@@ -275,23 +275,23 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_patch_eval",
                     "type":"function",
-                    "function":{"name":"patch_file","arguments":"{\"path\":\".obstral/runtime_eval.json\",\"search\":\"old\",\"replace\":\"new\"}"}
+                    "function":{"name":"patch_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\",\"search\":\"old\",\"replace\":\"new\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_patch_eval",
-                "content":"OK: patched '.obstral/runtime_eval.json' (+1 lines, 14 total)\n[auto-test] ✓ PASSED (exit 0)"
+                "content":"OK: patched '.spiral-coder/runtime_eval.json' (+1 lines, 14 total)\n[auto-test] ✓ PASSED (exit 0)"
             }),
         ];
-        let root = "Final answer must include `src/tui/agent/followup_requirements.rs`, `.obstral/runtime_eval.json`, and the verification command.";
+        let root = "Final answer must include `src/tui/agent/followup_requirements.rs`, `.spiral-coder/runtime_eval.json`, and the verification command.";
         let content = "[DONE]\nUpdated `src/tui/agent/followup_requirements.rs`.";
 
         let enriched =
             enrich_text_final_handoff(content, root, &messages, Some("cargo test -q demo 2>&1"))
                 .expect("enriched final");
 
-        assert!(enriched.contains(".obstral/runtime_eval.json"));
+        assert!(enriched.contains(".spiral-coder/runtime_eval.json"));
         assert!(enriched.contains("cargo test -q demo 2>&1"));
     }
 

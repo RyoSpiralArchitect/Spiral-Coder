@@ -265,7 +265,7 @@ fn tui_replay_followup_path(root_user_text: &str) -> Option<String> {
     path_literals_in_text(root_user_text)
         .into_iter()
         .find(|path| {
-            path.ends_with(".obstral/tui_replay.json") || path.ends_with("tui_replay.json")
+            path.ends_with(".spiral-coder/tui_replay.json") || path.ends_with("tui_replay.json")
         })
 }
 
@@ -273,7 +273,7 @@ fn runtime_eval_followup_path(root_user_text: &str) -> Option<String> {
     path_literals_in_text(root_user_text)
         .into_iter()
         .find(|path| {
-            path.ends_with(".obstral/runtime_eval.json") || path.ends_with("runtime_eval.json")
+            path.ends_with(".spiral-coder/runtime_eval.json") || path.ends_with("runtime_eval.json")
         })
 }
 
@@ -582,7 +582,7 @@ mod tests {
         let (rewritten, original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json too.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json too.",
         )
         .expect("docs followup coercion");
 
@@ -599,13 +599,13 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_read_replay",
                     "type":"function",
-                    "function":{"name":"read_file","arguments":"{\"path\":\".obstral/tui_replay.json\"}"}
+                    "function":{"name":"read_file","arguments":"{\"path\":\".spiral-coder/tui_replay.json\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.obstral/tui_replay.json] (10 lines, 120 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":"[.spiral-coder/tui_replay.json] (10 lines, 120 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
             }),
             json!({
                 "role":"tool",
@@ -621,14 +621,14 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update .obstral/tui_replay.json too.",
+            "Update .spiral-coder/tui_replay.json too.",
         )
         .expect("replay followup coercion");
 
         assert_eq!(rewritten.name, "patch_file");
         assert!(rewritten
             .arguments
-            .contains("\"path\":\".obstral/tui_replay.json\""));
+            .contains("\"path\":\".spiral-coder/tui_replay.json\""));
         assert!(rewritten.arguments.contains("src/tui/review_panel.rs"));
         assert!(coerced.starts_with("patch_file("));
     }
@@ -648,12 +648,12 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/state-schema.md and .obstral/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
+            "Update docs/state-schema.md and .spiral-coder/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
         )
         .expect("runtime eval followup coercion");
 
         assert_eq!(rewritten.name, "read_file");
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
     #[test]
@@ -664,13 +664,13 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_read_eval",
                     "type":"function",
-                    "function":{"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function":{"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_eval",
-                "content":"[.obstral/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
+                "content":"[.spiral-coder/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
             }),
             json!({
                 "role":"tool",
@@ -686,14 +686,14 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update .obstral/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
+            "Update .spiral-coder/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
         )
         .expect("runtime eval patch followup");
 
         assert_eq!(rewritten.name, "patch_file");
         assert!(rewritten
             .arguments
-            .contains("\"path\":\".obstral/runtime_eval.json\""));
+            .contains("\"path\":\".spiral-coder/runtime_eval.json\""));
         assert!(rewritten
             .arguments
             .contains("src/tui/agent/session_bridge.rs"));
@@ -721,23 +721,23 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_read_eval",
                     "type":"function",
-                    "function":{"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function":{"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_eval",
-                "content":"[.obstral/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
+                "content":"[.spiral-coder/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
             }),
         ];
 
         let hint = required_existing_followup_no_tool_hint(
             &messages,
-            "Update .obstral/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
+            "Update .spiral-coder/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
         )
         .expect("pending hint");
 
-        assert!(hint.contains("patch_file(path=.obstral/runtime_eval.json)"));
+        assert!(hint.contains("patch_file(path=.spiral-coder/runtime_eval.json)"));
         assert!(hint.contains("src/tui/agent/session_bridge.rs"));
     }
 
@@ -780,7 +780,7 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json to include `src/tui/review_panel.rs`.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
         )
         .expect("prompt-driven docs followup");
 
@@ -823,7 +823,7 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json to include `src/tui/review_panel.rs`.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
         )
         .expect("docs followup from repeated patch");
 
@@ -881,13 +881,13 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_read_replay",
                     "type":"function",
-                    "function":{"name":"read_file","arguments":"{\"path\":\".obstral/tui_replay.json\"}"}
+                    "function":{"name":"read_file","arguments":"{\"path\":\".spiral-coder/tui_replay.json\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.obstral/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":"[.spiral-coder/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
             }),
         ];
         let tc = ToolCallData {
@@ -899,14 +899,14 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json to include `src/tui/review_panel.rs`.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
         )
         .expect("replay followup after docs patch");
 
         assert_eq!(rewritten.name, "patch_file");
         assert!(rewritten
             .arguments
-            .contains("\"path\":\".obstral/tui_replay.json\""));
+            .contains("\"path\":\".spiral-coder/tui_replay.json\""));
         assert!(rewritten.arguments.contains("src/tui/review_panel.rs"));
         assert!(coerced.starts_with("patch_file("));
     }
@@ -963,12 +963,12 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json to include `src/tui/review_panel.rs`.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
         )
         .expect("replay read followup after docs patch");
 
         assert_eq!(rewritten.name, "read_file");
-        assert_eq!(coerced, "read_file(path=.obstral/tui_replay.json)");
+        assert_eq!(coerced, "read_file(path=.spiral-coder/tui_replay.json)");
     }
 
     #[test]
@@ -1018,20 +1018,20 @@ mod tests {
                 "tool_calls":[{
                     "id":"call_read_replay",
                     "type":"function",
-                    "function":{"name":"read_file","arguments":"{\"path\":\".obstral/tui_replay.json\"}"}
+                    "function":{"name":"read_file","arguments":"{\"path\":\".spiral-coder/tui_replay.json\"}"}
                 }]
             }),
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.obstral/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":"[.spiral-coder/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
             }),
         ];
         let tc = ToolCallData {
             id: "call_patch_replay".to_string(),
             name: "patch_file".to_string(),
             arguments: json!({
-                "path":".obstral/tui_replay.json",
+                "path":".spiral-coder/tui_replay.json",
                 "search":"\"src/tui/events.rs\"",
                 "replace":"\"src/tui/events.rs\",\n    \"src/tui/review_panel.rs\""
             })
@@ -1041,7 +1041,7 @@ mod tests {
         assert!(matches_required_existing_followup(
             &messages,
             &tc,
-            "Update docs/runtime-architecture.md and .obstral/tui_replay.json to include `src/tui/review_panel.rs`.",
+            "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
         ));
     }
 
@@ -1065,7 +1065,7 @@ mod tests {
 
         let hint = required_existing_followup_no_tool_hint(
             &messages,
-            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
+            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
         )
         .expect("docs followup should be pending");
 
@@ -1105,7 +1105,7 @@ mod tests {
         let (rewritten, original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
+            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
         )
         .expect("done should be redirected to pending followup");
 
@@ -1166,11 +1166,11 @@ mod tests {
         let (rewritten, _original, coerced) = coerce_existing_followup_tool_call(
             &messages,
             &tc,
-            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
+            "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
         )
         .expect("runtime eval followup should be next");
 
         assert_eq!(rewritten.name, "read_file");
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 }

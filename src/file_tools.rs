@@ -152,7 +152,7 @@ pub fn tool_write_file(path: &str, content: &str, base: Option<&str>) -> (String
 
     // Atomic write: temp file → rename.
     let mut tmp_os = abs_path.as_os_str().to_owned();
-    tmp_os.push(".__obstral_tmp");
+    tmp_os.push(".__spiral_coder_tmp");
     let tmp_path = PathBuf::from(tmp_os);
 
     if let Err(e) = std::fs::write(&tmp_path, content) {
@@ -236,7 +236,7 @@ fn write_patch_result(
 ) -> (String, bool) {
     // Atomic write.
     let mut tmp_os = abs_path.as_os_str().to_owned();
-    tmp_os.push(".__obstral_tmp");
+    tmp_os.push(".__spiral_coder_tmp");
     let tmp_path = PathBuf::from(tmp_os);
 
     if let Err(e) = std::fs::write(&tmp_path, new_content) {
@@ -606,7 +606,7 @@ pub fn tool_search_files(
         for entry in rd.flatten() {
             let path = entry.path();
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-            if name.starts_with('.') && name != ".obstral.md" {
+            if name.starts_with('.') && name != ".spiral-coder.md" {
                 continue; // skip hidden
             }
             if path.is_dir() {
@@ -813,7 +813,7 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
 
     // Atomic write.
     let mut tmp_os = abs_path.as_os_str().to_owned();
-    tmp_os.push(".__obstral_tmp");
+    tmp_os.push(".__spiral_coder_tmp");
     let tmp_path = PathBuf::from(tmp_os);
 
     if let Err(e) = std::fs::write(&tmp_path, &new_content) {
@@ -906,7 +906,7 @@ pub fn tool_list_dir(
         if name.is_empty() {
             continue;
         }
-        if !include_hidden && name.starts_with('.') && name != ".obstral.md" {
+        if !include_hidden && name.starts_with('.') && name != ".spiral-coder.md" {
             continue;
         }
         if path.is_dir() {
@@ -1174,7 +1174,7 @@ mod tests {
 
     #[test]
     fn write_then_read() {
-        let dir = std::env::temp_dir().join("obstral_test_wr");
+        let dir = std::env::temp_dir().join("spiral_coder_test_wr");
         let _ = std::fs::create_dir_all(&dir);
         let base = dir.to_string_lossy().into_owned();
 
@@ -1190,7 +1190,7 @@ mod tests {
 
     #[test]
     fn patch_basic() {
-        let dir = std::env::temp_dir().join("obstral_test_patch");
+        let dir = std::env::temp_dir().join("spiral_coder_test_patch");
         let _ = std::fs::create_dir_all(&dir);
         let base = dir.to_string_lossy().into_owned();
 
@@ -1207,7 +1207,7 @@ mod tests {
 
     #[test]
     fn patch_not_found_shows_preview() {
-        let dir = std::env::temp_dir().join("obstral_test_notfound");
+        let dir = std::env::temp_dir().join("spiral_coder_test_notfound");
         let _ = std::fs::create_dir_all(&dir);
         let base = dir.to_string_lossy().into_owned();
 
@@ -1222,7 +1222,7 @@ mod tests {
 
     #[test]
     fn patch_repairs_indent_only_multiline_search_miss() {
-        let dir = std::env::temp_dir().join("obstral_test_patch_indent_fallback");
+        let dir = std::env::temp_dir().join("spiral_coder_test_patch_indent_fallback");
         let _ = std::fs::remove_dir_all(&dir);
         let _ = std::fs::create_dir_all(dir.join("src"));
         let content = r#"const PR_READY_RUNTIME_PATHS: &[&str] = &[
@@ -1258,7 +1258,7 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
     #[test]
     fn patch_keeps_short_search_misses_strict() {
-        let dir = std::env::temp_dir().join("obstral_test_patch_short_strict");
+        let dir = std::env::temp_dir().join("spiral_coder_test_patch_short_strict");
         let _ = std::fs::remove_dir_all(&dir);
         let _ = std::fs::create_dir_all(&dir);
         let base = dir.to_string_lossy().into_owned();
@@ -1273,7 +1273,7 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
     #[test]
     fn list_dir_basic() {
-        let dir = std::env::temp_dir().join("obstral_test_list_dir");
+        let dir = std::env::temp_dir().join("spiral_coder_test_list_dir");
         let _ = std::fs::remove_dir_all(&dir);
         let _ = std::fs::create_dir_all(dir.join("a"));
         let _ = std::fs::write(dir.join("b.txt"), "hi");
@@ -1289,7 +1289,7 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
     #[test]
     fn search_files_accepts_file_scope_when_dir_is_file() {
-        let dir = std::env::temp_dir().join("obstral_test_search_file_scope");
+        let dir = std::env::temp_dir().join("spiral_coder_test_search_file_scope");
         let _ = std::fs::remove_dir_all(&dir);
         let _ = std::fs::create_dir_all(dir.join("src"));
         let _ = std::fs::write(
@@ -1309,7 +1309,7 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
     #[test]
     fn search_files_reports_paths_relative_to_tool_root() {
-        let dir = std::env::temp_dir().join("obstral_test_search_tool_root_relative");
+        let dir = std::env::temp_dir().join("spiral_coder_test_search_tool_root_relative");
         let _ = std::fs::remove_dir_all(&dir);
         let _ = std::fs::create_dir_all(dir.join("src"));
         let _ = std::fs::write(

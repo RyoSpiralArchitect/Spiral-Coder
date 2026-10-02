@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal OBSTRAL-compatible server that avoids running a custom EXE."""
+"""Minimal Spiral-Coder-compatible server that avoids running a custom EXE."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from urllib import request as urlrequest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = REPO_ROOT / "web"
-DEFAULT_WORKSPACE_ROOT = (Path.home() / "obstral-work").resolve()
+DEFAULT_WORKSPACE_ROOT = (Path.home() / "spiral-coder-work").resolve()
 # Default to a safe workspace outside the repo, so local tools never "accidentally"
 # create nested repos or delete tracked files under the source tree.
 WORKSPACE_ROOT = DEFAULT_WORKSPACE_ROOT
@@ -44,8 +44,8 @@ CHANGE_LOG: list[dict[str, Any]] = []
 
 # Self-evolving meta layer:
 # Prompt overrides live under the workspace root, not the repo, so they can be
-# safely modified via approvals without touching OBSTRAL's source tree.
-META_PROMPTS_REL = ".obstral/meta_prompts.json"
+# safely modified via approvals without touching Spiral-Coder's source tree.
+META_PROMPTS_REL = ".spiral-coder/meta_prompts.json"
 
 LOCAL_TOOL_PROMPT = (
     "You are a coding agent with local workspace tools.\n"
@@ -59,26 +59,26 @@ LOCAL_TOOL_PROMPT = (
     "and run git inside it (or use `git -C <dir> ...`). NEVER run `git add .` outside the target repo.\n\n"
     "Use run_command to act locally (git, tests, package managers, winget, etc.).\n"
     "Examples:\n"
-    "```obstral-tool\n"
+    "```spiral-coder-tool\n"
     "{\"name\":\"run_command\",\"arguments\":{\"command\":\"git status --porcelain\"}}\n"
     "{\"name\":\"run_command\",\"arguments\":{\"command\":\"powershell -NoProfile -Command \\\"winget --version\\\"\"}}\n"
     "{\"name\":\"run_command\",\"arguments\":{\"command\":\"bash -lc \\\"ls -la\\\"\"}}\n"
     "```\n\n"
     "If your provider/model does not support tool calling, you MUST emit tool intents "
-    "in this exact format so OBSTRAL can execute them:\n"
-    "```obstral-tool\n"
+    "in this exact format so Spiral-Coder can execute them:\n"
+    "```spiral-coder-tool\n"
     "{\"name\":\"mkdir\",\"arguments\":{\"path\":\"myproj\"}}\n"
     "{\"name\":\"write_file\",\"arguments\":{\"path\":\"myproj/README.md\",\"content\":\"...\"}}\n"
     "```\n"
-    "Only JSON is allowed inside the obstral-tool block.\n\n"
-    "Fallback (no tool calling AND you cannot emit obstral-tool JSON):\n"
-    "- For files: print a file path on its own line, then a fenced code block. OBSTRAL will write it.\n"
+    "Only JSON is allowed inside the spiral-coder-tool block.\n\n"
+    "Fallback (no tool calling AND you cannot emit spiral-coder-tool JSON):\n"
+    "- For files: print a file path on its own line, then a fenced code block. Spiral-Coder will write it.\n"
     "  Example:\n"
     "  src/main.py\n"
     "  ```python\n"
     "  print('hi')\n"
     "  ```\n"
-    "- For commands: use a fenced block with language bash/powershell/cmd. OBSTRAL will convert it to run_command.\n"
+    "- For commands: use a fenced block with language bash/powershell/cmd. Spiral-Coder will convert it to run_command.\n"
     "  Example:\n"
     "  ```powershell\n"
     "  git status --porcelain\n"
@@ -318,7 +318,7 @@ _VIBE_DOTENV_CACHE: dict[str, str] | None = None
 def _load_vibe_dotenv() -> dict[str, str]:
     """Load VIBE CLI dotenv (~/.vibe/.env) if present.
 
-    This lets OBSTRAL reuse the same keys without requiring global env var exports.
+    This lets Spiral-Coder reuse the same keys without requiring global env var exports.
     """
     global _VIBE_DOTENV_CACHE
     if _VIBE_DOTENV_CACHE is not None:
@@ -361,19 +361,19 @@ def _provider_key_from_env(provider: str) -> str:
             or os.environ.get("MISTRAL_API_KEY", "").strip()
             or str(vibe_env.get("CODESTRAL_API_KEY") or "").strip()
             or str(vibe_env.get("MISTRAL_API_KEY") or "").strip()
-            or os.environ.get("OBS_API_KEY", "").strip()
+            or os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
         )
     if provider == "mistral":
         return (
             os.environ.get("MISTRAL_API_KEY", "").strip()
             or str(vibe_env.get("MISTRAL_API_KEY") or "").strip()
-            or os.environ.get("OBS_API_KEY", "").strip()
+            or os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
         )
     if provider == "openai-compatible":
         return (
-            os.environ.get("OBS_API_KEY", "").strip()
+            os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
             or os.environ.get("OPENAI_API_KEY", "").strip()
-            or str(vibe_env.get("OBS_API_KEY") or "").strip()
+            or str(vibe_env.get("SPIRAL_CODER_API_KEY") or "").strip()
             or str(vibe_env.get("OPENAI_API_KEY") or "").strip()
         )
     if provider == "gemini":
@@ -491,14 +491,14 @@ def _wants_command_action(req: dict[str, Any]) -> bool:
 def _requires_edit_approval(req: dict[str, Any] | None) -> bool:
     if req is None:
         return False
-    env_default = _as_bool(os.environ.get("OBS_REQUIRE_EDIT_APPROVAL"), True)
+    env_default = _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True)
     return _as_bool(req.get("require_edit_approval"), env_default)
 
 
 def _requires_command_approval(req: dict[str, Any] | None) -> bool:
     if req is None:
         return False
-    env_default = _as_bool(os.environ.get("OBS_REQUIRE_COMMAND_APPROVAL"), True)
+    env_default = _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True)
     if "require_command_approval" in req:
         return _as_bool(req.get("require_command_approval"), env_default)
     return _requires_edit_approval(req)
@@ -751,7 +751,7 @@ def _preflight_provider_config(provider: str, base_url: str, api_key: str) -> No
         if k.startswith("sk-proj-"):
             raise RuntimeError(
                 "This API key looks like an OpenAI key (sk-proj-*). "
-                "Use MISTRAL_API_KEY or OBS_API_KEY for Mistral/Codestral."
+                "Use MISTRAL_API_KEY or SPIRAL_CODER_API_KEY for Mistral/Codestral."
             )
 
     if p == "openai-compatible" and "api.mistral.ai" in u:
@@ -816,13 +816,13 @@ def _normalize_assistant_content(content: Any) -> str:
     return str(content)
 
 
-_OBSTRAL_TOOL_RE = re.compile(
-    r"```obstral-tool\s*\r?\n(.*?)\r?\n```",
+_SPIRAL_CODER_TOOL_RE = re.compile(
+    r"```spiral-coder-tool\s*\r?\n(.*?)\r?\n```",
     re.IGNORECASE | re.DOTALL,
 )
 
 
-def _extract_obstral_tool_calls(text: str) -> tuple[str, list[dict[str, Any]]]:
+def _extract_spiral_coder_tool_calls(text: str) -> tuple[str, list[dict[str, Any]]]:
     s = str(text or "")
     calls: list[dict[str, Any]] = []
 
@@ -864,10 +864,10 @@ def _extract_obstral_tool_calls(text: str) -> tuple[str, list[dict[str, Any]]]:
                 continue
             collect(item)
 
-    for m in _OBSTRAL_TOOL_RE.finditer(s):
+    for m in _SPIRAL_CODER_TOOL_RE.finditer(s):
         parse_block(m.group(1))
 
-    cleaned = _OBSTRAL_TOOL_RE.sub("", s).strip()
+    cleaned = _SPIRAL_CODER_TOOL_RE.sub("", s).strip()
     return cleaned, calls
 
 
@@ -1146,7 +1146,7 @@ def _extract_implied_run_command_calls(text: str, *, max_commands: int = 6) -> l
             i += 1
             continue
         lang = str(m.group(1) or "").strip().lower()
-        if lang == "obstral-tool":
+        if lang == "spiral-coder-tool":
             # Tool blocks are handled elsewhere.
             i += 1
             while i < len(lines) and not str(lines[i] or "").strip().startswith("```"):
@@ -1240,13 +1240,13 @@ def _extract_text_from_openai_completions_response(res: dict[str, Any]) -> str:
 def _api_key_env_hint(provider: str) -> str:
     p = str(provider or "").strip().lower()
     if p == "openai-compatible":
-        return "OBS_API_KEY or OPENAI_API_KEY"
+        return "SPIRAL_CODER_API_KEY or OPENAI_API_KEY"
     if p == "gemini":
         return "GEMINI_API_KEY or GOOGLE_API_KEY"
     if p == "mistral":
-        return "MISTRAL_API_KEY or OBS_API_KEY"
+        return "MISTRAL_API_KEY or SPIRAL_CODER_API_KEY"
     if p == "codestral":
-        return "CODESTRAL_API_KEY or MISTRAL_API_KEY or OBS_API_KEY"
+        return "CODESTRAL_API_KEY or MISTRAL_API_KEY or SPIRAL_CODER_API_KEY"
     if p == "anthropic":
         return "ANTHROPIC_API_KEY"
     if p == "mistral-cli":
@@ -1566,11 +1566,11 @@ def _apply_run_command(command: str, timeout_seconds: int, *, cwd: Path | None =
 
     s = re.sub(r"\s+", " ", cmd.strip().lower())
     if "git reset --hard" in s:
-        raise RuntimeError("refusing to run dangerous command via OBSTRAL: git reset --hard")
+        raise RuntimeError("refusing to run dangerous command via Spiral-Coder: git reset --hard")
     if re.search(r"\bgit\s+clean\b", s) and re.search(r"\b-[a-z]*f[a-z]*\b", s) and re.search(r"\b-[a-z]*d[a-z]*\b", s):
-        raise RuntimeError("refusing to run dangerous command via OBSTRAL: git clean -fd")
+        raise RuntimeError("refusing to run dangerous command via Spiral-Coder: git clean -fd")
     if re.search(r"\bgit\s+rm\b", s) and re.search(r"\b(--cached|-r|--recursive)\b", s) and re.search(r"(^|\\s)\\.(\\s|$)", s):
-        raise RuntimeError("refusing to run dangerous command via OBSTRAL: git rm ... .")
+        raise RuntimeError("refusing to run dangerous command via Spiral-Coder: git rm ... .")
 
     timeout = min(600, max(1, int(timeout_seconds or 120)))
     run_cwd = (cwd or WORKSPACE_ROOT).resolve()
@@ -1787,7 +1787,7 @@ def _tool_dispatch(
 
 
 def _local_tools_enabled(req: dict[str, Any]) -> bool:
-    flag = str(os.environ.get("OBS_ENABLE_LOCAL_TOOLS", "1")).strip().lower()
+    flag = str(os.environ.get("SPIRAL_CODER_ENABLE_LOCAL_TOOLS", "1")).strip().lower()
     if flag in ("0", "false", "off", "no"):
         return False
 
@@ -2072,7 +2072,7 @@ def _chat_openai_compat(
         clean_content = str(content)
         text_tool_calls: list[dict[str, Any]] = []
         if tools_enabled:
-            clean_content, text_tool_calls = _extract_obstral_tool_calls(clean_content)
+            clean_content, text_tool_calls = _extract_spiral_coder_tool_calls(clean_content)
             if needs_material:
                 # Some models refuse tool-calling and instead print file blocks / shell blocks.
                 implied: list[dict[str, Any]] = []
@@ -2129,7 +2129,7 @@ def _chat_openai_compat(
                     msg_list.append(
                         {
                             "role": "user",
-                            "content": "[obstral-tool result]\n"
+                            "content": "[spiral-coder-tool result]\n"
                             + json.dumps(
                                 {"name": name, "result": result},
                                 ensure_ascii=False,
@@ -2156,12 +2156,12 @@ def _chat_openai_compat(
                             "role": "system",
                             "content": (
                                 "You must actually create/edit files now (not just describe steps).\n"
-                                "Call mkdir/write_file/run_command, emit an ```obstral-tool``` block, or use fallback blocks.\n"
+                                "Call mkdir/write_file/run_command, emit an ```spiral-coder-tool``` block, or use fallback blocks.\n"
                                 "Fallback:\n"
                                 "- file: <path> line then a fenced code block\n"
                                 "- command: ```powershell```/```cmd```/```bash```\n"
                                 "Example:\n"
-                                "```obstral-tool\n"
+                                "```spiral-coder-tool\n"
                                 "{\"name\":\"mkdir\",\"arguments\":{\"path\":\"projects/maze-game\"}}\n"
                                 "{\"name\":\"write_file\",\"arguments\":{\"path\":\"projects/maze-game/README.md\",\"content\":\"# Maze Game\\n\"}}\n"
                                 "```"
@@ -2171,7 +2171,7 @@ def _chat_openai_compat(
                     continue
                 return {
                     "content": str(clean_content)
-                    + "\n\n[OBSTRAL] Material change was required but the model did not call tools.",
+                    + "\n\n[Spiral-Coder] Material change was required but the model did not call tools.",
                     "model": model,
                 }
 
@@ -2183,12 +2183,12 @@ def _chat_openai_compat(
                             "role": "system",
                             "content": (
                                 "Tool use is REQUIRED. Do not reply with steps only.\n"
-                                "Call a tool, emit an ```obstral-tool``` block of JSON, or use fallback blocks.\n"
+                                "Call a tool, emit an ```spiral-coder-tool``` block of JSON, or use fallback blocks.\n"
                                 "Fallback:\n"
                                 "- file: <path> line then a fenced code block\n"
                                 "- command: ```powershell```/```cmd```/```bash```\n"
                                 "If unsure, start with:\n"
-                                "```obstral-tool\n"
+                                "```spiral-coder-tool\n"
                                 "{\"name\":\"list_files\",\"arguments\":{\"pattern\":\"**/*\",\"max_results\":200}}\n"
                                 "```"
                             ),
@@ -2197,7 +2197,7 @@ def _chat_openai_compat(
                     continue
                 return {
                     "content": str(clean_content)
-                    + "\n\n[OBSTRAL] Tool use was required but the model did not call tools.",
+                    + "\n\n[Spiral-Coder] Tool use was required but the model did not call tools.",
                     "model": model,
                 }
 
@@ -2411,7 +2411,7 @@ def _extract_mistral_cli_output(stdout: str) -> str:
 
 
 def _chat_mistral_cli(req: dict[str, Any], timeout: int) -> dict[str, Any]:
-    cmd_raw = os.environ.get("OBS_MISTRAL_CLI_CMD", "vibe").strip() or "vibe"
+    cmd_raw = os.environ.get("SPIRAL_CODER_MISTRAL_CLI_CMD", "vibe").strip() or "vibe"
     base_cmd = shlex.split(cmd_raw)
     if not base_cmd:
         base_cmd = ["vibe"]
@@ -2420,13 +2420,13 @@ def _chat_mistral_cli(req: dict[str, Any], timeout: int) -> dict[str, Any]:
     default_agent = "accept-edits" if mode != "observer" else "plan"
     agent = str(
         req.get("mistral_cli_agent")
-        or os.environ.get("OBS_MISTRAL_CLI_AGENT", default_agent)
+        or os.environ.get("SPIRAL_CODER_MISTRAL_CLI_AGENT", default_agent)
     ).strip()
     autonomy = _autonomy_level(req)
     default_turns = "8" if autonomy == "longrun" else "4"
     max_turns = int(
         req.get("mistral_cli_max_turns")
-        or os.environ.get("OBS_MISTRAL_CLI_MAX_TURNS", default_turns)
+        or os.environ.get("SPIRAL_CODER_MISTRAL_CLI_MAX_TURNS", default_turns)
     )
     max_turns = min(12, max(1, max_turns))
 
@@ -2460,7 +2460,7 @@ def _chat_mistral_cli(req: dict[str, Any], timeout: int) -> dict[str, Any]:
     except FileNotFoundError:
         raise RuntimeError(
             "Mistral CLI not found. Install with: uv tool install mistral-vibe "
-            "or set OBS_MISTRAL_CLI_CMD."
+            "or set SPIRAL_CODER_MISTRAL_CLI_CMD."
         ) from None
     except subprocess.TimeoutExpired:
         raise RuntimeError(f"Mistral CLI timed out after {timeout}s") from None
@@ -2672,18 +2672,18 @@ class LiteHandler(BaseHTTPRequestHandler):
                         "pending_edits": True,
                         "chat_tools": False,
                         "meta_prompts": True,
-                        "edit_approval_default": _as_bool(os.environ.get("OBS_REQUIRE_EDIT_APPROVAL"), True),
-                        "command_approval_default": _as_bool(os.environ.get("OBS_REQUIRE_COMMAND_APPROVAL"), True),
+                        "edit_approval_default": _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True),
+                        "command_approval_default": _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True),
                     },
                     "providers": {
                         "mistral": {
                             "api_key_present": _env_present("MISTRAL_API_KEY")
-                            or _env_present("OBS_API_KEY")
+                            or _env_present("SPIRAL_CODER_API_KEY")
                         },
                         "codestral": {
                             "api_key_present": _env_present("CODESTRAL_API_KEY")
                             or _env_present("MISTRAL_API_KEY")
-                            or _env_present("OBS_API_KEY")
+                            or _env_present("SPIRAL_CODER_API_KEY")
                         },
                         "gemini": {
                             "api_key_present": _env_present("GEMINI_API_KEY")
@@ -2693,7 +2693,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                             "api_key_present": _env_present("ANTHROPIC_API_KEY")
                         },
                         "openai-compatible": {
-                            "api_key_present": _env_present("OBS_API_KEY")
+                            "api_key_present": _env_present("SPIRAL_CODER_API_KEY")
                             or _env_present("OPENAI_API_KEY")
                         },
                     },
@@ -2730,7 +2730,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _models_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(502, out)
             return
@@ -2740,7 +2740,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _chat_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(502, out)
             return
@@ -2754,7 +2754,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _exec_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2768,7 +2768,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "item": item})
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2782,7 +2782,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "item": item})
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2811,7 +2811,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _queue_meta_prompts_write(cur))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("OBS_DEBUG"), False):
+                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2837,7 +2837,7 @@ class LiteHandler(BaseHTTPRequestHandler):
             self._write_sse("done", {})
         except Exception as e:
             out = {"error": str(e)}
-            if _as_bool(os.environ.get("OBS_DEBUG"), False):
+            if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
                 out["trace"] = traceback.format_exc()
             self._write_sse("error", out)
             self._write_sse("done", {})
@@ -2855,20 +2855,20 @@ class LiteHandler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run OBSTRAL lite server")
+    parser = argparse.ArgumentParser(description="Run Spiral-Coder lite server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=18080)
     parser.add_argument(
         "--workspace",
-        default=os.environ.get("OBS_WORKSPACE_ROOT", "").strip() or str(DEFAULT_WORKSPACE_ROOT),
-        help="Workspace root for local tools (default: $OBS_WORKSPACE_ROOT or ~/obstral-work).",
+        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(DEFAULT_WORKSPACE_ROOT),
+        help="Workspace root for local tools (default: $SPIRAL_CODER_WORKSPACE_ROOT or ~/spiral-coder-work).",
     )
     args = parser.parse_args()
 
     _set_workspace_root(str(args.workspace))
 
     server = ThreadingHTTPServer((args.host, args.port), LiteHandler)
-    print(f"OBSTRAL Lite UI: http://{args.host}:{args.port}/")
+    print(f"Spiral-Coder Lite UI: http://{args.host}:{args.port}/")
     print(f"Workspace root: {WORKSPACE_ROOT.as_posix()}")
     try:
         server.serve_forever()

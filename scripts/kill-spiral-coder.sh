@@ -6,9 +6,9 @@ PATH_CONTAINS=""
 
 usage() {
   cat <<'USAGE'
-Usage: bash ./scripts/kill-obstral.sh [--force|--no-force] [--path-contains <needle>]
+Usage: bash ./scripts/kill-spiral-coder.sh [--force|--no-force] [--path-contains <needle>]
 
-Stops running `obstral` processes.
+Stops running `spiral-coder` processes.
 - --path-contains filters by the process command line substring (best-effort).
 USAGE
 }
@@ -54,16 +54,16 @@ fi
 
 pids=""
 if command -v pgrep >/dev/null 2>&1; then
-  pids="$(pgrep -x obstral 2>/dev/null || true)"
+  pids="$(pgrep -x spiral-coder 2>/dev/null || true)"
 else
-  pids="$(ps ax -o pid= -o comm= 2>/dev/null | awk '$2=="obstral"{print $1}' || true)"
+  pids="$(ps ax -o pid= -o comm= 2>/dev/null | awk '$2=="spiral-coder"{print $1}' || true)"
 fi
 
 if [[ -z "${pids}" ]]; then
   if [[ -n "${needle}" ]]; then
-    echo "[kill-obstral] no obstral process (filtered)"
+    echo "[kill-spiral-coder] no spiral-coder process (filtered)"
   else
-    echo "[kill-obstral] no obstral process"
+    echo "[kill-spiral-coder] no spiral-coder process"
   fi
   exit 0
 fi
@@ -83,11 +83,11 @@ for pid in ${pids}; do
 done
 
 if [[ ${#filtered[@]} -eq 0 ]]; then
-  echo "[kill-obstral] no obstral process (filtered)"
+  echo "[kill-spiral-coder] no spiral-coder process (filtered)"
   exit 0
 fi
 
-echo "[kill-obstral] stopping ${#filtered[@]} process(es)..."
+echo "[kill-spiral-coder] stopping ${#filtered[@]} process(es)..."
 if [[ "${FORCE}" == "1" ]]; then
   for pid in "${filtered[@]}"; do
     kill -9 "${pid}" 2>/dev/null || true
@@ -98,5 +98,5 @@ else
   done
 fi
 
-echo "[kill-obstral] done"
+echo "[kill-spiral-coder] done"
 

@@ -30,10 +30,10 @@ if ($AddCargoBinToUserPath) {
   if ($userPath -notlike "*$cargoBin*") {
     [Environment]::SetEnvironmentVariable("Path", "$cargoBin;$userPath", "User")
     Write-Host "Added to User PATH: $cargoBin"
-    Write-Host "Restart your terminal, then run: obstral --version"
+    Write-Host "Restart your terminal, then run: spiral-coder --version"
   } else {
     Write-Host "User PATH already contains: $cargoBin"
   }
 }
 
-Write-Host "Installed: obstral.exe"
+Write-Host "Installed: spiral-coder.exe"

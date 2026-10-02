@@ -1,11 +1,11 @@
-# OBSTRAL
+# Spiral-Coder
 
 ![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
 > **One prompt box is not enough.**
-> OBSTRAL gives your AI a second brain — and makes them argue.
+> Spiral-Coder gives your AI a second brain — and makes them argue.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
@@ -15,7 +15,7 @@ Every AI coding tool has the same problem: the model that writes your code also 
 
 That's not a review. That's a self-defense monologue.
 
-OBSTRAL fixes this by running Coder and Observer in **completely separate contexts**. The Observer does not share the Coder's live working context or hidden scratchpad. It critiques outputs, transcripts, and optional git diff snapshots after the fact. That's what keeps it honest.
+Spiral-Coder fixes this by running Coder and Observer in **completely separate contexts**. The Observer does not share the Coder's live working context or hidden scratchpad. It critiques outputs, transcripts, and optional git diff snapshots after the fact. That's what keeps it honest.
 
 ---
 
@@ -25,7 +25,7 @@ These screenshots come from the Playwright smoke flows that exercise the Web UI 
 
 | Overview | Harness review gate |
 |---|---|
-| ![OBSTRAL web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
+| ![Spiral-Coder web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
 
 | Runtime approvals |
 |---|
@@ -35,7 +35,7 @@ These screenshots come from the Playwright smoke flows that exercise the Web UI 
 
 ## Dogfood Benchmarks
 
-OBSTRAL now keeps lightweight benchmark writeups for generated milestone repos without checking those repos into git.
+Spiral-Coder now keeps lightweight benchmark writeups for generated milestone repos without checking those repos into git.
 
 - [Benchmark Examples](docs/examples/README.md)
 - [Existing Repo Bugfix (Rust)](docs/examples/existing-repo-bugfix-rust.md)
@@ -48,16 +48,16 @@ Each page records the eval prompt shape, provider/model, rerun command, runtime 
 
 ## Current Benchmark Milestone
 
-The current milestone is simple but important: OBSTRAL can now cover both fresh-repo scaffolds and an existing-repo bugfix from `runtime_eval`, keep generated state out of git, and still document the result in a reproducible way.
+The current milestone is simple but important: Spiral-Coder can now cover both fresh-repo scaffolds and an existing-repo bugfix from `runtime_eval`, keep generated state out of git, and still document the result in a reproducible way.
 
 - `maze-game-rust-repo` proves the scaffold lane can create a fresh Rust repo, keep gameplay logic in `src/lib.rs`, keep `src/main.rs` runnable, and close with a real `cargo test`.
 - `maze-game-pygame-repo` proves the same closeout path works for a non-Rust repo, including a headless `pygame` verification command.
-- `resume-session-bridge-fix` shows the runtime can resume an existing Rust bugfix with both seeded session memory and repo-local `.obstral/progress.json` memory, then push the agent back toward the smallest safe patch.
-- The medium-plus self-dogfood stretch case `self-fix-observer-repo-rules-review-panel` now passes end-to-end: the runtime patches `src/observer/repo_rules.rs`, carries the required `docs/runtime-architecture.md` and `.obstral/tui_replay.json` follow-ups, and closes with the exact passing verification command in the final handoff.
-- The PR-ready self-dogfood case `self-fix-pr-ready-runtime-followup` now passes end-to-end too: the runtime patches `src/tui/agent/followup_requirements.rs`, carries the required `docs/state-schema.md` and `.obstral/runtime_eval.json` follow-ups, and repairs the final handoff when a verified artifact path would otherwise be omitted. Latest green run: `.tmp/runtime_eval_1777229175/report.json` (`tools=7`, `messages=22`, approx `3.85k` transcript tokens) with merge readiness captured in `.tmp/runtime_eval_1777229175/merge_gate.json`.
+- `resume-session-bridge-fix` shows the runtime can resume an existing Rust bugfix with both seeded session memory and repo-local `.spiral-coder/progress.json` memory, then push the agent back toward the smallest safe patch.
+- The medium-plus self-dogfood stretch case `self-fix-observer-repo-rules-review-panel` now passes end-to-end: the runtime patches `src/observer/repo_rules.rs`, carries the required `docs/runtime-architecture.md` and `.spiral-coder/tui_replay.json` follow-ups, and closes with the exact passing verification command in the final handoff.
+- The PR-ready self-dogfood case `self-fix-pr-ready-runtime-followup` now passes end-to-end too: the runtime patches `src/tui/agent/followup_requirements.rs`, carries the required `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` follow-ups, and repairs the final handoff when a verified artifact path would otherwise be omitted. Latest green run: `.tmp/runtime_eval_1777229175/report.json` (`tools=7`, `messages=22`, approx `3.85k` transcript tokens) with merge readiness captured in `.tmp/runtime_eval_1777229175/merge_gate.json`.
 - The merge-approval self-dogfood case `self-fix-pr-ready-merge-approval` now exercises a fuller PR-ready change set: code fix, docs follow-up, runtime-eval follow-up, exact configured smoke command, and a final handoff that includes the required status label `PR-ready merge approved`. Latest green run: `.tmp/runtime_eval_1777491446/report.json` (`tools=9`, `messages=28`, approx `4.40k` transcript tokens) with merge readiness captured in `.tmp/runtime_eval_1777491446/merge_gate.json`.
 - The rollback-guard stretch case `self-fix-merge-gate-rollback-guard` raises the self-dogfood difficulty again: after a source read, the runtime can synthesize the smallest safe mutation for a stalled no-tool turn, carry docs/runtime-eval follow-ups, and close with the required `rollback guard enforced` handoff. Latest green run: `.tmp/runtime_eval_1777493520/report.json` (`tools=6`, `messages=20`, approx `3.83k` transcript tokens) with merge readiness captured in `.tmp/runtime_eval_1777493520/merge_gate.json`.
-- Runtime eval closeout now writes a generated `merge_gate.json` next to `report.json`; `obstral merge-gate`, the TUI Merge tab, and the Web GUI merge-gate panel can inspect readiness, approve passing cases, hold cases, and copy rollback previews without executing destructive rollback.
+- Runtime eval closeout now writes a generated `merge_gate.json` next to `report.json`; `spiral-coder merge-gate`, the TUI Merge tab, and the Web GUI merge-gate panel can inspect readiness, approve passing cases, hold cases, and copy rollback previews without executing destructive rollback.
 - The benchmark reports now carry provider/model metadata plus approximate transcript token telemetry, which makes it easier to compare runs without pretending those numbers are billing-accurate.
 
 This matters because it turns "the agent made something cool once" into "the runtime can reproduce a milestone case and explain how it did it."
@@ -78,10 +78,10 @@ The next stretch is less about making prettier demos and more about making the r
 
 ---
 
-## Why OBSTRAL Exists
+## Why Spiral-Coder Exists
 
 Most LLM tools optimize for conversation.
-OBSTRAL optimizes for controlled execution loops: separate roles, approval gates, and critique that accumulates instead of resetting every turn.
+Spiral-Coder optimizes for controlled execution loops: separate roles, approval gates, and critique that accumulates instead of resetting every turn.
 
 This is not a chat client.
 It's a development control engine.
@@ -100,9 +100,9 @@ Different roles. Different models if you want. Different contexts always.
 
 ---
 
-## What OBSTRAL Knows Before You Say Anything
+## What Spiral-Coder Knows Before You Say Anything
 
-When you set `tool_root`, OBSTRAL automatically scans the project:
+When you set `tool_root`, Spiral-Coder automatically scans the project:
 
 ```
 [Project Context — auto-detected]
@@ -123,7 +123,7 @@ This context is injected into the Coder's system message **before your first pro
 In the TUI header you'll see a live badge: `▸ Rust · React · git:main`
 In the Web UI, the stack label appears below the toolRoot field in Settings.
 
-**Stack detection** — OBSTRAL looks for manifest files:
+**Stack detection** — Spiral-Coder looks for manifest files:
 - `Cargo.toml` → Rust
 - `package.json` → Node / React / TypeScript (inspects deps)
 - `pyproject.toml` / `requirements.txt` → Python
@@ -135,7 +135,7 @@ The scan runs once per session, takes under 200 ms, and silently skips anything 
 
 ### Deep Repo Map for Offline Code Navigation
 
-OBSTRAL now also ships a lightweight repo-map helper for codebase navigation and benchmarking:
+Spiral-Coder now also ships a lightweight repo-map helper for codebase navigation and benchmarking:
 
 ```bash
 python3 scripts/repo_map.py build --root .
@@ -148,21 +148,21 @@ python3 scripts/repo_map.py eval --root .
 This is not wired into the runtime loop yet. It is a foundation layer for:
 - better file/symbol targeting before full agent integration
 - partial file loading instead of whole-file reads
-- repeatable query benchmarks under `.obstral/repo_map.eval.json`
-- repo-local ranking cleanup via `.obstralignore`
+- repeatable query benchmarks under `.spiral-coder/repo_map.eval.json`
+- repo-local ranking cleanup via `.spiral-coderignore`
 - score breakdowns and confidence/margin signals before runtime integration
 
 The runtime now also detects when a repo-map is ready and can use it as a lazy fallback after a literal `search_files` miss or a `read_file` path miss, instead of paying the cost on every turn.
 
 ---
 
-## What Makes OBSTRAL Different
+## What Makes Spiral-Coder Different
 
 ### The Observer Has No Skin in the Game
 
 Other tools: same model writes code → same model reviews code → model defends its own choices.
 
-OBSTRAL: fresh context for every Observer run. The Observer doesn't know what it *would have* written, and it doesn't share the Coder's live scratchpad. It judges emitted outputs, transcripts, and optional diff snapshots after they exist.
+Spiral-Coder: fresh context for every Observer run. The Observer doesn't know what it *would have* written, and it doesn't share the Coder's live scratchpad. It judges emitted outputs, transcripts, and optional diff snapshots after they exist.
 
 Result: sharper feedback, honest risk assessment, no defensive hedging.
 
@@ -180,7 +180,7 @@ Repeated findings also become analyzer-visible risk. That means recurrence can i
 
 ### Error Classification, Not Just Exit Codes
 
-When a command fails, OBSTRAL doesn't hand the model a raw `exit_code: 1` and hope for the best. It classifies the error first:
+When a command fails, Spiral-Coder doesn't hand the model a raw `exit_code: 1` and hope for the best. It classifies the error first:
 
 | Error type | Recovery hint injected |
 |---|---|
@@ -192,7 +192,7 @@ When a command fails, OBSTRAL doesn't hand the model a raw `exit_code: 1` and ho
 | `LOGIC` | Re-read the logic. Don't just re-run. |
 
 PowerShell caveat: `exit_code` can be `0` even when it printed errors (non-terminating error records).
-OBSTRAL flags this as `SUSPICIOUS_SUCCESS` and treats it as failure to stop false-progress drift.
+Spiral-Coder flags this as `SUSPICIOUS_SUCCESS` and treats it as failure to stop false-progress drift.
 
 ### The Coder Has Five Tools
 
@@ -248,7 +248,7 @@ The scratchpad/governor protocol itself is now sourced from one shared contract 
 
 ### State-Machine Loop (Planning → Executing → Verifying → Recovery)
 
-Most "agent loops" are just a max-iteration timer. OBSTRAL routes the Coder through a tiny state machine instead:
+Most "agent loops" are just a max-iteration timer. Spiral-Coder routes the Coder through a tiny state machine instead:
 
 - `planning`  — restate the goal and pick the next concrete step
 - `executing` — run tools (files/commands)
@@ -261,7 +261,7 @@ Verification is now acceptance-aware: docs-only work can stop after a real build
 
 This makes long runs converge instead of drifting into README-polish loops.
 
-OBSTRAL also injects a compact `[Recent runs]` memory (commands + `write_file` / `patch_file` / `apply_diff`) so the Coder doesn't forget what it just did and repeat itself.
+Spiral-Coder also injects a compact `[Recent runs]` memory (commands + `write_file` / `patch_file` / `apply_diff`) so the Coder doesn't forget what it just did and repeat itself.
 
 It also rebuilds a compact `[Working Memory]` from session messages: confirmed facts, completed steps, and known-good verification commands. That gives resumed runs positive memory, not just failure memory.
 
@@ -276,9 +276,9 @@ The final `done` call is also acceptance-aware now: it must explicitly report wh
 
 ### Goal Verification on Stop (No False "Done")
 
-When the model returns `finish_reason=stop` without tool calls, OBSTRAL can automatically run lightweight checks (repo init, tests, build) and push a `[goal_check]` message back into the loop if anything is missing or failing. That stop-path now uses the same shared policy and shared goal-check log format in both TUI and Web GUI.
+When the model returns `finish_reason=stop` without tool calls, Spiral-Coder can automatically run lightweight checks (repo init, tests, build) and push a `[goal_check]` message back into the loop if anything is missing or failing. That stop-path now uses the same shared policy and shared goal-check log format in both TUI and Web GUI.
 
-The Web GUI also has a `/meta-diagnose` MVP now: run `/meta-diagnose`, `/meta-diagnose last-fail`, or `/meta-diagnose msg:<message-id>` in the Coder composer to send the last failure to the Observer as a JSON-only meta diagnosis. Failed Coder messages also expose a `Why did this fail?` button. Each run is saved under `.obstral/meta-diagnose/` with the failure packet, observer prompt, raw response, parsed diagnosis, and parse status. The Observer pane also includes a lightweight `Meta` tab that lists saved artifacts, shows compact `primary_failure` counts, opens their details/raw JSON, and can re-run a diagnosis from the saved target or packet. The TUI also supports `/meta-diagnose`, `/meta-diagnose last-fail`, and `/meta-diagnose msg:coder-<index>` from either the Coder or Observer input, saving the same artifact set locally.
+The Web GUI also has a `/meta-diagnose` MVP now: run `/meta-diagnose`, `/meta-diagnose last-fail`, or `/meta-diagnose msg:<message-id>` in the Coder composer to send the last failure to the Observer as a JSON-only meta diagnosis. Failed Coder messages also expose a `Why did this fail?` button. Each run is saved under `.spiral-coder/meta-diagnose/` with the failure packet, observer prompt, raw response, parsed diagnosis, and parse status. The Observer pane also includes a lightweight `Meta` tab that lists saved artifacts, shows compact `primary_failure` counts, opens their details/raw JSON, and can re-run a diagnosis from the saved target or packet. The TUI also supports `/meta-diagnose`, `/meta-diagnose last-fail`, and `/meta-diagnose msg:coder-<index>` from either the Coder or Observer input, saving the same artifact set locally.
 
 ### @file References: Skip the Read Turn
 
@@ -335,7 +335,7 @@ This is the difference between an agent that keeps circling and one that knows w
 
 ### Cross-platform (Windows / macOS / Linux)
 
-OBSTRAL runs on Windows, macOS, and Linux.
+Spiral-Coder runs on Windows, macOS, and Linux.
 
 It was originally built on Windows (so the annoying Windows edge cases are first-class), but the core runtime is OS-agnostic and the repo ships both PowerShell and bash entrypoints:
 
@@ -350,7 +350,7 @@ Windows-specific hardening (still useful even if you mainly develop on macOS/Lin
 
 ### Plugin Registry
 
-Extend OBSTRAL without forking it:
+Extend Spiral-Coder without forking it:
 
 ```js
 registerObserverPlugin({ name: "my-plugin", onProposal, onHealth, onPhase })
@@ -385,9 +385,9 @@ quote: user_input = input()
   "failure_mode": "missing_required_followup",
   "confidence": 90,
   "mutation_anchor": { "path": "src/tui/agent/task_harness.rs", "reason": "latest source file edited by the coder" },
-  "required_followups": [{ "path": ".obstral/runtime_eval.json", "required_literal": "eval --spec .obstral/runtime_eval.json", "reason": "coder-loop changes need runtime eval proof before closeout" }],
-  "verification_cmd": "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1",
-  "next_coder_action": { "tool": "exec", "args": { "command": "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1" }, "reason": "produce the required replay/eval proof before closeout" }
+  "required_followups": [{ "path": ".spiral-coder/runtime_eval.json", "required_literal": "eval --spec .spiral-coder/runtime_eval.json", "reason": "coder-loop changes need runtime eval proof before closeout" }],
+  "verification_cmd": "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1",
+  "next_coder_action": { "tool": "exec", "args": { "command": "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1" }, "reason": "produce the required replay/eval proof before closeout" }
 }
 
 --- benchmark_plan ---
@@ -395,7 +395,7 @@ quote: user_input = input()
   "case_id_hint": "runtime-eval-task-harness",
   "lane": "runtime_eval",
   "objective": "Add a runtime_eval regression for missing_required_followup so the Coder must mutate, verify, and close out with required artifacts.",
-  "required_checks": ["cargo test -q tui::agent::tests::", "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1"],
+  "required_checks": ["cargo test -q tui::agent::tests::", "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1"],
   "success_criteria": ["runtime eval fails on the old behavior and passes after the harness fix"]
 }
 
@@ -410,7 +410,7 @@ Every field is intentional. `quote` pins the exact offending line to the card. `
 
 When a human sends an Observer proposal or diagnostic back to the Coder, the UI wraps it in an explicit `<observer_...>` handoff tag and asks the Coder to state accept / override / defer in the next plan. That keeps the external critic's voice distinct from ordinary user instructions.
 
-`benchmark_plan` is the Observer's next-step testing instinct: it names the smallest regression lane and checks that should make the finding repeatable. When a human approves it from the TUI/GUI, the Coder receives it inside `<observer_benchmark_plan>` and the Task Harness switches to a dedicated `benchmark_plan` lane, first reading the matching `.obstral/runtime_eval.json` or `.obstral/tui_replay.json` spec before patching the smallest regression artifact. If the model emits a malformed spec patch after that read, the harness can synthesize the minimal JSON update from the approved `case_id_hint` and `src/...rs` evidence.
+`benchmark_plan` is the Observer's next-step testing instinct: it names the smallest regression lane and checks that should make the finding repeatable. When a human approves it from the TUI/GUI, the Coder receives it inside `<observer_benchmark_plan>` and the Task Harness switches to a dedicated `benchmark_plan` lane, first reading the matching `.spiral-coder/runtime_eval.json` or `.spiral-coder/tui_replay.json` spec before patching the smallest regression artifact. If the model emits a malformed spec patch after that read, the harness can synthesize the minimal JSON update from the approved `case_id_hint` and `src/...rs` evidence.
 
 Runtime eval now has smoke cases for both approved `runtime_eval` and `tui_replay` benchmark plans. Those cases assert the copied tool-root spec actually contains the expected source path, so the dogfood loop proves artifact mutation instead of only checking the final assistant summary.
 
@@ -424,8 +424,8 @@ Benchmark-plan proof gates now require successful explicit verification commands
 
 ### 0) Set your API key (TUI/CLI)
 
-- OpenAI-compatible: `OPENAI_API_KEY` or `OBS_API_KEY`
-- Mistral: `MISTRAL_API_KEY` (or `OBS_API_KEY`)
+- OpenAI-compatible: `OPENAI_API_KEY` or `SPIRAL_CODER_API_KEY`
+- Mistral: `MISTRAL_API_KEY` (or `SPIRAL_CODER_API_KEY`)
 - Anthropic (Chat/Observer only): `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -476,56 +476,56 @@ TUI defaults:
 - If a pane is missing a required API key or model, send is blocked and the TUI shows a warning instead of running.
 
 **Headless Coder (CLI)**
-Install `obstral` (optional):
+Install `spiral-coder` (optional):
 - Windows (PowerShell): `.\scripts\install.ps1`
 - macOS / Linux (bash): `bash ./scripts/install.sh`
 
 Then run:
 ```bash
-# (optional) generate .obstral.md template (stack + test_cmd)
-obstral init -C .
+# (optional) generate .spiral-coder.md template (stack + test_cmd)
+spiral-coder init -C .
 
 # run the coding agent in your project
-obstral agent "fix the failing test" -C . --vibe
+spiral-coder agent "fix the failing test" -C . --vibe
 
-# persist and resume a session (default: .tmp/obstral_session.json)
-obstral agent "fix the failing test" -C . --vibe --session
+# persist and resume a session (default: .tmp/spiral_coder_session.json)
+spiral-coder agent "fix the failing test" -C . --vibe --session
 # resume later (omit prompt -> auto "continue")
-obstral agent -C . --vibe --session
+spiral-coder agent -C . --vibe --session
 
 # write machine-readable artifacts (trace + snapshot + execution graph)
-obstral agent "fix the failing test" -C . --vibe --trace-out .tmp/obstral_trace.jsonl --json-out .tmp/obstral_final.json --graph-out .tmp/obstral_graph.json
+spiral-coder agent "fix the failing test" -C . --vibe --trace-out .tmp/spiral_coder_trace.jsonl --json-out .tmp/spiral_coder_final.json --graph-out .tmp/spiral_coder_graph.json
 
 # run the runtime eval harness against fixture cases
-obstral eval -C . --spec .obstral/runtime_eval.json
-obstral eval -C . --spec .obstral/runtime_eval.json --filter repo-map --continue-on-error
+spiral-coder eval -C . --spec .spiral-coder/runtime_eval.json
+spiral-coder eval -C . --spec .spiral-coder/runtime_eval.json --filter repo-map --continue-on-error
 
 # inspect merge readiness from the latest runtime eval merge gate
-obstral merge-gate -C .
-obstral merge-gate -C . --json
-obstral merge-gate -C . --ci
+spiral-coder merge-gate -C .
+spiral-coder merge-gate -C . --json
+spiral-coder merge-gate -C . --ci
 # review the same gate in TUI/Web: TUI `/tab merge`, or Web GUI Settings -> Merge gate
 
 # inspect repo/runtime inventory surfaces
-obstral inventory health -C .
-obstral inventory health -C . --json
-obstral inventory health -C . --ci --fail-on yellow
-obstral inventory manifest -C .
-obstral inventory parity -C .
-obstral inventory replay-status -C . --json
+spiral-coder inventory health -C .
+spiral-coder inventory health -C . --json
+spiral-coder inventory health -C . --ci --fail-on yellow
+spiral-coder inventory manifest -C .
+spiral-coder inventory parity -C .
+spiral-coder inventory replay-status -C . --json
 
 # auto-fix loop (Coder → Observer diff review → Coder)
-obstral agent "fix the failing test" -C . --vibe --autofix
-obstral agent "fix the failing test" -C . --vibe --autofix 3
+spiral-coder agent "fix the failing test" -C . --vibe --autofix
+spiral-coder agent "fix the failing test" -C . --vibe --autofix 3
 
 # auto-approve tool actions (no prompts)
-obstral agent "fix the failing test" -C . --vibe -y
+spiral-coder agent "fix the failing test" -C . --vibe -y
 
 # review your current git diff with Observer
-obstral review -C .
+spiral-coder review -C .
 
-# review changes since a checkpoint (hash printed by `obstral agent`)
-obstral review -C . --base <checkpoint_hash>
+# review changes since a checkpoint (hash printed by `spiral-coder agent`)
+spiral-coder review -C . --base <checkpoint_hash>
 ```
 
 **Python Lite (WDAC / no Rust binary)**
@@ -557,9 +557,9 @@ Defaults:
 To work on your actual project, set `tool_root` to your project path:
 - **TUI**: `-C .` / `--tool-root .` flag, or `/root <path>` slash command at runtime
 - **Web UI**: Settings → toolRoot field
-- **CLI**: `obstral agent "<prompt>" -C .`
+- **CLI**: `spiral-coder agent "<prompt>" -C .`
 
-When `tool_root` is set, OBSTRAL scans it on first use to build the project context block (stack, git, tree). Subsequent sends in the same session skip the scan.
+When `tool_root` is set, Spiral-Coder scans it on first use to build the project context block (stack, git, tree). Subsequent sends in the same session skip the scan.
 
 Path traversal is blocked: paths with `..` components are rejected at every tool boundary.
 
@@ -570,12 +570,12 @@ Path traversal is blocked: paths with `..` components are rejected at every tool
 
 ### Sessions (CLI)
 
-`obstral agent` can save and resume the full conversation (including tool calls) with `--session[=<path>]`.
+`spiral-coder agent` can save and resume the full conversation (including tool calls) with `--session[=<path>]`.
 
-- Default path: `.tmp/obstral_session.json`
+- Default path: `.tmp/spiral_coder_session.json`
 - If `-C/--root` is set, relative `--session` paths are resolved under `tool_root`
 - Autosaves during the run (after tool calls)
-- Resume without a prompt: run `obstral agent -C . --session` again
+- Resume without a prompt: run `spiral-coder agent -C . --session` again
 - Start fresh: add `--new-session` (overwrites the file)
 
 Related artifacts:
@@ -588,12 +588,12 @@ Session JSON may contain code and tool outputs — treat it as sensitive.
 
 ### Runtime Eval Harness
 
-`obstral eval` runs a fixture-driven suite against the headless Coder and writes per-case artifacts plus a final JSON report.
+`spiral-coder eval` runs a fixture-driven suite against the headless Coder and writes per-case artifacts plus a final JSON report.
 
 Example:
 
 ```bash
-obstral eval -C . --spec .obstral/runtime_eval.json
+spiral-coder eval -C . --spec .spiral-coder/runtime_eval.json
 ```
 
 What it writes:
@@ -617,20 +617,20 @@ Current v1 guidance:
 
 ### Inventory / Parity CLI
 
-`obstral inventory` prints lightweight repo/runtime inventory views for ops and parity work.
+`spiral-coder inventory` prints lightweight repo/runtime inventory views for ops and parity work.
 
 Examples:
 
 ```bash
-obstral inventory health -C .
-obstral inventory health -C . --json
-obstral inventory health -C . --ci --fail-on yellow
-obstral inventory manifest -C .
-obstral inventory commands -C .
-obstral inventory tools -C .
-obstral inventory state -C .
-obstral inventory replay-status -C . --json
-obstral inventory parity -C .
+spiral-coder inventory health -C .
+spiral-coder inventory health -C . --json
+spiral-coder inventory health -C . --ci --fail-on yellow
+spiral-coder inventory manifest -C .
+spiral-coder inventory commands -C .
+spiral-coder inventory tools -C .
+spiral-coder inventory state -C .
+spiral-coder inventory replay-status -C . --json
+spiral-coder inventory parity -C .
 ```
 
 Current views:
@@ -657,26 +657,26 @@ Today `health` rolls up:
 ### Approvals
 
 - **Web UI**: edits/commands queue as pending items in **Settings**. A header badge jumps straight to the pending approvals list, where you can approve/reject from the browser.
-- **CLI (`obstral agent`)**: prompts before running `exec` and applying file edits (`write_file` / `patch_file` / `apply_diff`). Use `-y/--yes` or `--no-approvals` to skip prompts.
+- **CLI (`spiral-coder agent`)**: prompts before running `exec` and applying file edits (`write_file` / `patch_file` / `apply_diff`). Use `-y/--yes` or `--no-approvals` to skip prompts.
 - **TUI**: currently auto-approves tool actions.
 
 ### Providers
 
-OBSTRAL supports these providers today:
+Spiral-Coder supports these providers today:
 
 | Provider | `--provider` | Default `base_url` | Key env var(s) | Tool-calling Coder |
 |---|---|---|---|---|
-| OpenAI-compatible | `openai-compatible` | `https://api.openai.com/v1` | `OBS_API_KEY` or `OPENAI_API_KEY` | ✅ |
-| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` (or `OBS_API_KEY`) | ✅ |
+| OpenAI-compatible | `openai-compatible` | `https://api.openai.com/v1` | `SPIRAL_CODER_API_KEY` or `OPENAI_API_KEY` | ✅ |
+| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` (or `SPIRAL_CODER_API_KEY`) | ✅ |
 | Anthropic | `anthropic` | `https://api.anthropic.com/v1` | `ANTHROPIC_API_KEY` | ❌ (Chat/Observer only) |
 | HF local (subprocess) | `hf` | `http://localhost` | *(none)* | ❌ (Chat/Observer only) |
 
 Notes:
-- The Coder agent loop (`obstral agent`, TUI Coder, Web agentic mode) requires an OpenAI-compatible **Chat Completions** API with tool calling (`tools` / `tool_calls`) → use `openai-compatible` or `mistral`.
+- The Coder agent loop (`spiral-coder agent`, TUI Coder, Web agentic mode) requires an OpenAI-compatible **Chat Completions** API with tool calling (`tools` / `tool_calls`) → use `openai-compatible` or `mistral`.
 - `openai-compatible` means the OpenAI Chat Completions API (`/v1/chat/completions`) with Bearer auth. In the TUI, the provider picker offers concrete hosted presets (`openai`, `gemini`, `anthropic-compat`) and sets the matching `base_url` + default model for you.
-- You can list built-ins with `obstral list providers` / `obstral list modes` / `obstral list personas`.
+- You can list built-ins with `spiral-coder list providers` / `spiral-coder list modes` / `spiral-coder list personas`.
 
-Set a different model per role: fast model for Coder iteration, powerful model for Observer analysis. In the TUI you can also split providers per pane (Coder still must be `openai-compatible`/`mistral`): `obstral tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`. Common gotchas: `401` (bad key), `429` (rate limit), `max_tokens` vs `max_completion_tokens` mismatch.
+Set a different model per role: fast model for Coder iteration, powerful model for Observer analysis. In the TUI you can also split providers per pane (Coder still must be `openai-compatible`/`mistral`): `spiral-coder tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`. Common gotchas: `401` (bad key), `429` (rate limit), `max_tokens` vs `max_completion_tokens` mismatch.
 
 ### Chat Personas
 
@@ -708,7 +708,7 @@ In the Web UI, Chat has two optional helpers:
 | `/mode <name>` | Switch the current pane's mode |
 | `/persona <key>` | Switch the current pane's persona |
 | `/temp <0.0–2.0>` | Adjust the current pane's temperature |
-| `/realize <off\|low\|mid\|high>` | Set the Coder's realize-on-demand strength and persist it under `.obstral/tui_prefs.json` (`mid` default in TUI) |
+| `/realize <off\|low\|mid\|high>` | Set the Coder's realize-on-demand strength and persist it under `.spiral-coder/tui_prefs.json` (`mid` default in TUI) |
 | `/root <path>` | Change tool_root for subsequent sends |
 | `/lang ja\|en\|fr` | Switch UI + prompt language |
 | `/tab <observer\|chat\|tasks\|next>` | Switch the right-side pane explicitly |
@@ -718,7 +718,7 @@ In the Web UI, Chat has two optional helpers:
 | `/meta-diagnose [last-fail\|msg:coder-<index>]` | Send a selected Coder failure to Observer for JSON-only diagnosis |
 | `/help` | Show all commands |
 
-Most TUI knobs are stored per project in `.obstral/tui_prefs.json`, including pane `provider/base_url/mode/model/persona/temp`, Coder `/realize`, `/lang`, `/autofix`, `Ctrl+A` auto-observe, and the last right-side tab.
+Most TUI knobs are stored per project in `.spiral-coder/tui_prefs.json`, including pane `provider/base_url/mode/model/persona/temp`, Coder `/realize`, `/lang`, `/autofix`, `Ctrl+A` auto-observe, and the last right-side tab.
 
 ### Engineering Docs
 
@@ -757,9 +757,9 @@ $env:GITHUB_TOKEN = "ghp_..."
 .\scripts\push_ssh.ps1
 ```
 
-**"access denied" on obstral.exe** — binary still running:
+**"access denied" on spiral-coder.exe** — binary still running:
 ```powershell
-.\scripts\kill-obstral.ps1
+.\scripts\kill-spiral-coder.ps1
 ```
 
 ---

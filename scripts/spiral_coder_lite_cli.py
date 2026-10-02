@@ -99,7 +99,7 @@ def _fg(color_code: int, s: str) -> str:
 
 _TXT: dict[str, dict[str, str]] = {
     "en": {
-        "banner": "OBSTRAL Lite TUI (Python)",
+        "banner": "Spiral-Coder Lite TUI (Python)",
         "hint_help": "Type /help for commands.",
         "prompt_coder": "coder> ",
         "prompt_observer": "observer> ",
@@ -115,7 +115,7 @@ _TXT: dict[str, dict[str, str]] = {
         "err": "Error",
     },
     "ja": {
-        "banner": "OBSTRAL Lite TUI (Python)",
+        "banner": "Spiral-Coder Lite TUI (Python)",
         "hint_help": "/help でコマンド一覧",
         "prompt_coder": "coder> ",
         "prompt_observer": "observer> ",
@@ -131,7 +131,7 @@ _TXT: dict[str, dict[str, str]] = {
         "err": "エラー",
     },
     "fr": {
-        "banner": "OBSTRAL Lite TUI (Python)",
+        "banner": "Spiral-Coder Lite TUI (Python)",
         "hint_help": "Tapez /help pour les commandes.",
         "prompt_coder": "codeur> ",
         "prompt_observer": "observateur> ",
@@ -255,7 +255,7 @@ def _run_doctor_from_req(req: dict[str, Any], check_models: bool = False) -> int
     api_key, key_source = _effective_api_key(provider, str(req.get("api_key") or ""))
     needs_key = _provider_needs_api_key(provider)
 
-    print("OBSTRAL Doctor")
+    print("Spiral-Coder Doctor")
     print(f"  provider:   {provider}")
     print(f"  mode:       {req.get('mode')}")
     print(f"  base_url:   {base_url or '(empty)'}")
@@ -276,9 +276,9 @@ def _run_doctor_from_req(req: dict[str, Any], check_models: bool = False) -> int
 
     if needs_key and not api_key:
         if provider in ("mistral", "codestral"):
-            warnings.append("API key missing. Set MISTRAL_API_KEY or OBS_API_KEY.")
+            warnings.append("API key missing. Set MISTRAL_API_KEY or SPIRAL_CODER_API_KEY.")
         elif provider == "openai-compatible":
-            warnings.append("API key missing. Set OPENAI_API_KEY or OBS_API_KEY.")
+            warnings.append("API key missing. Set OPENAI_API_KEY or SPIRAL_CODER_API_KEY.")
         elif provider == "anthropic":
             warnings.append("API key missing. Set ANTHROPIC_API_KEY.")
 
@@ -390,7 +390,7 @@ def _run_repl(args: argparse.Namespace) -> int:
     base_req["lang"] = str(args.lang or "").strip() or "ja"
     server = str(args.server or "").strip()
     use_server = bool(server)
-    print("OBSTRAL Lite CLI REPL")
+    print("Spiral-Coder Lite CLI REPL")
     print("  /help  show commands")
     print("  /exit  quit")
     print(
@@ -415,7 +415,7 @@ def _run_repl(args: argparse.Namespace) -> int:
 
     while True:
         try:
-            line = input("obstral-lite> ").strip()
+            line = input("spiral-coder-lite> ").strip()
         except EOFError:
             print("")
             break
@@ -934,7 +934,7 @@ def _run_tui(args: argparse.Namespace) -> int:
                     send_to_coder(
                         "\n".join(
                             [
-                                "[OBSTRAL] Pending edit approved. Continue without redoing the approved step.",
+                                "[Spiral-Coder] Pending edit approved. Continue without redoing the approved step.",
                                 f"id: {eid}",
                             ]
                         )
@@ -1040,7 +1040,7 @@ def _run_serve(args: argparse.Namespace) -> int:
     host = str(args.host or "127.0.0.1").strip() or "127.0.0.1"
     port = int(args.port or 18080)
     server = serve_lite.ThreadingHTTPServer((host, port), serve_lite.LiteHandler)
-    print(f"OBSTRAL Lite UI: http://{host}:{port}/")
+    print(f"Spiral-Coder Lite UI: http://{host}:{port}/")
     print(f"Workspace root: {serve_lite.WORKSPACE_ROOT.as_posix()}")
     try:
         server.serve_forever()
@@ -1133,10 +1133,10 @@ def _add_common_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--code-model", default=None)
     p.add_argument("--base-url", default=CLI_DEFAULT_BASE_URL)
     p.add_argument("--api-key", default="")
-    p.add_argument("--lang", choices=list(LANGS), default=os.environ.get("OBS_LANG", "ja").strip() or "ja")
+    p.add_argument("--lang", choices=list(LANGS), default=os.environ.get("SPIRAL_CODER_LANG", "ja").strip() or "ja")
     p.add_argument(
         "--workspace",
-        default=os.environ.get("OBS_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
+        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
         help="Workspace root for local tools when running in-process (ignored when --server is set)",
     )
     p.add_argument("--mode", default="VIBE")
@@ -1148,7 +1148,7 @@ def _add_common_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--server",
         default="",
-        help="If set, call a running OBSTRAL Lite server (example: http://127.0.0.1:18080)",
+        help="If set, call a running Spiral-Coder Lite server (example: http://127.0.0.1:18080)",
     )
     p.add_argument("--diff-file", default=None)
     p.add_argument("--cot", choices=["off", "brief", "structured", "deep"], default="brief")
@@ -1168,7 +1168,7 @@ def _add_common_flags(p: argparse.ArgumentParser) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="OBSTRAL lite CLI")
+    parser = argparse.ArgumentParser(description="Spiral-Coder lite CLI")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     chat = sub.add_parser("chat", help="Run one-shot chat")
@@ -1197,13 +1197,13 @@ def main(argv: list[str] | None = None) -> int:
     _add_common_flags(doctor)
     doctor.add_argument("--check-models", action="store_true", help="Call provider /models endpoint")
 
-    serve = sub.add_parser("serve", help="Run local OBSTRAL Lite web UI server")
+    serve = sub.add_parser("serve", help="Run local Spiral-Coder Lite web UI server")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=18080)
     serve.add_argument(
         "--workspace",
-        default=os.environ.get("OBS_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
-        help="Override workspace root for local tools (default: $OBS_WORKSPACE_ROOT or ~/obstral-work)",
+        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
+        help="Override workspace root for local tools (default: $SPIRAL_CODER_WORKSPACE_ROOT or ~/spiral-coder-work)",
     )
 
     pending = sub.add_parser("pending", help="List pending edits from a running server")

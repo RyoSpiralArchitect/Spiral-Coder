@@ -14,7 +14,7 @@ fn spawn_server(exe: &str, port: u16) -> Child {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
-        .expect("spawn obstral serve")
+        .expect("spawn spiral-coder serve")
 }
 
 #[tokio::test]
@@ -24,13 +24,13 @@ async fn serve_smoke_assets() {
         .join("target")
         .join("debug")
         .join(if cfg!(windows) {
-            "obstral.exe"
+            "spiral-coder.exe"
         } else {
-            "obstral"
+            "spiral-coder"
         });
     assert!(
         exe_path.exists(),
-        "expected obstral binary at {}",
+        "expected spiral-coder binary at {}",
         exe_path.display()
     );
     let exe = exe_path.to_string_lossy().to_string();

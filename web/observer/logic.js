@@ -2,8 +2,8 @@
   "use strict";
 
   const g = (typeof window !== "undefined") ? window : globalThis;
-  const OBSTRAL = g.OBSTRAL || (g.OBSTRAL = {});
-  if (OBSTRAL.observer) return;
+  const SpiralCoder = g.Spiral-Coder || (g.Spiral-Coder = {});
+  if (SpiralCoder.observer) return;
 
   function normalizeForSim(s) {
     let t = String(s || "");
@@ -284,7 +284,7 @@
     return cut < s.length ? s.slice(0, cut).trimEnd() : s;
   }
 
-  OBSTRAL.observer = {
+  SpiralCoder.observer = {
     normalizeForSim,
     tokenSetForSim,
     jaccardSim,

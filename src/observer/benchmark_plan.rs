@@ -126,7 +126,7 @@ fn choose_lane(target_files: &BTreeSet<String>, verification_cmd: Option<&str>) 
     let verify = verification_cmd.unwrap_or("").to_ascii_lowercase();
     if verify.contains("runtime_eval.json")
         || target_files.iter().any(|p| {
-            p == ".obstral/runtime_eval.json"
+            p == ".spiral-coder/runtime_eval.json"
                 || p.starts_with("src/tui/agent/")
                 || p == "src/tui/agent.rs"
         })
@@ -135,7 +135,7 @@ fn choose_lane(target_files: &BTreeSet<String>, verification_cmd: Option<&str>) 
     }
     if verify.contains("tui-replay")
         || target_files.iter().any(|p| {
-            p == ".obstral/tui_replay.json"
+            p == ".spiral-coder/tui_replay.json"
                 || p == "src/tui/events.rs"
                 || p == "src/tui/ui.rs"
                 || p == "src/tui/suggestion.rs"
@@ -165,14 +165,14 @@ fn default_required_checks(
         "runtime_eval" => {
             out.insert("cargo test -q tui::agent::tests::".to_string());
             out.insert(
-                "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1"
+                "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1"
                     .to_string(),
             );
         }
         "tui_replay" => {
             out.insert("cargo test -q tui::events::tests::".to_string());
             out.insert(
-                "cargo run --quiet -- tui-replay --spec .obstral/tui_replay.json".to_string(),
+                "cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json".to_string(),
             );
         }
         "observer_unit" => {

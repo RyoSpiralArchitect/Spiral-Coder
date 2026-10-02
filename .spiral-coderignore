@@ -1,8 +1,8 @@
-# Repo-map specific ignores for observistral.
+# Repo-map specific ignores for spiral-coder.
 # Keep ranking focused on editable source, not caches or build output.
 
 .spiral/**
-.obstral/**
+.spiral-coder/**
 .tmp/**
 target/**
 web/vendor/**

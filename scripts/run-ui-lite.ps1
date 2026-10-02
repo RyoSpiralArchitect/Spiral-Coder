@@ -22,26 +22,26 @@ $env:GIT_HTTP_PROXY = ""
 $env:GIT_HTTPS_PROXY = ""
 
 if ($ApiKey -and $ApiKey.Trim()) {
-  $env:OBS_API_KEY = $ApiKey.Trim()
+  $env:SPIRAL_CODER_API_KEY = $ApiKey.Trim()
 }
 
 $ws = if ($WorkspaceRoot -and $WorkspaceRoot.Trim()) {
   $WorkspaceRoot.Trim()
-} elseif ($env:OBS_WORKSPACE_ROOT -and $env:OBS_WORKSPACE_ROOT.Trim()) {
-  $env:OBS_WORKSPACE_ROOT.Trim()
+} elseif ($env:SPIRAL_CODER_WORKSPACE_ROOT -and $env:SPIRAL_CODER_WORKSPACE_ROOT.Trim()) {
+  $env:SPIRAL_CODER_WORKSPACE_ROOT.Trim()
 } else {
-  (Join-Path $HOME "obstral-work")
+  (Join-Path $HOME "spiral-coder-work")
 }
 
 New-Item -ItemType Directory -Force -Path $ws | Out-Null
-$env:OBS_WORKSPACE_ROOT = $ws
+$env:SPIRAL_CODER_WORKSPACE_ROOT = $ws
 
-$python = if ($env:OBS_HF_PYTHON -and $env:OBS_HF_PYTHON.Trim()) {
-  $env:OBS_HF_PYTHON
+$python = if ($env:SPIRAL_CODER_HF_PYTHON -and $env:SPIRAL_CODER_HF_PYTHON.Trim()) {
+  $env:SPIRAL_CODER_HF_PYTHON
 } else {
   "python"
 }
 
-Write-Host "OBSTRAL Lite UI: http://$ListenHost`:$Port/"
+Write-Host "Spiral-Coder Lite UI: http://$ListenHost`:$Port/"
 Write-Host "Workspace root: $ws"
 & $python ".\scripts\serve_lite.py" --host $ListenHost --port $Port --workspace $ws

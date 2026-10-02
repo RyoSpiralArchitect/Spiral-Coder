@@ -19,14 +19,14 @@ if (-not (Test-Path $cargoExe)) {
 & $cargoExe build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$srcExe = Join-Path $repoRoot "target\\debug\\obstral.exe"
+$srcExe = Join-Path $repoRoot "target\\debug\\spiral-coder.exe"
 if (-not (Test-Path $srcExe)) {
-  Write-Host "obstral.exe not found at: $srcExe"
+  Write-Host "spiral-coder.exe not found at: $srcExe"
   exit 1
 }
 
 New-Item -ItemType Directory -Force -Path $cargoBin | Out-Null
-$dstExe = Join-Path $cargoBin "obstral.exe"
+$dstExe = Join-Path $cargoBin "spiral-coder.exe"
 Copy-Item -Force $srcExe $dstExe
 
 # Update PATH for the current session too.
@@ -40,7 +40,7 @@ if ($AddCargoBinToUserPath) {
   if ($userPath -notlike "*$cargoBin*") {
     [Environment]::SetEnvironmentVariable("Path", "$cargoBin;$userPath", "User")
     Write-Host "Added to User PATH: $cargoBin"
-    Write-Host "Restart your terminal, then run: obstral --version"
+    Write-Host "Restart your terminal, then run: spiral-coder --version"
   } else {
     Write-Host "User PATH already contains: $cargoBin"
   }

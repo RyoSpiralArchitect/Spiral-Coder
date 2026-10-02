@@ -370,14 +370,14 @@ fn load_report_from_gate_path(
 }
 
 pub fn gate_review_path_for_root(root: &Path) -> PathBuf {
-    root.join(".obstral/runtime_eval.merge_gate_review.json")
+    root.join(".spiral-coder/runtime_eval.merge_gate_review.json")
 }
 
 pub fn load_board(root: &Path) -> Result<MergeGateBoard> {
     let Some(gate_path) = eval_merge_gate::latest_path_for_root(root) else {
         return Ok(MergeGateBoard::empty(
             root,
-            "no merge gate found. Run `obstral eval -C . --spec .obstral/runtime_eval.json` first."
+            "no merge gate found. Run `spiral-coder eval -C . --spec .spiral-coder/runtime_eval.json` first."
                 .to_string(),
         ));
     };
@@ -397,7 +397,7 @@ fn update_review(
     decision: MergeGateReviewDecision,
 ) -> Result<MergeGateActionResponse> {
     let gate_path = eval_merge_gate::latest_path_for_root(root)
-        .ok_or_else(|| anyhow!("no merge gate found. Run `obstral eval` first."))?;
+        .ok_or_else(|| anyhow!("no merge gate found. Run `spiral-coder eval` first."))?;
     let board = load_board_from_gate(root, &gate_path)?;
     let entry = board
         .entries

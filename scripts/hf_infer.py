@@ -43,7 +43,7 @@ def main() -> int:
     temperature = float(req.get("temperature", 0.4))
     max_new_tokens = int(req.get("max_new_tokens", 256))
     device = str(req.get("device", "auto")).strip().lower()
-    local_only = bool(req.get("local_only", False)) or os.getenv("OBS_HF_LOCAL_ONLY", "0") == "1"
+    local_only = bool(req.get("local_only", False)) or os.getenv("SPIRAL_CODER_HF_LOCAL_ONLY", "0") == "1"
     stream = bool(req.get("stream", False))
 
     try:

@@ -420,7 +420,7 @@ fn load_candidate_and_gate(
 }
 
 pub fn gate_path_for_root(root: &Path) -> PathBuf {
-    root.join(".obstral/governor_contract.promotion_gate.json")
+    root.join(".spiral-coder/governor_contract.promotion_gate.json")
 }
 
 pub fn load_board(root: &Path) -> Result<HarnessPromotionBoard> {
@@ -431,7 +431,7 @@ pub fn load_board(root: &Path) -> Result<HarnessPromotionBoard> {
             root,
             &candidate_path,
             &gate_path,
-            "no promotion candidate found. Run `obstral promote-harness` first.".to_string(),
+            "no promotion candidate found. Run `spiral-coder promote-harness` first.".to_string(),
         ));
     }
     let candidate = GovernorContractPromotionCandidate::load(&candidate_path)?;
@@ -549,12 +549,12 @@ mod tests {
         static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
         let mut path = std::env::temp_dir();
         path.push(format!(
-            "obstral_harness_gate_{}_{}_{}",
+            "spiral_coder_harness_gate_{}_{}_{}",
             std::process::id(),
             super::now_ms(),
             SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ));
-        std::fs::create_dir_all(path.join(".obstral")).expect("create temp root");
+        std::fs::create_dir_all(path.join(".spiral-coder")).expect("create temp root");
         std::fs::create_dir_all(path.join("shared")).expect("create shared dir");
         path
     }
@@ -591,7 +591,7 @@ mod tests {
             generated_at_ms: super::now_ms(),
             contract_path: contract_path.display().to_string(),
             overlay_path: root
-                .join(".obstral/governor_contract.overlay.json")
+                .join(".spiral-coder/governor_contract.overlay.json")
                 .display()
                 .to_string(),
             output_path: candidate_path.display().to_string(),

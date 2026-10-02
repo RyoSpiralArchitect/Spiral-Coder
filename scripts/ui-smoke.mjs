@@ -171,7 +171,7 @@ async function captureViewport(page, url, name, viewport, outDir) {
 
 async function seedHarnessReviewWorkspace(outDir) {
   const root = path.join(outDir, "harness_review_workspace");
-  await mkdir(path.join(root, ".obstral"), { recursive: true });
+  await mkdir(path.join(root, ".spiral-coder"), { recursive: true });
   await mkdir(path.join(root, "shared"), { recursive: true });
 
   const contractPath = path.join(root, "shared", "governor_contract.json");
@@ -192,13 +192,13 @@ async function seedHarnessReviewWorkspace(outDir) {
     support_note: "Seeded by ui smoke review flow",
   };
 
-  const candidatePath = path.join(root, ".obstral", "governor_contract.promotion.json");
+  const candidatePath = path.join(root, ".spiral-coder", "governor_contract.promotion.json");
   const candidate = {
     version: 1,
     generated_at_ms: Date.now(),
     contract_path: "shared/governor_contract.json",
-    overlay_path: ".obstral/governor_contract.overlay.json",
-    output_path: ".obstral/governor_contract.promotion.json",
+    overlay_path: ".spiral-coder/governor_contract.overlay.json",
+    output_path: ".spiral-coder/governor_contract.promotion.json",
     summary: {
       total: 1,
       add: 1,
@@ -236,7 +236,7 @@ async function seedHarnessReviewWorkspace(outDir) {
 
   await writeFile(candidatePath, `${JSON.stringify(candidate, null, 2)}\n`, "utf8");
   await writeFile(
-    path.join(root, ".obstral", "governor_contract.overlay.json"),
+    path.join(root, ".spiral-coder", "governor_contract.overlay.json"),
     `${JSON.stringify({ promoted_policies: [] }, null, 2)}\n`,
     "utf8"
   );
@@ -245,13 +245,13 @@ async function seedHarnessReviewWorkspace(outDir) {
     root,
     contractPath,
     candidatePath,
-    gatePath: path.join(root, ".obstral", "governor_contract.promotion_gate.json"),
+    gatePath: path.join(root, ".spiral-coder", "governor_contract.promotion_gate.json"),
   };
 }
 
 async function seedRuntimeApprovalWorkspace(outDir) {
   const root = path.join(outDir, "runtime_approval_workspace");
-  await mkdir(path.join(root, ".obstral"), { recursive: true });
+  await mkdir(path.join(root, ".spiral-coder"), { recursive: true });
   await mkdir(path.join(root, "notes"), { recursive: true });
   return {
     root,

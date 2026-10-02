@@ -881,16 +881,16 @@ impl RealizeOnDemandConfig {
 
     fn from_env() -> Self {
         let mut cfg = Self::default();
-        cfg.enabled = env_bool("OBSTRAL_REALIZE_ON_DEMAND", false);
+        cfg.enabled = env_bool("SPIRAL_CODER_REALIZE_ON_DEMAND", false);
         cfg.defer_threshold =
-            env_f64("OBSTRAL_REALIZE_DEFER_THRESHOLD", cfg.defer_threshold).clamp(0.05, 1.0);
-        if let Ok(raw) = std::env::var("OBSTRAL_REALIZATION_WINDOW") {
+            env_f64("SPIRAL_CODER_REALIZE_DEFER_THRESHOLD", cfg.defer_threshold).clamp(0.05, 1.0);
+        if let Ok(raw) = std::env::var("SPIRAL_CODER_REALIZATION_WINDOW") {
             if let Some((start, end)) = parse_realization_window(&raw) {
                 cfg.window_start = start;
                 cfg.window_end = end.max(start);
             }
         }
-        cfg.drift_metric = match std::env::var("OBSTRAL_REALIZE_DRIFT_METRIC")
+        cfg.drift_metric = match std::env::var("SPIRAL_CODER_REALIZE_DRIFT_METRIC")
             .unwrap_or_else(|_| "cos".to_string())
             .trim()
             .to_ascii_lowercase()
@@ -899,8 +899,8 @@ impl RealizeOnDemandConfig {
             "kl" => DriftMetric::Kl,
             _ => DriftMetric::Cos,
         };
-        cfg.lambda_min = env_f64("OBSTRAL_REALIZE_LAMBDA_MIN", cfg.lambda_min).clamp(0.0, 4.0);
-        cfg.lambda_max = env_f64("OBSTRAL_REALIZE_LAMBDA_MAX", cfg.lambda_max).clamp(0.0, 4.0);
+        cfg.lambda_min = env_f64("SPIRAL_CODER_REALIZE_LAMBDA_MIN", cfg.lambda_min).clamp(0.0, 4.0);
+        cfg.lambda_max = env_f64("SPIRAL_CODER_REALIZE_LAMBDA_MAX", cfg.lambda_max).clamp(0.0, 4.0);
         if cfg.lambda_max < cfg.lambda_min {
             cfg.lambda_max = cfg.lambda_min;
         }
@@ -1286,7 +1286,7 @@ const TOKEN_BUDGET_WARN_TOKENS: usize = 9000;
 ///
 /// IMPORTANT: Each `exec` runs in a fresh process. Without this, `cd` is lost between calls,
 /// which causes nested-git disasters and "why did it run in the repo root?" failures.
-const PWD_MARKER: &str = "__OBSTRAL_PWD__=";
+const PWD_MARKER: &str = "__SPIRAL_CODER_PWD__=";
 
 // ── System prompt addons ──────────────────────────────────────────────────────
 
@@ -1612,7 +1612,7 @@ Fallback for non-tool models (implied actions):\n\
       ```lang\n\
       file contents...\n\
       ```\n\
-    (OBSTRAL may auto-write the file with approval; it will NOT overwrite existing files.)\n\
+    (Spiral-Coder may auto-write the file with approval; it will NOT overwrite existing files.)\n\
   - To run commands, paste a PowerShell/bash code fence.\n\
 \n\
 PRIORITY (safety-first default when unsure):\n\
@@ -2504,13 +2504,13 @@ fn specific_recovery_hint(stderr: &str, stdout: &str) -> &'static str {
     }
 
     // Windows: `cargo run` cannot overwrite a running .exe (locked file handle).
-    // Example: "failed to remove file ... obstral.exe ... access is denied (os error 5)"
+    // Example: "failed to remove file ... spiral-coder.exe ... access is denied (os error 5)"
     let cargo_exe_lock = low.contains("failed to remove file")
-        && low.contains("obstral.exe")
+        && low.contains("spiral-coder.exe")
         && (low.contains("os error 5") || low.contains("access is denied"));
     if cargo_exe_lock {
         return "HINT: On Windows, a running .exe cannot be overwritten.\n\
-- Stop the running process (`Stop-Process -Name obstral -Force`) OR restart the terminal.\n\
+- Stop the running process (`Stop-Process -Name spiral-coder -Force`) OR restart the terminal.\n\
 - Or run cargo with an isolated target dir to avoid the lock:\n\
   $env:CARGO_TARGET_DIR = '.tmp/cargo-target-tui'; cargo run -- tui";
     }
@@ -2599,7 +2599,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
 
     // POSIX: keep behavior simple while preserving the wrapped command's exit status.
     format!(
-        "{{\n{raw}\n__obstral_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__obstral_status\" -ne 0 ]; then\n  sh -c \"exit $__obstral_status\"\nelse\n  true\nfi\n}}"
+        "{{\n{raw}\n__spiral_coder_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
     )
 }
 
@@ -7383,7 +7383,7 @@ Fix: `cd` into the intended repo before `git add .`, or add the nested repo dir 
         && cmd_low.contains("cargo")
     {
         return Some(
-            "Rust build failed because `obstral.exe` is locked.\n\
+            "Rust build failed because `spiral-coder.exe` is locked.\n\
 Fix: stop the running process (or close the TUI/serve), then rebuild.\n\
 Tip (Windows): use `scripts/run-tui.ps1` / `scripts/run-ui.ps1` which build in an isolated CARGO_TARGET_DIR and auto-kill old processes."
                 .to_string(),
@@ -8128,7 +8128,7 @@ async fn git_create_checkpoint(root: &str) -> Option<String> {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let msg = format!("obstral: pre-session checkpoint {epoch}");
+    let msg = format!("spiral-coder: pre-session checkpoint {epoch}");
     let _ = run_git_cmd(root, &["commit", "--allow-empty", "-m", &msg]).await;
 
     // Return the new HEAD hash.
@@ -8841,18 +8841,18 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
             }
         }
     }
-    // AGENTS.md / .obstral.md — project-specific rules injected right after project context.
+    // AGENTS.md / .spiral-coder.md — project-specific rules injected right after project context.
     // These take precedence over generic instructions and can override coding conventions.
     if let Some(agents_text) = agents_md {
         if !agents_text.is_empty() {
             if !has_system_prefix(
                 &messages,
-                "[Project Instructions — .obstral.md / AGENTS.md]",
+                "[Project Instructions — .spiral-coder.md / AGENTS.md]",
             ) {
                 let pos = messages.len().min(3);
                 messages.insert(pos, json!({
                     "role": "system",
-                    "content": format!("[Project Instructions — .obstral.md / AGENTS.md]\n{agents_text}")
+                    "content": format!("[Project Instructions — .spiral-coder.md / AGENTS.md]\n{agents_text}")
                 }));
             }
         }
@@ -15534,7 +15534,7 @@ fn main() {}
 
     #[test]
     fn injects_cargo_exe_lock_hint_on_windows_style_error() {
-        let stderr = "error: failed to remove file `C:\\\\Users\\\\user\\\\observistral\\\\target\\\\debug\\\\obstral.exe`\nCaused by: Access is denied. (os error 5)";
+        let stderr = "error: failed to remove file `C:\\\\Users\\\\user\\\\spiral-coder\\\\target\\\\debug\\\\spiral-coder.exe`\nCaused by: Access is denied. (os error 5)";
         let out = build_failed_tool_output("", stderr, 1);
         assert!(
             out.to_ascii_lowercase().contains("cargo_target_dir"),
@@ -16698,7 +16698,7 @@ remaining_gap: still need to run cargo test\n\
             "cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh";
 
         let final_text = maybe_build_verified_action_closeout_text(
-            "Update `docs/state-schema.md` and `.obstral/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
+            "Update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
             Some(&plan),
             &messages,
             &WorkingMemory::default(),

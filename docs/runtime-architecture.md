@@ -1,6 +1,6 @@
-# OBSTRAL Runtime Architecture (WIP)
+# Spiral-Coder Runtime Architecture (WIP)
 
-OBSTRAL is not "a chat app that sometimes runs commands".
+Spiral-Coder is not "a chat app that sometimes runs commands".
 It is a **controlled execution runtime** for LLMs, with human gates and a safety governor.
 
 This document describes the target structure we are converging on:
@@ -67,7 +67,7 @@ Responsibilities:
 Current code:
 - `src/agent_session.rs` (`AgentSession`, `SessionAutoSaver`)
 - `src/project.rs` (project scan: stack/git/test_cmd)
-- `src/progress_state.rs` (`.obstral/progress.json`, repo-level objective / artifact / verification snapshot used by the progress bridge)
+- `src/progress_state.rs` (`.spiral-coder/progress.json`, repo-level objective / artifact / verification snapshot used by the progress bridge)
 - `src/tui/agent.rs::git_create_checkpoint` (checkpoint creation is limited to tool roots that are themselves the git top-level)
 
 ### 3) Task Graph
@@ -110,7 +110,7 @@ Responsibilities:
 - emit a typed Coder diagnostic packet with mutation anchor, required follow-ups, verification command, final-handoff literals, and one concrete next action
 - emit a typed benchmark plan packet with the next smallest regression lane, case id hint, checks, and success criteria
 - expose the same diagnostic packet to TUI and GUI so humans can approve sending it back to the Coder inside explicit `<observer_...>` handoff tags
-- route approved `<observer_benchmark_plan>` handoffs through the `benchmark_plan` Task Harness lane so runtime-eval and TUI-replay proposals first land on their matching `.obstral/*.json` spec before patch/verify
+- route approved `<observer_benchmark_plan>` handoffs through the `benchmark_plan` Task Harness lane so runtime-eval and TUI-replay proposals first land on their matching `.spiral-coder/*.json` spec before patch/verify
 - repair malformed benchmark-plan spec patches by synthesizing the smallest JSON update from `case_id_hint` and `src/...rs` evidence when the model drifts after reading the spec
 - keep UI proposal truncation separate from diagnostic generation so lower-displayed but required follow-ups do not disappear from the Coder packet
 - feed proposal recurrence memory into analyzer-stage risk generation so repeated unresolved findings become first-class risks, not just score bumps
@@ -150,19 +150,19 @@ Responsibilities:
 
 Current code:
 - `src/tui/agent/harness_evolution.rs` (`ContractPatchProposal`, `HarnessEvolutionQueue`, runtime overlay prompt)
-- `.obstral/policy_patch_queue.json` (project-local overlay queue)
+- `.spiral-coder/policy_patch_queue.json` (project-local overlay queue)
 - `src/tui/agent.rs` (load/save wiring, telemetry, prompt injection)
-- `.obstral/governor_contract.overlay.json` (eval-gated promoted overlay rules)
+- `.spiral-coder/governor_contract.overlay.json` (eval-gated promoted overlay rules)
 - `src/main.rs::run_eval` (promotion step from passing eval case to promoted overlay)
 - `src/eval_merge_gate.rs` + `.tmp/runtime_eval_*/merge_gate.json` (generated merge readiness / rollback / promoted-overlay evidence)
-- `src/main.rs::run_merge_gate` / `obstral merge-gate` (CLI reader for merge readiness, CI status, and rollback previews)
-- `src/merge_gate.rs` + `.obstral/runtime_eval.merge_gate_review.json` (human approve / hold review state layered over the latest generated merge gate)
+- `src/main.rs::run_merge_gate` / `spiral-coder merge-gate` (CLI reader for merge readiness, CI status, and rollback previews)
+- `src/merge_gate.rs` + `.spiral-coder/runtime_eval.merge_gate_review.json` (human approve / hold review state layered over the latest generated merge gate)
 - `src/runtime_eval.rs` (benchmark reports now include agent config plus approximate transcript token telemetry for dogfood/example docs)
 - `src/runtime_eval.rs` checks can assert copied tool-root files exist and contain expected literals, so regression specs can prove real artifact mutation instead of relying only on the final assistant text
 - `src/runtime_eval.rs` checks can require proof-level verification with `verified_command_seen` and `auto_test_passed`, allowing benchmark-plan cases to distinguish artifact mutation from verified PR-ready closeout
 - approved benchmark-plan eval fixtures now cover single-spec updates and compound docs+spec updates, exercising PR-ready artifact sets rather than isolated file edits only
-- `src/harness_promotion.rs` + `obstral promote-harness` (reviewable promotion candidate artifact for GUI/TUI or human approval)
-- `src/harness_gate.rs` + `.obstral/governor_contract.promotion_gate.json` (human-gated approve / hold / apply-to-contract state shared by TUI and GUI)
+- `src/harness_promotion.rs` + `spiral-coder promote-harness` (reviewable promotion candidate artifact for GUI/TUI or human approval)
+- `src/harness_gate.rs` + `.spiral-coder/governor_contract.promotion_gate.json` (human-gated approve / hold / apply-to-contract state shared by TUI and GUI)
 - `src/server.rs` + `web/app.js` + `src/tui/promotion_gate.rs` + `src/tui/merge_gate.rs` (review surfaces that consume the same board artifacts and gate files)
 
 ### 6) Tool Router

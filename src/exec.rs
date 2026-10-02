@@ -873,7 +873,7 @@ async fn build_command(cmd_str: &str) -> Result<Command> {
 
         if needs_tempfile {
             let mut tmp = tempfile::Builder::new()
-                .prefix("obstral_exec_")
+                .prefix("spiral_coder_exec_")
                 .suffix(".ps1")
                 .tempfile()
                 .context("failed to create temp ps1 file")?;

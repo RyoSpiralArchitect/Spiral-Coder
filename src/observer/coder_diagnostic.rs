@@ -123,7 +123,7 @@ fn mutation_anchor(events: &[Event]) -> Option<MutationAnchor> {
             reason: "latest documentation follow-up edited by the coder".to_string(),
         });
     }
-    if let Some(path) = latest_written_path(events, |path| path.starts_with(".obstral/")) {
+    if let Some(path) = latest_written_path(events, |path| path.starts_with(".spiral-coder/")) {
         return Some(MutationAnchor {
             path,
             symbol: None,
@@ -187,15 +187,15 @@ fn required_followups(
     push_required_followup(
         &mut out,
         &haystack,
-        ".obstral/runtime_eval.json",
-        Some("eval --spec .obstral/runtime_eval.json"),
+        ".spiral-coder/runtime_eval.json",
+        Some("eval --spec .spiral-coder/runtime_eval.json"),
         "coder-loop changes need runtime eval proof before closeout",
     );
     push_required_followup(
         &mut out,
         &haystack,
-        ".obstral/tui_replay.json",
-        Some("tui-replay --spec .obstral/tui_replay.json"),
+        ".spiral-coder/tui_replay.json",
+        Some("tui-replay --spec .spiral-coder/tui_replay.json"),
         "TUI-visible changes need replay proof before closeout",
     );
 
@@ -229,17 +229,17 @@ fn verification_cmd(
 ) -> Option<String> {
     if required_followups
         .iter()
-        .any(|f| f.path == ".obstral/runtime_eval.json")
+        .any(|f| f.path == ".spiral-coder/runtime_eval.json")
     {
         return Some(
-            "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1".to_string(),
+            "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1".to_string(),
         );
     }
     if required_followups
         .iter()
-        .any(|f| f.path == ".obstral/tui_replay.json")
+        .any(|f| f.path == ".spiral-coder/tui_replay.json")
     {
-        return Some("cargo run --quiet -- tui-replay --spec .obstral/tui_replay.json".to_string());
+        return Some("cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json".to_string());
     }
 
     for event in events.iter().rev() {
@@ -358,7 +358,7 @@ fn next_coder_action(
     if let Some(cmd) = verification_cmd {
         if required_followups
             .iter()
-            .any(|f| f.path.starts_with(".obstral/"))
+            .any(|f| f.path.starts_with(".spiral-coder/"))
         {
             return Some(CoderAction {
                 tool: "exec".to_string(),
@@ -507,10 +507,10 @@ exit: 0
         assert!(diagnostic
             .required_followups
             .iter()
-            .any(|f| f.path == ".obstral/runtime_eval.json"));
+            .any(|f| f.path == ".spiral-coder/runtime_eval.json"));
         assert_eq!(
             diagnostic.verification_cmd.as_deref(),
-            Some("cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1")
+            Some("cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1")
         );
         assert_eq!(
             diagnostic
@@ -542,7 +542,7 @@ exit: 0
         assert!(diagnostic
             .required_followups
             .iter()
-            .any(|f| f.path == ".obstral/tui_replay.json"));
+            .any(|f| f.path == ".spiral-coder/tui_replay.json"));
         assert_eq!(
             diagnostic
                 .next_coder_action
@@ -585,7 +585,7 @@ exit: 0
         assert!(diagnostic
             .required_followups
             .iter()
-            .any(|f| f.path == ".obstral/tui_replay.json"));
+            .any(|f| f.path == ".spiral-coder/tui_replay.json"));
     }
 
     #[test]

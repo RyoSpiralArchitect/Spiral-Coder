@@ -2,8 +2,8 @@
   "use strict";
 
   const g = (typeof window !== "undefined") ? window : globalThis;
-  const OBSTRAL = g.OBSTRAL || (g.OBSTRAL = {});
-  if (OBSTRAL.sandbox) return;
+  const SpiralCoder = g.Spiral-Coder || (g.Spiral-Coder = {});
+  if (SpiralCoder.sandbox) return;
 
   function normalizePathSep(p) {
     return String(p || "")
@@ -50,7 +50,7 @@
     return base + "/" + wd;
   }
 
-  OBSTRAL.sandbox = {
+  SpiralCoder.sandbox = {
     normalizePathSep,
     safeThreadId,
     safeWorkdir,

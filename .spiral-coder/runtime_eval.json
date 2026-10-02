@@ -87,7 +87,7 @@
         { "kind": "trace_event_seen", "event": "harness_evolution_loaded" },
         { "kind": "trace_event_seen", "event": "harness_evolution_patch_proposed" },
         { "kind": "trace_event_seen", "event": "harness_evolution_overlay_prompted" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/governor_contract.overlay.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/governor_contract.overlay.json" }
       ]
     },
     {
@@ -106,7 +106,7 @@
         { "kind": "trace_event_seen", "event": "harness_evolution_loaded" },
         { "kind": "trace_event_seen", "event": "progress_state_loaded" },
         { "kind": "trace_event_seen", "event": "progress_bridge_prompted" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/progress.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/progress.json" }
       ]
     },
     {
@@ -124,7 +124,7 @@
         { "kind": "trace_event_seen", "event": "progress_bridge_prompted" },
         { "kind": "tool_call_seen", "name": "patch_file" },
         { "kind": "assistant_contains", "value": "src/lib.rs" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/progress.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/progress.json" }
       ]
     },
     {
@@ -144,7 +144,7 @@
         { "kind": "trace_event_seen", "event": "progress_state_loaded" },
         { "kind": "assistant_contains", "value": "src/maze.rs" },
         { "kind": "assistant_contains", "value": "cargo test 2>&1" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/progress.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/progress.json" }
       ]
     },
     {
@@ -164,7 +164,7 @@
         { "kind": "trace_event_seen", "event": "progress_state_loaded" },
         { "kind": "assistant_contains", "value": "src/main.rs" },
         { "kind": "assistant_contains", "value": "cargo test 2>&1" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/progress.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/progress.json" }
       ]
     },
     {
@@ -184,7 +184,7 @@
         { "kind": "trace_event_seen", "event": "progress_state_loaded" },
         { "kind": "assistant_contains", "value": "src/robot.rs" },
         { "kind": "assistant_contains", "value": "cargo test 2>&1" },
-        { "kind": "tool_root_file_exists", "path": ".obstral/progress.json" }
+        { "kind": "tool_root_file_exists", "path": ".spiral-coder/progress.json" }
       ]
     },
     {
@@ -193,7 +193,7 @@
       "copy_tool_root": true,
       "max_iters": 16,
       "tags": ["action", "fix", "rust", "self", "observer", "medium"],
-      "prompt": "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive, using the smallest safe code change. Because replay-sensitive observer rules are documented in this repo, update `docs/runtime-architecture.md` and `.obstral/tui_replay.json` to match. Run `cargo test -q observer::repo_rules::tests:: 2>&1 && bash scripts/tui-replay-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, and the replay spec path.",
+      "prompt": "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive, using the smallest safe code change. Because replay-sensitive observer rules are documented in this repo, update `docs/runtime-architecture.md` and `.spiral-coder/tui_replay.json` to match. Run `cargo test -q observer::repo_rules::tests:: 2>&1 && bash scripts/tui-replay-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, and the replay spec path.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
@@ -201,7 +201,7 @@
         { "kind": "tool_call_seen", "name": "patch_file" },
         { "kind": "assistant_contains", "value": "src/observer/repo_rules.rs" },
         { "kind": "assistant_contains", "value": "docs/runtime-architecture.md" },
-        { "kind": "assistant_contains", "value": ".obstral/tui_replay.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/tui_replay.json" },
         { "kind": "assistant_contains", "value": "cargo test -q observer::repo_rules::tests:: 2>&1 && bash scripts/tui-replay-smoke.sh" }
       ]
     },
@@ -211,7 +211,7 @@
       "copy_tool_root": true,
       "max_iters": 18,
       "tags": ["action", "fix", "rust", "self", "runtime-eval", "pr-ready"],
-      "prompt": "Fix the existing TUI agent follow-up requirement module so `src/tui/agent/session_bridge.rs` is treated as PR-ready runtime-sensitive, using the smallest safe code change. Because PR-ready runtime paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to match. Run `cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, and the verification command.",
+      "prompt": "Fix the existing TUI agent follow-up requirement module so `src/tui/agent/session_bridge.rs` is treated as PR-ready runtime-sensitive, using the smallest safe code change. Because PR-ready runtime paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Run `cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, and the verification command.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
@@ -219,7 +219,7 @@
         { "kind": "tool_call_seen", "name": "patch_file" },
         { "kind": "assistant_contains", "value": "src/tui/agent/followup_requirements.rs" },
         { "kind": "assistant_contains", "value": "docs/state-schema.md" },
-        { "kind": "assistant_contains", "value": ".obstral/runtime_eval.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/runtime_eval.json" },
         { "kind": "assistant_contains", "value": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh" }
       ]
     },
@@ -229,7 +229,7 @@
       "copy_tool_root": true,
       "max_iters": 20,
       "tags": ["action", "fix", "rust", "self", "runtime-eval", "pr-ready", "merge-gate"],
-      "prompt": "Fix the existing TUI agent merge approval module so an approved passing merge gate review produces a PR-ready final handoff, missing approval stays human approval pending, and failed cases stay blocked, using the smallest safe code change. Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to match. Run `cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `PR-ready merge approved`.",
+      "prompt": "Fix the existing TUI agent merge approval module so an approved passing merge gate review produces a PR-ready final handoff, missing approval stays human approval pending, and failed cases stay blocked, using the smallest safe code change. Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Run `cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `PR-ready merge approved`.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
@@ -237,7 +237,7 @@
         { "kind": "tool_call_seen", "name": "patch_file" },
         { "kind": "assistant_contains", "value": "src/tui/agent/merge_approval.rs" },
         { "kind": "assistant_contains", "value": "docs/state-schema.md" },
-        { "kind": "assistant_contains", "value": ".obstral/runtime_eval.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/runtime_eval.json" },
         { "kind": "assistant_contains", "value": "cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh" },
         { "kind": "assistant_contains", "value": "PR-ready merge approved" }
       ]
@@ -248,7 +248,7 @@
       "copy_tool_root": true,
       "max_iters": 22,
       "tags": ["action", "fix", "rust", "self", "runtime-eval", "pr-ready", "merge-gate", "rollback"],
-      "prompt": "Fix the existing merge gate board module so stale approval records never approve failed cases: failed cases with a rollback command stay rollback available, failed cases without rollback stay blocked, and approved passing cases stay approved, using the smallest safe code change in `src/merge_gate.rs`. Because merge-gate rollback board semantics are documented and benchmarked in this repo, update `docs/state-schema.md` and `.obstral/runtime_eval.json` to include `src/merge_gate.rs`. Run `cargo test -q merge_gate::tests:: 2>&1 && bash scripts/merge-gate-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `rollback guard enforced`.",
+      "prompt": "Fix the existing merge gate board module so stale approval records never approve failed cases: failed cases with a rollback command stay rollback available, failed cases without rollback stay blocked, and approved passing cases stay approved, using the smallest safe code change in `src/merge_gate.rs`. Because merge-gate rollback board semantics are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to include `src/merge_gate.rs`. Run `cargo test -q merge_gate::tests:: 2>&1 && bash scripts/merge-gate-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `rollback guard enforced`.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
@@ -256,7 +256,7 @@
         { "kind": "tool_call_seen", "name": "patch_file" },
         { "kind": "assistant_contains", "value": "src/merge_gate.rs" },
         { "kind": "assistant_contains", "value": "docs/state-schema.md" },
-        { "kind": "assistant_contains", "value": ".obstral/runtime_eval.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/runtime_eval.json" },
         { "kind": "assistant_contains", "value": "cargo test -q merge_gate::tests:: 2>&1 && bash scripts/merge-gate-smoke.sh" },
         { "kind": "assistant_contains", "value": "rollback guard enforced" }
       ]
@@ -267,18 +267,18 @@
       "copy_tool_root": true,
       "max_iters": 10,
       "tags": ["action", "benchmark-plan", "runtime-eval", "observer", "smoke"],
-      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: self-fix-session-bridge-runtime-followup\nobjective: Add the smallest runtime_eval regression proving src/tui/agent/session_bridge.rs is treated as PR-ready runtime-sensitive.\ntarget_files:\n- .obstral/runtime_eval.json\nrequired_checks:\n- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json\nsuccess_criteria:\n- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs or a case that would force that follow-up.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic regression artifact. Final answer must include .obstral/runtime_eval.json.",
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: self-fix-session-bridge-runtime-followup\nobjective: Add the smallest runtime_eval regression proving src/tui/agent/session_bridge.rs is treated as PR-ready runtime-sensitive.\ntarget_files:\n- .spiral-coder/runtime_eval.json\nrequired_checks:\n- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json\nsuccess_criteria:\n- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs or a case that would force that follow-up.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic regression artifact. Final answer must include .spiral-coder/runtime_eval.json.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
         { "kind": "tool_call_seen", "name": "read_file" },
         { "kind": "tool_call_seen", "name": "exec" },
         { "kind": "tool_call_seen", "name": "patch_file" },
-        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json" },
+        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json" },
         { "kind": "auto_test_passed" },
-        { "kind": "assistant_contains", "value": ".obstral/runtime_eval.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/runtime_eval.json" },
         { "kind": "trace_event_seen", "event": "task_harness" },
-        { "kind": "tool_root_file_contains", "path": ".obstral/runtime_eval.json", "value": "src/tui/agent/session_bridge.rs" }
+        { "kind": "tool_root_file_contains", "path": ".spiral-coder/runtime_eval.json", "value": "src/tui/agent/session_bridge.rs" }
       ]
     },
     {
@@ -287,18 +287,18 @@
       "copy_tool_root": true,
       "max_iters": 12,
       "tags": ["action", "benchmark-plan", "tui-replay", "observer", "smoke"],
-      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: tui_replay\ncase_id_hint: review-panel-replay-sensitive\nobjective: Add the smallest TUI replay regression proving src/tui/review_panel.rs is replay-sensitive.\ntarget_files:\n- .obstral/tui_replay.json\nrequired_checks:\n- grep -q \"src/tui/review_panel.rs\" .obstral/tui_replay.json\nsuccess_criteria:\n- .obstral/tui_replay.json includes src/tui/review_panel.rs or a case that would force that follow-up.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic replay regression artifact. Final answer must include .obstral/tui_replay.json.",
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: tui_replay\ncase_id_hint: review-panel-replay-sensitive\nobjective: Add the smallest TUI replay regression proving src/tui/review_panel.rs is replay-sensitive.\ntarget_files:\n- .spiral-coder/tui_replay.json\nrequired_checks:\n- grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json\nsuccess_criteria:\n- .spiral-coder/tui_replay.json includes src/tui/review_panel.rs or a case that would force that follow-up.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic replay regression artifact. Final answer must include .spiral-coder/tui_replay.json.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
         { "kind": "tool_call_seen", "name": "read_file" },
         { "kind": "tool_call_seen", "name": "exec" },
         { "kind": "tool_call_seen", "name": "patch_file" },
-        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/review_panel.rs\" .obstral/tui_replay.json" },
+        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json" },
         { "kind": "auto_test_passed" },
-        { "kind": "assistant_contains", "value": ".obstral/tui_replay.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/tui_replay.json" },
         { "kind": "trace_event_seen", "event": "task_harness" },
-        { "kind": "tool_root_file_contains", "path": ".obstral/tui_replay.json", "value": "src/tui/review_panel.rs" }
+        { "kind": "tool_root_file_contains", "path": ".spiral-coder/tui_replay.json", "value": "src/tui/review_panel.rs" }
       ]
     },
     {
@@ -307,19 +307,19 @@
       "copy_tool_root": true,
       "max_iters": 16,
       "tags": ["action", "benchmark-plan", "runtime-eval", "observer", "docs", "smoke"],
-      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: self-fix-session-bridge-runtime-followup-docs\nobjective: Add the smallest runtime_eval regression and docs note proving src/tui/agent/session_bridge.rs is treated as PR-ready runtime-sensitive.\ntarget_files:\n- .obstral/runtime_eval.json\n- docs/runtime-architecture.md\nrequired_checks:\n- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\nsuccess_criteria:\n- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs or a case that would force that follow-up.\n- docs/runtime-architecture.md includes src/tui/agent/session_bridge.rs as benchmark-plan coverage.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic regression and docs artifacts. Final answer must include .obstral/runtime_eval.json and docs/runtime-architecture.md.",
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: self-fix-session-bridge-runtime-followup-docs\nobjective: Add the smallest runtime_eval regression and docs note proving src/tui/agent/session_bridge.rs is treated as PR-ready runtime-sensitive.\ntarget_files:\n- .spiral-coder/runtime_eval.json\n- docs/runtime-architecture.md\nrequired_checks:\n- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\nsuccess_criteria:\n- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs or a case that would force that follow-up.\n- docs/runtime-architecture.md includes src/tui/agent/session_bridge.rs as benchmark-plan coverage.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic regression and docs artifacts. Final answer must include .spiral-coder/runtime_eval.json and docs/runtime-architecture.md.",
       "checks": [
         { "kind": "completed" },
         { "kind": "error_free" },
         { "kind": "tool_call_seen", "name": "read_file" },
         { "kind": "tool_call_seen", "name": "exec" },
         { "kind": "tool_call_min", "name": "patch_file", "min": 2 },
-        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md" },
+        { "kind": "verified_command_seen", "command": "grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md" },
         { "kind": "auto_test_passed" },
-        { "kind": "assistant_contains", "value": ".obstral/runtime_eval.json" },
+        { "kind": "assistant_contains", "value": ".spiral-coder/runtime_eval.json" },
         { "kind": "assistant_contains", "value": "docs/runtime-architecture.md" },
         { "kind": "trace_event_seen", "event": "task_harness" },
-        { "kind": "tool_root_file_contains", "path": ".obstral/runtime_eval.json", "value": "src/tui/agent/session_bridge.rs" },
+        { "kind": "tool_root_file_contains", "path": ".spiral-coder/runtime_eval.json", "value": "src/tui/agent/session_bridge.rs" },
         { "kind": "tool_root_file_contains", "path": "docs/runtime-architecture.md", "value": "src/tui/agent/session_bridge.rs" }
       ]
     },

@@ -726,11 +726,11 @@ impl Default for GovernorContractOverlay {
 }
 
 pub(crate) fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".obstral/policy_patch_queue.json")
+    Path::new(root).join(".spiral-coder/policy_patch_queue.json")
 }
 
 pub(crate) fn overlay_path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".obstral/governor_contract.overlay.json")
+    Path::new(root).join(".spiral-coder/governor_contract.overlay.json")
 }
 
 #[cfg(test)]
@@ -742,7 +742,7 @@ mod tests {
 
     fn temp_path(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "observistral_harness_evolution_{name}_{}_{}",
+            "spiral-coder_harness_evolution_{name}_{}_{}",
             std::process::id(),
             now_ms()
         ));

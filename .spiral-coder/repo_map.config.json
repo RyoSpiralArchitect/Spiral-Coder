@@ -1,11 +1,11 @@
 {
   "index_path": ".spiral/repo_map.json",
-  "ignore_file": ".obstralignore",
-  "eval_file": ".obstral/repo_map.eval.json",
+  "ignore_file": ".spiral-coderignore",
+  "eval_file": ".spiral-coder/repo_map.eval.json",
   "scan": {
     "max_bytes": 4000000,
     "skip_dirs": [
-      ".obstral",
+      ".spiral-coder",
       ".spiral",
       ".tmp",
       "coverage"

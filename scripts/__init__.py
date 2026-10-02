@@ -1,2 +1,2 @@
-"""OBSTRAL lite Python helpers."""
+"""Spiral-Coder lite Python helpers."""
 

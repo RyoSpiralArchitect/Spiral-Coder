@@ -26,7 +26,7 @@ const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
 
 fn dev_assets_root() -> Option<PathBuf> {
-    if let Ok(v) = std::env::var("OBSTRAL_ASSETS_DIR") {
+    if let Ok(v) = std::env::var("SPIRAL_CODER_ASSETS_DIR") {
         let p = PathBuf::from(v.trim());
         if !p.as_os_str().is_empty() {
             return Some(p);
@@ -291,7 +291,7 @@ pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
         workspace_root,
     };
 
-    println!("OBSTRAL UI: http://{addr}/");
+    println!("Spiral-Coder UI: http://{addr}/");
 
     loop {
         let (stream, _peer) = listener.accept().await?;
@@ -976,7 +976,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                             .unwrap_or(0);
                         msgs.insert(pos, serde_json::json!({"role":"system","content": txt}));
                     }
-                    // 2. AGENTS.md / .obstral.md — project-specific rules.
+                    // 2. AGENTS.md / .spiral-coder.md — project-specific rules.
                     if let Some(agents_text) = ctx.agents_md {
                         if !agents_text.is_empty() {
                             let pos = msgs
@@ -986,7 +986,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                                 .unwrap_or(1);
                             msgs.insert(pos.min(msgs.len()), serde_json::json!({
                                 "role": "system",
-                                "content": format!("[Project Instructions — .obstral.md / AGENTS.md]\n{agents_text}")
+                                "content": format!("[Project Instructions — .spiral-coder.md / AGENTS.md]\n{agents_text}")
                             }));
                         }
                     }
@@ -2088,7 +2088,7 @@ async fn api_reject_edit(stream: &mut TcpStream, state: AppState, body: &[u8]) -
 }
 
 fn meta_prompts_rel_path() -> &'static str {
-    ".obstral/meta_prompts.json"
+    ".spiral-coder/meta_prompts.json"
 }
 
 fn load_meta_prompts(workspace_root: &Path) -> serde_json::Value {
@@ -2298,7 +2298,7 @@ fn meta_artifact_slug(value: &str, fallback: &str) -> String {
 }
 
 fn meta_diagnose_rel_dir() -> &'static str {
-    ".obstral/meta-diagnose"
+    ".spiral-coder/meta-diagnose"
 }
 
 fn is_safe_meta_artifact_name(name: &str) -> bool {
@@ -3393,13 +3393,13 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
         host_os,
         providers: ApiStatusProviders {
             mistral: ApiProviderStatus {
-                api_key_present: env_present("MISTRAL_API_KEY") || env_present("OBS_API_KEY"),
+                api_key_present: env_present("MISTRAL_API_KEY") || env_present("SPIRAL_CODER_API_KEY"),
             },
             anthropic: ApiProviderStatus {
                 api_key_present: env_present("ANTHROPIC_API_KEY"),
             },
             openai_compatible: ApiProviderStatus {
-                api_key_present: env_present("OBS_API_KEY") || env_present("OPENAI_API_KEY"),
+                api_key_present: env_present("SPIRAL_CODER_API_KEY") || env_present("OPENAI_API_KEY"),
             },
         },
         features: ApiFeatures {
@@ -4405,7 +4405,7 @@ async fn stream_hf_subprocess(
 ) -> Result<()> {
     use serde_json::json;
 
-    let python = std::env::var("OBS_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
+    let python = std::env::var("SPIRAL_CODER_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
     let script_path = std::path::PathBuf::from("scripts").join("hf_infer.py");
 
     let mut messages: Vec<serde_json::Value> = Vec::with_capacity(1 + history.len() + 1);

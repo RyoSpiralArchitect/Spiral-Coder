@@ -349,7 +349,7 @@ pub fn save_to_path(contract: &GovernorContract, path: &Path) -> Result<()> {
 pub fn browser_fallback_script() -> String {
     let json = serde_json::to_string(contract())
         .expect("shared governor contract must serialize for browser fallback");
-    format!("window.__OBSTRAL_GOVERNOR_CONTRACT_FALLBACK__ = {json};\n")
+    format!("window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__ = {json};\n")
 }
 
 pub fn diagnostic_tools_hint() -> String {
@@ -1271,7 +1271,7 @@ mod tests {
     #[test]
     fn browser_fallback_script_bootstraps_window_contract() {
         let js = browser_fallback_script();
-        assert!(js.contains("window.__OBSTRAL_GOVERNOR_CONTRACT_FALLBACK__"));
+        assert!(js.contains("window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__"));
         assert!(js.contains("\"tool_names\""));
         assert!(js.contains("\"messages\""));
     }

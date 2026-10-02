@@ -22,14 +22,14 @@ Start-Sleep -Milliseconds 100
 Start-Sleep -Milliseconds 600
 
 $target = Get-Process msedge -ErrorAction SilentlyContinue |
-    Where-Object { $_.MainWindowTitle -match 'OBSTRAL|127\.0\.0\.1' } |
+    Where-Object { $_.MainWindowTitle -match 'Spiral-Coder|127\.0\.0\.1' } |
     Select-Object -First 1
 
 if (-not $target) {
     Start-Process 'http://127.0.0.1:18080/'
     Start-Sleep -Seconds 5
     $target = Get-Process msedge -ErrorAction SilentlyContinue |
-        Where-Object { $_.MainWindowTitle -match 'OBSTRAL|127\.0\.0\.1' } |
+        Where-Object { $_.MainWindowTitle -match 'Spiral-Coder|127\.0\.0\.1' } |
         Select-Object -First 1
 }
 
@@ -56,7 +56,7 @@ $h = $rect.Bottom - $rect.Top
 $bmp = New-Object System.Drawing.Bitmap $w, $h
 $g = [System.Drawing.Graphics]::FromImage($bmp)
 $g.CopyFromScreen($x, $y, 0, 0, [System.Drawing.Size]::new($w, $h))
-$bmp.Save('C:\Users\user\observistral\docs\screenshot.png', [System.Drawing.Imaging.ImageFormat]::Png)
+$bmp.Save('C:\Users\user\spiral-coder\docs\screenshot.png', [System.Drawing.Imaging.ImageFormat]::Png)
 $g.Dispose()
 $bmp.Dispose()
 Write-Host "saved ${w}x${h}"

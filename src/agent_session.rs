@@ -960,7 +960,7 @@ mod tests {
     #[test]
     fn save_atomic_supports_parentless_paths() {
         // This must work for paths like "session.json" where Path::parent() is empty ("").
-        let path = unique_path("obstral-session-test", "json");
+        let path = unique_path("spiral-coder-session-test", "json");
         let sess = AgentSession::new(
             None,
             None,
@@ -976,7 +976,7 @@ mod tests {
 
     #[test]
     fn session_roundtrip_preserves_observation_cache() {
-        let path = unique_path("obstral-session-obs", "json");
+        let path = unique_path("spiral-coder-session-obs", "json");
         let sess = AgentSession::new(
             Some("/tmp/demo".to_string()),
             Some("abc123".to_string()),
@@ -1023,7 +1023,7 @@ mod tests {
 
     #[test]
     fn autosaver_rewrites_when_observation_cache_changes() {
-        let path = unique_path("obstral-session-autosave", "json");
+        let path = unique_path("spiral-coder-session-autosave", "json");
         let existing = AgentSession::new(
             None,
             None,
@@ -1188,7 +1188,7 @@ mod tests {
 
     #[test]
     fn session_roundtrip_preserves_session_bridge() {
-        let path = unique_path("obstral-session-bridge", "json");
+        let path = unique_path("spiral-coder-session-bridge", "json");
         let sess = AgentSession::new(
             Some("/tmp/demo".to_string()),
             None,

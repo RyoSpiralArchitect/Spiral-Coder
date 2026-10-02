@@ -15,9 +15,9 @@ cargo install --path . --force
 
 cat <<'NOTE'
 
-Installed: obstral
+Installed: spiral-coder
 
-If `obstral` is not found, ensure `~/.cargo/bin` is in your PATH, e.g.:
+If `spiral-coder` is not found, ensure `~/.cargo/bin` is in your PATH, e.g.:
   echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
   source ~/.zshrc
 

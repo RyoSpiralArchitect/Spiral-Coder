@@ -74,7 +74,7 @@ fn missing_tui_replay_proof_risk(events: &[Event]) -> Option<Risk> {
         severity: Severity::Warn,
         description: RISK_MISSING_TUI_REPLAY_PROOF.to_string(),
         evidence: Some(format!(
-            "edited TUI path: {path}\nmissing follow-up: `cargo run -- ... tui-replay --spec .obstral/tui_replay.json`"
+            "edited TUI path: {path}\nmissing follow-up: `cargo run -- ... tui-replay --spec .spiral-coder/tui_replay.json`"
         )),
     })
 }
@@ -91,7 +91,7 @@ fn missing_runtime_eval_proof_risk(events: &[Event]) -> Option<Risk> {
         severity: Severity::Warn,
         description: RISK_MISSING_RUNTIME_EVAL_PROOF.to_string(),
         evidence: Some(format!(
-            "edited runtime path: {path}\nmissing follow-up: `cargo run -- ... eval --spec .obstral/runtime_eval.json`"
+            "edited runtime path: {path}\nmissing follow-up: `cargo run -- ... eval --spec .spiral-coder/runtime_eval.json`"
         )),
     })
 }
@@ -153,12 +153,12 @@ fn requires_runtime_eval(path: &str) -> bool {
 
 fn is_tui_replay_command(command: &str) -> bool {
     let low = command.trim().to_ascii_lowercase();
-    low.contains("tui-replay") || low.contains(".obstral/tui_replay.json")
+    low.contains("tui-replay") || low.contains(".spiral-coder/tui_replay.json")
 }
 
 fn is_runtime_eval_command(command: &str) -> bool {
     let low = command.trim().to_ascii_lowercase();
-    (low.contains(" eval ") || low.starts_with("eval ") || low.contains("obstral eval"))
+    (low.contains(" eval ") || low.starts_with("eval ") || low.contains("spiral-coder eval"))
         && low.contains("runtime_eval.json")
 }
 
@@ -233,7 +233,7 @@ mod tests {
             },
             Event::CommandExecuted {
                 command:
-                    "cargo run --quiet -- eval --spec .obstral/runtime_eval.json --filter demo"
+                    "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --filter demo"
                         .to_string(),
             },
         ];

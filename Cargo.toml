@@ -1,5 +1,5 @@
 [package]
-name = "obstral"
+name = "spiral-coder"
 version = "0.2.0"
 edition = "2021"
 description = "Provider-abstracted chat runtime (CLI + local UI)"

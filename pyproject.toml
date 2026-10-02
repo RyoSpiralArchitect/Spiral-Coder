@@ -3,15 +3,15 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "obstral-lite"
+name = "spiral-coder-lite"
 version = "0.1.0"
-description = "WDAC-friendly OBSTRAL Lite CLI"
+description = "WDAC-friendly Spiral-Coder Lite CLI"
 readme = "docs/lite-cli.md"
 requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-obstral-lite = "scripts.obstral_lite_cli:main"
+spiral-coder-lite = "scripts.spiral_coder_lite_cli:main"
 
 [tool.setuptools]
 include-package-data = false

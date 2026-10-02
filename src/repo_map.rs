@@ -670,7 +670,7 @@ pub fn repo_map_ready(root: &str) -> bool {
 
 fn python_candidates() -> Vec<String> {
     let mut out = Vec::new();
-    if let Ok(cmd) = std::env::var("OBS_REPO_MAP_PYTHON") {
+    if let Ok(cmd) = std::env::var("SPIRAL_CODER_REPO_MAP_PYTHON") {
         let trimmed = cmd.trim();
         if !trimmed.is_empty() {
             out.push(trimmed.to_string());

@@ -1,4 +1,4 @@
-# observistral contributor guide
+# spiral-coder contributor guide
 
 This repo is converging on enterprise-style coding-agent quality gates.
 Keep the unique Observer/Coder/Chat design, but raise the floor on structure,
@@ -31,7 +31,7 @@ See `docs/tui-agent-split-plan.md` for the current extraction plan.
 
 ## State and contracts
 
-OBSTRAL now has multiple typed state surfaces. Before adding new fields, decide
+Spiral-Coder now has multiple typed state surfaces. Before adding new fields, decide
 which layer owns them.
 
 - Runtime/provider config: `src/config.rs`
@@ -51,17 +51,17 @@ Changes that affect control flow should update the matching replay/eval path.
 
 - TUI visible or TUI control-flow changes:
   - `cargo test -q ... tui::events::tests::`
-  - `cargo run -- ... tui-replay --spec .obstral/tui_replay.json`
+  - `cargo run -- ... tui-replay --spec .spiral-coder/tui_replay.json`
 - Coder loop / rescue / governor / done-gate changes:
   - `cargo test -q ... tui::agent::tests::`
-  - `cargo run -- ... eval --spec .obstral/runtime_eval.json` for at least the affected case(s) when practical
+  - `cargo run -- ... eval --spec .spiral-coder/runtime_eval.json` for at least the affected case(s) when practical
 - Repo-map runtime fallback changes:
   - `python3 scripts/repo_map.py eval --root .`
   - affected runtime eval or TUI replay case
 - Observer suggestion changes:
   - `cargo test -q ... tui::suggestion::tests::`
   - `cargo test -q ... tui::events::tests::`
-  - `cargo run -- ... tui-replay --spec .obstral/tui_replay.json`
+  - `cargo run -- ... tui-replay --spec .spiral-coder/tui_replay.json`
 
 If a provider is flaky, keep deterministic replay coverage in place and note
 the live-provider limitation in the final summary.

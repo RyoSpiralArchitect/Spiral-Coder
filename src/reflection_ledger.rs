@@ -264,7 +264,7 @@ impl ReflectionLedger {
 }
 
 pub fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".obstral/reflection_ledger.json")
+    Path::new(root).join(".spiral-coder/reflection_ledger.json")
 }
 
 #[cfg(test)]
@@ -273,7 +273,7 @@ mod tests {
 
     fn unique_path() -> PathBuf {
         let n = now_ms();
-        std::env::temp_dir().join(format!("obstral-reflection-ledger-{n}.json"))
+        std::env::temp_dir().join(format!("spiral-coder-reflection-ledger-{n}.json"))
     }
 
     #[test]

@@ -8,7 +8,7 @@ usage() {
   cat <<'USAGE'
 Usage: bash ./scripts/run-ui.sh [--host <host>] [--port <port>]
 
-Builds and runs the OBSTRAL web UI server from an isolated CARGO_TARGET_DIR.
+Builds and runs the Spiral-Coder web UI server from an isolated CARGO_TARGET_DIR.
 USAGE
 }
 
@@ -50,12 +50,12 @@ echo "[run-ui] cargo build"
 echo "[run-ui] CARGO_TARGET_DIR=${CARGO_TARGET_DIR}"
 cargo build
 
-BIN="${CARGO_TARGET_DIR}/debug/obstral"
+BIN="${CARGO_TARGET_DIR}/debug/spiral-coder"
 if [[ ! -f "${BIN}" ]]; then
-  echo "obstral binary not found at: ${BIN}" >&2
+  echo "spiral-coder binary not found at: ${BIN}" >&2
   echo "Try: cargo build" >&2
   exit 1
 fi
 
-echo "OBSTRAL UI: http://${HOST}:${PORT}/"
+echo "Spiral-Coder UI: http://${HOST}:${PORT}/"
 exec "${BIN}" serve --host "${HOST}" --port "${PORT}"

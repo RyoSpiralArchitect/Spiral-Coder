@@ -237,7 +237,7 @@ impl TaskHarness {
 
     fn deliverable_hint(self) -> &'static str {
         if self.lane == TaskLane::BenchmarkPlan {
-            return "Completion must leave a deterministic regression artifact: update .obstral/runtime_eval.json, .obstral/tui_replay.json, or a targeted test/fixture.";
+            return "Completion must leave a deterministic regression artifact: update .spiral-coder/runtime_eval.json, .spiral-coder/tui_replay.json, or a targeted test/fixture.";
         }
         match self.artifact_mode {
             ArtifactMode::ObserveOnly => "Leave no file mutations behind.",
@@ -277,8 +277,8 @@ Move to `patch_file`/`apply_diff`, or run verification if you believe the fix is
                 if self.lane == TaskLane::BenchmarkPlan {
                     out.push_str(
                         "Treat `<observer_benchmark_plan>` as approved external Observer input.\n\
-If lane is `runtime_eval`, update `.obstral/runtime_eval.json` and any smallest required fixture.\n\
-If lane is `tui_replay`, update `.obstral/tui_replay.json`.\n\
+If lane is `runtime_eval`, update `.spiral-coder/runtime_eval.json` and any smallest required fixture.\n\
+If lane is `tui_replay`, update `.spiral-coder/tui_replay.json`.\n\
 If lane is `observer_unit` or `unit`, add the smallest targeted regression test instead.\n\
 Prefer the `required_checks` listed in the approved plan.\n\
 Do not only explain the benchmark plan; create or edit the regression artifact.\n",
@@ -791,16 +791,16 @@ fn is_benchmark_plan_candidate_tool(tc: &ToolCallData) -> bool {
 fn benchmark_plan_spec_path(root_user_text: &str) -> Option<String> {
     let low = root_user_text.to_ascii_lowercase();
     if low.contains("lane: tui_replay") || low.contains("\"lane\": \"tui_replay\"") {
-        return Some(".obstral/tui_replay.json".to_string());
+        return Some(".spiral-coder/tui_replay.json".to_string());
     }
     if low.contains("lane: runtime_eval") || low.contains("\"lane\": \"runtime_eval\"") {
-        return Some(".obstral/runtime_eval.json".to_string());
+        return Some(".spiral-coder/runtime_eval.json".to_string());
     }
-    if low.contains(".obstral/tui_replay.json") {
-        return Some(".obstral/tui_replay.json".to_string());
+    if low.contains(".spiral-coder/tui_replay.json") {
+        return Some(".spiral-coder/tui_replay.json".to_string());
     }
-    if low.contains(".obstral/runtime_eval.json") {
-        return Some(".obstral/runtime_eval.json".to_string());
+    if low.contains(".spiral-coder/runtime_eval.json") {
+        return Some(".spiral-coder/runtime_eval.json".to_string());
     }
     None
 }
@@ -820,10 +820,10 @@ fn benchmark_plan_target_paths(root_user_text: &str) -> Vec<String> {
 
 fn is_benchmark_plan_target_path(path: &str) -> bool {
     path.starts_with("docs/") && path.ends_with(".md")
-        || path == ".obstral/runtime_eval.json"
-        || path == ".obstral/tui_replay.json"
-        || path.ends_with("/.obstral/runtime_eval.json")
-        || path.ends_with("/.obstral/tui_replay.json")
+        || path == ".spiral-coder/runtime_eval.json"
+        || path == ".spiral-coder/tui_replay.json"
+        || path.ends_with("/.spiral-coder/runtime_eval.json")
+        || path.ends_with("/.spiral-coder/tui_replay.json")
 }
 
 fn push_unique_path(out: &mut Vec<String>, path: String) {
@@ -2790,7 +2790,7 @@ mod tests {
 lane: runtime_eval\n\
 case_id_hint: runtime-eval-task-harness\n\
 required_checks:\n\
-- cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1\n\
+- cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1\n\
 </observer_benchmark_plan>",
             false,
         );
@@ -2799,7 +2799,7 @@ required_checks:\n\
 
         let prompt = harness.prompt(None);
         assert!(prompt.contains("Treat `<observer_benchmark_plan>`"));
-        assert!(prompt.contains(".obstral/runtime_eval.json"));
+        assert!(prompt.contains(".spiral-coder/runtime_eval.json"));
         assert!(prompt.contains("Do not only explain"));
     }
 
@@ -2811,7 +2811,7 @@ required_checks:\n\
 lane: runtime_eval\n\
 objective: Add a deterministic regression.\n\
 required_checks:\n\
-- cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1\n\
+- cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1\n\
 </observer_benchmark_plan>",
             false,
         );
@@ -2827,24 +2827,24 @@ required_checks:\n\
 
         assert_eq!(original, "search_files(path=src, pattern=runtime eval)");
         assert_eq!(rewritten.name, "read_file");
-        assert!(rewritten.arguments.contains(".obstral/runtime_eval.json"));
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert!(rewritten.arguments.contains(".spiral-coder/runtime_eval.json"));
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
     #[test]
     fn coerce_benchmark_plan_tool_call_does_not_patch_before_spec_read() {
         let dir = tempdir().unwrap();
-        let obstral = dir.path().join(".obstral");
-        std::fs::create_dir_all(&obstral).unwrap();
+        let spiral_coder = dir.path().join(".spiral-coder");
+        std::fs::create_dir_all(&spiral_coder).unwrap();
         std::fs::write(
-            obstral.join("runtime_eval.json"),
+            spiral_coder.join("runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": []\n}\n",
         )
         .unwrap();
         let tc = ToolCallData {
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
-            arguments: json!({"dir":".obstral"}).to_string(),
+            arguments: json!({"dir":".spiral-coder"}).to_string(),
         };
 
         let (rewritten, _original, coerced) = coerce_benchmark_plan_tool_call(
@@ -2857,14 +2857,14 @@ required_checks:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
         )
         .expect("read first");
 
         assert_eq!(rewritten.name, "read_file");
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
     #[test]
@@ -2879,19 +2879,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/tui_replay.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/tui_replay.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": "[.obstral/tui_replay.json] (3 lines, 42 bytes)\n{\"cases\":[]}"
+                "content": "[.spiral-coder/tui_replay.json] (3 lines, 42 bytes)\n{\"cases\":[]}"
             }),
         ];
         let tc = ToolCallData {
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
-            arguments: json!({"dir":".obstral"}).to_string(),
+            arguments: json!({"dir":".spiral-coder"}).to_string(),
         };
 
         let rewritten = coerce_benchmark_plan_tool_call(
@@ -2914,19 +2914,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": format!("[.obstral/runtime_eval.json] (8 lines, 100 bytes)\n{body}")
+                "content": format!("[.spiral-coder/runtime_eval.json] (8 lines, 100 bytes)\n{body}")
             }),
         ];
         let tc = ToolCallData {
             id: "call_bad_patch".to_string(),
             name: "patch_file".to_string(),
-            arguments: "{\"path\":\".obstral/runtime_eval.json\",\"search\":\"{".to_string(),
+            arguments: "{\"path\":\".spiral-coder/runtime_eval.json\",\"search\":\"{".to_string(),
         };
 
         let (rewritten, _original, coerced) = coerce_benchmark_plan_tool_call(
@@ -2940,14 +2940,14 @@ success_criteria:\n\
 lane: runtime_eval\n\
 case_id_hint: self-fix-session-bridge-runtime-followup\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
         )
         .expect("synthetic benchmark patch");
 
         assert_eq!(rewritten.name, "patch_file");
-        assert!(rewritten.arguments.contains(".obstral/runtime_eval.json"));
+        assert!(rewritten.arguments.contains(".spiral-coder/runtime_eval.json"));
         assert!(rewritten
             .arguments
             .contains("src/tui/agent/session_bridge.rs"));
@@ -2957,10 +2957,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_allows_verify_after_filesystem_patch() {
         let dir = tempdir().unwrap();
-        let obstral = dir.path().join(".obstral");
-        std::fs::create_dir_all(&obstral).unwrap();
+        let spiral_coder = dir.path().join(".spiral-coder");
+        std::fs::create_dir_all(&spiral_coder).unwrap();
         std::fs::write(
-            obstral.join("runtime_eval.json"),
+            spiral_coder.join("runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/session_bridge.rs\"\n  ],\n  \"cases\": []\n}\n",
         )
         .unwrap();
@@ -2971,13 +2971,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": format!("[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{stale_body}")
+                "content": format!("[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{stale_body}")
             }),
         ];
         let tc = ToolCallData {
@@ -2996,7 +2996,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
         );
@@ -3007,10 +3007,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_reads_docs_after_spec_is_satisfied() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/session_bridge.rs\"\n  ],\n  \"cases\": []\n}\n",
         )
         .unwrap();
@@ -3025,19 +3025,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[]}"
             }),
         ];
         let tc = ToolCallData {
             id: "call_verify".to_string(),
             name: "exec".to_string(),
-            arguments: json!({"command":"grep -q session_bridge .obstral/runtime_eval.json"})
+            arguments: json!({"command":"grep -q session_bridge .spiral-coder/runtime_eval.json"})
                 .to_string(),
         };
 
@@ -3051,7 +3051,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3073,13 +3073,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3111,7 +3111,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3131,10 +3131,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_allows_verify_after_spec_and_docs_patch() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3149,13 +3149,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
             json!({
                 "role": "assistant",
@@ -3188,7 +3188,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3202,10 +3202,10 @@ success_criteria:\n\
     #[test]
     fn allows_benchmark_plan_followup_during_verify_reads_next_unsatisfied_target() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3220,13 +3220,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
         ];
         let tc = ToolCallData {
@@ -3245,7 +3245,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3262,13 +3262,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3305,7 +3305,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3322,13 +3322,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
         ];
         let tc = ToolCallData {
@@ -3347,7 +3347,7 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
@@ -3359,10 +3359,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_runs_required_check_after_targets_satisfied() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3377,13 +3377,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
             json!({
                 "role": "assistant",
@@ -3415,10 +3415,10 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
@@ -3441,13 +3441,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3473,10 +3473,10 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
@@ -3498,9 +3498,9 @@ success_criteria:\n\
         let root_user_text = "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json\n\
 </observer_benchmark_plan>";
         let messages = vec![
             json!({
@@ -3510,7 +3510,7 @@ required_checks:\n\
                     "type": "function",
                     "function": {
                         "name": "exec",
-                        "arguments": "{\"command\":\"grep -q \\\"src/tui/agent/session_bridge.rs\\\" .obstral/runtime_eval.json\"}"
+                        "arguments": "{\"command\":\"grep -q \\\"src/tui/agent/session_bridge.rs\\\" .spiral-coder/runtime_eval.json\"}"
                     }
                 }]
             }),
@@ -3537,11 +3537,11 @@ required_checks:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 required_checks:\n\
-- cargo run --quiet -- tui-replay --spec .obstral/tui_replay.json\n\
+- cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json\n\
 </observer_benchmark_plan>",
         );
 
-        assert_eq!(path.as_deref(), Some(".obstral/runtime_eval.json"));
+        assert_eq!(path.as_deref(), Some(".spiral-coder/runtime_eval.json"));
     }
 
     #[test]
@@ -3600,7 +3600,7 @@ required_checks:\n\
             json!({
                 "role": "tool",
                 "tool_call_id": "call_list",
-                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.obstral.md"
+                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.spiral-coder.md"
             }),
             json!({
                 "role": "assistant",
@@ -3654,7 +3654,7 @@ required_checks:\n\
             json!({
                 "role": "tool",
                 "tool_call_id": "call_list",
-                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.obstral.md"
+                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.spiral-coder.md"
             }),
         ];
 

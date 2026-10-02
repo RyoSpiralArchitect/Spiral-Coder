@@ -1,6 +1,6 @@
 # State Schema
 
-This document defines the main state surfaces in `observistral` and which layer
+This document defines the main state surfaces in `spiral-coder` and which layer
 owns each kind of data.
 
 The goal is simple: new features should not invent "just one more place" to
@@ -11,22 +11,22 @@ store state without first choosing the correct owner.
 | Layer | Owner | Lifetime | Backing store | Examples |
 |---|---|---|---|---|
 | Provider/runtime config | `src/config.rs` | process / launch | CLI args + env | `PartialConfig`, `RunConfig` |
-| Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.obstral/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
+| Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
 | Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
-| Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.obstral/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
-| Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.obstral/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
-| Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.obstral/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
-| Project-local promoted governor overlay | `src/tui/agent/harness_evolution.rs` | cross-session | `.obstral/governor_contract.overlay.json` | eval-gated promoted harness policies, green case IDs, stable overlay defaults |
-| Project-local contract promotion candidate | `src/harness_promotion.rs` | generated artifact | `.obstral/governor_contract.promotion.json` | UI-ready candidate list, patch previews, promotion decisions for `shared/governor_contract.json` |
-| Project-local contract promotion review gate | `src/harness_gate.rs` | cross-session | `.obstral/governor_contract.promotion_gate.json` | human review decisions like approved/held/applied, GUI/TUI gate state for source-contract updates |
+| Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
+| Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.spiral-coder/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
+| Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
+| Project-local promoted governor overlay | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/governor_contract.overlay.json` | eval-gated promoted harness policies, green case IDs, stable overlay defaults |
+| Project-local contract promotion candidate | `src/harness_promotion.rs` | generated artifact | `.spiral-coder/governor_contract.promotion.json` | UI-ready candidate list, patch previews, promotion decisions for `shared/governor_contract.json` |
+| Project-local contract promotion review gate | `src/harness_gate.rs` | cross-session | `.spiral-coder/governor_contract.promotion_gate.json` | human review decisions like approved/held/applied, GUI/TUI gate state for source-contract updates |
 | Runtime eval merge gate | `src/eval_merge_gate.rs` | generated artifact | `.tmp/runtime_eval_*/merge_gate.json` | merge readiness, rollback availability, promoted overlay paths, checkpoint status |
-| Project-local merge gate review state | `src/merge_gate.rs` | cross-session | `.obstral/runtime_eval.merge_gate_review.json` | human approve/hold decisions for latest runtime eval merge-gate cases, shared by TUI and GUI |
+| Project-local merge gate review state | `src/merge_gate.rs` | cross-session | `.spiral-coder/runtime_eval.merge_gate_review.json` | human approve/hold decisions for latest runtime eval merge-gate cases, shared by TUI and GUI |
 | Observer/Coder diagnostic contract | `src/observer/coder_diagnostic.rs` | per Observer run | API/formatted Observer output | `CoderDiagnostic`, `MutationAnchor`, required follow-ups, verification command, next Coder action |
 | Observer benchmark plan contract | `src/observer/benchmark_plan.rs` | per Observer run | API/formatted Observer output | `BenchmarkPlan`, case id hint, lane, required checks, success criteria |
 | Observer critique memory | `src/observer/memory.rs` | per Observer thread / API caller | request/response payload, Web thread state | `CritiqueMemory`, proposal recurrence counts, analyzer-stage recurring risk bias |
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
-| Replay/eval fixtures | `.obstral/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
+| Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
 ## Current ownership map
 
@@ -57,7 +57,7 @@ Code:
 
 File:
 
-- `.obstral/tui_prefs.json`
+- `.spiral-coder/tui_prefs.json`
 
 Owns:
 
@@ -119,7 +119,7 @@ Code:
 
 File:
 
-- `.obstral/progress.json`
+- `.spiral-coder/progress.json`
 
 Owns:
 
@@ -149,7 +149,7 @@ Code:
 
 File:
 
-- `.obstral/reflection_ledger.json`
+- `.spiral-coder/reflection_ledger.json`
 
 Owns:
 
@@ -278,7 +278,7 @@ This is a planning contract, not an executable command queue by itself. When a
 human approves the TUI/GUI handoff, the Coder receives
 `<observer_benchmark_plan>` and `TaskHarness` classifies it as the
 `benchmark_plan` lane, which focuses runtime-eval and TUI-replay plans onto the
-matching `.obstral/*.json` spec before mutation.
+matching `.spiral-coder/*.json` spec before mutation.
 
 ### 5c. Project-local harness evolution queue
 
@@ -288,7 +288,7 @@ Code:
 
 File:
 
-- `.obstral/policy_patch_queue.json`
+- `.spiral-coder/policy_patch_queue.json`
 
 Owns:
 
@@ -315,7 +315,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.overlay.json`
+- `.spiral-coder/governor_contract.overlay.json`
 
 Owns:
 
@@ -336,7 +336,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.promotion.json`
+- `.spiral-coder/governor_contract.promotion.json`
 
 Owns:
 
@@ -357,7 +357,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.promotion_gate.json`
+- `.spiral-coder/governor_contract.promotion_gate.json`
 
 Owns:
 
@@ -403,7 +403,7 @@ Code:
 
 File:
 
-- `.obstral/runtime_eval.merge_gate_review.json`
+- `.spiral-coder/runtime_eval.merge_gate_review.json`
 
 Owns:
 
@@ -450,8 +450,8 @@ Code:
 
 Files:
 
-- `.obstral/runtime_eval.json`
-- `.obstral/tui_replay.json`
+- `.spiral-coder/runtime_eval.json`
+- `.spiral-coder/tui_replay.json`
 - `.tmp/runtime_eval_*`
 - `.tmp/runtime_eval_*/merge_gate.json`
 - `.tmp/tui_replay_*`

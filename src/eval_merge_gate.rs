@@ -412,7 +412,7 @@ mod tests {
             cases: vec![case],
         };
         let mut overlays = BTreeMap::new();
-        overlays.insert("demo".to_string(), td.path().join(".obstral/overlay.json"));
+        overlays.insert("demo".to_string(), td.path().join(".spiral-coder/overlay.json"));
 
         let gate = build_merge_gate_report(&report, &td.path().join("report.json"), &overlays);
 
