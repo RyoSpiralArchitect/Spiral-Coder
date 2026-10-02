@@ -1,9 +1,10 @@
-﻿(() => {
+(() => {
   "use strict";
 
   const root = document.getElementById("app-root");
   if (!root) return;
 
+  const { readStoredValue, rootUserTextForRun, serverSupportsFeature } = window.SpiralCoderState;
   const e = React.createElement;
   const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
@@ -90,6 +91,7 @@
       failed: "failed",
       promotionNone: "No promotion candidates yet.",
       mergeGateNone: "No merge gate artifact yet.",
+      requiresRustServer: "Requires the Rust server (spiral-coder serve).",
       reject: "Reject",
       send: "Send",
       stop: "Stop",
@@ -330,6 +332,7 @@
       failed: "failed",
       promotionNone: "昇格候補はまだありません。",
       mergeGateNone: "merge gate artifact はまだありません。",
+      requiresRustServer: "Rust サーバー（spiral-coder serve）で利用できます。",
       reject: "却下",
       metaDiagnose: "メタ診断",
       metaBadge: "META",
@@ -425,6 +428,7 @@
       failed: "échoué",
       promotionNone: "Aucun candidat de promotion pour le moment.",
       mergeGateNone: "Aucun artifact merge gate pour le moment.",
+      requiresRustServer: "Nécessite le serveur Rust (spiral-coder serve).",
       reject: "Rejeter",
       send: "Envoyer",
       stop: "Stop",
@@ -3696,13 +3700,16 @@
   // ╚══════════════════════════════════════════════════════════╝
   function App() {
     const [lang, setLang] = useState(() => {
-      const v = (localStorage.getItem(LS.lang) || "").trim();
+      const v = (readStoredValue(localStorage, LS.lang) || "").trim();
       return v === "ja" || v === "en" || v === "fr" ? v : "ja";
     });
     const [status, setStatus] = useState(null);
+    const harnessSupported = serverSupportsFeature(status, "harness_promotions");
+    const mergeGateSupported = serverSupportsFeature(status, "merge_gate");
+    const projectScanSupported = serverSupportsFeature(status, "project_scan");
 
     const [config, setConfig] = useState(() => {
-      const v = safeJsonParse(localStorage.getItem(LS.config) || "null", null);
+      const v = safeJsonParse(readStoredValue(localStorage, LS.config) || "null", null);
       if (!v || typeof v !== "object") return { ...DEFAULT_CONFIG };
       const cfg = { ...DEFAULT_CONFIG, ...v };
       if (!cfg.chatModel && cfg.model) cfg.chatModel = cfg.model;
@@ -3819,7 +3826,7 @@
     const [gitCheckpoint, setGitCheckpoint] = useState(null);
 
     const [threadState, setThreadState] = useState(() => {
-      let threads = safeJsonParse(localStorage.getItem(LS.threads) || "null", null);
+      let threads = safeJsonParse(readStoredValue(localStorage, LS.threads) || "null", null);
       threads = Array.isArray(threads) ? threads : [];
       threads = threads
         .filter((t) => t && typeof t === "object" && typeof t.id === "string")
@@ -3836,6 +3843,7 @@
                   id: typeof m.id === "string" && m.id ? m.id : uid(),
                   pane: m.pane === "observer" ? "observer" : m.pane === "chat" ? "chat" : "coder",
                   role: m.role === "assistant" ? "assistant" : "user",
+                  origin: m.origin === "runtime" ? "runtime" : "user",
                   content: typeof m.content === "string" ? m.content : String(m.content || ""),
                   ts: typeof m.ts === "number" ? m.ts : Date.now(),
                   streaming: !!m.streaming,
@@ -3889,7 +3897,7 @@
           })(),
         }));
       if (!threads.length) threads = [makeThread("Thread 1")];
-      const active0 = (localStorage.getItem(LS.active) || "").trim();
+      const active0 = (readStoredValue(localStorage, LS.active) || "").trim();
       const active = threads.some((t) => t.id === active0) ? active0 : threads[0].id;
       return { threads, activeId: active };
     });
@@ -3912,7 +3920,7 @@
     const [showShortcuts, setShowShortcuts] = useState(false);
     const [splitPct, setSplitPct] = useState(() => {
       try {
-        const v = Number(localStorage.getItem(LS.splitPct));
+        const v = Number(readStoredValue(localStorage, LS.splitPct));
         if (Number.isFinite(v) && v >= 20 && v <= 80) return v;
       } catch (_) {}
       // Default: bias toward readable Observer critiques (users can resize + it persists).
@@ -4153,6 +4161,10 @@
 
     useEffect(() => {
       refreshStatus();
+    }, []);
+
+    useEffect(() => {
+      if (!status) return;
       refreshPendingEdits();
       refreshPendingCommands();
       refreshHarnessPromotions();
@@ -4164,7 +4176,7 @@
         refreshMergeGate();
       }, 3000);
       return () => clearInterval(t);
-    }, []);
+    }, [status && status.features]);
 
     // Safer default: run local commands under a scratch directory, not the Spiral-Coder repo root.
     // This prevents nested git repos (embedded repo warnings) and accidental `git add .` fallout.
@@ -4217,7 +4229,7 @@
 
     useEffect(() => {
       const root = String(config.toolRoot || "").trim();
-      if (!root || root === projectScanRootRef.current) return;
+      if (!projectScanSupported || !root || root === projectScanRootRef.current) return;
       projectScanRootRef.current = root;
       setProjectScanLoading(true);
       fetch(`/api/project/scan?root=${encodeURIComponent(root)}`)
@@ -4225,7 +4237,7 @@
         .then(d => setProjectScan(d && d.root ? d : null))
         .catch(() => setProjectScan(null))
         .finally(() => setProjectScanLoading(false));
-    }, [config.toolRoot]);
+    }, [config.toolRoot, projectScanSupported]);
 
     const refreshStatus = () => {
       fetch("/api/status")
@@ -4238,6 +4250,7 @@
     };
 
     const refreshPendingEdits = () => {
+      if (!serverSupportsFeature(status, "pending_edits")) return;
       fetch("/api/pending_edits")
         .then((r) => r.json())
         .then((j) => setPendingEdits(j && Array.isArray(j.pending) ? j.pending : []))
@@ -4245,6 +4258,7 @@
     };
 
     const refreshPendingCommands = () => {
+      if (!serverSupportsFeature(status, "pending_commands")) return;
       fetch("/api/pending_commands")
         .then((r) => r.json())
         .then((j) => setPendingCommands(j && Array.isArray(j.pending) ? j.pending : []))
@@ -4252,6 +4266,11 @@
     };
 
     const refreshHarnessPromotions = () => {
+      if (!harnessSupported) {
+        setHarnessPromotions(null);
+        setPromotionGateError("");
+        return;
+      }
       fetch("/api/harness_promotions")
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then((j) => {
@@ -4264,6 +4283,11 @@
     };
 
     const refreshMergeGate = () => {
+      if (!mergeGateSupported) {
+        setMergeGate(null);
+        setMergeGateError("");
+        return;
+      }
       fetch("/api/merge_gate")
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then((j) => {
@@ -4336,7 +4360,7 @@
             preview ? ("result:\n" + preview) : "",
           ].filter(Boolean).join("\n");
           // Best-effort: nudge Coder to resume after approval (Lite server pauses tool loops on approvals).
-          sendCoder(msg);
+          sendCoder(msg, { origin: "runtime" });
         }
       } catch (_) {
       } finally {
@@ -4364,7 +4388,7 @@
             cwd ? `cwd: ${cwd}` : "",
             preview ? ("result:\n" + preview) : "",
           ].filter(Boolean).join("\n");
-          sendCoder(msg);
+          sendCoder(msg, { origin: "runtime" });
         }
       } catch (_) {
       } finally {
@@ -4376,7 +4400,7 @@
     const resolveHarnessPromotion = async (id, action) => {
       const pid = String(id || "").trim();
       const act = String(action || "").trim().toLowerCase();
-      if (!pid || !act || promotionBusy) return;
+      if (!harnessSupported || !pid || !act || promotionBusy) return;
       const endpoint = act === "approve"
         ? "/api/harness_promotions/approve"
         : act === "hold"
@@ -4407,7 +4431,7 @@
     const resolveMergeGate = async (id, action) => {
       const gid = String(id || "").trim();
       const act = String(action || "").trim().toLowerCase();
-      if (!gid || !act || mergeGateBusy) return;
+      if (!mergeGateSupported || !gid || !act || mergeGateBusy) return;
       const endpoint = act === "approve"
         ? "/api/merge_gate/approve"
         : act === "hold"
@@ -6165,7 +6189,7 @@
       }
     };
 
-      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir) => {
+      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir, rootUserText) => {
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
       const MAX_ITERS = (() => {
@@ -6183,10 +6207,6 @@
         tests: { attempts: 0, ok: false },
         build: { attempts: 0, ok: false },
       };
-      const rootUserText = (() => {
-        const prior = (Array.isArray(history) ? history : []).find((msg) => msg && msg.role === "user" && String(msg.content || "").trim());
-        return String(prior && prior.content || text || "").trim();
-      })();
       const rootReadOnly = isRootReadOnlyObservationTask(rootUserText);
       const governorContract = await getGovernorContract();
       const taskContract = deriveTaskContract(rootUserText, rootReadOnly, governorContract);
@@ -8880,7 +8900,7 @@ state: ${agentState}`);
       finishStreaming(threadId, asstMsgId);
     };
 
-      const sendCoder = async (overrideText) => {
+      const sendCoder = async (overrideText, options = {}) => {
         if (sendingCoder) return;
         const raw = overrideText != null ? String(overrideText) : String(coderInput || "");
         const text = raw.trim();
@@ -9102,9 +9122,12 @@ state: ${agentState}`);
         };
 
         const threadId = activeThread.id;
-        const history = paneMessages("coder").map((m) => ({ role: m.role, content: m.content }));
+        const coderHistory = paneMessages("coder");
+        const origin = options.origin === "runtime" ? "runtime" : "user";
+        const rootUserText = rootUserTextForRun(text, coderHistory, origin);
+        const history = coderHistory.map((m) => ({ role: m.role, content: m.content }));
 
-      const userMsg = { id: uid(), pane: "coder", role: "user", content: text, ts: Date.now() };
+      const userMsg = { id: uid(), pane: "coder", role: "user", origin, content: text, ts: Date.now() };
       const asstMsg = { id: uid(), pane: "coder", role: "assistant", content: "", ts: Date.now(), streaming: true };
 
       setThreadState((s) => ({
@@ -9130,7 +9153,7 @@ state: ${agentState}`);
           const supportsTools = resolvedProvider === "openai-compatible" || resolvedProvider === "mistral" || resolvedProvider === "openai";
           const serverChatTools = !!(status && status.features && status.features.chat_tools);
           if ((config.forceAgent || wantsMaterial) && supportsTools && serverChatTools) {
-            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir);
+            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir, rootUserText);
           } else if (config.stream) {
           await streamChat(
             reqBody,
@@ -10326,7 +10349,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-primary",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "approve"),
                   },
                   tr(lang, "approve")
@@ -10338,7 +10361,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-warn",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "hold"),
                   },
                   tr(lang, "hold")
@@ -10350,7 +10373,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-accent",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "apply"),
                   },
                   tr(lang, "applyToContract")
@@ -10408,7 +10431,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-primary",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: () => resolveMergeGate(entry.id, "approve"),
                   },
                   tr(lang, "approve")
@@ -10420,7 +10443,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-warn",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: () => resolveMergeGate(entry.id, "hold"),
                   },
                   tr(lang, "hold")
@@ -10737,7 +10760,7 @@ state: ${agentState}`);
                   {
                     className: "btn",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: refreshHarnessPromotions,
                   },
                   tr(lang, "refresh")
@@ -10775,7 +10798,7 @@ state: ${agentState}`);
                       )
                     )
                   )
-                : e("div", { className: "hint" }, tr(lang, "promotionNone"))
+                : e("div", { className: "hint" }, tr(lang, status && !harnessSupported ? "requiresRustServer" : "promotionNone"))
             )
           ),
           e(
@@ -10810,7 +10833,7 @@ state: ${agentState}`);
                   {
                     className: "btn",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: refreshMergeGate,
                   },
                   tr(lang, "refresh")
@@ -10848,7 +10871,7 @@ state: ${agentState}`);
                       )
                     )
                   )
-                : e("div", { className: "hint" }, tr(lang, "mergeGateNone"))
+                : e("div", { className: "hint" }, tr(lang, status && !mergeGateSupported ? "requiresRustServer" : "mergeGateNone"))
             )
           ),
           e(

@@ -4,32 +4,29 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-> **ひとつのプロンプト窓では足りない。**
-> Spiral-CoderはAIに「第二の脳」を与え、その二つを対立させる。
+Spiral-Coder は、**Coder・Observer・Chat のコンテキストを分けた開発実行基盤**です。Coder がリポジトリ上で作業し、Observer が出力と検証記録を批評し、Chat が設計の対話を担います。CLI・TUI・ローカル Web UI を備えています。
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
+出発点は、Mistral のハッカソンで約2日間で作った実験でした。Spiral-Coder として、プロバイダー選択、作業の保存・再開、再現できる検証を土台から育て直します。コンテキストの分離だけで、批評の独立性や正しさが保証されるわけではありません。
+
+既存環境からの移行は [移行手順](docs/migration-spiral-coder.md) を参照してください。旧データを残したまま新しい保存先へコピーできます。
+
+```sh
+cargo install --locked --path .
+spiral-coder --help
+spiral-coder tui
+```
+
+モデルの呼び出しにはプロバイダー設定が必要です。ローカルの検証手順は [English README](README.md) にあります。
+
 ---
 
-すべてのAIコーディングツールには同じ問題がある。コードを書いたモデルが、そのコードをレビューする。
+## UI プレビュー
 
-それはレビューじゃない。自己弁護だ。
+Spiral-Coder の現行 Web UI。モデルを呼ばずにローカルで撮影。
 
-Spiral-CoderはCoderとObserverを**完全に別のコンテキスト**で動かすことでこれを解決する。ObserverはCoderのライブな作業コンテキストや隠れたスクラッチパッドを共有しない。見るのは、出力された結果・トランスクリプト・必要に応じたgit diffの断面だけだ。だから正直な批評ができる。
-
----
-
-## UI Preview
-
-以下の画像は、Web UI を end-to-end で流す Playwright smoke から取ったものです。
-
-| Overview | Harness review gate |
-|---|---|
-| ![Spiral-Coder web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
-
-| Runtime approvals |
-|---|
-| ![Runtime approvals flow](docs/screenshots/runtime-approval-flow.png) |
+![Spiral-Coder Web UI](docs/screenshots/spiral-coder-overview.png)
 
 ---
 
@@ -140,7 +137,7 @@ Web UIでは、SettingsのtoolRootフィールドの下にスタックラベル�
 
 Spiral-Coder: Observerは毎回フレッシュなコンテキストで動く。「自分ならこう書いた」という記憶がなく、Coderのライブなスクラッチパッドも共有しない。見るのは出力・トランスクリプト・必要に応じたdiffだけ。
 
-結果: より鋭い指摘、正直なリスク評価、言い訳のないフィードバック。
+レビューに渡す情報を明確に分けて確認できます。指摘の正しさは、モデル・証拠・評価によって確かめる必要があります。
 
 ### 提案は消えない
 

@@ -1133,10 +1133,10 @@ def _add_common_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--code-model", default=None)
     p.add_argument("--base-url", default=CLI_DEFAULT_BASE_URL)
     p.add_argument("--api-key", default="")
-    p.add_argument("--lang", choices=list(LANGS), default=os.environ.get("SPIRAL_CODER_LANG", "ja").strip() or "ja")
+    p.add_argument("--lang", choices=list(LANGS), default=serve_lite._env("SPIRAL_CODER_LANG", "ja").strip() or "ja")
     p.add_argument(
         "--workspace",
-        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
+        default=serve_lite._env("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
         help="Workspace root for local tools when running in-process (ignored when --server is set)",
     )
     p.add_argument("--mode", default="VIBE")
@@ -1202,7 +1202,7 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--port", type=int, default=18080)
     serve.add_argument(
         "--workspace",
-        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
+        default=serve_lite._env("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(serve_lite.DEFAULT_WORKSPACE_ROOT),
         help="Override workspace root for local tools (default: $SPIRAL_CODER_WORKSPACE_ROOT or ~/spiral-coder-work)",
     )
 

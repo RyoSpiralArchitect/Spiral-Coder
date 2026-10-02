@@ -4,32 +4,36 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-> **One prompt box is not enough.**
-> Spiral-Coder gives your AI a second brain — and makes them argue.
+Spiral-Coder is a coding runtime with separate **Coder**, **Observer**, and **Chat** contexts. The Coder works on a repository, the Observer critiques recorded outputs and verification evidence, and Chat supports design discussion. CLI, terminal UI, and local Web UI are included.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
----
+The project began as a two-day Mistral hackathon experiment. It is now being rebuilt as Spiral-Coder, with provider choice, durable sessions, and reproducible verification as explicit foundations. Separate contexts support review; they do not guarantee independent or correct judgments.
 
-Every AI coding tool has the same problem: the model that writes your code also reviews it.
+**Renaming an existing installation?** See [migration](docs/migration-spiral-coder.md) for the new command, configuration names, and non-destructive data migration.
 
-That's not a review. That's a self-defense monologue.
+```sh
+cargo install --locked --path .
+spiral-coder --help
+spiral-coder tui
+```
 
-Spiral-Coder fixes this by running Coder and Observer in **completely separate contexts**. The Observer does not share the Coder's live working context or hidden scratchpad. It critiques outputs, transcripts, and optional git diff snapshots after the fact. That's what keeps it honest.
+Configure a supported provider before making model calls. Run the complete model-free check suite with `bash scripts/check-local.sh` (also used by CI). Individual checks:
+
+```sh
+cargo test --locked --all-targets
+cargo run --locked -- tui-replay --spec .spiral-coder/tui_replay.json
+python3 -S scripts/repo_map.py build --root .
+python3 -S scripts/repo_map.py eval --root .
+```
 
 ---
 
 ## UI Preview
 
-These screenshots come from the Playwright smoke flows that exercise the Web UI end-to-end.
+Current Spiral-Coder Web UI, captured locally without model calls.
 
-| Overview | Harness review gate |
-|---|---|
-| ![Spiral-Coder web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
-
-| Runtime approvals |
-|---|
-| ![Runtime approvals flow](docs/screenshots/runtime-approval-flow.png) |
+![Spiral-Coder Web UI](docs/screenshots/spiral-coder-overview.png)
 
 ---
 
@@ -88,7 +92,7 @@ It's a development control engine.
 
 ---
 
-## Three Roles. Three Contexts. Zero Conflicts.
+## Three Roles. Separate Contexts.
 
 | Role | What it does | What it never does |
 |---|---|---|
@@ -164,7 +168,7 @@ Other tools: same model writes code → same model reviews code → model defend
 
 Spiral-Coder: fresh context for every Observer run. The Observer doesn't know what it *would have* written, and it doesn't share the Coder's live scratchpad. It judges emitted outputs, transcripts, and optional diff snapshots after they exist.
 
-Result: sharper feedback, honest risk assessment, no defensive hedging.
+The separation makes the review inputs auditable. Review quality still depends on the model, available evidence, and evaluation.
 
 ### Proposals Don't Disappear
 

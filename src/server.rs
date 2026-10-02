@@ -21,6 +21,7 @@ const APP_JS: &str = include_str!("../web/app.js");
 const STYLES_CSS: &str = include_str!("../web/styles.css");
 const CORE_SANDBOX_JS: &str = include_str!("../web/core/sandbox.js");
 const CORE_EXEC_JS: &str = include_str!("../web/core/exec.js");
+const CORE_STATE_JS: &str = include_str!("../web/core/state.js");
 const OBSERVER_LOGIC_JS: &str = include_str!("../web/observer/logic.js");
 const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
@@ -111,6 +112,7 @@ async fn serve_asset(stream: &mut TcpStream, req_path: &str) -> Result<()> {
         "styles.css" => Some(STYLES_CSS.as_bytes()),
         "core/sandbox.js" => Some(CORE_SANDBOX_JS.as_bytes()),
         "core/exec.js" => Some(CORE_EXEC_JS.as_bytes()),
+        "core/state.js" => Some(CORE_STATE_JS.as_bytes()),
         "observer/logic.js" => Some(OBSERVER_LOGIC_JS.as_bytes()),
         "vendor/react.production.min.js" => Some(REACT_JS.as_bytes()),
         "vendor/react-dom.production.min.js" => Some(REACT_DOM_JS.as_bytes()),
@@ -3393,13 +3395,15 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
         host_os,
         providers: ApiStatusProviders {
             mistral: ApiProviderStatus {
-                api_key_present: env_present("MISTRAL_API_KEY") || env_present("SPIRAL_CODER_API_KEY"),
+                api_key_present: env_present("MISTRAL_API_KEY")
+                    || env_present("SPIRAL_CODER_API_KEY"),
             },
             anthropic: ApiProviderStatus {
                 api_key_present: env_present("ANTHROPIC_API_KEY"),
             },
             openai_compatible: ApiProviderStatus {
-                api_key_present: env_present("SPIRAL_CODER_API_KEY") || env_present("OPENAI_API_KEY"),
+                api_key_present: env_present("SPIRAL_CODER_API_KEY")
+                    || env_present("OPENAI_API_KEY"),
             },
         },
         features: ApiFeatures {
@@ -3410,6 +3414,9 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
             observer_engine: true,
             meta_prompts: true,
             open_file: true,
+            harness_promotions: true,
+            merge_gate: true,
+            project_scan: true,
         },
         workspace_root,
     };
@@ -3873,6 +3880,9 @@ struct ApiFeatures {
     observer_engine: bool,
     meta_prompts: bool,
     open_file: bool,
+    harness_promotions: bool,
+    merge_gate: bool,
+    project_scan: bool,
 }
 
 #[derive(Serialize)]

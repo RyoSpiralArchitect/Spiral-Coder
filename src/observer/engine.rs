@@ -471,7 +471,9 @@ exit: 0
         assert!(formatted.contains("--- benchmark_plan ---"));
         assert!(formatted.contains("\"failure_mode\": \"missing_required_followup\""));
         assert!(formatted.contains("\"mutation_anchor\""));
-        assert!(formatted.contains("cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json"));
+        assert!(
+            formatted.contains("cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json")
+        );
         assert!(formatted.contains("\"lane\": \"runtime_eval\""));
     }
 

@@ -232,14 +232,17 @@ fn verification_cmd(
         .any(|f| f.path == ".spiral-coder/runtime_eval.json")
     {
         return Some(
-            "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1".to_string(),
+            "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1"
+                .to_string(),
         );
     }
     if required_followups
         .iter()
         .any(|f| f.path == ".spiral-coder/tui_replay.json")
     {
-        return Some("cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json".to_string());
+        return Some(
+            "cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json".to_string(),
+        );
     }
 
     for event in events.iter().rev() {

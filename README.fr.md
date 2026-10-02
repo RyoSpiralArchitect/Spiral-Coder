@@ -4,32 +4,29 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-> **Une seule boite de dialogue ne suffit pas.**
-> Spiral-Coder donne a votre IA un deuxieme cerveau — et les fait se disputer.
+Spiral-Coder est un moteur de développement avec des contextes séparés pour **Coder**, **Observer** et **Chat**. Coder agit dans le dépôt, Observer examine les sorties et les preuves de vérification, et Chat accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
+Né d’un prototype réalisé en environ deux jours pour un hackathon Mistral, le projet devient Spiral-Coder. Les priorités sont le choix du fournisseur, la sauvegarde et la reprise des sessions, et des vérifications reproductibles. Des contextes séparés ne garantissent pas à eux seuls une critique indépendante ou correcte.
+
+Pour une installation existante, voir le [guide de migration](docs/migration-spiral-coder.md). Les anciennes données sont conservées.
+
+```sh
+cargo install --locked --path .
+spiral-coder --help
+spiral-coder tui
+```
+
+Configurez un fournisseur avant tout appel de modèle. Les commandes de vérification locale figurent dans le [README anglais](README.md).
+
 ---
 
-Tous les outils de code IA ont le meme probleme : le modele qui ecrit votre code est aussi celui qui le relit.
+## Aperçu de l’interface
 
-Ce n'est pas une revue de code. C'est un monologue de defense.
+Interface Web actuelle de Spiral-Coder, capturée localement sans appel de modèle.
 
-Spiral-Coder resout ca en faisant tourner Coder et Observer dans des **contextes entierement separes**. L'Observer ne partage ni le contexte de travail en direct du Coder ni son scratchpad cache. Il critique les sorties, les transcripts et, si necessaire, des snapshots de `git diff` apres coup. C'est ce qui le rend honnete.
-
----
-
-## UI Preview
-
-Ces captures proviennent des smoke tests Playwright qui parcourent l'UI Web de bout en bout.
-
-| Overview | Harness review gate |
-|---|---|
-| ![Spiral-Coder web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
-
-| Runtime approvals |
-|---|
-| ![Runtime approvals flow](docs/screenshots/runtime-approval-flow.png) |
+![Spiral-Coder Web UI](docs/screenshots/spiral-coder-overview.png)
 
 ---
 
@@ -85,7 +82,7 @@ C'est un moteur de controle du processus de developpement.
 
 ---
 
-## Trois roles. Trois contextes. Zero conflit.
+## Trois rôles. Des contextes séparés.
 
 | Role | Ce qu'il fait | Ce qu'il ne fait jamais |
 |---|---|---|
@@ -140,7 +137,7 @@ Autres outils : meme modele ecrit le code → meme modele le relit → modele de
 
 Spiral-Coder : contexte vierge a chaque execution de l'Observer. Il ne sait pas ce qu'il *aurait* ecrit et ne partage pas le scratchpad vivant du Coder. Il juge uniquement les sorties, les transcripts et, si besoin, les snapshots de diff.
 
-Resultat : feedbacks plus tranchants, evaluation de risques honnete, pas de demi-mesures.
+La séparation rend les entrées de la revue auditables. La qualité dépend toujours du modèle, des preuves disponibles et de leur évaluation.
 
 ### Les propositions ne disparaissent pas
 

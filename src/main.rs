@@ -3052,20 +3052,16 @@ async fn run_agent_with_behavior(
                         let _ = tw.event("interrupted", json!({}));
                     }
                     handle.abort();
-                    if let Some(ref saver) = autosaver {
-                        let _ = saver.save_best_effort(
-                            tool_root.as_deref(),
-                            checkpoint.as_deref(),
-                            cur_cwd.as_deref(),
-                            &messages_json,
-                        );
-                    }
                     break;
                 }
             }
         }
 
         if interrupted {
+            // abort() requests cancellation; join before returning so an active
+            // save cannot race with a resumed process. The task owns the latest
+            // transcript, so retain its autosave instead of our pre-round copy.
+            let _ = handle.await;
             result = Err(anyhow::anyhow!("interrupted"));
             break;
         }
@@ -3087,6 +3083,14 @@ async fn run_agent_with_behavior(
         checkpoint = checkpoint.or(end_state.checkpoint);
         start_observation_cache = end_state.observation_cache;
         start_session_bridge = crate::agent_session::session_bridge_from_messages(&messages_json);
+        if let Some(ref saver) = autosaver {
+            saver.save_or_error(
+                tool_root.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages_json,
+            )?;
+        }
         if let Some(ref tw) = trace {
             let last_reflection =
                 crate::agent_session::last_reflection_summary_from_messages(&messages_json);
@@ -3178,19 +3182,21 @@ For each proposal you address, verify with commands/tests. When finished, call d
         }
     }
 
-    // Save session file (if requested).
-    if let Some(ref saver) = autosaver {
-        saver.save_or_error(
-            tool_root.as_deref(),
-            checkpoint.as_deref(),
-            cur_cwd.as_deref(),
-            &messages_json,
-        )?;
-    }
-
-    // Optional: write a final session snapshot separate from --session autosave.
-    if let Some(ref out_path) = json_out_path {
-        let mut sess = crate::agent_session::AgentSession::new(
+    let export_session = if json_out_path.is_none() && graph_out_path.is_none() {
+        None
+    } else if result.is_err() {
+        match crate::agent_session::AgentSession::load_for_failed_export(session_path.as_deref()) {
+            Ok(session) => {
+                eprintln!("[export] incomplete run: exporting the latest saved session snapshot");
+                Some(session)
+            }
+            Err(error) => {
+                eprintln!("[export] skipped JSON/graph output: {error:#}");
+                None
+            }
+        }
+    } else {
+        let mut session = crate::agent_session::AgentSession::new(
             tool_root.clone(),
             checkpoint.clone(),
             cur_cwd.clone(),
@@ -3198,9 +3204,14 @@ For each proposal you address, verify with commands/tests. When finished, call d
             messages_json.clone(),
         );
         if let Some(ref loaded) = loaded_session {
-            sess.created_at_ms = loaded.created_at_ms;
+            session.created_at_ms = loaded.created_at_ms;
         }
-        match crate::agent_session::AgentSession::save_atomic(out_path, &sess) {
+        Some(session)
+    };
+
+    // Optional: write a final or explicitly labeled durable session snapshot.
+    if let (Some(out_path), Some(session)) = (json_out_path.as_ref(), export_session.as_ref()) {
+        match crate::agent_session::AgentSession::save_atomic(out_path, session) {
             Ok(_) => eprintln!("[json_out] wrote: {}", out_path.display()),
             Err(e) => {
                 eprintln!("[json_out] ERROR: {e:#}");
@@ -3212,12 +3223,12 @@ For each proposal you address, verify with commands/tests. When finished, call d
     }
 
     // Optional: write an execution graph derived from the final messages.
-    if let Some(ref out_path) = graph_out_path {
+    if let (Some(out_path), Some(session)) = (graph_out_path.as_ref(), export_session.as_ref()) {
         let graph = crate::task_graph::TaskGraph::from_session_messages(
-            tool_root.clone(),
-            checkpoint.clone(),
-            cur_cwd.clone(),
-            &messages_json,
+            session.tool_root.clone(),
+            session.checkpoint.clone(),
+            session.cur_cwd.clone(),
+            &session.messages,
         );
         match crate::task_graph::save_graph_atomic(out_path, &graph) {
             Ok(_) => eprintln!("[graph_out] wrote: {}", out_path.display()),

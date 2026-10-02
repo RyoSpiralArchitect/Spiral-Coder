@@ -49,6 +49,7 @@ mod final_handoff;
 mod followup_requirements;
 mod harness_evolution;
 mod memory;
+mod message_window;
 mod meta_harness;
 mod progress_bridge;
 mod provider_compat;
@@ -86,6 +87,7 @@ use self::memory::{
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
     ObservationEvidence, ObservationReadEvidence, ObservationSearchEvidence,
 };
+use self::message_window::prune_message_window;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 #[cfg(test)]
@@ -1278,8 +1280,6 @@ const KEEP_RECENT_TOOL_TURNS: usize = 4;
 const KEEP_RECENT_ASSISTANT_TURNS: usize = 6;
 const SUCCESS_TOOL_HISTORY_MAX_LINES: usize = 10;
 const SUCCESS_TOOL_HISTORY_MAX_CHARS: usize = 1200;
-const KEEP_RECENT_MESSAGE_WINDOW: usize = 24;
-const MAX_CONTEXT_MESSAGES: usize = 48;
 const TOKEN_BUDGET_WARN_TOKENS: usize = 9000;
 
 /// Marker appended to every exec call so we can persist working directory across tool runs.
@@ -2257,112 +2257,6 @@ fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
         };
         messages[idx]["content"] = serde_json::Value::String(summary);
     }
-}
-
-fn assistant_message_has_observation_tool_call(msg: &serde_json::Value) -> bool {
-    msg.get("tool_calls")
-        .and_then(|v| v.as_array())
-        .map(|items| {
-            items.iter().any(|tc| {
-                tc.get("function")
-                    .and_then(|f| f.get("name"))
-                    .and_then(|v| v.as_str())
-                    .map(|name| matches!(name, "read_file" | "search_files" | "list_dir" | "glob"))
-                    .unwrap_or(false)
-            })
-        })
-        .unwrap_or(false)
-}
-
-fn tool_message_is_drop_safe(msg: &serde_json::Value) -> bool {
-    let content = msg
-        .get("content")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .trim_start();
-    content.starts_with("OK (exit_code: 0)")
-        || content.starts_with("OK: wrote '")
-        || content.starts_with("OK: patched '")
-        || content.starts_with("OK: applied ")
-        || content.starts_with("OK write_file")
-}
-
-fn prune_message_window(messages: &mut Vec<serde_json::Value>) {
-    if messages.len() <= MAX_CONTEXT_MESSAGES {
-        return;
-    }
-
-    let mut protected = std::collections::HashSet::new();
-    for (idx, msg) in messages.iter().enumerate() {
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        if !matches!(role, "assistant" | "tool") {
-            protected.insert(idx);
-        }
-    }
-    for idx in messages.len().saturating_sub(KEEP_RECENT_MESSAGE_WINDOW)..messages.len() {
-        protected.insert(idx);
-    }
-    let anchor_checks: &[fn(&str) -> bool] = &[
-        |content| parse_plan_block(content).is_some(),
-        |content| parse_think_block(content).is_some(),
-        |content| parse_reflection_block(content).is_some(),
-        |content| parse_impact_block(content).is_some(),
-        |content| parse_evidence_block(content).is_some(),
-    ];
-    for check in anchor_checks {
-        for idx in (0..messages.len()).rev() {
-            let msg = &messages[idx];
-            if msg.get("role").and_then(|v| v.as_str()) != Some("assistant") {
-                continue;
-            }
-            let content = msg
-                .get("content")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .trim();
-            if check(content) {
-                protected.insert(idx);
-                break;
-            }
-        }
-    }
-
-    let mut removable = Vec::new();
-    for (idx, msg) in messages.iter().enumerate() {
-        if protected.contains(&idx) {
-            continue;
-        }
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        let drop_safe = match role {
-            "assistant" => {
-                !assistant_message_has_observation_tool_call(msg)
-                    && assistant_message_is_compactable(msg)
-            }
-            "tool" => tool_message_is_drop_safe(msg),
-            _ => false,
-        };
-        if drop_safe {
-            removable.push(idx);
-        }
-    }
-
-    let over = messages.len().saturating_sub(MAX_CONTEXT_MESSAGES);
-    if over == 0 || removable.is_empty() {
-        return;
-    }
-
-    let drop_indices: std::collections::HashSet<usize> = removable.into_iter().take(over).collect();
-    if drop_indices.is_empty() {
-        return;
-    }
-
-    let mut compacted = Vec::with_capacity(messages.len() - drop_indices.len());
-    for (idx, msg) in messages.iter().enumerate() {
-        if !drop_indices.contains(&idx) {
-            compacted.push(msg.clone());
-        }
-    }
-    *messages = compacted;
 }
 
 // ── Error classification ──────────────────────────────────────────────────────
@@ -8510,7 +8404,6 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut reflection_required: Option<String> = None;
     let mut impact_required: Option<String> = None;
     let mut reflection_trigger_sig: Option<String> = None;
-    let mut last_reflection: Option<ReflectionBlock> = None;
     let mut reflection_guard: Option<ReflectionBlock> = None;
     let mut forced_tool_once = false;
     let mut tool_calls_this_run: usize = 0;
@@ -8584,7 +8477,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut path_required_verification =
         upgrade_required_verification_from_messages(&messages, VerificationLevel::Build);
     let mut required_verification = intent_required_verification.max(path_required_verification);
-    last_reflection = last_reflection_from_messages(&messages);
+    let mut last_reflection = last_reflection_from_messages(&messages);
     let mut working_mem = WorkingMemory::from_messages(&messages, test_cmd.as_deref());
     let mut assumption_ledger = AssumptionLedger::from_messages(&messages, &working_mem);
     if let Some(plan) = active_plan.as_ref() {
@@ -8705,7 +8598,7 @@ Execute only the new minimal action: {}",
     let progress_state = if let Some(path) = progress_state_path.as_ref() {
         match crate::progress_state::RepoProgressState::load(path) {
             Ok(progress) => Some(progress),
-            Err(e) if !path.exists() => None,
+            Err(_) if !path.exists() => None,
             Err(e) => {
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -19671,84 +19564,5 @@ assumptions: cache exists
                 .unwrap_or(""),
             original_last
         );
-    }
-
-    #[test]
-    fn prune_message_window_drops_old_exec_turns_but_keeps_observation_turns() {
-        let mut messages = vec![
-            json!({"role":"system","content":"base"}),
-            json!({"role":"user","content":"inspect and then fix"}),
-        ];
-
-        for idx in 0..20 {
-            messages.push(json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": format!("exec_{idx}"),
-                    "type": "function",
-                    "function": {
-                        "name": "exec",
-                        "arguments": format!("{{\"command\":\"cargo check #{idx}\"}}")
-                    }
-                }]
-            }));
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": format!("exec_{idx}"),
-                "content": format!("OK (exit_code: 0)\nstdout:\nrun {idx}")
-            }));
-        }
-
-        messages.push(json!({
-            "role": "assistant",
-            "tool_calls": [{
-                "id": "obs_search",
-                "type": "function",
-                "function": {
-                    "name": "search_files",
-                    "arguments": "{\"pattern\":\"reflect\",\"dir\":\"src\"}"
-                }
-            }]
-        }));
-        messages.push(json!({
-            "role": "tool",
-            "tool_call_id": "obs_search",
-            "content": "[search_files: 'reflect' — 1 match(es)]\nsrc/tui/agent.rs:1: reflect"
-        }));
-
-        for idx in 20..26 {
-            messages.push(json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": format!("tail_exec_{idx}"),
-                    "type": "function",
-                    "function": {
-                        "name": "exec",
-                        "arguments": format!("{{\"command\":\"cargo test #{idx}\"}}")
-                    }
-                }]
-            }));
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": format!("tail_exec_{idx}"),
-                "content": format!("OK (exit_code: 0)\nstdout:\ntail {idx}")
-            }));
-        }
-
-        let before = messages.len();
-        prune_message_window(&mut messages);
-
-        assert!(messages.len() < before);
-        assert!(messages.len() <= MAX_CONTEXT_MESSAGES);
-        assert!(messages.iter().any(|msg| {
-            msg["tool_call_id"].as_str() == Some("obs_search")
-                && msg["content"]
-                    .as_str()
-                    .unwrap_or("")
-                    .contains("[search_files:")
-        }));
-        assert!(!messages
-            .iter()
-            .any(|msg| { msg["tool_call_id"].as_str() == Some("exec_0") }));
     }
 }

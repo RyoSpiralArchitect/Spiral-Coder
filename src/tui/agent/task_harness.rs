@@ -11,6 +11,11 @@ use crate::streaming::ToolCallData;
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+#[path = "benchmark_proof.rs"]
+mod benchmark_proof;
+#[path = "benchmark_replay.rs"]
+mod benchmark_replay;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum TaskLane {
     ReadOnlyObserve,
@@ -696,9 +701,9 @@ pub(super) fn allows_benchmark_plan_followup_during_verify(
         return false;
     }
     if benchmark_plan_targets_satisfied(messages, root_user_text, tool_root)
-        && benchmark_plan_required_check_command(root_user_text).is_some_and(|command| {
-            benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str())
-        })
+        && pending_benchmark_plan_required_check_exec(messages, root_user_text).is_some_and(
+            |command| benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str()),
+        )
     {
         return true;
     }
@@ -746,6 +751,10 @@ pub(super) fn benchmark_plan_missing_required_exec_proof(
     benchmark_plan_pending_required_exec_command(root_user_text, messages).is_some()
 }
 
+pub(super) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
+    benchmark_proof::protected_call_ids(messages)
+}
+
 fn compare_rewritten_tool_call(
     tc: &ToolCallData,
     rewritten: ToolCallData,
@@ -767,7 +776,16 @@ fn compare_rewritten_tool_call(
                     compact_one_line(rewritten.arguments.as_str(), 120)
                 )
             });
-    if original == coerced {
+    // Display strings may collapse quoted whitespace or truncate long commands.
+    // Compare the actual arguments before deciding whether a rewrite is redundant.
+    let same_arguments = match (
+        serde_json::from_str::<Value>(&tc.arguments),
+        serde_json::from_str::<Value>(&rewritten.arguments),
+    ) {
+        (Ok(original), Ok(rewritten)) => original == rewritten,
+        _ => tc.arguments == rewritten.arguments,
+    };
+    if tc.name == rewritten.name && same_arguments {
         None
     } else {
         Some((rewritten, original, coerced))
@@ -836,45 +854,7 @@ fn pending_benchmark_plan_required_check_exec(
     messages: &[Value],
     root_user_text: &str,
 ) -> Option<String> {
-    let command = benchmark_plan_required_check_command(root_user_text)?;
-    if benchmark_plan_required_check_was_executed(messages, command.as_str()) {
-        None
-    } else {
-        Some(command)
-    }
-}
-
-fn benchmark_plan_required_check_command(root_user_text: &str) -> Option<String> {
-    let mut in_required_checks = false;
-    for line in root_user_text.lines() {
-        let trimmed = line.trim();
-        if trimmed.eq_ignore_ascii_case("required_checks:") {
-            in_required_checks = true;
-            continue;
-        }
-        if !in_required_checks {
-            continue;
-        }
-        if let Some(item) = trimmed.strip_prefix('-') {
-            let command = trim_benchmark_plan_command_literal(item);
-            if !command.is_empty() {
-                return Some(command);
-            }
-            continue;
-        }
-        if !trimmed.is_empty() && trimmed.ends_with(':') {
-            break;
-        }
-    }
-    None
-}
-
-fn trim_benchmark_plan_command_literal(raw: &str) -> String {
-    let mut command = raw.trim();
-    if command.starts_with('`') && command.ends_with('`') && command.len() >= 2 {
-        command = &command[1..command.len() - 1];
-    }
-    command.trim().to_string()
+    benchmark_proof::pending_command(messages, root_user_text)
 }
 
 fn benchmark_plan_targets_satisfied(
@@ -914,110 +894,7 @@ fn benchmark_plan_tool_call_is_required_check_exec(tc: &ToolCallData, command: &
                 .and_then(|v| v.as_str())
                 .map(str::to_string)
         })
-        .is_some_and(|actual| commands_match(actual.as_str(), command))
-}
-
-fn benchmark_plan_required_check_was_executed(messages: &[Value], command: &str) -> bool {
-    successful_exec_commands(messages)
-        .iter()
-        .any(|actual| commands_match(actual.as_str(), command))
-}
-
-pub(crate) mod transcript_signals {
-    use super::*;
-
-    pub(crate) fn successful_exec_commands(messages: &[Value]) -> Vec<String> {
-        let mut pending: BTreeMap<String, String> = BTreeMap::new();
-        let mut out = Vec::new();
-        for msg in messages {
-            match msg.get("role").and_then(|v| v.as_str()) {
-                Some("assistant") => {
-                    let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                        continue;
-                    };
-                    for tc in tool_calls {
-                        let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                        let name = tc
-                            .get("function")
-                            .and_then(|v| v.get("name"))
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .trim();
-                        if id.is_empty() || name != "exec" {
-                            continue;
-                        }
-                        let command = tc
-                            .get("function")
-                            .and_then(|v| v.get("arguments"))
-                            .and_then(|v| v.as_str())
-                            .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                            .and_then(|value| {
-                                value
-                                    .get("command")
-                                    .and_then(|v| v.as_str())
-                                    .map(str::to_string)
-                            })
-                            .unwrap_or_default();
-                        if !command.trim().is_empty() {
-                            pending.insert(id.to_string(), command);
-                        }
-                    }
-                }
-                Some("tool") => {
-                    let tool_call_id = msg
-                        .get("tool_call_id")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    let Some(command) = pending.remove(tool_call_id) else {
-                        continue;
-                    };
-                    let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                    if exec_tool_content_succeeded(content) {
-                        out.push(command);
-                    }
-                }
-                _ => {}
-            }
-        }
-        out
-    }
-
-    pub(crate) fn exec_tool_content_succeeded(content: &str) -> bool {
-        let text = content.trim();
-        !text.is_empty()
-            && (text.contains("exit_code: 0")
-                || text.contains("OK (exit 0)")
-                || text.starts_with("OK:"))
-            && !text.contains("GOVERNOR BLOCKED")
-            && !text.contains("FAILED")
-    }
-
-    pub(crate) fn commands_match(left: &str, right: &str) -> bool {
-        let left = command_signature(left);
-        let right = command_signature(right);
-        !left.is_empty() && left == right
-    }
-
-    pub(crate) fn command_signature(command: &str) -> String {
-        command.split_whitespace().collect::<Vec<_>>().join(" ")
-    }
-}
-
-fn successful_exec_commands(messages: &[Value]) -> Vec<String> {
-    transcript_signals::successful_exec_commands(messages)
-}
-
-fn exec_tool_content_succeeded(content: &str) -> bool {
-    transcript_signals::exec_tool_content_succeeded(content)
-}
-
-fn commands_match(left: &str, right: &str) -> bool {
-    transcript_signals::commands_match(left, right)
-}
-
-fn command_signature(command: &str) -> String {
-    transcript_signals::command_signature(command)
+        .is_some_and(|actual| benchmark_proof::commands_match(actual.as_str(), command))
 }
 
 fn tool_call_path(tc: &ToolCallData) -> Option<String> {
@@ -1083,7 +960,7 @@ fn synthesize_benchmark_plan_target_patch(
         return None;
     }
     let replace = if target.ends_with(".json") {
-        synthesize_benchmark_plan_json_body(body, required_path.as_str(), root_user_text)?
+        synthesize_benchmark_plan_json_body(target, body, required_path.as_str(), root_user_text)?
     } else if target.starts_with("docs/") && target.ends_with(".md") {
         synthesize_benchmark_plan_markdown_body(body, required_path.as_str())
     } else {
@@ -1102,12 +979,22 @@ fn synthesize_benchmark_plan_target_patch(
 }
 
 fn synthesize_benchmark_plan_json_body(
+    target: &str,
     body: &str,
     required_path: &str,
     root_user_text: &str,
 ) -> Option<String> {
     let mut value = serde_json::from_str::<Value>(body).ok()?;
-    if let Some(paths) = value.get_mut("paths").and_then(|v| v.as_array_mut()) {
+    if target.ends_with("/tui_replay.json") {
+        // Use the replay contract, not runtime-eval check names or a literal-only update.
+        let mut spec = serde_json::from_value::<crate::tui_replay::TuiReplaySpec>(value).ok()?;
+        spec.cases.push(benchmark_replay::case(
+            benchmark_plan_case_id_hint(root_user_text)
+                .unwrap_or_else(|| "observer-benchmark-plan-regression".to_string()),
+            required_path,
+        ));
+        value = serde_json::to_value(spec).ok()?;
+    } else if let Some(paths) = value.get_mut("paths").and_then(|v| v.as_array_mut()) {
         paths.push(Value::String(required_path.to_string()));
     } else if let Some(cases) = value.get_mut("cases").and_then(|v| v.as_array_mut()) {
         cases.push(serde_json::json!({
@@ -2827,7 +2714,9 @@ required_checks:\n\
 
         assert_eq!(original, "search_files(path=src, pattern=runtime eval)");
         assert_eq!(rewritten.name, "read_file");
-        assert!(rewritten.arguments.contains(".spiral-coder/runtime_eval.json"));
+        assert!(rewritten
+            .arguments
+            .contains(".spiral-coder/runtime_eval.json"));
         assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
@@ -2947,7 +2836,9 @@ success_criteria:\n\
         .expect("synthetic benchmark patch");
 
         assert_eq!(rewritten.name, "patch_file");
-        assert!(rewritten.arguments.contains(".spiral-coder/runtime_eval.json"));
+        assert!(rewritten
+            .arguments
+            .contains(".spiral-coder/runtime_eval.json"));
         assert!(rewritten
             .arguments
             .contains("src/tui/agent/session_bridge.rs"));
@@ -3529,6 +3420,56 @@ required_checks:\n\
             root_user_text,
             &messages
         ));
+    }
+
+    #[test]
+    fn benchmark_plan_advances_to_second_check_in_verify_and_done_coercion() {
+        let prompt = "<observer_benchmark_plan>\nlane: runtime_eval\nrequired_checks:\n- check Spec.json\n- grep -q 'A  B' Spec.json\nsuccess_criteria:\n- cover src/example.rs\n</observer_benchmark_plan>";
+        let messages = vec![
+            json!({"role": "assistant", "tool_calls": [{
+                "id": "read", "function": {"name": "read_file", "arguments": json!({"path": ".spiral-coder/runtime_eval.json"}).to_string()}
+            }]}),
+            json!({"role": "tool", "tool_call_id": "read", "content": "[.spiral-coder/runtime_eval.json] (1 lines, 30 bytes)\n{\"paths\":[\"src/example.rs\"]}"}),
+            json!({"role": "assistant", "tool_calls": [{
+                "id": "check", "function": {"name": "exec", "arguments": json!({"command": "check Spec.json"}).to_string()}
+            }]}),
+            json!({"role": "tool", "tool_call_id": "check", "content": "OK (exit_code: 0)"}),
+        ];
+        let harness = TaskHarness {
+            lane: TaskLane::BenchmarkPlan,
+            artifact_mode: ArtifactMode::ExistingFiles,
+        };
+        let second = "grep -q 'A  B' Spec.json";
+        assert!(benchmark_plan_missing_required_exec_proof(
+            prompt, &messages
+        ));
+        assert_eq!(
+            benchmark_plan_pending_required_exec_command(prompt, &messages).as_deref(),
+            Some(second)
+        );
+
+        for (name, args) in [
+            ("done", json!({"summary": "done"})),
+            ("exec", json!({"command": "grep -q 'A B' Spec.json"})),
+            ("exec", json!({"command": "grep -q 'a  b' Spec.json"})),
+        ] {
+            let candidate = ToolCallData {
+                id: "next".to_string(),
+                name: name.to_string(),
+                arguments: args.to_string(),
+            };
+            let (rewritten, _, _) =
+                coerce_benchmark_plan_tool_call(harness, &messages, &candidate, prompt, None)
+                    .expect("second check remains required");
+            assert_eq!(rewritten.name, "exec");
+            assert_eq!(
+                serde_json::from_str::<Value>(&rewritten.arguments).unwrap(),
+                json!({"command": second})
+            );
+            assert!(allows_benchmark_plan_followup_during_verify(
+                harness, &messages, &rewritten, prompt, None
+            ));
+        }
     }
 
     #[test]

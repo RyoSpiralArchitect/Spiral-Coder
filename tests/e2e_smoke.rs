@@ -7,39 +7,56 @@ fn pick_free_port() -> u16 {
     l.local_addr().expect("local addr").port()
 }
 
-fn spawn_server(exe: &str, port: u16) -> Child {
-    Command::new(exe)
+struct ServerGuard {
+    child: Child,
+    log: tempfile::NamedTempFile,
+    _workspace: tempfile::TempDir,
+}
+
+impl Drop for ServerGuard {
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let status = self.child.wait();
+        if std::thread::panicking() {
+            let log = std::fs::read_to_string(self.log.path()).unwrap_or_default();
+            eprintln!("spiral-coder serve status: {status:?}\nserver log:\n{log}");
+        }
+    }
+}
+
+fn spawn_server(port: u16) -> ServerGuard {
+    let workspace = tempfile::tempdir().expect("isolated server workspace");
+    let log = tempfile::NamedTempFile::new().expect("server log");
+    let child = Command::new(env!("CARGO_BIN_EXE_spiral-coder"))
         .args(["serve", "--host", "127.0.0.1", "--port", &port.to_string()])
+        .current_dir(workspace.path())
+        .env_remove("SPIRAL_CODER_ASSETS_DIR")
+        .env_remove("OBSTRAL_ASSETS_DIR") // Ignore legacy developer overrides too.
         .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(Stdio::from(
+            log.as_file().try_clone().expect("stdout log handle"),
+        ))
+        .stderr(Stdio::from(
+            log.as_file().try_clone().expect("stderr log handle"),
+        ))
         .spawn()
-        .expect("spawn spiral-coder serve")
+        .expect("spawn spiral-coder serve");
+    ServerGuard {
+        child,
+        log,
+        _workspace: workspace,
+    }
 }
 
 #[tokio::test]
 async fn serve_smoke_assets() {
-    let root = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
-    let exe_path = std::path::Path::new(&root)
-        .join("target")
-        .join("debug")
-        .join(if cfg!(windows) {
-            "spiral-coder.exe"
-        } else {
-            "spiral-coder"
-        });
-    assert!(
-        exe_path.exists(),
-        "expected spiral-coder binary at {}",
-        exe_path.display()
-    );
-    let exe = exe_path.to_string_lossy().to_string();
     let port = pick_free_port();
 
-    let mut child = spawn_server(&exe, port);
+    let mut server = spawn_server(port);
     let base = format!("http://127.0.0.1:{port}");
 
     let client = reqwest::Client::builder()
+        .no_proxy()
         .timeout(Duration::from_secs(3))
         .build()
         .expect("reqwest client");
@@ -47,11 +64,16 @@ async fn serve_smoke_assets() {
     // Wait until server is ready.
     let deadline = Instant::now() + Duration::from_secs(5);
     loop {
+        if let Some(status) = server.child.try_wait().expect("poll server") {
+            panic!("server exited before readiness: {status}");
+        }
         match client.get(format!("{base}/")).send().await {
-            Ok(r) if r.status().is_success() => break,
+            Ok(r) if r.status().is_success() => {
+                r.bytes().await.expect("consume readiness response");
+                break;
+            }
             _ => {
                 if Instant::now() > deadline {
-                    let _ = child.kill();
                     panic!("server did not become ready in time");
                 }
                 tokio::time::sleep(Duration::from_millis(120)).await;
@@ -64,6 +86,8 @@ async fn serve_smoke_assets() {
         .send()
         .await
         .expect("GET /")
+        .error_for_status()
+        .expect("successful GET / status")
         .text()
         .await
         .expect("read / body");
@@ -77,6 +101,8 @@ async fn serve_smoke_assets() {
         .send()
         .await
         .expect("GET app.js")
+        .error_for_status()
+        .expect("successful GET app.js status")
         .text()
         .await
         .expect("read app.js body");
@@ -85,11 +111,28 @@ async fn serve_smoke_assets() {
         "app.js should include sendObserver"
     );
 
+    let state_js = client
+        .get(format!("{base}/assets/core/state.js"))
+        .send()
+        .await
+        .expect("GET core/state.js")
+        .error_for_status()
+        .expect("successful state.js status")
+        .text()
+        .await
+        .expect("read state.js body");
+    assert!(
+        state_js.contains("rootUserTextForRun"),
+        "task and storage helpers should be served"
+    );
+
     let styles = client
         .get(format!("{base}/assets/styles.css"))
         .send()
         .await
         .expect("GET styles.css")
+        .error_for_status()
+        .expect("successful GET styles.css status")
         .text()
         .await
         .expect("read styles.css body");
@@ -103,6 +146,8 @@ async fn serve_smoke_assets() {
         .send()
         .await
         .expect("GET /api/status")
+        .error_for_status()
+        .expect("successful GET /api/status status")
         .json()
         .await
         .expect("parse /api/status JSON");
@@ -136,6 +181,8 @@ async fn serve_smoke_assets() {
         .send()
         .await
         .expect("GET /api/pending_edits")
+        .error_for_status()
+        .expect("successful GET /api/pending_edits status")
         .json()
         .await
         .expect("parse /api/pending_edits JSON");
@@ -146,7 +193,4 @@ async fn serve_smoke_assets() {
             .unwrap_or(false),
         "/api/pending_edits should return {{ pending: [] }}"
     );
-
-    let _ = child.kill();
-    let _ = child.wait();
 }

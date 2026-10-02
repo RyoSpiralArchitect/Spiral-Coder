@@ -23,16 +23,21 @@ from urllib import error as urlerror
 from urllib import request as urlrequest
 
 
+def _env(name: str, default: str | None = None) -> str | None:
+    """Read canonical configuration first, with legacy OBS_ migration support."""
+    if name in os.environ:
+        return os.environ[name]
+    if name.startswith("SPIRAL_CODER_"):
+        return os.environ.get("OBS_" + name[len("SPIRAL_CODER_"):], default)
+    return os.environ.get(name, default)
+
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = REPO_ROOT / "web"
 DEFAULT_WORKSPACE_ROOT = (Path.home() / "spiral-coder-work").resolve()
 # Default to a safe workspace outside the repo, so local tools never "accidentally"
 # create nested repos or delete tracked files under the source tree.
 WORKSPACE_ROOT = DEFAULT_WORKSPACE_ROOT
-try:
-    WORKSPACE_ROOT.mkdir(parents=True, exist_ok=True)
-except Exception:
-    pass
 MAX_BODY_BYTES = 2 * 1024 * 1024
 ANTHROPIC_VERSION = "2023-06-01"
 DIRECT_OPENER = urlrequest.build_opener(urlrequest.ProxyHandler({}))
@@ -291,7 +296,7 @@ DEFAULT_MODEL = {
 
 
 def _env_present(name: str) -> bool:
-    v = os.environ.get(name, "").strip()
+    v = _env(name, "").strip()
     return bool(v)
 
 
@@ -357,34 +362,34 @@ def _provider_key_from_env(provider: str) -> str:
     vibe_env = _load_vibe_dotenv()
     if provider == "codestral":
         return (
-            os.environ.get("CODESTRAL_API_KEY", "").strip()
-            or os.environ.get("MISTRAL_API_KEY", "").strip()
+            _env("CODESTRAL_API_KEY", "").strip()
+            or _env("MISTRAL_API_KEY", "").strip()
             or str(vibe_env.get("CODESTRAL_API_KEY") or "").strip()
             or str(vibe_env.get("MISTRAL_API_KEY") or "").strip()
-            or os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
+            or _env("SPIRAL_CODER_API_KEY", "").strip()
         )
     if provider == "mistral":
         return (
-            os.environ.get("MISTRAL_API_KEY", "").strip()
+            _env("MISTRAL_API_KEY", "").strip()
             or str(vibe_env.get("MISTRAL_API_KEY") or "").strip()
-            or os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
+            or _env("SPIRAL_CODER_API_KEY", "").strip()
         )
     if provider == "openai-compatible":
         return (
-            os.environ.get("SPIRAL_CODER_API_KEY", "").strip()
-            or os.environ.get("OPENAI_API_KEY", "").strip()
-            or str(vibe_env.get("SPIRAL_CODER_API_KEY") or "").strip()
+            _env("SPIRAL_CODER_API_KEY", "").strip()
+            or _env("OPENAI_API_KEY", "").strip()
+            or str(vibe_env.get("SPIRAL_CODER_API_KEY", vibe_env.get("OBS_API_KEY")) or "").strip()
             or str(vibe_env.get("OPENAI_API_KEY") or "").strip()
         )
     if provider == "gemini":
         return (
-            os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
+            _env("GEMINI_API_KEY", "").strip()
+            or _env("GOOGLE_API_KEY", "").strip()
             or str(vibe_env.get("GEMINI_API_KEY") or "").strip()
             or str(vibe_env.get("GOOGLE_API_KEY") or "").strip()
         )
     if provider == "anthropic":
-        return os.environ.get("ANTHROPIC_API_KEY", "").strip() or str(
+        return _env("ANTHROPIC_API_KEY", "").strip() or str(
             vibe_env.get("ANTHROPIC_API_KEY") or ""
         ).strip()
     return ""
@@ -491,14 +496,14 @@ def _wants_command_action(req: dict[str, Any]) -> bool:
 def _requires_edit_approval(req: dict[str, Any] | None) -> bool:
     if req is None:
         return False
-    env_default = _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True)
+    env_default = _as_bool(_env("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True)
     return _as_bool(req.get("require_edit_approval"), env_default)
 
 
 def _requires_command_approval(req: dict[str, Any] | None) -> bool:
     if req is None:
         return False
-    env_default = _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True)
+    env_default = _as_bool(_env("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True)
     if "require_command_approval" in req:
         return _as_bool(req.get("require_command_approval"), env_default)
     return _requires_edit_approval(req)
@@ -1787,7 +1792,7 @@ def _tool_dispatch(
 
 
 def _local_tools_enabled(req: dict[str, Any]) -> bool:
-    flag = str(os.environ.get("SPIRAL_CODER_ENABLE_LOCAL_TOOLS", "1")).strip().lower()
+    flag = str(_env("SPIRAL_CODER_ENABLE_LOCAL_TOOLS", "1")).strip().lower()
     if flag in ("0", "false", "off", "no"):
         return False
 
@@ -2411,7 +2416,7 @@ def _extract_mistral_cli_output(stdout: str) -> str:
 
 
 def _chat_mistral_cli(req: dict[str, Any], timeout: int) -> dict[str, Any]:
-    cmd_raw = os.environ.get("SPIRAL_CODER_MISTRAL_CLI_CMD", "vibe").strip() or "vibe"
+    cmd_raw = _env("SPIRAL_CODER_MISTRAL_CLI_CMD", "vibe").strip() or "vibe"
     base_cmd = shlex.split(cmd_raw)
     if not base_cmd:
         base_cmd = ["vibe"]
@@ -2420,13 +2425,13 @@ def _chat_mistral_cli(req: dict[str, Any], timeout: int) -> dict[str, Any]:
     default_agent = "accept-edits" if mode != "observer" else "plan"
     agent = str(
         req.get("mistral_cli_agent")
-        or os.environ.get("SPIRAL_CODER_MISTRAL_CLI_AGENT", default_agent)
+        or _env("SPIRAL_CODER_MISTRAL_CLI_AGENT", default_agent)
     ).strip()
     autonomy = _autonomy_level(req)
     default_turns = "8" if autonomy == "longrun" else "4"
     max_turns = int(
         req.get("mistral_cli_max_turns")
-        or os.environ.get("SPIRAL_CODER_MISTRAL_CLI_MAX_TURNS", default_turns)
+        or _env("SPIRAL_CODER_MISTRAL_CLI_MAX_TURNS", default_turns)
     )
     max_turns = min(12, max(1, max_turns))
 
@@ -2642,23 +2647,25 @@ class LiteHandler(BaseHTTPRequestHandler):
         if path == "/":
             self._serve_file(WEB_ROOT / "index.html", "text/html; charset=utf-8")
             return
-        if path == "/assets/app.js":
-            self._serve_file(WEB_ROOT / "app.js", "text/javascript; charset=utf-8")
+        static_assets = {
+            "/assets/app.js": ("app.js", "text/javascript; charset=utf-8"),
+            "/assets/styles.css": ("styles.css", "text/css; charset=utf-8"),
+            **{
+                f"/assets/{name}": (name, "text/javascript; charset=utf-8")
+                for name in (
+                    "core/state.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
+                    "vendor/react.production.min.js", "vendor/react-dom.production.min.js",
+                )
+            },
+        }
+        if path in static_assets:
+            name, content_type = static_assets[path]
+            self._serve_file(WEB_ROOT / name, content_type)
             return
-        if path == "/assets/styles.css":
-            self._serve_file(WEB_ROOT / "styles.css", "text/css; charset=utf-8")
-            return
-        if path == "/assets/vendor/react.production.min.js":
-            self._serve_file(
-                WEB_ROOT / "vendor" / "react.production.min.js",
-                "text/javascript; charset=utf-8",
-            )
-            return
-        if path == "/assets/vendor/react-dom.production.min.js":
-            self._serve_file(
-                WEB_ROOT / "vendor" / "react-dom.production.min.js",
-                "text/javascript; charset=utf-8",
-            )
+        if path == "/assets/governor_contract.js":
+            contract = json.loads((REPO_ROOT / "shared/governor_contract.json").read_text(encoding="utf-8"))
+            script = "window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__ = " + json.dumps(contract) + ";\n"
+            self._send_bytes(200, "text/javascript; charset=utf-8", script.encode("utf-8"))
             return
         if path == "/api/status":
             self._send_json(
@@ -2670,10 +2677,14 @@ class LiteHandler(BaseHTTPRequestHandler):
                     "features": {
                         "exec": True,
                         "pending_edits": True,
+                        "pending_commands": False,
+                        "harness_promotions": False,
+                        "merge_gate": False,
+                        "project_scan": False,
                         "chat_tools": False,
                         "meta_prompts": True,
-                        "edit_approval_default": _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True),
-                        "command_approval_default": _as_bool(os.environ.get("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True),
+                        "edit_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True),
+                        "command_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True),
                     },
                     "providers": {
                         "mistral": {
@@ -2730,7 +2741,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _models_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(502, out)
             return
@@ -2740,7 +2751,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _chat_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(502, out)
             return
@@ -2754,7 +2765,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _exec_impl(payload))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2768,7 +2779,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "item": item})
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2782,7 +2793,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, {"ok": True, "item": item})
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2811,7 +2822,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                 self._send_json(200, _queue_meta_prompts_write(cur))
             except Exception as e:
                 out = {"error": str(e)}
-                if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+                if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                     out["trace"] = traceback.format_exc()
                 self._send_json(400, out)
             return
@@ -2837,7 +2848,7 @@ class LiteHandler(BaseHTTPRequestHandler):
             self._write_sse("done", {})
         except Exception as e:
             out = {"error": str(e)}
-            if _as_bool(os.environ.get("SPIRAL_CODER_DEBUG"), False):
+            if _as_bool(_env("SPIRAL_CODER_DEBUG"), False):
                 out["trace"] = traceback.format_exc()
             self._write_sse("error", out)
             self._write_sse("done", {})
@@ -2860,7 +2871,7 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=18080)
     parser.add_argument(
         "--workspace",
-        default=os.environ.get("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(DEFAULT_WORKSPACE_ROOT),
+        default=_env("SPIRAL_CODER_WORKSPACE_ROOT", "").strip() or str(DEFAULT_WORKSPACE_ROOT),
         help="Workspace root for local tools (default: $SPIRAL_CODER_WORKSPACE_ROOT or ~/spiral-coder-work).",
     )
     args = parser.parse_args()

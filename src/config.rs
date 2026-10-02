@@ -367,7 +367,8 @@ impl PartialConfig {
             self.base_url = env_trimmed("SPIRAL_CODER_BASE_URL");
         }
         if self.timeout_seconds.is_none() {
-            self.timeout_seconds = env_trimmed("SPIRAL_CODER_TIMEOUT_SECONDS").and_then(|v| v.parse().ok());
+            self.timeout_seconds =
+                env_trimmed("SPIRAL_CODER_TIMEOUT_SECONDS").and_then(|v| v.parse().ok());
         }
         if self.persona.is_none() {
             self.persona = env_trimmed("SPIRAL_CODER_PERSONA");
@@ -376,7 +377,8 @@ impl PartialConfig {
             self.hf_device = env_trimmed("SPIRAL_CODER_HF_DEVICE");
         }
         if self.hf_local_only.is_none() {
-            self.hf_local_only = env_trimmed("SPIRAL_CODER_HF_LOCAL_ONLY").and_then(|v| parse_bool(&v));
+            self.hf_local_only =
+                env_trimmed("SPIRAL_CODER_HF_LOCAL_ONLY").and_then(|v| parse_bool(&v));
         }
 
         // Provider defaulting:
@@ -409,7 +411,9 @@ impl PartialConfig {
         } else if env_trimmed("GEMINI_API_KEY").is_some() || env_trimmed("GOOGLE_API_KEY").is_some()
         {
             ProviderKind::OpenAiCompatible
-        } else if env_trimmed("OPENAI_API_KEY").is_some() || env_trimmed("SPIRAL_CODER_API_KEY").is_some() {
+        } else if env_trimmed("OPENAI_API_KEY").is_some()
+            || env_trimmed("SPIRAL_CODER_API_KEY").is_some()
+        {
             ProviderKind::OpenAiCompatible
         } else {
             ProviderKind::OpenAiCompatible

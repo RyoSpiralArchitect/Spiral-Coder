@@ -2,7 +2,7 @@
   "use strict";
 
   const g = (typeof window !== "undefined") ? window : globalThis;
-  const SpiralCoder = g.Spiral-Coder || (g.Spiral-Coder = {});
+  const SpiralCoder = g.SpiralCoder || (g.SpiralCoder = {});
   if (SpiralCoder.sandbox) return;
 
   function normalizePathSep(p) {

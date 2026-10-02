@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
@@ -612,6 +611,14 @@ impl AgentSession {
         Ok(sess)
     }
 
+    /// A failed task never returned its current transcript. Export the last
+    /// durable snapshot, not the CLI's older copy from before that task started.
+    pub fn load_for_failed_export(path: Option<&Path>) -> Result<Self> {
+        let path = path.context("no --session snapshot available for the incomplete run")?;
+        Self::load(path)
+            .context("cannot export the incomplete run without a readable saved session")
+    }
+
     #[allow(dead_code)]
     pub fn save_atomic(path: &Path, sess: &AgentSession) -> Result<()> {
         let json = serde_json::to_string_pretty(sess).context("failed to serialize session")?;
@@ -758,12 +765,14 @@ fn save_text_atomic(path: &Path, text: &str) -> Result<()> {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct SaveKey {
-    messages_len: usize,
+    tool_root: Option<String>,
     checkpoint: Option<String>,
     cur_cwd: Option<String>,
-    observation_cache_hash: u64,
+    messages: Vec<serde_json::Value>,
+    observation_cache: Option<ObservationCache>,
+    progress_context: Option<crate::progress_state::ProgressSaveContext>,
 }
 
 #[derive(Serialize)]
@@ -785,12 +794,15 @@ struct AgentSessionSnapshot<'a> {
 ///
 /// Writes an OpenAI-compatible message array (including tool_calls + tool_call_id)
 /// to a JSON file atomically, so the agent can resume after crashes or interruptions.
+/// The active agent owns writes until its task has joined. A caller must not save
+/// an older copy of the transcript when canceling or handling a task failure.
+/// History length is not a revision: context compaction can shorten newer state.
 pub struct SessionAutoSaver {
     path: PathBuf,
     created_at_ms: u128,
     observation_cache: Mutex<Option<ObservationCache>>,
     progress_context: Mutex<Option<crate::progress_state::ProgressSaveContext>>,
-    last_saved: Mutex<SaveKey>,
+    last_saved: Mutex<Option<SaveKey>>,
     warned: AtomicBool,
 }
 
@@ -802,7 +814,7 @@ impl SessionAutoSaver {
             created_at_ms,
             observation_cache: Mutex::new(existing.and_then(|s| s.observation_cache.clone())),
             progress_context: Mutex::new(None),
-            last_saved: Mutex::new(SaveKey::default()),
+            last_saved: Mutex::new(None),
             warned: AtomicBool::new(false),
         }
     }
@@ -865,6 +877,13 @@ impl SessionAutoSaver {
         messages: &[serde_json::Value],
         skip_if_unchanged: bool,
     ) -> Result<bool> {
+        // Serialize comparison, both file writes, and publication of the saved
+        // key. Releasing this lock before I/O permits an earlier save to finish
+        // after a later save and overwrite it.
+        let mut last = self
+            .last_saved
+            .lock()
+            .expect("SessionAutoSaver last_saved poisoned");
         let observation_cache = self
             .observation_cache
             .lock()
@@ -875,27 +894,16 @@ impl SessionAutoSaver {
             .lock()
             .expect("SessionAutoSaver progress_context poisoned")
             .clone();
-        let mut observation_hasher = std::collections::hash_map::DefaultHasher::new();
-        observation_cache.hash(&mut observation_hasher);
         let key = SaveKey {
-            messages_len: messages.len(),
+            tool_root: tool_root.map(str::to_string),
             checkpoint: checkpoint.map(|s| s.to_string()),
             cur_cwd: cur_cwd.map(|s| s.to_string()),
-            observation_cache_hash: observation_hasher.finish(),
+            messages: messages.to_vec(),
+            observation_cache: observation_cache.clone(),
+            progress_context: progress_context.clone(),
         };
-        {
-            let last = self
-                .last_saved
-                .lock()
-                .expect("SessionAutoSaver last_saved poisoned");
-            // Never overwrite a newer save with an older snapshot (e.g., Ctrl+C in the CLI main loop
-            // while the agent task has already autosaved progress).
-            if key.messages_len < last.messages_len {
-                return Ok(false);
-            }
-            if skip_if_unchanged && *last == key {
-                return Ok(false);
-            }
+        if skip_if_unchanged && last.as_ref() == Some(&key) {
+            return Ok(false);
         }
 
         let session_bridge = session_bridge_from_messages(messages);
@@ -925,11 +933,7 @@ impl SessionAutoSaver {
             progress.save_atomic(&progress_path)?;
         }
 
-        let mut last = self
-            .last_saved
-            .lock()
-            .expect("SessionAutoSaver last_saved poisoned");
-        *last = key;
+        *last = Some(key);
 
         Ok(true)
     }
@@ -1019,6 +1023,141 @@ mod tests {
             Some("src/tui/events.rs")
         );
         let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn failed_export_uses_saved_snapshot_and_rejects_missing_or_invalid_state() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("session.json");
+        assert!(AgentSession::load_for_failed_export(None).is_err());
+        assert!(AgentSession::load_for_failed_export(Some(&path)).is_err());
+        let session = AgentSession::new(
+            Some("project".into()),
+            Some("checkpoint".into()),
+            None,
+            None,
+            vec![json!({"role":"assistant","content":"latest durable progress"})],
+        );
+        AgentSession::save_atomic(&path, &session).unwrap();
+        let exported = AgentSession::load_for_failed_export(Some(&path)).unwrap();
+        assert_eq!(
+            serde_json::to_value(exported).unwrap(),
+            serde_json::to_value(session).unwrap()
+        );
+        std::fs::write(&path, "invalid session").unwrap();
+        assert!(AgentSession::load_for_failed_export(Some(&path)).is_err());
+    }
+
+    #[test]
+    fn autosaver_persists_shorter_compacted_history() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let saver = SessionAutoSaver::new(path.clone(), None);
+        let before = vec![
+            json!({"role":"user","content":"fix"}),
+            json!({"role":"assistant","content":"old observation"}),
+            json!({"role":"assistant","content":"new observation"}),
+        ];
+        saver.save_or_error(None, None, None, &before).unwrap();
+        let after = vec![
+            before[0].clone(),
+            json!({"role":"assistant","content":"verified after compaction"}),
+        ];
+        assert!(saver.save_best_effort(None, None, None, &after).is_none());
+        assert_eq!(AgentSession::load(&path).unwrap().messages, after);
+    }
+
+    #[test]
+    fn autosaver_detects_same_length_content_and_root_changes() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let saver = SessionAutoSaver::new(path.clone(), None);
+        let mut messages = vec![json!({"role":"assistant","content":"before"})];
+        assert!(saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        assert!(!saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        messages[0]["content"] = json!("after");
+        assert!(saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        assert_eq!(AgentSession::load(&path).unwrap().messages, messages);
+        assert!(saver
+            .save_inner(Some("second"), None, None, &messages, true)
+            .unwrap());
+        assert_eq!(
+            AgentSession::load(&path).unwrap().tool_root.as_deref(),
+            Some("second")
+        );
+    }
+
+    #[test]
+    fn autosaver_detects_progress_context_change_without_new_messages() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let root = dir.path().to_str().unwrap();
+        let saver = SessionAutoSaver::new(path, None);
+        let messages = vec![json!({"role":"user","content":"fix"})];
+        saver
+            .save_or_error(Some(root), None, None, &messages)
+            .unwrap();
+        let context = crate::progress_state::ProgressSaveContext::new(
+            "fix",
+            "fix_existing_files",
+            "modify_existing",
+        );
+        saver.set_progress_context(Some(context.clone()));
+        assert!(saver
+            .save_inner(Some(root), None, None, &messages, true)
+            .unwrap());
+        let progress = crate::progress_state::RepoProgressState::load(
+            &crate::progress_state::path_for_root(root),
+        )
+        .unwrap();
+        assert_eq!(progress.task_summary, context.task_summary);
+        assert_eq!(progress.lane, context.lane);
+        assert_eq!(progress.artifact_mode, context.artifact_mode);
+    }
+
+    #[test]
+    fn concurrent_autosaves_keep_session_and_progress_consistent() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let root = dir.path().to_string_lossy().into_owned();
+        let saver = std::sync::Arc::new(SessionAutoSaver::new(path.clone(), None));
+        saver.set_progress_context(Some(crate::progress_state::ProgressSaveContext::new(
+            "fix",
+            "fix_existing_files",
+            "modify_existing",
+        )));
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+        std::thread::scope(|scope| {
+            for idx in 0..8 {
+                let saver = saver.clone();
+                let barrier = barrier.clone();
+                let root = &root;
+                scope.spawn(move || {
+                    let messages = vec![json!({"role":"assistant","content":format!(
+                        "<plan>\ngoal: writer {idx}\n</plan>"
+                    )})];
+                    barrier.wait();
+                    saver
+                        .save_or_error(Some(root), None, None, &messages)
+                        .unwrap();
+                });
+            }
+        });
+        let session = AgentSession::load(&path).unwrap();
+        let progress = crate::progress_state::RepoProgressState::load(
+            &crate::progress_state::path_for_root(&root),
+        )
+        .unwrap();
+        assert_eq!(
+            session.messages[0]["content"],
+            format!("<plan>\ngoal: {}\n</plan>", progress.current_objective),
+        );
     }
 
     #[test]

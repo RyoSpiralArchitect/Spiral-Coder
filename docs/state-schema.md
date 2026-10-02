@@ -26,6 +26,7 @@ store state without first choosing the correct owner.
 | Observer critique memory | `src/observer/memory.rs` | per Observer thread / API caller | request/response payload, Web thread state | `CritiqueMemory`, proposal recurrence counts, analyzer-stage recurring risk bias |
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
+| Web message provenance | `web/app.js` + `web/core/state.js` | Web thread lifetime | browser-local thread state | optional `message.origin` (`user` or `runtime`) for human messages versus runtime handoffs |
 | Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
 ## Current ownership map
@@ -110,6 +111,28 @@ This is the right home for typed operational memory such as:
 - recent successful commands used for `done` citation
 - accepted strategies that were already matched to successful follow-up actions
 - repeated dead-end commands that should not be retried first after resume
+
+Autosave ordering:
+
+- The active agent task owns transcript saves until it has joined. The CLI may
+  save its initial state before spawning and the returned end state after joining.
+- Cancellation waits for the aborted task to join and retains its latest autosave.
+  A failed or canceled task must not be overwritten by the CLI's pre-round copy.
+- JSON/graph exports after failure or cancellation use that last saved session
+  and are labeled as an incomplete run. Without a readable session, these exports
+  are explicitly skipped instead of publishing a stale pre-round transcript.
+- Save comparison and session/progress writes share one lock. Change detection
+  compares message content, root, checkpoint, cwd, observation cache, and progress
+  context; message count is not a revision, because compaction can shorten history.
+- Each file is replaced atomically, but session and repo-progress files are not a
+  single crash-atomic transaction. Current transcript/tool evidence remains primary.
+
+Context-window compaction lives in `src/tui/agent/message_window.rs`. It removes
+complete assistant tool-call/result exchanges, including multi-tool turns, as a
+unit. Recent results protect their matching calls. Failed, observational, or
+incomplete exchanges and the latest structured anchors are retained even when
+this exceeds the target window. Session history is currently compacted in place;
+separating the full audit transcript from provider context is a future change.
 
 ### 3b. Project-local repo progress snapshot
 
@@ -441,6 +464,13 @@ Important rule:
 
 - vague modifiers may refine quality but must not widen `goal` or `target`
 
+Web thread messages may include `origin: "user" | "runtime"`. Runtime-generated
+continuations and handoffs use `runtime`, so the current human intent can be
+selected without mistaking an injected continuation for a new human request.
+Legacy messages without `origin` default to `user` for backward compatibility.
+This field records provenance in the Web thread; it does not grant instruction
+authority or change the provider message role.
+
 ### 7. Replay and eval fixtures
 
 Code:
@@ -495,3 +525,11 @@ If the answer is not clear, document it here first.
 - Keep `IntentAnchor` memory-first for now; only persist it after replay/eval
   proves the shape is stable.
 - Keep replay/eval specs versioned and human-editable.
+
+## Web server capabilities
+
+`GET /api/status` owns explicit `features.harness_promotions`,
+`features.merge_gate`, and `features.project_scan` booleans. The Rust server
+provides these capabilities; the Lite server reports them as unavailable.
+The Web UI waits for status before polling optional endpoints and shows an
+explanation for unavailable review panels rather than an HTTP error.

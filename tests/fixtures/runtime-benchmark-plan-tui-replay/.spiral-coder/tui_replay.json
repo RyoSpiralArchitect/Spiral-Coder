@@ -6,12 +6,78 @@
   },
   "cases": [
     {
-      "id": "pane-prefs-observer-contract",
-      "prompt": "Keep pane prefs Observer handoff covered.",
+      "id": "pane-prefs-observer-suggestion",
+      "prompt": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\nMissing <think>\nNeed one concrete next step before broadening search."
+        }
+      ],
+      "observer_response": {
+        "summary": "Coder already has enough evidence to stop searching broadly and read the prefs implementation directly.",
+        "primary_blocker": "missing_concrete_next_step",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          },
+          {
+            "kind": "search",
+            "reason": "If that read does not answer the question, search for save_tui_prefs within src/tui next.",
+            "confidence": 0.64,
+            "suggested_tool": "search_files",
+            "suggested_args": {
+              "pattern": "save_tui_prefs",
+              "dir": "src/tui"
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
       "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
         {
           "kind": "observer_contains",
           "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
         }
       ]
     }
