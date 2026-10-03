@@ -126,6 +126,21 @@ async fn serve_smoke_assets() {
         "task and storage helpers should be served"
     );
 
+    let ui_js = client
+        .get(format!("{base}/assets/core/ui.js"))
+        .send()
+        .await
+        .expect("GET core/ui.js")
+        .error_for_status()
+        .expect("successful ui.js status")
+        .text()
+        .await
+        .expect("read ui.js body");
+    assert!(
+        ui_js.contains("focusDialog") && html.contains("/assets/core/ui.js"),
+        "indexed UI interaction helpers should be served"
+    );
+
     let styles = client
         .get(format!("{base}/assets/styles.css"))
         .send()

@@ -265,6 +265,47 @@
     return cleaned;
   }
 
+  function scaffoldCommand({ name, files, windows = isWindowsHost() }) {
+    if (!name || name === "." || name === ".." || /[\\/\0\r\n]/.test(name)) {
+      throw new Error("Scaffold name must be a single directory name");
+    }
+    const entries = Object.entries(files);
+    if (!entries.length || entries.some(([path]) => !/^[A-Za-z0-9_.-]+$/.test(path) || path === "." || path === "..")) {
+      throw new Error("Scaffold files must have simple file names");
+    }
+    if (windows) {
+      const commands = [
+        "$ErrorActionPreference = 'Stop'",
+        `if (Test-Path -LiteralPath ${psSingleQuote(name)}) { throw 'Scaffold directory already exists' }`,
+        `New-Item -ItemType Directory -Path ${psSingleQuote(name)} | Out-Null`,
+        `Set-Location -LiteralPath ${psSingleQuote(name)}`,
+        "New-Item -ItemType Directory -Path 'src','docs' | Out-Null",
+        ...entries.map(([path, content]) => `${psSingleQuote(content)} | Set-Content -LiteralPath ${psSingleQuote(path)} -Encoding UTF8 -NoNewline`),
+        "git init; if ($LASTEXITCODE -ne 0) { throw 'git init failed' }",
+        "git branch -M main; if ($LASTEXITCODE -ne 0) { throw 'git branch failed' }",
+        "$n = (git config user.name); if (-not $n) { git config user.name 'Spiral-Coder' }",
+        "$e = (git config user.email); if (-not $e) { git config user.email 'spiral-coder@local' }",
+        `git add -- ${entries.map(([path]) => psSingleQuote(path)).join(" ")}; if ($LASTEXITCODE -ne 0) { throw 'git add failed' }`,
+        "git commit -m 'Initial commit'; if ($LASTEXITCODE -ne 0) { throw 'git commit failed' }",
+      ];
+      return commands.join("\n");
+    }
+    const quote = (value) => "'" + String(value).replace(/'/g, "'\"'\"'") + "'";
+    return [
+      "set -eu",
+      `mkdir -- ${quote(name)}`,
+      `cd -- ${quote(`./${name}`)}`,
+      "mkdir src docs",
+      ...entries.map(([path, content]) => `printf '%s' ${quote(content)} > ${quote(path)}`),
+      "git init",
+      "git branch -M main",
+      "git config user.name >/dev/null || git config user.name 'Spiral-Coder'",
+      "git config user.email >/dev/null || git config user.email 'spiral-coder@local'",
+      `git add -- ${entries.map(([path]) => quote(path)).join(" ")}`,
+      "git commit -m 'Initial commit'",
+    ].join("\n");
+  }
+
   SpiralCoder.exec = {
     isWindowsHost,
     stripShellTranscript,
@@ -272,5 +313,6 @@
     gitRepoHint,
     bashToPowerShell,
     normalizeExecScript,
+    scaffoldCommand,
   };
 })();

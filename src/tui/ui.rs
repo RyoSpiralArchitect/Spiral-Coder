@@ -17,21 +17,26 @@ use super::app::{App, Focus, Message, RightTab, Role, TaskPhase, TaskTarget};
 use super::merge_gate;
 use super::promotion_gate;
 
+#[cfg(test)]
+#[path = "ui_tests.rs"]
+mod tests;
+
 // ── Brand palette (mirrors web UI) ────────────────────────────────────────────
 
-const CODER_BLUE: Color = Color::Rgb(96, 165, 250); // blue-400
-const OBS_MAG: Color = Color::Rgb(217, 70, 239); // fuchsia-500
-const ACCENT: Color = Color::Rgb(45, 212, 191); // teal-400
-const WARN: Color = Color::Rgb(251, 191, 36); // amber-400
-const DANGER: Color = Color::Rgb(248, 113, 113); // red-400
-const SUCCESS: Color = Color::Rgb(74, 222, 128); // green-400
-const PROMO: Color = Color::Rgb(129, 140, 248); // indigo-400
-const MERGE: Color = Color::Rgb(56, 189, 248); // sky-400
-const ACTION: Color = Color::Rgb(163, 230, 53); // lime-400
-const MUTED: Color = Color::Rgb(100, 116, 139); // slate-500
-const TEXT_BODY: Color = Color::Rgb(226, 232, 240); // slate-200
-const BG_DARK: Color = Color::Rgb(15, 23, 42); // slate-950
-const UNFOCUSED: Color = Color::Rgb(51, 65, 85); // slate-700
+const CODER_BLUE: Color = Color::Rgb(155, 190, 255); // #9BBEFF
+const OBSERVER_LAVENDER: Color = Color::Rgb(201, 184, 250); // #C9B8FA
+const ACCENT: Color = Color::Rgb(184, 198, 255); // #B8C6FF
+const TASK_BLUE: Color = Color::Rgb(160, 179, 240); // #A0B3F0
+const WARN: Color = Color::Rgb(231, 198, 141); // #E7C68D — warning amber
+const DANGER: Color = Color::Rgb(243, 162, 181); // #F3A2B5 — error rose
+const SUCCESS: Color = Color::Rgb(171, 200, 246); // #ABC8F6
+const PROMO: Color = Color::Rgb(180, 172, 241); // #B4ACF1
+const MERGE: Color = Color::Rgb(166, 201, 255); // #A6C9FF
+const ACTION: Color = Color::Rgb(189, 188, 248); // #BDBCF8
+const MUTED: Color = Color::Rgb(161, 169, 201); // #A1A9C9
+const TEXT_BODY: Color = Color::Rgb(232, 234, 248); // #E8EAF8
+const BG_DARK: Color = Color::Rgb(17, 20, 38); // #111426
+const UNFOCUSED: Color = Color::Rgb(75, 83, 119); // #4B5377
 
 // ── Animation ─────────────────────────────────────────────────────────────────
 
@@ -57,22 +62,15 @@ enum ActivePicker {
 }
 
 pub fn render(frame: &mut Frame, app: &App) {
-    let area = frame.area();
-
-    let vert = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(2), // header (2 rows)
-            Constraint::Min(1),
-            Constraint::Length(4), // input box
-            Constraint::Length(1), // footer shortcuts
-        ])
-        .split(area);
-
-    render_header(frame, vert[0], app);
-    render_body(frame, vert[1], app);
-    render_input(frame, vert[2], app);
-    render_footer(frame, vert[3], app);
+    frame.render_widget(
+        Block::default().style(Style::default().fg(TEXT_BODY).bg(BG_DARK)),
+        frame.area(),
+    );
+    let layout = super::layout::ScreenLayout::new(frame.area(), app);
+    render_header(frame, layout.header, app);
+    render_body(frame, &layout, app);
+    render_input(frame, layout.input, app);
+    render_footer(frame, layout.footer, app);
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -114,7 +112,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
                     String::new()
                 },
                 "TABS:[OBS] CHAT TASKS REVIEW MERGE".to_string(),
-                OBS_MAG,
+                OBSERVER_LAVENDER,
             ),
             RightTab::Chat => (
                 "CHAT",
@@ -140,7 +138,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
                     String::new()
                 },
                 "TABS: OBS CHAT [TASKS] REVIEW MERGE".to_string(),
-                WARN,
+                TASK_BLUE,
             ),
             RightTab::Promotions => (
                 "REVIEW",
@@ -182,9 +180,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
     let row1 = Line::from(vec![
         Span::styled(
             "  ◈ Spiral-Coder ",
-            Style::default()
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD),
+            Style::default().fg(TEXT_BODY).add_modifier(Modifier::BOLD),
         ),
         Span::styled("│ ", Style::default().fg(UNFOCUSED)),
         Span::styled("C: ", Style::default().fg(MUTED)),
@@ -302,51 +298,43 @@ fn provider_requires_key(provider: &ProviderKind) -> bool {
 
 // ── Body: two-pane split ──────────────────────────────────────────────────────
 
-fn render_body(frame: &mut Frame, area: Rect, app: &App) {
-    // Give the focused side more space; long Observer critiques are otherwise painful to read.
-    let (left_pct, right_pct) = if app.focus == Focus::Right {
-        (40u16, 60u16)
-    } else {
-        (55u16, 45u16)
-    };
-
-    let horiz = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(left_pct),
-            Constraint::Percentage(right_pct),
-        ])
-        .split(area);
-
+fn render_body(frame: &mut Frame, layout: &super::layout::ScreenLayout, app: &App) {
     render_message_pane(
         frame,
-        horiz[0],
+        layout.coder,
         app,
         PaneView::Coder,
         app.focus == Focus::Coder,
     );
-
     let right_focused = app.focus == Focus::Right;
-    let right = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Min(1)])
-        .split(horiz[1]);
-    render_right_tab_bar(frame, right[0], app, right_focused);
+    render_right_tab_bar(frame, layout.right_tabs, app, right_focused);
     match app.right_tab {
         RightTab::Observer => {
-            render_message_pane(frame, right[1], app, PaneView::Observer, right_focused);
+            render_message_pane(
+                frame,
+                layout.right_content,
+                app,
+                PaneView::Observer,
+                right_focused,
+            );
         }
         RightTab::Chat => {
-            render_message_pane(frame, right[1], app, PaneView::Chat, right_focused);
+            render_message_pane(
+                frame,
+                layout.right_content,
+                app,
+                PaneView::Chat,
+                right_focused,
+            );
         }
         RightTab::Tasks => {
-            render_tasks_pane(frame, right[1], app, right_focused);
+            render_tasks_pane(frame, layout.right_content, app, right_focused);
         }
         RightTab::Promotions => {
-            render_promotions_pane(frame, right[1], app, right_focused);
+            render_promotions_pane(frame, layout.right_content, app, right_focused);
         }
         RightTab::MergeGate => {
-            render_merge_gate_pane(frame, right[1], app, right_focused);
+            render_merge_gate_pane(frame, layout.right_content, app, right_focused);
         }
     }
 }
@@ -361,58 +349,30 @@ fn render_right_tab_bar(frame: &mut Frame, area: Rect, app: &App, focused: bool)
             Style::default().fg(MUTED)
         }
     };
-    let line = Line::from(vec![
-        Span::styled("  Right Pane ", Style::default().fg(MUTED)),
-        Span::styled("[Observer]", style_for(RightTab::Observer, OBS_MAG)),
-        Span::raw("  "),
-        Span::styled("[Chat]", style_for(RightTab::Chat, ACCENT)),
-        Span::raw("  "),
-        Span::styled("[Tasks]", style_for(RightTab::Tasks, WARN)),
-        Span::raw("  "),
-        Span::styled(
-            if app.harness_promotions.summary.needs_review + app.harness_promotions.summary.approved
-                > 0
-            {
-                format!(
-                    "[Review {}]",
-                    app.harness_promotions.summary.needs_review
-                        + app.harness_promotions.summary.approved
-                )
-            } else {
-                "[Review]".to_string()
-            },
-            style_for(RightTab::Promotions, PROMO),
-        ),
-        Span::raw("  "),
-        Span::styled(
-            if app.merge_gate.summary.needs_review
-                + app.merge_gate.summary.rollback_available
-                + app.merge_gate.summary.blocked
-                > 0
-            {
-                format!(
-                    "[Merge {}]",
-                    app.merge_gate.summary.needs_review
-                        + app.merge_gate.summary.rollback_available
-                        + app.merge_gate.summary.blocked
-                )
-            } else {
-                "[Merge]".to_string()
-            },
-            style_for(RightTab::MergeGate, MERGE),
-        ),
-        Span::styled("   Ctrl+R or /tab", Style::default().fg(MUTED)),
-    ]);
-    frame.render_widget(
-        Paragraph::new(line).style(Style::default().bg(BG_DARK)),
-        area,
-    );
+    frame.render_widget(Paragraph::new("").style(Style::default().bg(BG_DARK)), area);
+    for label in super::layout::right_tab_labels(area, app) {
+        let color = match label.tab {
+            RightTab::Observer => OBSERVER_LAVENDER,
+            RightTab::Chat => ACCENT,
+            RightTab::Tasks => TASK_BLUE,
+            RightTab::Promotions => PROMO,
+            RightTab::MergeGate => MERGE,
+        };
+        let mut style = style_for(label.tab, color);
+        if app.right_tab == label.tab {
+            style = style.add_modifier(Modifier::UNDERLINED);
+        }
+        frame.render_widget(
+            Paragraph::new(label.text).style(style.bg(BG_DARK)),
+            label.area,
+        );
+    }
 }
 
 fn render_message_pane(frame: &mut Frame, area: Rect, app: &App, view: PaneView, focused: bool) {
     let (pane, brand, label) = match view {
         PaneView::Coder => (&app.coder, CODER_BLUE, "CODER"),
-        PaneView::Observer => (&app.observer, OBS_MAG, "OBSERVER"),
+        PaneView::Observer => (&app.observer, OBSERVER_LAVENDER, "OBSERVER"),
         PaneView::Chat => (&app.chat, ACCENT, "CHAT"),
     };
     let prov = match view {
@@ -571,6 +531,23 @@ fn render_message_pane(frame: &mut Frame, area: Rect, app: &App, view: PaneView,
         return;
     }
 
+    let lines = message_lines(pane, view, app.tick_count);
+
+    // Scroll: scroll=0 pins to bottom; scroll=N shows N lines above bottom.
+    let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
+    let total = paragraph.line_count(inner.width);
+    let visible = inner.height as usize;
+    let max_scroll = total.saturating_sub(visible);
+    let from_bottom = pane.scroll.min(max_scroll);
+    let from_top = max_scroll.saturating_sub(from_bottom);
+
+    frame.render_widget(
+        paragraph.scroll((from_top.min(u16::MAX as usize) as u16, 0)),
+        inner,
+    );
+}
+
+fn message_lines(pane: &super::app::Pane, view: PaneView, tick_count: u64) -> Vec<Line<'static>> {
     let mut lines: Vec<Line> = Vec::new();
 
     let q = pane.find_query.trim();
@@ -612,7 +589,7 @@ fn render_message_pane(frame: &mut Frame, area: Rect, app: &App, view: PaneView,
             Role::Assistant => {
                 let (lbl, lbl_color) = match view {
                     PaneView::Coder => ("coder", CODER_BLUE),
-                    PaneView::Observer => ("obs", OBS_MAG),
+                    PaneView::Observer => ("obs", OBSERVER_LAVENDER),
                     PaneView::Chat => ("chat", ACCENT),
                 };
                 lines.push(Line::from(vec![
@@ -638,7 +615,7 @@ fn render_message_pane(frame: &mut Frame, area: Rect, app: &App, view: PaneView,
         // Streaming cursor.
         if !msg.complete {
             lines.push(Line::from(Span::styled(
-                format!("  {} ", spinner_char(app.tick_count)),
+                format!("  {} ", spinner_char(tick_count)),
                 Style::default().fg(ACCENT).add_modifier(Modifier::BOLD),
             )));
         }
@@ -651,26 +628,33 @@ fn render_message_pane(frame: &mut Frame, area: Rect, app: &App, view: PaneView,
         lines.push(Line::default());
     }
 
-    // Scroll: scroll=0 pins to bottom; scroll=N shows N lines above bottom.
-    let total = lines.len();
-    let visible = inner.height as usize;
-    let max_scroll = total.saturating_sub(visible);
-    let from_bottom = pane.scroll.min(max_scroll);
-    let from_top = max_scroll.saturating_sub(from_bottom);
+    lines
+}
 
-    frame.render_widget(
-        Paragraph::new(lines)
-            .wrap(Wrap { trim: false })
-            .scroll((from_top as u16, 0)),
-        inner,
-    );
+pub(super) fn history_scroll_limit(
+    app: &App,
+    pane: super::input::HistoryPane,
+    area: Rect,
+) -> usize {
+    use super::input::HistoryPane;
+    let layout = super::layout::ScreenLayout::new(area, app);
+    let (pane, view, area) = match pane {
+        HistoryPane::Coder => (&app.coder, PaneView::Coder, layout.coder),
+        HistoryPane::Observer => (&app.observer, PaneView::Observer, layout.right_content),
+        HistoryPane::Chat => (&app.chat, PaneView::Chat, layout.right_content),
+    };
+    let inner = Block::default().borders(Borders::ALL).inner(area);
+    Paragraph::new(message_lines(pane, view, app.tick_count))
+        .wrap(Wrap { trim: false })
+        .line_count(inner.width)
+        .saturating_sub(inner.height as usize)
 }
 
 // ── Welcome / empty-pane hint ─────────────────────────────────────────────────
 
 fn render_tasks_pane(frame: &mut Frame, area: Rect, app: &App, focused: bool) {
     let border_style = if focused {
-        Style::default().fg(WARN)
+        Style::default().fg(TASK_BLUE)
     } else {
         Style::default().fg(UNFOCUSED)
     };
@@ -686,7 +670,7 @@ fn render_tasks_pane(frame: &mut Frame, area: Rect, app: &App, focused: bool) {
         Span::raw(" "),
         Span::styled(
             "TASKS",
-            Style::default().fg(WARN).add_modifier(Modifier::BOLD),
+            Style::default().fg(TASK_BLUE).add_modifier(Modifier::BOLD),
         ),
         Span::styled(spin, Style::default().fg(ACCENT)),
         Span::styled(count, Style::default().fg(MUTED)),
@@ -978,7 +962,7 @@ fn render_welcome(frame: &mut Frame, area: Rect, app: &App, view: PaneView) {
             ],
         ),
         PaneView::Observer => (
-            OBS_MAG,
+            OBSERVER_LAVENDER,
             " ◈ OBSERVER",
             "Ask for critique, diagnosis, or the next step, then press Enter.",
             "Ctrl+O reviews the latest Coder output. /meta-diagnose inspects failures.",
@@ -1013,6 +997,11 @@ fn render_welcome(frame: &mut Frame, area: Rect, app: &App, view: PaneView) {
     } else {
         "API key: not required for hf/local"
     };
+    let api_status_color = if provider_requires_key(&cfg.provider) && cfg.api_key.is_none() {
+        WARN
+    } else {
+        MUTED
+    };
     let provider_line = format!(
         "Provider: {} ({})  Model: {}  Mode: {}",
         provider_preset_for_run(cfg).label(),
@@ -1030,7 +1019,10 @@ fn render_welcome(frame: &mut Frame, area: Rect, app: &App, view: PaneView) {
         Line::from(Span::styled(hint1, Style::default().fg(TEXT_BODY))),
         Line::from(Span::styled(hint2, Style::default().fg(MUTED))),
         Line::from(Span::styled(provider_line, Style::default().fg(MUTED))),
-        Line::from(Span::styled(api_status, Style::default().fg(WARN))),
+        Line::from(Span::styled(
+            api_status,
+            Style::default().fg(api_status_color),
+        )),
         Line::from(Span::styled(extra, Style::default().fg(MUTED))),
         Line::default(),
         Line::from(Span::styled(
@@ -1080,7 +1072,7 @@ fn render_welcome(frame: &mut Frame, area: Rect, app: &App, view: PaneView) {
 //
 // Sections:
 //   --- phase ---         → ACCENT banner
-//   --- proposals ---     → OBS_MAG banner + card-like rendering
+//   --- proposals ---     → OBSERVER_LAVENDER banner + card-like rendering
 //   --- coder_diagnostic --- → ACTION banner + JSON packet for Coder handoff
 //   --- benchmark_plan --- → PROMO banner + regression design packet
 //   --- critical_path --- → DANGER banner  (⚠ highlights)
@@ -1123,7 +1115,7 @@ fn render_observer_content(content: &str) -> Vec<Line<'static>> {
             }
             "--- proposals ---" => {
                 section = ObsSection::Proposals;
-                lines.push(obs_section_header("PROPOSALS", OBS_MAG));
+                lines.push(obs_section_header("PROPOSALS", OBSERVER_LAVENDER));
                 continue;
             }
             "--- coder_diagnostic ---" => {
@@ -1642,7 +1634,9 @@ fn render_coder_content(content: &str) -> Vec<Line<'static>> {
             lines.push(Line::from(vec![
                 Span::styled(
                     "  ⟳ PATCH ",
-                    Style::default().fg(OBS_MAG).add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(OBSERVER_LAVENDER)
+                        .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(path.to_string(), Style::default().fg(TEXT_BODY)),
             ]));
@@ -1678,7 +1672,9 @@ fn render_coder_content(content: &str) -> Vec<Line<'static>> {
             lines.push(Line::from(vec![
                 Span::styled(
                     "  ⟁ DIFF ",
-                    Style::default().fg(OBS_MAG).add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(OBSERVER_LAVENDER)
+                        .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(path.to_string(), Style::default().fg(TEXT_BODY)),
             ]));
@@ -1886,9 +1882,9 @@ fn render_input(frame: &mut Frame, area: Rect, app: &App) {
     let (label, brand, is_streaming, read_only) = match app.focus {
         Focus::Coder => ("CODER", CODER_BLUE, app.coder.streaming, false),
         Focus::Right => match app.right_tab {
-            RightTab::Observer => ("OBSERVER", OBS_MAG, app.observer.streaming, false),
+            RightTab::Observer => ("OBSERVER", OBSERVER_LAVENDER, app.observer.streaming, false),
             RightTab::Chat => ("CHAT", ACCENT, app.chat.streaming, false),
-            RightTab::Tasks => ("TASKS", WARN, false, true),
+            RightTab::Tasks => ("TASKS", TASK_BLUE, false, true),
             RightTab::Promotions => ("REVIEW", PROMO, false, true),
             RightTab::MergeGate => ("MERGE", MERGE, false, true),
         },
@@ -2205,11 +2201,9 @@ fn render_picker_input(frame: &mut Frame, area: Rect, app: &App, kind: ActivePic
         header,
         Style::default().fg(MUTED).add_modifier(Modifier::BOLD),
     )));
-    for (idx, item) in items
-        .iter()
-        .take(area.height.saturating_sub(1) as usize)
-        .enumerate()
-    {
+    let visible = area.height.saturating_sub(1) as usize;
+    let first = selected.saturating_sub(visible.saturating_sub(1));
+    for (idx, item) in items.iter().enumerate().skip(first).take(visible) {
         let prefix = if idx == selected { "›" } else { " " };
         let style = if idx == selected {
             Style::default().fg(ACCENT).add_modifier(Modifier::BOLD)

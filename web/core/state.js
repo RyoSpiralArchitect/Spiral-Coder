@@ -35,5 +35,38 @@
     return !!(status && status.ok && status.features && status.features[name] === true);
   }
 
-  window.SpiralCoderState = { readStoredValue, rootUserTextForRun, serverSupportsFeature };
+  function configWithoutSecrets(config) {
+    const safe = { ...config };
+    for (const key of ["apiKey", "chatApiKey", "codeApiKey", "observerApiKey"]) delete safe[key];
+    return safe;
+  }
+
+  function credentialRoute(config, pane) {
+    const prefix = pane === "code" ? "code" : pane === "observer" ? "observer" : "";
+    const value = (key) => String(config[key] || "").trim();
+    return JSON.stringify([
+      (prefix && value(prefix + "Provider")) || value("provider"),
+      ((prefix && value(prefix + "BaseUrl")) || value("baseUrl")).replace(/\/+$/, ""),
+    ]);
+  }
+
+  // An empty pane key may use another pane's key only when both credentials
+  // target the same provider and endpoint. Provider identity alone is not enough
+  // for custom OpenAI-compatible endpoints.
+  function paneApiKey(config, keys, pane) {
+    const route = credentialRoute(config, pane);
+    const order = pane === "code" ? ["code", "chat", "observer"]
+      : pane === "observer" ? ["observer", "chat", "code"] : ["chat", "code", "observer"];
+    for (const candidate of order) {
+      if (credentialRoute(config, candidate) !== route) continue;
+      const key = String(keys[candidate] || "").trim();
+      if (key) return key;
+    }
+    return "";
+  }
+
+  window.SpiralCoderState = {
+    readStoredValue, rootUserTextForRun, serverSupportsFeature,
+    configWithoutSecrets, credentialRoute, paneApiKey,
+  };
 })();

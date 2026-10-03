@@ -31,6 +31,18 @@ test('indexed runtime helpers and app bootstrap share valid JavaScript namespace
   assert.equal(typeof rendered?.type, 'function', 'app should reach its React render entry point');
 });
 
+test('optional highlighting downloads do not block local application scripts', () => {
+  const html = readFileSync(new URL('../../web/index.html', import.meta.url), 'utf8');
+  const externalScripts = html.match(/<script\b[^>]*src="https?:[^>]*>/g) || [];
+  assert.ok(externalScripts.length > 0);
+  for (const script of externalScripts) assert.match(script, /\basync\b/);
+  const externalStyles = html.match(/<link\b[^>]*href="https?:[^>]*>/g) || [];
+  for (const stylesheet of externalStyles) {
+    assert.match(stylesheet, /media="print"/);
+    assert.match(stylesheet, /onload="this\.media='all'"/);
+  }
+});
+
 test('initial app state reads legacy thread and preference values before persistence effects', () => {
   const legacyThread = [{ id: 'existing-thread', title: 'Saved work', messages: [] }];
   const db = new Map([

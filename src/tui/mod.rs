@@ -1,7 +1,9 @@
 pub mod agent;
 pub mod app;
 pub mod events;
+mod input;
 pub mod intent;
+mod layout;
 pub mod merge_gate;
 pub mod prefs;
 pub mod promotion_gate;
@@ -10,7 +12,7 @@ pub mod ui;
 
 use anyhow::{Context, Result};
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -93,7 +95,7 @@ pub async fn run(args: TuiArgs, partial_cfg: PartialConfig) -> Result<()> {
         coder_partial.mode = Some(Mode::Vibe);
     }
     let coder_cfg = coder_partial
-        .resolve()
+        .resolve_for_interactive_setup()
         .context("failed to resolve coder config")?;
 
     // Coder is the agentic tool loop; it requires an OpenAI-compatible Chat Completions API
@@ -146,7 +148,7 @@ Tip: you can still use Anthropic/HF for other panes via `--observer-provider` / 
             }
         }
         chat_partial
-            .resolve()
+            .resolve_for_interactive_setup()
             .context("failed to resolve chat config")?
     };
 
@@ -196,7 +198,7 @@ Tip: you can still use Anthropic/HF for other panes via `--observer-provider` / 
         }
         // Observer always uses Observer mode.
         obs_partial
-            .resolve()
+            .resolve_for_interactive_setup()
             .context("failed to resolve observer config")?
     };
 
@@ -235,6 +237,7 @@ Tip: you can still use Anthropic/HF for other panes via `--observer-provider` / 
             std::io::stderr(),
             crossterm::terminal::LeaveAlternateScreen,
             crossterm::event::DisableMouseCapture,
+            crossterm::event::DisableBracketedPaste,
         );
         let _ = crossterm::execute!(std::io::stderr(), crossterm::cursor::Show);
         default_hook(info);
@@ -243,8 +246,13 @@ Tip: you can still use Anthropic/HF for other panes via `--observer-provider` / 
     // ── Terminal setup ────────────────────────────────────────────────────────
     enable_raw_mode().context("failed to enable raw mode")?;
     let mut stdout = std::io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)
-        .context("failed to enter alternate screen")?;
+    execute!(
+        stdout,
+        EnterAlternateScreen,
+        EnableMouseCapture,
+        EnableBracketedPaste
+    )
+    .context("failed to enter alternate screen")?;
 
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend).context("failed to create terminal")?;
@@ -277,7 +285,8 @@ Tip: you can still use Anthropic/HF for other panes via `--observer-provider` / 
     let _ = execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture
+        DisableMouseCapture,
+        DisableBracketedPaste
     );
     let _ = terminal.show_cursor();
 

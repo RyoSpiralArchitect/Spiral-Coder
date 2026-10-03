@@ -344,7 +344,17 @@ pub struct RunConfig {
 }
 
 impl PartialConfig {
-    pub fn resolve(mut self) -> Result<RunConfig> {
+    pub fn resolve(self) -> Result<RunConfig> {
+        self.resolve_with_credentials(CredentialCheck::AtLaunch)
+    }
+
+    /// Resolve an interactive setup screen before credentials have been entered.
+    /// Callers must validate pane readiness before starting a provider request.
+    pub(crate) fn resolve_for_interactive_setup(self) -> Result<RunConfig> {
+        self.resolve_with_credentials(CredentialCheck::BeforeSend)
+    }
+
+    fn resolve_with_credentials(mut self, credential_check: CredentialCheck) -> Result<RunConfig> {
         if self.provider.is_none() {
             if let Some(v) = env_trimmed("SPIRAL_CODER_PROVIDER") {
                 if let Some(preset) = parse_provider_preset(&v) {
@@ -497,12 +507,16 @@ impl PartialConfig {
             .or_else(|| resolve_api_key_from_env(&provider, &base_url));
 
         match provider {
-            ProviderKind::Mistral if api_key.is_none() => {
+            ProviderKind::Mistral
+                if credential_check == CredentialCheck::AtLaunch && api_key.is_none() =>
+            {
                 return Err(anyhow!(
                     "missing API key for mistral. Set MISTRAL_API_KEY (or SPIRAL_CODER_API_KEY), or pass --api-key."
                 ));
             }
-            ProviderKind::Anthropic if api_key.is_none() => {
+            ProviderKind::Anthropic
+                if credential_check == CredentialCheck::AtLaunch && api_key.is_none() =>
+            {
                 return Err(anyhow!(
                     "missing API key for anthropic. Set ANTHROPIC_API_KEY (or pass --api-key)."
                 ));
@@ -529,6 +543,12 @@ impl PartialConfig {
             hf_local_only,
         })
     }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CredentialCheck {
+    AtLaunch,
+    BeforeSend,
 }
 
 fn default_base_url(provider: &ProviderKind) -> &'static str {
@@ -730,5 +750,59 @@ mod tests {
         assert!(ProviderPreset::Mistral
             .representative_models()
             .contains(&"mistral-large-latest"));
+    }
+
+    #[test]
+    fn interactive_setup_defers_only_missing_credentials() {
+        // Credential environment changes belong to a child process, not the
+        // process running other config tests concurrently.
+        const CHILD: &str = "SPIRAL_CODER_CONFIG_SETUP_TEST_CHILD";
+        if std::env::var_os(CHILD).is_none() {
+            let result = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "config::tests::interactive_setup_defers_only_missing_credentials",
+                    "--nocapture",
+                ])
+                .env(CHILD, "1")
+                .env_remove("MISTRAL_API_KEY")
+                .env_remove("ANTHROPIC_API_KEY")
+                .env_remove("SPIRAL_CODER_API_KEY")
+                .output()
+                .unwrap();
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+            return;
+        }
+        for provider in [ProviderKind::Mistral, ProviderKind::Anthropic] {
+            let partial = PartialConfig {
+                provider: Some(provider),
+                model: Some("test-model".into()),
+                base_url: Some("http://127.0.0.1:1".into()),
+                mode: Some(Mode::Chat),
+                persona: Some("default".into()),
+                timeout_seconds: Some(1),
+                ..PartialConfig::default()
+            };
+            let setup = partial.clone().resolve_for_interactive_setup().unwrap();
+            assert!(setup.api_key.is_none());
+            assert!(partial
+                .clone()
+                .resolve()
+                .unwrap_err()
+                .to_string()
+                .contains("missing API key"));
+            let mut invalid = partial.clone();
+            invalid.base_url = Some("file:///tmp/config".into());
+            assert!(invalid.clone().resolve_for_interactive_setup().is_err());
+            assert!(invalid.resolve().is_err());
+            let mut invalid = partial;
+            invalid.temperature = Some(3.0);
+            assert!(invalid.clone().resolve_for_interactive_setup().is_err());
+            assert!(invalid.resolve().is_err());
+        }
     }
 }
