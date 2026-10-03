@@ -1,13 +1,15 @@
+use super::exec_verification::ExecVerificationContext;
 use super::{
     governor_contract, keyword_tokens, mutation_target_path, normalize_memory_entry,
     parse_exec_command_from_args, token_overlap_score, AssumptionLedger, AssumptionStatus,
-    ThinkBlock, ToolCallData,
+    ExecKind, ThinkBlock, ToolCallData,
 };
 
 pub(super) fn refuted_assumption_conflict(
     ledger: &AssumptionLedger,
     think: &ThinkBlock,
     tc: &ToolCallData,
+    exec_context: &ExecVerificationContext<'_>,
 ) -> Option<String> {
     // Observations gather the new evidence requested by this gate. Mentioning a
     // refuted assumption while probing it does not mean relying on it.
@@ -20,6 +22,15 @@ pub(super) fn refuted_assumption_conflict(
     let mut probe = format!("{} {}", think.goal, think.next);
     if tc.name == "exec" {
         if let Some(command) = parse_exec_command_from_args(tc.arguments.as_str()) {
+            // Probing a refuted premise is evidence gathering, not reuse of it.
+            // Share the project's/root contract's exact verification authority
+            // with live execution and restored proof instead of parsing prose.
+            if matches!(
+                exec_context.classify(&command).kind,
+                ExecKind::Diagnostic | ExecKind::Verify
+            ) {
+                return None;
+            }
             probe.push(' ');
             probe.push_str(command.as_str());
         }
@@ -232,7 +243,13 @@ mod tests {
                 "replace":"const PATHS: &[&str] = &[\"src/runtime/missing.rs\"];",
                 "diff":"@@ -1 +1 @@\n-old\n+src/runtime/missing.rs"}),
             );
-            assert!(refuted_assumption_conflict(&ledger(), &think(name), &tc).is_none());
+            assert!(refuted_assumption_conflict(
+                &ledger(),
+                &think(name),
+                &tc,
+                &ExecVerificationContext::from_root(None, "")
+            )
+            .is_none());
         }
     }
 
@@ -256,7 +273,13 @@ mod tests {
             ),
         ] {
             assert!(
-                refuted_assumption_conflict(&ledger(), &think(name), &call(name, args)).is_none(),
+                refuted_assumption_conflict(
+                    &ledger(),
+                    &think(name),
+                    &call(name, args),
+                    &ExecVerificationContext::from_root(None, "")
+                )
+                .is_none(),
                 "{name}"
             );
         }
@@ -266,9 +289,25 @@ mod tests {
     fn refuted_existing_target_still_blocks_patch_but_not_a_similar_path() {
         for name in ["patch_file", "apply_diff"] {
             let tc = call(name, json!({"path":"src/runtime/missing.rs"}));
-            assert!(refuted_assumption_conflict(&ledger(), &think(name), &tc).is_some());
+            assert!(refuted_assumption_conflict(
+                &ledger(),
+                &think(name),
+                &tc,
+                &ExecVerificationContext::from_root(None, "")
+            )
+            .is_some());
             let other = call(name, json!({"path":"src/runtime/missing.rs.backup"}));
-            assert!(refuted_assumption_conflict(&ledger(), &think(name), &other).is_none());
+            assert!(refuted_assumption_conflict(
+                &ledger(),
+                &think(name),
+                &other,
+                &ExecVerificationContext::from_root(None, "")
+            )
+            .is_none());
         }
     }
 }
+
+#[cfg(test)]
+#[path = "assumption_exec_tests.rs"]
+mod exec_tests;

@@ -194,3 +194,29 @@ fn failed_auto_test_without_error_prefix_keeps_assertion_before_diff() {
         &compacted
     ));
 }
+
+#[test]
+fn failed_auto_test_cause_survives_older_history_pruning_without_growth() {
+    let output = format!("OK: patched 'spec.json'\n{}\n[auto-test] ✗ FAILED (exit 1)\nError: invalid check kind at line 42\nError: use an existing assistant target\n", "[diff] old source\n".repeat(25));
+    let compacted = compact_success_tool_result_for_history("patch_file", &output);
+    let mut messages = exchange("failed-edit", "patch_file", &compacted).to_vec();
+    for index in 0..KEEP_RECENT_TOOL_TURNS + 1 {
+        messages.extend(exchange(
+            &format!("read-{index}"),
+            "read_file",
+            "[spec.json] (1 lines, 2 bytes)\n{}",
+        ));
+    }
+    prune_old_tool_results(&mut messages);
+    let pruned = messages[1]["content"].as_str().unwrap();
+    assert!(pruned.contains("Error: invalid check kind at line 42"));
+    assert!(pruned.contains("Error: use an existing assistant target"));
+    assert!(pruned.lines().count() <= 6);
+    assert!(!crate::execution_evidence::auto_test_succeeded(
+        "patch_file",
+        pruned
+    ));
+    let once = messages.clone();
+    prune_old_tool_results(&mut messages);
+    assert_eq!(messages, once);
+}

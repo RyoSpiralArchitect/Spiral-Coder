@@ -9,6 +9,10 @@
 use anyhow::{anyhow, Result};
 use std::path::{Component, Path, PathBuf};
 
+mod diagnostics;
+#[cfg(test)]
+mod diagnostics_tests;
+
 // ── Path safety ───────────────────────────────────────────────────────────────
 
 fn normalize_component(s: String) -> String {
@@ -202,21 +206,22 @@ pub fn tool_patch_file(
             return write_patch_result(path, &abs_path, &content, &new_content);
         }
 
-        // Show a short preview so the model can self-correct.
-        let preview: String = content.lines().take(8).collect::<Vec<_>>().join("\n");
+        let context = diagnostics::missing_anchor(&content, search);
         return (
             format!(
                 "ERROR: search string not found in '{path}'.\n\
-                 File starts with:\n{preview}\n\n\
+                 {context}\n\
                  Tip: call read_file first to inspect exact content, then retry with the exact text."
             ),
             true,
         );
     }
     if count > 1 {
+        let context = diagnostics::ambiguous_anchor(&content, search);
         return (
             format!(
                 "ERROR: search string found {count} times in '{path}' — must be unique.\n\
+                 {context}\n\
                  Tip: include more surrounding lines to make the match unique."
             ),
             true,
@@ -748,6 +753,7 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
     let mut new_content = content.clone();
     let mut applied = 0usize;
     let mut errors: Vec<String> = Vec::new();
+    let mut diagnostic_contexts: Vec<String> = Vec::new();
 
     for (i, hunk) in hunks.iter().enumerate() {
         // Build the "old block" (context + remove lines) and "new block" (context + add lines).
@@ -781,7 +787,7 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
             let preview: String = old_lines
                 .iter()
                 .take(3)
-                .cloned()
+                .map(|line| line.chars().take(120).collect::<String>())
                 .collect::<Vec<_>>()
                 .join("\\n");
             errors.push(format!(
@@ -789,11 +795,25 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
                 i + 1,
                 preview
             ));
+            if diagnostic_contexts.len() < 2 {
+                diagnostic_contexts.push(format!(
+                    "Hunk {} input (before this hunk; diagnostic only):\n{}",
+                    i + 1,
+                    diagnostics::missing_anchor(&new_content, &old_block)
+                ));
+            }
         } else if count > 1 {
             errors.push(format!(
                 "hunk {}: old block not unique ({count} matches) — add more context lines",
                 i + 1
             ));
+            if diagnostic_contexts.len() < 2 {
+                diagnostic_contexts.push(format!(
+                    "Hunk {} input (before this hunk; diagnostic only):\n{}",
+                    i + 1,
+                    diagnostics::ambiguous_anchor(&new_content, &old_block)
+                ));
+            }
         } else {
             new_content = new_content.replacen(&old_block, &new_block, 1);
             applied += 1;
@@ -801,11 +821,11 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
     }
 
     if applied == 0 {
-        let preview: String = content.lines().take(6).collect::<Vec<_>>().join("\n");
         return (
             format!(
-                "ERROR: no hunks applied ({}). File starts with:\n{preview}\n\nTip: call read_file to inspect exact content.",
-                errors.join("; ")
+                "ERROR: no hunks applied ({}).\n{}\nTip: call read_file to inspect exact content.",
+                errors.join("; "),
+                diagnostic_contexts.join("\n")
             ),
             true,
         );
@@ -828,10 +848,11 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
         String::new()
     } else {
         format!(
-            "\n⚠ {}/{} hunks skipped: {}",
+            "\n⚠ {}/{} hunks skipped: {}\n{}",
             errors.len(),
             hunks.len(),
-            errors.join("; ")
+            errors.join("; "),
+            diagnostic_contexts.join("\n")
         )
     };
 

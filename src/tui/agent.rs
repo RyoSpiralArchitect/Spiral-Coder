@@ -69,6 +69,7 @@ mod recovery;
 mod repo_scaffold;
 mod session_bridge;
 mod task_harness;
+mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
 use self::assumption_gate::refuted_assumption_conflict;
@@ -2074,28 +2075,11 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
     // The first runtime status is authoritative, even when later stdout prints
     // another status. Preserve it verbatim before applying the digest budget.
     if crate::execution_evidence::file_edit_succeeded(tool_name, content) {
-        if let Some((status_index, status)) = lines
-            .iter()
-            .enumerate()
-            .find(|(_, line)| line.starts_with("[auto-test]"))
-        {
+        if let Some(status) = lines.iter().find(|line| line.starts_with("[auto-test]")) {
             seen.insert((*status).to_string());
             kept.push((*status).to_string());
-            if status.starts_with("[auto-test] ✗ FAILED (exit ") {
-                // The edit succeeded, but its verification did not. Keep the
-                // cause ahead of diff context; only scan the actual test output.
-                let test_output = lines[status_index + 1..].join("\n");
-                if let Some(digest) = extract_error_digest("", &test_output) {
-                    for line in digest.lines().skip(1).take(4) {
-                        push_unique_tool_line(&mut kept, &mut seen, line);
-                    }
-                } else {
-                    push_unique_tool_line(
-                        &mut kept,
-                        &mut seen,
-                        &interesting_failure_line("", &test_output),
-                    );
-                }
+            for line in tool_result_history::automatic_test_failure_diagnostics(content) {
+                push_unique_tool_line(&mut kept, &mut seen, &line);
             }
         }
     }
@@ -2176,9 +2160,17 @@ fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
     let prune_count = tool_indices.len() - KEEP_RECENT_TOOL_TURNS;
     for &idx in tool_indices.iter().take(prune_count) {
         if let Some(content) = messages[idx]["content"].as_str() {
-            // Never prune failures: they are the most important context for recovery.
-            // Prune successful exec outputs and file tool outputs.
+            // Keep execution failures, and retain the automatic-test cause when
+            // shortening an otherwise successful edit. Do not repeatedly grow
+            // the header of an already bounded multi-line failure receipt.
             if !is_prunable_tool_result(content) {
+                continue;
+            }
+            if content
+                .lines()
+                .next()
+                .is_some_and(|line| line.contains(" [pruned "))
+            {
                 continue;
             }
             let line_count = content.lines().count();
@@ -2194,6 +2186,12 @@ fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
                     {
                         summary.push('\n');
                         summary.push_str(status);
+                        for diagnostic in
+                            tool_result_history::automatic_test_failure_diagnostics(content)
+                        {
+                            summary.push('\n');
+                            summary.push_str(&diagnostic);
+                        }
                     }
                 }
                 messages[idx]["content"] = serde_json::Value::String(summary);
@@ -10405,7 +10403,12 @@ Execute only the new minimal action: {}",
                 continue;
             }
 
-            if let Some(conflict) = refuted_assumption_conflict(&assumption_ledger, think, tc) {
+            if let Some(conflict) = refuted_assumption_conflict(
+                &assumption_ledger,
+                think,
+                tc,
+                &exec_verification_context,
+            ) {
                 state = AgentState::Recovery;
                 recovery.stage = Some(RecoveryStage::Diagnose);
                 let block = format!(
@@ -19022,7 +19025,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
     #[test]
     fn refuted_assumption_conflict_blocks_reuse() {
         let mut ledger = AssumptionLedger::default();
-        ledger.mark_refuted("cargo check works unchanged", Some("exit code was 1"));
+        ledger.mark_refuted("cargo fix works unchanged", Some("exit code was 1"));
 
         let think = ThinkBlock {
             goal: "verify the build quickly".to_string(),
@@ -19030,18 +19033,23 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             tool: "exec".to_string(),
             risk: "same build failure".to_string(),
             doubt: "might still fail".to_string(),
-            next: "cargo check".to_string(),
+            next: "cargo fix".to_string(),
             verify: "exit code is zero".to_string(),
         };
         let tc = ToolCallData {
             id: "call_1".to_string(),
             name: "exec".to_string(),
-            arguments: serde_json::json!({"command":"cargo check"}).to_string(),
+            arguments: serde_json::json!({"command":"cargo fix"}).to_string(),
         };
 
-        let msg = refuted_assumption_conflict(&ledger, &think, &tc)
-            .expect("refuted assumption should conflict");
-        assert!(msg.contains("cargo check works unchanged"));
+        let msg = refuted_assumption_conflict(
+            &ledger,
+            &think,
+            &tc,
+            &exec_verification::ExecVerificationContext::from_root(None, ""),
+        )
+        .expect("refuted assumption should conflict");
+        assert!(msg.contains("cargo fix works unchanged"));
     }
 
     #[test]

@@ -57,6 +57,10 @@ Required literals belong in the displayed `done.summary` text; extra JSON keys
 are not a final answer. Repair hints preserve exact capitalization and spaces,
 and show the observed and required spelling for an ASCII case-only mismatch.
 They leave successful execution proof intact and never insert claims themselves.
+For edited files whose automatic tests fail, both immediate result shortening
+and later history pruning retain up to four bounded diagnostic lines after the
+first runtime test status. Pruning is idempotent; source diff text before the
+test and later stdout status strings do not replace that status.
 The existing independent final-answer checks remain authoritative. Prompts without
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.

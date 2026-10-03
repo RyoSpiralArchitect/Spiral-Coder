@@ -170,7 +170,12 @@ Repetition and progress evidence:
   only when its actual target is that exact path. Path text inside another file's
   replacement, a new-file write, or a verification scratchpad is not an existence
   dependency. Diagnostic reads and discovery remain available to gather evidence.
-  Other refuted assumptions retain their existing retry checks.
+  Diagnostic and verification `exec` calls can also gather evidence regardless
+  of how a refuted assumption is worded. The gate uses the same typed execution
+  context as proof accounting, including exact project-configured tests and
+  root-approved required checks; unknown or extended mutation commands retain
+  their assumption checks. This exemption does not bypass independent progress,
+  recovery, repetition, or completion gates.
   A subsequent successful read or write of that exact path confirms its existence
   through an event-local result hook; replay applies the same update in transcript
   order using correlated tool-call IDs. Earlier successes, unpaired results, cached
