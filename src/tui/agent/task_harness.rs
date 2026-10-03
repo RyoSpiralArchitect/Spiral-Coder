@@ -18,6 +18,9 @@ mod benchmark_proof;
 mod benchmark_recovery_tests;
 #[path = "benchmark_replay.rs"]
 mod benchmark_replay;
+#[path = "progress_gate.rs"]
+mod progress_gate;
+pub(super) use progress_gate::build_progress_gate_block;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum TaskLane {
@@ -342,147 +345,6 @@ pub(super) fn approved_benchmark_required_commands(root_user_text: &str) -> Vec<
     } else {
         Vec::new()
     }
-}
-
-pub(super) fn build_progress_gate_block(
-    harness: TaskHarness,
-    tc: &ToolCallData,
-    messages: &[Value],
-    recovery_stage: Option<RecoveryStage>,
-    test_cmd: Option<&str>,
-    last_mutation_step: Option<usize>,
-    file_tool_consec_failures: usize,
-) -> Option<String> {
-    if recovery_stage != Some(RecoveryStage::Fix) {
-        return None;
-    }
-    if harness.artifact_mode == ArtifactMode::ObserveOnly {
-        return None;
-    }
-
-    let history = observation_history(messages);
-    if file_tool_consec_failures > 0 && is_src_read_file_tool_call(tc) {
-        return None;
-    }
-    let verify_without_mutation = harness.artifact_mode == ArtifactMode::ExistingFiles
-        && last_mutation_step.is_none()
-        && tc.name == "exec"
-        && parse_exec_command_from_args(tc.arguments.as_str())
-            .and_then(|command| classify_verify_level(command.as_str(), test_cmd))
-            .is_some();
-    if !verify_without_mutation && !is_observation_tool(tc.name.as_str()) {
-        return None;
-    }
-
-    let attempted = canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
-        .unwrap_or_else(|| {
-            format!(
-                "{}({})",
-                tc.name,
-                compact_one_line(tc.arguments.as_str(), 120)
-            )
-        });
-    if !verify_without_mutation {
-        let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
-        let allow_first_target_read = matches!(
-            infer_fix_existing_focus(messages),
-            Some(FixExistingFocus::ReadImplementation(ref path))
-                if tc.name == "read_file"
-                    && same_successes == 0
-                    && serde_json::from_str::<Value>(tc.arguments.as_str())
-                        .ok()
-                        .and_then(|value| value.get("path").and_then(|v| v.as_str()).map(str::to_string))
-                        .as_deref()
-                        == Some(path.as_str())
-        );
-        if allow_first_target_read {
-            return None;
-        }
-        if same_successes == 0 && history.total_successes < 2 {
-            return None;
-        }
-    } else if history.total_successes < 2 {
-        return None;
-    }
-
-    let fix_focus = infer_fix_existing_focus(messages);
-    if let Some(FixExistingFocus::ReadImplementation(path)) = fix_focus.as_ref() {
-        return Some(format!(
-            "[Progress Gate]\n\
-Task lane: {}\n\
-Recovery stage is already `fix`.\n\
-Attempted next action: {}\n\
-Successful observation commands so far: {}\n\
-This is stalled progress, not forward motion.\n\
-Required now: read `{}` now to inspect the implementation before patching.\n\
-Do NOT rerun verification or widen search until `{}` is read.\n\
-Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
-            harness.lane_label(),
-            compact_one_line(&attempted, 180),
-            history.total_successes,
-            compact_one_line(path, 140),
-            compact_one_line(path, 140),
-        ));
-    }
-
-    let next_action = match harness.artifact_mode {
-        ArtifactMode::ExistingFiles => match harness.lane {
-            TaskLane::BenchmarkPlan => {
-                "patch the smallest benchmark spec/fixture update now with `patch_file` or `apply_diff`".to_string()
-            }
-            _ => match fix_focus.as_ref() {
-                Some(FixExistingFocus::PatchImplementation(path)) => format!(
-                    "apply the smallest edit now with `patch_file` or `apply_diff` on `{}`",
-                    compact_one_line(path, 140)
-                ),
-                _ => "apply the smallest edit now with `patch_file` or `apply_diff`".to_string(),
-            },
-        },
-        ArtifactMode::NewFiles => {
-            "create the requested file now with `write_file` or a minimal `exec`".to_string()
-        }
-        ArtifactMode::NewRepo => {
-            "create the requested repo/project artifact now with `write_file` or `exec`".to_string()
-        }
-        ArtifactMode::ObserveOnly => unreachable!(),
-    };
-    let verify_hint = if verify_without_mutation {
-        test_cmd
-            .filter(|cmd| !cmd.trim().is_empty())
-            .map(|cmd| {
-                format!(
-                    "Do NOT run `{}` again before a mutation lands. Read the strongest target or patch now.\n",
-                    compact_one_line(cmd, 140)
-                )
-            })
-            .unwrap_or_else(|| {
-                "Do NOT rerun verification before a mutation lands. Read the strongest target or patch now.\n".to_string()
-            })
-    } else {
-        test_cmd
-            .filter(|cmd| !cmd.trim().is_empty())
-            .map(|cmd| format!("If the artifact is already present, run the configured verification command now: `{}`.\n", compact_one_line(cmd, 140)))
-            .unwrap_or_else(|| {
-                "If you believe the artifact is already present, run a real command that proves it before `done`.\n".to_string()
-            })
-    };
-
-    Some(format!(
-        "[Progress Gate]\n\
-Task lane: {}\n\
-Recovery stage is already `fix`.\n\
-Attempted next action: {}\n\
-Successful observation commands so far: {}\n\
-This is stalled progress, not forward motion.\n\
-Required now: {}.\n\
-{}\
-Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
-        harness.lane_label(),
-        compact_one_line(&attempted, 180),
-        history.total_successes,
-        next_action,
-        verify_hint
-    ))
 }
 
 fn is_src_read_file_tool_call(tc: &ToolCallData) -> bool {
@@ -3684,7 +3546,7 @@ required_checks:\n\
 
     #[test]
     fn progress_gate_blocks_verify_exec_before_first_mutation_in_fix_lane() {
-        let messages = vec![
+        let mut messages = vec![
             json!({
                 "role": "assistant",
                 "tool_calls": [{
@@ -3712,6 +3574,15 @@ required_checks:\n\
                 "content": "[src/lib.rs] (22 lines, 561 bytes)\nmod maze;"
             }),
         ];
+        messages.push(json!({
+            "role":"assistant", "tool_calls":[{
+                "id":"baseline", "type":"function", "function":{
+                    "name":"exec", "arguments":json!({"command":"cargo test 2>&1"}).to_string()
+                }
+            }]
+        }));
+        messages.push(json!({"role":"tool", "tool_call_id":"baseline",
+            "content":"FAILED (exit_code: 1)\nstdout:\ntest failed"}));
         let tc = ToolCallData {
             id: "call_verify".to_string(),
             name: "exec".to_string(),

@@ -8,6 +8,8 @@ use crate::modes::Mode;
 use crate::tui::app::{App, Message, Role};
 use crate::tui::{events, intent};
 
+pub(crate) mod diagnostics;
+
 fn default_spec_version() -> u32 {
     1
 }
@@ -223,11 +225,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
         report_path.display()
     );
     if report.summary.failed > 0 {
-        anyhow::bail!(
-            "tui replay failed: {}/{} case(s) failed",
-            report.summary.failed,
-            report.summary.total
-        );
+        anyhow::bail!(diagnostics::failed_report(&report));
     }
     Ok(())
 }
@@ -532,8 +530,8 @@ pub(crate) fn replay_spec_for_test(
 fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     let text = std::fs::read_to_string(path)
         .with_context(|| format!("failed to read tui replay spec: {}", path.display()))?;
-    let spec: TuiReplaySpec = serde_json::from_str(&text)
-        .with_context(|| format!("failed to parse tui replay spec: {}", path.display()))?;
+    let spec: TuiReplaySpec =
+        serde_json::from_str(&text).map_err(|error| diagnostics::parse_error(path, error))?;
     if spec.version != 1 {
         anyhow::bail!(
             "unsupported tui replay spec version {} (expected 1)",

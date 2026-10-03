@@ -44,10 +44,12 @@ use std::path::Path;
 
 mod done_gate;
 mod evaluator_loop;
+mod exact_content;
 mod exec_classification;
 mod exec_proof;
 mod exec_verification;
 mod failure_localization;
+mod failure_memory;
 mod final_handoff;
 mod followup_requirements;
 mod harness_evolution;
@@ -77,6 +79,7 @@ use self::done_gate::{
 use self::evaluator_loop::EvaluatorLoop;
 use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
+use self::failure_memory::FailureMemory;
 use self::final_handoff::{
     authored_final_answer_hint, enrich_text_final_handoff, requires_authored_final_answer,
     validate_authored_done_summary,
@@ -2871,22 +2874,6 @@ Required now: {}",
     }
 }
 
-#[derive(Debug, Default)]
-struct FailureMemory {
-    consecutive_failures: usize,
-
-    last_command_sig: Option<String>,
-    same_command_repeats: usize,
-
-    last_error_sig: Option<String>,
-    same_error_repeats: usize,
-
-    last_output_hash: Option<u64>,
-    same_output_repeats: usize,
-
-    last_error_class: ErrorClass,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum GoalDelta {
     Closer,
@@ -5371,6 +5358,7 @@ fn collect_known_acceptance_commands(
 
 fn maybe_build_verified_action_closeout_text(
     root_user_text: &str,
+    tool_root: Option<&str>,
     plan: Option<&PlanBlock>,
     messages: &[serde_json::Value],
     working_mem: &WorkingMemory,
@@ -5380,7 +5368,9 @@ fn maybe_build_verified_action_closeout_text(
     last_mutation_step: Option<usize>,
     last_verify_ok_step: Option<usize>,
 ) -> Option<String> {
-    if requires_authored_final_answer(root_user_text) {
+    if requires_authored_final_answer(root_user_text)
+        || exact_content::validate_exact_content_task(root_user_text, tool_root).is_err()
+    {
         return None;
     }
     if latest_assistant_message_is_done(messages) {
@@ -6262,9 +6252,7 @@ fn validate_reflection(
         ));
     }
 
-    let repeated_failure = mem.same_error_repeats >= 2
-        || mem.same_command_repeats >= 3
-        || mem.same_output_repeats >= 2;
+    let repeated_failure = mem.repeated_failure_or_stall();
     let repeated_failure = repeated_failure || file_tool_consec_failures >= 2;
 
     if repeated_failure && r.strategy_change == StrategyChange::Keep {
@@ -7420,175 +7408,6 @@ fn extract_implied_write_files(text: &str) -> Vec<ImpliedWriteFile> {
     out
 }
 
-impl FailureMemory {
-    fn from_recent_messages(messages: &[serde_json::Value]) -> Self {
-        let mut mem = FailureMemory::default();
-
-        // Map tool_call_id -> command for exec calls.
-        let mut exec_by_id: std::collections::HashMap<String, String> =
-            std::collections::HashMap::new();
-
-        for msg in messages {
-            let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-
-            if role == "assistant" {
-                let Some(tcs) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                    continue;
-                };
-                for tc in tcs {
-                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                    if id.is_empty() {
-                        continue;
-                    }
-                    let name = tc
-                        .get("function")
-                        .and_then(|f| f.get("name"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if name != "exec" {
-                        continue;
-                    }
-                    let args = tc
-                        .get("function")
-                        .and_then(|f| f.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if let Some(cmd) = parse_exec_command_from_args(args) {
-                        exec_by_id.insert(id.to_string(), cmd);
-                    }
-                }
-                continue;
-            }
-
-            if role == "tool" {
-                let tcid = msg
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim();
-                if tcid.is_empty() {
-                    continue;
-                }
-                let Some(command) = exec_by_id.remove(tcid) else {
-                    continue;
-                };
-                let content = msg
-                    .get("content")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let (exit_code, stdout, stderr) = parse_exec_tool_output_sections(&content);
-                let Some(mut effective_exit_code) = exit_code else {
-                    continue;
-                };
-                if effective_exit_code == 0
-                    && suspicious_success_reason(stdout.as_str(), stderr.as_str()).is_some()
-                {
-                    effective_exit_code = 1;
-                }
-                let _ = mem.on_tool_result(
-                    command.as_str(),
-                    stdout.as_str(),
-                    stderr.as_str(),
-                    effective_exit_code,
-                );
-            }
-        }
-
-        mem
-    }
-
-    fn on_tool_result(
-        &mut self,
-        command: &str,
-        stdout: &str,
-        stderr: &str,
-        effective_exit_code: i32,
-    ) -> Option<String> {
-        // Track repeated identical commands (common loop symptom).
-        let cmd_sig = command_sig(command);
-        if self.last_command_sig.as_deref() == Some(&cmd_sig) {
-            self.same_command_repeats = self.same_command_repeats.saturating_add(1);
-        } else {
-            self.last_command_sig = Some(cmd_sig);
-            self.same_command_repeats = 1;
-        }
-
-        // Track output hash (stuck detection).
-        let oh = hash_output(stdout, stderr);
-        if self.last_output_hash == Some(oh) {
-            self.same_output_repeats = self.same_output_repeats.saturating_add(1);
-        } else {
-            self.last_output_hash = Some(oh);
-            self.same_output_repeats = 1;
-        }
-
-        if effective_exit_code == 0 {
-            self.consecutive_failures = 0;
-            self.last_error_sig = None;
-            self.same_error_repeats = 0;
-            self.last_error_class = ErrorClass::Unknown;
-            return None;
-        }
-
-        self.consecutive_failures = self.consecutive_failures.saturating_add(1);
-        self.last_error_class = classify_error(stderr, stdout);
-
-        let sig = error_signature(command, stdout, stderr, effective_exit_code);
-        if self.last_error_sig.as_deref() == Some(&sig) {
-            self.same_error_repeats = self.same_error_repeats.saturating_add(1);
-        } else {
-            self.last_error_sig = Some(sig);
-            self.same_error_repeats = 1;
-        }
-
-        // Emit hints only when crossing key thresholds to avoid spamming context.
-        if self.same_error_repeats == 2 {
-            if let Some(h) = hint_for_known_failure(command, stdout, stderr) {
-                return Some(h);
-            }
-            return Some(
-                "The SAME error happened twice.\n\
-Action: stop repeating; gather diagnostics (`pwd`, `ls`, `git status`) then change strategy."
-                    .to_string(),
-            );
-        }
-
-        if self.same_command_repeats == 3 {
-            return Some(
-                "You ran the SAME command 3 times.\n\
-Action: abandon this approach and try a different strategy (different cwd, different command, or add diagnostics)."
-                    .to_string(),
-            );
-        }
-
-        if self.consecutive_failures >= 3 {
-            let class_ctx = error_class_hint(&self.last_error_class);
-            let context = if class_ctx.is_empty() {
-                String::new()
-            } else {
-                format!("\nLast error type: {class_ctx}")
-            };
-            return Some(format!(
-                "3 consecutive failures.{context}\n\
-Action: change strategy now; do NOT retry the same approach again."
-            ));
-        }
-
-        if self.same_output_repeats >= 2 && self.same_command_repeats >= 2 {
-            return Some(
-                "Stuck detected: repeated identical output.\n\
-Action: print diagnostics and change strategy; do not repeat the same command."
-                    .to_string(),
-            );
-        }
-
-        None
-    }
-}
-
 fn parse_exec_command_from_args(args: &str) -> Option<String> {
     // Standard tool schema uses JSON arguments: {"command":"...","cwd":"..."}.
     if let Ok(v) = serde_json::from_str::<serde_json::Value>(args) {
@@ -8469,6 +8288,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
 
         if let Some(final_text) = maybe_build_verified_action_closeout_text(
             &root_user_text,
+            tool_root_abs.as_deref(),
             active_plan.as_ref(),
             &messages,
             &working_mem,
@@ -10591,8 +10411,14 @@ Execute only the new minimal action: {}",
                     last_mutation_step,
                     last_verify_ok_step,
                 )
-                .filter(|_| !requires_authored_final_answer(&root_user_text))
-                {
+                .filter(|_| {
+                    !requires_authored_final_answer(&root_user_text)
+                        && exact_content::validate_exact_content_task(
+                            &root_user_text,
+                            tool_root_abs.as_deref(),
+                        )
+                        .is_ok()
+                }) {
                     task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     messages.push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -12898,32 +12724,6 @@ Required now: run `{command}`."
 
             let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
             let summary = args["summary"].as_str().unwrap_or("").trim();
-            if !root_read_only {
-                if let Err(block) = validate_authored_done_summary(&root_user_text, summary) {
-                    state = AgentState::Recovery;
-                    messages.push(json!({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": format!("GOVERNOR BLOCKED\n\n{block}"),
-                    }));
-                    autosave_best_effort(
-                        &autosaver,
-                        &tx,
-                        tool_root_abs.as_deref(),
-                        checkpoint.as_deref(),
-                        cur_cwd.as_deref(),
-                        &messages,
-                    )
-                    .await;
-                    let _ = tx
-                        .send(StreamToken::Delta(format!(
-                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                        )))
-                        .await;
-                    pending_system_hint = Some(block);
-                    continue;
-                }
-            }
             let mut completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let mut remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
             let mut acceptance_evidence =
@@ -13103,8 +12903,6 @@ Required now: run `{command}`."
                 }
             };
 
-            task_outcome.accept_done(&remaining_acceptance);
-
             let summary_text = if summary.is_empty() {
                 synthesize_action_done_summary(done_plan, &messages).unwrap_or_default()
             } else {
@@ -13143,6 +12941,60 @@ Required now: run `{command}`."
                 final_text.push_str("\n\nNext:\n");
                 final_text.push_str(next_steps);
             }
+
+            let exact_content_error = exact_content::validate_exact_content_task(
+                &root_user_text,
+                tool_root_abs.as_deref(),
+            )
+            .err();
+            let needs_artifact_repair = exact_content_error.is_some();
+            let handoff_error = exact_content_error.or_else(|| {
+                if root_read_only {
+                    None
+                } else {
+                    validate_authored_done_summary(
+                        &root_user_text,
+                        summary,
+                        &final_text,
+                        &messages,
+                        test_cmd.as_deref(),
+                    )
+                    .err()
+                }
+            });
+            if let Some(block) = handoff_error {
+                state = AgentState::Recovery;
+                if needs_artifact_repair {
+                    // A line-oriented test cannot override a failed exact-byte contract.
+                    last_build_verify_ok_step = None;
+                    last_behavioral_verify_ok_step = None;
+                    last_verify_ok_step = None;
+                    recovery.stage = Some(RecoveryStage::Fix);
+                }
+                messages.push(json!({
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": format!("GOVERNOR BLOCKED\n\n{block}"),
+                }));
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                let _ = tx
+                    .send(StreamToken::Delta(format!(
+                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                    )))
+                    .await;
+                pending_system_hint = Some(block);
+                continue;
+            }
+
+            task_outcome.accept_done(&remaining_acceptance);
 
             // Close out the tool call so session JSON remains valid on resume.
             messages.push(json!({
@@ -15033,11 +14885,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
             AgentState::Planning
         };
 
-        if effective_exit_code != 0
-            || mem.same_error_repeats >= 2
-            || mem.same_command_repeats >= 3
-            || mem.same_output_repeats >= 2
-        {
+        if effective_exit_code != 0 || mem.repeated_failure_or_stall() {
             let default_reason = if effective_exit_code != 0 {
                 let class_ctx = error_class_hint(&mem.last_error_class);
                 if class_ctx.is_empty() {
@@ -15078,6 +14926,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
 
     if let Some(final_text) = maybe_build_verified_action_closeout_text(
         &root_user_text,
+        tool_root_abs.as_deref(),
         active_plan.as_ref(),
         &messages,
         &working_mem,
@@ -16391,6 +16240,7 @@ remaining_gap: still need to run cargo test\n\
 
         let final_text = maybe_build_verified_action_closeout_text(
             "Create a pygame maze game repo.",
+            None,
             Some(&plan),
             &messages,
             &working_mem,
@@ -16409,6 +16259,7 @@ remaining_gap: still need to run cargo test\n\
 
         let explicit_handoff = maybe_build_verified_action_closeout_text(
             "Create a pygame maze game repo. Final answer must include verification_receipt.txt and fresh exec proof.",
+            None,
             Some(&plan),
             &messages,
             &working_mem,
@@ -16461,6 +16312,7 @@ remaining_gap: still need to run cargo test\n\
 
         let final_text = maybe_build_verified_action_closeout_text(
             "Update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
+            None,
             Some(&plan),
             &messages,
             &WorkingMemory::default(),

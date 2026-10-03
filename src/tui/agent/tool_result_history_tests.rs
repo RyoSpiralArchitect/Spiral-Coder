@@ -96,3 +96,49 @@ fn old_patch_auto_test_evidence_survives_digest_pruning_and_evaluation() {
         }
     }
 }
+
+#[test]
+fn replay_check_failures_survive_the_exec_stderr_budget() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    let mut spec: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json"
+    ))
+    .unwrap();
+    // Parseable JSON and descriptive text are not a queued Observer action.
+    spec["cases"][0]["observer_response"]["suggestions"] = json!([]);
+    std::fs::write(&path, spec.to_string()).unwrap();
+    let report =
+        crate::tui_replay::replay_spec_for_test(&path, root.path(), &root.path().join("reports"))
+            .unwrap();
+    assert_eq!(report.summary.failed, 1);
+    let stderr = format!(
+        "{}\nError: {}",
+        "[tui-replay] progress details\n".repeat(100),
+        crate::tui_replay::diagnostics::failed_report(&report)
+    );
+    let rendered = build_failed_tool_output("", &stderr, 1);
+    assert!(rendered.contains("[ERROR DIGEST"));
+    assert!(rendered.contains("\"check\":\"hint_queued\""));
+    assert!(rendered.contains("hint_queued=false"));
+    assert!(rendered.contains("quickest_check alone does not queue a hint"));
+    assert!(rendered.contains(&report.out_dir.join("report.json").display().to_string()));
+    assert!(!rendered.contains("[auto-test] ✓ PASSED"));
+
+    spec["cases"][0]["checks"] = json!([{"kind":"target_message_contains"}]);
+    std::fs::write(&path, spec.to_string()).unwrap();
+    let error = crate::tui_replay::replay_spec_for_test(
+        &path,
+        root.path(),
+        &root.path().join("invalid-reports"),
+    )
+    .unwrap_err();
+    let stderr = format!(
+        "{}\nError: {error}",
+        "[tui-replay] progress details\n".repeat(100)
+    );
+    let rendered = build_failed_tool_output("", &stderr, 1);
+    assert!(rendered.contains("missing field `value`"));
+    assert!(rendered.contains(r#"{"kind":"target_message_contains","value":"coder-0"}"#));
+    assert!(!root.path().join("invalid-reports").exists());
+}

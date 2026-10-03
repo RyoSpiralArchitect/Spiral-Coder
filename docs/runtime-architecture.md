@@ -135,10 +135,27 @@ Responsibilities:
 - phase gating (core/feature/polish)
 
 Current code:
-- `src/tui/agent.rs` (AgentState + FailureMemory + error classifier + stuck hints)
+- `src/tui/agent.rs` (AgentState + error classifier)
+- `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
+- `src/tui/agent/progress_gate.rs` (evidence-aware observation and baseline-check pressure)
 - `src/exec.rs` (dangerous command checks, cwd validation)
 - `web/core/exec.js` (bash→PowerShell normalization, dangerous command guard)
 - `web/app.js` (loop governor + goal_check probes + recent-runs memory)
+
+Repetition and progress evidence:
+
+- Repeated output means the same complete command produced the same output
+  consecutively. Different successful commands may all be silent; their empty
+  output does not require a strategy change. Command identity preserves case,
+  quoted whitespace, suffixes, and multiline content in live and resumed runs.
+- In an existing-files task, a first read of a new target remains available even
+  after project discovery. Inferred focus and aggregate observation counts cannot
+  establish that the target was inspected. Unchanged repeated reads still trigger
+  progress pressure, and creation lanes keep their observation limits.
+- A baseline verification command must actually have executed before the progress
+  gate calls it a rerun. A governor block or user rejection does not count as an
+  execution. Subsequent unchanged reruns remain subject to progress pressure;
+  completion still requires all applicable fresh verification and acceptance gates.
 
 Command classification:
 
@@ -198,6 +215,8 @@ Current code:
 - `src/runtime_eval.rs` checks can assert copied tool-root files exist and contain expected literals, so regression specs can prove real artifact mutation instead of relying only on the final assistant text
 - `src/runtime_eval.rs` checks can require proof-level verification with `verified_command_seen` and `auto_test_passed`, allowing benchmark-plan cases to distinguish artifact mutation from verified PR-ready closeout
 - approved benchmark-plan eval fixtures now cover single-spec updates and compound docs+spec updates, exercising PR-ready artifact sets rather than isolated file edits only
+- `src/tui/agent/final_handoff.rs` checks explicit final-answer requirements against the **rendered** `done` answer before recording completion. A nonempty authored summary remains required. Bounded English path categories (a changed Rust file, documentation, a structured spec, or an artifact) resolve from correlated successful file edits; basename-only mentions do not satisfy a full recorded path. One matching path satisfies a category; incidental edits are not all mandatory. Quoted literals and explicitly named unquoted paths are extracted only from the final-answer clause, never from unrelated task examples. Missing items return a correction hint without discarding successful verification. This is a lexical handoff contract, not a semantic judge of arbitrary prose or status claims.
+- Legacy text finalizers can append recorded artifact paths and fresh verification commands, but never invent requested status/approval labels. Failed or unpaired tools, stdout success strings, and commands invalidated by a later mutation do not supply that receipt. Execution proof and final-answer completeness remain separate gates.
 - `src/tui/agent/benchmark_proof.rs` owns the approved plan's command evidence: every distinct `required_checks` item needs a successful, tool-call-correlated `exec` result before closeout. The harness selects the first pending item in plan order. Command case, quoting, and internal whitespace are significant; only surrounding whitespace and Markdown backticks around plan entries are ignored.
 - Successful `write_file`, `patch_file`, and `apply_diff` results invalidate earlier benchmark-plan command evidence, including edits whose appended auto-test fails. Attempts to execute commands outside the approved `required_checks` also invalidate all prior checks when the runtime classifies them as `ExecKind::Action` (for example, `sed -i`). Nonzero exits and timeouts may follow partial writes, so only explicitly blocked or user-rejected actions retain earlier evidence. Benchmark gates and eval reports use the same `execution_evidence::exec_may_have_run` predicate. Explicit required checks remain verification commands even when they use custom scripts. Diagnostic commands and additional recognized verification commands retain prior proof. A failed rerun revokes that required command's earlier success. Proof comes from the runtime's exit-status header, not command output or final-answer claims; external edits and shell mutations misclassified by the runtime remain outside this transcript gate's coverage.
 - The compound docs+spec benchmark-plan eval lists and asserts both verification commands separately, so success on the first command cannot satisfy the second requirement.

@@ -992,10 +992,7 @@ pub(super) fn rescue_missing_reflection_for_tool_turn(
     } else {
         "partial"
     };
-    let repeated_failure = mem.same_error_repeats >= 2
-        || mem.same_command_repeats >= 3
-        || mem.same_output_repeats >= 2
-        || file_tool_consec_failures >= 2;
+    let repeated_failure = mem.repeated_failure_or_stall() || file_tool_consec_failures >= 2;
     let strategy_change = if repeated_failure {
         StrategyChange::Abandon
     } else {

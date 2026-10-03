@@ -149,3 +149,12 @@ array. Loading or executing a case with missing or empty checks fails before
 replay artifacts are created. An unknown nested `replay.checks` object does not
 satisfy that requirement. A replay command's successful exit therefore requires
 evaluated assertions; it is still only evidence for the assertions specified.
+
+Replay failures print bounded structured records with the case, failed check,
+and observed detail, plus the report path. These use `Error:` lines so the
+Coder's error digest preserves them when verbose stderr is shortened. A missing
+queued hint points to the recorded Observer suggestions; descriptive
+`quickest_check` text alone does not queue a Coder action. Parse errors include
+examples serialized from the supported check enum, including required `value`
+fields. `target_message_contains` checks the selected message ID, not source
+contents. Diagnostics do not populate suggestions, repair cases, or waive checks.
