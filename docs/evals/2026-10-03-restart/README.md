@@ -1,6 +1,6 @@
 # Spiral-Coder restart: bounded runtime evidence
 
-This report preserves historical baseline failures and every completed restart attempt. It describes frozen executed artifacts, not automatically the latest source commit. Attempts 01–07 are recorded below. The first corrected target-isolation run was attempt 04; the latest completed follow-up is attempt 07 (Mistral 4/6, OpenAI 4/6). Neither cleared the six-case gate. These are bounded, harness-assisted integration observations, not model rankings.
+This report preserves historical baseline failures and every completed restart attempt. It describes frozen executed artifacts, not automatically the latest source commit. Attempts 01–08 are recorded below. The first corrected target-isolation run was attempt 04; the latest completed follow-up is attempt 08 (Mistral 6/6, OpenAI 4/6). Mistral cleared the six-case gate in this bounded run; OpenAI did not. These are bounded, harness-assisted integration observations, not model rankings.
 
 ## Evidence qualification: historical Cargo target contamination
 
@@ -414,6 +414,72 @@ and attempts 01–03.
 - Evaluator revision: `outcome-proof-v2`; target policy: `per-copied-workspace-default`.
 
 The matching full local check passed 568 Rust tests (one ignored), one server
+integration test, 3/3 deterministic TUI replays, nine Python tests, 13 Node tests,
+14/14 repo-map cases, and the Lite smoke covering nine local assets, status, and
+Git execution. These checks used the repository's separate build target.
+Hashes identify the executed artifacts; later source changes do not retroactively
+change this attempt's results.
+
+## Attempt 08: first complete Mistral run of the fixed six-case suite
+
+Mistral `mistral-small-2603` passed **6/6** cases; OpenAI `gpt-4.1-mini` passed
+**4/6**. Mistral cleared every specified criterion in this bounded run. OpenAI's
+two failed cases remain failures. The frozen spec, checks, iteration caps,
+temperature 0, maximum response tokens 2048, 90-second request timeout,
+English/VIBE mode, and 900-second outer process limit were unchanged. Each copied
+workspace used its own default Cargo target with `CARGO_TARGET_DIR` unset.
+
+Mistral exited 0 in 105.286 s; OpenAI exited 1 in 102.840 s. Neither reached the
+outer timeout. Every case reported zero runtime errors; case success still
+required all its independent completion, tool, verification, artifact, and
+final-answer checks.
+
+| Case | Mistral: result, checks, completion, iterations | OpenAI: result, checks, completion, iterations |
+| --- | --- | --- |
+| `create-single-file` | PASS; 6/6; completed=true; 4 | PASS; 6/6; completed=true; 4 |
+| `fix-failing-rust-test` | PASS; 9/9; completed=true; 5 | PASS; 9/9; completed=true; 5 |
+| `resume-damaged-tool-exchange-fix` | PASS; 6/6; completed=true; 8 | FAIL; 5/6; completed=true; 4 |
+| `approved-benchmark-plan-exec-proof-resume` | PASS; 7/7; completed=true; 5 | PASS; 7/7; completed=true; 3 |
+| `approved-benchmark-plan-tui-replay-smoke` | PASS; 11/11; completed=true; 7 | FAIL; 4/11; completed=false; 12 |
+| `self-fix-pr-ready-runtime-followup` | PASS; 8/8; completed=true; 9 | PASS; 8/8; completed=true; 10 |
+
+The two OpenAI failures remain distinct:
+
+- `resume-damaged-tool-exchange-fix`: the required `patch_file` call was absent; the run used `apply_diff`. Completion, expected source text, automatic-test proof for `cargo test 2>&1`, and the final source-path mention passed. Those artifact and verification successes do not waive the frozen tool-choice criterion.
+- `approved-benchmark-plan-tui-replay-smoke`: missing completion, an executed `exec` call, current explicit proof of both required commands, automatic-test success, the final artifact-path mention, and the artifact's required `src/tui/review_panel.rs` text assertion. Read and patch calls and task-harness telemetry passed. The case reached its 12-iteration cap. This is an unresolved artifact, verification, and completion failure, not merely a reporting omission.
+
+### Changes exercised since attempt 07
+
+- Commands classified as Diagnostic or Verify no longer enter the lexical assumption gate that had incorrectly blocked verification and directory inspection. Action commands retain their assumption checks; other recovery and verification gates remain active.
+- Automatic-test failure causes remain available after old tool results are pruned, preserving information needed for diagnosis.
+- Failed or ambiguous patch matches return relevant file context. The runtime does not automatically choose a replacement occurrence or silently apply an edit.
+
+### Comparison with attempt 07
+
+Mistral moved from 4/6 to 6/6 reported passes: replay passed all eleven criteria,
+and the PR-ready follow-up passed all eight. Its other four cases continued to
+pass. OpenAI stayed at 4/6 with the same two failed cases. Its damaged-resume
+failure remained solely the required tool choice. Its replay stayed incomplete
+and also failed the artifact source-path assertion that had passed in attempt 07.
+
+The Mistral result is a concrete milestone for these six specified integration
+cases, not a general reliability guarantee or a claim that one provider is
+better. Each model had one bounded run against this binary. The observations
+do not isolate the causal effect of individual changes, estimate a stable
+success rate, rank models, or support controlled timing comparisons. Seeded
+history, built-in recovery, and harness-generated actions contribute to the
+probes; they do not measure autonomous model coding quality in isolation.
+All earlier receipts and failures remain unchanged, including the shared-target
+Cargo qualification for baseline and attempts 01–03.
+
+### Artifact identity and local checks
+
+- Source commit: `3972b9db09ba9c5308e76cc39e5ea18814d6d861`.
+- Executed binary SHA-256: `79d7a30e71344ff120a91cf606235d485151e21f2b0edae4794af5075e8fcffd`.
+- Unchanged spec SHA-256: `2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0`.
+- Evaluator revision: `outcome-proof-v2`; target policy: `per-copied-workspace-default`.
+
+The matching full local check passed 578 Rust tests (one ignored), one server
 integration test, 3/3 deterministic TUI replays, nine Python tests, 13 Node tests,
 14/14 repo-map cases, and the Lite smoke covering nine local assets, status, and
 Git execution. These checks used the repository's separate build target.
