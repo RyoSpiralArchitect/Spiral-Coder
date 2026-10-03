@@ -1,5 +1,5 @@
 //! Bounded replay diagnostics that survive the agent's generic error digest.
-use super::{TuiReplayCheck, TuiReplayReport};
+use super::{TuiReplayCase, TuiReplayCheck, TuiReplayMessageRole, TuiReplayReport};
 use serde_json::json;
 use std::path::Path;
 
@@ -12,6 +12,24 @@ fn bounded(text: &str, limit: usize) -> String {
         result.push('…');
     }
     result
+}
+
+pub(super) fn missing_target(case: &TuiReplayCase) -> anyhow::Error {
+    let (mut user, mut assistant, mut tool) = (0, 0, 0);
+    for message in &case.coder_messages {
+        match message.role {
+            TuiReplayMessageRole::User => user += 1,
+            TuiReplayMessageRole::Assistant => assistant += 1,
+            TuiReplayMessageRole::Tool => tool += 1,
+        }
+    }
+    anyhow::anyhow!(
+        "could not infer a stuck target from coder_messages; {}\n\
+Error: tui-replay target requires a completed failure-like assistant message in top-level coder_messages (such as the recorded [GOVERNOR BLOCK] or [error] response).\n\
+Error: tui-replay without selector, the last nonempty assistant must be failure-like. selector=msg:coder-<index> selects an existing failure-like assistant; user/tool messages cannot be targets.\n\
+Error: tui-replay checks only assert the selected target. Changing target_message_contains.value cannot create or select a target.",
+        json!({"case":bounded(&case.id, 80), "roles":{"user":user,"assistant":assistant,"tool":tool}})
+    )
 }
 
 pub(crate) fn failed_report(report: &TuiReplayReport) -> String {

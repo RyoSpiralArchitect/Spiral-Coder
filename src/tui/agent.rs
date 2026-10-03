@@ -42,6 +42,7 @@ use crate::streaming::{
 use crate::types::ChatMessage;
 use std::path::Path;
 
+mod assumption_gate;
 mod done_gate;
 mod evaluator_loop;
 mod exact_content;
@@ -67,6 +68,7 @@ mod session_bridge;
 mod task_harness;
 #[cfg(test)]
 mod tool_result_history_tests;
+use self::assumption_gate::refuted_assumption_conflict;
 use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
     build_read_only_completion_hint, build_read_only_evidence_scores,
@@ -2068,9 +2070,29 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
     // The first runtime status is authoritative, even when later stdout prints
     // another status. Preserve it verbatim before applying the digest budget.
     if crate::execution_evidence::file_edit_succeeded(tool_name, content) {
-        if let Some(status) = lines.iter().find(|line| line.starts_with("[auto-test]")) {
+        if let Some((status_index, status)) = lines
+            .iter()
+            .enumerate()
+            .find(|(_, line)| line.starts_with("[auto-test]"))
+        {
             seen.insert((*status).to_string());
             kept.push((*status).to_string());
+            if status.starts_with("[auto-test] ✗ FAILED (exit ") {
+                // The edit succeeded, but its verification did not. Keep the
+                // cause ahead of diff context; only scan the actual test output.
+                let test_output = lines[status_index + 1..].join("\n");
+                if let Some(digest) = extract_error_digest("", &test_output) {
+                    for line in digest.lines().skip(1).take(4) {
+                        push_unique_tool_line(&mut kept, &mut seen, line);
+                    }
+                } else {
+                    push_unique_tool_line(
+                        &mut kept,
+                        &mut seen,
+                        &interesting_failure_line("", &test_output),
+                    );
+                }
+            }
         }
     }
 
@@ -4534,58 +4556,6 @@ fn validate_impact(impact: &ImpactBlock, plan: Option<&PlanBlock>) -> Result<()>
         ));
     }
     Ok(())
-}
-
-fn refuted_assumption_conflict(
-    ledger: &AssumptionLedger,
-    think: &ThinkBlock,
-    tc: &ToolCallData,
-) -> Option<String> {
-    let mut probe = format!("{} {}", think.goal, think.next);
-    if tc.name == "exec" {
-        if let Some(command) = parse_exec_command_from_args(tc.arguments.as_str()) {
-            probe.push(' ');
-            probe.push_str(command.as_str());
-        }
-    } else if let Some(path) = mutation_target_path(tc) {
-        probe.push(' ');
-        probe.push_str(path.as_str());
-    }
-
-    let probe_sig = normalize_memory_entry(probe.as_str());
-    let probe_tokens = keyword_tokens(probe.as_str());
-    if probe_sig.is_empty() && probe_tokens.is_empty() {
-        return None;
-    }
-
-    for entry in ledger
-        .entries
-        .iter()
-        .filter(|entry| entry.status == AssumptionStatus::Refuted)
-    {
-        let assumption_sig = normalize_memory_entry(entry.text.as_str());
-        let assumption_tokens = keyword_tokens(entry.text.as_str());
-        let overlap = token_overlap_score(&assumption_tokens, &probe_tokens);
-        let exec_retry = tc.name == "exec" && overlap >= 0.50;
-        if (!assumption_sig.is_empty()
-            && (probe_sig.contains(assumption_sig.as_str())
-                || assumption_sig.contains(probe_sig.as_str())))
-            || overlap >= 0.75
-            || exec_retry
-        {
-            let evidence_suffix = entry
-                .evidence
-                .as_deref()
-                .map(|evidence| format!(" ({evidence})"))
-                .unwrap_or_default();
-            return Some(governor_contract::assumption_refuted_reuse_message(
-                entry.text.as_str(),
-                evidence_suffix.as_str(),
-            ));
-        }
-    }
-
-    None
 }
 
 fn parse_string_list_arg(value: &serde_json::Value) -> Vec<String> {
@@ -8967,6 +8937,7 @@ This is the LAST model call for this run.\n\
                 task_harness,
                 &messages,
                 &root_user_text,
+                recovery.stage,
             ) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -9587,6 +9558,7 @@ Execute only the new minimal action: {}",
                     &messages,
                     tc,
                     &root_user_text,
+                    recovery.stage,
                 )
             {
                 let _ = tx
@@ -9649,6 +9621,7 @@ Execute only the new minimal action: {}",
                         &messages,
                         tc,
                         &root_user_text,
+                        recovery.stage,
                     )
                 {
                     let _ = tx

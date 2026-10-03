@@ -195,3 +195,31 @@ fn unquoted_final_paths_are_required_without_copying_unrelated_task_paths() {
     assert!(quoted_literals(&[" `closed` and `unclosed"]).contains("closed"));
     assert!(!quoted_literals(&[" `closed` and `unclosed"]).contains("unclosed"));
 }
+
+#[test]
+fn named_plain_values_in_a_path_list_require_authored_text_not_auto_insertion() {
+    let root = "Final answer must include receipt.log and verified by replay.";
+    let missing = validate_authored_done_summary(
+        root,
+        "Saved receipt.log",
+        "[DONE] Saved receipt.log",
+        &[],
+        None,
+    )
+    .unwrap_err();
+    assert!(missing.contains("explicit item `verified by replay`"));
+    assert!(enrich_text_final_handoff(
+        "[DONE] Saved receipt.log",
+        root,
+        &verified_edits(),
+        Some("cargo test")
+    )
+    .is_none());
+    let answer = "Saved receipt.log; verified by replay.";
+    assert!(validate_authored_done_summary(root, answer, answer, &[], None).is_ok());
+    assert!(named_values(&[" receipt.log and a concise explanation."]).is_empty());
+    assert!(named_values(&[" receipt.log and explain any failures."]).is_empty());
+    assert!(
+        named_values(&[" the changed Rust file path and the verification command."]).is_empty()
+    );
+}

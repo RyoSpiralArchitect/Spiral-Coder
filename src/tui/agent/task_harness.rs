@@ -18,6 +18,9 @@ mod benchmark_proof;
 mod benchmark_recovery_tests;
 #[path = "benchmark_replay.rs"]
 mod benchmark_replay;
+#[cfg(test)]
+#[path = "fix_recovery_tests.rs"]
+mod fix_recovery_tests;
 #[path = "progress_gate.rs"]
 mod progress_gate;
 pub(super) use progress_gate::build_progress_gate_block;
@@ -956,7 +959,18 @@ pub(super) fn coerce_fix_existing_blocked_mutation_tool_call(
     messages: &[Value],
     tc: &ToolCallData,
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -1035,7 +1049,18 @@ pub(super) fn coerce_fix_existing_literal_mutation_tool_call(
     messages: &[Value],
     tc: &ToolCallData,
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -1073,7 +1098,18 @@ pub(super) fn synthesize_fix_existing_no_tool_mutation_tool_call(
     harness: TaskHarness,
     messages: &[Value],
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<ToolCallData> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -3744,6 +3780,7 @@ required_checks:\n\
             },
             &messages,
             "Fix failed cases with rollback so stale approved reviews stay rollback available and failed cases without rollback stay blocked.",
+            None,
         )
         .expect("synthetic guard patch");
 
@@ -4196,6 +4233,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive.",
+            None,
         )
         .expect("blocked mutation coercion");
 
@@ -4307,6 +4345,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive, using the smallest safe code change.",
+            None,
         )
         .expect("literal mutation coercion");
 
@@ -4350,6 +4389,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive.",
+            None,
         )
         .expect("literal mutation despite test reference");
 

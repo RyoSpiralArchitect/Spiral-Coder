@@ -131,3 +131,44 @@ fn failed_replay_reports_actual_checks_and_bounds_model_supplied_labels() {
     assert!(diagnostic.contains("92 additional failed checks"));
     assert!(diagnostic.chars().count() < 7000);
 }
+
+#[test]
+fn target_inference_requires_failure_like_assistant_and_selector_cannot_use_user() {
+    let mut spec = load_spec(&repository_spec_path()).unwrap();
+    spec.cases.truncate(1);
+    let case = &mut spec.cases[0];
+    case.coder_messages.truncate(1);
+    case.checks = vec![TuiReplayCheck::TargetMessageContains {
+        value: "coder-1".to_string(),
+    }];
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    let replay = |spec: &TuiReplaySpec| {
+        std::fs::write(&path, serde_json::to_string(spec).unwrap()).unwrap();
+        replay_spec_for_test(&path, root.path(), &root.path().join("reports"))
+    };
+    let error = replay(&spec).unwrap_err().to_string();
+    assert!(error.contains(r#""roles":{"assistant":0,"tool":0,"user":1}"#));
+    assert!(error.contains("completed failure-like assistant"));
+    assert!(error.contains("target_message_contains.value cannot create or select a target"));
+    spec.cases[0].coder_messages.push(TuiReplayMessage {
+        role: TuiReplayMessageRole::Assistant,
+        content: "[GOVERNOR BLOCK]\nMissing <think>".to_string(),
+    });
+    assert_eq!(replay(&spec).unwrap().summary.passed, 1);
+    spec.cases[0].coder_messages.push(TuiReplayMessage {
+        role: TuiReplayMessageRole::Assistant,
+        content: "Continuing normally".to_string(),
+    });
+    assert!(replay(&spec)
+        .unwrap_err()
+        .to_string()
+        .contains("last nonempty assistant must be failure-like"));
+    spec.cases[0].selector = Some("msg:coder-1".to_string());
+    assert_eq!(replay(&spec).unwrap().summary.passed, 1);
+    spec.cases[0].selector = Some("msg:coder-0".to_string());
+    assert!(replay(&spec)
+        .unwrap_err()
+        .to_string()
+        .contains("not a completed coder assistant message"));
+}

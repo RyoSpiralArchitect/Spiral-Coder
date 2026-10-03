@@ -368,7 +368,7 @@ fn resolve_selector_and_reason(app: &App, case: &TuiReplayCase) -> Result<(Strin
         return Ok((selector, reason));
     }
     let Some((idx, reason)) = events::latest_tui_next_action_target(app) else {
-        anyhow::bail!("could not infer a stuck target from coder_messages");
+        return Err(diagnostics::missing_target(case));
     };
     Ok((
         format!("msg:coder-{idx}"),

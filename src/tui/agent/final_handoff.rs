@@ -123,6 +123,67 @@ fn explicit_paths(clauses: &[&str]) -> BTreeSet<String> {
         .collect()
 }
 
+/// A bounded comma/and list can name plain values as well as paths. Only
+/// recognize short, unqualified values in a list that explicitly names a path;
+/// descriptive requests such as "a summary" remain authored prose, not literals.
+fn named_values(clauses: &[&str]) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    for clause in clauses {
+        if explicit_paths(&[clause]).is_empty() {
+            continue;
+        }
+        for item in clause.split(',').flat_map(|item| item.split(" and ")) {
+            let item = item.trim().trim_end_matches(['.', '!', ';']);
+            let lower = item.to_ascii_lowercase();
+            let words: Vec<_> = lower.split_whitespace().collect();
+            if !(2..=5).contains(&words.len())
+                || item.contains('`')
+                || !explicit_paths(&[item]).is_empty()
+            {
+                continue;
+            }
+            if [
+                "a",
+                "an",
+                "the",
+                "your",
+                "what",
+                "how",
+                "why",
+                "whether",
+                "explain",
+                "describe",
+                "summarize",
+                "list",
+                "mention",
+                "show",
+                "state",
+            ]
+            .contains(&words[0])
+                || words.iter().any(|word| {
+                    [
+                        "path",
+                        "paths",
+                        "file",
+                        "files",
+                        "command",
+                        "commands",
+                        "summary",
+                        "explanation",
+                        "details",
+                        "steps",
+                    ]
+                    .contains(word)
+                })
+            {
+                continue;
+            }
+            out.insert(item.to_string());
+        }
+    }
+    out
+}
+
 #[derive(Default)]
 struct HandoffEvidence {
     paths: BTreeSet<String>,
@@ -212,7 +273,10 @@ pub(super) fn validate_authored_done_summary(
     if summary.trim().is_empty() {
         missing.push("nonempty authored summary".to_string());
     }
-    for literal in quoted_literals(&clauses).union(&explicit_paths(&clauses)) {
+    let mut required_literals = quoted_literals(&clauses);
+    required_literals.extend(explicit_paths(&clauses));
+    required_literals.extend(named_values(&clauses));
+    for literal in required_literals {
         if !rendered.contains(literal.as_str()) {
             missing.push(format!("explicit item `{literal}`"));
         }

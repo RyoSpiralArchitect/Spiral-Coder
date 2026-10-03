@@ -142,3 +142,55 @@ fn replay_check_failures_survive_the_exec_stderr_budget() {
     assert!(rendered.contains(r#"{"kind":"target_message_contains","value":"coder-0"}"#));
     assert!(!root.path().join("invalid-reports").exists());
 }
+
+#[test]
+fn failed_auto_test_target_diagnostic_precedes_edit_context() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    let spec = json!({"version":1,"cases":[{
+        "id":"missing-assistant-target", "prompt":"Inspect the requested target",
+        "coder_messages":[{"role":"user","content":"Inspect the requested target"}],
+        "observer_response":{"summary":"Recorded advice", "suggestions":[]},
+        "checks":[{"kind":"target_message_contains","value":"coder-0"}]
+    }]});
+    std::fs::write(&path, spec.to_string()).unwrap();
+    let error =
+        crate::tui_replay::replay_spec_for_test(&path, root.path(), &root.path().join("reports"))
+            .unwrap_err();
+    let result = format!(
+        "OK: patched 'replay.json'\n[hash] before=old after=new\n{}\n[auto-test] ✗ FAILED (exit 1)\nError: {error}\n{}",
+        "[diff] source context\nError: decoy in changed source\n".repeat(20),
+        "[auto-test] ✓ PASSED (exit 0)\nstdout filler\n".repeat(30),
+    );
+    let compacted = compact_success_tool_result_for_history("patch_file", &result);
+    assert!(compacted.contains("could not infer a stuck target from coder_messages"));
+    assert!(
+        compacted.contains("completed failure-like assistant message in top-level coder_messages")
+    );
+    assert!(compacted.contains("selector=msg:coder-<index>"));
+    assert!(compacted
+        .contains("Changing target_message_contains.value cannot create or select a target"));
+    assert!(compacted.find("could not infer").unwrap() < compacted.find("[diff]").unwrap());
+    assert!(!crate::execution_evidence::auto_test_succeeded(
+        "patch_file",
+        &compacted
+    ));
+    assert!(compacted.lines().count() <= SUCCESS_TOOL_HISTORY_MAX_LINES + 1);
+    assert!(!root.path().join("reports").exists());
+}
+
+#[test]
+fn failed_auto_test_without_error_prefix_keeps_assertion_before_diff() {
+    let result = format!(
+        "OK: wrote 'src/lib.rs'\n{}\n[auto-test] ✗ FAILED (exit 101)\nrunning 1 test\nthread 'behavior' panicked at src/lib.rs:12: assertion failed\n",
+        "[diff] changed content\n".repeat(30),
+    );
+    let compacted = compact_success_tool_result_for_history("write_file", &result);
+    assert!(
+        compacted.find("thread 'behavior' panicked").unwrap() < compacted.find("[diff]").unwrap()
+    );
+    assert!(!crate::execution_evidence::auto_test_succeeded(
+        "write_file",
+        &compacted
+    ));
+}

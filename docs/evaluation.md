@@ -158,3 +158,12 @@ queued hint points to the recorded Observer suggestions; descriptive
 examples serialized from the supported check enum, including required `value`
 fields. `target_message_contains` checks the selected message ID, not source
 contents. Diagnostics do not populate suggestions, repair cases, or waive checks.
+
+Target inference requires the latest nonempty assistant message in top-level
+`coder_messages` to describe a failure. An explicit `msg:coder-<index>` selector
+can select an earlier completed, failure-like assistant message. User and tool
+messages are never valid targets. Missing-target diagnostics report role counts
+and this distinction; changing a check's expected value cannot supply a target.
+When an edit succeeds but its automatic test fails, history compaction preserves
+the first status and prioritizes up to four error lines from the test output
+before diff context. Nonstandard failures retain a representative failure line.
