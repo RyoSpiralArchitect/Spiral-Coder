@@ -28,16 +28,32 @@ acceptance rows still prevent a completed outcome. This outcome records what the
 runtime accepted; independent artifact and verification checks remain necessary
 for correctness.
 
-Recovery diagnosis takes precedence over benchmark-plan tool coercion. After a
-failed edit, requested diagnostic commands and file reads stay intact until
-diagnosis succeeds; the harness cannot repeatedly substitute a blocked mutation.
-A no-tool response in this stage does not synthesize a benchmark edit either.
+Verified-action automatic closeouts defer to the model when the root instruction
+contains `Final answer must include` (case-insensitive). This covers the loop-start,
+redundant post-verification tool, and session-end action finalizers. The runtime
+returns the original final-answer instruction in its `done` hint and rejects an
+empty action `done.summary` instead of replacing it with a generic summary. A
+nonempty model summary still needs the usual acceptance and verification evidence;
+the guard does not invent requested status labels or certify arbitrary prose.
+The existing independent final-answer checks remain authoritative. Prompts without
+this explicit instruction retain automatic action closeout. This boundary does
+not claim coverage of unrelated read-only finalizers.
+
+Recovery stages take precedence over benchmark-plan tool coercion. In Diagnose,
+requested diagnostic commands and file reads stay intact after a failed edit.
+In Fix, the model's repair remains intact instead of being replaced by a generic
+benchmark edit. In Verify, its verification call remains intact until recovery
+completes. A no-tool response in any of these stages does not synthesize a
+benchmark edit. Benchmark assistance resumes when the recovery governor clears
+the stage; preserving a requested call does not bypass the stage's normal gate.
 
 On resume, an unreviewed mutation is identified by its runtime step relative to
 the last impact review, independently of the wording of the recovery prompt. An
 approved benchmark task may reconstruct its missing plan using the existing
 action-plan builder. The reconstructed plan must pass the task and instruction
-contracts before the impact block is validated and adopted. This does not count
+contracts, then is retained before validating the impact block. If that block is
+rejected, the next model request includes the retained plan's step and acceptance
+labels. Invalid progress references still fail. Retaining a plan does not count
 as verification or completion.
 
 `pre_tool_gate_rejected` records otherwise invisible reflection, impact, and

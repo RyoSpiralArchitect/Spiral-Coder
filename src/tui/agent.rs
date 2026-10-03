@@ -73,7 +73,10 @@ use self::done_gate::{
 use self::evaluator_loop::EvaluatorLoop;
 use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
-use self::final_handoff::enrich_text_final_handoff;
+use self::final_handoff::{
+    authored_final_answer_hint, enrich_text_final_handoff, requires_authored_final_answer,
+    validate_authored_done_summary,
+};
 use self::followup_requirements::{
     coerce_existing_followup_tool_call, matches_required_existing_followup,
     required_existing_followup_no_tool_hint,
@@ -5349,6 +5352,9 @@ fn maybe_build_verified_action_closeout_text(
     last_mutation_step: Option<usize>,
     last_verify_ok_step: Option<usize>,
 ) -> Option<String> {
+    if requires_authored_final_answer(root_user_text) {
+        return None;
+    }
     if latest_assistant_message_is_done(messages) {
         return None;
     }
@@ -9608,6 +9614,34 @@ Execute only the new minimal action: {}",
                     restored_impact_plan = true;
                     Some(plan)
                 });
+            // Keep the contract-validated plan before impact can reject this
+            // turn, so the next request exposes the same accepted step labels.
+            if restored_impact_plan {
+                if let Some(plan) = impact_plan.as_ref() {
+                    adopt_valid_plan(
+                        plan,
+                        &mut working_mem,
+                        &mut assumption_ledger,
+                        &mut active_plan,
+                        &mut intent_required_verification,
+                        path_required_verification,
+                        &mut required_verification,
+                        &mut recovery,
+                        &mut last_verify_ok_step,
+                        last_build_verify_ok_step,
+                        last_behavioral_verify_ok_step,
+                    );
+                    emit_telemetry_event(
+                        &tx,
+                        "impact_resume_plan_restored",
+                        json!({
+                            "mutation_step": pending_mutation.map(|pending| pending.step),
+                            "lane": task_harness.lane_label(),
+                        }),
+                    )
+                    .await;
+                }
+            }
             let impact = match parse_impact_block(&assistant_text) {
                 Some(impact) => impact,
                 None => {
@@ -9703,32 +9737,6 @@ Execute only the new minimal action: {}",
                 )))
                 .await;
 
-            if restored_impact_plan {
-                if let Some(plan) = impact_plan.as_ref() {
-                    adopt_valid_plan(
-                        plan,
-                        &mut working_mem,
-                        &mut assumption_ledger,
-                        &mut active_plan,
-                        &mut intent_required_verification,
-                        path_required_verification,
-                        &mut required_verification,
-                        &mut recovery,
-                        &mut last_verify_ok_step,
-                        last_build_verify_ok_step,
-                        last_behavioral_verify_ok_step,
-                    );
-                    emit_telemetry_event(
-                        &tx,
-                        "impact_resume_plan_restored",
-                        json!({
-                            "mutation_step": pending_mutation.map(|pending| pending.step),
-                            "lane": task_harness.lane_label(),
-                        }),
-                    )
-                    .await;
-                }
-            }
             impact_required = None;
         }
 
@@ -10729,7 +10737,9 @@ Execute only the new minimal action: {}",
                     test_cmd.as_deref(),
                     last_mutation_step,
                     last_verify_ok_step,
-                ) {
+                )
+                .filter(|_| !requires_authored_final_answer(&root_user_text))
+                {
                     task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     messages.push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -10763,13 +10773,17 @@ Execute only the new minimal action: {}",
                 }
 
                 state = AgentState::Recovery;
-                let block = build_post_verify_done_completion_hint(
+                let mut block = build_post_verify_done_completion_hint(
                     &candidate_plan,
                     &known_acceptance_commands,
                     tc,
                     required_verification,
                     test_cmd.as_deref(),
                 );
+                if let Some(hint) = authored_final_answer_hint(&root_user_text) {
+                    block.push_str("\n\n");
+                    block.push_str(&hint);
+                }
 
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -13031,6 +13045,32 @@ Required now: run `{command}`."
 
             let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
             let summary = args["summary"].as_str().unwrap_or("").trim();
+            if !root_read_only {
+                if let Err(block) = validate_authored_done_summary(&root_user_text, summary) {
+                    state = AgentState::Recovery;
+                    messages.push(json!({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": format!("GOVERNOR BLOCKED\n\n{block}"),
+                    }));
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+                    let _ = tx
+                        .send(StreamToken::Delta(format!(
+                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                        )))
+                        .await;
+                    pending_system_hint = Some(block);
+                    continue;
+                }
+            }
             let mut completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let mut remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
             let mut acceptance_evidence =
@@ -16512,6 +16552,22 @@ remaining_gap: still need to run cargo test\n\
         assert!(final_text.contains("maze_game_pygame/game.py"));
         assert!(final_text.contains("maze_game_pygame/main.py"));
         assert!(final_text.contains("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"));
+
+        let explicit_handoff = maybe_build_verified_action_closeout_text(
+            "Create a pygame maze game repo. Final answer must include verification_receipt.txt and fresh exec proof.",
+            Some(&plan),
+            &messages,
+            &working_mem,
+            &ObservationEvidence::default(),
+            VerificationLevel::Behavioral,
+            Some("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"),
+            Some(7),
+            Some(7),
+        );
+        assert!(
+            explicit_handoff.is_none(),
+            "an explicit handoff must reach the model's done summary"
+        );
     }
 
     #[test]

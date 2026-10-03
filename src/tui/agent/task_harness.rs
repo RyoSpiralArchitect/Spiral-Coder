@@ -622,8 +622,9 @@ pub(super) fn coerce_benchmark_plan_tool_call(
     recovery_stage: Option<RecoveryStage>,
     test_cmd: Option<&str>,
 ) -> Option<(ToolCallData, String, String)> {
-    // Recovery must inspect the failure before any synthesized edit or verification.
-    if recovery_stage == Some(RecoveryStage::Diagnose) {
+    // Recovery owns diagnosis, repair and re-verification. A target's matching
+    // text does not prove it is valid or authorize replacing a repair with a check.
+    if recovery_stage.is_some() {
         return None;
     }
     if harness.lane != TaskLane::BenchmarkPlan {
@@ -691,8 +692,8 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
     recovery_stage: Option<RecoveryStage>,
     test_cmd: Option<&str>,
 ) -> Option<ToolCallData> {
-    // Recovery must inspect the failure before any synthesized edit or verification.
-    if recovery_stage == Some(RecoveryStage::Diagnose) {
+    // Keep all active recovery operations ahead of benchmark assistance.
+    if recovery_stage.is_some() {
         return None;
     }
     let fallback = ToolCallData {

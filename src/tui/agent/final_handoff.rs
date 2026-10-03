@@ -1,6 +1,45 @@
 use serde_json::Value;
 use std::collections::BTreeSet;
 
+/// Explicit final-answer instructions need an authored handoff. The runtime
+/// must not replace them with its generic verified-action summary.
+pub(super) fn requires_authored_final_answer(root_user_text: &str) -> bool {
+    root_user_text
+        .to_ascii_lowercase()
+        .contains("final answer must include")
+}
+
+pub(super) fn authored_final_answer_hint(root_user_text: &str) -> Option<String> {
+    let instructions = root_user_text
+        .lines()
+        .filter_map(|line| {
+            let start = line
+                .to_ascii_lowercase()
+                .find("final answer must include")?;
+            Some(line[start..].trim())
+        })
+        .collect::<Vec<_>>();
+    if instructions.is_empty() {
+        return None;
+    }
+    Some(format!(
+        "[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Use the verified evidence and state any remaining limitations; do not repeat tools solely to obtain a generic runtime summary.\nOriginal final-answer instruction:\n{}",
+        instructions.join("\n")
+    ))
+}
+
+pub(super) fn validate_authored_done_summary(
+    root_user_text: &str,
+    summary: &str,
+) -> Result<(), String> {
+    if summary.trim().is_empty() {
+        if let Some(hint) = authored_final_answer_hint(root_user_text) {
+            return Err(hint);
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn enrich_text_final_handoff(
     content: &str,
     root_user_text: &str,
@@ -251,8 +290,33 @@ fn looks_like_command_literal(literal: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::enrich_text_final_handoff;
+    use super::*;
     use serde_json::json;
+
+    #[test]
+    fn explicit_unquoted_final_instruction_requires_authored_handoff() {
+        let instruction =
+            "Final answer must include verification_receipt.txt and fresh exec proof.";
+        let root = format!("Finish the verified task. {instruction}");
+        assert!(requires_authored_final_answer(&root));
+        let hint = authored_final_answer_hint(&root).expect("original instruction");
+        assert!(hint.contains(instruction));
+        assert!(hint.contains("nonempty `summary`"));
+        assert!(!hint.contains("[DONE]"));
+        assert_eq!(validate_authored_done_summary(&root, "   "), Err(hint));
+        assert!(validate_authored_done_summary(
+            &root,
+            "Refreshed verification_receipt.txt after rerunning both checks; fresh exec proof is recorded."
+        ).is_ok());
+    }
+
+    #[test]
+    fn ordinary_tasks_keep_legacy_summary_fallback() {
+        let root = "Finish the verified task.";
+        assert!(!requires_authored_final_answer(root));
+        assert!(authored_final_answer_hint(root).is_none());
+        assert!(validate_authored_done_summary(root, "").is_ok());
+    }
 
     #[test]
     fn enriches_done_with_missing_successful_mutation_path() {
