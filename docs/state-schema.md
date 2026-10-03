@@ -112,6 +112,21 @@ This is the right home for typed operational memory such as:
 - accepted strategies that were already matched to successful follow-up actions
 - repeated dead-end commands that should not be retried first after resume
 
+Resume repair:
+
+- `src/session_resume.rs` checks tool-call/result pairing before the saved
+  transcript is sent to a provider again. Call IDs must be nonempty and unique
+  within an assistant's tool-call group; every result must match a pending ID.
+- A missing, duplicate, or mismatched result discards the entire still-pending
+  exchange and its following tail, keeping earlier complete exchanges intact.
+  An orphan result after a complete exchange is discarded without removing that
+  completed exchange. Repair is idempotent: its output needs no second repair.
+- If repair changes history, `AgentSession` rebuilds reflection summaries and
+  the session bridge from the retained prefix so discarded tail metadata cannot
+  supply verification or recovery hints. Valid sessions keep their seeded state.
+- Repair changes history, not the filesystem: interrupted tools may have already
+  produced side effects. A missing result is not evidence that an action failed.
+
 Autosave ordering:
 
 - The active agent task owns transcript saves until it has joined. The CLI may

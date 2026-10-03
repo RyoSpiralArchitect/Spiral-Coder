@@ -13,6 +13,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 #[path = "benchmark_proof.rs"]
 mod benchmark_proof;
+#[cfg(test)]
+#[path = "benchmark_recovery_tests.rs"]
+mod benchmark_recovery_tests;
 #[path = "benchmark_replay.rs"]
 mod benchmark_replay;
 
@@ -616,7 +619,13 @@ pub(super) fn coerce_benchmark_plan_tool_call(
     tc: &ToolCallData,
     root_user_text: &str,
     tool_root: Option<&str>,
+    recovery_stage: Option<RecoveryStage>,
+    test_cmd: Option<&str>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Recovery must inspect the failure before any synthesized edit or verification.
+    if recovery_stage == Some(RecoveryStage::Diagnose) {
+        return None;
+    }
     if harness.lane != TaskLane::BenchmarkPlan {
         return None;
     }
@@ -657,7 +666,9 @@ pub(super) fn coerce_benchmark_plan_tool_call(
         return compare_rewritten_tool_call(tc, rewritten);
     }
 
-    if let Some(command) = pending_benchmark_plan_required_check_exec(messages, root_user_text) {
+    if let Some(command) =
+        pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd)
+    {
         if benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str()) {
             return None;
         }
@@ -677,7 +688,13 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
     messages: &[Value],
     root_user_text: &str,
     tool_root: Option<&str>,
+    recovery_stage: Option<RecoveryStage>,
+    test_cmd: Option<&str>,
 ) -> Option<ToolCallData> {
+    // Recovery must inspect the failure before any synthesized edit or verification.
+    if recovery_stage == Some(RecoveryStage::Diagnose) {
+        return None;
+    }
     let fallback = ToolCallData {
         id: "synthetic_benchmark_plan_no_tool".to_string(),
         name: "done".to_string(),
@@ -686,8 +703,16 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
         })
         .to_string(),
     };
-    coerce_benchmark_plan_tool_call(harness, messages, &fallback, root_user_text, tool_root)
-        .map(|(rewritten, _original, _coerced)| rewritten)
+    coerce_benchmark_plan_tool_call(
+        harness,
+        messages,
+        &fallback,
+        root_user_text,
+        tool_root,
+        recovery_stage,
+        test_cmd,
+    )
+    .map(|(rewritten, _original, _coerced)| rewritten)
 }
 
 pub(super) fn allows_benchmark_plan_followup_during_verify(
@@ -696,14 +721,16 @@ pub(super) fn allows_benchmark_plan_followup_during_verify(
     tc: &ToolCallData,
     root_user_text: &str,
     tool_root: Option<&str>,
+    test_cmd: Option<&str>,
 ) -> bool {
     if harness.lane != TaskLane::BenchmarkPlan {
         return false;
     }
     if benchmark_plan_targets_satisfied(messages, root_user_text, tool_root)
-        && pending_benchmark_plan_required_check_exec(messages, root_user_text).is_some_and(
-            |command| benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str()),
-        )
+        && pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd)
+            .is_some_and(|command| {
+                benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str())
+            })
     {
         return true;
     }
@@ -737,18 +764,20 @@ pub(super) fn allows_benchmark_plan_followup_during_verify(
 pub(super) fn benchmark_plan_pending_required_exec_command(
     root_user_text: &str,
     messages: &[Value],
+    test_cmd: Option<&str>,
 ) -> Option<String> {
     root_user_text
         .contains("<observer_benchmark_plan")
-        .then(|| pending_benchmark_plan_required_check_exec(messages, root_user_text))
+        .then(|| pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd))
         .flatten()
 }
 
 pub(super) fn benchmark_plan_missing_required_exec_proof(
     root_user_text: &str,
     messages: &[Value],
+    test_cmd: Option<&str>,
 ) -> bool {
-    benchmark_plan_pending_required_exec_command(root_user_text, messages).is_some()
+    benchmark_plan_pending_required_exec_command(root_user_text, messages, test_cmd).is_some()
 }
 
 pub(super) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
@@ -853,8 +882,9 @@ fn push_unique_path(out: &mut Vec<String>, path: String) {
 fn pending_benchmark_plan_required_check_exec(
     messages: &[Value],
     root_user_text: &str,
+    test_cmd: Option<&str>,
 ) -> Option<String> {
-    benchmark_proof::pending_command(messages, root_user_text)
+    benchmark_proof::pending_command(messages, root_user_text, test_cmd)
 }
 
 fn benchmark_plan_targets_satisfied(
@@ -2708,9 +2738,16 @@ required_checks:\n\
             arguments: json!({"pattern":"runtime eval","path":"src"}).to_string(),
         };
 
-        let (rewritten, original, coerced) =
-            coerce_benchmark_plan_tool_call(harness, &[], &tc, "lane: runtime_eval", None)
-                .expect("rewritten");
+        let (rewritten, original, coerced) = coerce_benchmark_plan_tool_call(
+            harness,
+            &[],
+            &tc,
+            "lane: runtime_eval",
+            None,
+            None,
+            None,
+        )
+        .expect("rewritten");
 
         assert_eq!(original, "search_files(path=src, pattern=runtime eval)");
         assert_eq!(rewritten.name, "read_file");
@@ -2749,6 +2786,8 @@ success_criteria:\n\
 - .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         )
         .expect("read first");
 
@@ -2788,6 +2827,8 @@ success_criteria:\n\
             &messages,
             &tc,
             "<observer_benchmark_plan>\nlane: tui_replay\n</observer_benchmark_plan>",
+            None,
+            None,
             None,
         );
 
@@ -2831,6 +2872,8 @@ case_id_hint: self-fix-session-bridge-runtime-followup\n\
 success_criteria:\n\
 - .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
+            None,
+            None,
             None,
         )
         .expect("synthetic benchmark patch");
@@ -2890,6 +2933,8 @@ success_criteria:\n\
 - .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         );
 
         assert!(rewritten.is_none());
@@ -2948,6 +2993,8 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         )
         .expect("docs read");
 
@@ -3007,6 +3054,8 @@ target_files:\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
+            None,
+            None,
             None,
         )
         .expect("docs patch");
@@ -3085,6 +3134,8 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         );
 
         assert!(rewritten.is_none());
@@ -3142,6 +3193,7 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None
         ));
     }
 
@@ -3202,6 +3254,7 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+            None
         ));
     }
 
@@ -3244,6 +3297,7 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+            None
         ));
     }
 
@@ -3314,6 +3368,7 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+        None, None
         )
         .expect("required check exec");
 
@@ -3372,6 +3427,7 @@ success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+        None, None
         )
         .expect("synthetic docs patch");
 
@@ -3414,11 +3470,13 @@ required_checks:\n\
 
         assert!(benchmark_plan_missing_required_exec_proof(
             root_user_text,
-            &[]
+            &[],
+            None
         ));
         assert!(!benchmark_plan_missing_required_exec_proof(
             root_user_text,
-            &messages
+            &messages,
+            None
         ));
     }
 
@@ -3441,10 +3499,10 @@ required_checks:\n\
         };
         let second = "grep -q 'A  B' Spec.json";
         assert!(benchmark_plan_missing_required_exec_proof(
-            prompt, &messages
+            prompt, &messages, None
         ));
         assert_eq!(
-            benchmark_plan_pending_required_exec_command(prompt, &messages).as_deref(),
+            benchmark_plan_pending_required_exec_command(prompt, &messages, None).as_deref(),
             Some(second)
         );
 
@@ -3458,16 +3516,17 @@ required_checks:\n\
                 name: name.to_string(),
                 arguments: args.to_string(),
             };
-            let (rewritten, _, _) =
-                coerce_benchmark_plan_tool_call(harness, &messages, &candidate, prompt, None)
-                    .expect("second check remains required");
+            let (rewritten, _, _) = coerce_benchmark_plan_tool_call(
+                harness, &messages, &candidate, prompt, None, None, None,
+            )
+            .expect("second check remains required");
             assert_eq!(rewritten.name, "exec");
             assert_eq!(
                 serde_json::from_str::<Value>(&rewritten.arguments).unwrap(),
                 json!({"command": second})
             );
             assert!(allows_benchmark_plan_followup_during_verify(
-                harness, &messages, &rewritten, prompt, None
+                harness, &messages, &rewritten, prompt, None, None
             ));
         }
     }

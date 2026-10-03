@@ -7,6 +7,8 @@ use tokio::sync::mpsc;
 use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
+mod tool_calls;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReflectionSummary {
     pub last_outcome: Option<String>,
@@ -556,10 +558,7 @@ pub async fn stream_openai_compat_json(
         return Err(last_err.unwrap_or_else(|| anyhow!("{label} request failed")));
     };
 
-    let mut tc_id = String::new();
-    let mut tc_name = String::new();
-    let mut tc_args = String::new();
-    let mut in_tool_call = false;
+    let mut tool_calls = tool_calls::ToolCallAccumulator::default();
 
     let mut buf: Vec<u8> = Vec::new();
     while let Some(chunk) = resp.chunk().await? {
@@ -581,14 +580,8 @@ pub async fn stream_openai_compat_json(
             }
             let data = data_lines.join("\n");
             if data.trim() == "[DONE]" {
-                if in_tool_call && !tc_name.is_empty() {
-                    let _ = tx
-                        .send(StreamToken::ToolCall(ToolCallData {
-                            id: tc_id.clone(),
-                            name: tc_name.clone(),
-                            arguments: tc_args.clone(),
-                        }))
-                        .await;
+                for call in tool_calls.drain() {
+                    let _ = tx.send(StreamToken::ToolCall(call)).await;
                 }
                 let _ = tx.send(StreamToken::Done).await;
                 return Ok(());
@@ -620,42 +613,13 @@ pub async fn stream_openai_compat_json(
             }
 
             if let Some(calls) = v.pointer("/choices/0/delta/tool_calls") {
-                if let Some(arr) = calls.as_array() {
-                    for call in arr {
-                        if let Some(id) = call.get("id").and_then(|x| x.as_str()) {
-                            if !id.is_empty() {
-                                tc_id = id.to_string();
-                                in_tool_call = true;
-                            }
-                        }
-                        if let Some(fn_name) =
-                            call.pointer("/function/name").and_then(|x| x.as_str())
-                        {
-                            if !fn_name.is_empty() {
-                                tc_name = fn_name.to_string();
-                            }
-                        }
-                        if let Some(args_chunk) =
-                            call.pointer("/function/arguments").and_then(|x| x.as_str())
-                        {
-                            tc_args.push_str(args_chunk);
-                        }
-                    }
-                }
+                tool_calls.push(calls)?;
             }
 
-            if finish_reason == "tool_calls" && in_tool_call && !tc_name.is_empty() {
-                let _ = tx
-                    .send(StreamToken::ToolCall(ToolCallData {
-                        id: tc_id.clone(),
-                        name: tc_name.clone(),
-                        arguments: tc_args.clone(),
-                    }))
-                    .await;
-                tc_id.clear();
-                tc_name.clear();
-                tc_args.clear();
-                in_tool_call = false;
+            if finish_reason == "tool_calls" {
+                for call in tool_calls.drain() {
+                    let _ = tx.send(StreamToken::ToolCall(call)).await;
+                }
             }
 
             if finish_reason == "stop" {

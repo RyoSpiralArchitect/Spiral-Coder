@@ -274,7 +274,7 @@ mod tests {
             }
             let proof_missing =
                 super::super::task_harness::benchmark_plan_missing_required_exec_proof(
-                    plan, &messages,
+                    plan, &messages, None,
                 );
             assert_eq!(proof_missing, !verify_after_edit);
             super::super::prune_old_tool_results(&mut messages);
@@ -288,11 +288,63 @@ mod tests {
                 .any(|message| message["tool_call_id"] == "edit"));
             assert_eq!(
                 super::super::task_harness::benchmark_plan_missing_required_exec_proof(
-                    plan, &messages
+                    plan, &messages, None
                 ),
                 proof_missing
             );
             assert_resume_intact(&messages);
+        }
+    }
+
+    #[test]
+    fn benchmark_window_keeps_shell_mutation_between_required_checks() {
+        let plan = "<observer_benchmark_plan>\nrequired_checks:\n- check A\n- check B\n</observer_benchmark_plan>";
+        for output in [
+            "OK (exit_code: 0)\nstdout:\none\ntwo\nthree",
+            "FAILED (exit_code: 1)",
+            "ERROR: process timed out",
+        ] {
+            for rerun_b in [false, true] {
+                let mut messages = vec![json!({"role":"user","content":plan})];
+                let mut add_exec = |id: &str, command: &str| {
+                    let mut pair =
+                        exchange(id, "exec", "OK (exit_code: 0)\nstdout:\none\ntwo\nthree");
+                    pair[0]["tool_calls"][0]["function"]["arguments"] =
+                        json!(json!({"command":command}).to_string());
+                    messages.extend(pair);
+                };
+                add_exec("a_before", "check A");
+                add_exec("b_before", "check B");
+                add_exec("shell_edit", "sed -i 's/old/new/' src/lib.rs");
+                add_exec("a_after", "check A");
+                if rerun_b {
+                    add_exec("b_after", "check B");
+                }
+                for index in 0..35 {
+                    add_exec(&format!("noise_{index}"), "git status --short");
+                }
+                messages[6]["content"] = json!(output);
+                let expected = (!rerun_b).then(|| "check B".to_string());
+                assert_eq!(
+                    super::super::task_harness::benchmark_plan_pending_required_exec_command(
+                        plan, &messages, None
+                    ),
+                    expected
+                );
+                super::super::prune_old_tool_results(&mut messages);
+                prune_message_window(&mut messages);
+                assert!(messages.len() <= MAX_CONTEXT_MESSAGES);
+                assert!(messages
+                    .iter()
+                    .any(|message| message["tool_call_id"] == "shell_edit"));
+                assert_eq!(
+                    super::super::task_harness::benchmark_plan_pending_required_exec_command(
+                        plan, &messages, None
+                    ),
+                    expected
+                );
+                assert_resume_intact(&messages);
+            }
         }
     }
 }

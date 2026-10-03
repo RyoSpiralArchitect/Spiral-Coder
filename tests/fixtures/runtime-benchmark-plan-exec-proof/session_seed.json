@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "created_at_ms": 0,
+  "updated_at_ms": 0,
+  "tool_root": null,
+  "checkpoint": null,
+  "cur_cwd": null,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Prepare the benchmark-plan docs and regression artifact, then verify both."
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "read_spec",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \".spiral-coder/runtime_eval.json\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "read_spec",
+      "content": "[.spiral-coder/runtime_eval.json] (10 lines, 200 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/benchmark_proof.rs\"\n  ],\n  \"cases\": [\n    {\n      \"id\": \"proof-fixture\",\n      \"prompt\": \"Keep verification evidence current.\"\n    }\n  ]\n}\n"
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "read_docs",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"docs/runtime-architecture.md\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "read_docs",
+      "content": "[docs/runtime-architecture.md] (3 lines, 100 bytes)\n# Runtime\n\n- `src/tui/agent/benchmark_proof.rs` tracks approved benchmark-plan checks.\n"
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "check_a_before",
+          "type": "function",
+          "function": {
+            "name": "exec",
+            "arguments": "{\"command\": \"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" .spiral-coder/runtime_eval.json\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "check_a_before",
+      "content": "OK (exit_code: 0)"
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "check_b_before",
+          "type": "function",
+          "function": {
+            "name": "exec",
+            "arguments": "{\"command\": \"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "check_b_before",
+      "content": "OK (exit_code: 0)"
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "shell_edit",
+          "type": "function",
+          "function": {
+            "name": "exec",
+            "arguments": "{\"command\": \"printf '\\\\nupdated after initial verification\\\\n' >> docs/runtime-architecture.md && printf stale > verification_receipt.txt\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "shell_edit",
+      "content": "OK (exit_code: 0)"
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "check_a_after",
+          "type": "function",
+          "function": {
+            "name": "exec",
+            "arguments": "{\"command\": \"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" .spiral-coder/runtime_eval.json\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "check_a_after",
+      "content": "OK (exit_code: 0)"
+    }
+  ]
+}

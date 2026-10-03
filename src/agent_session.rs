@@ -5,6 +5,9 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
+#[path = "session_resume.rs"]
+mod session_resume;
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LastReflectionSummary {
     pub last_outcome: Option<String>,
@@ -628,110 +631,13 @@ impl AgentSession {
     /// Repairs common session corruption patterns so the agent can resume.
     /// Returns a short warning string if the message list was modified.
     pub fn repair_for_resume(&mut self) -> Option<String> {
-        let mut pending_ids: Vec<String> = Vec::new();
-        let mut pending_started_at: Option<usize> = None;
-        let mut trim_from: Option<usize> = None;
-        let mut reason: Option<String> = None;
-
-        for (idx, msg) in self.messages.iter().enumerate() {
-            let role = msg.get("role").and_then(|r| r.as_str()).unwrap_or("");
-            match role {
-                "assistant" => {
-                    let tool_calls = msg.get("tool_calls");
-                    let has_tool_calls = tool_calls
-                        .and_then(|tc| tc.as_array())
-                        .map(|a| !a.is_empty())
-                        .unwrap_or(false);
-                    if has_tool_calls {
-                        if !pending_ids.is_empty() {
-                            trim_from = pending_started_at.or(Some(idx));
-                            reason = Some(
-                                "found a new assistant tool_call before the previous tool_call completed"
-                                    .to_string(),
-                            );
-                            break;
-                        }
-                        let ids: Vec<String> = tool_calls
-                            .and_then(|tc| tc.as_array())
-                            .into_iter()
-                            .flatten()
-                            .filter_map(|tc| {
-                                tc.get("id").and_then(|v| v.as_str()).map(|s| s.to_string())
-                            })
-                            .collect();
-                        if !ids.is_empty() {
-                            pending_ids = ids;
-                            pending_started_at = Some(idx);
-                        }
-                    } else if !pending_ids.is_empty() {
-                        trim_from = pending_started_at;
-                        reason = Some(
-                            "found a non-tool assistant message while tool results were still pending"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                }
-                "tool" => {
-                    let Some(id) = msg.get("tool_call_id").and_then(|v| v.as_str()) else {
-                        trim_from = Some(idx);
-                        reason = Some("tool message missing tool_call_id".to_string());
-                        break;
-                    };
-                    if pending_ids.is_empty() {
-                        trim_from = Some(idx);
-                        reason = Some(
-                            "tool result appeared without a preceding assistant tool_call"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                    if let Some(pos) = pending_ids.iter().position(|p| p == id) {
-                        pending_ids.remove(pos);
-                        if pending_ids.is_empty() {
-                            pending_started_at = None;
-                        }
-                    } else {
-                        trim_from = Some(idx);
-                        reason = Some(
-                            "tool result tool_call_id did not match the pending tool_call"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                }
-                _ => {
-                    if !pending_ids.is_empty() {
-                        trim_from = pending_started_at;
-                        reason = Some(format!(
-                            "found a '{role}' message while tool results were still pending"
-                        ));
-                        break;
-                    }
-                }
-            }
-        }
-
-        if trim_from.is_none() && !pending_ids.is_empty() {
-            trim_from = pending_started_at;
-            reason = Some("session ended mid tool_call (missing tool results)".to_string());
-        }
-
-        let Some(from) = trim_from else {
-            return None;
-        };
-
-        if from >= self.messages.len() {
-            return None;
-        }
-
-        let old_len = self.messages.len();
-        self.messages.truncate(from);
-        let trimmed = old_len - from;
-        Some(format!(
-            "repaired session: truncated {trimmed} message(s) from index {from} ({})",
-            reason.unwrap_or_else(|| "unknown reason".to_string())
-        ))
+        let warning = session_resume::repair(&mut self.messages)?;
+        // Derived resume hints must describe the retained transcript, not facts
+        // from the discarded malformed tail.
+        self.last_reflection = last_reflection_summary_from_messages(&self.messages);
+        self.recent_reflections = recent_reflection_summaries_from_messages(&self.messages, 3);
+        self.session_bridge = session_bridge_from_messages(&self.messages);
+        Some(warning)
     }
 }
 
@@ -959,6 +865,70 @@ mod tests {
             .unwrap_or_default()
             .as_nanos();
         PathBuf::from(format!("{prefix}-{n}.{ext}"))
+    }
+
+    #[test]
+    fn resume_repair_persists_an_idempotent_complete_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("session.json");
+        let prefix = vec![
+            json!({"role":"user","content":"fix and verify"}),
+            json!({"role":"assistant","tool_calls":[{
+                "id":"complete","function":{"name":"read_file","arguments":"{}"}
+            }]}),
+            json!({"role":"tool","tool_call_id":"complete","content":"observed source"}),
+        ];
+        let mut messages = prefix.clone();
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{
+                "id":"pending","function":{"name":"exec","arguments":"{}"}
+            }]}),
+            json!({"role":"tool","tool_call_id":"wrong","content":"OK (exit_code: 0)"}),
+        ]);
+        let mut session = AgentSession::new(None, None, None, None, messages);
+        session.last_reflection = Some(LastReflectionSummary {
+            next_minimal_action: Some("discarded tail action".into()),
+            ..Default::default()
+        });
+        session.recent_reflections = vec![session.last_reflection.clone().unwrap()];
+        session.session_bridge = Some(SessionBridge {
+            last_good_verification: Some(SessionVerificationMemory {
+                command: "discarded tail verification".into(),
+            }),
+            ..Default::default()
+        });
+        assert!(session.repair_for_resume().is_some());
+        assert_eq!(session.messages, prefix);
+        assert!(session.last_reflection.is_none());
+        assert!(session.recent_reflections.is_empty());
+        assert_eq!(
+            session.session_bridge,
+            session_bridge_from_messages(&prefix)
+        );
+        AgentSession::save_atomic(&path, &session).unwrap();
+        let mut loaded = AgentSession::load(&path).unwrap();
+        assert_eq!(loaded.messages, prefix);
+        assert_eq!(loaded.repair_for_resume(), None);
+    }
+
+    #[test]
+    fn valid_resume_preserves_seeded_metadata() {
+        let mut session = AgentSession::new(
+            None,
+            None,
+            None,
+            None,
+            vec![json!({"role":"user","content":"continue"})],
+        );
+        session.session_bridge = Some(SessionBridge {
+            last_good_verification: Some(SessionVerificationMemory {
+                command: "previously recorded test".into(),
+            }),
+            ..Default::default()
+        });
+        let before = serde_json::to_value(&session).unwrap();
+        assert_eq!(session.repair_for_resume(), None);
+        assert_eq!(serde_json::to_value(&session).unwrap(), before);
     }
 
     #[test]

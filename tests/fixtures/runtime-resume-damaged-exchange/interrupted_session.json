@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "created_at_ms": 1775389000000,
+  "updated_at_ms": 1775389000000,
+  "tool_root": null,
+  "checkpoint": null,
+  "cur_cwd": null,
+  "last_reflection": {
+    "last_outcome": "partial",
+    "goal_delta": "same",
+    "wrong_assumption": "reading again would help",
+    "strategy_change": "adjust",
+    "next_minimal_action": "patch src/lib.rs with the smallest fix"
+  },
+  "recent_reflections": [
+    {
+      "last_outcome": "partial",
+      "goal_delta": "same",
+      "wrong_assumption": "reading again would help",
+      "strategy_change": "adjust",
+      "next_minimal_action": "patch src/lib.rs with the smallest fix"
+    }
+  ],
+  "observation_cache": {
+    "reads": [
+      {
+        "command": "read_file(path=src/lib.rs)",
+        "path": "src/lib.rs"
+      }
+    ],
+    "searches": [],
+    "resolutions": [
+      {
+        "query": "src/lib.rs",
+        "canonical_path": "src/lib.rs",
+        "source": "read_file"
+      }
+    ]
+  },
+  "session_bridge": {
+    "last_good_verification": {
+      "command": "cargo test 2>&1"
+    },
+    "accepted_strategies": [
+      {
+        "wrong_assumption": "reading again would help",
+        "next_minimal_action": "patch src/lib.rs with the smallest fix",
+        "matched_command": "patch_file(path=src/lib.rs)",
+        "count": 1
+      }
+    ],
+    "repeated_dead_ends": [
+      {
+        "command": "read_file(path=src/lib.rs)",
+        "reason": "repeat observation without enough new progress",
+        "count": 3
+      }
+    ]
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a coding agent. Use tools and verify your work."
+    },
+    {
+      "role": "user",
+      "content": "Fix the failing test with the smallest code change. Run tests before you finish."
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_interrupted_read",
+          "type": "function",
+          "function": {
+            "name": "read_file",
+            "arguments": "{\"path\": \"src/lib.rs\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_mismatched_result",
+      "content": "Interrupted session: result belongs to a different tool call."
+    }
+  ]
+}

@@ -44,13 +44,17 @@ use std::path::Path;
 
 mod done_gate;
 mod evaluator_loop;
+mod exec_classification;
+mod exec_proof;
 mod failure_localization;
 mod final_handoff;
 mod followup_requirements;
 mod harness_evolution;
+mod impact_recovery;
 mod memory;
 mod message_window;
 mod meta_harness;
+mod outcome;
 mod progress_bridge;
 mod provider_compat;
 mod read_only;
@@ -67,6 +71,7 @@ use self::done_gate::{
     synthesize_action_done_summary, validate_done_acceptance,
 };
 use self::evaluator_loop::EvaluatorLoop;
+use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
 use self::final_handoff::enrich_text_final_handoff;
 use self::followup_requirements::{
@@ -3588,7 +3593,10 @@ impl WorkingMemory {
                     if !non_exec_tool_succeeded(content) {
                         continue;
                     }
-                    let verified = content.contains("PASSED (exit 0)");
+                    let verified = crate::execution_evidence::auto_test_succeeded(
+                        intent.name.as_str(),
+                        content,
+                    );
                     update_working_memory_after_non_exec(
                         &mut mem,
                         intent.name.as_str(),
@@ -5256,7 +5264,8 @@ fn collect_successful_auto_test_verification_commands(
     let Some(test_cmd) = test_cmd.map(str::trim).filter(|cmd| !cmd.is_empty()) else {
         return Vec::new();
     };
-    let mut pending_ids: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    let mut pending_ids: std::collections::BTreeMap<String, String> =
+        std::collections::BTreeMap::new();
     let mut commands = Vec::new();
 
     for msg in messages {
@@ -5281,7 +5290,7 @@ fn collect_successful_auto_test_verification_commands(
                     .unwrap_or("")
                     .trim();
                 if matches!(name, "write_file" | "patch_file" | "apply_diff") {
-                    pending_ids.insert(id.to_string());
+                    pending_ids.insert(id.to_string(), name.to_string());
                 }
             }
             continue;
@@ -5296,11 +5305,11 @@ fn collect_successful_auto_test_verification_commands(
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .trim();
-        if tool_call_id.is_empty() || !pending_ids.remove(tool_call_id) {
+        let Some(name) = pending_ids.remove(tool_call_id) else {
             continue;
-        }
+        };
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        if content.contains("PASSED (exit 0)") {
+        if crate::execution_evidence::auto_test_succeeded(&name, content) {
             remember_recent_unique(&mut commands, test_cmd, 8, 1024);
         }
     }
@@ -5346,7 +5355,7 @@ fn maybe_build_verified_action_closeout_text(
     if required_existing_followup_no_tool_hint(messages, root_user_text).is_some() {
         return None;
     }
-    if benchmark_plan_missing_required_exec_proof(root_user_text, messages) {
+    if benchmark_plan_missing_required_exec_proof(root_user_text, messages, test_cmd) {
         return None;
     }
 
@@ -6204,136 +6213,6 @@ fn last_impact_step_from_messages(messages: &[serde_json::Value]) -> Option<usiz
     last_impact_step
 }
 
-fn restore_done_gate_from_messages(
-    messages: &[serde_json::Value],
-    test_cmd: Option<&str>,
-) -> (
-    usize,
-    Option<usize>,
-    Option<usize>,
-    Option<usize>,
-    Option<usize>,
-) {
-    // step_seq counts tool results (role=tool) so we can compare "mutation happened after verify"
-    // even across resumed sessions.
-    let mut step_seq: usize = 0;
-    let mut last_mutation_step: Option<usize> = None;
-    let mut last_build_verify_ok_step: Option<usize> = None;
-    let mut last_behavioral_verify_ok_step: Option<usize> = None;
-    let mut last_exec_step: Option<usize> = None;
-
-    // Map tool_call_id -> (tool_name, exec_command?)
-    let mut by_id: std::collections::HashMap<String, (String, Option<String>)> =
-        std::collections::HashMap::new();
-
-    for msg in messages {
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        if role == "assistant" {
-            let Some(tcs) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                continue;
-            };
-            for tc in tcs {
-                let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                if id.is_empty() {
-                    continue;
-                }
-                let name = tc
-                    .get("function")
-                    .and_then(|f| f.get("name"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim()
-                    .to_string();
-                let args = tc
-                    .get("function")
-                    .and_then(|f| f.get("arguments"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim()
-                    .to_string();
-                let cmd = if name == "exec" {
-                    parse_exec_command_from_args(&args)
-                } else {
-                    None
-                };
-                by_id.insert(id.to_string(), (name, cmd));
-            }
-            continue;
-        }
-
-        if role != "tool" {
-            continue;
-        }
-
-        step_seq = step_seq.saturating_add(1);
-
-        let id = msg
-            .get("tool_call_id")
-            .and_then(|v| v.as_str())
-            .unwrap_or("")
-            .trim();
-        if id.is_empty() {
-            continue;
-        }
-        let Some((name, cmd)) = by_id.remove(id) else {
-            continue;
-        };
-        let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-
-        if name == "exec" {
-            last_exec_step = Some(step_seq);
-            let (exit_code, stdout, stderr) = parse_exec_tool_output_sections(content);
-            let Some(exit_code) = exit_code else {
-                continue;
-            };
-            let cmd = cmd.unwrap_or_default();
-            let verify_level = classify_verify_level(&cmd, test_cmd);
-            let kind = classify_exec_kind(&cmd, test_cmd);
-            if exit_code == 0 && suspicious_success_reason(&stdout, &stderr).is_none() {
-                match kind {
-                    ExecKind::Action => last_mutation_step = Some(step_seq),
-                    ExecKind::Verify => match verify_level {
-                        Some(VerificationLevel::Build) => {
-                            last_build_verify_ok_step = Some(step_seq)
-                        }
-                        Some(VerificationLevel::Behavioral) => {
-                            last_behavioral_verify_ok_step = Some(step_seq)
-                        }
-                        None => {}
-                    },
-                    ExecKind::Diagnostic => {}
-                }
-            }
-            continue;
-        }
-
-        if matches!(name.as_str(), "write_file" | "patch_file" | "apply_diff") {
-            // Successful edits always append a hash line.
-            if content.contains("[hash]") {
-                last_mutation_step = Some(step_seq);
-            }
-            // Auto-test success (if configured) also counts as verification.
-            if content.contains("PASSED (exit 0)") {
-                match configured_test_cmd_verification_level(test_cmd) {
-                    Some(VerificationLevel::Build) => last_build_verify_ok_step = Some(step_seq),
-                    Some(VerificationLevel::Behavioral) => {
-                        last_behavioral_verify_ok_step = Some(step_seq)
-                    }
-                    None => {}
-                }
-            }
-        }
-    }
-
-    (
-        step_seq,
-        last_mutation_step,
-        last_build_verify_ok_step,
-        last_behavioral_verify_ok_step,
-        last_exec_step,
-    )
-}
-
 fn validate_plan(plan: &PlanBlock) -> Result<()> {
     if plan.goal.trim().is_empty() {
         return Err(anyhow!(governor_contract::plan_missing_goal_message()));
@@ -6686,11 +6565,7 @@ fn has_project_rules_context(messages: &[serde_json::Value]) -> bool {
 }
 
 fn is_diagnostic_command(command: &str) -> bool {
-    let sig = command_sig(command);
-    signature_matches_any(
-        sig.as_str(),
-        governor_contract::instruction_resolver_diagnostic_exec_signatures(),
-    )
+    exec_classification::is_diagnostic(command)
 }
 
 fn verification_examples(level: VerificationLevel) -> String {
@@ -6742,45 +6617,8 @@ fn verification_examples(level: VerificationLevel) -> String {
     }
 }
 
-fn verification_level_from_signature(sig: &str) -> Option<VerificationLevel> {
-    let verification = governor_contract::verification();
-    if signature_matches_any(sig, &verification.ignore_command_signatures) {
-        return None;
-    }
-    if signature_matches_any(sig, &verification.behavioral_command_signatures) {
-        return Some(VerificationLevel::Behavioral);
-    }
-
-    if signature_matches_any(sig, &verification.build_command_signatures) {
-        return Some(VerificationLevel::Build);
-    }
-
-    None
-}
-
 fn configured_test_cmd_verification_level(test_cmd: Option<&str>) -> Option<VerificationLevel> {
-    let sig = command_sig_full(test_cmd.unwrap_or(""));
-    if sig.is_empty() {
-        return None;
-    }
-    if signature_matches_any(
-        &sig,
-        &governor_contract::verification().ignore_command_signatures,
-    ) {
-        return None;
-    }
-    verification_level_from_signature(&sig).or(Some(VerificationLevel::Behavioral))
-}
-
-fn command_has_failure_suppression(sig: &str) -> bool {
-    let normalized = sig.trim();
-    !normalized.is_empty()
-        && (normalized.contains("|| true")
-            || normalized.contains("|| :")
-            || normalized.contains("|| exit 0")
-            || normalized.contains("; true")
-            || normalized.contains("; :")
-            || normalized.contains("; exit 0"))
+    exec_classification::configured_level(test_cmd)
 }
 
 fn verification_requirement_hint(level: VerificationLevel, test_cmd: Option<&str>) -> String {
@@ -6848,37 +6686,15 @@ fn should_emit_verification_requirement_prompt(
 }
 
 fn classify_verify_level(command: &str, test_cmd: Option<&str>) -> Option<VerificationLevel> {
-    let c = command_sig_full(command);
-    if c.is_empty() {
-        return None;
-    }
-    if command_has_failure_suppression(&c) {
-        return None;
-    }
-    if let Some(level) = verification_level_from_signature(&c) {
-        return Some(level);
-    }
-    if let Some(t) = test_cmd {
-        let t_sig = command_sig_full(t);
-        if !t_sig.is_empty() && c == t_sig {
-            return configured_test_cmd_verification_level(Some(t));
-        }
-    }
-    None
-}
-
-fn is_verify_command(command: &str, test_cmd: Option<&str>) -> bool {
-    classify_verify_level(command, test_cmd).is_some()
+    exec_classification::verify_level(command, test_cmd)
 }
 
 fn classify_exec_kind(command: &str, test_cmd: Option<&str>) -> ExecKind {
-    if is_verify_command(command, test_cmd) {
-        return ExecKind::Verify;
-    }
-    if is_diagnostic_command(command) {
-        return ExecKind::Diagnostic;
-    }
-    ExecKind::Action
+    exec_classification::classify(command, test_cmd)
+}
+
+pub(crate) fn exec_may_mutate_for_evaluation(command: &str, test_cmd: Option<&str>) -> bool {
+    matches!(classify_exec_kind(command, test_cmd), ExecKind::Action)
 }
 
 fn normalize_for_signature_with_limit(s: &str, max_len: usize) -> String {
@@ -6905,12 +6721,6 @@ fn text_contains_any(haystack: &str, terms: &[String]) -> bool {
     terms
         .iter()
         .any(|term| !term.is_empty() && haystack.contains(term))
-}
-
-fn signature_matches_any(sig: &str, signatures: &[String]) -> bool {
-    signatures
-        .iter()
-        .any(|pattern| !pattern.is_empty() && sig.contains(pattern))
 }
 
 fn goal_check_max_attempts() -> usize {
@@ -8400,6 +8210,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         done_tool_def(),
     ]);
     let mut state = AgentState::Planning;
+    let mut task_outcome = outcome::TaskOutcome::default();
     let mut pending_system_hint: Option<String> = None;
     let mut reflection_required: Option<String> = None;
     let mut impact_required: Option<String> = None;
@@ -8808,6 +8619,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
             last_mutation_step,
             last_verify_ok_step,
         ) {
+            task_outcome.finalized(&final_text);
             state = AgentState::Done;
             let final_text = enrich_text_final_handoff(
                 final_text.as_str(),
@@ -9513,6 +9325,8 @@ This is the LAST model call for this run.\n\
                 &messages,
                 &root_user_text,
                 tool_root_abs.as_deref(),
+                recovery.stage,
+                test_cmd.as_deref(),
             ) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -9595,6 +9409,14 @@ This is the LAST model call for this run.\n\
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                                 .await;
+                            impact_recovery::emit_rejection(
+                                &tx,
+                                "reflection",
+                                &msg,
+                                &tool_calls,
+                                &assistant_text,
+                            )
+                            .await;
                             pending_system_hint = Some(msg);
                             state = AgentState::Recovery;
                             reflection_required = Some(reason);
@@ -9605,6 +9427,14 @@ This is the LAST model call for this run.\n\
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                             .await;
+                        impact_recovery::emit_rejection(
+                            &tx,
+                            "reflection",
+                            &msg,
+                            &tool_calls,
+                            &assistant_text,
+                        )
+                        .await;
                         pending_system_hint = Some(msg);
                         state = AgentState::Recovery;
                         reflection_required = Some(reason);
@@ -9619,6 +9449,14 @@ This is the LAST model call for this run.\n\
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(
+                    &tx,
+                    "reflection",
+                    &msg,
+                    &tool_calls,
+                    &assistant_text,
+                )
+                .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 reflection_required = Some(reason);
@@ -9630,6 +9468,14 @@ This is the LAST model call for this run.\n\
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(
+                    &tx,
+                    "reflection",
+                    &msg,
+                    &tool_calls,
+                    &assistant_text,
+                )
+                .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 reflection_required = Some(reason);
@@ -9724,6 +9570,11 @@ Execute only the new minimal action: {}",
         }
 
         if let Some(reason) = impact_required.clone() {
+            let pending_mutation = impact_recovery::UnreviewedMutation::from_steps(
+                last_mutation_step,
+                last_impact_step,
+            );
+            let mut restored_impact_plan = false;
             let impact_plan = parse_plan_block(&assistant_text)
                 .filter(|plan| {
                     validate_plan_for_task_contract(
@@ -9734,7 +9585,29 @@ Execute only the new minimal action: {}",
                     )
                     .is_ok()
                 })
-                .or_else(|| active_plan.clone());
+                .or_else(|| active_plan.clone())
+                .or_else(|| {
+                    let [tc] = tool_calls.as_slice() else {
+                        return None;
+                    };
+                    let plan = impact_recovery::benchmark_resume_plan(
+                        pending_mutation,
+                        task_harness,
+                        tc,
+                        &root_user_text,
+                        required_verification,
+                        test_cmd.as_deref(),
+                    )?;
+                    validate_plan_for_task_contract(
+                        &plan,
+                        root_read_only,
+                        &task_contract,
+                        &instruction_resolver,
+                    )
+                    .ok()?;
+                    restored_impact_plan = true;
+                    Some(plan)
+                });
             let impact = match parse_impact_block(&assistant_text) {
                 Some(impact) => impact,
                 None => {
@@ -9746,6 +9619,7 @@ Execute only the new minimal action: {}",
                             goal_wants_actions,
                             cfg.provider.clone(),
                             impact_plan.as_ref(),
+                            pending_mutation,
                         ) {
                             let _ = tx
                                 .send(StreamToken::Delta(
@@ -9759,6 +9633,14 @@ Execute only the new minimal action: {}",
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                                 .await;
+                            impact_recovery::emit_rejection(
+                                &tx,
+                                "impact",
+                                &msg,
+                                &tool_calls,
+                                &assistant_text,
+                            )
+                            .await;
                             pending_system_hint = Some(msg);
                             state = AgentState::Recovery;
                             impact_required = Some(reason);
@@ -9769,6 +9651,14 @@ Execute only the new minimal action: {}",
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                             .await;
+                        impact_recovery::emit_rejection(
+                            &tx,
+                            "impact",
+                            &msg,
+                            &tool_calls,
+                            &assistant_text,
+                        )
+                        .await;
                         pending_system_hint = Some(msg);
                         state = AgentState::Recovery;
                         impact_required = Some(reason);
@@ -9783,6 +9673,8 @@ Execute only the new minimal action: {}",
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
+                    .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 impact_required = Some(reason);
@@ -9793,6 +9685,8 @@ Execute only the new minimal action: {}",
                 let msg = governor_contract::impact_one_tool_message(tool_calls.len());
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
+                    .await;
+                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
                     .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
@@ -9809,6 +9703,32 @@ Execute only the new minimal action: {}",
                 )))
                 .await;
 
+            if restored_impact_plan {
+                if let Some(plan) = impact_plan.as_ref() {
+                    adopt_valid_plan(
+                        plan,
+                        &mut working_mem,
+                        &mut assumption_ledger,
+                        &mut active_plan,
+                        &mut intent_required_verification,
+                        path_required_verification,
+                        &mut required_verification,
+                        &mut recovery,
+                        &mut last_verify_ok_step,
+                        last_build_verify_ok_step,
+                        last_behavioral_verify_ok_step,
+                    );
+                    emit_telemetry_event(
+                        &tx,
+                        "impact_resume_plan_restored",
+                        json!({
+                            "mutation_step": pending_mutation.map(|pending| pending.step),
+                            "lane": task_harness.lane_label(),
+                        }),
+                    )
+                    .await;
+                }
+            }
             impact_required = None;
         }
 
@@ -9832,6 +9752,8 @@ Execute only the new minimal action: {}",
             let msg = governor_contract::multiple_tool_calls_message(tool_calls.len());
             let _ = tx
                 .send(StreamToken::Delta(format!("\n[governor] {msg}\n")))
+                .await;
+            impact_recovery::emit_rejection(&tx, "single_tool", &msg, &tool_calls, &assistant_text)
                 .await;
             pending_system_hint = Some(msg);
             state = AgentState::Recovery;
@@ -9926,6 +9848,8 @@ Execute only the new minimal action: {}",
                 tc,
                 &root_user_text,
                 tool_root_abs.as_deref(),
+                recovery.stage,
+                test_cmd.as_deref(),
             ) {
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -10736,6 +10660,7 @@ Execute only the new minimal action: {}",
                     &messages,
                     &working_mem,
                 ) {
+                    task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     let final_text = enrich_text_final_handoff(
                         final_text.as_str(),
@@ -10779,7 +10704,12 @@ Execute only the new minimal action: {}",
                 &collect_known_acceptance_commands(&messages, &working_mem, test_cmd.as_deref()),
                 &observation_evidence,
             );
-            if benchmark_plan_pending_required_exec_command(&root_user_text, &messages).is_none()
+            if benchmark_plan_pending_required_exec_command(
+                &root_user_text,
+                &messages,
+                test_cmd.as_deref(),
+            )
+            .is_none()
                 && should_prefer_done_after_verified_action(
                     tc,
                     &candidate_plan,
@@ -10800,6 +10730,7 @@ Execute only the new minimal action: {}",
                     last_mutation_step,
                     last_verify_ok_step,
                 ) {
+                    task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                     autosave_best_effort(
@@ -12348,6 +12279,11 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         continue;
                     }
                     if ran_goal_checks {
+                        task_outcome.verified_goal_checks(&[
+                            (wants_repo_goal, goal_checks.repo.ok),
+                            (wants_test_goal, goal_checks.tests.ok),
+                            (wants_build_goal, goal_checks.build.ok),
+                        ]);
                         state = AgentState::Done;
                         let _ = tx
                             .send(StreamToken::Delta(format!(
@@ -12379,6 +12315,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                 &messages,
                 &working_mem,
             ) {
+                task_outcome.finalized(&final_text);
                 state = AgentState::Done;
                 messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                 autosave_best_effort(
@@ -13041,9 +12978,11 @@ Required now: {}",
                 continue;
             }
 
-            if let Some(command) =
-                benchmark_plan_pending_required_exec_command(&root_user_text, &messages)
-            {
+            if let Some(command) = benchmark_plan_pending_required_exec_command(
+                &root_user_text,
+                &messages,
+                test_cmd.as_deref(),
+            ) {
                 state = AgentState::Recovery;
                 recovery.stage = Some(RecoveryStage::Verify);
                 let block = format!(
@@ -13174,6 +13113,7 @@ Required now: run `{command}`."
                                     &messages,
                                     &working_mem,
                                 ) {
+                                    task_outcome.finalized(&final_text);
                                     state = AgentState::Done;
                                     messages.push(json!({
                                         "role": "tool",
@@ -13270,6 +13210,8 @@ Required now: run `{command}`."
                 }
             };
 
+            task_outcome.accept_done(&remaining_acceptance);
+
             let summary_text = if summary.is_empty() {
                 synthesize_action_done_summary(done_plan, &messages).unwrap_or_default()
             } else {
@@ -13344,6 +13286,7 @@ Required now: run `{command}`."
             &tc,
             &root_user_text,
             tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
         );
         if let Some(block) = recovery.maybe_block_tool(
             &tc,
@@ -13476,7 +13419,8 @@ Required now: run `{command}`."
                 }
             }
 
-            let verified = result.contains("PASSED (exit 0)");
+            let verified =
+                !is_error && crate::execution_evidence::auto_test_succeeded("apply_diff", &result);
             let verified_level = if verified {
                 configured_test_cmd_verification_level(test_cmd.as_deref())
             } else {
@@ -13619,6 +13563,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -13801,6 +13746,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -13972,6 +13918,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -14152,6 +14099,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -14466,7 +14414,8 @@ Action required: call read_file(path) first to confirm current contents, then re
                 file_tool_consec_failures = 0;
             }
 
-            let verified = result.contains("PASSED (exit 0)");
+            let verified = !is_error
+                && crate::execution_evidence::auto_test_succeeded(tc.name.as_str(), &result);
             let verified_level = if verified {
                 configured_test_cmd_verification_level(test_cmd.as_deref())
             } else {
@@ -14652,6 +14601,7 @@ Action required: call read_file(path) first to confirm current contents, then re
                         &messages,
                         &working_mem,
                     ) {
+                        task_outcome.finalized(&final_text);
                         state = AgentState::Done;
                         messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                         autosave_best_effort(
@@ -14688,6 +14638,7 @@ Action required: call read_file(path) first to confirm current contents, then re
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -15115,26 +15066,24 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         // Update failure memory + recovery governor + possibly inject a system hint.
         let verify_level = classify_verify_level(&command, test_cmd.as_deref());
         let exec_kind = classify_exec_kind(&command, test_cmd.as_deref());
+        exec_proof::record_result(
+            &command,
+            test_cmd.as_deref(),
+            exec_proof::ExecProofResult {
+                content: &tool_output,
+                succeeded: effective_exit_code == 0 && !escaped_tool_root,
+            },
+            this_step,
+            &mut last_mutation_step,
+            &mut last_build_verify_ok_step,
+            &mut last_behavioral_verify_ok_step,
+        );
+        last_verify_ok_step = effective_verify_ok_step(
+            required_verification,
+            last_build_verify_ok_step,
+            last_behavioral_verify_ok_step,
+        );
         if effective_exit_code == 0 && !escaped_tool_root {
-            match exec_kind {
-                ExecKind::Action => last_mutation_step = Some(this_step),
-                ExecKind::Verify => {
-                    if let Some(level) = verify_level {
-                        match level {
-                            VerificationLevel::Build => last_build_verify_ok_step = Some(this_step),
-                            VerificationLevel::Behavioral => {
-                                last_behavioral_verify_ok_step = Some(this_step)
-                            }
-                        }
-                        last_verify_ok_step = effective_verify_ok_step(
-                            required_verification,
-                            last_build_verify_ok_step,
-                            last_behavioral_verify_ok_step,
-                        );
-                    }
-                }
-                ExecKind::Diagnostic => {}
-            }
             update_working_memory_after_exec(
                 &mut working_mem,
                 command.as_str(),
@@ -15244,6 +15193,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         last_mutation_step,
         last_verify_ok_step,
     ) {
+        task_outcome.finalized(&final_text);
         let final_text = enrich_text_final_handoff(
             final_text.as_str(),
             &root_user_text,
@@ -15314,6 +15264,15 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         }
     }
 
+    emit_telemetry_event(
+        &tx,
+        "agent_outcome",
+        json!({
+            "completed": task_outcome.completed(&messages),
+            "state": format!("{state:?}").to_ascii_lowercase(),
+        }),
+    )
+    .await;
     let _ = tx.send(StreamToken::Done).await;
     Ok(AgenticEndState {
         messages,
@@ -17913,6 +17872,7 @@ verify: exit code is zero\n\
             true,
             ProviderKind::OpenAiCompatible,
             Some(&plan),
+            impact_recovery::UnreviewedMutation::from_steps(Some(1), None),
         )
         .expect("synthetic impact");
 

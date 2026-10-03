@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": [
+    "src/tui/agent/benchmark_proof.rs"
+  ],
+  "cases": [
+    {
+      "id": "proof-fixture",
+      "prompt": "Keep verification evidence current."
+    }
+  ]
+}

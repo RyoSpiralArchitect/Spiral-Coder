@@ -57,14 +57,36 @@
       "tool_root": "tests/fixtures/runtime-create-file",
       "copy_tool_root": true,
       "max_iters": 14,
-      "tags": ["action", "create", "file"],
+      "tags": [
+        "action",
+        "create",
+        "file"
+      ],
       "prompt": "Create `notes/todo.txt` containing exactly `ship it`. Verify it before you finish. Final answer must include the created file path.",
       "checks": [
-        { "kind": "completed" },
-        { "kind": "error_free" },
-        { "kind": "tool_call_seen", "name": "write_file" },
-        { "kind": "assistant_contains", "value": "notes/todo.txt" },
-        { "kind": "trace_event_seen", "event": "task_harness" }
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "write_file"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "notes/todo.txt"
+        },
+        {
+          "kind": "tool_root_file_equals",
+          "path": "notes/todo.txt",
+          "value": "ship it"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "task_harness"
+        }
       ]
     },
     {
@@ -363,6 +385,91 @@
         { "kind": "assistant_contains", "value": "SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1" },
         { "kind": "trace_event_seen", "event": "task_harness" },
         { "kind": "trace_event_seen", "event": "harness_evolution_loaded" }
+      ]
+    },
+    {
+      "id": "approved-benchmark-plan-exec-proof-resume",
+      "tool_root": "tests/fixtures/runtime-benchmark-plan-exec-proof",
+      "session_seed": "session_seed.json",
+      "copy_tool_root": true,
+      "max_iters": 8,
+      "tags": [
+        "action",
+        "benchmark-plan",
+        "runtime-eval",
+        "proof",
+        "resume",
+        "smoke"
+      ],
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: exec-proof-after-shell-edit\nobjective: Finish the prepared regression artifacts for src/tui/agent/benchmark_proof.rs, using current verification evidence.\ntarget_files:\n- .spiral-coder/runtime_eval.json\n- docs/runtime-architecture.md\nrequired_checks:\n- grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json\n- grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\nsuccess_criteria:\n- Both artifacts include src/tui/agent/benchmark_proof.rs.\n- All required checks have succeeded after the latest shell edit.\n</observer_benchmark_plan>\nResume the seeded work. The artifacts are already prepared; complete the required verification and close out. Final answer must include verification_receipt.txt and fresh exec proof.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "exec"
+        },
+        {
+          "kind": "verified_command_seen",
+          "command": "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+        },
+        {
+          "kind": "tool_root_file_contains",
+          "path": "verification_receipt.txt",
+          "value": "verified-current"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "verification_receipt.txt"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "fresh exec proof"
+        }
+      ]
+    },
+    {
+      "id": "resume-damaged-tool-exchange-fix",
+      "tool_root": "tests/fixtures/runtime-resume-damaged-exchange",
+      "session_seed": "interrupted_session.json",
+      "copy_tool_root": true,
+      "max_iters": 10,
+      "tags": [
+        "action",
+        "resume",
+        "session",
+        "repair",
+        "rust"
+      ],
+      "prompt": "Continue the interrupted session. Fix the failing greet test with the smallest code change and run the configured test command before finishing. Include the changed source path in the final answer.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "patch_file"
+        },
+        {
+          "kind": "tool_root_file_contains",
+          "path": "src/lib.rs",
+          "value": "Hello, {}!"
+        },
+        {
+          "kind": "auto_test_passed",
+          "command": "cargo test 2>&1"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "src/lib.rs"
+        }
       ]
     }
   ]

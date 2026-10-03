@@ -1,0 +1,99 @@
+# Runtime evaluation evidence
+
+Runtime eval specs remain version 1. New case reports identify the evaluator as
+`metrics.evaluator_revision: "outcome-proof-v2"`. Historical reports and raw run
+artifacts retain their original results; they are not retroactively relabeled.
+
+## Completion and errors
+
+Every case requires `completed` and `error_free`, including cases with custom
+checks. Explicit copies of those checks are not duplicated. Content matches,
+tool-call counts, and files on disk cannot bypass these outcome requirements.
+
+`agent_outcome` is runtime telemetry emitted before the response stream ends:
+
+- `completed` is a Boolean describing the task outcome.
+- `state` records the final runtime state for diagnosis.
+
+A transport `done` event means the stream ended. An `agent_end` event with
+`ok: true` means the run returned without an error. Neither alone establishes
+that the task completed. The evaluator requires a successful run end, a true
+`agent_outcome` from the latest round, and no error events. Missing outcome
+telemetry in older traces fails the current completion check closed.
+
+An iteration cap with intermediate text remains incomplete. An accepted `done`
+call with remaining acceptance criteria also remains incomplete. A validated
+runtime finalizer may complete the task after the last iteration. Its remaining
+acceptance rows still prevent a completed outcome. This outcome records what the
+runtime accepted; independent artifact and verification checks remain necessary
+for correctness.
+
+Recovery diagnosis takes precedence over benchmark-plan tool coercion. After a
+failed edit, requested diagnostic commands and file reads stay intact until
+diagnosis succeeds; the harness cannot repeatedly substitute a blocked mutation.
+A no-tool response in this stage does not synthesize a benchmark edit either.
+
+On resume, an unreviewed mutation is identified by its runtime step relative to
+the last impact review, independently of the wording of the recovery prompt. An
+approved benchmark task may reconstruct its missing plan using the existing
+action-plan builder. The reconstructed plan must pass the task and instruction
+contracts before the impact block is validated and adopted. This does not count
+as verification or completion.
+
+`pre_tool_gate_rejected` records otherwise invisible reflection, impact, and
+single-tool gate failures: gate name, bounded reason, tool count, up to four
+bounded tool names, response character count, and parsed-block presence flags.
+It omits raw response text, tool arguments, and call IDs.
+`impact_resume_plan_restored` records the mutation step and task lane when the
+validated resume plan is adopted. These events diagnose blocked progress; they
+do not change a case's outcome.
+
+## Command and automatic-test evidence
+
+`verified_command_seen` requires an assistant tool call and matching tool result
+ID, an exact successful runtime exit-status header, and current proof. Command
+matching ignores surrounding whitespace only: case, quoting, and internal
+whitespace retain their shell meaning. Output printed by a command and final
+assistant claims do not establish success. The recognized runtime pruning suffix
+`[pruned NL]` preserves an otherwise valid success header.
+
+A failed rerun revokes that command's previous success. Successful file edits
+invalidate earlier command proof, including edits whose appended automatic test
+fails. Other shell actions invalidate proof even when they fail or time out,
+since they may already have changed files. Explicit runtime rejections and
+nonmutating diagnostic commands preserve proof. The evaluator uses the runtime's
+shared action classification; exact commands declared by `verified_command_seen`
+are treated as verification commands under the spec's contract.
+
+`successful_exec_commands` and `auto_test_pass_count` remain historical telemetry.
+Checks use `verified_exec_commands` and `fresh_auto_test_pass_count`; those fields
+may be empty even when historical counts are nonzero.
+
+Automatic-test success must accompany a correlated successful file-edit result.
+The first automatic-test status determines success, so a failed test printing a
+success marker cannot manufacture a pass. Later mutations invalidate that pass.
+A later failed explicit rerun of the configured test command also revokes it.
+
+A command-specific `auto_test_passed` check additionally requires exact agreement
+with `verification_config.test_command`. The CLI records this telemetry after
+project configuration is loaded, using the same command passed to the runtime.
+A mention in the final answer or a different successful command is insufficient.
+Missing command metadata in historical traces fails a command-specific check
+closed. Checks without a command still require fresh automatic-test evidence.
+
+These transcript checks cannot detect external filesystem changes, prove a test
+suite is adequate, or replace artifact assertions. The command classifier and
+explicit verification contract bound what shell mutations can be recognized.
+
+## Artifacts and promotion
+
+`tool_root_file_equals` compares file bytes with the UTF-8 encoding of `value`.
+A missing file, extra text, trailing newline, or directory fails. The
+`create-single-file` case uses this check for exactly `ship it` in
+`notes/todo.txt`; a tool attempt and a claimed path alone cannot pass.
+
+Before promotion, all requested artifact checks still apply. Only existence of
+`.spiral-coder/governor_contract.overlay.json` is deferred because promotion itself
+creates that reserved file. Content checks on that path, similarly named paths,
+and all other existence checks remain prerequisites. The final case report
+checks the complete original check set.

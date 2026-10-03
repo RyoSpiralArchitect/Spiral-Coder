@@ -140,6 +140,35 @@ Current code:
 - `web/core/exec.js` (bash→PowerShell normalization, dangerous command guard)
 - `web/app.js` (loop governor + goal_check probes + recent-runs memory)
 
+Command classification:
+
+- `src/tui/agent/exec_classification.rs` recognizes command words rather than
+  lowercased/truncated substrings. A filename such as `verification_receipt.txt`
+  cannot match the diagnostic `cat` command, and quoted argument text cannot
+  turn `echo` into `cargo test` verification.
+- The supported shell subset is simple commands, literal quotes, leading
+  environment assignments, `env` assignments, `cd` prefixes, `&&` chains, and
+  stderr-to-stdout `2>&1`. Every element of an inferred verification chain must
+  be a recognized diagnostic or verification command. Git branch/remote queries
+  and numeric `sed -n` print ranges have restricted read-only forms.
+- File redirects, substitutions, multiline scripts, pipelines, status masking,
+  and unknown compound commands are conservatively actions and do not earn
+  inferred verification credit. This is not a shell parser or sandbox; unsupported
+  benign commands may require an additional explicit verification step.
+- An exact configured test command can authorize custom scripts and `&&`
+  chains. Matching preserves case and quoted whitespace. It does
+  not override unsupported shell syntax or known write flags. Approved benchmark
+  `required_checks` retain their separate explicit command-evidence contract.
+
+- `src/tui/agent/exec_proof.rs` shares generic verification timestamp accounting
+  between live exec results and resumed transcripts. Any possibly executed action,
+  including failure or timeout after partial writes, advances the mutation step.
+  An executed verification failure clears both prior verification levels, so an
+  older behavioral success cannot mask a newer failed build. Explicit pre-execution
+  blocks and user rejections preserve evidence. Resume accepts only the strict
+  runtime success header (including the pruning suffix); live execution uses its
+  effective return status. A fresh applicable check restores verification credit.
+
 ### 5b) Harness Evolution Overlay
 
 Responsibilities:
@@ -158,13 +187,15 @@ Current code:
 - `src/main.rs::run_merge_gate` / `spiral-coder merge-gate` (CLI reader for merge readiness, CI status, and rollback previews)
 - `src/merge_gate.rs` + `.spiral-coder/runtime_eval.merge_gate_review.json` (human approve / hold review state layered over the latest generated merge gate)
 - `src/runtime_eval.rs` (benchmark reports now include agent config plus approximate transcript token telemetry for dogfood/example docs)
+- Runtime evaluation completion, command freshness, auto-test provenance, exact artifact checks, and promotion prerequisites are defined in [evaluation.md](evaluation.md). New reports carry `metrics.evaluator_revision: "outcome-proof-v2"`; historical evidence remains unchanged.
 - `src/runtime_eval.rs` checks can assert copied tool-root files exist and contain expected literals, so regression specs can prove real artifact mutation instead of relying only on the final assistant text
 - `src/runtime_eval.rs` checks can require proof-level verification with `verified_command_seen` and `auto_test_passed`, allowing benchmark-plan cases to distinguish artifact mutation from verified PR-ready closeout
 - approved benchmark-plan eval fixtures now cover single-spec updates and compound docs+spec updates, exercising PR-ready artifact sets rather than isolated file edits only
 - `src/tui/agent/benchmark_proof.rs` owns the approved plan's command evidence: every distinct `required_checks` item needs a successful, tool-call-correlated `exec` result before closeout. The harness selects the first pending item in plan order. Command case, quoting, and internal whitespace are significant; only surrounding whitespace and Markdown backticks around plan entries are ignored.
-- Successful `write_file`, `patch_file`, and `apply_diff` results invalidate earlier benchmark-plan command evidence, including edits whose appended auto-test fails. A failed rerun also revokes that command's earlier success. Proof comes from the runtime's exit-status header, not command output or final-answer claims. This transcript gate does not detect edits made outside those file tools.
+- Successful `write_file`, `patch_file`, and `apply_diff` results invalidate earlier benchmark-plan command evidence, including edits whose appended auto-test fails. Attempts to execute commands outside the approved `required_checks` also invalidate all prior checks when the runtime classifies them as `ExecKind::Action` (for example, `sed -i`). Nonzero exits and timeouts may follow partial writes, so only explicitly blocked or user-rejected actions retain earlier evidence. Benchmark gates and eval reports use the same `execution_evidence::exec_may_have_run` predicate. Explicit required checks remain verification commands even when they use custom scripts. Diagnostic commands and additional recognized verification commands retain prior proof. A failed rerun revokes that required command's earlier success. Proof comes from the runtime's exit-status header, not command output or final-answer claims; external edits and shell mutations misclassified by the runtime remain outside this transcript gate's coverage.
 - The compound docs+spec benchmark-plan eval lists and asserts both verification commands separately, so success on the first command cannot satisfy the second requirement.
-- Output pruning may append the runtime's `[pruned NL]` suffix to a successful status header; this retains the original command proof. Message-window compaction preserves the active plan's verification exchanges and file-mutation exchanges together, so trimming history cannot erase success or revive success invalidated by a later edit. The context limit remains a soft cap for these protected exchanges.
+- Output pruning may append the runtime's `[pruned NL]` suffix to a successful status header; this retains the original command proof. Message-window compaction preserves the active plan's verification exchanges, file-mutation exchanges, and action-exec exchanges together, so trimming history cannot erase success or revive success invalidated by a later edit. The context limit remains a soft cap for these protected exchanges.
+- `approved-benchmark-plan-exec-proof-resume` seeds two successful required checks, a later successful shell edit, and a rerun of only the first check. The second check must run again and refresh a stale receipt in the copied fixture. This bounded runtime eval complements deterministic proof/compaction regressions; its seeded transcript is test input, not a record of live model performance.
 - `src/tui/agent/benchmark_replay.rs` generates typed TUI replay cases with seeded coder messages, a recorded Observer response, and checks for suggestion parsing and the queued Coder hint. The generated cases run through the actual replay parser and runner in offline tests. This verifies handoff plumbing for the named path; it does not establish live-model performance or test the named source file's behavior.
 - The TUI benchmark-plan smoke now runs the generated case using `spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive`, in addition to the path check. The `spiral-coder` binary must be on PATH when launching that runtime eval; a development run can prepend its `target/debug` directory. The replay command itself uses the recorded response and makes no provider call.
 - `src/harness_promotion.rs` + `spiral-coder promote-harness` (reviewable promotion candidate artifact for GUI/TUI or human approval)

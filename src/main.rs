@@ -4,6 +4,7 @@ mod chatbot;
 mod config;
 mod eval_merge_gate;
 mod exec;
+mod execution_evidence;
 mod file_tools;
 mod governor_contract;
 mod harness_gate;
@@ -2881,6 +2882,13 @@ async fn run_agent_with_behavior(
         (None, None, None)
     };
 
+    if let Some(ref tw) = trace {
+        let _ = tw.event(
+            "verification_config",
+            json!({ "test_command": test_cmd.as_deref() }),
+        );
+    }
+
     let autofix_rounds = match autofix {
         Some(n) => n.max(1).min(8),
         None => 0usize,
@@ -3532,13 +3540,7 @@ async fn run_eval(args: EvalArgs, common: CommonArgs) -> Result<()> {
         .await;
         let duration_ms = started.elapsed().as_millis();
         let run_error = run_result.err().map(|e| format!("{e:#}"));
-        let mut precheck_case = case.clone();
-        precheck_case.checks.retain(|check| {
-            !matches!(
-                check,
-                crate::runtime_eval::RuntimeEvalCheck::ToolRootFileExists { .. }
-            )
-        });
+        let precheck_case = crate::runtime_eval::pre_promotion_case(case);
 
         let precheck_report = crate::runtime_eval::evaluate_case(
             &precheck_case,
