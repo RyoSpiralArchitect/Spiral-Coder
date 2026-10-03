@@ -1,13 +1,13 @@
 # Maze Game (pygame)
 
-This benchmark asks OBSTRAL to scaffold a fresh `maze_game_pygame/` repo, keep the gameplay logic in `maze_game_pygame/game.py`, keep `maze_game_pygame/main.py` runnable, and finish only after a headless pygame unit-test run passes.
+This benchmark asks Spiral-Coder to scaffold a fresh `maze_game_pygame/` repo, keep the gameplay logic in `maze_game_pygame/game.py`, keep `maze_game_pygame/main.py` runnable, and finish only after a headless pygame unit-test run passes.
 
 The generated repo is intentionally not tracked in git. Re-running the command below recreates it under a fresh `.tmp/runtime_eval_<timestamp>/...` directory.
 
 ## Reproduce
 
 ```bash
-cargo run --quiet -- eval --spec .obstral/runtime_eval.json --filter maze-game-pygame-repo --max-cases 1
+cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --filter maze-game-pygame-repo --max-cases 1
 ```
 
 ## Last Green Snapshot

@@ -377,7 +377,7 @@ mod tests {
 
     #[test]
     fn save_graph_atomic_supports_parentless_paths() {
-        let path = unique_path("obstral-graph-test", "json");
+        let path = unique_path("spiral-coder-graph-test", "json");
         let g = TaskGraph {
             version: TaskGraph::VERSION,
             created_at_ms: now_ms(),

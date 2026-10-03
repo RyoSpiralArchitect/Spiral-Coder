@@ -1,6 +1,6 @@
-# OBSTRAL Runtime Architecture (WIP)
+# Spiral-Coder Runtime Architecture (WIP)
 
-OBSTRAL is not "a chat app that sometimes runs commands".
+Spiral-Coder is not "a chat app that sometimes runs commands".
 It is a **controlled execution runtime** for LLMs, with human gates and a safety governor.
 
 This document describes the target structure we are converging on:
@@ -67,7 +67,7 @@ Responsibilities:
 Current code:
 - `src/agent_session.rs` (`AgentSession`, `SessionAutoSaver`)
 - `src/project.rs` (project scan: stack/git/test_cmd)
-- `src/progress_state.rs` (`.obstral/progress.json`, repo-level objective / artifact / verification snapshot used by the progress bridge)
+- `src/progress_state.rs` (`.spiral-coder/progress.json`, repo-level objective / artifact / verification snapshot used by the progress bridge)
 - `src/tui/agent.rs::git_create_checkpoint` (checkpoint creation is limited to tool roots that are themselves the git top-level)
 
 ### 3) Task Graph
@@ -110,7 +110,7 @@ Responsibilities:
 - emit a typed Coder diagnostic packet with mutation anchor, required follow-ups, verification command, final-handoff literals, and one concrete next action
 - emit a typed benchmark plan packet with the next smallest regression lane, case id hint, checks, and success criteria
 - expose the same diagnostic packet to TUI and GUI so humans can approve sending it back to the Coder inside explicit `<observer_...>` handoff tags
-- route approved `<observer_benchmark_plan>` handoffs through the `benchmark_plan` Task Harness lane so runtime-eval and TUI-replay proposals first land on their matching `.obstral/*.json` spec before patch/verify
+- route approved `<observer_benchmark_plan>` handoffs through the `benchmark_plan` Task Harness lane so runtime-eval and TUI-replay proposals first land on their matching `.spiral-coder/*.json` spec before patch/verify
 - repair malformed benchmark-plan spec patches by synthesizing the smallest JSON update from `case_id_hint` and `src/...rs` evidence when the model drifts after reading the spec
 - keep UI proposal truncation separate from diagnostic generation so lower-displayed but required follow-ups do not disappear from the Coder packet
 - feed proposal recurrence memory into analyzer-stage risk generation so repeated unresolved findings become first-class risks, not just score bumps
@@ -134,11 +134,92 @@ Responsibilities:
 - sandbox constraints (cwd/tool_root)
 - phase gating (core/feature/polish)
 
+Automatic tests after successful file edits have a typed `NotRun`/`Passed`/
+`Failed` outcome, determined by the first runtime status only. A failed test
+preserves the edit as a mutation, revokes earlier build and behavioral proof,
+and enters `Diagnose` immediately. The agent can inspect the failure before
+repairing it without repeating a test already known to fail. A missing or
+unrecognized status grants no proof; an untested fix still requires verification.
+`src/tui/agent/recovery.rs` owns the phases, and shared file-result accounting
+keeps live and restored verification timestamps consistent.
+
 Current code:
-- `src/tui/agent.rs` (AgentState + FailureMemory + error classifier + stuck hints)
+- `src/tui/agent.rs` (AgentState + error classifier)
+- `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
+- `src/tui/agent/progress_gate.rs` (evidence-aware observation and baseline-check pressure)
 - `src/exec.rs` (dangerous command checks, cwd validation)
 - `web/core/exec.js` (bash→PowerShell normalization, dangerous command guard)
 - `web/app.js` (loop governor + goal_check probes + recent-runs memory)
+
+Repetition and progress evidence:
+
+- Repeated output means the same complete command produced the same output
+  consecutively. Different successful commands may all be silent; their empty
+  output does not require a strategy change. Command identity preserves case,
+  quoted whitespace, suffixes, and multiline content in live and resumed runs.
+- In an existing-files task, a first read of a new target remains available even
+  after project discovery. Inferred focus and aggregate observation counts cannot
+  establish that the target was inspected. Unchanged repeated reads still trigger
+  progress pressure, and creation lanes keep their observation limits.
+- A baseline verification command must actually have executed before the progress
+  gate calls it a rerun. A governor block or user rejection does not count as an
+  execution. Subsequent unchanged reruns remain subject to progress pressure;
+  completion still requires all applicable fresh verification and acceptance gates.
+
+- A refuted `file exists at <path>` assumption blocks an existing-file patch
+  only when its actual target is that exact path. Path text inside another file's
+  replacement, a new-file write, or a verification scratchpad is not an existence
+  dependency. Diagnostic reads and discovery remain available to gather evidence.
+  Diagnostic and verification `exec` calls can also gather evidence regardless
+  of how a refuted assumption is worded. The gate uses the same typed execution
+  context as proof accounting, including exact project-configured tests and
+  root-approved required checks; unknown or extended mutation commands retain
+  their assumption checks. This exemption does not bypass independent progress,
+  recovery, repetition, or completion gates.
+  A subsequent successful read or write of that exact path confirms its existence
+  through an event-local result hook; replay applies the same update in transcript
+  order using correlated tool-call IDs. Earlier successes, unpaired results, cached
+  reads, and plan/think text cannot clear a newer refutation. Reads of a currently
+  refuted existence path bypass its cached content so diagnosis inspects the file.
+- Fix-existing mutation synthesis/restoration receives the typed recovery stage.
+  It does not rewrite diagnostics into patches during `diagnose` or `verify`;
+  requested repairs in `fix` and ordinary planning retain their existing behavior.
+
+Command classification:
+
+- `src/tui/agent/exec_classification.rs` recognizes command words rather than
+  lowercased/truncated substrings. A filename such as `verification_receipt.txt`
+  cannot match the diagnostic `cat` command, and quoted argument text cannot
+  turn `echo` into `cargo test` verification.
+- The supported shell subset is simple commands, literal quotes, leading
+  environment assignments, `env` assignments, `cd` prefixes, `&&` chains, and
+  stderr-to-stdout `2>&1`. Every element of an inferred verification chain must
+  be a recognized diagnostic or verification command. Git branch/remote queries
+  and numeric `sed -n` print ranges have restricted read-only forms.
+- File redirects, substitutions, multiline scripts, pipelines, status masking,
+  and unknown compound commands are conservatively actions and do not earn
+  inferred verification credit. This is not a shell parser or sandbox; unsupported
+  benign commands may require an additional explicit verification step.
+- An exact configured test command can authorize custom scripts and `&&`
+  chains. Matching preserves case and quoted whitespace. It does
+  not override unsupported shell syntax or known write flags. Approved benchmark
+  `required_checks` retain their separate explicit command-evidence contract.
+- `src/tui/agent/exec_verification.rs` carries the root task's approved required
+  commands alongside project configuration. Exact required-command matches are
+  verification in live execution, restored generic proof, and restored working
+  memory, including custom runners or explicit receipt-writing checks. Assistant
+  scratchpads and command substrings cannot grant this authority. The independent
+  benchmark ledger still requires every declared check; finishing its custom
+  checks does not create a spurious mutation requiring another composite rerun.
+
+- `src/tui/agent/exec_proof.rs` shares generic verification timestamp accounting
+  between live exec results and resumed transcripts. Any possibly executed action,
+  including failure or timeout after partial writes, advances the mutation step.
+  An executed verification failure clears both prior verification levels, so an
+  older behavioral success cannot mask a newer failed build. Explicit pre-execution
+  blocks and user rejections preserve evidence. Resume accepts only the strict
+  runtime success header (including the pruning suffix); live execution uses its
+  effective return status. A fresh applicable check restores verification credit.
 
 ### 5b) Harness Evolution Overlay
 
@@ -150,19 +231,29 @@ Responsibilities:
 
 Current code:
 - `src/tui/agent/harness_evolution.rs` (`ContractPatchProposal`, `HarnessEvolutionQueue`, runtime overlay prompt)
-- `.obstral/policy_patch_queue.json` (project-local overlay queue)
+- `.spiral-coder/policy_patch_queue.json` (project-local overlay queue)
 - `src/tui/agent.rs` (load/save wiring, telemetry, prompt injection)
-- `.obstral/governor_contract.overlay.json` (eval-gated promoted overlay rules)
+- `.spiral-coder/governor_contract.overlay.json` (eval-gated promoted overlay rules)
 - `src/main.rs::run_eval` (promotion step from passing eval case to promoted overlay)
 - `src/eval_merge_gate.rs` + `.tmp/runtime_eval_*/merge_gate.json` (generated merge readiness / rollback / promoted-overlay evidence)
-- `src/main.rs::run_merge_gate` / `obstral merge-gate` (CLI reader for merge readiness, CI status, and rollback previews)
-- `src/merge_gate.rs` + `.obstral/runtime_eval.merge_gate_review.json` (human approve / hold review state layered over the latest generated merge gate)
+- `src/main.rs::run_merge_gate` / `spiral-coder merge-gate` (CLI reader for merge readiness, CI status, and rollback previews)
+- `src/merge_gate.rs` + `.spiral-coder/runtime_eval.merge_gate_review.json` (human approve / hold review state layered over the latest generated merge gate)
 - `src/runtime_eval.rs` (benchmark reports now include agent config plus approximate transcript token telemetry for dogfood/example docs)
+- Runtime evaluation completion, command freshness, auto-test provenance, exact artifact checks, and promotion prerequisites are defined in [evaluation.md](evaluation.md). New reports carry `metrics.evaluator_revision: "outcome-proof-v2"`; historical evidence remains unchanged.
 - `src/runtime_eval.rs` checks can assert copied tool-root files exist and contain expected literals, so regression specs can prove real artifact mutation instead of relying only on the final assistant text
 - `src/runtime_eval.rs` checks can require proof-level verification with `verified_command_seen` and `auto_test_passed`, allowing benchmark-plan cases to distinguish artifact mutation from verified PR-ready closeout
 - approved benchmark-plan eval fixtures now cover single-spec updates and compound docs+spec updates, exercising PR-ready artifact sets rather than isolated file edits only
-- `src/harness_promotion.rs` + `obstral promote-harness` (reviewable promotion candidate artifact for GUI/TUI or human approval)
-- `src/harness_gate.rs` + `.obstral/governor_contract.promotion_gate.json` (human-gated approve / hold / apply-to-contract state shared by TUI and GUI)
+- `src/tui/agent/final_handoff.rs` checks explicit final-answer requirements against the **rendered** `done` answer before recording completion. A nonempty authored summary remains required. Bounded English path categories (a changed Rust file, documentation, a structured spec, or an artifact) resolve from correlated successful file edits; basename-only mentions do not satisfy a full recorded path. One matching path satisfies a category; incidental edits are not all mandatory. Quoted literals and explicitly named unquoted paths are extracted only from the final-answer clause, never from unrelated task examples. In a comma/and list that names a path, short unqualified values are also treated as named phrases; descriptive requests such as "a concise explanation" remain prose. The runtime asks the model to supply missing phrases and never appends them as factual status. Missing items return a correction hint without discarding successful verification. This is a lexical handoff contract, not a semantic judge of arbitrary prose or status claims.
+- Legacy text finalizers can append recorded artifact paths and fresh verification commands, but never invent requested status/approval labels. Failed or unpaired tools, stdout success strings, and commands invalidated by a later mutation do not supply that receipt. Execution proof and final-answer completeness remain separate gates.
+- `src/tui/agent/benchmark_proof.rs` owns the approved plan's command evidence: every distinct `required_checks` item needs a successful, tool-call-correlated `exec` result before closeout. The harness selects the first pending item in plan order. Command case, quoting, and internal whitespace are significant; only surrounding whitespace and Markdown backticks around plan entries are ignored.
+- Successful `write_file`, `patch_file`, and `apply_diff` results invalidate earlier benchmark-plan command evidence, including edits whose appended auto-test fails. Attempts to execute commands outside the approved `required_checks` also invalidate all prior checks when the runtime classifies them as `ExecKind::Action` (for example, `sed -i`). Nonzero exits and timeouts may follow partial writes, so only explicitly blocked or user-rejected actions retain earlier evidence. Benchmark gates and eval reports use the same `execution_evidence::exec_may_have_run` predicate. Explicit required checks remain verification commands even when they use custom scripts. Diagnostic commands and additional recognized verification commands retain prior proof. A failed rerun revokes that required command's earlier success. Proof comes from the runtime's exit-status header, not command output or final-answer claims; external edits and shell mutations misclassified by the runtime remain outside this transcript gate's coverage.
+- The compound docs+spec benchmark-plan eval lists and asserts both verification commands separately, so success on the first command cannot satisfy the second requirement.
+- Output pruning may append the runtime's `[pruned NL]` suffix to a successful status header; this retains the original command proof. Message-window compaction preserves the active plan's verification exchanges, file-mutation exchanges, and action-exec exchanges together, so trimming history cannot erase success or revive success invalidated by a later edit. The context limit remains a soft cap for these protected exchanges.
+- `approved-benchmark-plan-exec-proof-resume` seeds two successful required checks, a later successful shell edit, and a rerun of only the first check. The second check must run again and refresh a stale receipt in the copied fixture. This bounded runtime eval complements deterministic proof/compaction regressions; its seeded transcript is test input, not a record of live model performance.
+- `src/tui/agent/benchmark_replay.rs` generates typed TUI replay cases with seeded coder messages, a recorded Observer response, and checks for suggestion parsing and the queued Coder hint. The generated cases run through the actual replay parser and runner in offline tests. This verifies handoff plumbing for the named path; it does not establish live-model performance or test the named source file's behavior.
+- The TUI benchmark-plan smoke now runs the generated case using `spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive`, in addition to the path check. The `spiral-coder` binary must be on PATH when launching that runtime eval; a development run can prepend its `target/debug` directory. The replay command itself uses the recorded response and makes no provider call.
+- `src/harness_promotion.rs` + `spiral-coder promote-harness` (reviewable promotion candidate artifact for GUI/TUI or human approval)
+- `src/harness_gate.rs` + `.spiral-coder/governor_contract.promotion_gate.json` (human-gated approve / hold / apply-to-contract state shared by TUI and GUI)
 - `src/server.rs` + `web/app.js` + `src/tui/promotion_gate.rs` + `src/tui/merge_gate.rs` (review surfaces that consume the same board artifacts and gate files)
 
 ### 6) Tool Router

@@ -6,7 +6,7 @@ if ! grep -q 'src/tui/agent/merge_approval.rs' docs/state-schema.md; then
   exit 1
 fi
 
-if ! grep -q 'src/tui/agent/merge_approval.rs' .obstral/runtime_eval.json; then
+if ! grep -q 'src/tui/agent/merge_approval.rs' .spiral-coder/runtime_eval.json; then
   echo "missing runtime eval follow-up for src/tui/agent/merge_approval.rs" >&2
   exit 1
 fi

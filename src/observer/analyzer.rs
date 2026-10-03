@@ -714,7 +714,7 @@ pub fn generate_proposals(risks: &[Risk]) -> Vec<Proposal> {
         if repo_rules::is_missing_tui_replay_proof(r.description.as_str()) {
             push(Proposal {
                 title: "Refresh TUI replay proof".to_string(),
-                to_coder: "This change touched TUI-visible or TUI-control-flow code. Run `cargo run -- ... tui-replay --spec .obstral/tui_replay.json` and keep the proof green before calling the work done.".to_string(),
+                to_coder: "This change touched TUI-visible or TUI-control-flow code. Run `cargo run -- ... tui-replay --spec .spiral-coder/tui_replay.json` and keep the proof green before calling the work done.".to_string(),
                 severity: r.severity,
                 score: 0,
                 phase: DevPhase::Core,
@@ -736,7 +736,7 @@ pub fn generate_proposals(risks: &[Risk]) -> Vec<Proposal> {
         if repo_rules::is_missing_runtime_eval_proof(r.description.as_str()) {
             push(Proposal {
                 title: "Refresh runtime eval proof".to_string(),
-                to_coder: "This change touched coder-loop/runtime code. Run `cargo run -- ... eval --spec .obstral/runtime_eval.json` for the affected case before closeout so the harness proof stays current.".to_string(),
+                to_coder: "This change touched coder-loop/runtime code. Run `cargo run -- ... eval --spec .spiral-coder/runtime_eval.json` for the affected case before closeout so the harness proof stays current.".to_string(),
                 severity: r.severity,
                 score: 0,
                 phase: DevPhase::Core,

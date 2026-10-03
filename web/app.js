@@ -1,9 +1,10 @@
-﻿(() => {
+(() => {
   "use strict";
 
   const root = document.getElementById("app-root");
   if (!root) return;
 
+  const { readStoredValue, rootUserTextForRun, serverSupportsFeature } = window.SpiralCoderState;
   const e = React.createElement;
   const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
@@ -11,12 +12,12 @@
   // ║  SECTION: Constants & i18n                               ║
   // ╚══════════════════════════════════════════════════════════╝
   const LS = {
-    lang: "obstral.lang.v1",
-    config: "obstral.config.v1",
-    threads: "obstral.threads.v1",
-    active: "obstral.active.v1",
+    lang: "spiral-coder.lang.v1",
+    config: "spiral-coder.config.v1",
+    threads: "spiral-coder.threads.v1",
+    active: "spiral-coder.active.v1",
     // Bump version to reset the default split for readability (Observer critiques are the product).
-    splitPct: "obstral.splitPct.v2",
+    splitPct: "spiral-coder.splitPct.v2",
   };
 
   // ── i18n strings (en / ja / fr) ──────────────────────────────────────────────
@@ -90,6 +91,7 @@
       failed: "failed",
       promotionNone: "No promotion candidates yet.",
       mergeGateNone: "No merge gate artifact yet.",
+      requiresRustServer: "Requires the Rust server (spiral-coder serve).",
       reject: "Reject",
       send: "Send",
       stop: "Stop",
@@ -130,7 +132,7 @@
       sending: "sending…",
       streaming: "streaming…",
       error: "error",
-      fetchFailed: "Failed to fetch (is OBSTRAL serve running?)",
+      fetchFailed: "Failed to fetch (is Spiral-Coder serve running?)",
       copy: "Copy",
       reader: "Read",
       refresh: "Refresh",
@@ -266,7 +268,7 @@
       sending: "sending…",
       streaming: "streaming…",
       error: "error",
-      fetchFailed: "通信できません（obstral serve が起動してる？ポート合ってる？）",
+      fetchFailed: "通信できません（spiral-coder serve が起動してる？ポート合ってる？）",
       copy: "コピー",
       reader: "読む",
       refresh: "更新",
@@ -330,6 +332,7 @@
       failed: "failed",
       promotionNone: "昇格候補はまだありません。",
       mergeGateNone: "merge gate artifact はまだありません。",
+      requiresRustServer: "Rust サーバー（spiral-coder serve）で利用できます。",
       reject: "却下",
       metaDiagnose: "メタ診断",
       metaBadge: "META",
@@ -425,6 +428,7 @@
       failed: "échoué",
       promotionNone: "Aucun candidat de promotion pour le moment.",
       mergeGateNone: "Aucun artifact merge gate pour le moment.",
+      requiresRustServer: "Nécessite le serveur Rust (spiral-coder serve).",
       reject: "Rejeter",
       send: "Envoyer",
       stop: "Stop",
@@ -465,7 +469,7 @@
       sending: "envoi…",
       streaming: "stream…",
       error: "erreur",
-      fetchFailed: "Échec de requête (OBSTRAL serve est-il lancé ?)",
+      fetchFailed: "Échec de requête (Spiral-Coder serve est-il lancé ?)",
       copy: "Copier",
       reader: "Lire",
       refresh: "Rafraîchir",
@@ -536,7 +540,7 @@
   }
 
   // ── Plugin Registry ───────────────────────────────────────────────────────────
-  // Extend OBSTRAL without forking the source.
+  // Extend Spiral-Coder without forking the source.
   //
   // Usage — load your plugin via <script src="my-plugin.js"></script> before app.js:
   //   registerObserverPlugin({ name, onProposal, onHealth, onPhase })
@@ -545,10 +549,10 @@
   //
   // Hooks are currently scaffolded (no-op). Integration points will be added
   // in parseProposals() and parseHealthScore() as Phase C matures.
-  const _OBSTRAL_PLUGINS = { observer: [], phases: {}, validators: [] };
-  function registerObserverPlugin(p) { _OBSTRAL_PLUGINS.observer.push(p); }
-  function registerPhase(key, cfg)   { _OBSTRAL_PLUGINS.phases[key] = cfg; }
-  function registerValidator(fn)     { _OBSTRAL_PLUGINS.validators.push(fn); }
+  const _SPIRAL_CODER_PLUGINS = { observer: [], phases: {}, validators: [] };
+  function registerObserverPlugin(p) { _SPIRAL_CODER_PLUGINS.observer.push(p); }
+  function registerPhase(key, cfg)   { _SPIRAL_CODER_PLUGINS.phases[key] = cfg; }
+  function registerValidator(fn)     { _SPIRAL_CODER_PLUGINS.validators.push(fn); }
 
   // ╔══════════════════════════════════════════════════════════╗
   // ║  SECTION: Utils                                          ║
@@ -598,7 +602,7 @@
   }
 
   // Similarity + proposal parsing helpers live in `web/observer/logic.js`
-  // and are exposed on `window.OBSTRAL.observer`.
+  // and are exposed on `window.SpiralCoder.observer`.
 
   function autoObservePrompt(uiLang) {
     const l = String(uiLang || "").trim().toLowerCase();
@@ -831,7 +835,7 @@
   }
 
   function transcriptMd(thread, meta) {
-    const lines = ["# OBSTRAL transcript", ""];
+    const lines = ["# Spiral-Coder transcript", ""];
     if (meta) {
       lines.push("```");
       Object.keys(meta).forEach((k) => lines.push(`${k}: ${meta[k]}`));
@@ -993,17 +997,17 @@
     return parts;
   }
 
-  const SANDBOX = (window.OBSTRAL && window.OBSTRAL.sandbox) ? window.OBSTRAL.sandbox : {};
+  const SANDBOX = (window.SpiralCoder && window.SpiralCoder.sandbox) ? window.SpiralCoder.sandbox : {};
   const normalizePathSep = SANDBOX.normalizePathSep;
   const safeThreadId = SANDBOX.safeThreadId;
   const safeWorkdir = SANDBOX.safeWorkdir;
   const resolvedThreadRoot = SANDBOX.resolvedThreadRoot;
   const resolvedCwd = SANDBOX.resolvedCwd;
   if (!normalizePathSep || !safeThreadId || !safeWorkdir || !resolvedThreadRoot || !resolvedCwd) {
-    throw new Error("OBSTRAL UI: missing sandbox helpers (core/sandbox.js not loaded)");
+    throw new Error("Spiral-Coder UI: missing sandbox helpers (core/sandbox.js not loaded)");
   }
 
-  const OBSERVER = (window.OBSTRAL && window.OBSTRAL.observer) ? window.OBSTRAL.observer : {};
+  const OBSERVER = (window.SpiralCoder && window.SpiralCoder.observer) ? window.SpiralCoder.observer : {};
   const normalizeForSim = OBSERVER.normalizeForSim;
   const tokenSetForSim = OBSERVER.tokenSetForSim;
   const jaccardSim = OBSERVER.jaccardSim;
@@ -1026,10 +1030,10 @@
     || !parseBenchmarkPlan
     || !stripObserverMeta
   ) {
-    throw new Error("OBSTRAL UI: missing observer helpers (observer/logic.js not loaded)");
+    throw new Error("Spiral-Coder UI: missing observer helpers (observer/logic.js not loaded)");
   }
 
-  const EXEC = (window.OBSTRAL && window.OBSTRAL.exec) ? window.OBSTRAL.exec : {};
+  const EXEC = (window.SpiralCoder && window.SpiralCoder.exec) ? window.SpiralCoder.exec : {};
   const isWindowsHost = EXEC.isWindowsHost;
   const stripShellTranscript = EXEC.stripShellTranscript;
   const dangerousCommandReason = EXEC.dangerousCommandReason;
@@ -1042,7 +1046,7 @@
     || !gitRepoHint
     || !normalizeExecScript
   ) {
-    throw new Error("OBSTRAL UI: missing exec helpers (core/exec.js not loaded)");
+    throw new Error("Spiral-Coder UI: missing exec helpers (core/exec.js not loaded)");
   }
 
   function confirmDangerous(uiLang, reason) {
@@ -1364,7 +1368,7 @@
         "[Project Context",
         "[Project Instructions",
         "AGENTS.md",
-        ".obstral.md",
+        ".spiral-coder.md",
       ],
       read_only_forbidden_terms: [
         "edit",
@@ -1437,7 +1441,7 @@
 
   const DEFAULT_GOVERNOR_CONTRACT = (() => {
     const embedded = typeof window !== "undefined"
-      ? window.__OBSTRAL_GOVERNOR_CONTRACT_FALLBACK__
+      ? window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__
       : null;
     return embedded && typeof embedded === "object"
       ? embedded
@@ -1679,7 +1683,7 @@
         }
         if (probe === "git_head") {
           return isWindows
-            ? `$obstral_${key} = ''; try { $obstral_${key} = (git rev-parse HEAD 2>$null).Trim() } catch { $obstral_${key} = '' }; Write-Output (${psSingleQuote(key)} + '=' + $obstral_${key})`
+            ? `$spiral_coder_${key} = ''; try { $spiral_coder_${key} = (git rev-parse HEAD 2>$null).Trim() } catch { $spiral_coder_${key} = '' }; Write-Output (${psSingleQuote(key)} + '=' + $spiral_coder_${key})`
             : `echo ${key}=$(git rev-parse HEAD 2>/dev/null || true)`;
         }
         return "";
@@ -3525,7 +3529,7 @@
   }
 
   // ── Observer Logic ────────────────────────────────────────────────────────────
-  // Observer parsing helpers are split into `web/observer/logic.js` (window.OBSTRAL.observer).
+  // Observer parsing helpers are split into `web/observer/logic.js` (window.SpiralCoder.observer).
 
   function parseMetaPromptOp(toCoderText) {
     const s = String(toCoderText || "");
@@ -3696,13 +3700,16 @@
   // ╚══════════════════════════════════════════════════════════╝
   function App() {
     const [lang, setLang] = useState(() => {
-      const v = (localStorage.getItem(LS.lang) || "").trim();
+      const v = (readStoredValue(localStorage, LS.lang) || "").trim();
       return v === "ja" || v === "en" || v === "fr" ? v : "ja";
     });
     const [status, setStatus] = useState(null);
+    const harnessSupported = serverSupportsFeature(status, "harness_promotions");
+    const mergeGateSupported = serverSupportsFeature(status, "merge_gate");
+    const projectScanSupported = serverSupportsFeature(status, "project_scan");
 
     const [config, setConfig] = useState(() => {
-      const v = safeJsonParse(localStorage.getItem(LS.config) || "null", null);
+      const v = safeJsonParse(readStoredValue(localStorage, LS.config) || "null", null);
       if (!v || typeof v !== "object") return { ...DEFAULT_CONFIG };
       const cfg = { ...DEFAULT_CONFIG, ...v };
       if (!cfg.chatModel && cfg.model) cfg.chatModel = cfg.model;
@@ -3819,7 +3826,7 @@
     const [gitCheckpoint, setGitCheckpoint] = useState(null);
 
     const [threadState, setThreadState] = useState(() => {
-      let threads = safeJsonParse(localStorage.getItem(LS.threads) || "null", null);
+      let threads = safeJsonParse(readStoredValue(localStorage, LS.threads) || "null", null);
       threads = Array.isArray(threads) ? threads : [];
       threads = threads
         .filter((t) => t && typeof t === "object" && typeof t.id === "string")
@@ -3836,6 +3843,7 @@
                   id: typeof m.id === "string" && m.id ? m.id : uid(),
                   pane: m.pane === "observer" ? "observer" : m.pane === "chat" ? "chat" : "coder",
                   role: m.role === "assistant" ? "assistant" : "user",
+                  origin: m.origin === "runtime" ? "runtime" : "user",
                   content: typeof m.content === "string" ? m.content : String(m.content || ""),
                   ts: typeof m.ts === "number" ? m.ts : Date.now(),
                   streaming: !!m.streaming,
@@ -3889,7 +3897,7 @@
           })(),
         }));
       if (!threads.length) threads = [makeThread("Thread 1")];
-      const active0 = (localStorage.getItem(LS.active) || "").trim();
+      const active0 = (readStoredValue(localStorage, LS.active) || "").trim();
       const active = threads.some((t) => t.id === active0) ? active0 : threads[0].id;
       return { threads, activeId: active };
     });
@@ -3912,7 +3920,7 @@
     const [showShortcuts, setShowShortcuts] = useState(false);
     const [splitPct, setSplitPct] = useState(() => {
       try {
-        const v = Number(localStorage.getItem(LS.splitPct));
+        const v = Number(readStoredValue(localStorage, LS.splitPct));
         if (Number.isFinite(v) && v >= 20 && v <= 80) return v;
       } catch (_) {}
       // Default: bias toward readable Observer critiques (users can resize + it persists).
@@ -4153,6 +4161,10 @@
 
     useEffect(() => {
       refreshStatus();
+    }, []);
+
+    useEffect(() => {
+      if (!status) return;
       refreshPendingEdits();
       refreshPendingCommands();
       refreshHarnessPromotions();
@@ -4164,9 +4176,9 @@
         refreshMergeGate();
       }, 3000);
       return () => clearInterval(t);
-    }, []);
+    }, [status && status.features]);
 
-    // Safer default: run local commands under a scratch directory, not the OBSTRAL repo root.
+    // Safer default: run local commands under a scratch directory, not the Spiral-Coder repo root.
     // This prevents nested git repos (embedded repo warnings) and accidental `git add .` fallout.
     useEffect(() => {
       if (toolRootInitRef.current) return;
@@ -4217,7 +4229,7 @@
 
     useEffect(() => {
       const root = String(config.toolRoot || "").trim();
-      if (!root || root === projectScanRootRef.current) return;
+      if (!projectScanSupported || !root || root === projectScanRootRef.current) return;
       projectScanRootRef.current = root;
       setProjectScanLoading(true);
       fetch(`/api/project/scan?root=${encodeURIComponent(root)}`)
@@ -4225,19 +4237,20 @@
         .then(d => setProjectScan(d && d.root ? d : null))
         .catch(() => setProjectScan(null))
         .finally(() => setProjectScanLoading(false));
-    }, [config.toolRoot]);
+    }, [config.toolRoot, projectScanSupported]);
 
     const refreshStatus = () => {
       fetch("/api/status")
         .then((r) => r.json())
         .then((j) => {
-          try { window.__OBSTRAL_HOST_OS = j && j.host_os ? String(j.host_os) : ""; } catch (_) {}
+          try { window.__SPIRAL_CODER_HOST_OS = j && j.host_os ? String(j.host_os) : ""; } catch (_) {}
           setStatus(j);
         })
         .catch(() => {});
     };
 
     const refreshPendingEdits = () => {
+      if (!serverSupportsFeature(status, "pending_edits")) return;
       fetch("/api/pending_edits")
         .then((r) => r.json())
         .then((j) => setPendingEdits(j && Array.isArray(j.pending) ? j.pending : []))
@@ -4245,6 +4258,7 @@
     };
 
     const refreshPendingCommands = () => {
+      if (!serverSupportsFeature(status, "pending_commands")) return;
       fetch("/api/pending_commands")
         .then((r) => r.json())
         .then((j) => setPendingCommands(j && Array.isArray(j.pending) ? j.pending : []))
@@ -4252,6 +4266,11 @@
     };
 
     const refreshHarnessPromotions = () => {
+      if (!harnessSupported) {
+        setHarnessPromotions(null);
+        setPromotionGateError("");
+        return;
+      }
       fetch("/api/harness_promotions")
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then((j) => {
@@ -4264,6 +4283,11 @@
     };
 
     const refreshMergeGate = () => {
+      if (!mergeGateSupported) {
+        setMergeGate(null);
+        setMergeGateError("");
+        return;
+      }
       fetch("/api/merge_gate")
         .then((r) => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then((j) => {
@@ -4329,14 +4353,14 @@
           const result = it.result != null ? JSON.stringify(it.result, null, 2) : "";
           const preview = result && result.length > 1800 ? (result.slice(0, 1800) + "\n...truncated...") : result;
           const msg = [
-            "[OBSTRAL] Pending edit approved. Continue without redoing the approved step.",
+            "[Spiral-Coder] Pending edit approved. Continue without redoing the approved step.",
             `id: ${eid}`,
             action ? `action: ${action}` : "",
             path ? `path: ${path}` : "",
             preview ? ("result:\n" + preview) : "",
           ].filter(Boolean).join("\n");
           // Best-effort: nudge Coder to resume after approval (Lite server pauses tool loops on approvals).
-          sendCoder(msg);
+          sendCoder(msg, { origin: "runtime" });
         }
       } catch (_) {
       } finally {
@@ -4358,13 +4382,13 @@
           const result = it.result != null ? JSON.stringify(it.result, null, 2) : "";
           const preview = result && result.length > 1800 ? (result.slice(0, 1800) + "\n...truncated...") : result;
           const msg = [
-            "[OBSTRAL] Pending command approved. Continue without redoing the approved step.",
+            "[Spiral-Coder] Pending command approved. Continue without redoing the approved step.",
             `id: ${cid}`,
             command ? `command: ${command}` : "",
             cwd ? `cwd: ${cwd}` : "",
             preview ? ("result:\n" + preview) : "",
           ].filter(Boolean).join("\n");
-          sendCoder(msg);
+          sendCoder(msg, { origin: "runtime" });
         }
       } catch (_) {
       } finally {
@@ -4376,7 +4400,7 @@
     const resolveHarnessPromotion = async (id, action) => {
       const pid = String(id || "").trim();
       const act = String(action || "").trim().toLowerCase();
-      if (!pid || !act || promotionBusy) return;
+      if (!harnessSupported || !pid || !act || promotionBusy) return;
       const endpoint = act === "approve"
         ? "/api/harness_promotions/approve"
         : act === "hold"
@@ -4407,7 +4431,7 @@
     const resolveMergeGate = async (id, action) => {
       const gid = String(id || "").trim();
       const act = String(action || "").trim().toLowerCase();
-      if (!gid || !act || mergeGateBusy) return;
+      if (!mergeGateSupported || !gid || !act || mergeGateBusy) return;
       const endpoint = act === "approve"
         ? "/api/merge_gate/approve"
         : act === "hold"
@@ -4651,7 +4675,7 @@
         observer_model_selected: observerActiveModel(),
       });
       const safe = String(activeThread.title || "thread").replace(/[\\/:*?\"<>|]/g, "_");
-      downloadText(`obstral-${safe}.md`, md);
+      downloadText(`spiral-coder-${safe}.md`, md);
     };
 
     const copyText = async (text, id) => {
@@ -5997,7 +6021,7 @@
         "You are a CLI coding agent.",
         "Work autonomously in long-run mode: decompose into modules, edit files, and verify.",
         "Prioritize concrete file changes over abstract discussion.",
-        "Always operate under tool_root (create a new project dir; do NOT touch OBSTRAL's repo).",
+        "Always operate under tool_root (create a new project dir; do NOT touch Spiral-Coder's repo).",
         "Before each major action, write a 3-line scratchpad: goal / risk / next (keep it short).",
         "If an action requires approval, STOP and tell the user which pending edit id(s) to approve, then continue after approval.",
         "Never run destructive cleanup commands (git reset --hard / git clean -fd / git rm ... .) unless the user explicitly asks.",
@@ -6165,7 +6189,7 @@
       }
     };
 
-      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir) => {
+      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir, rootUserText) => {
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
       const MAX_ITERS = (() => {
@@ -6183,10 +6207,6 @@
         tests: { attempts: 0, ok: false },
         build: { attempts: 0, ok: false },
       };
-      const rootUserText = (() => {
-        const prior = (Array.isArray(history) ? history : []).find((msg) => msg && msg.role === "user" && String(msg.content || "").trim());
-        return String(prior && prior.content || text || "").trim();
-      })();
       const rootReadOnly = isRootReadOnlyObservationTask(rootUserText);
       const governorContract = await getGovernorContract();
       const taskContract = deriveTaskContract(rootUserText, rootReadOnly, governorContract);
@@ -6292,7 +6312,7 @@
         }));
       };
 
-      const PWD_MARKER = "__OBSTRAL_PWD__=";
+      const PWD_MARKER = "__SPIRAL_CODER_PWD__=";
       const wrapExecWithPwd = (cmd) => {
         const raw = String(cmd || "").trim();
         if (!raw) return raw;
@@ -7097,10 +7117,10 @@
         }
 
         // Cargo exe lock (binary is running).
-        if (s.includes("failed to remove file") && s.includes("obstral.exe") && (s.includes("access is denied") || s.includes("アクセスが拒否"))) {
+        if (s.includes("failed to remove file") && s.includes("spiral-coder.exe") && (s.includes("access is denied") || s.includes("アクセスが拒否"))) {
           return [
-            "obstral.exe is locked (running). Stop the process before rebuilding.",
-            "Fix: .\\scripts\\kill-obstral.ps1 ; then re-run build (or use .\\scripts\\run-tui.ps1 / run-ui.ps1).",
+            "spiral-coder.exe is locked (running). Stop the process before rebuilding.",
+            "Fix: .\\scripts\\kill-spiral-coder.ps1 ; then re-run build (or use .\\scripts\\run-tui.ps1 / run-ui.ps1).",
           ].join("\n");
         }
 
@@ -7109,7 +7129,7 @@
           return [
             "You are mixing repos (nested git repo).",
             "Fix: operate inside the project directory only, or move it under tool_root (.tmp/<threadId>).",
-            "Do NOT run `git add .` from the OBSTRAL repo root.",
+            "Do NOT run `git add .` from the Spiral-Coder repo root.",
           ].join("\n");
         }
 
@@ -8880,7 +8900,7 @@ state: ${agentState}`);
       finishStreaming(threadId, asstMsgId);
     };
 
-      const sendCoder = async (overrideText) => {
+      const sendCoder = async (overrideText, options = {}) => {
         if (sendingCoder) return;
         const raw = overrideText != null ? String(overrideText) : String(coderInput || "");
         const text = raw.trim();
@@ -8894,7 +8914,7 @@ state: ${agentState}`);
           const arg = parts.slice(1).join(" ").trim();
           if (cmd === "/agent") {
             setConfig((c) => ({ ...c, mistralCliAgent: arg }));
-            const msg = { id: uid(), pane: "coder", role: "assistant", content: `[OBSTRAL] vibe agent = ${arg || "(default)"}`, ts: Date.now() };
+            const msg = { id: uid(), pane: "coder", role: "assistant", content: `[Spiral-Coder] vibe agent = ${arg || "(default)"}`, ts: Date.now() };
             setThreadState((s) => ({
               ...s,
               threads: s.threads.map((t) => (t.id === activeThread.id ? { ...t, updatedAt: Date.now(), messages: [...(t.messages || []), msg] } : t)),
@@ -8905,7 +8925,7 @@ state: ${agentState}`);
           if (cmd === "/turns") {
             const n = String(arg || "").trim();
             setConfig((c) => ({ ...c, mistralCliMaxTurns: n }));
-            const msg = { id: uid(), pane: "coder", role: "assistant", content: `[OBSTRAL] vibe max_turns = ${n || "(default)"}`, ts: Date.now() };
+            const msg = { id: uid(), pane: "coder", role: "assistant", content: `[Spiral-Coder] vibe max_turns = ${n || "(default)"}`, ts: Date.now() };
             setThreadState((s) => ({
               ...s,
               threads: s.threads.map((t) => (t.id === activeThread.id ? { ...t, updatedAt: Date.now(), messages: [...(t.messages || []), msg] } : t)),
@@ -8916,7 +8936,7 @@ state: ${agentState}`);
           if (cmd === "/scaffold") {
             const canExec = !!(status && status.features && status.features.exec);
             if (!canExec) {
-              const msg = { id: uid(), pane: "coder", role: "assistant", content: "[OBSTRAL] /scaffold requires /api/exec", ts: Date.now() };
+              const msg = { id: uid(), pane: "coder", role: "assistant", content: "[Spiral-Coder] /scaffold requires /api/exec", ts: Date.now() };
               setThreadState((s) => ({
                 ...s,
                 threads: s.threads.map((t) => (t.id === activeThread.id ? { ...t, updatedAt: Date.now(), messages: [...(t.messages || []), msg] } : t)),
@@ -8934,7 +8954,7 @@ state: ${agentState}`);
               .replace(/_+/g, "_")
               .trim();
             if (!safe) {
-              const msg = { id: uid(), pane: "coder", role: "assistant", content: "[OBSTRAL] usage: /scaffold <repo-name>", ts: Date.now() };
+              const msg = { id: uid(), pane: "coder", role: "assistant", content: "[Spiral-Coder] usage: /scaffold <repo-name>", ts: Date.now() };
               setThreadState((s) => ({
                 ...s,
                 threads: s.threads.map((t) => (t.id === activeThread.id ? { ...t, updatedAt: Date.now(), messages: [...(t.messages || []), msg] } : t)),
@@ -8947,7 +8967,7 @@ state: ${agentState}`);
             const readmeEn = [
               `# ${safe}`,
               "",
-              "Generated by OBSTRAL `/scaffold`.",
+              "Generated by Spiral-Coder `/scaffold`.",
               "",
               "## What is this?",
               "A minimal repository scaffold so you can start coding immediately.",
@@ -8970,7 +8990,7 @@ state: ${agentState}`);
             const readmeJa = [
               `# ${safe}`,
               "",
-              "OBSTRAL `/scaffold` により生成されました。",
+              "Spiral-Coder `/scaffold` により生成されました。",
               "",
               "## これは何？",
               "すぐに開発を開始できる最小のリポジトリ雛形です。",
@@ -8993,7 +9013,7 @@ state: ${agentState}`);
             const readmeFr = [
               `# ${safe}`,
               "",
-              "Généré par OBSTRAL `/scaffold`.",
+              "Généré par Spiral-Coder `/scaffold`.",
               "",
               "## C'est quoi ?",
               "Un modèle minimal pour démarrer un projet immédiatement.",
@@ -9017,7 +9037,7 @@ state: ${agentState}`);
             const readmeJaPs = "@(" + readmeJa.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath 'README.ja.md' -Encoding UTF8";
             const readmeFrPs = "@(" + readmeFr.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath 'README.fr.md' -Encoding UTF8";
             const gitignoreLines = [
-              "# OBSTRAL scaffold",
+              "# Spiral-Coder scaffold",
               ".DS_Store",
               "node_modules/",
               "dist/",
@@ -9040,8 +9060,8 @@ state: ${agentState}`);
               gitignorePs,
               "git init | Out-Null",
               "git branch -M main | Out-Null",
-              "$n = (git config user.name); if (-not $n) { git config user.name 'OBSTRAL' }",
-              "$e = (git config user.email); if (-not $e) { git config user.email 'obstral@local' }",
+              "$n = (git config user.name); if (-not $n) { git config user.name 'Spiral-Coder' }",
+              "$e = (git config user.email); if (-not $e) { git config user.email 'spiral-coder@local' }",
               "git add README.md README.ja.md README.fr.md .gitignore | Out-Null",
               "git commit -m 'Initial commit' | Out-Null",
             ].join("; ");
@@ -9050,8 +9070,8 @@ state: ${agentState}`);
               const res = await postJson("/api/exec", { command: cmdPs, cwd: baseCwd });
               const ok = (res && typeof res.exit_code === "number") ? res.exit_code === 0 : false;
               const out = ok
-                ? `[OBSTRAL] scaffolded repo: ${safe} (cwd=${String(res.cwd || baseCwd || "")})`
-                : `[OBSTRAL] scaffold failed (exit_code=${res.exit_code}). stderr: ${String(res.stderr || "(empty)")}`;
+                ? `[Spiral-Coder] scaffolded repo: ${safe} (cwd=${String(res.cwd || baseCwd || "")})`
+                : `[Spiral-Coder] scaffold failed (exit_code=${res.exit_code}). stderr: ${String(res.stderr || "(empty)")}`;
               const msg = { id: uid(), pane: "coder", role: "assistant", content: out, ts: Date.now() };
               setThreadState((s) => ({
                 ...s,
@@ -9062,7 +9082,7 @@ state: ${agentState}`);
                 )),
               }));
             } catch (err) {
-              const msg = { id: uid(), pane: "coder", role: "assistant", content: `[OBSTRAL] scaffold error: ${prettyErr(err)}`, ts: Date.now() };
+              const msg = { id: uid(), pane: "coder", role: "assistant", content: `[Spiral-Coder] scaffold error: ${prettyErr(err)}`, ts: Date.now() };
               setThreadState((s) => ({
                 ...s,
                 threads: s.threads.map((t) => (t.id === activeThread.id ? { ...t, updatedAt: Date.now(), messages: [...(t.messages || []), msg] } : t)),
@@ -9102,9 +9122,12 @@ state: ${agentState}`);
         };
 
         const threadId = activeThread.id;
-        const history = paneMessages("coder").map((m) => ({ role: m.role, content: m.content }));
+        const coderHistory = paneMessages("coder");
+        const origin = options.origin === "runtime" ? "runtime" : "user";
+        const rootUserText = rootUserTextForRun(text, coderHistory, origin);
+        const history = coderHistory.map((m) => ({ role: m.role, content: m.content }));
 
-      const userMsg = { id: uid(), pane: "coder", role: "user", content: text, ts: Date.now() };
+      const userMsg = { id: uid(), pane: "coder", role: "user", origin, content: text, ts: Date.now() };
       const asstMsg = { id: uid(), pane: "coder", role: "assistant", content: "", ts: Date.now(), streaming: true };
 
       setThreadState((s) => ({
@@ -9130,7 +9153,7 @@ state: ${agentState}`);
           const supportsTools = resolvedProvider === "openai-compatible" || resolvedProvider === "mistral" || resolvedProvider === "openai";
           const serverChatTools = !!(status && status.features && status.features.chat_tools);
           if ((config.forceAgent || wantsMaterial) && supportsTools && serverChatTools) {
-            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir);
+            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir, rootUserText);
           } else if (config.stream) {
           await streamChat(
             reqBody,
@@ -9526,7 +9549,7 @@ state: ${agentState}`);
         `observer_intensity: ${intensity}`,
         loopLine,
         intensityInstr,
-        "Meta ops (optional): if you propose updating OBSTRAL runtime prompts, start to_coder with one of: META_SET_CODER:, META_APPEND_CODER:, META_SET_OBSERVER:, META_APPEND_OBSERVER:.",
+        "Meta ops (optional): if you propose updating Spiral-Coder runtime prompts, start to_coder with one of: META_SET_CODER:, META_APPEND_CODER:, META_SET_OBSERVER:, META_APPEND_OBSERVER:.",
         "Review the coder's artifacts below. Check each dimension: CORRECTNESS, SECURITY, RELIABILITY, PERFORMANCE, MAINTAINABILITY.",
         "Code citation: for every warn/crit proposal, add a quote: field containing an exact function name,",
         "  variable name, or ≤40-char code snippet from the coder's output. Use n/a only if no code is visible.",
@@ -9920,7 +9943,7 @@ state: ${agentState}`);
 
       const langName = (lang === "fr") ? "French" : (lang === "en") ? "English" : "Japanese";
       const routerPrompt = [
-        "You are TaskRouter for OBSTRAL (behind-the-scenes).",
+        "You are TaskRouter for Spiral-Coder (behind-the-scenes).",
         "Return ONLY valid JSON. No markdown. No commentary.",
         "Schema: {\"tasks\":[{\"target\":\"coder|observer\",\"title\":\"...\",\"body\":\"...\",\"phase\":\"core|feature|polish|any\",\"priority\":0-100}]}",
         "Rules:",
@@ -10326,7 +10349,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-primary",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "approve"),
                   },
                   tr(lang, "approve")
@@ -10338,7 +10361,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-warn",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "hold"),
                   },
                   tr(lang, "hold")
@@ -10350,7 +10373,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-accent",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: () => resolveHarnessPromotion(entry.id, "apply"),
                   },
                   tr(lang, "applyToContract")
@@ -10408,7 +10431,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-primary",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: () => resolveMergeGate(entry.id, "approve"),
                   },
                   tr(lang, "approve")
@@ -10420,7 +10443,7 @@ state: ${agentState}`);
                   {
                     className: "btn btn-warn",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: () => resolveMergeGate(entry.id, "hold"),
                   },
                   tr(lang, "hold")
@@ -10513,7 +10536,7 @@ state: ${agentState}`);
           e(
             "div",
             { className: "brand" },
-            e("h1", null, "OBSTRAL"),
+            e("h1", null, "Spiral-Coder"),
             e(
               "span",
               { className: "pill", title: status && status.workspace_root ? String(status.workspace_root) : "" },
@@ -10737,7 +10760,7 @@ state: ${agentState}`);
                   {
                     className: "btn",
                     type: "button",
-                    disabled: promotionBusy,
+                    disabled: promotionBusy || !harnessSupported,
                     onClick: refreshHarnessPromotions,
                   },
                   tr(lang, "refresh")
@@ -10775,7 +10798,7 @@ state: ${agentState}`);
                       )
                     )
                   )
-                : e("div", { className: "hint" }, tr(lang, "promotionNone"))
+                : e("div", { className: "hint" }, tr(lang, status && !harnessSupported ? "requiresRustServer" : "promotionNone"))
             )
           ),
           e(
@@ -10810,7 +10833,7 @@ state: ${agentState}`);
                   {
                     className: "btn",
                     type: "button",
-                    disabled: mergeGateBusy,
+                    disabled: mergeGateBusy || !mergeGateSupported,
                     onClick: refreshMergeGate,
                   },
                   tr(lang, "refresh")
@@ -10848,7 +10871,7 @@ state: ${agentState}`);
                       )
                     )
                   )
-                : e("div", { className: "hint" }, tr(lang, "mergeGateNone"))
+                : e("div", { className: "hint" }, tr(lang, status && !mergeGateSupported ? "requiresRustServer" : "mergeGateNone"))
             )
           ),
           e(

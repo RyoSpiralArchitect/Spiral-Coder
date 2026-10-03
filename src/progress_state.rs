@@ -238,7 +238,7 @@ impl RepoProgressState {
 }
 
 pub fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".obstral/progress.json")
+    Path::new(root).join(".spiral-coder/progress.json")
 }
 
 #[derive(Debug, Clone)]

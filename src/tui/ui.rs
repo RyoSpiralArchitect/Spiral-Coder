@@ -181,7 +181,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
 
     let row1 = Line::from(vec![
         Span::styled(
-            "  ◈ OBSTRAL ",
+            "  ◈ Spiral-Coder ",
             Style::default()
                 .fg(Color::White)
                 .add_modifier(Modifier::BOLD),
@@ -835,7 +835,7 @@ fn render_promotions_pane(frame: &mut Frame, area: Rect, app: &App, focused: boo
             Style::default().fg(MUTED),
         )));
         lines.push(Line::from(Span::styled(
-            "  Run `obstral promote-harness` to generate a candidate artifact.",
+            "  Run `spiral-coder promote-harness` to generate a candidate artifact.",
             Style::default().fg(MUTED),
         )));
     } else {
@@ -914,7 +914,7 @@ fn render_merge_gate_pane(frame: &mut Frame, area: Rect, app: &App, focused: boo
             Style::default().fg(MUTED),
         )));
         lines.push(Line::from(Span::styled(
-            "  Run `obstral eval --spec .obstral/runtime_eval.json` to generate merge_gate.json.",
+            "  Run `spiral-coder eval --spec .spiral-coder/runtime_eval.json` to generate merge_gate.json.",
             Style::default().fg(MUTED),
         )));
     } else {

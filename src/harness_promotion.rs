@@ -162,7 +162,7 @@ impl GovernorContractPromotionCandidate {
 }
 
 pub fn candidate_path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".obstral/governor_contract.promotion.json")
+    Path::new(root).join(".spiral-coder/governor_contract.promotion.json")
 }
 
 pub fn build_promotion_candidate(
@@ -406,8 +406,8 @@ mod tests {
             &contract,
             &overlay,
             Path::new("shared/governor_contract.json"),
-            Path::new(".obstral/governor_contract.overlay.json"),
-            Path::new(".obstral/governor_contract.promotion.json"),
+            Path::new(".spiral-coder/governor_contract.overlay.json"),
+            Path::new(".spiral-coder/governor_contract.promotion.json"),
             1,
         );
         assert_eq!(candidate.summary.add, 1);
@@ -461,8 +461,8 @@ mod tests {
             &contract,
             &overlay,
             Path::new("shared/governor_contract.json"),
-            Path::new(".obstral/governor_contract.overlay.json"),
-            Path::new(".obstral/governor_contract.promotion.json"),
+            Path::new(".spiral-coder/governor_contract.overlay.json"),
+            Path::new(".spiral-coder/governor_contract.promotion.json"),
             1,
         );
         assert_eq!(candidate.summary.noop, 1);
@@ -490,8 +490,8 @@ mod tests {
             &contract,
             &overlay,
             Path::new("shared/governor_contract.json"),
-            Path::new(".obstral/governor_contract.overlay.json"),
-            Path::new(".obstral/governor_contract.promotion.json"),
+            Path::new(".spiral-coder/governor_contract.overlay.json"),
+            Path::new(".spiral-coder/governor_contract.promotion.json"),
             2,
         );
         assert_eq!(candidate.summary.hold, 1);

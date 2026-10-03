@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn trace_writer_supports_parentless_paths() {
         // This must work for paths like "trace.jsonl" where Path::parent() is empty ("").
-        let path = unique_path("obstral-trace-test", "jsonl");
+        let path = unique_path("spiral-coder-trace-test", "jsonl");
         let tw = TraceWriter::new(path.clone()).expect("TraceWriter::new");
         tw.event("test", json!({"ok": true})).expect("event");
         drop(tw);

@@ -14,17 +14,17 @@ pub async fn run(mut partial: PartialConfig) -> Result<()> {
     let mut history: Vec<ChatMessage> = Vec::new();
 
     let mut rl = DefaultEditor::new().context("failed to initialize line editor")?;
-    let history_path = std::path::PathBuf::from(".obstral_history");
+    let history_path = std::path::PathBuf::from(".spiral_coder_history");
     let _ = rl.load_history(&history_path);
 
-    println!("OBSTRAL REPL");
+    println!("Spiral-Coder REPL");
     println!("  /help  show commands");
     println!("  /exit  quit");
 
     loop {
         let cfg = partial.clone().resolve()?;
         let prompt = format!(
-            "obstral[{}|{}|{}]> ",
+            "spiral-coder[{}|{}|{}]> ",
             cfg.mode.label(),
             cfg.persona,
             cfg.provider

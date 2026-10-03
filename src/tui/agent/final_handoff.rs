@@ -1,330 +1,387 @@
+//! Final-answer requirements are checked separately from execution proof.
 use serde_json::Value;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
-pub(super) fn enrich_text_final_handoff(
-    content: &str,
-    root_user_text: &str,
-    messages: &[Value],
-    test_cmd: Option<&str>,
-) -> Option<String> {
-    if !content.trim_start().starts_with("[DONE]") {
-        return None;
-    }
-    if !root_user_text
-        .to_ascii_lowercase()
-        .contains("final answer must include")
-    {
-        return None;
-    }
+const MARKER: &str = "final answer must include";
 
-    let mutated = successful_mutation_paths(messages);
-    let mut missing_paths = path_literals_in_text(root_user_text)
-        .into_iter()
-        .filter(|path| mutated.contains(path))
-        .filter(|path| !content.contains(path))
-        .collect::<Vec<_>>();
-    missing_paths.sort();
-    missing_paths.dedup();
-
-    let mut enriched = content.to_string();
-    if !missing_paths.is_empty() {
-        enriched.push_str("\n\nArtifacts:\n");
-        for path in missing_paths {
-            enriched.push_str("- `");
-            enriched.push_str(path.as_str());
-            enriched.push_str("`\n");
-        }
-    }
-
-    if let Some(cmd) = test_cmd
-        .map(str::trim)
-        .filter(|cmd| !cmd.is_empty())
-        .filter(|_cmd| {
-            root_user_text
-                .to_ascii_lowercase()
-                .contains("verification command")
+fn instructions(root: &str) -> Vec<&str> {
+    root.lines()
+        .filter_map(|line| {
+            line.to_ascii_lowercase()
+                .find(MARKER)
+                .map(|i| &line[i + MARKER.len()..])
         })
-        .filter(|cmd| !content.contains(cmd))
-        .filter(|_cmd| successful_auto_test_seen(messages))
-    {
-        enriched.push_str("\nVerification:\n- `");
-        enriched.push_str(cmd);
-        enriched.push_str("`\n");
-    }
-
-    let mut missing_required_literals = required_non_command_final_literals(root_user_text)
-        .into_iter()
-        .filter(|literal| !content.contains(literal))
-        .collect::<Vec<_>>();
-    missing_required_literals.sort();
-    missing_required_literals.dedup();
-    if !missing_required_literals.is_empty() {
-        enriched.push_str("\nRequired final answer items:\n");
-        for literal in missing_required_literals {
-            enriched.push_str("- `");
-            enriched.push_str(literal.as_str());
-            enriched.push_str("`\n");
-        }
-    }
-
-    (enriched != content).then_some(enriched)
+        .collect()
 }
 
-fn successful_mutation_paths(messages: &[Value]) -> BTreeSet<String> {
-    let mut pending = std::collections::BTreeMap::new();
-    let mut out = BTreeSet::new();
+pub(super) fn requires_authored_final_answer(root: &str) -> bool {
+    !instructions(root).is_empty()
+}
 
-    for msg in messages {
-        match msg.get("role").and_then(|v| v.as_str()).unwrap_or("") {
-            "assistant" => {
-                let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                    continue;
-                };
-                for tc in tool_calls {
-                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                    let name = tc
-                        .get("function")
-                        .and_then(|v| v.get("name"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if id.is_empty() || !matches!(name, "patch_file" | "write_file") {
-                        continue;
-                    }
-                    let Some(path) = tc
-                        .get("function")
-                        .and_then(|v| v.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                        .and_then(|value| {
-                            value
-                                .get("path")
-                                .and_then(|v| v.as_str())
-                                .map(str::to_string)
-                        })
-                    else {
+pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
+    let clauses = instructions(root);
+    (!clauses.is_empty()).then(|| format!(
+        "[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\n{}",
+        clauses.iter().map(|clause| format!("Final answer must include{clause}")).collect::<Vec<_>>().join("\n")
+    ))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PathKind {
+    Any,
+    Rust,
+    Documentation,
+    Spec,
+}
+
+impl PathKind {
+    fn matches(self, path: &str) -> bool {
+        match self {
+            Self::Any => true,
+            Self::Rust => path.ends_with(".rs"),
+            Self::Documentation => {
+                path.starts_with("docs/")
+                    || [".md", ".rst", ".adoc"]
+                        .iter()
+                        .any(|ext| path.ends_with(ext))
+            }
+            Self::Spec => [".json", ".yaml", ".yml", ".toml"]
+                .iter()
+                .any(|ext| path.ends_with(ext)),
+        }
+    }
+    fn label(self) -> &'static str {
+        match self {
+            Self::Any => "artifact path",
+            Self::Rust => "changed Rust file path",
+            Self::Documentation => "documentation path",
+            Self::Spec => "specification path",
+        }
+    }
+}
+
+fn path_kinds(clauses: &[&str]) -> Vec<PathKind> {
+    let mut kinds = Vec::new();
+    for clause in clauses {
+        // These are deliberately bounded English categories, not a general
+        // natural-language interpretation or a requirement to list every edit.
+        let lower = clause.to_ascii_lowercase();
+        for item in lower.split(',').flat_map(|item| item.split(" and ")) {
+            if !item.contains("path") {
+                continue;
+            }
+            let kind = if item.contains("rust") {
+                PathKind::Rust
+            } else if item.contains("docs") || item.contains("documentation") {
+                PathKind::Documentation
+            } else if item.contains("spec") {
+                PathKind::Spec
+            } else {
+                PathKind::Any
+            };
+            if !kinds.contains(&kind) {
+                kinds.push(kind);
+            }
+        }
+    }
+    kinds
+}
+
+fn quoted_literals(clauses: &[&str]) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    for clause in clauses {
+        let mut rest = *clause;
+        while let Some((_, opened)) = rest.split_once('`') {
+            let Some((literal, closed)) = opened.split_once('`') else {
+                break;
+            };
+            if !literal.is_empty() {
+                out.insert(literal.to_string());
+            }
+            rest = closed;
+        }
+    }
+    out
+}
+
+fn explicit_paths(clauses: &[&str]) -> BTreeSet<String> {
+    clauses
+        .iter()
+        .flat_map(|clause| clause.split_whitespace())
+        .filter_map(|token| {
+            let path = token
+                .trim_matches(['`', '"', '\'', '(', ')', '[', ']', ','])
+                .trim_end_matches(['.', ',', ';', ':', '!', '?']);
+            let filename = path.rsplit_once('.').is_some_and(|(stem, ext)| {
+                !stem.is_empty()
+                    && ext.chars().all(|c| c.is_ascii_alphabetic())
+                    && (ext.len() >= 2 || matches!(ext, "c" | "h" | "r" | "R"))
+            });
+            (!path.is_empty() && (path.contains('/') || path.contains('\\') || filename))
+                .then(|| path.to_string())
+        })
+        .collect()
+}
+
+/// A bounded comma/and list can name plain values as well as paths. Only
+/// recognize short, unqualified values in a list that explicitly names a path;
+/// descriptive requests such as "a summary" remain authored prose, not literals.
+fn named_values(clauses: &[&str]) -> BTreeSet<String> {
+    let mut out = BTreeSet::new();
+    for clause in clauses {
+        if explicit_paths(&[clause]).is_empty() {
+            continue;
+        }
+        for item in clause.split(',').flat_map(|item| item.split(" and ")) {
+            let item = item.trim().trim_end_matches(['.', '!', ';']);
+            let lower = item.to_ascii_lowercase();
+            let words: Vec<_> = lower.split_whitespace().collect();
+            if !(2..=5).contains(&words.len())
+                || item.contains('`')
+                || !explicit_paths(&[item]).is_empty()
+            {
+                continue;
+            }
+            if [
+                "a",
+                "an",
+                "the",
+                "your",
+                "what",
+                "how",
+                "why",
+                "whether",
+                "explain",
+                "describe",
+                "summarize",
+                "list",
+                "mention",
+                "show",
+                "state",
+            ]
+            .contains(&words[0])
+                || words.iter().any(|word| {
+                    [
+                        "path",
+                        "paths",
+                        "file",
+                        "files",
+                        "command",
+                        "commands",
+                        "summary",
+                        "explanation",
+                        "details",
+                        "steps",
+                    ]
+                    .contains(word)
+                })
+            {
+                continue;
+            }
+            out.insert(item.to_string());
+        }
+    }
+    out
+}
+
+#[derive(Default)]
+struct HandoffEvidence {
+    paths: BTreeSet<String>,
+    commands: BTreeSet<String>,
+}
+
+fn collect_evidence(root: &str, messages: &[Value], test_cmd: Option<&str>) -> HandoffEvidence {
+    let context = super::exec_verification::ExecVerificationContext::from_root(test_cmd, root);
+    let mut pending = BTreeMap::new();
+    let mut evidence = HandoffEvidence::default();
+    for message in messages {
+        match message["role"].as_str() {
+            Some("assistant") => {
+                for call in message["tool_calls"].as_array().into_iter().flatten() {
+                    let Some(id) = call["id"].as_str().filter(|id| !id.is_empty()) else {
                         continue;
                     };
-                    pending.insert(id.to_string(), path);
+                    let args = call["function"]["arguments"]
+                        .as_str()
+                        .and_then(|s| serde_json::from_str::<Value>(s).ok());
+                    pending.insert(
+                        id.to_string(),
+                        (
+                            call["function"]["name"].as_str().unwrap_or("").to_string(),
+                            args,
+                        ),
+                    );
                 }
             }
-            "tool" => {
-                let tool_call_id = msg
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim();
-                let Some(path) = pending.remove(tool_call_id) else {
+            Some("tool") => {
+                let Some((name, Some(args))) = message["tool_call_id"]
+                    .as_str()
+                    .and_then(|id| pending.remove(id))
+                else {
                     continue;
                 };
-                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if content.starts_with("OK:") {
-                    out.insert(path);
+                let content = message["content"].as_str().unwrap_or("");
+                if crate::execution_evidence::file_edit_succeeded(&name, content) {
+                    if let Some(path) = args["path"].as_str().filter(|path| !path.trim().is_empty())
+                    {
+                        evidence
+                            .paths
+                            .insert(path.replace('\\', "/").trim_start_matches("./").to_string());
+                    }
+                    evidence.commands.clear();
+                    if crate::execution_evidence::auto_test_succeeded(&name, content) {
+                        if let Some(command) = test_cmd.filter(|cmd| !cmd.trim().is_empty()) {
+                            evidence.commands.insert(command.trim().to_string());
+                        }
+                    }
+                } else if name == "exec" && crate::execution_evidence::exec_may_have_run(content) {
+                    let command = args["command"].as_str().unwrap_or("");
+                    match context.classify(command).kind {
+                        super::ExecKind::Action => evidence.commands.clear(),
+                        super::ExecKind::Verify => {
+                            if crate::execution_evidence::exec_succeeded(content) {
+                                evidence.commands.insert(command.trim().to_string());
+                            } else {
+                                evidence.commands.clear();
+                            }
+                        }
+                        super::ExecKind::Diagnostic => {}
+                    }
                 }
             }
             _ => {}
         }
     }
-
-    out
+    evidence
 }
 
-fn successful_auto_test_seen(messages: &[Value]) -> bool {
-    messages.iter().any(|msg| {
-        msg.get("role").and_then(|v| v.as_str()) == Some("tool")
-            && msg
-                .get("content")
-                .and_then(|v| v.as_str())
-                .is_some_and(|content| content.contains("[auto-test] ✓ PASSED"))
-    })
-}
-
-fn path_literals_in_text(text: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    for token in text.split_whitespace() {
-        let trimmed = token
-            .trim_matches(|c: char| {
-                (c.is_ascii_punctuation() && !matches!(c, '.' | '/' | '\\' | '_' | '-'))
-                    || matches!(
-                        c,
-                        '「' | '」'
-                            | '『'
-                            | '』'
-                            | '（'
-                            | '）'
-                            | '('
-                            | ')'
-                            | '['
-                            | ']'
-                            | '{'
-                            | '}'
-                            | '`'
-                            | '"'
-                            | '\''
-                    )
-            })
-            .trim_end_matches(|c: char| matches!(c, '.' | ',' | ';' | ':' | '!' | '?'))
-            .trim_matches(|c: char| {
-                matches!(
-                    c,
-                    '「' | '」'
-                        | '『'
-                        | '』'
-                        | '（'
-                        | '）'
-                        | '('
-                        | ')'
-                        | '['
-                        | ']'
-                        | '{'
-                        | '}'
-                        | '`'
-                        | '"'
-                        | '\''
-                )
-            });
-        let has_path_sep = trimmed.contains('/') || trimmed.contains('\\');
-        let has_extension = trimmed
-            .split('/')
-            .next_back()
-            .is_some_and(|segment| segment.contains('.'));
-        if (has_path_sep || has_extension) && !trimmed.is_empty() {
-            let literal = trimmed.replace('\\', "/");
-            if !out.contains(&literal) {
-                out.push(literal);
-            }
+/// Validate the rendered answer: truthful citations in Acceptance count, but
+/// hints, previous assistant messages, and unrendered tool arguments do not.
+pub(super) fn validate_authored_done_summary(
+    root: &str,
+    summary: &str,
+    rendered: &str,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Result<(), String> {
+    let Some(hint) = authored_final_answer_hint(root) else {
+        return Ok(());
+    };
+    let clauses = instructions(root);
+    let evidence = collect_evidence(root, messages, test_cmd);
+    let mut missing = Vec::new();
+    if summary.trim().is_empty() {
+        missing.push("nonempty authored summary".to_string());
+    }
+    let mut required_literals = quoted_literals(&clauses);
+    required_literals.extend(explicit_paths(&clauses));
+    required_literals.extend(named_values(&clauses));
+    for literal in required_literals {
+        if !rendered.contains(literal.as_str()) {
+            let case_hint = rendered.to_ascii_lowercase().find(&literal.to_ascii_lowercase()).map(|start| {
+                // ASCII folding preserves byte offsets, including UTF-8 prose
+                // before the literal. Do not relax the exact-match contract.
+                let found = &rendered[start..start + literal.len()];
+                format!("; case-sensitive mismatch: replace {} with {} in the text of `done.summary`",
+                    serde_json::to_string(found).expect("string serialization"),
+                    serde_json::to_string(&literal).expect("string serialization"))
+            }).unwrap_or_default();
+            missing.push(format!("explicit item `{literal}`{case_hint}"));
         }
     }
-    out
-}
-
-fn required_non_command_final_literals(root_user_text: &str) -> Vec<String> {
-    if !root_user_text
-        .to_ascii_lowercase()
-        .contains("final answer must include")
-    {
-        return Vec::new();
-    }
-    backtick_literals(root_user_text)
-        .into_iter()
-        .filter(|literal| !looks_like_path_literal(literal))
-        .filter(|literal| !looks_like_command_literal(literal))
-        .collect()
-}
-
-fn backtick_literals(text: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut rest = text;
-    while let Some((_, after_open)) = rest.split_once('`') {
-        let Some((literal, after_close)) = after_open.split_once('`') else {
-            break;
-        };
-        let literal = literal.trim();
-        if !literal.is_empty() && !out.iter().any(|existing| existing == literal) {
-            out.push(literal.to_string());
+    for kind in path_kinds(&clauses) {
+        let candidates: Vec<_> = evidence
+            .paths
+            .iter()
+            .filter(|path| kind.matches(path))
+            .collect();
+        // No invented path or success claim when the transcript lacks an edit.
+        // Execution/acceptance gates retain responsibility for artifact proof.
+        if !candidates.is_empty()
+            && !candidates
+                .iter()
+                .any(|path| rendered.contains(path.as_str()))
+        {
+            missing.push(format!(
+                "{} (recorded: {})",
+                kind.label(),
+                candidates
+                    .iter()
+                    .map(|p| format!("`{p}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
         }
-        rest = after_close;
     }
-    out
-}
-
-fn looks_like_path_literal(literal: &str) -> bool {
-    let normalized = literal.replace('\\', "/");
-    normalized.contains('/')
-        || normalized
-            .split('/')
-            .next_back()
-            .is_some_and(|segment| segment.contains('.'))
-}
-
-fn looks_like_command_literal(literal: &str) -> bool {
-    let low = literal.trim().to_ascii_lowercase();
-    low.contains("&&")
-        || low.contains(" 2>&1")
-        || [
-            "cargo ", "bash ", "python", "pytest", "npm ", "pnpm ", "yarn ", "bun ", "go ",
-            "deno ", "test ", "cd ",
-        ]
+    if clauses
         .iter()
-        .any(|prefix| low.starts_with(prefix))
+        .any(|clause| clause.to_ascii_lowercase().contains("verification command"))
+        && !evidence.commands.is_empty()
+        && !evidence
+            .commands
+            .iter()
+            .any(|command| rendered.contains(command))
+    {
+        missing.push(format!(
+            "exact verification command (fresh: {})",
+            evidence
+                .commands
+                .iter()
+                .map(|cmd| format!("`{cmd}`"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
+    if missing.is_empty() {
+        Ok(())
+    } else {
+        Err(format!("{hint}\nMissing from the final answer:\n- {}\nRevise the `done` answer using this evidence; successful verification remains valid.", missing.join("\n- ")))
+    }
+}
+
+/// Legacy text-only finalizers may add a factual receipt. They must never
+/// fabricate a requested status/approval label or copy unrelated root literals.
+pub(super) fn enrich_text_final_handoff(
+    content: &str,
+    root: &str,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    if !content.trim_start().starts_with("[DONE]") || !requires_authored_final_answer(root) {
+        return None;
+    }
+    let evidence = collect_evidence(root, messages, test_cmd);
+    let kinds = path_kinds(&instructions(root));
+    let paths: Vec<_> = evidence
+        .paths
+        .iter()
+        .filter(|path| {
+            kinds.iter().any(|kind| kind.matches(path)) && !content.contains(path.as_str())
+        })
+        .collect();
+    let mut enriched = content.to_string();
+    if !paths.is_empty() {
+        enriched.push_str("\n\nRecorded file edits:\n");
+        for path in paths {
+            enriched.push_str(&format!("- `{path}`\n"));
+        }
+    }
+    if instructions(root)
+        .iter()
+        .any(|clause| clause.to_ascii_lowercase().contains("verification command"))
+    {
+        for command in evidence
+            .commands
+            .iter()
+            .filter(|command| !content.contains(command.as_str()))
+        {
+            enriched.push_str(&format!(
+                "\nRecorded successful verification: `{command}`\n"
+            ));
+        }
+    }
+    (enriched != content).then_some(enriched)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::enrich_text_final_handoff;
-    use serde_json::json;
-
-    #[test]
-    fn enriches_done_with_missing_successful_mutation_path() {
-        let messages = vec![
-            json!({
-                "role":"assistant",
-                "tool_calls":[{
-                    "id":"call_patch_src",
-                    "type":"function",
-                    "function":{"name":"patch_file","arguments":"{\"path\":\"src/tui/agent/followup_requirements.rs\",\"search\":\"old\",\"replace\":\"new\"}"}
-                }]
-            }),
-            json!({
-                "role":"tool",
-                "tool_call_id":"call_patch_src",
-                "content":"OK: patched 'src/tui/agent/followup_requirements.rs' (+1 lines, 25 total)"
-            }),
-            json!({
-                "role":"assistant",
-                "tool_calls":[{
-                    "id":"call_patch_eval",
-                    "type":"function",
-                    "function":{"name":"patch_file","arguments":"{\"path\":\".obstral/runtime_eval.json\",\"search\":\"old\",\"replace\":\"new\"}"}
-                }]
-            }),
-            json!({
-                "role":"tool",
-                "tool_call_id":"call_patch_eval",
-                "content":"OK: patched '.obstral/runtime_eval.json' (+1 lines, 14 total)\n[auto-test] ✓ PASSED (exit 0)"
-            }),
-        ];
-        let root = "Final answer must include `src/tui/agent/followup_requirements.rs`, `.obstral/runtime_eval.json`, and the verification command.";
-        let content = "[DONE]\nUpdated `src/tui/agent/followup_requirements.rs`.";
-
-        let enriched =
-            enrich_text_final_handoff(content, root, &messages, Some("cargo test -q demo 2>&1"))
-                .expect("enriched final");
-
-        assert!(enriched.contains(".obstral/runtime_eval.json"));
-        assert!(enriched.contains("cargo test -q demo 2>&1"));
-    }
-
-    #[test]
-    fn ignores_non_done_text() {
-        let enriched = enrich_text_final_handoff(
-            "still working",
-            "Final answer must include `src/lib.rs`.",
-            &[],
-            None,
-        );
-        assert!(enriched.is_none());
-    }
-
-    #[test]
-    fn enriches_done_with_required_status_label_literal() {
-        let content = "[DONE]\nUpdated `src/tui/agent/merge_approval.rs`.";
-        let root = "Final answer must include the changed Rust file path, the verification command, and the status label `PR-ready merge approved`.";
-
-        let enriched = enrich_text_final_handoff(content, root, &[], None).expect("enriched");
-
-        assert!(enriched.contains("PR-ready merge approved"));
-        assert!(enriched.contains("Required final answer items"));
-    }
-
-    #[test]
-    fn does_not_add_command_literals_without_verified_command_evidence() {
-        let content = "[DONE]\nUpdated `src/tui/agent/merge_approval.rs`.";
-        let root = "Final answer must include `cargo test -q demo::tests:: 2>&1 && bash scripts/smoke.sh` and `PR-ready merge approved`.";
-
-        let enriched = enrich_text_final_handoff(content, root, &[], None).expect("enriched");
-
-        assert!(enriched.contains("PR-ready merge approved"));
-        assert!(!enriched.contains("cargo test -q demo::tests::"));
-    }
-}
+mod tests;

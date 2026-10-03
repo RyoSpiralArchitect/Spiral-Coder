@@ -2026,21 +2026,21 @@ mod tests {
                     "type": "function",
                     "function": {
                         "name":"patch_file",
-                        "arguments":"{\"path\":\".obstral/tui_replay.json\",\"search\":\"old\",\"replace\":\"new\"}"
+                        "arguments":"{\"path\":\".spiral-coder/tui_replay.json\",\"search\":\"old\",\"replace\":\"new\"}"
                     }
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_replay",
-                "content": "OK: patched '.obstral/tui_replay.json' (+1 lines, 10 total)"
+                "content": "OK: patched '.spiral-coder/tui_replay.json' (+1 lines, 10 total)"
             }),
         ];
 
         let summary = synthesize_action_done_summary(None, &messages).expect("summary");
         assert!(summary.contains("src/observer/repo_rules.rs"));
         assert!(summary.contains("docs/runtime-architecture.md"));
-        assert!(summary.contains(".obstral/tui_replay.json"));
+        assert!(summary.contains(".spiral-coder/tui_replay.json"));
     }
 
     #[test]

@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
+
+#[path = "session_resume.rs"]
+mod session_resume;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LastReflectionSummary {
@@ -612,6 +614,14 @@ impl AgentSession {
         Ok(sess)
     }
 
+    /// A failed task never returned its current transcript. Export the last
+    /// durable snapshot, not the CLI's older copy from before that task started.
+    pub fn load_for_failed_export(path: Option<&Path>) -> Result<Self> {
+        let path = path.context("no --session snapshot available for the incomplete run")?;
+        Self::load(path)
+            .context("cannot export the incomplete run without a readable saved session")
+    }
+
     #[allow(dead_code)]
     pub fn save_atomic(path: &Path, sess: &AgentSession) -> Result<()> {
         let json = serde_json::to_string_pretty(sess).context("failed to serialize session")?;
@@ -621,110 +631,13 @@ impl AgentSession {
     /// Repairs common session corruption patterns so the agent can resume.
     /// Returns a short warning string if the message list was modified.
     pub fn repair_for_resume(&mut self) -> Option<String> {
-        let mut pending_ids: Vec<String> = Vec::new();
-        let mut pending_started_at: Option<usize> = None;
-        let mut trim_from: Option<usize> = None;
-        let mut reason: Option<String> = None;
-
-        for (idx, msg) in self.messages.iter().enumerate() {
-            let role = msg.get("role").and_then(|r| r.as_str()).unwrap_or("");
-            match role {
-                "assistant" => {
-                    let tool_calls = msg.get("tool_calls");
-                    let has_tool_calls = tool_calls
-                        .and_then(|tc| tc.as_array())
-                        .map(|a| !a.is_empty())
-                        .unwrap_or(false);
-                    if has_tool_calls {
-                        if !pending_ids.is_empty() {
-                            trim_from = pending_started_at.or(Some(idx));
-                            reason = Some(
-                                "found a new assistant tool_call before the previous tool_call completed"
-                                    .to_string(),
-                            );
-                            break;
-                        }
-                        let ids: Vec<String> = tool_calls
-                            .and_then(|tc| tc.as_array())
-                            .into_iter()
-                            .flatten()
-                            .filter_map(|tc| {
-                                tc.get("id").and_then(|v| v.as_str()).map(|s| s.to_string())
-                            })
-                            .collect();
-                        if !ids.is_empty() {
-                            pending_ids = ids;
-                            pending_started_at = Some(idx);
-                        }
-                    } else if !pending_ids.is_empty() {
-                        trim_from = pending_started_at;
-                        reason = Some(
-                            "found a non-tool assistant message while tool results were still pending"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                }
-                "tool" => {
-                    let Some(id) = msg.get("tool_call_id").and_then(|v| v.as_str()) else {
-                        trim_from = Some(idx);
-                        reason = Some("tool message missing tool_call_id".to_string());
-                        break;
-                    };
-                    if pending_ids.is_empty() {
-                        trim_from = Some(idx);
-                        reason = Some(
-                            "tool result appeared without a preceding assistant tool_call"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                    if let Some(pos) = pending_ids.iter().position(|p| p == id) {
-                        pending_ids.remove(pos);
-                        if pending_ids.is_empty() {
-                            pending_started_at = None;
-                        }
-                    } else {
-                        trim_from = Some(idx);
-                        reason = Some(
-                            "tool result tool_call_id did not match the pending tool_call"
-                                .to_string(),
-                        );
-                        break;
-                    }
-                }
-                _ => {
-                    if !pending_ids.is_empty() {
-                        trim_from = pending_started_at;
-                        reason = Some(format!(
-                            "found a '{role}' message while tool results were still pending"
-                        ));
-                        break;
-                    }
-                }
-            }
-        }
-
-        if trim_from.is_none() && !pending_ids.is_empty() {
-            trim_from = pending_started_at;
-            reason = Some("session ended mid tool_call (missing tool results)".to_string());
-        }
-
-        let Some(from) = trim_from else {
-            return None;
-        };
-
-        if from >= self.messages.len() {
-            return None;
-        }
-
-        let old_len = self.messages.len();
-        self.messages.truncate(from);
-        let trimmed = old_len - from;
-        Some(format!(
-            "repaired session: truncated {trimmed} message(s) from index {from} ({})",
-            reason.unwrap_or_else(|| "unknown reason".to_string())
-        ))
+        let warning = session_resume::repair(&mut self.messages)?;
+        // Derived resume hints must describe the retained transcript, not facts
+        // from the discarded malformed tail.
+        self.last_reflection = last_reflection_summary_from_messages(&self.messages);
+        self.recent_reflections = recent_reflection_summaries_from_messages(&self.messages, 3);
+        self.session_bridge = session_bridge_from_messages(&self.messages);
+        Some(warning)
     }
 }
 
@@ -758,12 +671,14 @@ fn save_text_atomic(path: &Path, text: &str) -> Result<()> {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct SaveKey {
-    messages_len: usize,
+    tool_root: Option<String>,
     checkpoint: Option<String>,
     cur_cwd: Option<String>,
-    observation_cache_hash: u64,
+    messages: Vec<serde_json::Value>,
+    observation_cache: Option<ObservationCache>,
+    progress_context: Option<crate::progress_state::ProgressSaveContext>,
 }
 
 #[derive(Serialize)]
@@ -785,12 +700,15 @@ struct AgentSessionSnapshot<'a> {
 ///
 /// Writes an OpenAI-compatible message array (including tool_calls + tool_call_id)
 /// to a JSON file atomically, so the agent can resume after crashes or interruptions.
+/// The active agent owns writes until its task has joined. A caller must not save
+/// an older copy of the transcript when canceling or handling a task failure.
+/// History length is not a revision: context compaction can shorten newer state.
 pub struct SessionAutoSaver {
     path: PathBuf,
     created_at_ms: u128,
     observation_cache: Mutex<Option<ObservationCache>>,
     progress_context: Mutex<Option<crate::progress_state::ProgressSaveContext>>,
-    last_saved: Mutex<SaveKey>,
+    last_saved: Mutex<Option<SaveKey>>,
     warned: AtomicBool,
 }
 
@@ -802,7 +720,7 @@ impl SessionAutoSaver {
             created_at_ms,
             observation_cache: Mutex::new(existing.and_then(|s| s.observation_cache.clone())),
             progress_context: Mutex::new(None),
-            last_saved: Mutex::new(SaveKey::default()),
+            last_saved: Mutex::new(None),
             warned: AtomicBool::new(false),
         }
     }
@@ -865,6 +783,13 @@ impl SessionAutoSaver {
         messages: &[serde_json::Value],
         skip_if_unchanged: bool,
     ) -> Result<bool> {
+        // Serialize comparison, both file writes, and publication of the saved
+        // key. Releasing this lock before I/O permits an earlier save to finish
+        // after a later save and overwrite it.
+        let mut last = self
+            .last_saved
+            .lock()
+            .expect("SessionAutoSaver last_saved poisoned");
         let observation_cache = self
             .observation_cache
             .lock()
@@ -875,27 +800,16 @@ impl SessionAutoSaver {
             .lock()
             .expect("SessionAutoSaver progress_context poisoned")
             .clone();
-        let mut observation_hasher = std::collections::hash_map::DefaultHasher::new();
-        observation_cache.hash(&mut observation_hasher);
         let key = SaveKey {
-            messages_len: messages.len(),
+            tool_root: tool_root.map(str::to_string),
             checkpoint: checkpoint.map(|s| s.to_string()),
             cur_cwd: cur_cwd.map(|s| s.to_string()),
-            observation_cache_hash: observation_hasher.finish(),
+            messages: messages.to_vec(),
+            observation_cache: observation_cache.clone(),
+            progress_context: progress_context.clone(),
         };
-        {
-            let last = self
-                .last_saved
-                .lock()
-                .expect("SessionAutoSaver last_saved poisoned");
-            // Never overwrite a newer save with an older snapshot (e.g., Ctrl+C in the CLI main loop
-            // while the agent task has already autosaved progress).
-            if key.messages_len < last.messages_len {
-                return Ok(false);
-            }
-            if skip_if_unchanged && *last == key {
-                return Ok(false);
-            }
+        if skip_if_unchanged && last.as_ref() == Some(&key) {
+            return Ok(false);
         }
 
         let session_bridge = session_bridge_from_messages(messages);
@@ -925,11 +839,7 @@ impl SessionAutoSaver {
             progress.save_atomic(&progress_path)?;
         }
 
-        let mut last = self
-            .last_saved
-            .lock()
-            .expect("SessionAutoSaver last_saved poisoned");
-        *last = key;
+        *last = Some(key);
 
         Ok(true)
     }
@@ -958,9 +868,73 @@ mod tests {
     }
 
     #[test]
+    fn resume_repair_persists_an_idempotent_complete_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("session.json");
+        let prefix = vec![
+            json!({"role":"user","content":"fix and verify"}),
+            json!({"role":"assistant","tool_calls":[{
+                "id":"complete","function":{"name":"read_file","arguments":"{}"}
+            }]}),
+            json!({"role":"tool","tool_call_id":"complete","content":"observed source"}),
+        ];
+        let mut messages = prefix.clone();
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{
+                "id":"pending","function":{"name":"exec","arguments":"{}"}
+            }]}),
+            json!({"role":"tool","tool_call_id":"wrong","content":"OK (exit_code: 0)"}),
+        ]);
+        let mut session = AgentSession::new(None, None, None, None, messages);
+        session.last_reflection = Some(LastReflectionSummary {
+            next_minimal_action: Some("discarded tail action".into()),
+            ..Default::default()
+        });
+        session.recent_reflections = vec![session.last_reflection.clone().unwrap()];
+        session.session_bridge = Some(SessionBridge {
+            last_good_verification: Some(SessionVerificationMemory {
+                command: "discarded tail verification".into(),
+            }),
+            ..Default::default()
+        });
+        assert!(session.repair_for_resume().is_some());
+        assert_eq!(session.messages, prefix);
+        assert!(session.last_reflection.is_none());
+        assert!(session.recent_reflections.is_empty());
+        assert_eq!(
+            session.session_bridge,
+            session_bridge_from_messages(&prefix)
+        );
+        AgentSession::save_atomic(&path, &session).unwrap();
+        let mut loaded = AgentSession::load(&path).unwrap();
+        assert_eq!(loaded.messages, prefix);
+        assert_eq!(loaded.repair_for_resume(), None);
+    }
+
+    #[test]
+    fn valid_resume_preserves_seeded_metadata() {
+        let mut session = AgentSession::new(
+            None,
+            None,
+            None,
+            None,
+            vec![json!({"role":"user","content":"continue"})],
+        );
+        session.session_bridge = Some(SessionBridge {
+            last_good_verification: Some(SessionVerificationMemory {
+                command: "previously recorded test".into(),
+            }),
+            ..Default::default()
+        });
+        let before = serde_json::to_value(&session).unwrap();
+        assert_eq!(session.repair_for_resume(), None);
+        assert_eq!(serde_json::to_value(&session).unwrap(), before);
+    }
+
+    #[test]
     fn save_atomic_supports_parentless_paths() {
         // This must work for paths like "session.json" where Path::parent() is empty ("").
-        let path = unique_path("obstral-session-test", "json");
+        let path = unique_path("spiral-coder-session-test", "json");
         let sess = AgentSession::new(
             None,
             None,
@@ -976,7 +950,7 @@ mod tests {
 
     #[test]
     fn session_roundtrip_preserves_observation_cache() {
-        let path = unique_path("obstral-session-obs", "json");
+        let path = unique_path("spiral-coder-session-obs", "json");
         let sess = AgentSession::new(
             Some("/tmp/demo".to_string()),
             Some("abc123".to_string()),
@@ -1022,8 +996,143 @@ mod tests {
     }
 
     #[test]
+    fn failed_export_uses_saved_snapshot_and_rejects_missing_or_invalid_state() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("session.json");
+        assert!(AgentSession::load_for_failed_export(None).is_err());
+        assert!(AgentSession::load_for_failed_export(Some(&path)).is_err());
+        let session = AgentSession::new(
+            Some("project".into()),
+            Some("checkpoint".into()),
+            None,
+            None,
+            vec![json!({"role":"assistant","content":"latest durable progress"})],
+        );
+        AgentSession::save_atomic(&path, &session).unwrap();
+        let exported = AgentSession::load_for_failed_export(Some(&path)).unwrap();
+        assert_eq!(
+            serde_json::to_value(exported).unwrap(),
+            serde_json::to_value(session).unwrap()
+        );
+        std::fs::write(&path, "invalid session").unwrap();
+        assert!(AgentSession::load_for_failed_export(Some(&path)).is_err());
+    }
+
+    #[test]
+    fn autosaver_persists_shorter_compacted_history() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let saver = SessionAutoSaver::new(path.clone(), None);
+        let before = vec![
+            json!({"role":"user","content":"fix"}),
+            json!({"role":"assistant","content":"old observation"}),
+            json!({"role":"assistant","content":"new observation"}),
+        ];
+        saver.save_or_error(None, None, None, &before).unwrap();
+        let after = vec![
+            before[0].clone(),
+            json!({"role":"assistant","content":"verified after compaction"}),
+        ];
+        assert!(saver.save_best_effort(None, None, None, &after).is_none());
+        assert_eq!(AgentSession::load(&path).unwrap().messages, after);
+    }
+
+    #[test]
+    fn autosaver_detects_same_length_content_and_root_changes() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let saver = SessionAutoSaver::new(path.clone(), None);
+        let mut messages = vec![json!({"role":"assistant","content":"before"})];
+        assert!(saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        assert!(!saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        messages[0]["content"] = json!("after");
+        assert!(saver
+            .save_inner(Some("first"), None, None, &messages, true)
+            .unwrap());
+        assert_eq!(AgentSession::load(&path).unwrap().messages, messages);
+        assert!(saver
+            .save_inner(Some("second"), None, None, &messages, true)
+            .unwrap());
+        assert_eq!(
+            AgentSession::load(&path).unwrap().tool_root.as_deref(),
+            Some("second")
+        );
+    }
+
+    #[test]
+    fn autosaver_detects_progress_context_change_without_new_messages() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let root = dir.path().to_str().unwrap();
+        let saver = SessionAutoSaver::new(path, None);
+        let messages = vec![json!({"role":"user","content":"fix"})];
+        saver
+            .save_or_error(Some(root), None, None, &messages)
+            .unwrap();
+        let context = crate::progress_state::ProgressSaveContext::new(
+            "fix",
+            "fix_existing_files",
+            "modify_existing",
+        );
+        saver.set_progress_context(Some(context.clone()));
+        assert!(saver
+            .save_inner(Some(root), None, None, &messages, true)
+            .unwrap());
+        let progress = crate::progress_state::RepoProgressState::load(
+            &crate::progress_state::path_for_root(root),
+        )
+        .unwrap();
+        assert_eq!(progress.task_summary, context.task_summary);
+        assert_eq!(progress.lane, context.lane);
+        assert_eq!(progress.artifact_mode, context.artifact_mode);
+    }
+
+    #[test]
+    fn concurrent_autosaves_keep_session_and_progress_consistent() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("session.json");
+        let root = dir.path().to_string_lossy().into_owned();
+        let saver = std::sync::Arc::new(SessionAutoSaver::new(path.clone(), None));
+        saver.set_progress_context(Some(crate::progress_state::ProgressSaveContext::new(
+            "fix",
+            "fix_existing_files",
+            "modify_existing",
+        )));
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+        std::thread::scope(|scope| {
+            for idx in 0..8 {
+                let saver = saver.clone();
+                let barrier = barrier.clone();
+                let root = &root;
+                scope.spawn(move || {
+                    let messages = vec![json!({"role":"assistant","content":format!(
+                        "<plan>\ngoal: writer {idx}\n</plan>"
+                    )})];
+                    barrier.wait();
+                    saver
+                        .save_or_error(Some(root), None, None, &messages)
+                        .unwrap();
+                });
+            }
+        });
+        let session = AgentSession::load(&path).unwrap();
+        let progress = crate::progress_state::RepoProgressState::load(
+            &crate::progress_state::path_for_root(&root),
+        )
+        .unwrap();
+        assert_eq!(
+            session.messages[0]["content"],
+            format!("<plan>\ngoal: {}\n</plan>", progress.current_objective),
+        );
+    }
+
+    #[test]
     fn autosaver_rewrites_when_observation_cache_changes() {
-        let path = unique_path("obstral-session-autosave", "json");
+        let path = unique_path("spiral-coder-session-autosave", "json");
         let existing = AgentSession::new(
             None,
             None,
@@ -1188,7 +1297,7 @@ mod tests {
 
     #[test]
     fn session_roundtrip_preserves_session_bridge() {
-        let path = unique_path("obstral-session-bridge", "json");
+        let path = unique_path("spiral-coder-session-bridge", "json");
         let sess = AgentSession::new(
             Some("/tmp/demo".to_string()),
             None,

@@ -21,12 +21,13 @@ const APP_JS: &str = include_str!("../web/app.js");
 const STYLES_CSS: &str = include_str!("../web/styles.css");
 const CORE_SANDBOX_JS: &str = include_str!("../web/core/sandbox.js");
 const CORE_EXEC_JS: &str = include_str!("../web/core/exec.js");
+const CORE_STATE_JS: &str = include_str!("../web/core/state.js");
 const OBSERVER_LOGIC_JS: &str = include_str!("../web/observer/logic.js");
 const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
 
 fn dev_assets_root() -> Option<PathBuf> {
-    if let Ok(v) = std::env::var("OBSTRAL_ASSETS_DIR") {
+    if let Ok(v) = std::env::var("SPIRAL_CODER_ASSETS_DIR") {
         let p = PathBuf::from(v.trim());
         if !p.as_os_str().is_empty() {
             return Some(p);
@@ -111,6 +112,7 @@ async fn serve_asset(stream: &mut TcpStream, req_path: &str) -> Result<()> {
         "styles.css" => Some(STYLES_CSS.as_bytes()),
         "core/sandbox.js" => Some(CORE_SANDBOX_JS.as_bytes()),
         "core/exec.js" => Some(CORE_EXEC_JS.as_bytes()),
+        "core/state.js" => Some(CORE_STATE_JS.as_bytes()),
         "observer/logic.js" => Some(OBSERVER_LOGIC_JS.as_bytes()),
         "vendor/react.production.min.js" => Some(REACT_JS.as_bytes()),
         "vendor/react-dom.production.min.js" => Some(REACT_DOM_JS.as_bytes()),
@@ -291,7 +293,7 @@ pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
         workspace_root,
     };
 
-    println!("OBSTRAL UI: http://{addr}/");
+    println!("Spiral-Coder UI: http://{addr}/");
 
     loop {
         let (stream, _peer) = listener.accept().await?;
@@ -976,7 +978,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                             .unwrap_or(0);
                         msgs.insert(pos, serde_json::json!({"role":"system","content": txt}));
                     }
-                    // 2. AGENTS.md / .obstral.md — project-specific rules.
+                    // 2. AGENTS.md / .spiral-coder.md — project-specific rules.
                     if let Some(agents_text) = ctx.agents_md {
                         if !agents_text.is_empty() {
                             let pos = msgs
@@ -986,7 +988,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                                 .unwrap_or(1);
                             msgs.insert(pos.min(msgs.len()), serde_json::json!({
                                 "role": "system",
-                                "content": format!("[Project Instructions — .obstral.md / AGENTS.md]\n{agents_text}")
+                                "content": format!("[Project Instructions — .spiral-coder.md / AGENTS.md]\n{agents_text}")
                             }));
                         }
                     }
@@ -2088,7 +2090,7 @@ async fn api_reject_edit(stream: &mut TcpStream, state: AppState, body: &[u8]) -
 }
 
 fn meta_prompts_rel_path() -> &'static str {
-    ".obstral/meta_prompts.json"
+    ".spiral-coder/meta_prompts.json"
 }
 
 fn load_meta_prompts(workspace_root: &Path) -> serde_json::Value {
@@ -2298,7 +2300,7 @@ fn meta_artifact_slug(value: &str, fallback: &str) -> String {
 }
 
 fn meta_diagnose_rel_dir() -> &'static str {
-    ".obstral/meta-diagnose"
+    ".spiral-coder/meta-diagnose"
 }
 
 fn is_safe_meta_artifact_name(name: &str) -> bool {
@@ -3393,13 +3395,15 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
         host_os,
         providers: ApiStatusProviders {
             mistral: ApiProviderStatus {
-                api_key_present: env_present("MISTRAL_API_KEY") || env_present("OBS_API_KEY"),
+                api_key_present: env_present("MISTRAL_API_KEY")
+                    || env_present("SPIRAL_CODER_API_KEY"),
             },
             anthropic: ApiProviderStatus {
                 api_key_present: env_present("ANTHROPIC_API_KEY"),
             },
             openai_compatible: ApiProviderStatus {
-                api_key_present: env_present("OBS_API_KEY") || env_present("OPENAI_API_KEY"),
+                api_key_present: env_present("SPIRAL_CODER_API_KEY")
+                    || env_present("OPENAI_API_KEY"),
             },
         },
         features: ApiFeatures {
@@ -3410,6 +3414,9 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
             observer_engine: true,
             meta_prompts: true,
             open_file: true,
+            harness_promotions: true,
+            merge_gate: true,
+            project_scan: true,
         },
         workspace_root,
     };
@@ -3873,6 +3880,9 @@ struct ApiFeatures {
     observer_engine: bool,
     meta_prompts: bool,
     open_file: bool,
+    harness_promotions: bool,
+    merge_gate: bool,
+    project_scan: bool,
 }
 
 #[derive(Serialize)]
@@ -4405,7 +4415,7 @@ async fn stream_hf_subprocess(
 ) -> Result<()> {
     use serde_json::json;
 
-    let python = std::env::var("OBS_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
+    let python = std::env::var("SPIRAL_CODER_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
     let script_path = std::path::PathBuf::from("scripts").join("hf_infer.py");
 
     let mut messages: Vec<serde_json::Value> = Vec::with_capacity(1 + history.len() + 1);

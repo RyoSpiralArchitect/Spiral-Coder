@@ -1374,28 +1374,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "obstral"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "clap",
- "clipboard-win",
- "crossterm",
- "futures-util",
- "httpmock",
- "once_cell",
- "ratatui",
- "reqwest",
- "rustyline",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
- "tui-textarea",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2034,6 +2012,28 @@ checksum = "86f4aa3ad99f2088c990dfa82d367e19cb29268ed67c574d10d0a4bfe71f07e0"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "spiral-coder"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "clap",
+ "clipboard-win",
+ "crossterm",
+ "futures-util",
+ "httpmock",
+ "once_cell",
+ "ratatui",
+ "reqwest",
+ "rustyline",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tui-textarea",
 ]
 
 [[package]]

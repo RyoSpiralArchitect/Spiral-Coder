@@ -31,7 +31,7 @@ pub struct TuiArgs {
     pub observer_provider: Option<ProviderKind>,
 
     /// Provider base URL for the Observer pane. When omitted and the provider differs
-    /// from the Coder, the provider default is used (not OBS_BASE_URL).
+    /// from the Coder, the provider default is used (not SPIRAL_CODER_BASE_URL).
     #[arg(long)]
     pub observer_base_url: Option<String>,
 
@@ -44,7 +44,7 @@ pub struct TuiArgs {
     pub chat_provider: Option<ProviderKind>,
 
     /// Provider base URL for the Chat pane. When omitted and the provider differs
-    /// from the Coder, the provider default is used (not OBS_BASE_URL).
+    /// from the Coder, the provider default is used (not SPIRAL_CODER_BASE_URL).
     #[arg(long)]
     pub chat_base_url: Option<String>,
 

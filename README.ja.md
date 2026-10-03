@@ -1,41 +1,38 @@
-# OBSTRAL
+# Spiral-Coder
 
 ![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-> **ひとつのプロンプト窓では足りない。**
-> OBSTRALはAIに「第二の脳」を与え、その二つを対立させる。
+Spiral-Coder は、**Coder・Observer・Chat のコンテキストを分けた開発実行基盤**です。Coder がリポジトリ上で作業し、Observer が出力と検証記録を批評し、Chat が設計の対話を担います。CLI・TUI・ローカル Web UI を備えています。
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
+出発点は、Mistral のハッカソンで約2日間で作った実験でした。Spiral-Coder として、プロバイダー選択、作業の保存・再開、再現できる検証を土台から育て直します。コンテキストの分離だけで、批評の独立性や正しさが保証されるわけではありません。
+
+既存環境からの移行は [移行手順](docs/migration-spiral-coder.md) を参照してください。旧データを残したまま新しい保存先へコピーできます。
+
+```sh
+cargo install --locked --path .
+spiral-coder --help
+spiral-coder tui
+```
+
+モデルの呼び出しにはプロバイダー設定が必要です。ローカルの検証手順は [English README](README.md) にあります。
+
 ---
 
-すべてのAIコーディングツールには同じ問題がある。コードを書いたモデルが、そのコードをレビューする。
+## UI プレビュー
 
-それはレビューじゃない。自己弁護だ。
+Spiral-Coder の現行 Web UI。モデルを呼ばずにローカルで撮影。
 
-OBSTRALはCoderとObserverを**完全に別のコンテキスト**で動かすことでこれを解決する。ObserverはCoderのライブな作業コンテキストや隠れたスクラッチパッドを共有しない。見るのは、出力された結果・トランスクリプト・必要に応じたgit diffの断面だけだ。だから正直な批評ができる。
-
----
-
-## UI Preview
-
-以下の画像は、Web UI を end-to-end で流す Playwright smoke から取ったものです。
-
-| Overview | Harness review gate |
-|---|---|
-| ![OBSTRAL web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
-
-| Runtime approvals |
-|---|
-| ![Runtime approvals flow](docs/screenshots/runtime-approval-flow.png) |
+![Spiral-Coder Web UI](docs/screenshots/spiral-coder-overview.png)
 
 ---
 
 ## Dogfood Benchmarks
 
-OBSTRAL では、生成した milestone repo を git に含めずに、軽量な benchmark writeup として残すようにしています。
+Spiral-Coder では、生成した milestone repo を git に含めずに、軽量な benchmark writeup として残すようにしています。
 
 - [Benchmark Examples](docs/examples/README.md)
 - [Existing Repo Bugfix (Rust)](docs/examples/existing-repo-bugfix-rust.md)
@@ -46,19 +43,19 @@ OBSTRAL では、生成した milestone repo を git に含めずに、軽量な
 
 ---
 
-## 現在のBenchmark Milestone
+## 過去のベンチマーク記録
 
-いまの milestone は素朴ですが大事です。OBSTRAL は `runtime_eval` から、fresh repo scaffold だけでなく既存 repo の bugfix も扱い、生成状態を git に含めず、それでも再現可能な形で結果を記録できるところまで来ています。
+以下は旧評価器で得た過去の結果です。記録を保持していますが、すべてを現在の厳密な完了・検証条件で再実行したわけではありません。現在の基準は[評価契約](docs/evaluation.md)、失敗を含む再始動時の結果は[検証記録](docs/evals/2026-10-03-restart/README.md)を参照してください。
 
 - `maze-game-rust-repo` は、scaffold lane が fresh な Rust repo を作り、ゲームロジックを `src/lib.rs` に置き、`src/main.rs` を runnable に保ち、最後に本物の `cargo test` で締められることを示します。
 - `maze-game-pygame-repo` は、同じ closeout path が非 Rust repo でも動き、headless な `pygame` の verification command まで運べることを示します。
-- `resume-session-bridge-fix` は、seed された session memory と repo-local な `.obstral/progress.json` を使って既存 Rust repo の bugfix を resume し、最小の safe patch へ戻せることを示します。
-- medium+ の self-dogfood stretch case である `self-fix-observer-repo-rules-review-panel` は、いま end-to-end で green です。runtime は `src/observer/repo_rules.rs` を patch し、required な `docs/runtime-architecture.md` と `.obstral/tui_replay.json` の follow-up も運び、そのまま正確な verification command を final handoff に載せて閉じられます。
-- PR-ready self-dogfood case の `self-fix-pr-ready-runtime-followup` も end-to-end で green です。runtime は `src/tui/agent/followup_requirements.rs` を patch し、required な `docs/state-schema.md` と `.obstral/runtime_eval.json` の follow-up を運び、verified artifact path が final handoff から落ちそうな時は補完します。最新 green run は `.tmp/runtime_eval_1777229175/report.json` で、`tools=7`、`messages=22`、概算 transcript token は `3.85k` です。merge readiness は `.tmp/runtime_eval_1777229175/merge_gate.json` に出ます。
-- runtime eval closeout は `report.json` の隣に generated な `merge_gate.json` を書くようになり、`obstral merge-gate`、TUI の Merge tab、Web GUI の merge-gate panel から readiness を読み、passing case を approve し、各 case を hold し、destructive rollback を実行せずに rollback preview をコピーできます。
+- `resume-session-bridge-fix` は、seed された session memory と repo-local な `.spiral-coder/progress.json` を使って既存 Rust repo の bugfix を resume し、最小の safe patch へ戻せることを示します。
+- medium+ の self-dogfood stretch case である `self-fix-observer-repo-rules-review-panel` は、いま end-to-end で green です。runtime は `src/observer/repo_rules.rs` を patch し、required な `docs/runtime-architecture.md` と `.spiral-coder/tui_replay.json` の follow-up も運び、そのまま正確な verification command を final handoff に載せて閉じられます。
+- PR-ready self-dogfood case の `self-fix-pr-ready-runtime-followup` も end-to-end で green です。runtime は `src/tui/agent/followup_requirements.rs` を patch し、required な `docs/state-schema.md` と `.spiral-coder/runtime_eval.json` の follow-up を運び、verified artifact path が final handoff から落ちそうな時は補完します。最新 green run は `.tmp/runtime_eval_1777229175/report.json` で、`tools=7`、`messages=22`、概算 transcript token は `3.85k` です。merge readiness は `.tmp/runtime_eval_1777229175/merge_gate.json` に出ます。
+- runtime eval closeout は `report.json` の隣に generated な `merge_gate.json` を書くようになり、`spiral-coder merge-gate`、TUI の Merge tab、Web GUI の merge-gate panel から readiness を読み、passing case を approve し、各 case を hold し、destructive rollback を実行せずに rollback preview をコピーできます。
 - benchmark report には provider/model に加えて概算 transcript token telemetry も入るようになり、billing 精度を装わずに run 同士を比較しやすくなりました。
 
-これは「たまたま一度うまく作れた」から、「runtime が milestone case を再現し、そのやり方まで説明できる」への前進です。
+これらは個々の実行で観測された結果であり、一般的な成功率や長時間稼働の信頼性を示すものではありません。
 
 ---
 
@@ -75,31 +72,31 @@ OBSTRAL では、生成した milestone repo を git に含めずに、軽量な
 
 ---
 
-## なぜOBSTRALか
+## なぜSpiral-Coderか
 
 多くのLLMツールは「会話」を最適化している。
-OBSTRALは「制御された実行ループ」を最適化する。役割分離、承認ゲート、そして毎ターンリセットされない累積批評でドリフトを止める。
+Spiral-Coderは「制御された実行ループ」を最適化する。役割分離、承認ゲート、そして毎ターンリセットされない累積批評でドリフトを止める。
 
 これはチャットクライアントではない。
 開発プロセスの制御エンジンだ。
 
 ---
 
-## 3つの役割。3つのコンテキスト。干渉なし。
+## 3つの役割と別々のコンテキスト
 
-| 役割 | やること | やらないこと |
+| 役割 | 担当 | 境界 |
 |---|---|---|
-| **Coder** | 実行 — ファイル操作、シェルコマンド、エージェントループ（最大12回）、5つのツール | 自分のコードを見直すこと |
-| **Observer** | 批評 — 提案をスコアリング、スルーした問題をエスカレート | コードを書くこと、Coderのライブな作業コンテキストを共有すること |
+| **Coder** | 読み取り・編集・検証・振り返りを、回数制限のあるツールループで実行 | 自己点検は独立した検証ではない |
+| **Observer** | 記録された出力を批評し、次の操作を提案 | 別のコンテキストで、渡された証拠を確認する |
 | **Chat** | 壁打ち — 設計、ゴム鴨、トレードオフ | 実行ループを邪魔すること |
 
 別の役割。望めば別のモデル。コンテキストは常に別。
 
 ---
 
-## OBSTRALはあなたが何か言う前から知っている
+## Spiral-Coderはあなたが何か言う前から知っている
 
-`tool_root` を設定すると、OBSTRALはプロジェクトを自動スキャンする:
+`tool_root` を設定すると、Spiral-Coderはプロジェクトを自動スキャンする:
 
 ```
 [Project Context — auto-detected]
@@ -120,7 +117,7 @@ key:  Cargo.toml · web/app.js · README.md
 TUIヘッダーにはリアルタイムバッジが表示される: `▸ Rust · React · git:main`
 Web UIでは、SettingsのtoolRootフィールドの下にスタックラベルが表示される。
 
-**スタック検出** — OBSTRALはマニフェストファイルを探す:
+**スタック検出** — Spiral-Coderはマニフェストファイルを探す:
 - `Cargo.toml` → Rust
 - `package.json` → Node / React / TypeScript（depsを確認）
 - `pyproject.toml` / `requirements.txt` → Python
@@ -128,19 +125,19 @@ Web UIでは、SettingsのtoolRootフィールドの下にスタックラベル�
 - `pom.xml` → Java
 - `build.gradle*`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `build.zig`, `*.tf`, `CMakeLists.txt`, `*.sln` / `*.csproj`, `deno.json*` → JVM / Ruby / PHP / Elixir / Swift / Zig / Terraform / C/C++ / .NET / Deno も追加で検出
 
-スキャンはセッションごとに1回だけ実行され、200ms以内で完了し、読めないファイルは黙ってスキップする。
+初期スキャンは読めない項目をスキップします。所要時間はリポジトリとファイルシステムに依存します。
 
 ---
 
-## OBSTRALが他と違うところ
+## Spiral-Coderが他と違うところ
 
 ### Observerには「後ろめたさ」がない
 
 他のツール: 同じモデルがコードを書く → 同じモデルがレビューする → モデルは自分の選択を守る。
 
-OBSTRAL: Observerは毎回フレッシュなコンテキストで動く。「自分ならこう書いた」という記憶がなく、Coderのライブなスクラッチパッドも共有しない。見るのは出力・トランスクリプト・必要に応じたdiffだけ。
+Spiral-Coder: Observerは毎回フレッシュなコンテキストで動く。「自分ならこう書いた」という記憶がなく、Coderのライブなスクラッチパッドも共有しない。見るのは出力・トランスクリプト・必要に応じたdiffだけ。
 
-結果: より鋭い指摘、正直なリスク評価、言い訳のないフィードバック。
+レビューに渡す情報を明確に分けて確認できます。指摘の正しさは、モデル・証拠・評価によって確かめる必要があります。
 
 ### 提案は消えない
 
@@ -154,7 +151,7 @@ Observerは言ったことを覚えている。`critical` 警告を2回無視す
 
 ### exit コードじゃなく、エラーの「種類」を見る
 
-コマンドが失敗したとき、OBSTRALはモデルに生の `exit_code: 1` を渡して終わらない。まず種別を判定する:
+コマンドが失敗したとき、Spiral-Coderはモデルに生の `exit_code: 1` を渡して終わらない。まず種別を判定する:
 
 | エラー種別 | 注入されるヒント |
 |---|---|
@@ -166,11 +163,11 @@ Observerは言ったことを覚えている。`critical` 警告を2回無視す
 | `LOGIC` | ロジックを再読しろ。リランは意味がない。 |
 
 PowerShell注意: エラーを出力しても `exit_code=0` になるケースがある（非終端エラー）。
-OBSTRALはこれを `SUSPICIOUS_SUCCESS` として失敗扱いし、偽の前進ドリフトを止める。
+Spiral-Coderはこれを `SUSPICIOUS_SUCCESS` として失敗扱いし、偽の前進ドリフトを止める。
 
-### Coderには5つのツールがある
+### Coderの主要な編集ツール
 
-Coderはシェルコマンドだけに限定されない。5つの専用ツールを持っている:
+Coderはシェルコマンドに加え、以下の編集ツールと `search_files`・`list_dir`・`glob`・`done` を使います:
 
 | ツール | 使いどころ |
 |---|---|
@@ -180,7 +177,7 @@ Coderはシェルコマンドだけに限定されない。5つの専用ツー�
 | `patch_file(path, search, replace)` | 正確なスニペットを置換 — 曖昧な場合はエラーで止まる |
 | `apply_diff(path, diff)` | 統一形式の `@@` diff（複数hunk）を適用 — `patch_file` では小さすぎる編集向け |
 
-`write_file` / `patch_file` / `apply_diff` はテンポラリファイル → リネームのパターンを使うため、書き込み途中でクラッシュしても破損ファイルが残らない。
+`write_file` / `patch_file` / `apply_diff` は一時ファイルへの書き込み後にリネームし、途中まで書かれた内容が見えるリスクを減らします。複数ファイルをまとめたトランザクションではありません。
 
 `patch_file` は検索文字列が**ちょうど1回**だけ存在することを要求する。0回なら修正のためのファイルプレビューを返す。2回以上なら件数をエラーで返す。曖昧さはエラーであり、推測ではない。
 
@@ -222,7 +219,7 @@ scratchpad / governor protocol 自体も `shared/governor_contract.json` を単�
 
 ### ステートマシン・ループ（Planning → Executing → Verifying → Recovery）
 
-多くの「エージェントループ」は最大反復回数のタイマーになりがちです。OBSTRALはCoderを小さなステートマシンでルーティングします。
+多くの「エージェントループ」は最大反復回数のタイマーになりがちです。Spiral-CoderはCoderを小さなステートマシンでルーティングします。
 
 - `planning`  — ゴールと次の具体ステップを言語化する
 - `executing` — ツール実行（ファイル/コマンド）
@@ -250,9 +247,9 @@ TUI と Web GUI の両方で、`reflect` / `impact` の runtime gate を同じ�
 
 ### stop時のゴール検証（偽の「Done」を防ぐ）
 
-モデルが `finish_reason=stop` でツール呼び出しなしに止まった場合でも、OBSTRALは軽いチェック（repo init / tests / build など）を自動実行し、足りない・失敗している場合は `[goal_check]` を差し戻してループを継続させられます。この stop-path も、いまは TUI / Web GUI の両方で同じ shared policy と同じ goal-check ログ形式を使います。
+モデルが `finish_reason=stop` でツール呼び出しなしに止まった場合でも、Spiral-Coderは軽いチェック（repo init / tests / build など）を自動実行し、足りない・失敗している場合は `[goal_check]` を差し戻してループを継続させられます。この stop-path も、いまは TUI / Web GUI の両方で同じ shared policy と同じ goal-check ログ形式を使います。
 
-Web GUI には `/meta-diagnose` のMVPも入りました。Coder の composer で `/meta-diagnose`、`/meta-diagnose last-fail`、`/meta-diagnose msg:<message-id>` を実行すると、直近失敗を Observer に JSON-only のメタ診断として送れます。失敗した Coder メッセージには `Why did this fail?` ボタンも出ます。各実行は `.obstral/meta-diagnose/` に保存され、failure packet、observer prompt、raw response、parsed diagnosis、parse status を後から追えます。Observer ペインには軽量な `Meta` タブもあり、保存済み artifact の一覧、`primary_failure` の簡易件数、詳細/生JSONの確認に加えて、保存済み target / packet からの再診断もできます。TUI でも Coder / Observer の入力欄から `/meta-diagnose`、`/meta-diagnose last-fail`、`/meta-diagnose msg:coder-<index>` を実行でき、同じ artifact 群をローカル保存します。
+Web GUI には `/meta-diagnose` のMVPも入りました。Coder の composer で `/meta-diagnose`、`/meta-diagnose last-fail`、`/meta-diagnose msg:<message-id>` を実行すると、直近失敗を Observer に JSON-only のメタ診断として送れます。失敗した Coder メッセージには `Why did this fail?` ボタンも出ます。各実行は `.spiral-coder/meta-diagnose/` に保存され、failure packet、observer prompt、raw response、parsed diagnosis、parse status を後から追えます。Observer ペインには軽量な `Meta` タブもあり、保存済み artifact の一覧、`primary_failure` の簡易件数、詳細/生JSONの確認に加えて、保存済み target / packet からの再診断もできます。TUI でも Coder / Observer の入力欄から `/meta-diagnose`、`/meta-diagnose last-fail`、`/meta-diagnose msg:coder-<index>` を実行でき、同じ artifact 群をローカル保存します。
 
 ### @ファイル参照：読み込みターンをスキップ
 
@@ -309,7 +306,7 @@ next_minimal_action: <one short sentence>
 
 ### クロスプラットフォーム（Windows / macOS / Linux）
 
-OBSTRALは Windows / macOS / Linux で動く。
+Spiral-Coderは Windows / macOS / Linux で動く。
 
 もともとはWindowsで作られた（Windows特有の面倒な罠を最初から潰している）が、コアのランタイムはOS非依存で、`scripts/` には PowerShell / bash の両方の入口が入っている:
 
@@ -324,7 +321,7 @@ Windows側の“硬さ”（macOS/Linuxで開発していても効く）:
 
 ### プラグインレジストリ
 
-フォークせずにOBSTRALを拡張:
+フォークせずにSpiral-Coderを拡張:
 
 ```js
 registerObserverPlugin({ name: "my-plugin", onProposal, onHealth, onPhase })
@@ -369,8 +366,8 @@ score: 41  rationale: コアロジックは動くが、インジェクション�
 
 ### 0) APIキーをセット（TUI/CLI）
 
-- OpenAI互換: `OPENAI_API_KEY` または `OBS_API_KEY`
-- Mistral: `MISTRAL_API_KEY`（または `OBS_API_KEY`）
+- OpenAI互換: `OPENAI_API_KEY` または `SPIRAL_CODER_API_KEY`
+- Mistral: `MISTRAL_API_KEY`（または `SPIRAL_CODER_API_KEY`）
 - Anthropic（Chat/Observerのみ）: `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -421,43 +418,43 @@ TUI のデフォルト:
 - 必須の API キーや model が欠けているペインでは、送信は走らず警告だけ出る。
 
 **Headless Coder（CLI）**
-（任意）`obstral` をインストール:
+（任意）`spiral-coder` をインストール:
 - Windows（PowerShell）: `.\scripts\install.ps1`
 - macOS / Linux（bash）: `bash ./scripts/install.sh`
 
 その後:
 ```bash
-#（任意）.obstral.md テンプレを生成（stack + test_cmd）
-obstral init -C .
+#（任意）.spiral-coder.md テンプレを生成（stack + test_cmd）
+spiral-coder init -C .
 
 # プロジェクト内でコーディングエージェントを実行
-obstral agent "fix the failing test" -C . --vibe
+spiral-coder agent "fix the failing test" -C . --vibe
 
-# セッションを保存して再開できるようにする（デフォルト: .tmp/obstral_session.json）
-obstral agent "fix the failing test" -C . --vibe --session
+# セッションを保存して再開できるようにする（デフォルト: .tmp/spiral_coder_session.json）
+spiral-coder agent "fix the failing test" -C . --vibe --session
 # 後で再開（プロンプト省略 -> 自動で「続けて」）
-obstral agent -C . --vibe --session
+spiral-coder agent -C . --vibe --session
 
 # 機械可読な成果物を出力（trace + 最終JSONスナップショット + 実行グラフ）
-obstral agent "fix the failing test" -C . --vibe --trace-out .tmp/obstral_trace.jsonl --json-out .tmp/obstral_final.json --graph-out .tmp/obstral_graph.json
+spiral-coder agent "fix the failing test" -C . --vibe --trace-out .tmp/spiral_coder_trace.jsonl --json-out .tmp/spiral_coder_final.json --graph-out .tmp/spiral_coder_graph.json
 
 # 自動修正ループ（Coder → Observer差分レビュー → Coder）
-obstral agent "fix the failing test" -C . --vibe --autofix
-obstral agent "fix the failing test" -C . --vibe --autofix 3
+spiral-coder agent "fix the failing test" -C . --vibe --autofix
+spiral-coder agent "fix the failing test" -C . --vibe --autofix 3
 
 # ツール実行を自動承認（プロンプトなし）
-obstral agent "fix the failing test" -C . --vibe -y
+spiral-coder agent "fix the failing test" -C . --vibe -y
 
 # 現在のgit diffをObserverでレビュー
-obstral review -C .
+spiral-coder review -C .
 
-# チェックポイント以降の差分をレビュー（`obstral agent`が出すhashを指定）
-obstral review -C . --base <checkpoint_hash>
+# チェックポイント以降の差分をレビュー（`spiral-coder agent`が出すhashを指定）
+spiral-coder review -C . --base <checkpoint_hash>
 
 # 最新 runtime eval merge gate の readiness を確認
-obstral merge-gate -C .
-obstral merge-gate -C . --json
-obstral merge-gate -C . --ci
+spiral-coder merge-gate -C .
+spiral-coder merge-gate -C . --json
+spiral-coder merge-gate -C . --ci
 # 同じ gate は TUI `/tab merge`、または Web GUI Settings -> Merge gate からも review できる
 ```
 
@@ -490,9 +487,9 @@ python3 ./scripts/serve_lite.py
 実際のプロジェクトで作業するには `tool_root` をプロジェクトパスに設定する:
 - **TUI**: `-C .` / `--tool-root .` フラグ、または実行中に `/root <path>` スラッシュコマンド
 - **Web UI**: Settings → toolRoot フィールド
-- **CLI**: `obstral agent "<prompt>" -C .`
+- **CLI**: `spiral-coder agent "<prompt>" -C .`
 
-`tool_root` が設定されると、OBSTRALは初回使用時にスキャンしてプロジェクトコンテキストを構築する（スタック、git、ツリー）。同セッション内の後続の送信ではスキャンをスキップする。
+`tool_root` が設定されると、Spiral-Coderは初回使用時にスキャンしてプロジェクトコンテキストを構築する（スタック、git、ツリー）。同セッション内の後続の送信ではスキャンをスキップする。
 
 パストラバーサルはすべてのツール境界でブロックされる: `..` コンポーネントを含むパスはエラーとして拒否される（サイレントではない）。
 
@@ -503,12 +500,12 @@ python3 ./scripts/serve_lite.py
 
 ### セッション（CLI）
 
-`obstral agent` は `--session[=<path>]` で会話全体（tool call含む）をJSONに保存し、再開できる。
+`spiral-coder agent` は `--session[=<path>]` で会話全体（tool call含む）をJSONに保存し、再開できる。
 
-- デフォルトパス: `.tmp/obstral_session.json`
+- デフォルトパス: `.tmp/spiral_coder_session.json`
 - `-C/--root` 指定時、相対パスの `--session` は `tool_root` からの相対として解釈される
 - 実行中も（tool call後などに）自動保存
-- プロンプト省略で再開: `obstral agent -C . --session` をもう一度実行
+- プロンプト省略で再開: `spiral-coder agent -C . --session` をもう一度実行
 - 最初からやり直し: `--new-session` を付ける（ファイルは上書き）
 
 関連する成果物出力:
@@ -522,27 +519,27 @@ python3 ./scripts/serve_lite.py
 ### 承認（Approvals）
 
 - **Web UI**: edit/command をPendingとしてキューできる。ブラウザから承認・却下。
-- **CLI（`obstral agent`）**: `exec` とファイル編集（`write_file` / `patch_file` / `apply_diff`）の前に承認プロンプトが出る。`-y/--yes` または `--no-approvals` でプロンプトを省略。
+- **CLI（`spiral-coder agent`）**: `exec` とファイル編集（`write_file` / `patch_file` / `apply_diff`）の前に承認プロンプトが出る。`-y/--yes` または `--no-approvals` でプロンプトを省略。
 - **TUI**: 現状はツールを自動承認。
 
 ### プロバイダ
 
-OBSTRALが今サポートしているプロバイダはこれ:
+Spiral-Coderが今サポートしているプロバイダはこれ:
 
 | Provider | `--provider` | デフォルト `base_url` | キーenv | ツール実行Coder |
 |---|---|---|---|---|
-| OpenAI互換 | `openai-compatible` | `https://api.openai.com/v1` | `OBS_API_KEY` / `OPENAI_API_KEY` | ✅ |
-| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY`（または `OBS_API_KEY`） | ✅ |
+| OpenAI互換 | `openai-compatible` | `https://api.openai.com/v1` | `SPIRAL_CODER_API_KEY` / `OPENAI_API_KEY` | ✅ |
+| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY`（または `SPIRAL_CODER_API_KEY`） | ✅ |
 | Anthropic | `anthropic` | `https://api.anthropic.com/v1` | `ANTHROPIC_API_KEY` | ❌（Chat/Observerのみ） |
 | HF local（subprocess） | `hf` | `http://localhost` | *(なし)* | ❌（Chat/Observerのみ） |
 
 補足:
-- Coderのエージェントループ（`obstral agent` / TUI Coder / Web agentic）は、OpenAI互換の **Chat Completions + tool calling**（`tools` / `tool_calls`）が必須 → `openai-compatible` か `mistral` を使う。
-- `openai-compatible` は OpenAI互換の Chat Completions API（`/v1/chat/completions`）＋ Bearer認証を想定。`--base-url` / `OBS_BASE_URL` にエンドポイント（`/v1` まで）を設定する。
-- `obstral list providers` / `obstral list modes` / `obstral list personas` で内蔵値を確認できる。
+- Coderのエージェントループ（`spiral-coder agent` / TUI Coder / Web agentic）は、OpenAI互換の **Chat Completions + tool calling**（`tools` / `tool_calls`）が必須 → `openai-compatible` か `mistral` を使う。
+- `openai-compatible` は OpenAI互換の Chat Completions API（`/v1/chat/completions`）＋ Bearer認証を想定。`--base-url` / `SPIRAL_CODER_BASE_URL` にエンドポイント（`/v1` まで）を設定する。
+- `spiral-coder list providers` / `spiral-coder list modes` / `spiral-coder list personas` で内蔵値を確認できる。
 
 役割ごとに別モデルを設定できる: Coderのイテレーションには速いモデル、Observerの分析には強力なモデル。よくある実戦エラー: `401`（キー不正）、`429`（レート制限）、`max_tokens` / `max_completion_tokens` のパラメータ差異。
-TUIではペインごとにプロバイダも分けられる（Coderは `openai-compatible` / `mistral` 必須）: `obstral tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`
+TUIではペインごとにプロバイダも分けられる（Coderは `openai-compatible` / `mistral` 必須）: `spiral-coder tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`
 
 ### Chatペルソナ
 
@@ -612,9 +609,9 @@ $env:GITHUB_TOKEN = "ghp_..."
 .\scripts\push_ssh.ps1
 ```
 
-**obstral.exe のアクセス拒否** — バイナリが実行中:
+**spiral-coder.exe のアクセス拒否** — バイナリが実行中:
 ```powershell
-.\scripts\kill-obstral.ps1
+.\scripts\kill-spiral-coder.ps1
 ```
 
 ---

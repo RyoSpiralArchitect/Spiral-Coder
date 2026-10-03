@@ -19,16 +19,16 @@ $ws = if ($WorkspaceRoot -and $WorkspaceRoot.Trim()) {
 New-Item -ItemType Directory -Force -Path $ws | Out-Null
 
 # Use an isolated target dir to avoid the common Windows dev failure:
-# cargo cannot overwrite `obstral.exe` if another instance is running from the same target dir.
+# cargo cannot overwrite `spiral-coder.exe` if another instance is running from the same target dir.
 $env:CARGO_TARGET_DIR = (Join-Path $repoRoot ".tmp\\cargo-target-e2e-rust")
 New-Item -ItemType Directory -Force -Path $env:CARGO_TARGET_DIR | Out-Null
 
-& (Join-Path $PSScriptRoot "kill-obstral.ps1") -PathContains $env:CARGO_TARGET_DIR | Out-Null
+& (Join-Path $PSScriptRoot "kill-spiral-coder.ps1") -PathContains $env:CARGO_TARGET_DIR | Out-Null
 
 Write-Host "[e2e-smoke-rust] cargo build" -ForegroundColor Cyan
 cargo build -q
 
-$exe = Join-Path $env:CARGO_TARGET_DIR "debug\\obstral.exe"
+$exe = Join-Path $env:CARGO_TARGET_DIR "debug\\spiral-coder.exe"
 if (-not (Test-Path $exe)) {
   throw "expected exe missing: $exe"
 }

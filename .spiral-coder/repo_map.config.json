@@ -1,0 +1,17 @@
+{
+  "index_path": ".spiral/repo_map.json",
+  "ignore_file": ".spiral-coderignore",
+  "eval_file": ".spiral-coder/repo_map.eval.json",
+  "scan": {
+    "max_bytes": 4000000,
+    "skip_dirs": [
+      ".spiral-coder",
+      ".spiral",
+      ".tmp",
+      "coverage"
+    ]
+  },
+  "query": {
+    "top_k": 8
+  }
+}

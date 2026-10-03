@@ -11,6 +11,20 @@ use crate::streaming::ToolCallData;
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+#[path = "benchmark_proof.rs"]
+mod benchmark_proof;
+#[cfg(test)]
+#[path = "benchmark_recovery_tests.rs"]
+mod benchmark_recovery_tests;
+#[path = "benchmark_replay.rs"]
+mod benchmark_replay;
+#[cfg(test)]
+#[path = "fix_recovery_tests.rs"]
+mod fix_recovery_tests;
+#[path = "progress_gate.rs"]
+mod progress_gate;
+pub(super) use progress_gate::build_progress_gate_block;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum TaskLane {
     ReadOnlyObserve,
@@ -237,7 +251,7 @@ impl TaskHarness {
 
     fn deliverable_hint(self) -> &'static str {
         if self.lane == TaskLane::BenchmarkPlan {
-            return "Completion must leave a deterministic regression artifact: update .obstral/runtime_eval.json, .obstral/tui_replay.json, or a targeted test/fixture.";
+            return "Completion must leave a deterministic regression artifact: update .spiral-coder/runtime_eval.json, .spiral-coder/tui_replay.json, or a targeted test/fixture.";
         }
         match self.artifact_mode {
             ArtifactMode::ObserveOnly => "Leave no file mutations behind.",
@@ -277,8 +291,8 @@ Move to `patch_file`/`apply_diff`, or run verification if you believe the fix is
                 if self.lane == TaskLane::BenchmarkPlan {
                     out.push_str(
                         "Treat `<observer_benchmark_plan>` as approved external Observer input.\n\
-If lane is `runtime_eval`, update `.obstral/runtime_eval.json` and any smallest required fixture.\n\
-If lane is `tui_replay`, update `.obstral/tui_replay.json`.\n\
+If lane is `runtime_eval`, update `.spiral-coder/runtime_eval.json` and any smallest required fixture.\n\
+If lane is `tui_replay`, update `.spiral-coder/tui_replay.json`.\n\
 If lane is `observer_unit` or `unit`, add the smallest targeted regression test instead.\n\
 Prefer the `required_checks` listed in the approved plan.\n\
 Do not only explain the benchmark plan; create or edit the regression artifact.\n",
@@ -328,145 +342,12 @@ fn is_approved_observer_benchmark_plan(low: &str) -> bool {
     low.contains("[observer benchmark plan approved]") || low.contains("<observer_benchmark_plan")
 }
 
-pub(super) fn build_progress_gate_block(
-    harness: TaskHarness,
-    tc: &ToolCallData,
-    messages: &[Value],
-    recovery_stage: Option<RecoveryStage>,
-    test_cmd: Option<&str>,
-    last_mutation_step: Option<usize>,
-    file_tool_consec_failures: usize,
-) -> Option<String> {
-    if recovery_stage != Some(RecoveryStage::Fix) {
-        return None;
-    }
-    if harness.artifact_mode == ArtifactMode::ObserveOnly {
-        return None;
-    }
-
-    let history = observation_history(messages);
-    if file_tool_consec_failures > 0 && is_src_read_file_tool_call(tc) {
-        return None;
-    }
-    let verify_without_mutation = harness.artifact_mode == ArtifactMode::ExistingFiles
-        && last_mutation_step.is_none()
-        && tc.name == "exec"
-        && parse_exec_command_from_args(tc.arguments.as_str())
-            .and_then(|command| classify_verify_level(command.as_str(), test_cmd))
-            .is_some();
-    if !verify_without_mutation && !is_observation_tool(tc.name.as_str()) {
-        return None;
-    }
-
-    let attempted = canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
-        .unwrap_or_else(|| {
-            format!(
-                "{}({})",
-                tc.name,
-                compact_one_line(tc.arguments.as_str(), 120)
-            )
-        });
-    if !verify_without_mutation {
-        let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
-        let allow_first_target_read = matches!(
-            infer_fix_existing_focus(messages),
-            Some(FixExistingFocus::ReadImplementation(ref path))
-                if tc.name == "read_file"
-                    && same_successes == 0
-                    && serde_json::from_str::<Value>(tc.arguments.as_str())
-                        .ok()
-                        .and_then(|value| value.get("path").and_then(|v| v.as_str()).map(str::to_string))
-                        .as_deref()
-                        == Some(path.as_str())
-        );
-        if allow_first_target_read {
-            return None;
-        }
-        if same_successes == 0 && history.total_successes < 2 {
-            return None;
-        }
-    } else if history.total_successes < 2 {
-        return None;
-    }
-
-    let fix_focus = infer_fix_existing_focus(messages);
-    if let Some(FixExistingFocus::ReadImplementation(path)) = fix_focus.as_ref() {
-        return Some(format!(
-            "[Progress Gate]\n\
-Task lane: {}\n\
-Recovery stage is already `fix`.\n\
-Attempted next action: {}\n\
-Successful observation commands so far: {}\n\
-This is stalled progress, not forward motion.\n\
-Required now: read `{}` now to inspect the implementation before patching.\n\
-Do NOT rerun verification or widen search until `{}` is read.\n\
-Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
-            harness.lane_label(),
-            compact_one_line(&attempted, 180),
-            history.total_successes,
-            compact_one_line(path, 140),
-            compact_one_line(path, 140),
-        ));
-    }
-
-    let next_action = match harness.artifact_mode {
-        ArtifactMode::ExistingFiles => match harness.lane {
-            TaskLane::BenchmarkPlan => {
-                "patch the smallest benchmark spec/fixture update now with `patch_file` or `apply_diff`".to_string()
-            }
-            _ => match fix_focus.as_ref() {
-                Some(FixExistingFocus::PatchImplementation(path)) => format!(
-                    "apply the smallest edit now with `patch_file` or `apply_diff` on `{}`",
-                    compact_one_line(path, 140)
-                ),
-                _ => "apply the smallest edit now with `patch_file` or `apply_diff`".to_string(),
-            },
-        },
-        ArtifactMode::NewFiles => {
-            "create the requested file now with `write_file` or a minimal `exec`".to_string()
-        }
-        ArtifactMode::NewRepo => {
-            "create the requested repo/project artifact now with `write_file` or `exec`".to_string()
-        }
-        ArtifactMode::ObserveOnly => unreachable!(),
-    };
-    let verify_hint = if verify_without_mutation {
-        test_cmd
-            .filter(|cmd| !cmd.trim().is_empty())
-            .map(|cmd| {
-                format!(
-                    "Do NOT run `{}` again before a mutation lands. Read the strongest target or patch now.\n",
-                    compact_one_line(cmd, 140)
-                )
-            })
-            .unwrap_or_else(|| {
-                "Do NOT rerun verification before a mutation lands. Read the strongest target or patch now.\n".to_string()
-            })
+pub(super) fn approved_benchmark_required_commands(root_user_text: &str) -> Vec<String> {
+    if is_approved_observer_benchmark_plan(&root_user_text.to_ascii_lowercase()) {
+        benchmark_proof::required_commands(root_user_text)
     } else {
-        test_cmd
-            .filter(|cmd| !cmd.trim().is_empty())
-            .map(|cmd| format!("If the artifact is already present, run the configured verification command now: `{}`.\n", compact_one_line(cmd, 140)))
-            .unwrap_or_else(|| {
-                "If you believe the artifact is already present, run a real command that proves it before `done`.\n".to_string()
-            })
-    };
-
-    Some(format!(
-        "[Progress Gate]\n\
-Task lane: {}\n\
-Recovery stage is already `fix`.\n\
-Attempted next action: {}\n\
-Successful observation commands so far: {}\n\
-This is stalled progress, not forward motion.\n\
-Required now: {}.\n\
-{}\
-Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
-        harness.lane_label(),
-        compact_one_line(&attempted, 180),
-        history.total_successes,
-        next_action,
-        verify_hint
-    ))
+        Vec::new()
+    }
 }
 
 fn is_src_read_file_tool_call(tc: &ToolCallData) -> bool {
@@ -611,7 +492,14 @@ pub(super) fn coerce_benchmark_plan_tool_call(
     tc: &ToolCallData,
     root_user_text: &str,
     tool_root: Option<&str>,
+    recovery_stage: Option<RecoveryStage>,
+    test_cmd: Option<&str>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Recovery owns diagnosis, repair and re-verification. A target's matching
+    // text does not prove it is valid or authorize replacing a repair with a check.
+    if recovery_stage.is_some() {
+        return None;
+    }
     if harness.lane != TaskLane::BenchmarkPlan {
         return None;
     }
@@ -652,7 +540,9 @@ pub(super) fn coerce_benchmark_plan_tool_call(
         return compare_rewritten_tool_call(tc, rewritten);
     }
 
-    if let Some(command) = pending_benchmark_plan_required_check_exec(messages, root_user_text) {
+    if let Some(command) =
+        pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd)
+    {
         if benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str()) {
             return None;
         }
@@ -672,7 +562,13 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
     messages: &[Value],
     root_user_text: &str,
     tool_root: Option<&str>,
+    recovery_stage: Option<RecoveryStage>,
+    test_cmd: Option<&str>,
 ) -> Option<ToolCallData> {
+    // Keep all active recovery operations ahead of benchmark assistance.
+    if recovery_stage.is_some() {
+        return None;
+    }
     let fallback = ToolCallData {
         id: "synthetic_benchmark_plan_no_tool".to_string(),
         name: "done".to_string(),
@@ -681,8 +577,16 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
         })
         .to_string(),
     };
-    coerce_benchmark_plan_tool_call(harness, messages, &fallback, root_user_text, tool_root)
-        .map(|(rewritten, _original, _coerced)| rewritten)
+    coerce_benchmark_plan_tool_call(
+        harness,
+        messages,
+        &fallback,
+        root_user_text,
+        tool_root,
+        recovery_stage,
+        test_cmd,
+    )
+    .map(|(rewritten, _original, _coerced)| rewritten)
 }
 
 pub(super) fn allows_benchmark_plan_followup_during_verify(
@@ -691,14 +595,16 @@ pub(super) fn allows_benchmark_plan_followup_during_verify(
     tc: &ToolCallData,
     root_user_text: &str,
     tool_root: Option<&str>,
+    test_cmd: Option<&str>,
 ) -> bool {
     if harness.lane != TaskLane::BenchmarkPlan {
         return false;
     }
     if benchmark_plan_targets_satisfied(messages, root_user_text, tool_root)
-        && benchmark_plan_required_check_command(root_user_text).is_some_and(|command| {
-            benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str())
-        })
+        && pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd)
+            .is_some_and(|command| {
+                benchmark_plan_tool_call_is_required_check_exec(tc, command.as_str())
+            })
     {
         return true;
     }
@@ -732,18 +638,24 @@ pub(super) fn allows_benchmark_plan_followup_during_verify(
 pub(super) fn benchmark_plan_pending_required_exec_command(
     root_user_text: &str,
     messages: &[Value],
+    test_cmd: Option<&str>,
 ) -> Option<String> {
     root_user_text
         .contains("<observer_benchmark_plan")
-        .then(|| pending_benchmark_plan_required_check_exec(messages, root_user_text))
+        .then(|| pending_benchmark_plan_required_check_exec(messages, root_user_text, test_cmd))
         .flatten()
 }
 
 pub(super) fn benchmark_plan_missing_required_exec_proof(
     root_user_text: &str,
     messages: &[Value],
+    test_cmd: Option<&str>,
 ) -> bool {
-    benchmark_plan_pending_required_exec_command(root_user_text, messages).is_some()
+    benchmark_plan_pending_required_exec_command(root_user_text, messages, test_cmd).is_some()
+}
+
+pub(super) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
+    benchmark_proof::protected_call_ids(messages)
 }
 
 fn compare_rewritten_tool_call(
@@ -767,7 +679,16 @@ fn compare_rewritten_tool_call(
                     compact_one_line(rewritten.arguments.as_str(), 120)
                 )
             });
-    if original == coerced {
+    // Display strings may collapse quoted whitespace or truncate long commands.
+    // Compare the actual arguments before deciding whether a rewrite is redundant.
+    let same_arguments = match (
+        serde_json::from_str::<Value>(&tc.arguments),
+        serde_json::from_str::<Value>(&rewritten.arguments),
+    ) {
+        (Ok(original), Ok(rewritten)) => original == rewritten,
+        _ => tc.arguments == rewritten.arguments,
+    };
+    if tc.name == rewritten.name && same_arguments {
         None
     } else {
         Some((rewritten, original, coerced))
@@ -791,16 +712,16 @@ fn is_benchmark_plan_candidate_tool(tc: &ToolCallData) -> bool {
 fn benchmark_plan_spec_path(root_user_text: &str) -> Option<String> {
     let low = root_user_text.to_ascii_lowercase();
     if low.contains("lane: tui_replay") || low.contains("\"lane\": \"tui_replay\"") {
-        return Some(".obstral/tui_replay.json".to_string());
+        return Some(".spiral-coder/tui_replay.json".to_string());
     }
     if low.contains("lane: runtime_eval") || low.contains("\"lane\": \"runtime_eval\"") {
-        return Some(".obstral/runtime_eval.json".to_string());
+        return Some(".spiral-coder/runtime_eval.json".to_string());
     }
-    if low.contains(".obstral/tui_replay.json") {
-        return Some(".obstral/tui_replay.json".to_string());
+    if low.contains(".spiral-coder/tui_replay.json") {
+        return Some(".spiral-coder/tui_replay.json".to_string());
     }
-    if low.contains(".obstral/runtime_eval.json") {
-        return Some(".obstral/runtime_eval.json".to_string());
+    if low.contains(".spiral-coder/runtime_eval.json") {
+        return Some(".spiral-coder/runtime_eval.json".to_string());
     }
     None
 }
@@ -820,10 +741,10 @@ fn benchmark_plan_target_paths(root_user_text: &str) -> Vec<String> {
 
 fn is_benchmark_plan_target_path(path: &str) -> bool {
     path.starts_with("docs/") && path.ends_with(".md")
-        || path == ".obstral/runtime_eval.json"
-        || path == ".obstral/tui_replay.json"
-        || path.ends_with("/.obstral/runtime_eval.json")
-        || path.ends_with("/.obstral/tui_replay.json")
+        || path == ".spiral-coder/runtime_eval.json"
+        || path == ".spiral-coder/tui_replay.json"
+        || path.ends_with("/.spiral-coder/runtime_eval.json")
+        || path.ends_with("/.spiral-coder/tui_replay.json")
 }
 
 fn push_unique_path(out: &mut Vec<String>, path: String) {
@@ -835,46 +756,9 @@ fn push_unique_path(out: &mut Vec<String>, path: String) {
 fn pending_benchmark_plan_required_check_exec(
     messages: &[Value],
     root_user_text: &str,
+    test_cmd: Option<&str>,
 ) -> Option<String> {
-    let command = benchmark_plan_required_check_command(root_user_text)?;
-    if benchmark_plan_required_check_was_executed(messages, command.as_str()) {
-        None
-    } else {
-        Some(command)
-    }
-}
-
-fn benchmark_plan_required_check_command(root_user_text: &str) -> Option<String> {
-    let mut in_required_checks = false;
-    for line in root_user_text.lines() {
-        let trimmed = line.trim();
-        if trimmed.eq_ignore_ascii_case("required_checks:") {
-            in_required_checks = true;
-            continue;
-        }
-        if !in_required_checks {
-            continue;
-        }
-        if let Some(item) = trimmed.strip_prefix('-') {
-            let command = trim_benchmark_plan_command_literal(item);
-            if !command.is_empty() {
-                return Some(command);
-            }
-            continue;
-        }
-        if !trimmed.is_empty() && trimmed.ends_with(':') {
-            break;
-        }
-    }
-    None
-}
-
-fn trim_benchmark_plan_command_literal(raw: &str) -> String {
-    let mut command = raw.trim();
-    if command.starts_with('`') && command.ends_with('`') && command.len() >= 2 {
-        command = &command[1..command.len() - 1];
-    }
-    command.trim().to_string()
+    benchmark_proof::pending_command(messages, root_user_text, test_cmd)
 }
 
 fn benchmark_plan_targets_satisfied(
@@ -914,110 +798,7 @@ fn benchmark_plan_tool_call_is_required_check_exec(tc: &ToolCallData, command: &
                 .and_then(|v| v.as_str())
                 .map(str::to_string)
         })
-        .is_some_and(|actual| commands_match(actual.as_str(), command))
-}
-
-fn benchmark_plan_required_check_was_executed(messages: &[Value], command: &str) -> bool {
-    successful_exec_commands(messages)
-        .iter()
-        .any(|actual| commands_match(actual.as_str(), command))
-}
-
-pub(crate) mod transcript_signals {
-    use super::*;
-
-    pub(crate) fn successful_exec_commands(messages: &[Value]) -> Vec<String> {
-        let mut pending: BTreeMap<String, String> = BTreeMap::new();
-        let mut out = Vec::new();
-        for msg in messages {
-            match msg.get("role").and_then(|v| v.as_str()) {
-                Some("assistant") => {
-                    let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                        continue;
-                    };
-                    for tc in tool_calls {
-                        let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                        let name = tc
-                            .get("function")
-                            .and_then(|v| v.get("name"))
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("")
-                            .trim();
-                        if id.is_empty() || name != "exec" {
-                            continue;
-                        }
-                        let command = tc
-                            .get("function")
-                            .and_then(|v| v.get("arguments"))
-                            .and_then(|v| v.as_str())
-                            .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                            .and_then(|value| {
-                                value
-                                    .get("command")
-                                    .and_then(|v| v.as_str())
-                                    .map(str::to_string)
-                            })
-                            .unwrap_or_default();
-                        if !command.trim().is_empty() {
-                            pending.insert(id.to_string(), command);
-                        }
-                    }
-                }
-                Some("tool") => {
-                    let tool_call_id = msg
-                        .get("tool_call_id")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    let Some(command) = pending.remove(tool_call_id) else {
-                        continue;
-                    };
-                    let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                    if exec_tool_content_succeeded(content) {
-                        out.push(command);
-                    }
-                }
-                _ => {}
-            }
-        }
-        out
-    }
-
-    pub(crate) fn exec_tool_content_succeeded(content: &str) -> bool {
-        let text = content.trim();
-        !text.is_empty()
-            && (text.contains("exit_code: 0")
-                || text.contains("OK (exit 0)")
-                || text.starts_with("OK:"))
-            && !text.contains("GOVERNOR BLOCKED")
-            && !text.contains("FAILED")
-    }
-
-    pub(crate) fn commands_match(left: &str, right: &str) -> bool {
-        let left = command_signature(left);
-        let right = command_signature(right);
-        !left.is_empty() && left == right
-    }
-
-    pub(crate) fn command_signature(command: &str) -> String {
-        command.split_whitespace().collect::<Vec<_>>().join(" ")
-    }
-}
-
-fn successful_exec_commands(messages: &[Value]) -> Vec<String> {
-    transcript_signals::successful_exec_commands(messages)
-}
-
-fn exec_tool_content_succeeded(content: &str) -> bool {
-    transcript_signals::exec_tool_content_succeeded(content)
-}
-
-fn commands_match(left: &str, right: &str) -> bool {
-    transcript_signals::commands_match(left, right)
-}
-
-fn command_signature(command: &str) -> String {
-    transcript_signals::command_signature(command)
+        .is_some_and(|actual| benchmark_proof::commands_match(actual.as_str(), command))
 }
 
 fn tool_call_path(tc: &ToolCallData) -> Option<String> {
@@ -1083,7 +864,7 @@ fn synthesize_benchmark_plan_target_patch(
         return None;
     }
     let replace = if target.ends_with(".json") {
-        synthesize_benchmark_plan_json_body(body, required_path.as_str(), root_user_text)?
+        synthesize_benchmark_plan_json_body(target, body, required_path.as_str(), root_user_text)?
     } else if target.starts_with("docs/") && target.ends_with(".md") {
         synthesize_benchmark_plan_markdown_body(body, required_path.as_str())
     } else {
@@ -1102,12 +883,22 @@ fn synthesize_benchmark_plan_target_patch(
 }
 
 fn synthesize_benchmark_plan_json_body(
+    target: &str,
     body: &str,
     required_path: &str,
     root_user_text: &str,
 ) -> Option<String> {
     let mut value = serde_json::from_str::<Value>(body).ok()?;
-    if let Some(paths) = value.get_mut("paths").and_then(|v| v.as_array_mut()) {
+    if target.ends_with("/tui_replay.json") {
+        // Use the replay contract, not runtime-eval check names or a literal-only update.
+        let mut spec = serde_json::from_value::<crate::tui_replay::TuiReplaySpec>(value).ok()?;
+        spec.cases.push(benchmark_replay::case(
+            benchmark_plan_case_id_hint(root_user_text)
+                .unwrap_or_else(|| "observer-benchmark-plan-regression".to_string()),
+            required_path,
+        ));
+        value = serde_json::to_value(spec).ok()?;
+    } else if let Some(paths) = value.get_mut("paths").and_then(|v| v.as_array_mut()) {
         paths.push(Value::String(required_path.to_string()));
     } else if let Some(cases) = value.get_mut("cases").and_then(|v| v.as_array_mut()) {
         cases.push(serde_json::json!({
@@ -1168,7 +959,18 @@ pub(super) fn coerce_fix_existing_blocked_mutation_tool_call(
     messages: &[Value],
     tc: &ToolCallData,
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -1247,7 +1049,18 @@ pub(super) fn coerce_fix_existing_literal_mutation_tool_call(
     messages: &[Value],
     tc: &ToolCallData,
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<(ToolCallData, String, String)> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -1285,7 +1098,18 @@ pub(super) fn synthesize_fix_existing_no_tool_mutation_tool_call(
     harness: TaskHarness,
     messages: &[Value],
     root_user_text: &str,
+    recovery_stage: Option<RecoveryStage>,
 ) -> Option<ToolCallData> {
+    // Diagnosis and verification own the next action in those recovery stages.
+    // Rewriting a requested diagnostic into a patch makes the recovery gate
+    // reject the very operation it asked for, causing an unrecoverable loop.
+    if matches!(
+        recovery_stage,
+        Some(RecoveryStage::Diagnose | RecoveryStage::Verify)
+    ) {
+        return None;
+    }
+
     if harness.lane != TaskLane::FixExisting || harness.artifact_mode != ArtifactMode::ExistingFiles
     {
         return None;
@@ -2790,7 +2614,7 @@ mod tests {
 lane: runtime_eval\n\
 case_id_hint: runtime-eval-task-harness\n\
 required_checks:\n\
-- cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1\n\
+- cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1\n\
 </observer_benchmark_plan>",
             false,
         );
@@ -2799,7 +2623,7 @@ required_checks:\n\
 
         let prompt = harness.prompt(None);
         assert!(prompt.contains("Treat `<observer_benchmark_plan>`"));
-        assert!(prompt.contains(".obstral/runtime_eval.json"));
+        assert!(prompt.contains(".spiral-coder/runtime_eval.json"));
         assert!(prompt.contains("Do not only explain"));
     }
 
@@ -2811,7 +2635,7 @@ required_checks:\n\
 lane: runtime_eval\n\
 objective: Add a deterministic regression.\n\
 required_checks:\n\
-- cargo run --quiet -- eval --spec .obstral/runtime_eval.json --max-cases 1\n\
+- cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --max-cases 1\n\
 </observer_benchmark_plan>",
             false,
         );
@@ -2821,30 +2645,39 @@ required_checks:\n\
             arguments: json!({"pattern":"runtime eval","path":"src"}).to_string(),
         };
 
-        let (rewritten, original, coerced) =
-            coerce_benchmark_plan_tool_call(harness, &[], &tc, "lane: runtime_eval", None)
-                .expect("rewritten");
+        let (rewritten, original, coerced) = coerce_benchmark_plan_tool_call(
+            harness,
+            &[],
+            &tc,
+            "lane: runtime_eval",
+            None,
+            None,
+            None,
+        )
+        .expect("rewritten");
 
         assert_eq!(original, "search_files(path=src, pattern=runtime eval)");
         assert_eq!(rewritten.name, "read_file");
-        assert!(rewritten.arguments.contains(".obstral/runtime_eval.json"));
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert!(rewritten
+            .arguments
+            .contains(".spiral-coder/runtime_eval.json"));
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
     #[test]
     fn coerce_benchmark_plan_tool_call_does_not_patch_before_spec_read() {
         let dir = tempdir().unwrap();
-        let obstral = dir.path().join(".obstral");
-        std::fs::create_dir_all(&obstral).unwrap();
+        let spiral_coder = dir.path().join(".spiral-coder");
+        std::fs::create_dir_all(&spiral_coder).unwrap();
         std::fs::write(
-            obstral.join("runtime_eval.json"),
+            spiral_coder.join("runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": []\n}\n",
         )
         .unwrap();
         let tc = ToolCallData {
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
-            arguments: json!({"dir":".obstral"}).to_string(),
+            arguments: json!({"dir":".spiral-coder"}).to_string(),
         };
 
         let (rewritten, _original, coerced) = coerce_benchmark_plan_tool_call(
@@ -2857,14 +2690,16 @@ required_checks:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         )
         .expect("read first");
 
         assert_eq!(rewritten.name, "read_file");
-        assert_eq!(coerced, "read_file(path=.obstral/runtime_eval.json)");
+        assert_eq!(coerced, "read_file(path=.spiral-coder/runtime_eval.json)");
     }
 
     #[test]
@@ -2879,19 +2714,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/tui_replay.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/tui_replay.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": "[.obstral/tui_replay.json] (3 lines, 42 bytes)\n{\"cases\":[]}"
+                "content": "[.spiral-coder/tui_replay.json] (3 lines, 42 bytes)\n{\"cases\":[]}"
             }),
         ];
         let tc = ToolCallData {
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
-            arguments: json!({"dir":".obstral"}).to_string(),
+            arguments: json!({"dir":".spiral-coder"}).to_string(),
         };
 
         let rewritten = coerce_benchmark_plan_tool_call(
@@ -2899,6 +2734,8 @@ success_criteria:\n\
             &messages,
             &tc,
             "<observer_benchmark_plan>\nlane: tui_replay\n</observer_benchmark_plan>",
+            None,
+            None,
             None,
         );
 
@@ -2914,19 +2751,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": format!("[.obstral/runtime_eval.json] (8 lines, 100 bytes)\n{body}")
+                "content": format!("[.spiral-coder/runtime_eval.json] (8 lines, 100 bytes)\n{body}")
             }),
         ];
         let tc = ToolCallData {
             id: "call_bad_patch".to_string(),
             name: "patch_file".to_string(),
-            arguments: "{\"path\":\".obstral/runtime_eval.json\",\"search\":\"{".to_string(),
+            arguments: "{\"path\":\".spiral-coder/runtime_eval.json\",\"search\":\"{".to_string(),
         };
 
         let (rewritten, _original, coerced) = coerce_benchmark_plan_tool_call(
@@ -2940,14 +2777,18 @@ success_criteria:\n\
 lane: runtime_eval\n\
 case_id_hint: self-fix-session-bridge-runtime-followup\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
+            None,
+            None,
             None,
         )
         .expect("synthetic benchmark patch");
 
         assert_eq!(rewritten.name, "patch_file");
-        assert!(rewritten.arguments.contains(".obstral/runtime_eval.json"));
+        assert!(rewritten
+            .arguments
+            .contains(".spiral-coder/runtime_eval.json"));
         assert!(rewritten
             .arguments
             .contains("src/tui/agent/session_bridge.rs"));
@@ -2957,10 +2798,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_allows_verify_after_filesystem_patch() {
         let dir = tempdir().unwrap();
-        let obstral = dir.path().join(".obstral");
-        std::fs::create_dir_all(&obstral).unwrap();
+        let spiral_coder = dir.path().join(".spiral-coder");
+        std::fs::create_dir_all(&spiral_coder).unwrap();
         std::fs::write(
-            obstral.join("runtime_eval.json"),
+            spiral_coder.join("runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/session_bridge.rs\"\n  ],\n  \"cases\": []\n}\n",
         )
         .unwrap();
@@ -2971,13 +2812,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read",
-                "content": format!("[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{stale_body}")
+                "content": format!("[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{stale_body}")
             }),
         ];
         let tc = ToolCallData {
@@ -2996,9 +2837,11 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 success_criteria:\n\
-- .obstral/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
+- .spiral-coder/runtime_eval.json includes src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         );
 
         assert!(rewritten.is_none());
@@ -3007,10 +2850,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_reads_docs_after_spec_is_satisfied() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/session_bridge.rs\"\n  ],\n  \"cases\": []\n}\n",
         )
         .unwrap();
@@ -3025,19 +2868,19 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[]}"
             }),
         ];
         let tc = ToolCallData {
             id: "call_verify".to_string(),
             name: "exec".to_string(),
-            arguments: json!({"command":"grep -q session_bridge .obstral/runtime_eval.json"})
+            arguments: json!({"command":"grep -q session_bridge .spiral-coder/runtime_eval.json"})
                 .to_string(),
         };
 
@@ -3051,12 +2894,14 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         )
         .expect("docs read");
 
@@ -3073,13 +2918,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (5 lines, 70 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3111,11 +2956,13 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
+            None,
+            None,
             None,
         )
         .expect("docs patch");
@@ -3131,10 +2978,10 @@ success_criteria:\n\
     #[test]
     fn coerce_benchmark_plan_tool_call_allows_verify_after_spec_and_docs_patch() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3149,13 +2996,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
             json!({
                 "role": "assistant",
@@ -3188,12 +3035,14 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None,
+            None,
         );
 
         assert!(rewritten.is_none());
@@ -3202,10 +3051,10 @@ success_criteria:\n\
     #[test]
     fn allows_benchmark_plan_followup_during_verify_reads_next_unsatisfied_target() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3220,13 +3069,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
         ];
         let tc = ToolCallData {
@@ -3245,12 +3094,13 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+            None
         ));
     }
 
@@ -3262,13 +3112,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3305,12 +3155,13 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+            None
         ));
     }
 
@@ -3322,13 +3173,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
         ];
         let tc = ToolCallData {
@@ -3347,22 +3198,23 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+            None
         ));
     }
 
     #[test]
     fn coerce_benchmark_plan_tool_call_runs_required_check_after_targets_satisfied() {
         let dir = tempdir().unwrap();
-        std::fs::create_dir_all(dir.path().join(".obstral")).unwrap();
+        std::fs::create_dir_all(dir.path().join(".spiral-coder")).unwrap();
         std::fs::create_dir_all(dir.path().join("docs")).unwrap();
         std::fs::write(
-            dir.path().join(".obstral/runtime_eval.json"),
+            dir.path().join(".spiral-coder/runtime_eval.json"),
             "{\n  \"paths\": [\"src/tui/agent/session_bridge.rs\"]\n}\n",
         )
         .unwrap();
@@ -3377,13 +3229,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[]}"
             }),
             json!({
                 "role": "assistant",
@@ -3415,14 +3267,15 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             Some(dir.path().to_str().unwrap()),
+        None, None
         )
         .expect("required check exec");
 
@@ -3441,13 +3294,13 @@ success_criteria:\n\
                 "tool_calls": [{
                     "id": "call_read_spec",
                     "type": "function",
-                    "function": {"name":"read_file","arguments":"{\"path\":\".obstral/runtime_eval.json\"}"}
+                    "function": {"name":"read_file","arguments":"{\"path\":\".spiral-coder/runtime_eval.json\"}"}
                 }]
             }),
             json!({
                 "role": "tool",
                 "tool_call_id": "call_read_spec",
-                "content": "[.obstral/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
+                "content": "[.spiral-coder/runtime_eval.json] (2 lines, 20 bytes)\n{\"paths\":[\"src/tui/agent/session_bridge.rs\"]}"
             }),
             json!({
                 "role": "assistant",
@@ -3473,14 +3326,15 @@ success_criteria:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 - docs/runtime-architecture.md\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json && grep -q \"src/tui/agent/session_bridge.rs\" docs/runtime-architecture.md\n\
 success_criteria:\n\
 - both files include src/tui/agent/session_bridge.rs\n\
 </observer_benchmark_plan>",
             None,
+        None, None
         )
         .expect("synthetic docs patch");
 
@@ -3498,9 +3352,9 @@ success_criteria:\n\
         let root_user_text = "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 target_files:\n\
-- .obstral/runtime_eval.json\n\
+- .spiral-coder/runtime_eval.json\n\
 required_checks:\n\
-- grep -q \"src/tui/agent/session_bridge.rs\" .obstral/runtime_eval.json\n\
+- grep -q \"src/tui/agent/session_bridge.rs\" .spiral-coder/runtime_eval.json\n\
 </observer_benchmark_plan>";
         let messages = vec![
             json!({
@@ -3510,7 +3364,7 @@ required_checks:\n\
                     "type": "function",
                     "function": {
                         "name": "exec",
-                        "arguments": "{\"command\":\"grep -q \\\"src/tui/agent/session_bridge.rs\\\" .obstral/runtime_eval.json\"}"
+                        "arguments": "{\"command\":\"grep -q \\\"src/tui/agent/session_bridge.rs\\\" .spiral-coder/runtime_eval.json\"}"
                     }
                 }]
             }),
@@ -3523,12 +3377,65 @@ required_checks:\n\
 
         assert!(benchmark_plan_missing_required_exec_proof(
             root_user_text,
-            &[]
+            &[],
+            None
         ));
         assert!(!benchmark_plan_missing_required_exec_proof(
             root_user_text,
-            &messages
+            &messages,
+            None
         ));
+    }
+
+    #[test]
+    fn benchmark_plan_advances_to_second_check_in_verify_and_done_coercion() {
+        let prompt = "<observer_benchmark_plan>\nlane: runtime_eval\nrequired_checks:\n- check Spec.json\n- grep -q 'A  B' Spec.json\nsuccess_criteria:\n- cover src/example.rs\n</observer_benchmark_plan>";
+        let messages = vec![
+            json!({"role": "assistant", "tool_calls": [{
+                "id": "read", "function": {"name": "read_file", "arguments": json!({"path": ".spiral-coder/runtime_eval.json"}).to_string()}
+            }]}),
+            json!({"role": "tool", "tool_call_id": "read", "content": "[.spiral-coder/runtime_eval.json] (1 lines, 30 bytes)\n{\"paths\":[\"src/example.rs\"]}"}),
+            json!({"role": "assistant", "tool_calls": [{
+                "id": "check", "function": {"name": "exec", "arguments": json!({"command": "check Spec.json"}).to_string()}
+            }]}),
+            json!({"role": "tool", "tool_call_id": "check", "content": "OK (exit_code: 0)"}),
+        ];
+        let harness = TaskHarness {
+            lane: TaskLane::BenchmarkPlan,
+            artifact_mode: ArtifactMode::ExistingFiles,
+        };
+        let second = "grep -q 'A  B' Spec.json";
+        assert!(benchmark_plan_missing_required_exec_proof(
+            prompt, &messages, None
+        ));
+        assert_eq!(
+            benchmark_plan_pending_required_exec_command(prompt, &messages, None).as_deref(),
+            Some(second)
+        );
+
+        for (name, args) in [
+            ("done", json!({"summary": "done"})),
+            ("exec", json!({"command": "grep -q 'A B' Spec.json"})),
+            ("exec", json!({"command": "grep -q 'a  b' Spec.json"})),
+        ] {
+            let candidate = ToolCallData {
+                id: "next".to_string(),
+                name: name.to_string(),
+                arguments: args.to_string(),
+            };
+            let (rewritten, _, _) = coerce_benchmark_plan_tool_call(
+                harness, &messages, &candidate, prompt, None, None, None,
+            )
+            .expect("second check remains required");
+            assert_eq!(rewritten.name, "exec");
+            assert_eq!(
+                serde_json::from_str::<Value>(&rewritten.arguments).unwrap(),
+                json!({"command": second})
+            );
+            assert!(allows_benchmark_plan_followup_during_verify(
+                harness, &messages, &rewritten, prompt, None, None
+            ));
+        }
     }
 
     #[test]
@@ -3537,11 +3444,11 @@ required_checks:\n\
             "<observer_benchmark_plan>\n\
 lane: runtime_eval\n\
 required_checks:\n\
-- cargo run --quiet -- tui-replay --spec .obstral/tui_replay.json\n\
+- cargo run --quiet -- tui-replay --spec .spiral-coder/tui_replay.json\n\
 </observer_benchmark_plan>",
         );
 
-        assert_eq!(path.as_deref(), Some(".obstral/runtime_eval.json"));
+        assert_eq!(path.as_deref(), Some(".spiral-coder/runtime_eval.json"));
     }
 
     #[test]
@@ -3600,7 +3507,7 @@ required_checks:\n\
             json!({
                 "role": "tool",
                 "tool_call_id": "call_list",
-                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.obstral.md"
+                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.spiral-coder.md"
             }),
             json!({
                 "role": "assistant",
@@ -3654,7 +3561,7 @@ required_checks:\n\
             json!({
                 "role": "tool",
                 "tool_call_id": "call_list",
-                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.obstral.md"
+                "content": "[list_dir: '.' ・ 2 item(s)]\nREADME.md\n.spiral-coder.md"
             }),
         ];
 
@@ -3675,7 +3582,7 @@ required_checks:\n\
 
     #[test]
     fn progress_gate_blocks_verify_exec_before_first_mutation_in_fix_lane() {
-        let messages = vec![
+        let mut messages = vec![
             json!({
                 "role": "assistant",
                 "tool_calls": [{
@@ -3703,6 +3610,15 @@ required_checks:\n\
                 "content": "[src/lib.rs] (22 lines, 561 bytes)\nmod maze;"
             }),
         ];
+        messages.push(json!({
+            "role":"assistant", "tool_calls":[{
+                "id":"baseline", "type":"function", "function":{
+                    "name":"exec", "arguments":json!({"command":"cargo test 2>&1"}).to_string()
+                }
+            }]
+        }));
+        messages.push(json!({"role":"tool", "tool_call_id":"baseline",
+            "content":"FAILED (exit_code: 1)\nstdout:\ntest failed"}));
         let tc = ToolCallData {
             id: "call_verify".to_string(),
             name: "exec".to_string(),
@@ -3864,6 +3780,7 @@ required_checks:\n\
             },
             &messages,
             "Fix failed cases with rollback so stale approved reviews stay rollback available and failed cases without rollback stay blocked.",
+            None,
         )
         .expect("synthetic guard patch");
 
@@ -4316,6 +4233,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive.",
+            None,
         )
         .expect("blocked mutation coercion");
 
@@ -4427,6 +4345,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive, using the smallest safe code change.",
+            None,
         )
         .expect("literal mutation coercion");
 
@@ -4470,6 +4389,7 @@ required_checks:\n\
             &messages,
             &tc,
             "Fix the existing observer rule module so `src/tui/review_panel.rs` is treated as replay-sensitive.",
+            None,
         )
         .expect("literal mutation despite test reference");
 

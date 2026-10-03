@@ -42,20 +42,37 @@ use crate::streaming::{
 use crate::types::ChatMessage;
 use std::path::Path;
 
+mod assumption_gate;
+#[cfg(test)]
+mod auto_test_recovery_tests;
 mod done_gate;
 mod evaluator_loop;
+mod exact_content;
+mod exec_classification;
+mod exec_proof;
+mod exec_verification;
 mod failure_localization;
+mod failure_memory;
 mod final_handoff;
 mod followup_requirements;
 mod harness_evolution;
+mod impact_recovery;
 mod memory;
+mod message_window;
 mod meta_harness;
+mod outcome;
 mod progress_bridge;
+mod protocol_fields;
 mod provider_compat;
 mod read_only;
+mod recovery;
 mod repo_scaffold;
 mod session_bridge;
 mod task_harness;
+mod tool_result_history;
+#[cfg(test)]
+mod tool_result_history_tests;
+use self::assumption_gate::refuted_assumption_conflict;
 use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
     build_read_only_completion_hint, build_read_only_evidence_scores,
@@ -66,8 +83,13 @@ use self::done_gate::{
     synthesize_action_done_summary, validate_done_acceptance,
 };
 use self::evaluator_loop::EvaluatorLoop;
+use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
-use self::final_handoff::enrich_text_final_handoff;
+use self::failure_memory::FailureMemory;
+use self::final_handoff::{
+    authored_final_answer_hint, enrich_text_final_handoff, requires_authored_final_answer,
+    validate_authored_done_summary,
+};
 use self::followup_requirements::{
     coerce_existing_followup_tool_call, matches_required_existing_followup,
     required_existing_followup_no_tool_hint,
@@ -86,8 +108,10 @@ use self::memory::{
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
     ObservationEvidence, ObservationReadEvidence, ObservationSearchEvidence,
 };
+use self::message_window::prune_message_window;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
+use self::protocol_fields::parse_tag_fields;
 #[cfg(test)]
 use self::provider_compat::compat_synthetic_think;
 use self::provider_compat::{
@@ -109,6 +133,7 @@ use self::read_only::{
     preferred_read_only_search_dir, preferred_read_only_search_pattern, read_only_plan_violation,
     synthetic_read_only_observation_plan, ReadOnlyDiagnoseRescueAction,
 };
+use self::recovery::RecoveryGovernor;
 use self::session_bridge::SessionBridgeView;
 use self::task_harness::{
     allows_artifact_creation_during_diagnose, allows_artifact_creation_during_verify,
@@ -881,16 +906,16 @@ impl RealizeOnDemandConfig {
 
     fn from_env() -> Self {
         let mut cfg = Self::default();
-        cfg.enabled = env_bool("OBSTRAL_REALIZE_ON_DEMAND", false);
+        cfg.enabled = env_bool("SPIRAL_CODER_REALIZE_ON_DEMAND", false);
         cfg.defer_threshold =
-            env_f64("OBSTRAL_REALIZE_DEFER_THRESHOLD", cfg.defer_threshold).clamp(0.05, 1.0);
-        if let Ok(raw) = std::env::var("OBSTRAL_REALIZATION_WINDOW") {
+            env_f64("SPIRAL_CODER_REALIZE_DEFER_THRESHOLD", cfg.defer_threshold).clamp(0.05, 1.0);
+        if let Ok(raw) = std::env::var("SPIRAL_CODER_REALIZATION_WINDOW") {
             if let Some((start, end)) = parse_realization_window(&raw) {
                 cfg.window_start = start;
                 cfg.window_end = end.max(start);
             }
         }
-        cfg.drift_metric = match std::env::var("OBSTRAL_REALIZE_DRIFT_METRIC")
+        cfg.drift_metric = match std::env::var("SPIRAL_CODER_REALIZE_DRIFT_METRIC")
             .unwrap_or_else(|_| "cos".to_string())
             .trim()
             .to_ascii_lowercase()
@@ -899,8 +924,8 @@ impl RealizeOnDemandConfig {
             "kl" => DriftMetric::Kl,
             _ => DriftMetric::Cos,
         };
-        cfg.lambda_min = env_f64("OBSTRAL_REALIZE_LAMBDA_MIN", cfg.lambda_min).clamp(0.0, 4.0);
-        cfg.lambda_max = env_f64("OBSTRAL_REALIZE_LAMBDA_MAX", cfg.lambda_max).clamp(0.0, 4.0);
+        cfg.lambda_min = env_f64("SPIRAL_CODER_REALIZE_LAMBDA_MIN", cfg.lambda_min).clamp(0.0, 4.0);
+        cfg.lambda_max = env_f64("SPIRAL_CODER_REALIZE_LAMBDA_MAX", cfg.lambda_max).clamp(0.0, 4.0);
         if cfg.lambda_max < cfg.lambda_min {
             cfg.lambda_max = cfg.lambda_min;
         }
@@ -1016,7 +1041,7 @@ fn strip_tag_block_owned(text: &str, tag: &str) -> String {
 
 fn parse_realize_block(text: &str) -> Option<String> {
     let body = extract_tag_block(text, "realize")?;
-    let fields = parse_tag_fields(body);
+    let fields = parse_tag_fields(body, "realize");
     for (key, value) in fields {
         if key == "reason" && !value.trim().is_empty() {
             return Some(compact_one_line(value.trim(), 160));
@@ -1278,15 +1303,13 @@ const KEEP_RECENT_TOOL_TURNS: usize = 4;
 const KEEP_RECENT_ASSISTANT_TURNS: usize = 6;
 const SUCCESS_TOOL_HISTORY_MAX_LINES: usize = 10;
 const SUCCESS_TOOL_HISTORY_MAX_CHARS: usize = 1200;
-const KEEP_RECENT_MESSAGE_WINDOW: usize = 24;
-const MAX_CONTEXT_MESSAGES: usize = 48;
 const TOKEN_BUDGET_WARN_TOKENS: usize = 9000;
 
 /// Marker appended to every exec call so we can persist working directory across tool runs.
 ///
 /// IMPORTANT: Each `exec` runs in a fresh process. Without this, `cd` is lost between calls,
 /// which causes nested-git disasters and "why did it run in the repo root?" failures.
-const PWD_MARKER: &str = "__OBSTRAL_PWD__=";
+const PWD_MARKER: &str = "__SPIRAL_CODER_PWD__=";
 
 // ── System prompt addons ──────────────────────────────────────────────────────
 
@@ -1612,7 +1635,7 @@ Fallback for non-tool models (implied actions):\n\
       ```lang\n\
       file contents...\n\
       ```\n\
-    (OBSTRAL may auto-write the file with approval; it will NOT overwrite existing files.)\n\
+    (Spiral-Coder may auto-write the file with approval; it will NOT overwrite existing files.)\n\
   - To run commands, paste a PowerShell/bash code fence.\n\
 \n\
 PRIORITY (safety-first default when unsure):\n\
@@ -2049,6 +2072,18 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
     let mut seen = std::collections::HashSet::new();
     push_unique_tool_line(&mut kept, &mut seen, lines[0]);
 
+    // The first runtime status is authoritative, even when later stdout prints
+    // another status. Preserve it verbatim before applying the digest budget.
+    if crate::execution_evidence::file_edit_succeeded(tool_name, content) {
+        if let Some(status) = lines.iter().find(|line| line.starts_with("[auto-test]")) {
+            seen.insert((*status).to_string());
+            kept.push((*status).to_string());
+            for line in tool_result_history::automatic_test_failure_diagnostics(content) {
+                push_unique_tool_line(&mut kept, &mut seen, &line);
+            }
+        }
+    }
+
     if tool_name == "exec" {
         for line in lines.iter().skip(1).take(3) {
             push_unique_tool_line(&mut kept, &mut seen, line);
@@ -2107,7 +2142,8 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
 }
 
 /// Collapse tool result messages older than KEEP_RECENT_TOOL_TURNS to a
-/// one-line summary.  Each collapsed result saves ~200-2000 tokens.
+/// compact summary, preserving the first automatic-test status if present.
+/// Each collapsed result saves ~200-2000 tokens.
 /// Only the content field is modified; tool_call_id stays intact.
 fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
     let tool_indices: Vec<usize> = messages
@@ -2124,16 +2160,41 @@ fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
     let prune_count = tool_indices.len() - KEEP_RECENT_TOOL_TURNS;
     for &idx in tool_indices.iter().take(prune_count) {
         if let Some(content) = messages[idx]["content"].as_str() {
-            // Never prune failures: they are the most important context for recovery.
-            // Prune successful exec outputs and file tool outputs.
+            // Keep execution failures, and retain the automatic-test cause when
+            // shortening an otherwise successful edit. Do not repeatedly grow
+            // the header of an already bounded multi-line failure receipt.
             if !is_prunable_tool_result(content) {
+                continue;
+            }
+            if content
+                .lines()
+                .next()
+                .is_some_and(|line| line.contains(" [pruned "))
+            {
                 continue;
             }
             let line_count = content.lines().count();
             if line_count > 2 {
                 let first = content.lines().next().unwrap_or("[done]").to_string();
-                messages[idx]["content"] =
-                    serde_json::Value::String(format!("{first} [pruned {line_count}L]"));
+                let mut summary = format!("{first} [pruned {line_count}L]");
+                if ["write_file", "patch_file", "apply_diff"]
+                    .iter()
+                    .any(|name| crate::execution_evidence::file_edit_succeeded(name, content))
+                {
+                    if let Some(status) =
+                        content.lines().find(|line| line.starts_with("[auto-test]"))
+                    {
+                        summary.push('\n');
+                        summary.push_str(status);
+                        for diagnostic in
+                            tool_result_history::automatic_test_failure_diagnostics(content)
+                        {
+                            summary.push('\n');
+                            summary.push_str(&diagnostic);
+                        }
+                    }
+                }
+                messages[idx]["content"] = serde_json::Value::String(summary);
             }
         }
     }
@@ -2257,112 +2318,6 @@ fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
         };
         messages[idx]["content"] = serde_json::Value::String(summary);
     }
-}
-
-fn assistant_message_has_observation_tool_call(msg: &serde_json::Value) -> bool {
-    msg.get("tool_calls")
-        .and_then(|v| v.as_array())
-        .map(|items| {
-            items.iter().any(|tc| {
-                tc.get("function")
-                    .and_then(|f| f.get("name"))
-                    .and_then(|v| v.as_str())
-                    .map(|name| matches!(name, "read_file" | "search_files" | "list_dir" | "glob"))
-                    .unwrap_or(false)
-            })
-        })
-        .unwrap_or(false)
-}
-
-fn tool_message_is_drop_safe(msg: &serde_json::Value) -> bool {
-    let content = msg
-        .get("content")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .trim_start();
-    content.starts_with("OK (exit_code: 0)")
-        || content.starts_with("OK: wrote '")
-        || content.starts_with("OK: patched '")
-        || content.starts_with("OK: applied ")
-        || content.starts_with("OK write_file")
-}
-
-fn prune_message_window(messages: &mut Vec<serde_json::Value>) {
-    if messages.len() <= MAX_CONTEXT_MESSAGES {
-        return;
-    }
-
-    let mut protected = std::collections::HashSet::new();
-    for (idx, msg) in messages.iter().enumerate() {
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        if !matches!(role, "assistant" | "tool") {
-            protected.insert(idx);
-        }
-    }
-    for idx in messages.len().saturating_sub(KEEP_RECENT_MESSAGE_WINDOW)..messages.len() {
-        protected.insert(idx);
-    }
-    let anchor_checks: &[fn(&str) -> bool] = &[
-        |content| parse_plan_block(content).is_some(),
-        |content| parse_think_block(content).is_some(),
-        |content| parse_reflection_block(content).is_some(),
-        |content| parse_impact_block(content).is_some(),
-        |content| parse_evidence_block(content).is_some(),
-    ];
-    for check in anchor_checks {
-        for idx in (0..messages.len()).rev() {
-            let msg = &messages[idx];
-            if msg.get("role").and_then(|v| v.as_str()) != Some("assistant") {
-                continue;
-            }
-            let content = msg
-                .get("content")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .trim();
-            if check(content) {
-                protected.insert(idx);
-                break;
-            }
-        }
-    }
-
-    let mut removable = Vec::new();
-    for (idx, msg) in messages.iter().enumerate() {
-        if protected.contains(&idx) {
-            continue;
-        }
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        let drop_safe = match role {
-            "assistant" => {
-                !assistant_message_has_observation_tool_call(msg)
-                    && assistant_message_is_compactable(msg)
-            }
-            "tool" => tool_message_is_drop_safe(msg),
-            _ => false,
-        };
-        if drop_safe {
-            removable.push(idx);
-        }
-    }
-
-    let over = messages.len().saturating_sub(MAX_CONTEXT_MESSAGES);
-    if over == 0 || removable.is_empty() {
-        return;
-    }
-
-    let drop_indices: std::collections::HashSet<usize> = removable.into_iter().take(over).collect();
-    if drop_indices.is_empty() {
-        return;
-    }
-
-    let mut compacted = Vec::with_capacity(messages.len() - drop_indices.len());
-    for (idx, msg) in messages.iter().enumerate() {
-        if !drop_indices.contains(&idx) {
-            compacted.push(msg.clone());
-        }
-    }
-    *messages = compacted;
 }
 
 // ── Error classification ──────────────────────────────────────────────────────
@@ -2504,13 +2459,13 @@ fn specific_recovery_hint(stderr: &str, stdout: &str) -> &'static str {
     }
 
     // Windows: `cargo run` cannot overwrite a running .exe (locked file handle).
-    // Example: "failed to remove file ... obstral.exe ... access is denied (os error 5)"
+    // Example: "failed to remove file ... spiral-coder.exe ... access is denied (os error 5)"
     let cargo_exe_lock = low.contains("failed to remove file")
-        && low.contains("obstral.exe")
+        && low.contains("spiral-coder.exe")
         && (low.contains("os error 5") || low.contains("access is denied"));
     if cargo_exe_lock {
         return "HINT: On Windows, a running .exe cannot be overwritten.\n\
-- Stop the running process (`Stop-Process -Name obstral -Force`) OR restart the terminal.\n\
+- Stop the running process (`Stop-Process -Name spiral-coder -Force`) OR restart the terminal.\n\
 - Or run cargo with an isolated target dir to avoid the lock:\n\
   $env:CARGO_TARGET_DIR = '.tmp/cargo-target-tui'; cargo run -- tui";
     }
@@ -2599,7 +2554,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
 
     // POSIX: keep behavior simple while preserving the wrapped command's exit status.
     format!(
-        "{{\n{raw}\n__obstral_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__obstral_status\" -ne 0 ]; then\n  sh -c \"exit $__obstral_status\"\nelse\n  true\nfi\n}}"
+        "{{\n{raw}\n__spiral_coder_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
     )
 }
 
@@ -2775,188 +2730,6 @@ impl GoalCheckTracker {
     fn any_attempted(&self) -> bool {
         self.repo.attempts > 0 || self.tests.attempts > 0 || self.build.attempts > 0
     }
-}
-
-#[derive(Debug, Default)]
-struct RecoveryGovernor {
-    stage: Option<RecoveryStage>,
-    required_verification: VerificationLevel,
-}
-
-impl RecoveryGovernor {
-    fn stage_label(&self) -> &'static str {
-        match self.stage {
-            None => "none",
-            Some(RecoveryStage::Diagnose) => "diagnose",
-            Some(RecoveryStage::Fix) => "fix",
-            Some(RecoveryStage::Verify) => "verify",
-        }
-    }
-
-    fn in_recovery(&self) -> bool {
-        self.stage.is_some()
-    }
-
-    fn restore_from_session(
-        mem: &FailureMemory,
-        messages: &[serde_json::Value],
-        required_verification: VerificationLevel,
-    ) -> Self {
-        let mut g = RecoveryGovernor {
-            stage: None,
-            required_verification,
-        };
-        if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
-            g.stage = Some(RecoveryStage::Diagnose);
-        }
-        g
-    }
-
-    fn maybe_block_tool(
-        &self,
-        tc: &ToolCallData,
-        test_cmd: Option<&str>,
-        task_harness: TaskHarness,
-        allow_existing_followup_verify: bool,
-    ) -> Option<String> {
-        let Some(stage) = self.stage else {
-            return None;
-        };
-        let name = tc.name.as_str();
-
-        // Note: `done` is handled earlier in the main loop.
-        match stage {
-            RecoveryStage::Diagnose => {
-                if is_diagnostic_tool_name(name) {
-                    return None;
-                }
-                if name == "exec" {
-                    let cmd =
-                        parse_exec_command_from_args(tc.arguments.as_str()).unwrap_or_default();
-                    if is_diagnostic_command(cmd.as_str()) {
-                        return None;
-                    }
-                }
-                if allows_artifact_creation_during_diagnose(task_harness, tc) {
-                    return None;
-                }
-                Some(format!(
-                    "[Recovery Gate] stage=diagnose\n\
-You are in recovery mode. Do NOT start new work yet.\n\
-Required now: run diagnostics first (e.g. `pwd`, `ls`/`dir`, `git status`, `git rev-parse --show-toplevel`)."
-                ))
-            }
-            RecoveryStage::Fix => None, // allow edits/commands to fix
-            RecoveryStage::Verify => {
-                if allows_artifact_creation_during_verify(task_harness, tc)
-                    || allow_existing_followup_verify
-                {
-                    return None;
-                }
-                if name == "exec" {
-                    let cmd =
-                        parse_exec_command_from_args(tc.arguments.as_str()).unwrap_or_default();
-                    let verify_level = classify_verify_level(cmd.as_str(), test_cmd);
-                    if verify_level
-                        .map(|level| level.satisfies(self.required_verification))
-                        .unwrap_or(false)
-                    {
-                        return None;
-                    }
-                }
-                Some(format!(
-                    "[Recovery Gate] stage=verify\n\
-You already applied a fix. Verify before continuing.\n\
-Required now: {}",
-                    verification_requirement_hint(self.required_verification, test_cmd)
-                ))
-            }
-        }
-    }
-
-    fn on_diagnostic_result(&mut self, ok: bool) {
-        if !self.in_recovery() && !ok {
-            self.stage = Some(RecoveryStage::Diagnose);
-            return;
-        }
-        if !ok {
-            self.stage = Some(RecoveryStage::Diagnose);
-            return;
-        }
-        if self.stage == Some(RecoveryStage::Diagnose) {
-            self.stage = Some(RecoveryStage::Fix);
-        }
-    }
-
-    fn on_fix_result(&mut self, ok: bool, verified_level: Option<VerificationLevel>) {
-        if !self.in_recovery() && !ok {
-            self.stage = Some(RecoveryStage::Diagnose);
-            return;
-        }
-        if !ok {
-            self.stage = Some(RecoveryStage::Diagnose);
-            return;
-        }
-        if verified_level
-            .map(|level| level.satisfies(self.required_verification))
-            .unwrap_or(false)
-        {
-            self.stage = None;
-            return;
-        }
-        match self.stage {
-            Some(RecoveryStage::Diagnose) | Some(RecoveryStage::Fix) => {
-                self.stage = Some(RecoveryStage::Verify);
-            }
-            _ => {}
-        }
-    }
-
-    fn on_exec_result(
-        &mut self,
-        kind: ExecKind,
-        verify_level: Option<VerificationLevel>,
-        ok: bool,
-    ) {
-        if !ok {
-            self.stage = Some(RecoveryStage::Diagnose);
-            return;
-        }
-        if kind == ExecKind::Verify
-            && verify_level
-                .map(|level| level.satisfies(self.required_verification))
-                .unwrap_or(false)
-        {
-            // A successful verification ends recovery regardless of the current stage.
-            self.stage = None;
-            return;
-        }
-        match (self.stage, kind) {
-            (Some(RecoveryStage::Diagnose), ExecKind::Diagnostic) => {
-                self.stage = Some(RecoveryStage::Fix);
-            }
-            (Some(RecoveryStage::Fix), ExecKind::Action) => {
-                self.stage = Some(RecoveryStage::Verify);
-            }
-            _ => {}
-        }
-    }
-}
-
-#[derive(Debug, Default)]
-struct FailureMemory {
-    consecutive_failures: usize,
-
-    last_command_sig: Option<String>,
-    same_command_repeats: usize,
-
-    last_error_sig: Option<String>,
-    same_error_repeats: usize,
-
-    last_output_hash: Option<u64>,
-    same_output_repeats: usize,
-
-    last_error_class: ErrorClass,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -3488,20 +3261,21 @@ impl AssumptionLedger {
 
     fn from_messages(messages: &[serde_json::Value], working_mem: &WorkingMemory) -> Self {
         let mut ledger = Self::default();
+        let mut file_evidence = assumption_gate::FileExistenceReplay::default();
         for msg in messages {
-            if msg.get("role").and_then(|v| v.as_str()) != Some("assistant") {
-                continue;
+            if msg.get("role").and_then(|v| v.as_str()) == Some("assistant") {
+                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
+                if let Some(plan) = parse_plan_block(content).filter(|p| validate_plan(p).is_ok()) {
+                    ledger.sync_to_plan(&plan);
+                }
+                if let Some(reflect) = parse_reflection_block(content) {
+                    ledger.mark_refuted(
+                        reflect.wrong_assumption.as_str(),
+                        Some(reflect.next_minimal_action.as_str()),
+                    );
+                }
             }
-            let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-            if let Some(plan) = parse_plan_block(content).filter(|p| validate_plan(p).is_ok()) {
-                ledger.sync_to_plan(&plan);
-            }
-            if let Some(reflect) = parse_reflection_block(content) {
-                ledger.mark_refuted(
-                    reflect.wrong_assumption.as_str(),
-                    Some(reflect.next_minimal_action.as_str()),
-                );
-            }
+            file_evidence.observe(&mut ledger, msg);
         }
         ledger.refresh_confirmations(working_mem);
         ledger
@@ -3573,6 +3347,8 @@ impl WorkingMemory {
         }
 
         let mut mem = Self::default();
+        let exec_context =
+            exec_verification::ExecVerificationContext::from_messages(test_cmd, messages);
         let mut active_plan: Option<PlanBlock> = None;
         let mut pending: std::collections::HashMap<String, PendingToolIntent> =
             std::collections::HashMap::new();
@@ -3678,7 +3454,7 @@ impl WorkingMemory {
                     if effective_exit_code != 0 {
                         continue;
                     }
-                    let exec_kind = classify_exec_kind(command.as_str(), test_cmd);
+                    let exec_kind = exec_context.classify(command.as_str()).kind;
                     update_working_memory_after_exec(
                         &mut mem,
                         command.as_str(),
@@ -3694,7 +3470,10 @@ impl WorkingMemory {
                     if !non_exec_tool_succeeded(content) {
                         continue;
                     }
-                    let verified = content.contains("PASSED (exit 0)");
+                    let verified = crate::execution_evidence::auto_test_succeeded(
+                        intent.name.as_str(),
+                        content,
+                    );
                     update_working_memory_after_non_exec(
                         &mut mem,
                         intent.name.as_str(),
@@ -4616,58 +4395,6 @@ fn validate_impact(impact: &ImpactBlock, plan: Option<&PlanBlock>) -> Result<()>
     Ok(())
 }
 
-fn refuted_assumption_conflict(
-    ledger: &AssumptionLedger,
-    think: &ThinkBlock,
-    tc: &ToolCallData,
-) -> Option<String> {
-    let mut probe = format!("{} {}", think.goal, think.next);
-    if tc.name == "exec" {
-        if let Some(command) = parse_exec_command_from_args(tc.arguments.as_str()) {
-            probe.push(' ');
-            probe.push_str(command.as_str());
-        }
-    } else if let Some(path) = mutation_target_path(tc) {
-        probe.push(' ');
-        probe.push_str(path.as_str());
-    }
-
-    let probe_sig = normalize_memory_entry(probe.as_str());
-    let probe_tokens = keyword_tokens(probe.as_str());
-    if probe_sig.is_empty() && probe_tokens.is_empty() {
-        return None;
-    }
-
-    for entry in ledger
-        .entries
-        .iter()
-        .filter(|entry| entry.status == AssumptionStatus::Refuted)
-    {
-        let assumption_sig = normalize_memory_entry(entry.text.as_str());
-        let assumption_tokens = keyword_tokens(entry.text.as_str());
-        let overlap = token_overlap_score(&assumption_tokens, &probe_tokens);
-        let exec_retry = tc.name == "exec" && overlap >= 0.50;
-        if (!assumption_sig.is_empty()
-            && (probe_sig.contains(assumption_sig.as_str())
-                || assumption_sig.contains(probe_sig.as_str())))
-            || overlap >= 0.75
-            || exec_retry
-        {
-            let evidence_suffix = entry
-                .evidence
-                .as_deref()
-                .map(|evidence| format!(" ({evidence})"))
-                .unwrap_or_default();
-            return Some(governor_contract::assumption_refuted_reuse_message(
-                entry.text.as_str(),
-                evidence_suffix.as_str(),
-            ));
-        }
-    }
-
-    None
-}
-
 fn parse_string_list_arg(value: &serde_json::Value) -> Vec<String> {
     match value {
         serde_json::Value::Array(items) => items
@@ -5362,7 +5089,8 @@ fn collect_successful_auto_test_verification_commands(
     let Some(test_cmd) = test_cmd.map(str::trim).filter(|cmd| !cmd.is_empty()) else {
         return Vec::new();
     };
-    let mut pending_ids: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    let mut pending_ids: std::collections::BTreeMap<String, String> =
+        std::collections::BTreeMap::new();
     let mut commands = Vec::new();
 
     for msg in messages {
@@ -5387,7 +5115,7 @@ fn collect_successful_auto_test_verification_commands(
                     .unwrap_or("")
                     .trim();
                 if matches!(name, "write_file" | "patch_file" | "apply_diff") {
-                    pending_ids.insert(id.to_string());
+                    pending_ids.insert(id.to_string(), name.to_string());
                 }
             }
             continue;
@@ -5402,11 +5130,11 @@ fn collect_successful_auto_test_verification_commands(
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .trim();
-        if tool_call_id.is_empty() || !pending_ids.remove(tool_call_id) {
+        let Some(name) = pending_ids.remove(tool_call_id) else {
             continue;
-        }
+        };
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        if content.contains("PASSED (exit 0)") {
+        if crate::execution_evidence::auto_test_succeeded(&name, content) {
             remember_recent_unique(&mut commands, test_cmd, 8, 1024);
         }
     }
@@ -5437,6 +5165,7 @@ fn collect_known_acceptance_commands(
 
 fn maybe_build_verified_action_closeout_text(
     root_user_text: &str,
+    tool_root: Option<&str>,
     plan: Option<&PlanBlock>,
     messages: &[serde_json::Value],
     working_mem: &WorkingMemory,
@@ -5446,13 +5175,18 @@ fn maybe_build_verified_action_closeout_text(
     last_mutation_step: Option<usize>,
     last_verify_ok_step: Option<usize>,
 ) -> Option<String> {
+    if requires_authored_final_answer(root_user_text)
+        || exact_content::validate_exact_content_task(root_user_text, tool_root).is_err()
+    {
+        return None;
+    }
     if latest_assistant_message_is_done(messages) {
         return None;
     }
     if required_existing_followup_no_tool_hint(messages, root_user_text).is_some() {
         return None;
     }
-    if benchmark_plan_missing_required_exec_proof(root_user_text, messages) {
+    if benchmark_plan_missing_required_exec_proof(root_user_text, messages, test_cmd) {
         return None;
     }
 
@@ -5534,184 +5268,7 @@ fn extract_tag_block<'a>(text: &'a str, tag: &str) -> Option<&'a str> {
     let end = rest
         .find(&close)
         .or_else(|| rest.find(&format!("</{tag}")))?;
-    Some(rest[..end].trim())
-}
-
-fn parse_nested_tag_fields(body: &str) -> Vec<(String, String)> {
-    let mut out = Vec::new();
-    let mut cursor = 0usize;
-
-    while let Some(rel_open) = body[cursor..].find('<') {
-        let open_start = cursor + rel_open;
-        let name_start = open_start + 1;
-        let Some(rel_name_end) = body[name_start..].find('>') else {
-            break;
-        };
-        let name_end = name_start + rel_name_end;
-        let raw_name = body[name_start..name_end].trim();
-        if raw_name.is_empty()
-            || raw_name.starts_with('/')
-            || raw_name.contains(char::is_whitespace)
-            || raw_name.contains('=')
-        {
-            cursor = name_end + 1;
-            continue;
-        }
-
-        let close = format!("</{raw_name}>");
-        let value_start = name_end + 1;
-        let Some(rel_close_start) = body[value_start..].find(&close) else {
-            cursor = value_start;
-            continue;
-        };
-        let value_end = value_start + rel_close_start;
-        let value = body[value_start..value_end].trim();
-        if !value.is_empty() {
-            out.push((raw_name.to_ascii_lowercase(), value.to_string()));
-        }
-        cursor = value_end + close.len();
-    }
-
-    out
-}
-
-fn parse_tag_fields(body: &str) -> Vec<(String, String)> {
-    let nested = parse_nested_tag_fields(body);
-    if !nested.is_empty() {
-        return nested;
-    }
-
-    let bracketed = parse_bracket_quoted_fields(body);
-    if !bracketed.is_empty() {
-        return bracketed;
-    }
-
-    let mut out: Vec<(String, String)> = Vec::new();
-    let mut current_key: Option<String> = None;
-    let mut current_value = String::new();
-
-    for raw_line in body.lines() {
-        let line = raw_line.trim();
-        if let Some((k, v)) = line.split_once(':') {
-            if let Some(key) = current_key.take() {
-                out.push((key, current_value.trim().to_string()));
-            }
-            current_key = Some(k.trim().to_ascii_lowercase());
-            current_value = v.trim().to_string();
-            continue;
-        }
-
-        if current_key.is_some() && !line.is_empty() {
-            if !current_value.is_empty() {
-                current_value.push(' ');
-            }
-            current_value.push_str(line);
-        }
-    }
-
-    if let Some(key) = current_key {
-        out.push((key, current_value.trim().to_string()));
-    }
-
-    out
-}
-
-fn canonical_loose_tag_key(raw_key: &str) -> Option<String> {
-    const FIELDS: &[&str] = &[
-        "next_minimal_action",
-        "wrong_assumption",
-        "strategy_change",
-        "acceptance",
-        "assumptions",
-        "last_outcome",
-        "remaining_gap",
-        "goal_delta",
-        "progress",
-        "changed",
-        "verify",
-        "reason",
-        "steps",
-        "risks",
-        "doubt",
-        "goal",
-        "step",
-        "tool",
-        "risk",
-        "next",
-    ];
-
-    let key = raw_key.trim().to_ascii_lowercase();
-    if key.is_empty() {
-        return None;
-    }
-    for field in FIELDS {
-        if key == *field || key.ends_with(field) {
-            return Some((*field).to_string());
-        }
-    }
-    None
-}
-
-fn parse_bracket_quoted_fields(body: &str) -> Vec<(String, String)> {
-    let normalized = body.replace("\r\n", "\n").replace('\n', " ");
-    let chars: Vec<char> = normalized.chars().collect();
-    let mut out = Vec::new();
-    let mut i = 0usize;
-
-    while i < chars.len() {
-        while i < chars.len() && !(chars[i].is_ascii_alphabetic() || chars[i] == '_') {
-            i += 1;
-        }
-        if i >= chars.len() {
-            break;
-        }
-        let start = i;
-        while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
-            i += 1;
-        }
-        let raw_key: String = chars[start..i].iter().collect();
-        let Some(key) = canonical_loose_tag_key(&raw_key) else {
-            continue;
-        };
-
-        while i < chars.len() && chars[i].is_ascii_whitespace() {
-            i += 1;
-        }
-        if i + 1 >= chars.len() || chars[i] != '[' || chars[i + 1] != '"' {
-            continue;
-        }
-        i += 2;
-
-        let mut value = String::new();
-        let mut escaped = false;
-        while i < chars.len() {
-            let ch = chars[i];
-            if escaped {
-                value.push(ch);
-                escaped = false;
-                i += 1;
-                continue;
-            }
-            if ch == '\\' {
-                escaped = true;
-                i += 1;
-                continue;
-            }
-            if ch == '"' && i + 1 < chars.len() && chars[i + 1] == ']' {
-                i += 2;
-                break;
-            }
-            value.push(ch);
-            i += 1;
-        }
-
-        let value = compact_one_line(value.trim(), 300);
-        if !value.is_empty() {
-            out.push((key, value));
-        }
-    }
-
-    out
+    Some(rest[..end].trim_end())
 }
 
 fn parse_first_usize(s: &str) -> Option<usize> {
@@ -5830,7 +5387,7 @@ fn parse_block_fields(text: &str, tag: &str) -> Option<BTreeMap<String, ParsedBl
     let body = extract_tag_block(text, tag)?;
     let mut out = BTreeMap::new();
 
-    for (raw_key, raw_value) in parse_tag_fields(body) {
+    for (raw_key, raw_value) in parse_tag_fields(body, tag) {
         let Some(field) = governor_contract::block_field(tag, raw_key.as_str()) else {
             continue;
         };
@@ -6310,136 +5867,6 @@ fn last_impact_step_from_messages(messages: &[serde_json::Value]) -> Option<usiz
     last_impact_step
 }
 
-fn restore_done_gate_from_messages(
-    messages: &[serde_json::Value],
-    test_cmd: Option<&str>,
-) -> (
-    usize,
-    Option<usize>,
-    Option<usize>,
-    Option<usize>,
-    Option<usize>,
-) {
-    // step_seq counts tool results (role=tool) so we can compare "mutation happened after verify"
-    // even across resumed sessions.
-    let mut step_seq: usize = 0;
-    let mut last_mutation_step: Option<usize> = None;
-    let mut last_build_verify_ok_step: Option<usize> = None;
-    let mut last_behavioral_verify_ok_step: Option<usize> = None;
-    let mut last_exec_step: Option<usize> = None;
-
-    // Map tool_call_id -> (tool_name, exec_command?)
-    let mut by_id: std::collections::HashMap<String, (String, Option<String>)> =
-        std::collections::HashMap::new();
-
-    for msg in messages {
-        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-        if role == "assistant" {
-            let Some(tcs) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                continue;
-            };
-            for tc in tcs {
-                let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                if id.is_empty() {
-                    continue;
-                }
-                let name = tc
-                    .get("function")
-                    .and_then(|f| f.get("name"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim()
-                    .to_string();
-                let args = tc
-                    .get("function")
-                    .and_then(|f| f.get("arguments"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim()
-                    .to_string();
-                let cmd = if name == "exec" {
-                    parse_exec_command_from_args(&args)
-                } else {
-                    None
-                };
-                by_id.insert(id.to_string(), (name, cmd));
-            }
-            continue;
-        }
-
-        if role != "tool" {
-            continue;
-        }
-
-        step_seq = step_seq.saturating_add(1);
-
-        let id = msg
-            .get("tool_call_id")
-            .and_then(|v| v.as_str())
-            .unwrap_or("")
-            .trim();
-        if id.is_empty() {
-            continue;
-        }
-        let Some((name, cmd)) = by_id.remove(id) else {
-            continue;
-        };
-        let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-
-        if name == "exec" {
-            last_exec_step = Some(step_seq);
-            let (exit_code, stdout, stderr) = parse_exec_tool_output_sections(content);
-            let Some(exit_code) = exit_code else {
-                continue;
-            };
-            let cmd = cmd.unwrap_or_default();
-            let verify_level = classify_verify_level(&cmd, test_cmd);
-            let kind = classify_exec_kind(&cmd, test_cmd);
-            if exit_code == 0 && suspicious_success_reason(&stdout, &stderr).is_none() {
-                match kind {
-                    ExecKind::Action => last_mutation_step = Some(step_seq),
-                    ExecKind::Verify => match verify_level {
-                        Some(VerificationLevel::Build) => {
-                            last_build_verify_ok_step = Some(step_seq)
-                        }
-                        Some(VerificationLevel::Behavioral) => {
-                            last_behavioral_verify_ok_step = Some(step_seq)
-                        }
-                        None => {}
-                    },
-                    ExecKind::Diagnostic => {}
-                }
-            }
-            continue;
-        }
-
-        if matches!(name.as_str(), "write_file" | "patch_file" | "apply_diff") {
-            // Successful edits always append a hash line.
-            if content.contains("[hash]") {
-                last_mutation_step = Some(step_seq);
-            }
-            // Auto-test success (if configured) also counts as verification.
-            if content.contains("PASSED (exit 0)") {
-                match configured_test_cmd_verification_level(test_cmd) {
-                    Some(VerificationLevel::Build) => last_build_verify_ok_step = Some(step_seq),
-                    Some(VerificationLevel::Behavioral) => {
-                        last_behavioral_verify_ok_step = Some(step_seq)
-                    }
-                    None => {}
-                }
-            }
-        }
-    }
-
-    (
-        step_seq,
-        last_mutation_step,
-        last_build_verify_ok_step,
-        last_behavioral_verify_ok_step,
-        last_exec_step,
-    )
-}
-
 fn validate_plan(plan: &PlanBlock) -> Result<()> {
     if plan.goal.trim().is_empty() {
         return Err(anyhow!(governor_contract::plan_missing_goal_message()));
@@ -6632,9 +6059,7 @@ fn validate_reflection(
         ));
     }
 
-    let repeated_failure = mem.same_error_repeats >= 2
-        || mem.same_command_repeats >= 3
-        || mem.same_output_repeats >= 2;
+    let repeated_failure = mem.repeated_failure_or_stall();
     let repeated_failure = repeated_failure || file_tool_consec_failures >= 2;
 
     if repeated_failure && r.strategy_change == StrategyChange::Keep {
@@ -6752,25 +6177,6 @@ fn build_governor_state(
     }
 }
 
-fn last_tool_looks_failed(messages: &[serde_json::Value]) -> bool {
-    let Some(last_tool) = messages
-        .iter()
-        .rev()
-        .find(|m| m.get("role").and_then(|v| v.as_str()) == Some("tool"))
-    else {
-        return false;
-    };
-    let content = last_tool
-        .get("content")
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
-    let low = content.to_ascii_lowercase();
-    low.contains("failed (exit_code:")
-        || low.contains("governor blocked")
-        || low.contains("rejected by user")
-        || low.contains("[result_file_err]")
-}
-
 fn is_diagnostic_tool_name(name: &str) -> bool {
     governor_contract::diagnostic_tool_names()
         .iter()
@@ -6792,11 +6198,7 @@ fn has_project_rules_context(messages: &[serde_json::Value]) -> bool {
 }
 
 fn is_diagnostic_command(command: &str) -> bool {
-    let sig = command_sig(command);
-    signature_matches_any(
-        sig.as_str(),
-        governor_contract::instruction_resolver_diagnostic_exec_signatures(),
-    )
+    exec_classification::is_diagnostic(command)
 }
 
 fn verification_examples(level: VerificationLevel) -> String {
@@ -6848,45 +6250,8 @@ fn verification_examples(level: VerificationLevel) -> String {
     }
 }
 
-fn verification_level_from_signature(sig: &str) -> Option<VerificationLevel> {
-    let verification = governor_contract::verification();
-    if signature_matches_any(sig, &verification.ignore_command_signatures) {
-        return None;
-    }
-    if signature_matches_any(sig, &verification.behavioral_command_signatures) {
-        return Some(VerificationLevel::Behavioral);
-    }
-
-    if signature_matches_any(sig, &verification.build_command_signatures) {
-        return Some(VerificationLevel::Build);
-    }
-
-    None
-}
-
 fn configured_test_cmd_verification_level(test_cmd: Option<&str>) -> Option<VerificationLevel> {
-    let sig = command_sig_full(test_cmd.unwrap_or(""));
-    if sig.is_empty() {
-        return None;
-    }
-    if signature_matches_any(
-        &sig,
-        &governor_contract::verification().ignore_command_signatures,
-    ) {
-        return None;
-    }
-    verification_level_from_signature(&sig).or(Some(VerificationLevel::Behavioral))
-}
-
-fn command_has_failure_suppression(sig: &str) -> bool {
-    let normalized = sig.trim();
-    !normalized.is_empty()
-        && (normalized.contains("|| true")
-            || normalized.contains("|| :")
-            || normalized.contains("|| exit 0")
-            || normalized.contains("; true")
-            || normalized.contains("; :")
-            || normalized.contains("; exit 0"))
+    exec_classification::configured_level(test_cmd)
 }
 
 fn verification_requirement_hint(level: VerificationLevel, test_cmd: Option<&str>) -> String {
@@ -6954,37 +6319,15 @@ fn should_emit_verification_requirement_prompt(
 }
 
 fn classify_verify_level(command: &str, test_cmd: Option<&str>) -> Option<VerificationLevel> {
-    let c = command_sig_full(command);
-    if c.is_empty() {
-        return None;
-    }
-    if command_has_failure_suppression(&c) {
-        return None;
-    }
-    if let Some(level) = verification_level_from_signature(&c) {
-        return Some(level);
-    }
-    if let Some(t) = test_cmd {
-        let t_sig = command_sig_full(t);
-        if !t_sig.is_empty() && c == t_sig {
-            return configured_test_cmd_verification_level(Some(t));
-        }
-    }
-    None
-}
-
-fn is_verify_command(command: &str, test_cmd: Option<&str>) -> bool {
-    classify_verify_level(command, test_cmd).is_some()
+    exec_classification::verify_level(command, test_cmd)
 }
 
 fn classify_exec_kind(command: &str, test_cmd: Option<&str>) -> ExecKind {
-    if is_verify_command(command, test_cmd) {
-        return ExecKind::Verify;
-    }
-    if is_diagnostic_command(command) {
-        return ExecKind::Diagnostic;
-    }
-    ExecKind::Action
+    exec_classification::classify(command, test_cmd)
+}
+
+pub(crate) fn exec_may_mutate_for_evaluation(command: &str, test_cmd: Option<&str>) -> bool {
+    matches!(classify_exec_kind(command, test_cmd), ExecKind::Action)
 }
 
 fn normalize_for_signature_with_limit(s: &str, max_len: usize) -> String {
@@ -7011,12 +6354,6 @@ fn text_contains_any(haystack: &str, terms: &[String]) -> bool {
     terms
         .iter()
         .any(|term| !term.is_empty() && haystack.contains(term))
-}
-
-fn signature_matches_any(sig: &str, signatures: &[String]) -> bool {
-    signatures
-        .iter()
-        .any(|pattern| !pattern.is_empty() && sig.contains(pattern))
 }
 
 fn goal_check_max_attempts() -> usize {
@@ -7383,7 +6720,7 @@ Fix: `cd` into the intended repo before `git add .`, or add the nested repo dir 
         && cmd_low.contains("cargo")
     {
         return Some(
-            "Rust build failed because `obstral.exe` is locked.\n\
+            "Rust build failed because `spiral-coder.exe` is locked.\n\
 Fix: stop the running process (or close the TUI/serve), then rebuild.\n\
 Tip (Windows): use `scripts/run-tui.ps1` / `scripts/run-ui.ps1` which build in an isolated CARGO_TARGET_DIR and auto-kill old processes."
                 .to_string(),
@@ -7859,175 +7196,6 @@ fn extract_implied_write_files(text: &str) -> Vec<ImpliedWriteFile> {
     out
 }
 
-impl FailureMemory {
-    fn from_recent_messages(messages: &[serde_json::Value]) -> Self {
-        let mut mem = FailureMemory::default();
-
-        // Map tool_call_id -> command for exec calls.
-        let mut exec_by_id: std::collections::HashMap<String, String> =
-            std::collections::HashMap::new();
-
-        for msg in messages {
-            let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
-
-            if role == "assistant" {
-                let Some(tcs) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                    continue;
-                };
-                for tc in tcs {
-                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                    if id.is_empty() {
-                        continue;
-                    }
-                    let name = tc
-                        .get("function")
-                        .and_then(|f| f.get("name"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if name != "exec" {
-                        continue;
-                    }
-                    let args = tc
-                        .get("function")
-                        .and_then(|f| f.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if let Some(cmd) = parse_exec_command_from_args(args) {
-                        exec_by_id.insert(id.to_string(), cmd);
-                    }
-                }
-                continue;
-            }
-
-            if role == "tool" {
-                let tcid = msg
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim();
-                if tcid.is_empty() {
-                    continue;
-                }
-                let Some(command) = exec_by_id.remove(tcid) else {
-                    continue;
-                };
-                let content = msg
-                    .get("content")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let (exit_code, stdout, stderr) = parse_exec_tool_output_sections(&content);
-                let Some(mut effective_exit_code) = exit_code else {
-                    continue;
-                };
-                if effective_exit_code == 0
-                    && suspicious_success_reason(stdout.as_str(), stderr.as_str()).is_some()
-                {
-                    effective_exit_code = 1;
-                }
-                let _ = mem.on_tool_result(
-                    command.as_str(),
-                    stdout.as_str(),
-                    stderr.as_str(),
-                    effective_exit_code,
-                );
-            }
-        }
-
-        mem
-    }
-
-    fn on_tool_result(
-        &mut self,
-        command: &str,
-        stdout: &str,
-        stderr: &str,
-        effective_exit_code: i32,
-    ) -> Option<String> {
-        // Track repeated identical commands (common loop symptom).
-        let cmd_sig = command_sig(command);
-        if self.last_command_sig.as_deref() == Some(&cmd_sig) {
-            self.same_command_repeats = self.same_command_repeats.saturating_add(1);
-        } else {
-            self.last_command_sig = Some(cmd_sig);
-            self.same_command_repeats = 1;
-        }
-
-        // Track output hash (stuck detection).
-        let oh = hash_output(stdout, stderr);
-        if self.last_output_hash == Some(oh) {
-            self.same_output_repeats = self.same_output_repeats.saturating_add(1);
-        } else {
-            self.last_output_hash = Some(oh);
-            self.same_output_repeats = 1;
-        }
-
-        if effective_exit_code == 0 {
-            self.consecutive_failures = 0;
-            self.last_error_sig = None;
-            self.same_error_repeats = 0;
-            self.last_error_class = ErrorClass::Unknown;
-            return None;
-        }
-
-        self.consecutive_failures = self.consecutive_failures.saturating_add(1);
-        self.last_error_class = classify_error(stderr, stdout);
-
-        let sig = error_signature(command, stdout, stderr, effective_exit_code);
-        if self.last_error_sig.as_deref() == Some(&sig) {
-            self.same_error_repeats = self.same_error_repeats.saturating_add(1);
-        } else {
-            self.last_error_sig = Some(sig);
-            self.same_error_repeats = 1;
-        }
-
-        // Emit hints only when crossing key thresholds to avoid spamming context.
-        if self.same_error_repeats == 2 {
-            if let Some(h) = hint_for_known_failure(command, stdout, stderr) {
-                return Some(h);
-            }
-            return Some(
-                "The SAME error happened twice.\n\
-Action: stop repeating; gather diagnostics (`pwd`, `ls`, `git status`) then change strategy."
-                    .to_string(),
-            );
-        }
-
-        if self.same_command_repeats == 3 {
-            return Some(
-                "You ran the SAME command 3 times.\n\
-Action: abandon this approach and try a different strategy (different cwd, different command, or add diagnostics)."
-                    .to_string(),
-            );
-        }
-
-        if self.consecutive_failures >= 3 {
-            let class_ctx = error_class_hint(&self.last_error_class);
-            let context = if class_ctx.is_empty() {
-                String::new()
-            } else {
-                format!("\nLast error type: {class_ctx}")
-            };
-            return Some(format!(
-                "3 consecutive failures.{context}\n\
-Action: change strategy now; do NOT retry the same approach again."
-            ));
-        }
-
-        if self.same_output_repeats >= 2 && self.same_command_repeats >= 2 {
-            return Some(
-                "Stuck detected: repeated identical output.\n\
-Action: print diagnostics and change strategy; do not repeat the same command."
-                    .to_string(),
-            );
-        }
-
-        None
-    }
-}
-
 fn parse_exec_command_from_args(args: &str) -> Option<String> {
     // Standard tool schema uses JSON arguments: {"command":"...","cwd":"..."}.
     if let Ok(v) = serde_json::from_str::<serde_json::Value>(args) {
@@ -8128,7 +7296,7 @@ async fn git_create_checkpoint(root: &str) -> Option<String> {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let msg = format!("obstral: pre-session checkpoint {epoch}");
+    let msg = format!("spiral-coder: pre-session checkpoint {epoch}");
     let _ = run_git_cmd(root, &["commit", "--allow-empty", "-m", &msg]).await;
 
     // Return the new HEAD hash.
@@ -8506,11 +7674,11 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         done_tool_def(),
     ]);
     let mut state = AgentState::Planning;
+    let mut task_outcome = outcome::TaskOutcome::default();
     let mut pending_system_hint: Option<String> = None;
     let mut reflection_required: Option<String> = None;
     let mut impact_required: Option<String> = None;
     let mut reflection_trigger_sig: Option<String> = None;
-    let mut last_reflection: Option<ReflectionBlock> = None;
     let mut reflection_guard: Option<ReflectionBlock> = None;
     let mut forced_tool_once = false;
     let mut tool_calls_this_run: usize = 0;
@@ -8530,6 +7698,8 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let root_user_text_low = root_user_text.to_ascii_lowercase();
     let root_read_only = is_root_read_only_observation_task(&root_user_text);
     let task_harness = TaskHarness::infer(&root_user_text, root_read_only);
+    let exec_verification_context =
+        exec_verification::ExecVerificationContext::from_root(test_cmd.as_deref(), &root_user_text);
     let progress_context = crate::progress_state::ProgressSaveContext::new(
         &root_user_text,
         task_harness.lane_label(),
@@ -8584,7 +7754,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut path_required_verification =
         upgrade_required_verification_from_messages(&messages, VerificationLevel::Build);
     let mut required_verification = intent_required_verification.max(path_required_verification);
-    last_reflection = last_reflection_from_messages(&messages);
+    let mut last_reflection = last_reflection_from_messages(&messages);
     let mut working_mem = WorkingMemory::from_messages(&messages, test_cmd.as_deref());
     let mut assumption_ledger = AssumptionLedger::from_messages(&messages, &working_mem);
     if let Some(plan) = active_plan.as_ref() {
@@ -8705,7 +7875,7 @@ Execute only the new minimal action: {}",
     let progress_state = if let Some(path) = progress_state_path.as_ref() {
         match crate::progress_state::RepoProgressState::load(path) {
             Ok(progress) => Some(progress),
-            Err(e) if !path.exists() => None,
+            Err(_) if !path.exists() => None,
             Err(e) => {
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -8841,18 +8011,18 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
             }
         }
     }
-    // AGENTS.md / .obstral.md — project-specific rules injected right after project context.
+    // AGENTS.md / .spiral-coder.md — project-specific rules injected right after project context.
     // These take precedence over generic instructions and can override coding conventions.
     if let Some(agents_text) = agents_md {
         if !agents_text.is_empty() {
             if !has_system_prefix(
                 &messages,
-                "[Project Instructions — .obstral.md / AGENTS.md]",
+                "[Project Instructions — .spiral-coder.md / AGENTS.md]",
             ) {
                 let pos = messages.len().min(3);
                 messages.insert(pos, json!({
                     "role": "system",
-                    "content": format!("[Project Instructions — .obstral.md / AGENTS.md]\n{agents_text}")
+                    "content": format!("[Project Instructions — .spiral-coder.md / AGENTS.md]\n{agents_text}")
                 }));
             }
         }
@@ -8906,6 +8076,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
 
         if let Some(final_text) = maybe_build_verified_action_closeout_text(
             &root_user_text,
+            tool_root_abs.as_deref(),
             active_plan.as_ref(),
             &messages,
             &working_mem,
@@ -8915,6 +8086,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
             last_mutation_step,
             last_verify_ok_step,
         ) {
+            task_outcome.finalized(&final_text);
             state = AgentState::Done;
             let final_text = enrich_text_final_handoff(
                 final_text.as_str(),
@@ -9583,6 +8755,7 @@ This is the LAST model call for this run.\n\
                 task_harness,
                 &messages,
                 &root_user_text,
+                recovery.stage,
             ) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -9620,6 +8793,8 @@ This is the LAST model call for this run.\n\
                 &messages,
                 &root_user_text,
                 tool_root_abs.as_deref(),
+                recovery.stage,
+                test_cmd.as_deref(),
             ) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -9702,6 +8877,14 @@ This is the LAST model call for this run.\n\
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                                 .await;
+                            impact_recovery::emit_rejection(
+                                &tx,
+                                "reflection",
+                                &msg,
+                                &tool_calls,
+                                &assistant_text,
+                            )
+                            .await;
                             pending_system_hint = Some(msg);
                             state = AgentState::Recovery;
                             reflection_required = Some(reason);
@@ -9712,6 +8895,14 @@ This is the LAST model call for this run.\n\
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                             .await;
+                        impact_recovery::emit_rejection(
+                            &tx,
+                            "reflection",
+                            &msg,
+                            &tool_calls,
+                            &assistant_text,
+                        )
+                        .await;
                         pending_system_hint = Some(msg);
                         state = AgentState::Recovery;
                         reflection_required = Some(reason);
@@ -9726,6 +8917,14 @@ This is the LAST model call for this run.\n\
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(
+                    &tx,
+                    "reflection",
+                    &msg,
+                    &tool_calls,
+                    &assistant_text,
+                )
+                .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 reflection_required = Some(reason);
@@ -9737,6 +8936,14 @@ This is the LAST model call for this run.\n\
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(
+                    &tx,
+                    "reflection",
+                    &msg,
+                    &tool_calls,
+                    &assistant_text,
+                )
+                .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 reflection_required = Some(reason);
@@ -9831,6 +9038,11 @@ Execute only the new minimal action: {}",
         }
 
         if let Some(reason) = impact_required.clone() {
+            let pending_mutation = impact_recovery::UnreviewedMutation::from_steps(
+                last_mutation_step,
+                last_impact_step,
+            );
+            let mut restored_impact_plan = false;
             let impact_plan = parse_plan_block(&assistant_text)
                 .filter(|plan| {
                     validate_plan_for_task_contract(
@@ -9841,7 +9053,57 @@ Execute only the new minimal action: {}",
                     )
                     .is_ok()
                 })
-                .or_else(|| active_plan.clone());
+                .or_else(|| active_plan.clone())
+                .or_else(|| {
+                    let [tc] = tool_calls.as_slice() else {
+                        return None;
+                    };
+                    let plan = impact_recovery::benchmark_resume_plan(
+                        pending_mutation,
+                        task_harness,
+                        tc,
+                        &root_user_text,
+                        required_verification,
+                        test_cmd.as_deref(),
+                    )?;
+                    validate_plan_for_task_contract(
+                        &plan,
+                        root_read_only,
+                        &task_contract,
+                        &instruction_resolver,
+                    )
+                    .ok()?;
+                    restored_impact_plan = true;
+                    Some(plan)
+                });
+            // Keep the contract-validated plan before impact can reject this
+            // turn, so the next request exposes the same accepted step labels.
+            if restored_impact_plan {
+                if let Some(plan) = impact_plan.as_ref() {
+                    adopt_valid_plan(
+                        plan,
+                        &mut working_mem,
+                        &mut assumption_ledger,
+                        &mut active_plan,
+                        &mut intent_required_verification,
+                        path_required_verification,
+                        &mut required_verification,
+                        &mut recovery,
+                        &mut last_verify_ok_step,
+                        last_build_verify_ok_step,
+                        last_behavioral_verify_ok_step,
+                    );
+                    emit_telemetry_event(
+                        &tx,
+                        "impact_resume_plan_restored",
+                        json!({
+                            "mutation_step": pending_mutation.map(|pending| pending.step),
+                            "lane": task_harness.lane_label(),
+                        }),
+                    )
+                    .await;
+                }
+            }
             let impact = match parse_impact_block(&assistant_text) {
                 Some(impact) => impact,
                 None => {
@@ -9853,6 +9115,7 @@ Execute only the new minimal action: {}",
                             goal_wants_actions,
                             cfg.provider.clone(),
                             impact_plan.as_ref(),
+                            pending_mutation,
                         ) {
                             let _ = tx
                                 .send(StreamToken::Delta(
@@ -9866,6 +9129,14 @@ Execute only the new minimal action: {}",
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                                 .await;
+                            impact_recovery::emit_rejection(
+                                &tx,
+                                "impact",
+                                &msg,
+                                &tool_calls,
+                                &assistant_text,
+                            )
+                            .await;
                             pending_system_hint = Some(msg);
                             state = AgentState::Recovery;
                             impact_required = Some(reason);
@@ -9876,6 +9147,14 @@ Execute only the new minimal action: {}",
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                             .await;
+                        impact_recovery::emit_rejection(
+                            &tx,
+                            "impact",
+                            &msg,
+                            &tool_calls,
+                            &assistant_text,
+                        )
+                        .await;
                         pending_system_hint = Some(msg);
                         state = AgentState::Recovery;
                         impact_required = Some(reason);
@@ -9890,6 +9169,8 @@ Execute only the new minimal action: {}",
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                     .await;
+                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
+                    .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
                 impact_required = Some(reason);
@@ -9900,6 +9181,8 @@ Execute only the new minimal action: {}",
                 let msg = governor_contract::impact_one_tool_message(tool_calls.len());
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
+                    .await;
+                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
                     .await;
                 pending_system_hint = Some(msg);
                 state = AgentState::Recovery;
@@ -9939,6 +9222,8 @@ Execute only the new minimal action: {}",
             let msg = governor_contract::multiple_tool_calls_message(tool_calls.len());
             let _ = tx
                 .send(StreamToken::Delta(format!("\n[governor] {msg}\n")))
+                .await;
+            impact_recovery::emit_rejection(&tx, "single_tool", &msg, &tool_calls, &assistant_text)
                 .await;
             pending_system_hint = Some(msg);
             state = AgentState::Recovery;
@@ -10033,6 +9318,8 @@ Execute only the new minimal action: {}",
                 tc,
                 &root_user_text,
                 tool_root_abs.as_deref(),
+                recovery.stage,
+                test_cmd.as_deref(),
             ) {
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -10089,6 +9376,7 @@ Execute only the new minimal action: {}",
                     &messages,
                     tc,
                     &root_user_text,
+                    recovery.stage,
                 )
             {
                 let _ = tx
@@ -10151,6 +9439,7 @@ Execute only the new minimal action: {}",
                         &messages,
                         tc,
                         &root_user_text,
+                        recovery.stage,
                     )
                 {
                     let _ = tx
@@ -10843,6 +10132,7 @@ Execute only the new minimal action: {}",
                     &messages,
                     &working_mem,
                 ) {
+                    task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     let final_text = enrich_text_final_handoff(
                         final_text.as_str(),
@@ -10886,7 +10176,12 @@ Execute only the new minimal action: {}",
                 &collect_known_acceptance_commands(&messages, &working_mem, test_cmd.as_deref()),
                 &observation_evidence,
             );
-            if benchmark_plan_pending_required_exec_command(&root_user_text, &messages).is_none()
+            if benchmark_plan_pending_required_exec_command(
+                &root_user_text,
+                &messages,
+                test_cmd.as_deref(),
+            )
+            .is_none()
                 && should_prefer_done_after_verified_action(
                     tc,
                     &candidate_plan,
@@ -10906,7 +10201,16 @@ Execute only the new minimal action: {}",
                     test_cmd.as_deref(),
                     last_mutation_step,
                     last_verify_ok_step,
-                ) {
+                )
+                .filter(|_| {
+                    !requires_authored_final_answer(&root_user_text)
+                        && exact_content::validate_exact_content_task(
+                            &root_user_text,
+                            tool_root_abs.as_deref(),
+                        )
+                        .is_ok()
+                }) {
+                    task_outcome.finalized(&final_text);
                     state = AgentState::Done;
                     messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                     autosave_best_effort(
@@ -10939,13 +10243,17 @@ Execute only the new minimal action: {}",
                 }
 
                 state = AgentState::Recovery;
-                let block = build_post_verify_done_completion_hint(
+                let mut block = build_post_verify_done_completion_hint(
                     &candidate_plan,
                     &known_acceptance_commands,
                     tc,
                     required_verification,
                     test_cmd.as_deref(),
                 );
+                if let Some(hint) = authored_final_answer_hint(&root_user_text) {
+                    block.push_str("\n\n");
+                    block.push_str(&hint);
+                }
 
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -11095,7 +10403,12 @@ Execute only the new minimal action: {}",
                 continue;
             }
 
-            if let Some(conflict) = refuted_assumption_conflict(&assumption_ledger, think, tc) {
+            if let Some(conflict) = refuted_assumption_conflict(
+                &assumption_ledger,
+                think,
+                tc,
+                &exec_verification_context,
+            ) {
                 state = AgentState::Recovery;
                 recovery.stage = Some(RecoveryStage::Diagnose);
                 let block = format!(
@@ -12455,6 +11768,11 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         continue;
                     }
                     if ran_goal_checks {
+                        task_outcome.verified_goal_checks(&[
+                            (wants_repo_goal, goal_checks.repo.ok),
+                            (wants_test_goal, goal_checks.tests.ok),
+                            (wants_build_goal, goal_checks.build.ok),
+                        ]);
                         state = AgentState::Done;
                         let _ = tx
                             .send(StreamToken::Delta(format!(
@@ -12486,6 +11804,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                 &messages,
                 &working_mem,
             ) {
+                task_outcome.finalized(&final_text);
                 state = AgentState::Done;
                 messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                 autosave_best_effort(
@@ -12765,6 +12084,9 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             .unwrap_or_else(|| {
                                 format!("{}|{}", path, tool_root_abs.as_deref().unwrap_or(""))
                             });
+                            if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
+                                file_cache.remove(&cache_key);
+                            }
                             let (result, is_error) =
                                 if let Some(cached) = file_cache.get(&cache_key) {
                                     let header =
@@ -12833,6 +12155,12 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                 observation_evidence
                                     .remember_read(command.as_str(), observed_path.as_str());
                                 sync_observation_cache_autosave(&autosaver, &observation_evidence);
+                                assumption_gate::confirm_file_existence_after_result(
+                                    &mut assumption_ledger,
+                                    "read_file",
+                                    &path,
+                                    &result,
+                                );
                                 assumption_ledger.refresh_confirmations(&working_mem);
                                 pending_system_hint = active_plan.as_ref().and_then(|plan| {
                                     build_read_only_completion_hint(
@@ -13148,9 +12476,11 @@ Required now: {}",
                 continue;
             }
 
-            if let Some(command) =
-                benchmark_plan_pending_required_exec_command(&root_user_text, &messages)
-            {
+            if let Some(command) = benchmark_plan_pending_required_exec_command(
+                &root_user_text,
+                &messages,
+                test_cmd.as_deref(),
+            ) {
                 state = AgentState::Recovery;
                 recovery.stage = Some(RecoveryStage::Verify);
                 let block = format!(
@@ -13281,6 +12611,7 @@ Required now: run `{command}`."
                                     &messages,
                                     &working_mem,
                                 ) {
+                                    task_outcome.finalized(&final_text);
                                     state = AgentState::Done;
                                     messages.push(json!({
                                         "role": "tool",
@@ -13416,6 +12747,60 @@ Required now: run `{command}`."
                 final_text.push_str(next_steps);
             }
 
+            let exact_content_error = exact_content::validate_exact_content_task(
+                &root_user_text,
+                tool_root_abs.as_deref(),
+            )
+            .err();
+            let needs_artifact_repair = exact_content_error.is_some();
+            let handoff_error = exact_content_error.or_else(|| {
+                if root_read_only {
+                    None
+                } else {
+                    validate_authored_done_summary(
+                        &root_user_text,
+                        summary,
+                        &final_text,
+                        &messages,
+                        test_cmd.as_deref(),
+                    )
+                    .err()
+                }
+            });
+            if let Some(block) = handoff_error {
+                state = AgentState::Recovery;
+                if needs_artifact_repair {
+                    // A line-oriented test cannot override a failed exact-byte contract.
+                    last_build_verify_ok_step = None;
+                    last_behavioral_verify_ok_step = None;
+                    last_verify_ok_step = None;
+                    recovery.stage = Some(RecoveryStage::Fix);
+                }
+                messages.push(json!({
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": format!("GOVERNOR BLOCKED\n\n{block}"),
+                }));
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                let _ = tx
+                    .send(StreamToken::Delta(format!(
+                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                    )))
+                    .await;
+                pending_system_hint = Some(block);
+                continue;
+            }
+
+            task_outcome.accept_done(&remaining_acceptance);
+
             // Close out the tool call so session JSON remains valid on resume.
             messages.push(json!({
                 "role": "tool",
@@ -13451,6 +12836,7 @@ Required now: run `{command}`."
             &tc,
             &root_user_text,
             tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
         );
         if let Some(block) = recovery.maybe_block_tool(
             &tc,
@@ -13583,7 +12969,10 @@ Required now: run `{command}`."
                 }
             }
 
-            let verified = result.contains("PASSED (exit 0)");
+            let automatic_test =
+                crate::execution_evidence::auto_test_outcome("apply_diff", &result);
+            let verified =
+                !is_error && automatic_test == crate::execution_evidence::AutoTestOutcome::Passed;
             let verified_level = if verified {
                 configured_test_cmd_verification_level(test_cmd.as_deref())
             } else {
@@ -13592,21 +12981,23 @@ Required now: run `{command}`."
             if is_error {
                 recovery.on_fix_result(false, None);
             } else {
-                last_mutation_step = Some(this_step);
-                if let Some(level) = verified_level {
-                    match level {
-                        VerificationLevel::Build => last_build_verify_ok_step = Some(this_step),
-                        VerificationLevel::Behavioral => {
-                            last_behavioral_verify_ok_step = Some(this_step)
-                        }
-                    }
-                    last_verify_ok_step = effective_verify_ok_step(
-                        required_verification,
-                        last_build_verify_ok_step,
-                        last_behavioral_verify_ok_step,
-                    );
-                }
-                recovery.on_fix_result(true, verified_level);
+                exec_proof::record_file_result(
+                    exec_proof::FileProofResult {
+                        name: "apply_diff",
+                        content: &result,
+                        test_cmd: test_cmd.as_deref(),
+                    },
+                    this_step,
+                    &mut last_mutation_step,
+                    &mut last_build_verify_ok_step,
+                    &mut last_behavioral_verify_ok_step,
+                );
+                last_verify_ok_step = effective_verify_ok_step(
+                    required_verification,
+                    last_build_verify_ok_step,
+                    last_behavioral_verify_ok_step,
+                );
+                recovery.on_successful_edit(automatic_test, verified_level);
             }
 
             let first_line = result.lines().next().unwrap_or("").to_string();
@@ -13642,7 +13033,11 @@ Required now: run `{command}`."
                     AgentState::Planning
                 };
                 file_tool_consec_failures = 0;
-                pending_system_hint = if recovery.stage == Some(RecoveryStage::Verify) {
+                pending_system_hint = if automatic_test
+                    == crate::execution_evidence::AutoTestOutcome::Failed
+                {
+                    Some(recovery::AUTO_TEST_FAILURE_HINT.to_string())
+                } else if recovery.stage == Some(RecoveryStage::Verify) {
                     Some(format!(
                         "Recovery stage=verify: {}",
                         verification_requirement_hint(required_verification, test_cmd.as_deref())
@@ -13726,6 +13121,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -13908,6 +13304,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -14079,6 +13476,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -14259,6 +13657,7 @@ Required now: run `{command}`."
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -14345,6 +13744,9 @@ Required now: run `{command}`."
 
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
+                    if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
+                        file_cache.remove(&cache_key);
+                    }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
                     if let Some(cached) = file_cache.get(&cache_key) {
                         let header = cached.lines().next().unwrap_or(&path).to_string();
@@ -14573,7 +13975,10 @@ Action required: call read_file(path) first to confirm current contents, then re
                 file_tool_consec_failures = 0;
             }
 
-            let verified = result.contains("PASSED (exit 0)");
+            let automatic_test =
+                crate::execution_evidence::auto_test_outcome(tc.name.as_str(), &result);
+            let verified =
+                !is_error && automatic_test == crate::execution_evidence::AutoTestOutcome::Passed;
             let verified_level = if verified {
                 configured_test_cmd_verification_level(test_cmd.as_deref())
             } else {
@@ -14585,23 +13990,23 @@ Action required: call read_file(path) first to confirm current contents, then re
                     if is_error {
                         recovery.on_fix_result(false, None);
                     } else {
-                        last_mutation_step = Some(this_step);
-                        if let Some(level) = verified_level {
-                            match level {
-                                VerificationLevel::Build => {
-                                    last_build_verify_ok_step = Some(this_step)
-                                }
-                                VerificationLevel::Behavioral => {
-                                    last_behavioral_verify_ok_step = Some(this_step)
-                                }
-                            }
-                            last_verify_ok_step = effective_verify_ok_step(
-                                required_verification,
-                                last_build_verify_ok_step,
-                                last_behavioral_verify_ok_step,
-                            );
-                        }
-                        recovery.on_fix_result(true, verified_level);
+                        exec_proof::record_file_result(
+                            exec_proof::FileProofResult {
+                                name: tc.name.as_str(),
+                                content: &result,
+                                test_cmd: test_cmd.as_deref(),
+                            },
+                            this_step,
+                            &mut last_mutation_step,
+                            &mut last_build_verify_ok_step,
+                            &mut last_behavioral_verify_ok_step,
+                        );
+                        last_verify_ok_step = effective_verify_ok_step(
+                            required_verification,
+                            last_build_verify_ok_step,
+                            last_behavioral_verify_ok_step,
+                        );
+                        recovery.on_successful_edit(automatic_test, verified_level);
                     }
                 }
                 _ => {}
@@ -14650,7 +14055,11 @@ Action required: call read_file(path) first to confirm current contents, then re
                 } else {
                     AgentState::Planning
                 };
-                pending_system_hint = if recovery.stage == Some(RecoveryStage::Fix) {
+                pending_system_hint = if automatic_test
+                    == crate::execution_evidence::AutoTestOutcome::Failed
+                {
+                    Some(recovery::AUTO_TEST_FAILURE_HINT.to_string())
+                } else if recovery.stage == Some(RecoveryStage::Fix) {
                     Some("Recovery stage=fix: apply a minimal fix now (edit files or run a corrected command).".to_string())
                 } else if recovery.stage == Some(RecoveryStage::Verify) {
                     Some(format!(
@@ -14684,6 +14093,12 @@ Action required: call read_file(path) first to confirm current contents, then re
                     );
                     sync_observation_cache_autosave(&autosaver, &observation_evidence);
                 }
+                assumption_gate::confirm_file_existence_after_result(
+                    &mut assumption_ledger,
+                    &tc.name,
+                    &path,
+                    &result,
+                );
                 assumption_ledger.refresh_confirmations(&working_mem);
                 if matches!(tc.name.as_str(), "write_file" | "patch_file") {
                     let path_level = verification_level_for_mutation_path(path.as_str());
@@ -14759,6 +14174,7 @@ Action required: call read_file(path) first to confirm current contents, then re
                         &messages,
                         &working_mem,
                     ) {
+                        task_outcome.finalized(&final_text);
                         state = AgentState::Done;
                         messages.push(json!({"role": "assistant", "content": final_text.clone()}));
                         autosave_best_effort(
@@ -14795,6 +14211,7 @@ Action required: call read_file(path) first to confirm current contents, then re
                             &messages,
                             &working_mem,
                         ) {
+                            task_outcome.finalized(&final_text);
                             state = AgentState::Done;
                             messages
                                 .push(json!({"role": "assistant", "content": final_text.clone()}));
@@ -15220,28 +14637,27 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         .await;
 
         // Update failure memory + recovery governor + possibly inject a system hint.
-        let verify_level = classify_verify_level(&command, test_cmd.as_deref());
-        let exec_kind = classify_exec_kind(&command, test_cmd.as_deref());
+        let classification = exec_verification_context.classify(&command);
+        let verify_level = classification.verification;
+        let exec_kind = classification.kind;
+        exec_proof::record_result(
+            &command,
+            &exec_verification_context,
+            exec_proof::ExecProofResult {
+                content: &tool_output,
+                succeeded: effective_exit_code == 0 && !escaped_tool_root,
+            },
+            this_step,
+            &mut last_mutation_step,
+            &mut last_build_verify_ok_step,
+            &mut last_behavioral_verify_ok_step,
+        );
+        last_verify_ok_step = effective_verify_ok_step(
+            required_verification,
+            last_build_verify_ok_step,
+            last_behavioral_verify_ok_step,
+        );
         if effective_exit_code == 0 && !escaped_tool_root {
-            match exec_kind {
-                ExecKind::Action => last_mutation_step = Some(this_step),
-                ExecKind::Verify => {
-                    if let Some(level) = verify_level {
-                        match level {
-                            VerificationLevel::Build => last_build_verify_ok_step = Some(this_step),
-                            VerificationLevel::Behavioral => {
-                                last_behavioral_verify_ok_step = Some(this_step)
-                            }
-                        }
-                        last_verify_ok_step = effective_verify_ok_step(
-                            required_verification,
-                            last_build_verify_ok_step,
-                            last_behavioral_verify_ok_step,
-                        );
-                    }
-                }
-                ExecKind::Diagnostic => {}
-            }
             update_working_memory_after_exec(
                 &mut working_mem,
                 command.as_str(),
@@ -15297,11 +14713,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
             AgentState::Planning
         };
 
-        if effective_exit_code != 0
-            || mem.same_error_repeats >= 2
-            || mem.same_command_repeats >= 3
-            || mem.same_output_repeats >= 2
-        {
+        if effective_exit_code != 0 || mem.repeated_failure_or_stall() {
             let default_reason = if effective_exit_code != 0 {
                 let class_ctx = error_class_hint(&mem.last_error_class);
                 if class_ctx.is_empty() {
@@ -15342,6 +14754,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
 
     if let Some(final_text) = maybe_build_verified_action_closeout_text(
         &root_user_text,
+        tool_root_abs.as_deref(),
         active_plan.as_ref(),
         &messages,
         &working_mem,
@@ -15351,6 +14764,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         last_mutation_step,
         last_verify_ok_step,
     ) {
+        task_outcome.finalized(&final_text);
         let final_text = enrich_text_final_handoff(
             final_text.as_str(),
             &root_user_text,
@@ -15421,6 +14835,15 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         }
     }
 
+    emit_telemetry_event(
+        &tx,
+        "agent_outcome",
+        json!({
+            "completed": task_outcome.completed(&messages),
+            "state": format!("{state:?}").to_ascii_lowercase(),
+        }),
+    )
+    .await;
     let _ = tx.send(StreamToken::Done).await;
     Ok(AgenticEndState {
         messages,
@@ -15534,7 +14957,7 @@ fn main() {}
 
     #[test]
     fn injects_cargo_exe_lock_hint_on_windows_style_error() {
-        let stderr = "error: failed to remove file `C:\\\\Users\\\\user\\\\observistral\\\\target\\\\debug\\\\obstral.exe`\nCaused by: Access is denied. (os error 5)";
+        let stderr = "error: failed to remove file `C:\\\\Users\\\\user\\\\spiral-coder\\\\target\\\\debug\\\\spiral-coder.exe`\nCaused by: Access is denied. (os error 5)";
         let out = build_failed_tool_output("", stderr, 1);
         assert!(
             out.to_ascii_lowercase().contains("cargo_target_dir"),
@@ -16645,6 +16068,7 @@ remaining_gap: still need to run cargo test\n\
 
         let final_text = maybe_build_verified_action_closeout_text(
             "Create a pygame maze game repo.",
+            None,
             Some(&plan),
             &messages,
             &working_mem,
@@ -16660,6 +16084,23 @@ remaining_gap: still need to run cargo test\n\
         assert!(final_text.contains("maze_game_pygame/game.py"));
         assert!(final_text.contains("maze_game_pygame/main.py"));
         assert!(final_text.contains("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"));
+
+        let explicit_handoff = maybe_build_verified_action_closeout_text(
+            "Create a pygame maze game repo. Final answer must include verification_receipt.txt and fresh exec proof.",
+            None,
+            Some(&plan),
+            &messages,
+            &working_mem,
+            &ObservationEvidence::default(),
+            VerificationLevel::Behavioral,
+            Some("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"),
+            Some(7),
+            Some(7),
+        );
+        assert!(
+            explicit_handoff.is_none(),
+            "an explicit handoff must reach the model's done summary"
+        );
     }
 
     #[test]
@@ -16698,7 +16139,8 @@ remaining_gap: still need to run cargo test\n\
             "cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh";
 
         let final_text = maybe_build_verified_action_closeout_text(
-            "Update `docs/state-schema.md` and `.obstral/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
+            "Update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
+            None,
             Some(&plan),
             &messages,
             &WorkingMemory::default(),
@@ -18020,6 +17462,7 @@ verify: exit code is zero\n\
             true,
             ProviderKind::OpenAiCompatible,
             Some(&plan),
+            impact_recovery::UnreviewedMutation::from_steps(Some(1), None),
         )
         .expect("synthetic impact");
 
@@ -19582,7 +19025,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
     #[test]
     fn refuted_assumption_conflict_blocks_reuse() {
         let mut ledger = AssumptionLedger::default();
-        ledger.mark_refuted("cargo check works unchanged", Some("exit code was 1"));
+        ledger.mark_refuted("cargo fix works unchanged", Some("exit code was 1"));
 
         let think = ThinkBlock {
             goal: "verify the build quickly".to_string(),
@@ -19590,18 +19033,23 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             tool: "exec".to_string(),
             risk: "same build failure".to_string(),
             doubt: "might still fail".to_string(),
-            next: "cargo check".to_string(),
+            next: "cargo fix".to_string(),
             verify: "exit code is zero".to_string(),
         };
         let tc = ToolCallData {
             id: "call_1".to_string(),
             name: "exec".to_string(),
-            arguments: serde_json::json!({"command":"cargo check"}).to_string(),
+            arguments: serde_json::json!({"command":"cargo fix"}).to_string(),
         };
 
-        let msg = refuted_assumption_conflict(&ledger, &think, &tc)
-            .expect("refuted assumption should conflict");
-        assert!(msg.contains("cargo check works unchanged"));
+        let msg = refuted_assumption_conflict(
+            &ledger,
+            &think,
+            &tc,
+            &exec_verification::ExecVerificationContext::from_root(None, ""),
+        )
+        .expect("refuted assumption should conflict");
+        assert!(msg.contains("cargo fix works unchanged"));
     }
 
     #[test]
@@ -19671,84 +19119,5 @@ assumptions: cache exists
                 .unwrap_or(""),
             original_last
         );
-    }
-
-    #[test]
-    fn prune_message_window_drops_old_exec_turns_but_keeps_observation_turns() {
-        let mut messages = vec![
-            json!({"role":"system","content":"base"}),
-            json!({"role":"user","content":"inspect and then fix"}),
-        ];
-
-        for idx in 0..20 {
-            messages.push(json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": format!("exec_{idx}"),
-                    "type": "function",
-                    "function": {
-                        "name": "exec",
-                        "arguments": format!("{{\"command\":\"cargo check #{idx}\"}}")
-                    }
-                }]
-            }));
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": format!("exec_{idx}"),
-                "content": format!("OK (exit_code: 0)\nstdout:\nrun {idx}")
-            }));
-        }
-
-        messages.push(json!({
-            "role": "assistant",
-            "tool_calls": [{
-                "id": "obs_search",
-                "type": "function",
-                "function": {
-                    "name": "search_files",
-                    "arguments": "{\"pattern\":\"reflect\",\"dir\":\"src\"}"
-                }
-            }]
-        }));
-        messages.push(json!({
-            "role": "tool",
-            "tool_call_id": "obs_search",
-            "content": "[search_files: 'reflect' — 1 match(es)]\nsrc/tui/agent.rs:1: reflect"
-        }));
-
-        for idx in 20..26 {
-            messages.push(json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": format!("tail_exec_{idx}"),
-                    "type": "function",
-                    "function": {
-                        "name": "exec",
-                        "arguments": format!("{{\"command\":\"cargo test #{idx}\"}}")
-                    }
-                }]
-            }));
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": format!("tail_exec_{idx}"),
-                "content": format!("OK (exit_code: 0)\nstdout:\ntail {idx}")
-            }));
-        }
-
-        let before = messages.len();
-        prune_message_window(&mut messages);
-
-        assert!(messages.len() < before);
-        assert!(messages.len() <= MAX_CONTEXT_MESSAGES);
-        assert!(messages.iter().any(|msg| {
-            msg["tool_call_id"].as_str() == Some("obs_search")
-                && msg["content"]
-                    .as_str()
-                    .unwrap_or("")
-                    .contains("[search_files:")
-        }));
-        assert!(!messages
-            .iter()
-            .any(|msg| { msg["tool_call_id"].as_str() == Some("exec_0") }));
     }
 }

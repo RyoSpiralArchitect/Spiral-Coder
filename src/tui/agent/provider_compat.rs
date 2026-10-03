@@ -532,7 +532,7 @@ fn synthetic_action_plan_risks(
     }
 }
 
-fn synthetic_action_plan(
+pub(super) fn synthetic_action_plan(
     root_user_text: &str,
     tc: &ToolCallData,
     task_harness: TaskHarness,
@@ -992,10 +992,7 @@ pub(super) fn rescue_missing_reflection_for_tool_turn(
     } else {
         "partial"
     };
-    let repeated_failure = mem.same_error_repeats >= 2
-        || mem.same_command_repeats >= 3
-        || mem.same_output_repeats >= 2
-        || file_tool_consec_failures >= 2;
+    let repeated_failure = mem.repeated_failure_or_stall() || file_tool_consec_failures >= 2;
     let strategy_change = if repeated_failure {
         StrategyChange::Abandon
     } else {
@@ -1117,6 +1114,7 @@ pub(super) fn rescue_missing_impact_for_tool_turn(
     goal_wants_actions: bool,
     provider: ProviderKind,
     plan: Option<&PlanBlock>,
+    pending: Option<impact_recovery::UnreviewedMutation>,
 ) -> Option<ImpactBlock> {
     if root_read_only || !goal_wants_actions {
         return None;
@@ -1124,13 +1122,18 @@ pub(super) fn rescue_missing_impact_for_tool_turn(
     if !supports_action_task_rescues(&provider) {
         return None;
     }
-    if !reason.to_ascii_lowercase().contains("successful mutation") {
-        return None;
-    }
+    let pending = pending?;
     let plan = plan?;
 
     Some(ImpactBlock {
-        changed: synthetic_impact_changed(reason),
+        changed: if reason.contains(':') {
+            synthetic_impact_changed(reason)
+        } else {
+            format!(
+                "recorded workspace mutation at step {} still requires acceptance verification",
+                pending.step
+            )
+        },
         progress: synthetic_impact_progress(plan),
         remaining_gap: synthetic_impact_remaining_gap(tc),
     })

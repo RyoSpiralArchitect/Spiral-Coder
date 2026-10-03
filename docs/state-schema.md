@@ -1,6 +1,6 @@
 # State Schema
 
-This document defines the main state surfaces in `observistral` and which layer
+This document defines the main state surfaces in `spiral-coder` and which layer
 owns each kind of data.
 
 The goal is simple: new features should not invent "just one more place" to
@@ -11,22 +11,23 @@ store state without first choosing the correct owner.
 | Layer | Owner | Lifetime | Backing store | Examples |
 |---|---|---|---|---|
 | Provider/runtime config | `src/config.rs` | process / launch | CLI args + env | `PartialConfig`, `RunConfig` |
-| Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.obstral/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
+| Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
 | Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
-| Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.obstral/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
-| Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.obstral/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
-| Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.obstral/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
-| Project-local promoted governor overlay | `src/tui/agent/harness_evolution.rs` | cross-session | `.obstral/governor_contract.overlay.json` | eval-gated promoted harness policies, green case IDs, stable overlay defaults |
-| Project-local contract promotion candidate | `src/harness_promotion.rs` | generated artifact | `.obstral/governor_contract.promotion.json` | UI-ready candidate list, patch previews, promotion decisions for `shared/governor_contract.json` |
-| Project-local contract promotion review gate | `src/harness_gate.rs` | cross-session | `.obstral/governor_contract.promotion_gate.json` | human review decisions like approved/held/applied, GUI/TUI gate state for source-contract updates |
+| Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
+| Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.spiral-coder/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
+| Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
+| Project-local promoted governor overlay | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/governor_contract.overlay.json` | eval-gated promoted harness policies, green case IDs, stable overlay defaults |
+| Project-local contract promotion candidate | `src/harness_promotion.rs` | generated artifact | `.spiral-coder/governor_contract.promotion.json` | UI-ready candidate list, patch previews, promotion decisions for `shared/governor_contract.json` |
+| Project-local contract promotion review gate | `src/harness_gate.rs` | cross-session | `.spiral-coder/governor_contract.promotion_gate.json` | human review decisions like approved/held/applied, GUI/TUI gate state for source-contract updates |
 | Runtime eval merge gate | `src/eval_merge_gate.rs` | generated artifact | `.tmp/runtime_eval_*/merge_gate.json` | merge readiness, rollback availability, promoted overlay paths, checkpoint status |
-| Project-local merge gate review state | `src/merge_gate.rs` | cross-session | `.obstral/runtime_eval.merge_gate_review.json` | human approve/hold decisions for latest runtime eval merge-gate cases, shared by TUI and GUI |
+| Project-local merge gate review state | `src/merge_gate.rs` | cross-session | `.spiral-coder/runtime_eval.merge_gate_review.json` | human approve/hold decisions for latest runtime eval merge-gate cases, shared by TUI and GUI |
 | Observer/Coder diagnostic contract | `src/observer/coder_diagnostic.rs` | per Observer run | API/formatted Observer output | `CoderDiagnostic`, `MutationAnchor`, required follow-ups, verification command, next Coder action |
 | Observer benchmark plan contract | `src/observer/benchmark_plan.rs` | per Observer run | API/formatted Observer output | `BenchmarkPlan`, case id hint, lane, required checks, success criteria |
 | Observer critique memory | `src/observer/memory.rs` | per Observer thread / API caller | request/response payload, Web thread state | `CritiqueMemory`, proposal recurrence counts, analyzer-stage recurring risk bias |
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
-| Replay/eval fixtures | `.obstral/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
+| Web message provenance | `web/app.js` + `web/core/state.js` | Web thread lifetime | browser-local thread state | optional `message.origin` (`user` or `runtime`) for human messages versus runtime handoffs |
+| Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
 ## Current ownership map
 
@@ -57,7 +58,7 @@ Code:
 
 File:
 
-- `.obstral/tui_prefs.json`
+- `.spiral-coder/tui_prefs.json`
 
 Owns:
 
@@ -111,6 +112,43 @@ This is the right home for typed operational memory such as:
 - accepted strategies that were already matched to successful follow-up actions
 - repeated dead-end commands that should not be retried first after resume
 
+Resume repair:
+
+- `src/session_resume.rs` checks tool-call/result pairing before the saved
+  transcript is sent to a provider again. Call IDs must be nonempty and unique
+  within an assistant's tool-call group; every result must match a pending ID.
+- A missing, duplicate, or mismatched result discards the entire still-pending
+  exchange and its following tail, keeping earlier complete exchanges intact.
+  An orphan result after a complete exchange is discarded without removing that
+  completed exchange. Repair is idempotent: its output needs no second repair.
+- If repair changes history, `AgentSession` rebuilds reflection summaries and
+  the session bridge from the retained prefix so discarded tail metadata cannot
+  supply verification or recovery hints. Valid sessions keep their seeded state.
+- Repair changes history, not the filesystem: interrupted tools may have already
+  produced side effects. A missing result is not evidence that an action failed.
+
+Autosave ordering:
+
+- The active agent task owns transcript saves until it has joined. The CLI may
+  save its initial state before spawning and the returned end state after joining.
+- Cancellation waits for the aborted task to join and retains its latest autosave.
+  A failed or canceled task must not be overwritten by the CLI's pre-round copy.
+- JSON/graph exports after failure or cancellation use that last saved session
+  and are labeled as an incomplete run. Without a readable session, these exports
+  are explicitly skipped instead of publishing a stale pre-round transcript.
+- Save comparison and session/progress writes share one lock. Change detection
+  compares message content, root, checkpoint, cwd, observation cache, and progress
+  context; message count is not a revision, because compaction can shorten history.
+- Each file is replaced atomically, but session and repo-progress files are not a
+  single crash-atomic transaction. Current transcript/tool evidence remains primary.
+
+Context-window compaction lives in `src/tui/agent/message_window.rs`. It removes
+complete assistant tool-call/result exchanges, including multi-tool turns, as a
+unit. Recent results protect their matching calls. Failed, observational, or
+incomplete exchanges and the latest structured anchors are retained even when
+this exceeds the target window. Session history is currently compacted in place;
+separating the full audit transcript from provider context is a future change.
+
 ### 3b. Project-local repo progress snapshot
 
 Code:
@@ -119,7 +157,7 @@ Code:
 
 File:
 
-- `.obstral/progress.json`
+- `.spiral-coder/progress.json`
 
 Owns:
 
@@ -149,7 +187,7 @@ Code:
 
 File:
 
-- `.obstral/reflection_ledger.json`
+- `.spiral-coder/reflection_ledger.json`
 
 Owns:
 
@@ -278,7 +316,7 @@ This is a planning contract, not an executable command queue by itself. When a
 human approves the TUI/GUI handoff, the Coder receives
 `<observer_benchmark_plan>` and `TaskHarness` classifies it as the
 `benchmark_plan` lane, which focuses runtime-eval and TUI-replay plans onto the
-matching `.obstral/*.json` spec before mutation.
+matching `.spiral-coder/*.json` spec before mutation.
 
 ### 5c. Project-local harness evolution queue
 
@@ -288,7 +326,7 @@ Code:
 
 File:
 
-- `.obstral/policy_patch_queue.json`
+- `.spiral-coder/policy_patch_queue.json`
 
 Owns:
 
@@ -315,7 +353,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.overlay.json`
+- `.spiral-coder/governor_contract.overlay.json`
 
 Owns:
 
@@ -336,7 +374,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.promotion.json`
+- `.spiral-coder/governor_contract.promotion.json`
 
 Owns:
 
@@ -357,7 +395,7 @@ Code:
 
 File:
 
-- `.obstral/governor_contract.promotion_gate.json`
+- `.spiral-coder/governor_contract.promotion_gate.json`
 
 Owns:
 
@@ -403,7 +441,7 @@ Code:
 
 File:
 
-- `.obstral/runtime_eval.merge_gate_review.json`
+- `.spiral-coder/runtime_eval.merge_gate_review.json`
 
 Owns:
 
@@ -441,6 +479,13 @@ Important rule:
 
 - vague modifiers may refine quality but must not widen `goal` or `target`
 
+Web thread messages may include `origin: "user" | "runtime"`. Runtime-generated
+continuations and handoffs use `runtime`, so the current human intent can be
+selected without mistaking an injected continuation for a new human request.
+Legacy messages without `origin` default to `user` for backward compatibility.
+This field records provenance in the Web thread; it does not grant instruction
+authority or change the provider message role.
+
 ### 7. Replay and eval fixtures
 
 Code:
@@ -450,8 +495,8 @@ Code:
 
 Files:
 
-- `.obstral/runtime_eval.json`
-- `.obstral/tui_replay.json`
+- `.spiral-coder/runtime_eval.json`
+- `.spiral-coder/tui_replay.json`
 - `.tmp/runtime_eval_*`
 - `.tmp/runtime_eval_*/merge_gate.json`
 - `.tmp/tui_replay_*`
@@ -495,3 +540,11 @@ If the answer is not clear, document it here first.
 - Keep `IntentAnchor` memory-first for now; only persist it after replay/eval
   proves the shape is stable.
 - Keep replay/eval specs versioned and human-editable.
+
+## Web server capabilities
+
+`GET /api/status` owns explicit `features.harness_promotions`,
+`features.merge_gate`, and `features.project_scan` booleans. The Rust server
+provides these capabilities; the Lite server reports them as unavailable.
+The Web UI waits for status before polling optional endpoints and shows an
+explanation for unavailable review panels rather than an HTTP error.

@@ -1,6 +1,6 @@
 # mini-rust-cli
 
-Small sandbox repository for stressing `observistral` against an unfamiliar Rust codebase.
+Small sandbox repository for stressing `spiral-coder` against an unfamiliar Rust codebase.
 
 ## Layout
 

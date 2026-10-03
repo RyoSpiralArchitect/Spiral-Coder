@@ -10,7 +10,7 @@ use crate::personas::resolve_persona;
 use super::agent::RealizePreset;
 use super::app::{App, RightTab};
 
-const PREFS_REL_PATH: &str = ".obstral/tui_prefs.json";
+const PREFS_REL_PATH: &str = ".spiral-coder/tui_prefs.json";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PanePrefs {

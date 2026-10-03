@@ -47,9 +47,9 @@ pub struct ProjectContext {
     pub tree: Vec<(String, usize)>, // (dir_name, file_count)
     pub key_files: Vec<String>,
     pub readme_excerpt: Option<String>,
-    /// Content of .obstral.md / AGENTS.md / CLAUDE.md — project-specific instructions.
+    /// Content of .spiral-coder.md / AGENTS.md / CLAUDE.md — project-specific instructions.
     pub agents_md: Option<String>,
-    /// Auto-detected or .obstral.md-configured test command.
+    /// Auto-detected or .spiral-coder.md-configured test command.
     pub test_cmd: Option<String>,
     repo_map: Option<RepoMapStatus>,
 }
@@ -93,10 +93,10 @@ impl ProjectContext {
         // Git info: run async with tight timeouts.
         let (git_branch, git_modified, git_untracked, git_recent) = scan_git(&root).await;
 
-        // Project-specific instruction file (.obstral.md > AGENTS.md > CLAUDE.md).
+        // Project-specific instruction file (.spiral-coder.md > AGENTS.md > CLAUDE.md).
         let agents_md = try_read_agents_file(&root);
 
-        // Test command: from .obstral.md `test_cmd:` line, then auto-detect from stack.
+        // Test command: from .spiral-coder.md `test_cmd:` line, then auto-detect from stack.
         let test_cmd = detect_test_cmd(&root, agents_md.as_deref());
 
         // Repo-map status: cheap local signal for future lazy integration.
@@ -141,7 +141,7 @@ impl ProjectContext {
             out.push_str(&format!("stack: {}\n", self.stack.join(", ")));
         }
 
-        // Test command (auto-detected or configured in .obstral.md)
+        // Test command (auto-detected or configured in .spiral-coder.md)
         if let Some(ref cmd) = self.test_cmd {
             let cmd = cmd.trim();
             if !cmd.is_empty() {
@@ -547,9 +547,9 @@ fn read_readme_excerpt(root: &str) -> Option<String> {
 }
 
 /// Detect the test command for this project.
-/// Priority: `test_cmd:` line in .obstral.md > auto-detect from stack markers.
+/// Priority: `test_cmd:` line in .spiral-coder.md > auto-detect from stack markers.
 fn detect_test_cmd(root: &str, agents_md: Option<&str>) -> Option<String> {
-    // 1. Explicit override in .obstral.md: `test_cmd: cargo test --workspace`
+    // 1. Explicit override in .spiral-coder.md: `test_cmd: cargo test --workspace`
     if let Some(content) = agents_md {
         for line in content.lines() {
             let trimmed = line.trim();
@@ -902,10 +902,10 @@ fn first_top_level_match(root: &Path, pattern: &str) -> Option<String> {
 }
 
 /// Read the first project instruction file found in `root`.
-/// Priority: .obstral.md > AGENTS.md > CLAUDE.md
+/// Priority: .spiral-coder.md > AGENTS.md > CLAUDE.md
 /// Truncated to 200 lines to keep token cost bounded.
 fn try_read_agents_file(root: &str) -> Option<String> {
-    for name in &[".obstral.md", "AGENTS.md", "CLAUDE.md"] {
+    for name in &[".spiral-coder.md", "AGENTS.md", "CLAUDE.md"] {
         let path = Path::new(root).join(name);
         if let Ok(content) = std::fs::read_to_string(&path) {
             let trimmed = content.trim();

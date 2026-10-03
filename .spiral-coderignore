@@ -1,0 +1,10 @@
+# Repo-map specific ignores for spiral-coder.
+# Keep ranking focused on editable source, not caches or build output.
+
+.spiral/**
+.spiral-coder/**
+.tmp/**
+target/**
+web/vendor/**
+coverage/**
+__pycache__/**

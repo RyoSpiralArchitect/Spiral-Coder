@@ -449,7 +449,7 @@ exit: 0
         assert!(formatted.contains("Update state ownership docs"));
         assert!(formatted.contains("docs/state-schema.md"));
         assert!(formatted.contains("Refresh TUI replay proof"));
-        assert!(formatted.contains(".obstral/tui_replay.json"));
+        assert!(formatted.contains(".spiral-coder/tui_replay.json"));
     }
 
     #[test]
@@ -466,12 +466,14 @@ exit: 0
         let formatted = format_critique_as_observer_blocks(&critique);
 
         assert!(formatted.contains("Refresh runtime eval proof"));
-        assert!(formatted.contains(".obstral/runtime_eval.json"));
+        assert!(formatted.contains(".spiral-coder/runtime_eval.json"));
         assert!(formatted.contains("--- coder_diagnostic ---"));
         assert!(formatted.contains("--- benchmark_plan ---"));
         assert!(formatted.contains("\"failure_mode\": \"missing_required_followup\""));
         assert!(formatted.contains("\"mutation_anchor\""));
-        assert!(formatted.contains("cargo run --quiet -- eval --spec .obstral/runtime_eval.json"));
+        assert!(
+            formatted.contains("cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json")
+        );
         assert!(formatted.contains("\"lane\": \"runtime_eval\""));
     }
 

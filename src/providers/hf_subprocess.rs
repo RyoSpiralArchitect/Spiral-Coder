@@ -22,7 +22,8 @@ pub struct HuggingFaceSubprocessProvider {
 
 impl HuggingFaceSubprocessProvider {
     pub fn new(model: String, device: String, local_only: bool, timeout: Duration) -> Self {
-        let python = std::env::var("OBS_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
+        let python =
+            std::env::var("SPIRAL_CODER_HF_PYTHON").unwrap_or_else(|_| "python".to_string());
         let script_path = PathBuf::from("scripts").join("hf_infer.py");
         Self {
             model,

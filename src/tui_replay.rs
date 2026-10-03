@@ -8,6 +8,8 @@ use crate::modes::Mode;
 use crate::tui::app::{App, Message, Role};
 use crate::tui::{events, intent};
 
+pub(crate) mod diagnostics;
+
 fn default_spec_version() -> u32 {
     1
 }
@@ -223,11 +225,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
         report_path.display()
     );
     if report.summary.failed > 0 {
-        anyhow::bail!(
-            "tui replay failed: {}/{} case(s) failed",
-            report.summary.failed,
-            report.summary.total
-        );
+        anyhow::bail!(diagnostics::failed_report(&report));
     }
     Ok(())
 }
@@ -240,6 +238,7 @@ fn run_case(
     base_root_path: &Path,
     out_dir: &Path,
 ) -> Result<TuiReplayCaseReport> {
+    validate_case(case)?;
     let root = resolve_case_root(base_root_path, defaults, case);
     let lang = case
         .lang
@@ -369,7 +368,7 @@ fn resolve_selector_and_reason(app: &App, case: &TuiReplayCase) -> Result<(Strin
         return Ok((selector, reason));
     }
     let Some((idx, reason)) = events::latest_tui_next_action_target(app) else {
-        anyhow::bail!("could not infer a stuck target from coder_messages");
+        return Err(diagnostics::missing_target(case));
     };
     Ok((
         format!("msg:coder-{idx}"),
@@ -498,11 +497,41 @@ fn build_report(
     }
 }
 
+#[cfg(test)]
+pub(crate) fn replay_spec_for_test(
+    path: &Path,
+    root: &Path,
+    out_dir: &Path,
+) -> Result<TuiReplayReport> {
+    use clap::Parser;
+    let common = crate::CommonArgs::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--model",
+        "offline-replay-fixture",
+        "--base-url",
+        "http://127.0.0.1:9/v1",
+    ])?;
+    let spec = load_spec(path)?;
+    let cases = spec
+        .cases
+        .iter()
+        .enumerate()
+        .map(|(index, case)| run_case(index, &common, &spec.defaults, case, root, out_dir))
+        .collect::<Result<Vec<_>>>()?;
+    Ok(build_report(
+        path.to_path_buf(),
+        out_dir.to_path_buf(),
+        cases,
+    ))
+}
+
 fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     let text = std::fs::read_to_string(path)
         .with_context(|| format!("failed to read tui replay spec: {}", path.display()))?;
-    let spec: TuiReplaySpec = serde_json::from_str(&text)
-        .with_context(|| format!("failed to parse tui replay spec: {}", path.display()))?;
+    let spec: TuiReplaySpec =
+        serde_json::from_str(&text).map_err(|error| diagnostics::parse_error(path, error))?;
     if spec.version != 1 {
         anyhow::bail!(
             "unsupported tui replay spec version {} (expected 1)",
@@ -512,8 +541,24 @@ fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     if spec.cases.is_empty() {
         anyhow::bail!("tui replay spec contains no cases");
     }
+    for case in &spec.cases {
+        validate_case(case)?;
+    }
     Ok(spec)
 }
+
+fn validate_case(case: &TuiReplayCase) -> Result<()> {
+    if case.checks.is_empty() {
+        anyhow::bail!(
+            "tui replay case '{}' requires at least one top-level checks entry; nested replay.checks is not part of the case schema",
+            case.id
+        );
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests;
 
 fn save_report(path: &Path, report: &TuiReplayReport) -> Result<()> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));

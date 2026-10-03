@@ -2,12 +2,12 @@
   "use strict";
 
   const g = (typeof window !== "undefined") ? window : globalThis;
-  const OBSTRAL = g.OBSTRAL || (g.OBSTRAL = {});
-  if (OBSTRAL.exec) return;
+  const SpiralCoder = g.SpiralCoder || (g.SpiralCoder = {});
+  if (SpiralCoder.exec) return;
 
   function isWindowsHost() {
     try {
-      const ho = String((window && window.__OBSTRAL_HOST_OS) || "").trim().toLowerCase();
+      const ho = String((window && window.__SPIRAL_CODER_HOST_OS) || "").trim().toLowerCase();
       if (ho) return ho === "windows";
       return typeof navigator !== "undefined" && /Windows/i.test(String(navigator.userAgent || ""));
     } catch (_) {
@@ -108,7 +108,7 @@
     if (/does not have a commit checked out/i.test(s)) {
       return [
         "HINT: You tried to add a git repo that has no commits (unborn HEAD) as a nested repo/submodule.",
-        "- Preferred: avoid nesting. Create the project under tool_root and DO NOT add it to the OBSTRAL repo.",
+        "- Preferred: avoid nesting. Create the project under tool_root and DO NOT add it to the Spiral-Coder repo.",
         "- Otherwise: commit inside the nested repo first, then add as submodule.",
       ].join("\n");
     }
@@ -265,7 +265,7 @@
     return cleaned;
   }
 
-  OBSTRAL.exec = {
+  SpiralCoder.exec = {
     isWindowsHost,
     stripShellTranscript,
     dangerousCommandReason,

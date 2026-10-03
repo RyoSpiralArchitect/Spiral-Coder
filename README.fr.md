@@ -1,41 +1,38 @@
-# OBSTRAL
+# Spiral-Coder
 
 ![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-> **Une seule boite de dialogue ne suffit pas.**
-> OBSTRAL donne a votre IA un deuxieme cerveau — et les fait se disputer.
+Spiral-Coder est un moteur de développement avec des contextes séparés pour **Coder**, **Observer** et **Chat**. Coder agit dans le dépôt, Observer examine les sorties et les preuves de vérification, et Chat accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
+Né d’un prototype réalisé en environ deux jours pour un hackathon Mistral, le projet devient Spiral-Coder. Les priorités sont le choix du fournisseur, la sauvegarde et la reprise des sessions, et des vérifications reproductibles. Des contextes séparés ne garantissent pas à eux seuls une critique indépendante ou correcte.
+
+Pour une installation existante, voir le [guide de migration](docs/migration-spiral-coder.md). Les anciennes données sont conservées.
+
+```sh
+cargo install --locked --path .
+spiral-coder --help
+spiral-coder tui
+```
+
+Configurez un fournisseur avant tout appel de modèle. Les commandes de vérification locale figurent dans le [README anglais](README.md).
+
 ---
 
-Tous les outils de code IA ont le meme probleme : le modele qui ecrit votre code est aussi celui qui le relit.
+## Aperçu de l’interface
 
-Ce n'est pas une revue de code. C'est un monologue de defense.
+Interface Web actuelle de Spiral-Coder, capturée localement sans appel de modèle.
 
-OBSTRAL resout ca en faisant tourner Coder et Observer dans des **contextes entierement separes**. L'Observer ne partage ni le contexte de travail en direct du Coder ni son scratchpad cache. Il critique les sorties, les transcripts et, si necessaire, des snapshots de `git diff` apres coup. C'est ce qui le rend honnete.
-
----
-
-## UI Preview
-
-Ces captures proviennent des smoke tests Playwright qui parcourent l'UI Web de bout en bout.
-
-| Overview | Harness review gate |
-|---|---|
-| ![OBSTRAL web overview](docs/screenshots/web-overview.png) | ![Harness review flow](docs/screenshots/harness-review-flow.png) |
-
-| Runtime approvals |
-|---|
-| ![Runtime approvals flow](docs/screenshots/runtime-approval-flow.png) |
+![Spiral-Coder Web UI](docs/screenshots/spiral-coder-overview.png)
 
 ---
 
 ## Benchmarks Dogfood
 
-OBSTRAL conserve maintenant de petites fiches de benchmark pour les repos generes, sans ajouter ces repos eux-memes au git du projet.
+Spiral-Coder conserve maintenant de petites fiches de benchmark pour les repos generes, sans ajouter ces repos eux-memes au git du projet.
 
 - [Benchmark Examples](docs/examples/README.md)
 - [Existing Repo Bugfix (Rust)](docs/examples/existing-repo-bugfix-rust.md)
@@ -46,19 +43,19 @@ Chaque page note la forme du prompt d'eval, le provider/modele, la commande de r
 
 ---
 
-## Milestone de Benchmark Actuel
+## Historique des benchmarks
 
-Le milestone actuel est simple mais important : OBSTRAL peut maintenant couvrir a la fois des scaffolds de repos frais et un bugfix dans un repo existant depuis `runtime_eval`, garder l'etat genere hors du git du projet, et documenter le resultat de facon reproductible.
+Les jalons ci-dessous décrivent des exécutions antérieures avec l’ancien évaluateur. Leurs résultats sont conservés, mais ils n’ont pas tous été réévalués avec les critères actuels. Voir le [contrat d’évaluation](docs/evaluation.md) et les [résultats de la reprise](docs/evals/2026-10-03-restart/README.md), y compris les échecs.
 
 - `maze-game-rust-repo` montre que la scaffold lane peut creer un repo Rust frais, garder la logique de jeu dans `src/lib.rs`, garder `src/main.rs` executable, puis conclure avec un vrai `cargo test`.
 - `maze-game-pygame-repo` montre que le meme chemin de closeout fonctionne aussi pour un repo non Rust, y compris avec une verification `pygame` headless.
-- `resume-session-bridge-fix` montre que le runtime peut reprendre un bugfix Rust dans un repo existant en combinant une memoire de session seedee et une memoire repo-locale `.obstral/progress.json`, puis pousser l'agent vers le plus petit patch sur.
-- Le stretch case medium+ de self-dogfood `self-fix-observer-repo-rules-review-panel` passe maintenant end-to-end : le runtime patche `src/observer/repo_rules.rs`, porte les follow-ups requis sur `docs/runtime-architecture.md` et `.obstral/tui_replay.json`, puis conclut avec la commande exacte de verification reussie dans le handoff final.
-- Le cas self-dogfood PR-ready `self-fix-pr-ready-runtime-followup` passe aussi end-to-end : le runtime patche `src/tui/agent/followup_requirements.rs`, porte les follow-ups requis sur `docs/state-schema.md` et `.obstral/runtime_eval.json`, puis repare le handoff final si un chemin d'artefact verifie risque d'etre omis. Dernier run vert : `.tmp/runtime_eval_1777229175/report.json` (`tools=7`, `messages=22`, environ `3.85k` tokens transcript), avec la readiness merge dans `.tmp/runtime_eval_1777229175/merge_gate.json`.
-- Le closeout `runtime_eval` ecrit maintenant un `merge_gate.json` genere a cote de `report.json`; `obstral merge-gate`, l'onglet Merge du TUI et le panneau merge-gate de la Web GUI peuvent lire la readiness, approuver les cas passants, mettre des cas en attente, et copier les previews rollback sans executer de rollback destructif.
+- `resume-session-bridge-fix` montre que le runtime peut reprendre un bugfix Rust dans un repo existant en combinant une memoire de session seedee et une memoire repo-locale `.spiral-coder/progress.json`, puis pousser l'agent vers le plus petit patch sur.
+- Le stretch case medium+ de self-dogfood `self-fix-observer-repo-rules-review-panel` passe maintenant end-to-end : le runtime patche `src/observer/repo_rules.rs`, porte les follow-ups requis sur `docs/runtime-architecture.md` et `.spiral-coder/tui_replay.json`, puis conclut avec la commande exacte de verification reussie dans le handoff final.
+- Le cas self-dogfood PR-ready `self-fix-pr-ready-runtime-followup` passe aussi end-to-end : le runtime patche `src/tui/agent/followup_requirements.rs`, porte les follow-ups requis sur `docs/state-schema.md` et `.spiral-coder/runtime_eval.json`, puis repare le handoff final si un chemin d'artefact verifie risque d'etre omis. Dernier run vert : `.tmp/runtime_eval_1777229175/report.json` (`tools=7`, `messages=22`, environ `3.85k` tokens transcript), avec la readiness merge dans `.tmp/runtime_eval_1777229175/merge_gate.json`.
+- Le closeout `runtime_eval` ecrit maintenant un `merge_gate.json` genere a cote de `report.json`; `spiral-coder merge-gate`, l'onglet Merge du TUI et le panneau merge-gate de la Web GUI peuvent lire la readiness, approuver les cas passants, mettre des cas en attente, et copier les previews rollback sans executer de rollback destructif.
 - Les rapports de benchmark portent maintenant le provider/modele ainsi qu'une telemetrie approximative des tokens du transcript, ce qui aide a comparer les runs sans pretendre fournir une facturation exacte.
 
-L'interet est la : on passe de « l'agent a produit un truc sympa une fois » a « le runtime peut reproduire un cas milestone et expliquer comment ».
+Ces observations portent sur des exécutions individuelles ; elles ne mesurent ni un taux de réussite général ni la fiabilité sur une longue durée.
 
 ---
 
@@ -75,31 +72,31 @@ La suite utile consiste moins a produire de plus jolies demos qu'a rendre le run
 
 ---
 
-## Pourquoi OBSTRAL existe
+## Pourquoi Spiral-Coder existe
 
 La plupart des outils LLM optimisent la conversation.
-OBSTRAL optimise des boucles d'execution controlees : roles separes, garde-fous d'approbation, et critique cumulative au lieu de repartir de zero a chaque tour.
+Spiral-Coder optimise des boucles d'execution controlees : roles separes, garde-fous d'approbation, et critique cumulative au lieu de repartir de zero a chaque tour.
 
 Ce n'est pas un client de chat.
 C'est un moteur de controle du processus de developpement.
 
 ---
 
-## Trois roles. Trois contextes. Zero conflit.
+## Trois rôles. Des contextes séparés.
 
-| Role | Ce qu'il fait | Ce qu'il ne fait jamais |
+| Rôle | Responsabilité | Limite |
 |---|---|---|
-| **Coder** | Agit — fichiers, commandes shell, boucle agentique (12 etapes max), 5 outils integres | Relire ou remettre en question son propre travail |
-| **Observer** | Critique — score chaque proposition, escalade ce que vous ignorez | Ecrire du code ou partager le contexte de travail en direct du Coder |
+| **Coder** | Lit, modifie, vérifie et réfléchit dans une boucle bornée | Son autoévaluation ne constitue pas une validation indépendante |
+| **Observer** | Critique les sorties enregistrées et propose des étapes | Examine les preuves fournies dans un contexte séparé |
 | **Chat** | Reflechit avec vous — conception, canard en plastique, compromis | Interrompre la boucle d'execution |
 
 Roles distincts. Modeles distincts si vous le souhaitez. Contextes toujours distincts.
 
 ---
 
-## Ce qu'OBSTRAL sait avant que vous parliez
+## Ce qu'Spiral-Coder sait avant que vous parliez
 
-Quand vous definissez `tool_root`, OBSTRAL analyse automatiquement le projet :
+Quand vous definissez `tool_root`, Spiral-Coder analyse automatiquement le projet :
 
 ```
 [Project Context — auto-detected]
@@ -120,7 +117,7 @@ Ce contexte est injecte dans le message systeme du Coder **avant votre premier p
 Dans le TUI, un badge s'affiche en temps reel dans l'entete : `▸ Rust · React · git:main`
 Dans l'UI Web, le label du stack apparait sous le champ toolRoot dans les parametres.
 
-**Detection du stack** — OBSTRAL cherche les fichiers manifestes :
+**Detection du stack** — Spiral-Coder cherche les fichiers manifestes :
 - `Cargo.toml` → Rust
 - `package.json` → Node / React / TypeScript (inspecte les deps)
 - `pyproject.toml` / `requirements.txt` → Python
@@ -128,19 +125,19 @@ Dans l'UI Web, le label du stack apparait sous le champ toolRoot dans les parame
 - `pom.xml` → Java
 - `build.gradle*`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `build.zig`, `*.tf`, `CMakeLists.txt`, `*.sln` / `*.csproj`, `deno.json*` → detection additionnelle pour JVM / Ruby / PHP / Elixir / Swift / Zig / Terraform / C/C++ / .NET / Deno
 
-L'analyse s'execute une fois par session, prend moins de 200 ms et ignore silencieusement ce qu'elle ne peut pas lire.
+L’analyse initiale ignore les entrées illisibles. Sa durée dépend du dépôt et du système de fichiers.
 
 ---
 
-## Ce qui rend OBSTRAL different
+## Ce qui rend Spiral-Coder different
 
 ### L'Observer n'a rien a defendre
 
 Autres outils : meme modele ecrit le code → meme modele le relit → modele defend ses propres choix.
 
-OBSTRAL : contexte vierge a chaque execution de l'Observer. Il ne sait pas ce qu'il *aurait* ecrit et ne partage pas le scratchpad vivant du Coder. Il juge uniquement les sorties, les transcripts et, si besoin, les snapshots de diff.
+Spiral-Coder : contexte vierge a chaque execution de l'Observer. Il ne sait pas ce qu'il *aurait* ecrit et ne partage pas le scratchpad vivant du Coder. Il juge uniquement les sorties, les transcripts et, si besoin, les snapshots de diff.
 
-Resultat : feedbacks plus tranchants, evaluation de risques honnete, pas de demi-mesures.
+La séparation rend les entrées de la revue auditables. La qualité dépend toujours du modèle, des preuves disponibles et de leur évaluation.
 
 ### Les propositions ne disparaissent pas
 
@@ -154,7 +151,7 @@ L'Observer se souvient de ce qu'il a dit. Si vous ignorez un avertissement `crit
 
 ### Classification d'erreur, pas juste des codes de sortie
 
-Quand une commande echoue, OBSTRAL ne donne pas au modele un brut `exit_code: 1` en esperant le mieux. Il classe l'erreur d'abord :
+Quand une commande echoue, Spiral-Coder ne donne pas au modele un brut `exit_code: 1` en esperant le mieux. Il classe l'erreur d'abord :
 
 | Type d'erreur | Hint injecte |
 |---|---|
@@ -166,11 +163,11 @@ Quand une commande echoue, OBSTRAL ne donne pas au modele un brut `exit_code: 1`
 | `LOGIC` | Relisez la logique. Ne relancez pas juste pour relancer. |
 
 Note PowerShell : `exit_code` peut etre `0` meme si des erreurs ont ete imprimees (erreurs non bloquantes).
-OBSTRAL le signale comme `SUSPICIOUS_SUCCESS` et le traite comme un echec pour eviter les faux progres.
+Spiral-Coder le signale comme `SUSPICIOUS_SUCCESS` et le traite comme un echec pour eviter les faux progres.
 
-### Le Coder dispose de cinq outils
+### Principaux outils d’édition du Coder
 
-Le Coder n'est pas limite aux commandes shell. Il dispose de cinq outils dedies :
+Le Coder utilise les outils d’édition ci-dessous ainsi que `search_files`, `list_dir`, `glob` et `done` :
 
 | Outil | Quand l'utiliser |
 |---|---|
@@ -180,7 +177,7 @@ Le Coder n'est pas limite aux commandes shell. Il dispose de cinq outils dedies 
 | `patch_file(path, search, replace)` | Remplacer un extrait exact — echoue bruyamment en cas d'ambiguite |
 | `apply_diff(path, diff)` | Appliquer un diff unifie `@@` (plusieurs hunks) — ideal quand `patch_file` est trop petit |
 
-`write_file`, `patch_file` et `apply_diff` utilisent un schema fichier temporaire → renommage, donc un crash en cours d'ecriture ne laisse jamais de fichier corrompu.
+`write_file`, `patch_file` et `apply_diff` écrivent dans un fichier temporaire avant de le renommer, afin de réduire le risque d’exposer une écriture partielle. Cela ne constitue pas une transaction sur plusieurs fichiers.
 
 `patch_file` exige que la chaine de recherche apparaisse **exactement une fois**. Zero occurrence → apercu du fichier pour auto-correction. Plusieurs occurrences → compte exact retourne en erreur. L'ambiguite est une erreur, pas une supposition.
 
@@ -222,7 +219,7 @@ Le protocole scratchpad / governor lui-meme vient maintenant d'un contrat partag
 
 ### Boucle a machine d'etats (Planning → Executing → Verifying → Recovery)
 
-Beaucoup de "agent loops" ne sont qu'un timer. OBSTRAL route le Coder via une petite machine d'etats :
+Beaucoup de "agent loops" ne sont qu'un timer. Spiral-Coder route le Coder via une petite machine d'etats :
 
 - `planning`  — reformuler l'objectif et choisir la prochaine etape concrete
 - `executing` — executer des outils (fichiers/commandes)
@@ -235,7 +232,7 @@ La verification est aussi \"acceptance-aware\" : un travail docs-only peut s'arr
 
 Cela aide les runs longs a converger au lieu de tourner en rond.
 
-OBSTRAL injecte aussi une memoire compacte `[Recent runs]` (commandes + `write_file` / `patch_file` / `apply_diff`) pour que le Coder n'oublie pas ce qu'il vient de faire et ne repete pas les memes actions.
+Spiral-Coder injecte aussi une memoire compacte `[Recent runs]` (commandes + `write_file` / `patch_file` / `apply_diff`) pour que le Coder n'oublie pas ce qu'il vient de faire et ne repete pas les memes actions.
 
 Il reconstruit aussi une `[Working Memory]` compacte a partir des messages de session : faits confirmes, etapes terminees et commandes de verification deja valides. Un resume repart donc d'un contexte verifie, pas seulement d'une memoire des echecs.
 
@@ -250,9 +247,9 @@ L'appel final `done` devient lui aussi \"acceptance-aware\" : il doit maintenant
 
 ### Verification des objectifs a l'arret (pas de faux "Done")
 
-Quand le modele renvoie `finish_reason=stop` sans tool calls, OBSTRAL peut executer automatiquement des checks legers (repo init, tests, build) et injecter un message `[goal_check]` dans la boucle si quelque chose manque ou echoue. Ce chemin de stop suit maintenant la meme politique partagee et le meme format de log goal-check dans le TUI et la Web GUI.
+Quand le modele renvoie `finish_reason=stop` sans tool calls, Spiral-Coder peut executer automatiquement des checks legers (repo init, tests, build) et injecter un message `[goal_check]` dans la boucle si quelque chose manque ou echoue. Ce chemin de stop suit maintenant la meme politique partagee et le meme format de log goal-check dans le TUI et la Web GUI.
 
-La Web GUI a maintenant aussi un MVP `/meta-diagnose` : lancez `/meta-diagnose`, `/meta-diagnose last-fail` ou `/meta-diagnose msg:<message-id>` dans le composeur Coder pour envoyer le dernier echec a l'Observer sous forme de diagnostic meta JSON-only. Les messages Coder en echec affichent aussi un bouton `Why did this fail?`. Chaque execution est enregistree dans `.obstral/meta-diagnose/` avec le failure packet, le prompt Observer, la reponse brute, le diagnostic parse et l'etat du parse. Le panneau Observer inclut aussi un onglet `Meta` leger pour lister les artifacts sauvegardes, afficher un petit comptage par `primary_failure`, ouvrir leurs details / JSON brut, et relancer un diagnostic depuis la cible ou le packet sauvegarde. Le TUI prend aussi en charge `/meta-diagnose`, `/meta-diagnose last-fail` et `/meta-diagnose msg:coder-<index>` depuis la zone Coder ou Observer, en sauvegardant les memes artifacts localement.
+La Web GUI a maintenant aussi un MVP `/meta-diagnose` : lancez `/meta-diagnose`, `/meta-diagnose last-fail` ou `/meta-diagnose msg:<message-id>` dans le composeur Coder pour envoyer le dernier echec a l'Observer sous forme de diagnostic meta JSON-only. Les messages Coder en echec affichent aussi un bouton `Why did this fail?`. Chaque execution est enregistree dans `.spiral-coder/meta-diagnose/` avec le failure packet, le prompt Observer, la reponse brute, le diagnostic parse et l'etat du parse. Le panneau Observer inclut aussi un onglet `Meta` leger pour lister les artifacts sauvegardes, afficher un petit comptage par `primary_failure`, ouvrir leurs details / JSON brut, et relancer un diagnostic depuis la cible ou le packet sauvegarde. Le TUI prend aussi en charge `/meta-diagnose`, `/meta-diagnose last-fail` et `/meta-diagnose msg:coder-<index>` depuis la zone Coder ou Observer, en sauvegardant les memes artifacts localement.
 
 ### References @fichier : sautez le tour de lecture
 
@@ -309,7 +306,7 @@ C'est la difference entre un agent qui tourne en rond et un qui sait quand il es
 
 ### Multi-OS (Windows / macOS / Linux)
 
-OBSTRAL tourne sur Windows, macOS et Linux.
+Spiral-Coder tourne sur Windows, macOS et Linux.
 
 Il a d'abord ete construit sur Windows (donc les pieges Windows sont traites serieusement), mais le runtime est agnostique et le repo fournit des points d'entree PowerShell et bash :
 
@@ -324,7 +321,7 @@ Durcissement cote Windows (utile meme si vous developpez surtout sur macOS/Linux
 
 ### Registre de plugins
 
-Etendez OBSTRAL sans le forker :
+Etendez Spiral-Coder sans le forker :
 
 ```js
 registerObserverPlugin({ name: "mon-plugin", onProposal, onHealth, onPhase })
@@ -369,8 +366,8 @@ Chaque champ est intentionnel. `quote` epingle la ligne exacte incriminee sur la
 
 ### 0) Definir la cle API (TUI/CLI)
 
-- OpenAI-compatible : `OPENAI_API_KEY` ou `OBS_API_KEY`
-- Mistral : `MISTRAL_API_KEY` (ou `OBS_API_KEY`)
+- OpenAI-compatible : `OPENAI_API_KEY` ou `SPIRAL_CODER_API_KEY`
+- Mistral : `MISTRAL_API_KEY` (ou `SPIRAL_CODER_API_KEY`)
 - Anthropic (Chat/Observer uniquement) : `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -421,27 +418,27 @@ Comportement par defaut du TUI :
 - Si un panneau n'a pas la cle API requise ou n'a pas de modele, l'envoi est bloque et le TUI affiche un avertissement.
 
 **Coder headless (CLI)**
-Installer `obstral` (optionnel) :
+Installer `spiral-coder` (optionnel) :
 - Windows (PowerShell) : `.\scripts\install.ps1`
 - macOS / Linux (bash) : `bash ./scripts/install.sh`
 
 Puis :
 ```bash
-# (optionnel) generer le template .obstral.md (stack + test_cmd)
-obstral init -C .
+# (optionnel) generer le template .spiral-coder.md (stack + test_cmd)
+spiral-coder init -C .
 
 # lancer l'agent de code dans votre projet
-obstral agent "fix the failing test" -C . --vibe --session
+spiral-coder agent "fix the failing test" -C . --vibe --session
 # reprendre plus tard (sans prompt -> "continue" auto)
-obstral agent -C . --vibe --session
+spiral-coder agent -C . --vibe --session
 
 # artefacts (trace JSONL + snapshot JSON final + graphe d'execution)
-obstral agent "fix the failing test" -C . --vibe --trace-out .tmp/obstral_trace.jsonl --json-out .tmp/obstral_final.json --graph-out .tmp/obstral_graph.json
+spiral-coder agent "fix the failing test" -C . --vibe --trace-out .tmp/spiral_coder_trace.jsonl --json-out .tmp/spiral_coder_final.json --graph-out .tmp/spiral_coder_graph.json
 
 # lire la readiness du dernier runtime eval merge gate
-obstral merge-gate -C .
-obstral merge-gate -C . --json
-obstral merge-gate -C . --ci
+spiral-coder merge-gate -C .
+spiral-coder merge-gate -C . --json
+spiral-coder merge-gate -C . --ci
 # la meme gate est visible dans le TUI `/tab merge`, ou dans Web GUI Settings -> Merge gate
 ```
 
@@ -475,7 +472,7 @@ Pour travailler sur votre projet reel, definissez `tool_root` sur le chemin du p
 - **TUI** : option `-C .` / `--tool-root .`, ou commande slash `/root <chemin>` en cours de session
 - **UI Web** : Parametres → champ toolRoot
 
-Quand `tool_root` est defini, OBSTRAL l'analyse a la premiere utilisation pour construire le bloc de contexte projet (stack, git, arborescence). Les envois suivants dans la meme session sautent l'analyse.
+Quand `tool_root` est defini, Spiral-Coder l'analyse a la premiere utilisation pour construire le bloc de contexte projet (stack, git, arborescence). Les envois suivants dans la meme session sautent l'analyse.
 
 La traversee de chemins est bloquee : les chemins avec des composantes `..` sont rejetes a chaque frontiere d'outil (jamais silencieusement).
 
@@ -486,12 +483,12 @@ La traversee de chemins est bloquee : les chemins avec des composantes `..` sont
 
 ### Sessions (CLI)
 
-`obstral agent` peut sauvegarder et reprendre la conversation complete (y compris les tool calls) avec `--session[=<chemin>]`.
+`spiral-coder agent` peut sauvegarder et reprendre la conversation complete (y compris les tool calls) avec `--session[=<chemin>]`.
 
-- Chemin par defaut : `.tmp/obstral_session.json`
+- Chemin par defaut : `.tmp/spiral_coder_session.json`
 - Si `-C/--root` est defini, les chemins relatifs de sortie sont resolus sous `tool_root`
 - Auto-sauvegarde pendant l'execution (apres les tool calls)
-- Reprendre sans prompt : relancez `obstral agent -C . --session`
+- Reprendre sans prompt : relancez `spiral-coder agent -C . --session`
 - Recommencer : ajoutez `--new-session` (ecrase le fichier)
 
 Artefacts associes :
@@ -511,21 +508,21 @@ Aucun mode ne vous force a vous arreter — ils se mettent en file d'attente sil
 
 ### Providers
 
-OBSTRAL supporte ces providers aujourd'hui :
+Spiral-Coder supporte ces providers aujourd'hui :
 
 | Provider | `--provider` | `base_url` par defaut | Cle env | Coder avec outils |
 |---|---|---|---|---|
-| OpenAI-compatible | `openai-compatible` | `https://api.openai.com/v1` | `OBS_API_KEY` ou `OPENAI_API_KEY` | ✅ |
-| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` (ou `OBS_API_KEY`) | ✅ |
+| OpenAI-compatible | `openai-compatible` | `https://api.openai.com/v1` | `SPIRAL_CODER_API_KEY` ou `OPENAI_API_KEY` | ✅ |
+| Mistral | `mistral` | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` (ou `SPIRAL_CODER_API_KEY`) | ✅ |
 | Anthropic | `anthropic` | `https://api.anthropic.com/v1` | `ANTHROPIC_API_KEY` | ❌ (Chat/Observer uniquement) |
 | HF local (subprocess) | `hf` | `http://localhost` | *(aucune)* | ❌ (Chat/Observer uniquement) |
 
 Notes :
-- La boucle agentique du Coder (`obstral agent`, TUI Coder, mode agentique Web) requiert une API **Chat Completions OpenAI-compatible** avec tool calling (`tools` / `tool_calls`) → utilisez `openai-compatible` ou `mistral`.
-- `openai-compatible` veut dire API OpenAI Chat Completions (`/v1/chat/completions`) avec Bearer auth. Pointez `--base-url` / `OBS_BASE_URL` vers votre endpoint (inclure le `/v1`).
-- Valeurs integrees : `obstral list providers` / `obstral list modes` / `obstral list personas`.
+- La boucle agentique du Coder (`spiral-coder agent`, TUI Coder, mode agentique Web) requiert une API **Chat Completions OpenAI-compatible** avec tool calling (`tools` / `tool_calls`) → utilisez `openai-compatible` ou `mistral`.
+- `openai-compatible` veut dire API OpenAI Chat Completions (`/v1/chat/completions`) avec Bearer auth. Pointez `--base-url` / `SPIRAL_CODER_BASE_URL` vers votre endpoint (inclure le `/v1`).
+- Valeurs integrees : `spiral-coder list providers` / `spiral-coder list modes` / `spiral-coder list personas`.
 
-Definissez un modele different par role : modele rapide pour les iterations du Coder, modele puissant pour l'analyse de l'Observer. Dans la TUI, vous pouvez aussi separer les providers par panneau (le Coder doit rester `openai-compatible`/`mistral`) : `obstral tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`. Erreurs courantes : `401` (cle incorrecte), `429` (rate limit), mismatch `max_tokens` vs `max_completion_tokens`.
+Definissez un modele different par role : modele rapide pour les iterations du Coder, modele puissant pour l'analyse de l'Observer. Dans la TUI, vous pouvez aussi separer les providers par panneau (le Coder doit rester `openai-compatible`/`mistral`) : `spiral-coder tui --observer-provider anthropic --observer-model claude-3-5-sonnet-latest`. Erreurs courantes : `401` (cle incorrecte), `429` (rate limit), mismatch `max_tokens` vs `max_completion_tokens`.
 
 ### Personas Chat
 
@@ -595,9 +592,9 @@ $env:GITHUB_TOKEN = "ghp_..."
 .\scripts\push_ssh.ps1
 ```
 
-**"access denied" sur obstral.exe** — binaire encore en cours d'execution :
+**"access denied" sur spiral-coder.exe** — binaire encore en cours d'execution :
 ```powershell
-.\scripts\kill-obstral.ps1
+.\scripts\kill-spiral-coder.ps1
 ```
 
 ---

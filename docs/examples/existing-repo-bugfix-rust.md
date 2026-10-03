@@ -1,26 +1,26 @@
 # Existing Repo Bugfix (Rust)
 
-This benchmark asks OBSTRAL to resume work on a tiny existing Rust repo, patch the smallest safe fix in `src/lib.rs`, and finish only after `cargo test 2>&1` passes.
+This benchmark asks Spiral-Coder to resume work on a tiny existing Rust repo, patch the smallest safe fix in `src/lib.rs`, and finish only after `cargo test 2>&1` passes.
 
-Unlike the maze-game scaffolds, this case is intentionally about editing an existing file with resume memory. The fixture includes both a seeded `session.json`-style resume snapshot and a repo-local `.obstral/progress.json` snapshot so the runtime can carry forward prior verification and dead-end avoidance.
+Unlike the maze-game scaffolds, this case is intentionally about editing an existing file with resume memory. The fixture includes both a seeded `session.json`-style resume snapshot and a repo-local `.spiral-coder/progress.json` snapshot so the runtime can carry forward prior verification and dead-end avoidance.
 
 ## Reproduce
 
 ```bash
-cargo run --quiet -- eval --spec .obstral/runtime_eval.json --filter resume-session-bridge-fix --max-cases 1
+cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --filter resume-session-bridge-fix --max-cases 1
 ```
 
 For the fresh non-resume variant:
 
 ```bash
-cargo run --quiet -- eval --spec .obstral/runtime_eval.json --filter fix-failing-rust-test --max-cases 1
+cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --filter fix-failing-rust-test --max-cases 1
 ```
 
 ## Fixture Shape
 
 - Fixture root: `tests/fixtures/runtime-fix-rust/`
 - Resume seed: `tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json`
-- Repo progress seed: `tests/fixtures/runtime-fix-rust/.obstral/progress.json`
+- Repo progress seed: `tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json`
 - Expected changed file: `src/lib.rs`
 - Verification command:
 

@@ -1,45 +1,45 @@
-# OBSTRAL Lite CLI
+# Spiral-Coder Lite CLI
 
-This project includes a Python CLI that avoids `obstral.exe` and works under WDAC.
+This project includes a Python CLI that avoids `spiral-coder.exe` and works under WDAC.
 
 ## App Install (Global Command)
 
 ### Option A: Wrapper installer (Windows)
 
 ```powershell
-cd C:\Users\user\observistral
+cd C:\Users\user\spiral-coder
 powershell -ExecutionPolicy Bypass -File .\scripts\install-lite-cli.ps1 -Scope User -Force
-obstral-lite list-providers
+spiral-coder-lite list-providers
 ```
 
 ### Option B: Python tool install
 
 ```powershell
-cd C:\Users\user\observistral
+cd C:\Users\user\spiral-coder
 uv tool install -e .
-obstral-lite list-providers
+spiral-coder-lite list-providers
 ```
 
 ## Commands
 
 ```powershell
-cd C:\Users\user\observistral
-python .\scripts\obstral_lite_cli.py list-providers
-python .\scripts\obstral_lite_cli.py list-presets
-python .\scripts\obstral_lite_cli.py doctor --provider mistral --check-models
-python .\scripts\obstral_lite_cli.py chat "hello" --provider openai-compatible --api-key "<KEY>"
-python .\scripts\obstral_lite_cli.py chat "scaffold game" --provider openai-compatible --tool-root projects/mygame
-python .\scripts\obstral_lite_cli.py repl --provider openai-compatible --api-key "<KEY>"
-python .\scripts\obstral_lite_cli.py serve --host 127.0.0.1 --port 18080 --workspace .
-python .\scripts\obstral_lite_cli.py pending --server http://127.0.0.1:18080
-python .\scripts\obstral_lite_cli.py approve --server http://127.0.0.1:18080 edit_xxx
-python .\scripts\obstral_lite_cli.py reject --server http://127.0.0.1:18080 edit_xxx
+cd C:\Users\user\spiral-coder
+python .\scripts\spiral_coder_lite_cli.py list-providers
+python .\scripts\spiral_coder_lite_cli.py list-presets
+python .\scripts\spiral_coder_lite_cli.py doctor --provider mistral --check-models
+python .\scripts\spiral_coder_lite_cli.py chat "hello" --provider openai-compatible --api-key "<KEY>"
+python .\scripts\spiral_coder_lite_cli.py chat "scaffold game" --provider openai-compatible --tool-root projects/mygame
+python .\scripts\spiral_coder_lite_cli.py repl --provider openai-compatible --api-key "<KEY>"
+python .\scripts\spiral_coder_lite_cli.py serve --host 127.0.0.1 --port 18080 --workspace .
+python .\scripts\spiral_coder_lite_cli.py pending --server http://127.0.0.1:18080
+python .\scripts\spiral_coder_lite_cli.py approve --server http://127.0.0.1:18080 edit_xxx
+python .\scripts\spiral_coder_lite_cli.py reject --server http://127.0.0.1:18080 edit_xxx
 ```
 
 PowerShell wrapper:
 
 ```powershell
-.\scripts\obstral-lite.ps1 chat "hello" --provider openai-compatible --api-key "<KEY>"
+.\scripts\spiral-coder-lite.ps1 chat "hello" --provider openai-compatible --api-key "<KEY>"
 ```
 
 ## CLI UX Improvements
@@ -70,7 +70,7 @@ UI/CLI provider name: `codestral`.
 `mistral-cli` provider calls the official `vibe` command.
 
 ```powershell
-python .\scripts\obstral_lite_cli.py chat "Implement feature X" --provider mistral-cli
+python .\scripts\spiral_coder_lite_cli.py chat "Implement feature X" --provider mistral-cli
 ```
 
 If `vibe` is missing:
@@ -92,19 +92,19 @@ Default behavior:
 Disable if needed:
 
 ```powershell
-python .\scripts\obstral_lite_cli.py chat "hi" --autonomy off --cot off
+python .\scripts\spiral_coder_lite_cli.py chat "hi" --autonomy off --cot off
 ```
 
 Stronger CoT formatting:
 
 ```powershell
-python .\scripts\obstral_lite_cli.py chat "hi" --cot structured
+python .\scripts\spiral_coder_lite_cli.py chat "hi" --cot structured
 ```
 
 Even deeper CoT formatting:
 
 ```powershell
-python .\scripts\obstral_lite_cli.py chat "hi" --cot deep
+python .\scripts\spiral_coder_lite_cli.py chat "hi" --cot deep
 ```
 
 UI approval endpoints:
@@ -115,5 +115,5 @@ UI approval endpoints:
 
 Env defaults:
 
-- `OBS_REQUIRE_EDIT_APPROVAL=1|0`
-- `OBS_REQUIRE_COMMAND_APPROVAL=1|0`
+- `SPIRAL_CODER_REQUIRE_EDIT_APPROVAL=1|0`
+- `SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL=1|0`

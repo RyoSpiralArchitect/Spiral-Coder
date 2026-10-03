@@ -1,12 +1,13 @@
 {
-  "name": "observistral-ui-tools",
+  "name": "spiral-coder-ui-tools",
   "private": true,
   "type": "module",
   "scripts": {
     "ui:smoke": "node scripts/ui-smoke.mjs --scenario all",
     "ui:smoke:baseline": "node scripts/ui-smoke.mjs --scenario baseline",
     "ui:smoke:review-flow": "node scripts/ui-smoke.mjs --scenario harness-review-flow",
-    "ui:smoke:runtime-flow": "node scripts/ui-smoke.mjs --scenario runtime-approval-flow"
+    "ui:smoke:runtime-flow": "node scripts/ui-smoke.mjs --scenario runtime-approval-flow",
+    "test": "node --test tests/web/*.test.mjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0"

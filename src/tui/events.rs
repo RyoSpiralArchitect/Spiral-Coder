@@ -736,15 +736,15 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                 pane_key_status("chat", &app.chat_cfg),
                 String::new(),
                 "CLI flags:".to_string(),
-                "- obstral tui --api-key <key>".to_string(),
-                "- obstral tui --observer-api-key <key>".to_string(),
-                "- obstral tui --chat-api-key <key>".to_string(),
+                "- spiral-coder tui --api-key <key>".to_string(),
+                "- spiral-coder tui --observer-api-key <key>".to_string(),
+                "- spiral-coder tui --chat-api-key <key>".to_string(),
                 String::new(),
                 "Environment variables:".to_string(),
-                "- OpenAI: OPENAI_API_KEY or OBS_API_KEY".to_string(),
+                "- OpenAI: OPENAI_API_KEY or SPIRAL_CODER_API_KEY".to_string(),
                 "- Google Gemini: GEMINI_API_KEY or GOOGLE_API_KEY".to_string(),
                 "- Anthropic-compatible: ANTHROPIC_API_KEY".to_string(),
-                "- Mistral: MISTRAL_API_KEY or OBS_API_KEY".to_string(),
+                "- Mistral: MISTRAL_API_KEY or SPIRAL_CODER_API_KEY".to_string(),
                 "- Anthropic: ANTHROPIC_API_KEY".to_string(),
                 "- HF local: no key required".to_string(),
                 String::new(),
@@ -887,11 +887,11 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                 .as_ref()
                 .cloned()
                 .unwrap_or_else(|| ".".to_string());
-            let obstral_path = std::path::Path::new(&root).join(".obstral.md");
-            if obstral_path.exists() {
+            let spiral_coder_path = std::path::Path::new(&root).join(".spiral-coder.md");
+            if spiral_coder_path.exists() {
                 push!(format!(
-                    ".obstral.md already exists at {}",
-                    obstral_path.display()
+                    ".spiral-coder.md already exists at {}",
+                    spiral_coder_path.display()
                 ));
             } else {
                 // Detect stack and test_cmd synchronously.
@@ -905,7 +905,7 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                     stack.clone()
                 };
                 let content = format!(
-                    "# .obstral.md — Project Instructions for OBSTRAL Coder
+                    "# .spiral-coder.md — Project Instructions for Spiral-Coder Coder
 #
 # This file is automatically injected into the Coder's system prompt.
 # Edit it to set project rules, test commands, and coding conventions.
@@ -932,12 +932,12 @@ test_cmd: {test_cmd}
 # Add any project-specific context, architecture notes, or constraints here.
 "
                 );
-                match std::fs::write(&obstral_path, &content) {
+                match std::fs::write(&spiral_coder_path, &content) {
                     Ok(_) => push!(format!(
-                        "✓ created .obstral.md at {} — edit it to customize",
-                        obstral_path.display()
+                        "✓ created .spiral-coder.md at {} — edit it to customize",
+                        spiral_coder_path.display()
                     )),
-                    Err(e) => push!(format!("✗ failed to create .obstral.md: {e}")),
+                    Err(e) => push!(format!("✗ failed to create .spiral-coder.md: {e}")),
                 }
             }
         }
@@ -986,7 +986,7 @@ test_cmd: {test_cmd}
 /meta-diagnose [...] send coder failure to Observer\n\
 /autofix            toggle Observer->Coder auto-fix pipeline\n\
 /diff               show session diff from git checkpoint\n\
-/init               generate .obstral.md template\n\
+/init               generate .spiral-coder.md template\n\
 /rollback           restore git checkpoint from session start\n\
 Ctrl+R              cycle right pane tab\n"
                     .to_string()
@@ -2475,7 +2475,7 @@ fn save_tui_meta_diagnose_artifact(
         .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok())
         .unwrap_or_else(|| PathBuf::from("."));
-    let dir = base.join(".obstral").join("meta-diagnose");
+    let dir = base.join(".spiral-coder").join("meta-diagnose");
     let ts = artifact
         .get("ts")
         .and_then(|v| v.as_str())
@@ -3353,7 +3353,7 @@ mod tests {
             .unwrap_or_default()
             .as_nanos();
         std::env::temp_dir()
-            .join(format!("obstral_tui_events_{stamp}"))
+            .join(format!("spiral_coder_tui_events_{stamp}"))
             .display()
             .to_string()
     }

@@ -14,23 +14,23 @@ if ($Scope -eq "User") {
   $targetDir = Join-Path $repoRoot "bin"
 }
 
-$cmdPath = Join-Path $targetDir "obstral-lite.cmd"
-$ps1Path = Join-Path $targetDir "obstral-lite.ps1"
+$cmdPath = Join-Path $targetDir "spiral-coder-lite.cmd"
+$ps1Path = Join-Path $targetDir "spiral-coder-lite.ps1"
 
 if (-not $DryRun) {
   New-Item -ItemType Directory -Force $targetDir | Out-Null
 }
 
 if (((Test-Path $cmdPath) -or (Test-Path $ps1Path)) -and -not $Force -and -not $DryRun) {
-  throw "obstral-lite command already exists in '$targetDir'. Re-run with -Force to overwrite."
+  throw "spiral-coder-lite command already exists in '$targetDir'. Re-run with -Force to overwrite."
 }
 
 $cmdTemplate = @'
 @echo off
 setlocal
-set "PY=%OBS_HF_PYTHON%"
+set "PY=%SPIRAL_CODER_HF_PYTHON%"
 if "%PY%"=="" set "PY=python"
-"%PY%" "__REPO__\scripts\obstral_lite_cli.py" %*
+"%PY%" "__REPO__\scripts\spiral_coder_lite_cli.py" %*
 set "EC=%ERRORLEVEL%"
 endlocal & exit /b %EC%
 '@
@@ -38,8 +38,8 @@ endlocal & exit /b %EC%
 $ps1Template = @'
 $ErrorActionPreference = "Stop"
 $repo = "__REPO__"
-$python = if ($env:OBS_HF_PYTHON -and $env:OBS_HF_PYTHON.Trim()) { $env:OBS_HF_PYTHON } else { "python" }
-& $python "$repo\scripts\obstral_lite_cli.py" @args
+$python = if ($env:SPIRAL_CODER_HF_PYTHON -and $env:SPIRAL_CODER_HF_PYTHON.Trim()) { $env:SPIRAL_CODER_HF_PYTHON } else { "python" }
+& $python "$repo\scripts\spiral_coder_lite_cli.py" @args
 exit $LASTEXITCODE
 '@
 
@@ -70,4 +70,4 @@ if (-not $onPath) {
 }
 Write-Host ""
 Write-Host "Try:"
-Write-Host "  obstral-lite list-providers"
+Write-Host "  spiral-coder-lite list-providers"

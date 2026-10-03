@@ -6,7 +6,7 @@ if ! grep -q 'src/tui/agent/session_bridge.rs' docs/state-schema.md; then
   exit 1
 fi
 
-if ! grep -q 'src/tui/agent/session_bridge.rs' .obstral/runtime_eval.json; then
+if ! grep -q 'src/tui/agent/session_bridge.rs' .spiral-coder/runtime_eval.json; then
   echo "missing runtime eval follow-up for src/tui/agent/session_bridge.rs" >&2
   exit 1
 fi

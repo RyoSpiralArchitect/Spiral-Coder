@@ -1,3 +1,8 @@
+mod environment;
+mod evidence;
+
+pub use environment::validate_build_isolation;
+
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -89,6 +94,10 @@ pub enum RuntimeEvalCheck {
         path: String,
         value: String,
     },
+    ToolRootFileEquals {
+        path: String,
+        value: String,
+    },
     MessagesMin {
         min: usize,
     },
@@ -108,13 +117,23 @@ pub struct RuntimeEvalArtifacts {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RuntimeEvalMetrics {
+    #[serde(default)]
+    pub evaluator_revision: Option<String>,
     pub completed: bool,
+    #[serde(default)]
+    pub task_completed: Option<bool>,
     pub error_count: usize,
     pub tool_call_count: usize,
     pub unique_tool_calls: Vec<String>,
     pub tool_call_histogram: BTreeMap<String, usize>,
     pub successful_exec_commands: Vec<String>,
+    #[serde(default)]
+    pub verified_exec_commands: Vec<String>,
     pub auto_test_pass_count: usize,
+    #[serde(default)]
+    pub fresh_auto_test_pass_count: usize,
+    #[serde(default)]
+    pub auto_test_command: Option<String>,
     pub trace_events: BTreeMap<String, usize>,
     pub iteration_count: usize,
     pub max_iteration: usize,
@@ -296,6 +315,19 @@ pub fn sanitize_case_id(id: &str) -> String {
     }
 }
 
+/// The runtime creates only this reserved overlay artifact during promotion.
+/// All requested work artifacts must already pass before promotion is attempted.
+pub fn pre_promotion_case(case: &RuntimeEvalCase) -> RuntimeEvalCase {
+    let mut precheck = case.clone();
+    precheck.checks.retain(|check| {
+        !matches!(check,
+            RuntimeEvalCheck::ToolRootFileExists { path }
+                if path == ".spiral-coder/governor_contract.overlay.json"
+        )
+    });
+    precheck
+}
+
 pub fn evaluate_case(
     case: &RuntimeEvalCase,
     root: &str,
@@ -305,7 +337,7 @@ pub fn evaluate_case(
 ) -> Result<RuntimeEvalCaseReport> {
     let trace_lines = load_trace_lines(&artifacts.trace_path)?;
     let agent = extract_agent_config(&trace_lines);
-    let metrics = collect_metrics(&trace_lines, &artifacts)?;
+    let metrics = collect_metrics(&trace_lines, &artifacts, case)?;
     let checks = evaluate_checks(case, root, &artifacts, &metrics, run_error.as_deref());
     let ok = checks.iter().all(|c| c.ok) && run_error.is_none();
     Ok(RuntimeEvalCaseReport {
@@ -456,8 +488,12 @@ fn load_trace_lines(path: &Path) -> Result<Vec<TraceLine>> {
 fn collect_metrics(
     trace_lines: &[TraceLine],
     artifacts: &RuntimeEvalArtifacts,
+    case: &RuntimeEvalCase,
 ) -> Result<RuntimeEvalMetrics> {
-    let mut metrics = RuntimeEvalMetrics::default();
+    let mut metrics = RuntimeEvalMetrics {
+        evaluator_revision: Some("outcome-proof-v2".to_string()),
+        ..RuntimeEvalMetrics::default()
+    };
     let mut tool_names = BTreeSet::new();
     let mut agent_end_ok = None;
     let mut last_recovery_stage: Option<String> = None;
@@ -477,7 +513,6 @@ fn collect_metrics(
             }
             "error" => metrics.error_count += 1,
             "checkpoint" => metrics.checkpoint_count += 1,
-            "round_start" => metrics.round_count += 1,
             "agent_iter" => {
                 metrics.iteration_count += 1;
                 if let Some(iter) = line.data.get("iter").and_then(|v| v.as_u64()) {
@@ -632,6 +667,20 @@ fn collect_metrics(
                     .and_then(|v| v.as_u64())
                     .map(|v| v as usize);
             }
+            "round_start" => {
+                metrics.round_count += 1;
+                metrics.task_completed = None;
+            }
+            "agent_outcome" => {
+                metrics.task_completed = line.data.get("completed").and_then(Value::as_bool);
+            }
+            "verification_config" => {
+                metrics.auto_test_command = line
+                    .data
+                    .get("test_command")
+                    .and_then(Value::as_str)
+                    .map(str::to_string);
+            }
             "agent_end" => {
                 agent_end_ok = line.data.get("ok").and_then(|v| v.as_bool());
             }
@@ -639,9 +688,8 @@ fn collect_metrics(
         }
     }
     metrics.unique_tool_calls = tool_names.into_iter().collect();
-    metrics.completed = agent_end_ok
-        .or_else(|| metrics.trace_events.get("done").map(|n| *n > 0))
-        .unwrap_or(false)
+    metrics.completed = agent_end_ok == Some(true)
+        && metrics.task_completed == Some(true)
         && metrics.error_count == 0;
 
     let session_value = load_session_value(&artifacts.json_path)
@@ -650,8 +698,23 @@ fn collect_metrics(
     if let Some(messages) = session_value.get("messages").and_then(|v| v.as_array()) {
         metrics.messages_len = messages.len();
         metrics.last_assistant = select_terminal_assistant_message(messages);
-        metrics.successful_exec_commands = collect_successful_exec_commands(messages);
-        metrics.auto_test_pass_count = count_auto_test_passes(messages);
+        let required_commands: Vec<String> = case
+            .checks
+            .iter()
+            .filter_map(|check| match check {
+                RuntimeEvalCheck::VerifiedCommandSeen { command } => Some(command.clone()),
+                _ => None,
+            })
+            .collect();
+        let proof = evidence::collect(
+            messages,
+            &required_commands,
+            metrics.auto_test_command.as_deref(),
+        );
+        metrics.successful_exec_commands = proof.successful_commands;
+        metrics.verified_exec_commands = proof.verified_commands;
+        metrics.auto_test_pass_count = proof.auto_test_pass_count;
+        metrics.fresh_auto_test_pass_count = proof.fresh_auto_test_pass_count;
         let token_estimates = estimate_transcript_tokens(messages);
         metrics.transcript_input_tokens_est = token_estimates.input;
         metrics.transcript_output_tokens_est = token_estimates.output;
@@ -673,94 +736,6 @@ fn collect_metrics(
         .unwrap_or(0);
 
     Ok(metrics)
-}
-
-fn collect_successful_exec_commands(messages: &[Value]) -> Vec<String> {
-    let mut pending: BTreeMap<String, String> = BTreeMap::new();
-    let mut out = Vec::new();
-
-    for msg in messages {
-        match msg.get("role").and_then(|v| v.as_str()) {
-            Some("assistant") => {
-                let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                    continue;
-                };
-                for tc in tool_calls {
-                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                    let name = tc
-                        .get("function")
-                        .and_then(|v| v.get("name"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if id.is_empty() || name != "exec" {
-                        continue;
-                    }
-                    let command = tc
-                        .get("function")
-                        .and_then(|v| v.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                        .and_then(|value| {
-                            value
-                                .get("command")
-                                .and_then(|v| v.as_str())
-                                .map(str::to_string)
-                        })
-                        .unwrap_or_default();
-                    if !command.trim().is_empty() {
-                        pending.insert(id.to_string(), command);
-                    }
-                }
-            }
-            Some("tool") => {
-                let tool_call_id = msg
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim();
-                let Some(command) = pending.remove(tool_call_id) else {
-                    continue;
-                };
-                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if exec_tool_content_succeeded(content) {
-                    out.push(command);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    out
-}
-
-fn exec_tool_content_succeeded(content: &str) -> bool {
-    let text = content.trim();
-    !text.is_empty()
-        && (text.contains("exit_code: 0")
-            || text.contains("OK (exit 0)")
-            || text.starts_with("OK:"))
-        && !text.contains("GOVERNOR BLOCKED")
-        && !text.contains("FAILED")
-}
-
-fn count_auto_test_passes(messages: &[Value]) -> usize {
-    messages
-        .iter()
-        .filter(|msg| msg.get("role").and_then(|v| v.as_str()) == Some("tool"))
-        .filter_map(|msg| msg.get("content").and_then(|v| v.as_str()))
-        .filter(|content| content.contains("[auto-test]") && content.contains("PASSED (exit 0)"))
-        .count()
-}
-
-fn command_sig_for_eval(command: &str) -> String {
-    command.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
-fn command_matches_for_eval(left: &str, right: &str) -> bool {
-    let left = command_sig_for_eval(left);
-    let right = command_sig_for_eval(right);
-    !left.is_empty() && left == right
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -877,6 +852,10 @@ fn select_terminal_assistant_message(messages: &[Value]) -> Option<String> {
     let mut last_assistant = None;
     let mut last_done = None;
     for msg in messages {
+        if msg.get("role").and_then(|v| v.as_str()) == Some("user") {
+            last_assistant = None;
+            last_done = None;
+        }
         if msg.get("role").and_then(|v| v.as_str()) != Some("assistant") {
             continue;
         }
@@ -899,11 +878,19 @@ fn evaluate_checks(
     metrics: &RuntimeEvalMetrics,
     run_error: Option<&str>,
 ) -> Vec<RuntimeEvalCheckResult> {
-    let checks = if case.checks.is_empty() {
-        vec![RuntimeEvalCheck::Completed, RuntimeEvalCheck::ErrorFree]
-    } else {
-        case.checks.clone()
-    };
+    let mut checks = case.checks.clone();
+    if !checks
+        .iter()
+        .any(|check| matches!(check, RuntimeEvalCheck::Completed))
+    {
+        checks.insert(0, RuntimeEvalCheck::Completed);
+    }
+    if !checks
+        .iter()
+        .any(|check| matches!(check, RuntimeEvalCheck::ErrorFree))
+    {
+        checks.insert(1, RuntimeEvalCheck::ErrorFree);
+    }
     checks
         .iter()
         .map(|check| evaluate_check(check, root, artifacts, metrics, run_error))
@@ -921,7 +908,10 @@ fn evaluate_check(
         RuntimeEvalCheck::Completed => RuntimeEvalCheckResult {
             label: "completed".to_string(),
             ok: metrics.completed,
-            detail: format!("completed={}", metrics.completed),
+            detail: format!(
+                "completed={} agent_outcome={:?}",
+                metrics.completed, metrics.task_completed
+            ),
         },
         RuntimeEvalCheck::ErrorFree => RuntimeEvalCheckResult {
             label: "error_free".to_string(),
@@ -977,38 +967,34 @@ fn evaluate_check(
         }
         RuntimeEvalCheck::VerifiedCommandSeen { command } => {
             let ok = metrics
-                .successful_exec_commands
+                .verified_exec_commands
                 .iter()
-                .any(|seen| command_matches_for_eval(seen, command));
+                .any(|seen| evidence::commands_match(seen, command));
             RuntimeEvalCheckResult {
                 label: format!("verified_command_seen:{command}"),
                 ok,
                 detail: format!(
-                    "successful_exec_commands={:?}",
-                    metrics.successful_exec_commands
+                    "verified_exec_commands={:?}",
+                    metrics.verified_exec_commands
                 ),
             }
         }
         RuntimeEvalCheck::AutoTestPassed { command } => {
             let command_ok = command.as_ref().is_none_or(|command| {
                 metrics
-                    .last_assistant
+                    .auto_test_command
                     .as_deref()
-                    .is_some_and(|message| message.contains(command.as_str()))
-                    || metrics
-                        .successful_exec_commands
-                        .iter()
-                        .any(|seen| command_matches_for_eval(seen, command))
+                    .is_some_and(|actual| evidence::commands_match(actual, command))
             });
             RuntimeEvalCheckResult {
                 label: match command {
                     Some(command) => format!("auto_test_passed:{command}"),
                     None => "auto_test_passed".to_string(),
                 },
-                ok: metrics.auto_test_pass_count > 0 && command_ok,
+                ok: metrics.fresh_auto_test_pass_count > 0 && command_ok,
                 detail: format!(
-                    "auto_test_pass_count={} command_ok={command_ok}",
-                    metrics.auto_test_pass_count
+                    "fresh_auto_test_pass_count={} test_command={:?} command_ok={command_ok}",
+                    metrics.fresh_auto_test_pass_count, metrics.auto_test_command
                 ),
             }
         }
@@ -1049,6 +1035,24 @@ fn evaluate_check(
                         "resolved={} bytes={} matched={ok}",
                         resolved.display(),
                         body.len()
+                    ),
+                    Err(err) => format!("resolved={} error={err}", resolved.display()),
+                },
+            }
+        }
+        RuntimeEvalCheck::ToolRootFileEquals { path, value } => {
+            let resolved = Path::new(root).join(path);
+            let content = std::fs::read(&resolved);
+            let ok = content.as_ref().is_ok_and(|body| body == value.as_bytes());
+            RuntimeEvalCheckResult {
+                label: format!("tool_root_file_equals:{path}"),
+                ok,
+                detail: match content {
+                    Ok(body) => format!(
+                        "resolved={} bytes={} expected_bytes={} exact_match={ok}",
+                        resolved.display(),
+                        body.len(),
+                        value.len()
                     ),
                     Err(err) => format!("resolved={} error={err}", resolved.display()),
                 },
@@ -1143,6 +1147,7 @@ mod tests {
                 "{\"event\":\"reflection_ledger_remembered\",\"data\":{\"entries\":3,\"count\":2}}\n",
                 "{\"event\":\"provider_retry\",\"data\":{\"provider\":\"mistral\",\"status\":429,\"delay_ms\":5000}}\n",
                 "{\"event\":\"done\",\"data\":{}}\n",
+                "{\"event\":\"agent_outcome\",\"data\":{\"completed\":true}}\n",
                 "{\"event\":\"agent_end\",\"data\":{\"ok\":true}}\n"
             ),
         )
@@ -1152,22 +1157,6 @@ mod tests {
             &serde_json::json!({
                 "messages": [
                     {"role": "system", "content": "sys"},
-                    {
-                        "role": "assistant",
-                        "tool_calls": [{
-                            "id": "call_exec",
-                            "type": "function",
-                            "function": {
-                                "name": "exec",
-                                "arguments": "{\"command\":\"grep -q ok created.flag\"}"
-                            }
-                        }]
-                    },
-                    {
-                        "role": "tool",
-                        "tool_call_id": "call_exec",
-                        "content": "OK (exit_code: 0)\nstdout:\nok"
-                    },
                     {
                         "role": "assistant",
                         "tool_calls": [{
@@ -1183,6 +1172,22 @@ mod tests {
                         "role": "tool",
                         "tool_call_id": "call_patch",
                         "content": "OK: patched 'created.flag'\n[auto-test] ✓ PASSED (exit 0)"
+                    },
+                    {
+                        "role": "assistant",
+                        "tool_calls": [{
+                            "id": "call_exec",
+                            "type": "function",
+                            "function": {
+                                "name": "exec",
+                                "arguments": "{\"command\":\"grep -q ok created.flag\"}"
+                            }
+                        }]
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "call_exec",
+                        "content": "OK (exit_code: 0)\nstdout:\nok"
                     },
                     {
                         "role": "assistant",
@@ -1424,3 +1429,6 @@ mod tests {
         assert!(report.checks.iter().any(|c| !c.ok));
     }
 }
+
+#[cfg(test)]
+mod regression_tests;

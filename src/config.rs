@@ -118,13 +118,13 @@ impl ProviderPreset {
 
     pub fn api_key_env_hint(self) -> &'static str {
         match self {
-            ProviderPreset::OpenAi => "OPENAI_API_KEY or OBS_API_KEY",
+            ProviderPreset::OpenAi => "OPENAI_API_KEY or SPIRAL_CODER_API_KEY",
             ProviderPreset::Gemini => "GEMINI_API_KEY or GOOGLE_API_KEY",
             ProviderPreset::AnthropicCompat | ProviderPreset::Anthropic => "ANTHROPIC_API_KEY",
             ProviderPreset::OpenAiCompatibleCustom => {
-                "provider-specific key (or OBS_API_KEY for OpenAI-style endpoints)"
+                "provider-specific key (or SPIRAL_CODER_API_KEY for OpenAI-style endpoints)"
             }
-            ProviderPreset::Mistral => "MISTRAL_API_KEY or OBS_API_KEY",
+            ProviderPreset::Mistral => "MISTRAL_API_KEY or SPIRAL_CODER_API_KEY",
             ProviderPreset::HfLocal => "(none; hf/local does not use an API key)",
         }
     }
@@ -346,7 +346,7 @@ pub struct RunConfig {
 impl PartialConfig {
     pub fn resolve(mut self) -> Result<RunConfig> {
         if self.provider.is_none() {
-            if let Some(v) = env_trimmed("OBS_PROVIDER") {
+            if let Some(v) = env_trimmed("SPIRAL_CODER_PROVIDER") {
                 if let Some(preset) = parse_provider_preset(&v) {
                     apply_provider_preset(&mut self, preset);
                 } else {
@@ -355,28 +355,30 @@ impl PartialConfig {
             }
         }
         if self.model.is_none() {
-            self.model = env_trimmed("OBS_MODEL");
+            self.model = env_trimmed("SPIRAL_CODER_MODEL");
         }
         if self.chat_model.is_none() {
-            self.chat_model = env_trimmed("OBS_CHAT_MODEL");
+            self.chat_model = env_trimmed("SPIRAL_CODER_CHAT_MODEL");
         }
         if self.code_model.is_none() {
-            self.code_model = env_trimmed("OBS_CODE_MODEL");
+            self.code_model = env_trimmed("SPIRAL_CODER_CODE_MODEL");
         }
         if self.base_url.is_none() {
-            self.base_url = env_trimmed("OBS_BASE_URL");
+            self.base_url = env_trimmed("SPIRAL_CODER_BASE_URL");
         }
         if self.timeout_seconds.is_none() {
-            self.timeout_seconds = env_trimmed("OBS_TIMEOUT_SECONDS").and_then(|v| v.parse().ok());
+            self.timeout_seconds =
+                env_trimmed("SPIRAL_CODER_TIMEOUT_SECONDS").and_then(|v| v.parse().ok());
         }
         if self.persona.is_none() {
-            self.persona = env_trimmed("OBS_PERSONA");
+            self.persona = env_trimmed("SPIRAL_CODER_PERSONA");
         }
         if self.hf_device.is_none() {
-            self.hf_device = env_trimmed("OBS_HF_DEVICE");
+            self.hf_device = env_trimmed("SPIRAL_CODER_HF_DEVICE");
         }
         if self.hf_local_only.is_none() {
-            self.hf_local_only = env_trimmed("OBS_HF_LOCAL_ONLY").and_then(|v| parse_bool(&v));
+            self.hf_local_only =
+                env_trimmed("SPIRAL_CODER_HF_LOCAL_ONLY").and_then(|v| parse_bool(&v));
         }
 
         // Provider defaulting:
@@ -409,7 +411,9 @@ impl PartialConfig {
         } else if env_trimmed("GEMINI_API_KEY").is_some() || env_trimmed("GOOGLE_API_KEY").is_some()
         {
             ProviderKind::OpenAiCompatible
-        } else if env_trimmed("OPENAI_API_KEY").is_some() || env_trimmed("OBS_API_KEY").is_some() {
+        } else if env_trimmed("OPENAI_API_KEY").is_some()
+            || env_trimmed("SPIRAL_CODER_API_KEY").is_some()
+        {
             ProviderKind::OpenAiCompatible
         } else {
             ProviderKind::OpenAiCompatible
@@ -495,7 +499,7 @@ impl PartialConfig {
         match provider {
             ProviderKind::Mistral if api_key.is_none() => {
                 return Err(anyhow!(
-                    "missing API key for mistral. Set MISTRAL_API_KEY (or OBS_API_KEY), or pass --api-key."
+                    "missing API key for mistral. Set MISTRAL_API_KEY (or SPIRAL_CODER_API_KEY), or pass --api-key."
                 ));
             }
             ProviderKind::Anthropic if api_key.is_none() => {
@@ -578,15 +582,15 @@ fn parse_bool(s: &str) -> Option<bool> {
 fn resolve_api_key_from_env(provider: &ProviderKind, base_url: &str) -> Option<String> {
     let get = |k: &str| env_trimmed(k);
     match detect_provider_preset(provider, base_url) {
-        ProviderPreset::OpenAi => get("OBS_API_KEY").or_else(|| get("OPENAI_API_KEY")),
+        ProviderPreset::OpenAi => get("SPIRAL_CODER_API_KEY").or_else(|| get("OPENAI_API_KEY")),
         ProviderPreset::Gemini => get("GEMINI_API_KEY").or_else(|| get("GOOGLE_API_KEY")),
         ProviderPreset::AnthropicCompat | ProviderPreset::Anthropic => get("ANTHROPIC_API_KEY"),
-        ProviderPreset::OpenAiCompatibleCustom => get("OBS_API_KEY")
+        ProviderPreset::OpenAiCompatibleCustom => get("SPIRAL_CODER_API_KEY")
             .or_else(|| get("OPENAI_API_KEY"))
             .or_else(|| get("GEMINI_API_KEY"))
             .or_else(|| get("GOOGLE_API_KEY"))
             .or_else(|| get("ANTHROPIC_API_KEY")),
-        ProviderPreset::Mistral => get("MISTRAL_API_KEY").or_else(|| get("OBS_API_KEY")),
+        ProviderPreset::Mistral => get("MISTRAL_API_KEY").or_else(|| get("SPIRAL_CODER_API_KEY")),
         ProviderPreset::HfLocal => None,
     }
 }
@@ -678,8 +682,8 @@ mod tests {
 
     #[test]
     fn resolve_honors_obs_provider_gemini_preset() {
-        with_env_var("OBS_PROVIDER", Some("gemini"), || {
-            with_env_var("OBS_BASE_URL", None, || {
+        with_env_var("SPIRAL_CODER_PROVIDER", Some("gemini"), || {
+            with_env_var("SPIRAL_CODER_BASE_URL", None, || {
                 with_env_var("GEMINI_API_KEY", Some("gem-test"), || {
                     let cfg = PartialConfig::default()
                         .resolve()

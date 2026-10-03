@@ -27,9 +27,9 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 VERSION = 1
 DEFAULT_INDEX = ".spiral/repo_map.json"
-DEFAULT_CONFIG = ".obstral/repo_map.config.json"
-DEFAULT_EVAL = ".obstral/repo_map.eval.json"
-DEFAULT_IGNORE = ".obstralignore"
+DEFAULT_CONFIG = ".spiral-coder/repo_map.config.json"
+DEFAULT_EVAL = ".spiral-coder/repo_map.eval.json"
+DEFAULT_IGNORE = ".spiral-coderignore"
 DEFAULT_MAX_BYTES = 4_000_000
 
 DEFAULT_SKIP_DIRS = {
