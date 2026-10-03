@@ -175,6 +175,8 @@ fn explicit_instruction_requires_summary_but_ordinary_tasks_keep_fallback() {
     let hint = authored_final_answer_hint(root).unwrap();
     assert!(hint.contains(root));
     assert!(hint.contains("nonempty `summary`"));
+    assert!(hint.contains("TEXT of `done.summary`"));
+    assert!(hint.contains("Extra JSON keys or custom fields are not displayed"));
     assert!(validate_authored_done_summary(root, "", "Acceptance", &[], None).is_err());
     assert!(validate_authored_done_summary("Finish the task.", "", "", &[], None).is_ok());
     assert!(enrich_text_final_handoff("still working", root, &verified_edits(), None).is_none());
@@ -222,4 +224,22 @@ fn named_plain_values_in_a_path_list_require_authored_text_not_auto_insertion() 
     assert!(
         named_values(&[" the changed Rust file path and the verification command."]).is_empty()
     );
+}
+
+#[test]
+fn case_only_mismatch_shows_the_exact_replacement_without_weakening_the_contract() {
+    let root = "Final answer must include receipt.log and verified by replay.";
+    let answer = "検証: Verified by replay; saved receipt.log.";
+    let error = validate_authored_done_summary(root, answer, answer, &[], None).unwrap_err();
+    assert!(error.contains("case-sensitive"));
+    assert!(error.contains("replace \"Verified by replay\" with \"verified by replay\""));
+    assert!(error.contains("successful verification remains valid"));
+    let corrected = answer.replace("Verified by replay", "verified by replay");
+    assert!(validate_authored_done_summary(root, &corrected, &corrected, &[], None).is_ok());
+    assert!(enrich_text_final_handoff(answer, root, &[], None).is_none());
+
+    let absent =
+        validate_authored_done_summary(root, "receipt.log", "receipt.log", &[], None).unwrap_err();
+    assert!(absent.contains("explicit item `verified by replay`"));
+    assert!(!absent.contains("replace \"Verified by replay\""));
 }

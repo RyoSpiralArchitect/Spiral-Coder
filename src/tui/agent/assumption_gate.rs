@@ -96,6 +96,98 @@ fn same_path(left: &str, right: &str) -> bool {
             .filter(|part| *part != Component::CurDir))
 }
 
+pub(super) fn needs_fresh_file_read(ledger: &AssumptionLedger, path: &str) -> bool {
+    ledger.entries.iter().any(|entry| {
+        entry.status == AssumptionStatus::Refuted
+            && refuted_file_existence(&entry.text).is_some_and(|missing| same_path(path, missing))
+    })
+}
+
+/// Feed only a newly completed read/write result, never cached working-memory facts.
+pub(super) fn confirm_file_existence_after_result(
+    ledger: &mut AssumptionLedger,
+    name: &str,
+    path: &str,
+    result: &str,
+) {
+    let header = result.lines().next().unwrap_or("");
+    let observed = match name {
+        "read_file" if !header.contains("[⚡ cached — unchanged since last read]") => header
+            .strip_prefix('[')
+            .and_then(|rest| rest.rsplit_once("] ("))
+            .map(|(path, _)| path),
+        "write_file" if crate::execution_evidence::file_edit_succeeded(name, result) => header
+            .strip_prefix("OK: wrote '")
+            .and_then(|rest| rest.rsplit_once("' ("))
+            .map(|(path, _)| path),
+        _ => None,
+    };
+    if !observed.is_some_and(|observed| same_path(observed, path)) {
+        return;
+    }
+    for entry in &mut ledger.entries {
+        if entry.status == AssumptionStatus::Refuted
+            && refuted_file_existence(&entry.text).is_some_and(|missing| same_path(path, missing))
+        {
+            entry.status = AssumptionStatus::Confirmed;
+            entry.evidence = Some(format!("{name}({path}) succeeded after refutation"));
+        }
+    }
+}
+
+/// Session reconstruction applies the same event-local update in transcript order.
+#[derive(Default)]
+pub(super) struct FileExistenceReplay {
+    pending: std::collections::HashMap<String, (String, String)>,
+}
+
+impl FileExistenceReplay {
+    pub(super) fn observe(&mut self, ledger: &mut AssumptionLedger, message: &serde_json::Value) {
+        match message["role"].as_str() {
+            Some("assistant") => {
+                for call in message["tool_calls"].as_array().into_iter().flatten() {
+                    let Some(id) = call["id"].as_str().filter(|id| !id.is_empty()) else {
+                        continue;
+                    };
+                    let Some(name @ ("read_file" | "write_file")) =
+                        call["function"]["name"].as_str()
+                    else {
+                        continue;
+                    };
+                    let Some(args) = call["function"]["arguments"]
+                        .as_str()
+                        .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw).ok())
+                    else {
+                        continue;
+                    };
+                    if let Some(path) = args["path"].as_str() {
+                        self.pending
+                            .insert(id.to_string(), (name.to_string(), path.to_string()));
+                    }
+                }
+            }
+            Some("tool") => {
+                if let Some((name, path)) = message["tool_call_id"]
+                    .as_str()
+                    .and_then(|id| self.pending.remove(id))
+                {
+                    confirm_file_existence_after_result(
+                        ledger,
+                        &name,
+                        &path,
+                        message["content"].as_str().unwrap_or(""),
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "assumption_evidence_tests.rs"]
+mod evidence_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;

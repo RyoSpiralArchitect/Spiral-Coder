@@ -21,7 +21,7 @@ pub(super) fn requires_authored_final_answer(root: &str) -> bool {
 pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
     let clauses = instructions(root);
     (!clauses.is_empty()).then(|| format!(
-        "[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Preserve explicitly named paths and short required phrases verbatim when supported by that evidence. State limitations truthfully; do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\n{}",
+        "[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\n{}",
         clauses.iter().map(|clause| format!("Final answer must include{clause}")).collect::<Vec<_>>().join("\n")
     ))
 }
@@ -278,7 +278,15 @@ pub(super) fn validate_authored_done_summary(
     required_literals.extend(named_values(&clauses));
     for literal in required_literals {
         if !rendered.contains(literal.as_str()) {
-            missing.push(format!("explicit item `{literal}`"));
+            let case_hint = rendered.to_ascii_lowercase().find(&literal.to_ascii_lowercase()).map(|start| {
+                // ASCII folding preserves byte offsets, including UTF-8 prose
+                // before the literal. Do not relax the exact-match contract.
+                let found = &rendered[start..start + literal.len()];
+                format!("; case-sensitive mismatch: replace {} with {} in the text of `done.summary`",
+                    serde_json::to_string(found).expect("string serialization"),
+                    serde_json::to_string(&literal).expect("string serialization"))
+            }).unwrap_or_default();
+            missing.push(format!("explicit item `{literal}`{case_hint}"));
         }
     }
     for kind in path_kinds(&clauses) {

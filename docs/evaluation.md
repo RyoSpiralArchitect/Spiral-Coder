@@ -53,6 +53,10 @@ returns the original final-answer instruction in its `done` hint and rejects an
 empty action `done.summary` instead of replacing it with a generic summary. A
 nonempty model summary still needs the usual acceptance and verification evidence;
 the guard does not invent requested status labels or certify arbitrary prose.
+Required literals belong in the displayed `done.summary` text; extra JSON keys
+are not a final answer. Repair hints preserve exact capitalization and spaces,
+and show the observed and required spelling for an ASCII case-only mismatch.
+They leave successful execution proof intact and never insert claims themselves.
 The existing independent final-answer checks remain authoritative. Prompts without
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.

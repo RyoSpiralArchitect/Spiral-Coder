@@ -134,6 +134,15 @@ Responsibilities:
 - sandbox constraints (cwd/tool_root)
 - phase gating (core/feature/polish)
 
+Automatic tests after successful file edits have a typed `NotRun`/`Passed`/
+`Failed` outcome, determined by the first runtime status only. A failed test
+preserves the edit as a mutation, revokes earlier build and behavioral proof,
+and enters `Diagnose` immediately. The agent can inspect the failure before
+repairing it without repeating a test already known to fail. A missing or
+unrecognized status grants no proof; an untested fix still requires verification.
+`src/tui/agent/recovery.rs` owns the phases, and shared file-result accounting
+keeps live and restored verification timestamps consistent.
+
 Current code:
 - `src/tui/agent.rs` (AgentState + error classifier)
 - `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
@@ -162,6 +171,11 @@ Repetition and progress evidence:
   replacement, a new-file write, or a verification scratchpad is not an existence
   dependency. Diagnostic reads and discovery remain available to gather evidence.
   Other refuted assumptions retain their existing retry checks.
+  A subsequent successful read or write of that exact path confirms its existence
+  through an event-local result hook; replay applies the same update in transcript
+  order using correlated tool-call IDs. Earlier successes, unpaired results, cached
+  reads, and plan/think text cannot clear a newer refutation. Reads of a currently
+  refuted existence path bypass its cached content so diagnosis inspects the file.
 - Fix-existing mutation synthesis/restoration receives the typed recovery stage.
   It does not rewrite diagnostics into patches during `diagnose` or `verify`;
   requested repairs in `fix` and ordinary planning retain their existing behavior.

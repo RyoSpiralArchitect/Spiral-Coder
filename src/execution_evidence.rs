@@ -34,12 +34,36 @@ pub(crate) fn file_edit_succeeded(name: &str, content: &str) -> bool {
 
 /// The runtime prepends its automatic-test status before stdout/stderr. Later
 /// success text in test output cannot override the first status or a failed edit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum AutoTestOutcome {
+    NotRun,
+    Passed,
+    Failed,
+}
+
+pub(crate) fn auto_test_outcome(name: &str, content: &str) -> AutoTestOutcome {
+    if !file_edit_succeeded(name, content) {
+        return AutoTestOutcome::NotRun;
+    }
+    let status = content.lines().find(|line| line.starts_with("[auto-test]"));
+    match status {
+        Some("[auto-test] ✓ PASSED (exit 0)") => AutoTestOutcome::Passed,
+        Some(line)
+            if line
+                .strip_prefix("[auto-test] ✗ FAILED (exit ")
+                .and_then(|value| value.strip_suffix(')'))
+                .and_then(|value| value.parse::<i32>().ok())
+                .is_some() =>
+        {
+            AutoTestOutcome::Failed
+        }
+        // Missing or unrecognized historical status grants no verification.
+        _ => AutoTestOutcome::NotRun,
+    }
+}
+
 pub(crate) fn auto_test_succeeded(name: &str, content: &str) -> bool {
-    file_edit_succeeded(name, content)
-        && content
-            .lines()
-            .find(|line| line.starts_with("[auto-test]"))
-            .is_some_and(|line| line == "[auto-test] ✓ PASSED (exit 0)")
+    auto_test_outcome(name, content) == AutoTestOutcome::Passed
 }
 
 #[cfg(test)]

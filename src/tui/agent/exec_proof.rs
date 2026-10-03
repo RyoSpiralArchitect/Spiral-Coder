@@ -5,6 +5,40 @@ use super::{
     configured_test_cmd_verification_level, parse_exec_command_from_args,
     parse_exec_tool_output_sections, suspicious_success_reason, ExecKind, VerificationLevel,
 };
+use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
+
+pub(super) struct FileProofResult<'a> {
+    pub name: &'a str,
+    pub content: &'a str,
+    pub test_cmd: Option<&'a str>,
+}
+
+/// The write remains a mutation when its automatic test fails. That failure
+/// revokes both proof levels just like an explicit failed verification command.
+pub(super) fn record_file_result(
+    result: FileProofResult<'_>,
+    step: usize,
+    last_mutation: &mut Option<usize>,
+    last_build: &mut Option<usize>,
+    last_behavioral: &mut Option<usize>,
+) {
+    if !crate::execution_evidence::file_edit_succeeded(result.name, result.content) {
+        return;
+    }
+    *last_mutation = Some(step);
+    match auto_test_outcome(result.name, result.content) {
+        AutoTestOutcome::Failed => {
+            *last_build = None;
+            *last_behavioral = None;
+        }
+        AutoTestOutcome::Passed => match configured_test_cmd_verification_level(result.test_cmd) {
+            Some(VerificationLevel::Build) => *last_build = Some(step),
+            Some(VerificationLevel::Behavioral) => *last_behavioral = Some(step),
+            None => {}
+        },
+        AutoTestOutcome::NotRun => {}
+    }
+}
 
 /// Live execution supplies its effective return status; restoration derives it
 /// from the runtime-owned transcript header, never a success string in stdout.
@@ -151,21 +185,17 @@ pub(super) fn restore_done_gate_from_messages(
             continue;
         }
 
-        if crate::execution_evidence::file_edit_succeeded(&name, content) {
-            // The write succeeded even if a hash or valid automatic-test status
-            // could not be recorded afterward.
-            last_mutation_step = Some(step_seq);
-            // Auto-test success (if configured) also counts as verification.
-            if crate::execution_evidence::auto_test_succeeded(&name, content) {
-                match configured_test_cmd_verification_level(test_cmd) {
-                    Some(VerificationLevel::Build) => last_build_verify_ok_step = Some(step_seq),
-                    Some(VerificationLevel::Behavioral) => {
-                        last_behavioral_verify_ok_step = Some(step_seq)
-                    }
-                    None => {}
-                }
-            }
-        }
+        record_file_result(
+            FileProofResult {
+                name: &name,
+                content,
+                test_cmd,
+            },
+            step_seq,
+            &mut last_mutation_step,
+            &mut last_build_verify_ok_step,
+            &mut last_behavioral_verify_ok_step,
+        );
     }
 
     (
@@ -219,10 +249,14 @@ mod tests {
             ("patch_file", "OK: patched 'src/lib.rs'"),
             ("apply_diff", "OK: applied diff to 'src/lib.rs'"),
         ] {
-            for status in [
-                "",
-                "[auto-test] ✗ FAILED (exit 1)\n[auto-test] ✓ PASSED (exit 0)",
-                "[auto-test] unknown\nPASSED (exit 0)",
+            for (status, expected_build, expected_behavioral) in [
+                ("", Some(1), Some(2)),
+                (
+                    "[auto-test] ✗ FAILED (exit 1)\n[auto-test] ✓ PASSED (exit 0)",
+                    None,
+                    None,
+                ),
+                ("[auto-test] unknown\nPASSED (exit 0)", Some(1), Some(2)),
             ] {
                 // Successful edits remain mutations when their optional hash is missing.
                 let content = format!("{header}\n{status}");
@@ -230,7 +264,10 @@ mod tests {
                 file_exchange(&mut messages, name, &content);
                 let (_, mutation, build, behavioral, _) =
                     restore_done_gate_from_messages(&messages, Some("cargo test"));
-                assert_eq!((mutation, build, behavioral), (Some(3), Some(1), Some(2)));
+                assert_eq!(
+                    (mutation, build, behavioral),
+                    (Some(3), expected_build, expected_behavioral)
+                );
                 assert!(mutation > behavioral);
             }
             let mut messages = Vec::new();
