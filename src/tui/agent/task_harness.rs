@@ -336,6 +336,14 @@ fn is_approved_observer_benchmark_plan(low: &str) -> bool {
     low.contains("[observer benchmark plan approved]") || low.contains("<observer_benchmark_plan")
 }
 
+pub(super) fn approved_benchmark_required_commands(root_user_text: &str) -> Vec<String> {
+    if is_approved_observer_benchmark_plan(&root_user_text.to_ascii_lowercase()) {
+        benchmark_proof::required_commands(root_user_text)
+    } else {
+        Vec::new()
+    }
+}
+
 pub(super) fn build_progress_gate_block(
     harness: TaskHarness,
     tc: &ToolCallData,

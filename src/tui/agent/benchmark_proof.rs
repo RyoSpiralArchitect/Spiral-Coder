@@ -14,7 +14,7 @@ pub(super) fn commands_match(actual: &str, required: &str) -> bool {
     !actual.trim().is_empty() && actual.trim() == required.trim()
 }
 
-fn required_commands(root_user_text: &str) -> Vec<String> {
+pub(super) fn required_commands(root_user_text: &str) -> Vec<String> {
     let mut commands = Vec::new();
     let mut in_plan = false;
     let mut in_checks = false;

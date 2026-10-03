@@ -1,5 +1,23 @@
 # Runtime evaluation evidence
 
+## Copied-workspace build isolation
+
+Each copied fixture must use its own Cargo build output. Sharing an absolute
+`CARGO_TARGET_DIR` across copies of the same package can reuse a passing test
+executable from another copy even when the current source still fails. A
+controlled local audit reproduced this difference with unchanged fixture source.
+
+Before any selected copied case runs, `eval` rejects an inherited absolute or
+parent-traversing `CARGO_TARGET_DIR`. Leave it unset (Cargo then uses each copied
+workspace's own `target`) or use a relative child directory. Non-copied cases
+retain their existing build configuration. This guard covers the inherited
+environment variable; fixture-local Cargo configuration and commands that
+explicitly override a target directory still need separate review.
+
+For example, build the executable first, then run the evaluation with
+`env -u CARGO_TARGET_DIR target/debug/spiral-coder ... eval ...` on Unix.
+Avoid using a shared target to save build time in correctness evaluations.
+
 Runtime eval specs remain version 1. New case reports identify the evaluator as
 `metrics.evaluator_revision: "outcome-proof-v2"`. Historical reports and raw run
 artifacts retain their original results; they are not retroactively relabeled.
@@ -66,6 +84,12 @@ do not change a case's outcome.
 
 ## Command and automatic-test evidence
 
+Colon-delimited protocol blocks recognize only the active block contract's field
+names and aliases at the least-indented field level. A step's literal colon text,
+nested fixture keys, or a more deeply indented recognized label remain part of
+the current value. This keeps multi-step plans intact when a step describes JSON
+or replay fields. Existing XML and bracket-quoted field forms remain supported.
+
 `verified_command_seen` requires an assistant tool call and matching tool result
 ID, an exact successful runtime exit-status header, and current proof. Command
 matching ignores surrounding whitespace only: case, quoting, and internal
@@ -89,6 +113,10 @@ Automatic-test success must accompany a correlated successful file-edit result.
 The first automatic-test status determines success, so a failed test printing a
 success marker cannot manufacture a pass. Later mutations invalidate that pass.
 A later failed explicit rerun of the configured test command also revokes it.
+History digests and old-tool-result pruning retain the first automatic-test
+status verbatim. Later stdout that prints a success marker cannot replace a
+failed status, and older successful edit evidence remains available to resume
+and evaluation after its verbose output is pruned.
 
 A command-specific `auto_test_passed` check additionally requires exact agreement
 with `verification_config.test_command`. The CLI records this telemetry after
@@ -113,3 +141,11 @@ Before promotion, all requested artifact checks still apply. Only existence of
 creates that reserved file. Content checks on that path, similarly named paths,
 and all other existence checks remain prerequisites. The final case report
 checks the complete original check set.
+
+## TUI replay assertions
+
+Every TUI replay case must contain at least one entry in its top-level `checks`
+array. Loading or executing a case with missing or empty checks fails before
+replay artifacts are created. An unknown nested `replay.checks` object does not
+satisfy that requirement. A replay command's successful exit therefore requires
+evaluated assertions; it is still only evidence for the assertions specified.

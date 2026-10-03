@@ -1,9 +1,9 @@
 //! Generic done-gate verification timestamps for live and resumed exec results.
 
+use super::exec_verification::ExecVerificationContext;
 use super::{
-    classify_exec_kind, classify_verify_level, configured_test_cmd_verification_level,
-    parse_exec_command_from_args, parse_exec_tool_output_sections, suspicious_success_reason,
-    ExecKind, VerificationLevel,
+    configured_test_cmd_verification_level, parse_exec_command_from_args,
+    parse_exec_tool_output_sections, suspicious_success_reason, ExecKind, VerificationLevel,
 };
 
 /// Live execution supplies its effective return status; restoration derives it
@@ -29,7 +29,7 @@ impl<'a> ExecProofResult<'a> {
 /// prior success. Only explicit pre-execution rejection preserves the evidence.
 pub(super) fn record_result(
     command: &str,
-    test_cmd: Option<&str>,
+    context: &ExecVerificationContext<'_>,
     result: ExecProofResult<'_>,
     step: usize,
     last_mutation: &mut Option<usize>,
@@ -39,11 +39,12 @@ pub(super) fn record_result(
     if !crate::execution_evidence::exec_may_have_run(result.content) {
         return;
     }
-    match classify_exec_kind(command, test_cmd) {
+    let classification = context.classify(command);
+    match classification.kind {
         ExecKind::Action => *last_mutation = Some(step),
         ExecKind::Verify => {
             if result.succeeded {
-                match classify_verify_level(command, test_cmd) {
+                match classification.verification {
                     Some(VerificationLevel::Build) => *last_build = Some(step),
                     Some(VerificationLevel::Behavioral) => *last_behavioral = Some(step),
                     None => {}
@@ -69,6 +70,7 @@ pub(super) fn restore_done_gate_from_messages(
     Option<usize>,
     Option<usize>,
 ) {
+    let context = ExecVerificationContext::from_messages(test_cmd, messages);
     // step_seq counts tool results (role=tool) so we can compare "mutation happened after verify"
     // even across resumed sessions.
     let mut step_seq: usize = 0;
@@ -139,7 +141,7 @@ pub(super) fn restore_done_gate_from_messages(
             last_exec_step = Some(step_seq);
             record_result(
                 &cmd.unwrap_or_default(),
-                test_cmd,
+                &context,
                 ExecProofResult::from_history(content),
                 step_seq,
                 &mut last_mutation_step,
@@ -180,7 +182,7 @@ mod tests {
     use super::super::{
         effective_verify_ok_step, restore_done_gate_from_messages, VerificationLevel,
     };
-    use super::{record_result, ExecProofResult};
+    use super::{record_result, ExecProofResult, ExecVerificationContext};
     use serde_json::{json, Value};
 
     fn exchange(messages: &mut Vec<Value>, command: &str, output: &str) {
@@ -399,7 +401,7 @@ mod tests {
             exchange(&mut messages, command, content);
             record_result(
                 command,
-                None,
+                &ExecVerificationContext::from_root(None, ""),
                 ExecProofResult { content, succeeded },
                 index + 1,
                 &mut mutation,

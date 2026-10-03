@@ -46,6 +46,7 @@ mod done_gate;
 mod evaluator_loop;
 mod exec_classification;
 mod exec_proof;
+mod exec_verification;
 mod failure_localization;
 mod final_handoff;
 mod followup_requirements;
@@ -56,11 +57,14 @@ mod message_window;
 mod meta_harness;
 mod outcome;
 mod progress_bridge;
+mod protocol_fields;
 mod provider_compat;
 mod read_only;
 mod repo_scaffold;
 mod session_bridge;
 mod task_harness;
+#[cfg(test)]
+mod tool_result_history_tests;
 use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
     build_read_only_completion_hint, build_read_only_evidence_scores,
@@ -98,6 +102,7 @@ use self::memory::{
 use self::message_window::prune_message_window;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
+use self::protocol_fields::parse_tag_fields;
 #[cfg(test)]
 use self::provider_compat::compat_synthetic_think;
 use self::provider_compat::{
@@ -1026,7 +1031,7 @@ fn strip_tag_block_owned(text: &str, tag: &str) -> String {
 
 fn parse_realize_block(text: &str) -> Option<String> {
     let body = extract_tag_block(text, "realize")?;
-    let fields = parse_tag_fields(body);
+    let fields = parse_tag_fields(body, "realize");
     for (key, value) in fields {
         if key == "reason" && !value.trim().is_empty() {
             return Some(compact_one_line(value.trim(), 160));
@@ -2057,6 +2062,15 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
     let mut seen = std::collections::HashSet::new();
     push_unique_tool_line(&mut kept, &mut seen, lines[0]);
 
+    // The first runtime status is authoritative, even when later stdout prints
+    // another status. Preserve it verbatim before applying the digest budget.
+    if crate::execution_evidence::file_edit_succeeded(tool_name, content) {
+        if let Some(status) = lines.iter().find(|line| line.starts_with("[auto-test]")) {
+            seen.insert((*status).to_string());
+            kept.push((*status).to_string());
+        }
+    }
+
     if tool_name == "exec" {
         for line in lines.iter().skip(1).take(3) {
             push_unique_tool_line(&mut kept, &mut seen, line);
@@ -2115,7 +2129,8 @@ fn compact_success_tool_result_for_history(tool_name: &str, content: &str) -> St
 }
 
 /// Collapse tool result messages older than KEEP_RECENT_TOOL_TURNS to a
-/// one-line summary.  Each collapsed result saves ~200-2000 tokens.
+/// compact summary, preserving the first automatic-test status if present.
+/// Each collapsed result saves ~200-2000 tokens.
 /// Only the content field is modified; tool_call_id stays intact.
 fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
     let tool_indices: Vec<usize> = messages
@@ -2140,8 +2155,19 @@ fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
             let line_count = content.lines().count();
             if line_count > 2 {
                 let first = content.lines().next().unwrap_or("[done]").to_string();
-                messages[idx]["content"] =
-                    serde_json::Value::String(format!("{first} [pruned {line_count}L]"));
+                let mut summary = format!("{first} [pruned {line_count}L]");
+                if ["write_file", "patch_file", "apply_diff"]
+                    .iter()
+                    .any(|name| crate::execution_evidence::file_edit_succeeded(name, content))
+                {
+                    if let Some(status) =
+                        content.lines().find(|line| line.starts_with("[auto-test]"))
+                    {
+                        summary.push('\n');
+                        summary.push_str(status);
+                    }
+                }
+                messages[idx]["content"] = serde_json::Value::String(summary);
             }
         }
     }
@@ -3475,6 +3501,8 @@ impl WorkingMemory {
         }
 
         let mut mem = Self::default();
+        let exec_context =
+            exec_verification::ExecVerificationContext::from_messages(test_cmd, messages);
         let mut active_plan: Option<PlanBlock> = None;
         let mut pending: std::collections::HashMap<String, PendingToolIntent> =
             std::collections::HashMap::new();
@@ -3580,7 +3608,7 @@ impl WorkingMemory {
                     if effective_exit_code != 0 {
                         continue;
                     }
-                    let exec_kind = classify_exec_kind(command.as_str(), test_cmd);
+                    let exec_kind = exec_context.classify(command.as_str()).kind;
                     update_working_memory_after_exec(
                         &mut mem,
                         command.as_str(),
@@ -5443,184 +5471,7 @@ fn extract_tag_block<'a>(text: &'a str, tag: &str) -> Option<&'a str> {
     let end = rest
         .find(&close)
         .or_else(|| rest.find(&format!("</{tag}")))?;
-    Some(rest[..end].trim())
-}
-
-fn parse_nested_tag_fields(body: &str) -> Vec<(String, String)> {
-    let mut out = Vec::new();
-    let mut cursor = 0usize;
-
-    while let Some(rel_open) = body[cursor..].find('<') {
-        let open_start = cursor + rel_open;
-        let name_start = open_start + 1;
-        let Some(rel_name_end) = body[name_start..].find('>') else {
-            break;
-        };
-        let name_end = name_start + rel_name_end;
-        let raw_name = body[name_start..name_end].trim();
-        if raw_name.is_empty()
-            || raw_name.starts_with('/')
-            || raw_name.contains(char::is_whitespace)
-            || raw_name.contains('=')
-        {
-            cursor = name_end + 1;
-            continue;
-        }
-
-        let close = format!("</{raw_name}>");
-        let value_start = name_end + 1;
-        let Some(rel_close_start) = body[value_start..].find(&close) else {
-            cursor = value_start;
-            continue;
-        };
-        let value_end = value_start + rel_close_start;
-        let value = body[value_start..value_end].trim();
-        if !value.is_empty() {
-            out.push((raw_name.to_ascii_lowercase(), value.to_string()));
-        }
-        cursor = value_end + close.len();
-    }
-
-    out
-}
-
-fn parse_tag_fields(body: &str) -> Vec<(String, String)> {
-    let nested = parse_nested_tag_fields(body);
-    if !nested.is_empty() {
-        return nested;
-    }
-
-    let bracketed = parse_bracket_quoted_fields(body);
-    if !bracketed.is_empty() {
-        return bracketed;
-    }
-
-    let mut out: Vec<(String, String)> = Vec::new();
-    let mut current_key: Option<String> = None;
-    let mut current_value = String::new();
-
-    for raw_line in body.lines() {
-        let line = raw_line.trim();
-        if let Some((k, v)) = line.split_once(':') {
-            if let Some(key) = current_key.take() {
-                out.push((key, current_value.trim().to_string()));
-            }
-            current_key = Some(k.trim().to_ascii_lowercase());
-            current_value = v.trim().to_string();
-            continue;
-        }
-
-        if current_key.is_some() && !line.is_empty() {
-            if !current_value.is_empty() {
-                current_value.push(' ');
-            }
-            current_value.push_str(line);
-        }
-    }
-
-    if let Some(key) = current_key {
-        out.push((key, current_value.trim().to_string()));
-    }
-
-    out
-}
-
-fn canonical_loose_tag_key(raw_key: &str) -> Option<String> {
-    const FIELDS: &[&str] = &[
-        "next_minimal_action",
-        "wrong_assumption",
-        "strategy_change",
-        "acceptance",
-        "assumptions",
-        "last_outcome",
-        "remaining_gap",
-        "goal_delta",
-        "progress",
-        "changed",
-        "verify",
-        "reason",
-        "steps",
-        "risks",
-        "doubt",
-        "goal",
-        "step",
-        "tool",
-        "risk",
-        "next",
-    ];
-
-    let key = raw_key.trim().to_ascii_lowercase();
-    if key.is_empty() {
-        return None;
-    }
-    for field in FIELDS {
-        if key == *field || key.ends_with(field) {
-            return Some((*field).to_string());
-        }
-    }
-    None
-}
-
-fn parse_bracket_quoted_fields(body: &str) -> Vec<(String, String)> {
-    let normalized = body.replace("\r\n", "\n").replace('\n', " ");
-    let chars: Vec<char> = normalized.chars().collect();
-    let mut out = Vec::new();
-    let mut i = 0usize;
-
-    while i < chars.len() {
-        while i < chars.len() && !(chars[i].is_ascii_alphabetic() || chars[i] == '_') {
-            i += 1;
-        }
-        if i >= chars.len() {
-            break;
-        }
-        let start = i;
-        while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
-            i += 1;
-        }
-        let raw_key: String = chars[start..i].iter().collect();
-        let Some(key) = canonical_loose_tag_key(&raw_key) else {
-            continue;
-        };
-
-        while i < chars.len() && chars[i].is_ascii_whitespace() {
-            i += 1;
-        }
-        if i + 1 >= chars.len() || chars[i] != '[' || chars[i + 1] != '"' {
-            continue;
-        }
-        i += 2;
-
-        let mut value = String::new();
-        let mut escaped = false;
-        while i < chars.len() {
-            let ch = chars[i];
-            if escaped {
-                value.push(ch);
-                escaped = false;
-                i += 1;
-                continue;
-            }
-            if ch == '\\' {
-                escaped = true;
-                i += 1;
-                continue;
-            }
-            if ch == '"' && i + 1 < chars.len() && chars[i + 1] == ']' {
-                i += 2;
-                break;
-            }
-            value.push(ch);
-            i += 1;
-        }
-
-        let value = compact_one_line(value.trim(), 300);
-        if !value.is_empty() {
-            out.push((key, value));
-        }
-    }
-
-    out
+    Some(rest[..end].trim_end())
 }
 
 fn parse_first_usize(s: &str) -> Option<usize> {
@@ -5739,7 +5590,7 @@ fn parse_block_fields(text: &str, tag: &str) -> Option<BTreeMap<String, ParsedBl
     let body = extract_tag_block(text, tag)?;
     let mut out = BTreeMap::new();
 
-    for (raw_key, raw_value) in parse_tag_fields(body) {
+    for (raw_key, raw_value) in parse_tag_fields(body, tag) {
         let Some(field) = governor_contract::block_field(tag, raw_key.as_str()) else {
             continue;
         };
@@ -8240,6 +8091,8 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let root_user_text_low = root_user_text.to_ascii_lowercase();
     let root_read_only = is_root_read_only_observation_task(&root_user_text);
     let task_harness = TaskHarness::infer(&root_user_text, root_read_only);
+    let exec_verification_context =
+        exec_verification::ExecVerificationContext::from_root(test_cmd.as_deref(), &root_user_text);
     let progress_context = crate::progress_state::ProgressSaveContext::new(
         &root_user_text,
         task_harness.lane_label(),
@@ -15104,11 +14957,12 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         .await;
 
         // Update failure memory + recovery governor + possibly inject a system hint.
-        let verify_level = classify_verify_level(&command, test_cmd.as_deref());
-        let exec_kind = classify_exec_kind(&command, test_cmd.as_deref());
+        let classification = exec_verification_context.classify(&command);
+        let verify_level = classification.verification;
+        let exec_kind = classification.kind;
         exec_proof::record_result(
             &command,
-            test_cmd.as_deref(),
+            &exec_verification_context,
             exec_proof::ExecProofResult {
                 content: &tool_output,
                 succeeded: effective_exit_code == 0 && !escaped_tool_root,

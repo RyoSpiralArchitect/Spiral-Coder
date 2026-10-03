@@ -240,6 +240,7 @@ fn run_case(
     base_root_path: &Path,
     out_dir: &Path,
 ) -> Result<TuiReplayCaseReport> {
+    validate_case(case)?;
     let root = resolve_case_root(base_root_path, defaults, case);
     let lang = case
         .lang
@@ -542,8 +543,24 @@ fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     if spec.cases.is_empty() {
         anyhow::bail!("tui replay spec contains no cases");
     }
+    for case in &spec.cases {
+        validate_case(case)?;
+    }
     Ok(spec)
 }
+
+fn validate_case(case: &TuiReplayCase) -> Result<()> {
+    if case.checks.is_empty() {
+        anyhow::bail!(
+            "tui replay case '{}' requires at least one top-level checks entry; nested replay.checks is not part of the case schema",
+            case.id
+        );
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests;
 
 fn save_report(path: &Path, report: &TuiReplayReport) -> Result<()> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));

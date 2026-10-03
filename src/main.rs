@@ -3468,6 +3468,12 @@ async fn run_eval(args: EvalArgs, common: CommonArgs) -> Result<()> {
         anyhow::bail!("runtime eval selected 0 cases");
     }
 
+    crate::runtime_eval::validate_build_isolation(
+        &selected,
+        &spec_data.defaults,
+        std::env::var_os("CARGO_TARGET_DIR").as_deref(),
+    )?;
+
     eprintln!(
         "[eval] spec={} cases={} out={}",
         spec_path.display(),

@@ -1,4 +1,7 @@
+mod environment;
 mod evidence;
+
+pub use environment::validate_build_isolation;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};

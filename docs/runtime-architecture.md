@@ -159,6 +159,13 @@ Command classification:
   chains. Matching preserves case and quoted whitespace. It does
   not override unsupported shell syntax or known write flags. Approved benchmark
   `required_checks` retain their separate explicit command-evidence contract.
+- `src/tui/agent/exec_verification.rs` carries the root task's approved required
+  commands alongside project configuration. Exact required-command matches are
+  verification in live execution, restored generic proof, and restored working
+  memory, including custom runners or explicit receipt-writing checks. Assistant
+  scratchpads and command substrings cannot grant this authority. The independent
+  benchmark ledger still requires every declared check; finishing its custom
+  checks does not create a spurious mutation requiring another composite rerun.
 
 - `src/tui/agent/exec_proof.rs` shares generic verification timestamp accounting
   between live exec results and resumed transcripts. Any possibly executed action,

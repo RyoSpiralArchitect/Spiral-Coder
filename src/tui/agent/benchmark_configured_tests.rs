@@ -54,8 +54,14 @@ fn configured_tui_composite_and_individual_proofs_can_both_finish() {
     );
     result(&mut messages, "exec", &required[1], "OK (exit_code: 0)");
     assert_eq!(pending_command(&messages, &prompt, Some(&configured)), None);
-    // The generic done gate asks for the full configured check after a custom
-    // required command. Its success must not erase the independent A/B proof.
+    // Exact approved custom checks must also count for the generic done gate.
+    // No extra composite rerun is needed to undo a spurious Action mutation.
+    let (_, mutation, _, verified, _) =
+        crate::tui::agent::restore_done_gate_from_messages(&messages, Some(&configured));
+    assert_eq!((mutation, verified), (Some(1), Some(3)));
+    let memory = crate::tui::agent::WorkingMemory::from_messages(&messages, Some(&configured));
+    assert!(memory.successful_verifications.contains(&required[1]));
+    // An optional additional composite rerun keeps the independent A/B proof.
     result(&mut messages, "exec", &configured, "OK (exit_code: 0)");
     let (_, mutation, _, verified, _) =
         crate::tui::agent::restore_done_gate_from_messages(&messages, Some(&configured));
