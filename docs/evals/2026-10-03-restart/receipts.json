@@ -2831,6 +2831,668 @@
       ],
       "fixture_build_isolation": "per-copied-workspace-default",
       "spec_snapshot_available": true
+    },
+    {
+      "run": "final-mistral-05",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "mistral-small-2603",
+        "provider": "mistral",
+        "binary_sha256": "b650f3c0496572b180d62a236708fd54b55ba86cb9f5ecd16c30ec58579330d9",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 147.947,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708"
+      },
+      "local_report_sha256": "65ae7d92688a68e400adda8a4559574655f11519669bafa1fce9afd0519751c9",
+      "evaluator": "outcome-proof-v2",
+      "implementation_commit": "0c5f763517edceb1ba5b34179a76f260d1a14141",
+      "fixture_build_isolation": "per-copied-workspace-default",
+      "spec_snapshot_available": true,
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 9657,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 3,
+            "iteration_count": 4,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 0
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 14344,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 3,
+            "iteration_count": 4,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 10401,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "iteration_count": 6,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": true
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": false,
+          "duration_ms": 9160,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "iteration_count": 3,
+            "auto_test_pass_count": 0,
+            "fresh_auto_test_pass_count": 0,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 0
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": false
+            }
+          ]
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 25825,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "iteration_count": 6,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 0
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": true
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": true
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": false,
+          "duration_ms": 77710,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "iteration_count": 18,
+            "auto_test_pass_count": 0,
+            "fresh_auto_test_pass_count": 0,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "final-openai-05",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "gpt-4.1-mini",
+        "provider": "openai",
+        "binary_sha256": "b650f3c0496572b180d62a236708fd54b55ba86cb9f5ecd16c30ec58579330d9",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 82.767,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708"
+      },
+      "local_report_sha256": "0e4b294e97863914dea20725272408f57a1c2ac32a384d26e411ccb38858c51a",
+      "evaluator": "outcome-proof-v2",
+      "implementation_commit": "0c5f763517edceb1ba5b34179a76f260d1a14141",
+      "fixture_build_isolation": "per-copied-workspace-default",
+      "spec_snapshot_available": true,
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 9637,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "iteration_count": 4,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 10429,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "iteration_count": 5,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": false,
+          "duration_ms": 6731,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "iteration_count": 4,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": true
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 6150,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "iteration_count": 3,
+            "auto_test_pass_count": 0,
+            "fresh_auto_test_pass_count": 0,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 0
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 29461,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 11,
+            "iteration_count": 12,
+            "auto_test_pass_count": 0,
+            "fresh_auto_test_pass_count": 0,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 2
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": true
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": true
+            }
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 19502,
+          "run_error_present": false,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 7,
+            "iteration_count": 10,
+            "auto_test_pass_count": 1,
+            "fresh_auto_test_pass_count": 1,
+            "provider_retry_count": 0,
+            "recovery_enter_count": 1
+          },
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true
+            },
+            {
+              "label": "error_free",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true
+            }
+          ]
+        }
+      ]
     }
   ]
 }
