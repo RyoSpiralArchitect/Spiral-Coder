@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "fixture": "runtime-fix-rust",
+  "run": "final-mistral-03/002-fix-failing-rust-test",
+  "source_sha256": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+  "source_matches_original_failing_fixture": true,
+  "source_return": "Hello, {}?",
+  "test_expected": "Hello, Ada!",
+  "audit": [
+    {
+      "target": "fresh-isolated-target",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "target": "shared-live-fixture-target",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "finding": "Identical unchanged failing source passes with reused shared target but fails with a fresh target. Prior live Cargo successes are not reliable source verification.",
+  "followup": "Leave CARGO_TARGET_DIR unset in the API runner so every copied fixture has its own default target; preserve all prior reports."
+}

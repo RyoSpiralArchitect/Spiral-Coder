@@ -43,9 +43,9 @@ Chaque page note la forme du prompt d'eval, le provider/modele, la commande de r
 
 ---
 
-## Milestone de Benchmark Actuel
+## Historique des benchmarks
 
-Le milestone actuel est simple mais important : Spiral-Coder peut maintenant couvrir a la fois des scaffolds de repos frais et un bugfix dans un repo existant depuis `runtime_eval`, garder l'etat genere hors du git du projet, et documenter le resultat de facon reproductible.
+Les jalons ci-dessous décrivent des exécutions antérieures avec l’ancien évaluateur. Leurs résultats sont conservés, mais ils n’ont pas tous été réévalués avec les critères actuels. Voir le [contrat d’évaluation](docs/evaluation.md) et les [résultats de la reprise](docs/evals/2026-10-03-restart/README.md), y compris les échecs.
 
 - `maze-game-rust-repo` montre que la scaffold lane peut creer un repo Rust frais, garder la logique de jeu dans `src/lib.rs`, garder `src/main.rs` executable, puis conclure avec un vrai `cargo test`.
 - `maze-game-pygame-repo` montre que le meme chemin de closeout fonctionne aussi pour un repo non Rust, y compris avec une verification `pygame` headless.
@@ -55,7 +55,7 @@ Le milestone actuel est simple mais important : Spiral-Coder peut maintenant cou
 - Le closeout `runtime_eval` ecrit maintenant un `merge_gate.json` genere a cote de `report.json`; `spiral-coder merge-gate`, l'onglet Merge du TUI et le panneau merge-gate de la Web GUI peuvent lire la readiness, approuver les cas passants, mettre des cas en attente, et copier les previews rollback sans executer de rollback destructif.
 - Les rapports de benchmark portent maintenant le provider/modele ainsi qu'une telemetrie approximative des tokens du transcript, ce qui aide a comparer les runs sans pretendre fournir une facturation exacte.
 
-L'interet est la : on passe de « l'agent a produit un truc sympa une fois » a « le runtime peut reproduire un cas milestone et expliquer comment ».
+Ces observations portent sur des exécutions individuelles ; elles ne mesurent ni un taux de réussite général ni la fiabilité sur une longue durée.
 
 ---
 
@@ -84,10 +84,10 @@ C'est un moteur de controle du processus de developpement.
 
 ## Trois rôles. Des contextes séparés.
 
-| Role | Ce qu'il fait | Ce qu'il ne fait jamais |
+| Rôle | Responsabilité | Limite |
 |---|---|---|
-| **Coder** | Agit — fichiers, commandes shell, boucle agentique (12 etapes max), 5 outils integres | Relire ou remettre en question son propre travail |
-| **Observer** | Critique — score chaque proposition, escalade ce que vous ignorez | Ecrire du code ou partager le contexte de travail en direct du Coder |
+| **Coder** | Lit, modifie, vérifie et réfléchit dans une boucle bornée | Son autoévaluation ne constitue pas une validation indépendante |
+| **Observer** | Critique les sorties enregistrées et propose des étapes | Examine les preuves fournies dans un contexte séparé |
 | **Chat** | Reflechit avec vous — conception, canard en plastique, compromis | Interrompre la boucle d'execution |
 
 Roles distincts. Modeles distincts si vous le souhaitez. Contextes toujours distincts.
@@ -125,7 +125,7 @@ Dans l'UI Web, le label du stack apparait sous le champ toolRoot dans les parame
 - `pom.xml` → Java
 - `build.gradle*`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `build.zig`, `*.tf`, `CMakeLists.txt`, `*.sln` / `*.csproj`, `deno.json*` → detection additionnelle pour JVM / Ruby / PHP / Elixir / Swift / Zig / Terraform / C/C++ / .NET / Deno
 
-L'analyse s'execute une fois par session, prend moins de 200 ms et ignore silencieusement ce qu'elle ne peut pas lire.
+L’analyse initiale ignore les entrées illisibles. Sa durée dépend du dépôt et du système de fichiers.
 
 ---
 
@@ -165,9 +165,9 @@ Quand une commande echoue, Spiral-Coder ne donne pas au modele un brut `exit_cod
 Note PowerShell : `exit_code` peut etre `0` meme si des erreurs ont ete imprimees (erreurs non bloquantes).
 Spiral-Coder le signale comme `SUSPICIOUS_SUCCESS` et le traite comme un echec pour eviter les faux progres.
 
-### Le Coder dispose de cinq outils
+### Principaux outils d’édition du Coder
 
-Le Coder n'est pas limite aux commandes shell. Il dispose de cinq outils dedies :
+Le Coder utilise les outils d’édition ci-dessous ainsi que `search_files`, `list_dir`, `glob` et `done` :
 
 | Outil | Quand l'utiliser |
 |---|---|
@@ -177,7 +177,7 @@ Le Coder n'est pas limite aux commandes shell. Il dispose de cinq outils dedies 
 | `patch_file(path, search, replace)` | Remplacer un extrait exact — echoue bruyamment en cas d'ambiguite |
 | `apply_diff(path, diff)` | Appliquer un diff unifie `@@` (plusieurs hunks) — ideal quand `patch_file` est trop petit |
 
-`write_file`, `patch_file` et `apply_diff` utilisent un schema fichier temporaire → renommage, donc un crash en cours d'ecriture ne laisse jamais de fichier corrompu.
+`write_file`, `patch_file` et `apply_diff` écrivent dans un fichier temporaire avant de le renommer, afin de réduire le risque d’exposer une écriture partielle. Cela ne constitue pas une transaction sur plusieurs fichiers.
 
 `patch_file` exige que la chaine de recherche apparaisse **exactement une fois**. Zero occurrence → apercu du fichier pour auto-correction. Plusieurs occurrences → compte exact retourne en erreur. L'ambiguite est une erreur, pas une supposition.
 

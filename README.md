@@ -50,9 +50,9 @@ Each page records the eval prompt shape, provider/model, rerun command, runtime 
 
 ---
 
-## Current Benchmark Milestone
+## Historical Benchmark Milestones
 
-The current milestone is simple but important: Spiral-Coder can now cover both fresh-repo scaffolds and an existing-repo bugfix from `runtime_eval`, keep generated state out of git, and still document the result in a reproducible way.
+The following milestones describe earlier runs under the previous evaluator. They retain their historical results and have not all been rerun under the stricter completion and proof checks. See the [evaluation contract](docs/evaluation.md) and [restart validation](docs/evals/2026-10-03-restart/README.md) for current evidence, including unsuccessful attempts.
 
 - `maze-game-rust-repo` proves the scaffold lane can create a fresh Rust repo, keep gameplay logic in `src/lib.rs`, keep `src/main.rs` runnable, and close with a real `cargo test`.
 - `maze-game-pygame-repo` proves the same closeout path works for a non-Rust repo, including a headless `pygame` verification command.
@@ -64,7 +64,7 @@ The current milestone is simple but important: Spiral-Coder can now cover both f
 - Runtime eval closeout now writes a generated `merge_gate.json` next to `report.json`; `spiral-coder merge-gate`, the TUI Merge tab, and the Web GUI merge-gate panel can inspect readiness, approve passing cases, hold cases, and copy rollback previews without executing destructive rollback.
 - The benchmark reports now carry provider/model metadata plus approximate transcript token telemetry, which makes it easier to compare runs without pretending those numbers are billing-accurate.
 
-This matters because it turns "the agent made something cool once" into "the runtime can reproduce a milestone case and explain how it did it."
+These records describe individual observed runs; they do not establish a general success rate or long-running reliability.
 
 ---
 
@@ -94,10 +94,10 @@ It's a development control engine.
 
 ## Three Roles. Separate Contexts.
 
-| Role | What it does | What it never does |
+| Role | Responsibility | Boundary |
 |---|---|---|
-| **Coder** | Acts — files, shell commands, agentic loop (up to 12 steps), 5 built-in tools | Review or second-guess its own work |
-| **Observer** | Critiques — scores every proposal, escalates what you ignore | Write code or share the Coder's live working context |
+| **Coder** | Reads, edits, runs checks, and reflects within a bounded tool loop | Owns execution; its self-review is not independent validation |
+| **Observer** | Critiques recorded outputs and proposes next steps | Reviews supplied evidence in a separate context |
 | **Chat** | Thinks with you — design, rubber duck, tradeoffs | Interrupt the execution loop |
 
 Different roles. Different models if you want. Different contexts always.
@@ -135,7 +135,7 @@ In the Web UI, the stack label appears below the toolRoot field in Settings.
 - `pom.xml` → Java
 - `build.gradle*`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `build.zig`, `*.tf`, `CMakeLists.txt`, `*.sln` / `*.csproj`, `deno.json*` → additional JVM / Ruby / PHP / Elixir / Swift / Zig / Terraform / C/C++ / .NET / Deno stacks
 
-The scan runs once per session, takes under 200 ms, and silently skips anything it can't read.
+The initial scan skips unreadable entries. Its duration depends on the repository and filesystem.
 
 ### Deep Repo Map for Offline Code Navigation
 
@@ -149,7 +149,7 @@ python3 scripts/repo_map.py show --root . --file src/project.rs --symbol Project
 python3 scripts/repo_map.py eval --root .
 ```
 
-This is not wired into the runtime loop yet. It is a foundation layer for:
+The helper supports:
 - better file/symbol targeting before full agent integration
 - partial file loading instead of whole-file reads
 - repeatable query benchmarks under `.spiral-coder/repo_map.eval.json`
@@ -198,9 +198,9 @@ When a command fails, Spiral-Coder doesn't hand the model a raw `exit_code: 1` a
 PowerShell caveat: `exit_code` can be `0` even when it printed errors (non-terminating error records).
 Spiral-Coder flags this as `SUSPICIOUS_SUCCESS` and treats it as failure to stop false-progress drift.
 
-### The Coder Has Five Tools
+### The Coder's Core Editing Tools
 
-The Coder isn't limited to shell commands. It has five purpose-built tools:
+The Coder uses the editing tools below, alongside `search_files`, `list_dir`, `glob`, and `done`:
 
 | Tool | When to use it |
 |---|---|
@@ -210,7 +210,7 @@ The Coder isn't limited to shell commands. It has five purpose-built tools:
 | `patch_file(path, search, replace)` | Replace an exact snippet — fails loudly on ambiguity |
 | `apply_diff(path, diff)` | Apply a unified `@@` diff (multiple hunks) — best for larger edits when `patch_file` is too small |
 
-`write_file`, `patch_file`, and `apply_diff` use a temp-file → rename pattern, so a crash mid-write never leaves corrupt output.
+`write_file`, `patch_file`, and `apply_diff` write through a temporary file and rename it to reduce the risk of exposing a partial write. This does not provide a transaction across multiple files.
 
 `patch_file` requires the search string to appear **exactly once**. If it appears zero times, you get a preview of the file so the model can self-correct. If it appears more than once, you get the count. Ambiguity is an error, not a guess.
 

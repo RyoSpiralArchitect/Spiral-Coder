@@ -1,0 +1,293 @@
+{
+  "version": 1,
+  "defaults": {
+    "tool_root": ".",
+    "lang": "en",
+    "max_iters": 8,
+    "copy_tool_root": false
+  },
+  "cases": [
+    {
+      "id": "create-single-file",
+      "tool_root": "tests/fixtures/runtime-create-file",
+      "copy_tool_root": true,
+      "max_iters": 14,
+      "tags": [
+        "action",
+        "create",
+        "file",
+        "restart-live-v2"
+      ],
+      "prompt": "Create `notes/todo.txt` containing exactly `ship it`. Verify it before you finish. Final answer must include the created file path.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "write_file"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "notes/todo.txt"
+        },
+        {
+          "kind": "tool_root_file_equals",
+          "path": "notes/todo.txt",
+          "value": "ship it"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "task_harness"
+        }
+      ]
+    },
+    {
+      "id": "fix-failing-rust-test",
+      "tool_root": "tests/fixtures/runtime-fix-rust",
+      "copy_tool_root": true,
+      "max_iters": 14,
+      "tags": [
+        "action",
+        "fix",
+        "rust",
+        "tests",
+        "restart-live-v2"
+      ],
+      "prompt": "Fix the failing test with the smallest code change. Run tests before you finish. Final answer must include the changed file path.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "read_file"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "patch_file"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "task_harness"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "harness_evolution_loaded"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "progress_state_loaded"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "progress_bridge_prompted"
+        },
+        {
+          "kind": "tool_root_file_exists",
+          "path": ".spiral-coder/progress.json"
+        }
+      ]
+    },
+    {
+      "id": "resume-damaged-tool-exchange-fix",
+      "tool_root": "tests/fixtures/runtime-resume-damaged-exchange",
+      "session_seed": "interrupted_session.json",
+      "copy_tool_root": true,
+      "max_iters": 10,
+      "tags": [
+        "action",
+        "resume",
+        "session",
+        "repair",
+        "rust",
+        "restart-live-v2"
+      ],
+      "prompt": "Continue the interrupted session. Fix the failing greet test with the smallest code change and run the configured test command before finishing. Include the changed source path in the final answer.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "patch_file"
+        },
+        {
+          "kind": "tool_root_file_contains",
+          "path": "src/lib.rs",
+          "value": "Hello, {}!"
+        },
+        {
+          "kind": "auto_test_passed",
+          "command": "cargo test 2>&1"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "src/lib.rs"
+        }
+      ]
+    },
+    {
+      "id": "approved-benchmark-plan-exec-proof-resume",
+      "tool_root": "tests/fixtures/runtime-benchmark-plan-exec-proof",
+      "session_seed": "session_seed.json",
+      "copy_tool_root": true,
+      "max_iters": 8,
+      "tags": [
+        "action",
+        "benchmark-plan",
+        "runtime-eval",
+        "proof",
+        "resume",
+        "smoke",
+        "restart-live-v2"
+      ],
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: runtime_eval\ncase_id_hint: exec-proof-after-shell-edit\nobjective: Finish the prepared regression artifacts for src/tui/agent/benchmark_proof.rs, using current verification evidence.\ntarget_files:\n- .spiral-coder/runtime_eval.json\n- docs/runtime-architecture.md\nrequired_checks:\n- grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json\n- grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\nsuccess_criteria:\n- Both artifacts include src/tui/agent/benchmark_proof.rs.\n- All required checks have succeeded after the latest shell edit.\n</observer_benchmark_plan>\nResume the seeded work. The artifacts are already prepared; complete the required verification and close out. Final answer must include verification_receipt.txt and fresh exec proof.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "exec"
+        },
+        {
+          "kind": "verified_command_seen",
+          "command": "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+        },
+        {
+          "kind": "tool_root_file_contains",
+          "path": "verification_receipt.txt",
+          "value": "verified-current"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "verification_receipt.txt"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "fresh exec proof"
+        }
+      ]
+    },
+    {
+      "id": "approved-benchmark-plan-tui-replay-smoke",
+      "tool_root": "tests/fixtures/runtime-benchmark-plan-tui-replay",
+      "copy_tool_root": true,
+      "max_iters": 12,
+      "tags": [
+        "action",
+        "benchmark-plan",
+        "tui-replay",
+        "observer",
+        "smoke",
+        "restart-live-v2"
+      ],
+      "prompt": "[Observer benchmark plan approved]\n<observer_benchmark_plan source=\"deterministic_observer\" required=\"true\">\nlane: tui_replay\ncase_id_hint: review-panel-replay-sensitive\nobjective: Add the smallest TUI replay regression proving src/tui/review_panel.rs is replay-sensitive.\ntarget_files:\n- .spiral-coder/tui_replay.json\nrequired_checks:\n- grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json\n- spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\nsuccess_criteria:\n- .spiral-coder/tui_replay.json includes src/tui/review_panel.rs or a case that would force that follow-up.\n</observer_benchmark_plan>\nImplement or update the smallest deterministic replay regression artifact. Final answer must include .spiral-coder/tui_replay.json.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "read_file"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "exec"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "patch_file"
+        },
+        {
+          "kind": "verified_command_seen",
+          "command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json"
+        },
+        {
+          "kind": "verified_command_seen",
+          "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+        },
+        {
+          "kind": "auto_test_passed"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": ".spiral-coder/tui_replay.json"
+        },
+        {
+          "kind": "trace_event_seen",
+          "event": "task_harness"
+        },
+        {
+          "kind": "tool_root_file_contains",
+          "path": ".spiral-coder/tui_replay.json",
+          "value": "src/tui/review_panel.rs"
+        }
+      ]
+    },
+    {
+      "id": "self-fix-pr-ready-runtime-followup",
+      "tool_root": "tests/fixtures/runtime-self-fix-pr-ready",
+      "copy_tool_root": true,
+      "max_iters": 18,
+      "tags": [
+        "action",
+        "fix",
+        "rust",
+        "self",
+        "runtime-eval",
+        "pr-ready",
+        "restart-live-v2"
+      ],
+      "prompt": "Fix the existing TUI agent follow-up requirement module so `src/tui/agent/session_bridge.rs` is treated as PR-ready runtime-sensitive, using the smallest safe code change. Because PR-ready runtime paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Run `cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, and the verification command.",
+      "checks": [
+        {
+          "kind": "completed"
+        },
+        {
+          "kind": "error_free"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "read_file"
+        },
+        {
+          "kind": "tool_call_seen",
+          "name": "patch_file"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "src/tui/agent/followup_requirements.rs"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "docs/state-schema.md"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": ".spiral-coder/runtime_eval.json"
+        },
+        {
+          "kind": "assistant_contains",
+          "value": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh"
+        }
+      ]
+    }
+  ]
+}

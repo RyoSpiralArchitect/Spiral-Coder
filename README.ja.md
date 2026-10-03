@@ -43,9 +43,9 @@ Spiral-Coder では、生成した milestone repo を git に含めずに、軽�
 
 ---
 
-## 現在のBenchmark Milestone
+## 過去のベンチマーク記録
 
-いまの milestone は素朴ですが大事です。Spiral-Coder は `runtime_eval` から、fresh repo scaffold だけでなく既存 repo の bugfix も扱い、生成状態を git に含めず、それでも再現可能な形で結果を記録できるところまで来ています。
+以下は旧評価器で得た過去の結果です。記録を保持していますが、すべてを現在の厳密な完了・検証条件で再実行したわけではありません。現在の基準は[評価契約](docs/evaluation.md)、失敗を含む再始動時の結果は[検証記録](docs/evals/2026-10-03-restart/README.md)を参照してください。
 
 - `maze-game-rust-repo` は、scaffold lane が fresh な Rust repo を作り、ゲームロジックを `src/lib.rs` に置き、`src/main.rs` を runnable に保ち、最後に本物の `cargo test` で締められることを示します。
 - `maze-game-pygame-repo` は、同じ closeout path が非 Rust repo でも動き、headless な `pygame` の verification command まで運べることを示します。
@@ -55,7 +55,7 @@ Spiral-Coder では、生成した milestone repo を git に含めずに、軽�
 - runtime eval closeout は `report.json` の隣に generated な `merge_gate.json` を書くようになり、`spiral-coder merge-gate`、TUI の Merge tab、Web GUI の merge-gate panel から readiness を読み、passing case を approve し、各 case を hold し、destructive rollback を実行せずに rollback preview をコピーできます。
 - benchmark report には provider/model に加えて概算 transcript token telemetry も入るようになり、billing 精度を装わずに run 同士を比較しやすくなりました。
 
-これは「たまたま一度うまく作れた」から、「runtime が milestone case を再現し、そのやり方まで説明できる」への前進です。
+これらは個々の実行で観測された結果であり、一般的な成功率や長時間稼働の信頼性を示すものではありません。
 
 ---
 
@@ -82,12 +82,12 @@ Spiral-Coderは「制御された実行ループ」を最適化する。役割�
 
 ---
 
-## 3つの役割。3つのコンテキスト。干渉なし。
+## 3つの役割と別々のコンテキスト
 
-| 役割 | やること | やらないこと |
+| 役割 | 担当 | 境界 |
 |---|---|---|
-| **Coder** | 実行 — ファイル操作、シェルコマンド、エージェントループ（最大12回）、5つのツール | 自分のコードを見直すこと |
-| **Observer** | 批評 — 提案をスコアリング、スルーした問題をエスカレート | コードを書くこと、Coderのライブな作業コンテキストを共有すること |
+| **Coder** | 読み取り・編集・検証・振り返りを、回数制限のあるツールループで実行 | 自己点検は独立した検証ではない |
+| **Observer** | 記録された出力を批評し、次の操作を提案 | 別のコンテキストで、渡された証拠を確認する |
 | **Chat** | 壁打ち — 設計、ゴム鴨、トレードオフ | 実行ループを邪魔すること |
 
 別の役割。望めば別のモデル。コンテキストは常に別。
@@ -125,7 +125,7 @@ Web UIでは、SettingsのtoolRootフィールドの下にスタックラベル�
 - `pom.xml` → Java
 - `build.gradle*`, `Gemfile`, `composer.json`, `mix.exs`, `Package.swift`, `build.zig`, `*.tf`, `CMakeLists.txt`, `*.sln` / `*.csproj`, `deno.json*` → JVM / Ruby / PHP / Elixir / Swift / Zig / Terraform / C/C++ / .NET / Deno も追加で検出
 
-スキャンはセッションごとに1回だけ実行され、200ms以内で完了し、読めないファイルは黙ってスキップする。
+初期スキャンは読めない項目をスキップします。所要時間はリポジトリとファイルシステムに依存します。
 
 ---
 
@@ -165,9 +165,9 @@ Observerは言ったことを覚えている。`critical` 警告を2回無視す
 PowerShell注意: エラーを出力しても `exit_code=0` になるケースがある（非終端エラー）。
 Spiral-Coderはこれを `SUSPICIOUS_SUCCESS` として失敗扱いし、偽の前進ドリフトを止める。
 
-### Coderには5つのツールがある
+### Coderの主要な編集ツール
 
-Coderはシェルコマンドだけに限定されない。5つの専用ツールを持っている:
+Coderはシェルコマンドに加え、以下の編集ツールと `search_files`・`list_dir`・`glob`・`done` を使います:
 
 | ツール | 使いどころ |
 |---|---|
@@ -177,7 +177,7 @@ Coderはシェルコマンドだけに限定されない。5つの専用ツー�
 | `patch_file(path, search, replace)` | 正確なスニペットを置換 — 曖昧な場合はエラーで止まる |
 | `apply_diff(path, diff)` | 統一形式の `@@` diff（複数hunk）を適用 — `patch_file` では小さすぎる編集向け |
 
-`write_file` / `patch_file` / `apply_diff` はテンポラリファイル → リネームのパターンを使うため、書き込み途中でクラッシュしても破損ファイルが残らない。
+`write_file` / `patch_file` / `apply_diff` は一時ファイルへの書き込み後にリネームし、途中まで書かれた内容が見えるリスクを減らします。複数ファイルをまとめたトランザクションではありません。
 
 `patch_file` は検索文字列が**ちょうど1回**だけ存在することを要求する。0回なら修正のためのファイルプレビューを返す。2回以上なら件数をエラーで返す。曖昧さはエラーであり、推測ではない。
 
