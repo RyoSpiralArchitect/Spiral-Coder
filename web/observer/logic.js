@@ -284,6 +284,18 @@
     return cut < s.length ? s.slice(0, cut).trimEnd() : s;
   }
 
+  // Persisted assistant entries record attempted assistance, including failures
+  // and interrupted requests. Reloading must not silently retry a paid request;
+  // the explicit next-action button remains available for a human retry.
+  function hasNextActionAttempt(messages, targetId) {
+    if (!targetId || !Array.isArray(messages)) return false;
+    return messages.some((message) => message
+      && message.pane === "observer"
+      && message.role === "assistant"
+      && message.metaKind === "observer_next_action"
+      && message.metaTargetId === targetId);
+  }
+
   SpiralCoder.observer = {
     normalizeForSim,
     tokenSetForSim,
@@ -295,5 +307,6 @@
     parseCoderDiagnostic,
     parseBenchmarkPlan,
     stripObserverMeta,
+    hasNextActionAttempt,
   };
 })();

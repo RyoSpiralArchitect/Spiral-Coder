@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::config::{ProviderKind, RunConfig};
+use crate::config::{PartialConfig, ProviderKind, RunConfig};
 use crate::modes::parse_mode;
 use crate::personas::resolve_persona;
 
@@ -143,6 +143,7 @@ fn apply_pane_prefs(
     cfg: &mut RunConfig,
     legacy_persona: Option<&str>,
 ) {
+    let original = cfg.clone();
     if let Some(raw) = saved.provider.as_deref() {
         if let Ok(provider) = raw.parse::<ProviderKind>() {
             let allowed = match pane {
@@ -181,6 +182,39 @@ fn apply_pane_prefs(
         if resolve_persona(persona).is_ok() {
             cfg.persona = persona.to_string();
         }
+    }
+    if cfg.provider != original.provider || cfg.base_url != original.base_url {
+        // Saved settings never carry credentials. A different target must resolve
+        // its own environment key instead of inheriting the launch-time key.
+        let provider_changed = cfg.provider != original.provider;
+        let model = if provider_changed && saved.model.is_none() {
+            String::new()
+        } else {
+            cfg.model.clone()
+        };
+        let base_url = if provider_changed && saved.base_url.is_none() {
+            String::new()
+        } else {
+            cfg.base_url.clone()
+        };
+        let resolved = PartialConfig {
+            vibe: matches!(cfg.mode, crate::modes::Mode::Vibe),
+            provider: Some(cfg.provider.clone()),
+            model: Some(model.clone()),
+            chat_model: Some(model.clone()),
+            code_model: Some(model),
+            api_key: None,
+            base_url: Some(base_url),
+            mode: Some(cfg.mode.clone()),
+            persona: Some(cfg.persona.clone()),
+            temperature: Some(cfg.temperature),
+            max_tokens: Some(cfg.max_tokens),
+            timeout_seconds: Some(cfg.timeout_seconds),
+            hf_device: Some(cfg.hf_device.clone()),
+            hf_local_only: Some(cfg.hf_local_only),
+        }
+        .resolve_for_interactive_setup();
+        *cfg = resolved.unwrap_or(original);
     }
 }
 
@@ -291,6 +325,108 @@ pub fn root_label(root: Option<&str>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn restored_provider_and_endpoint_do_not_inherit_another_explicit_key() {
+        const CHILD: &str = "SPIRAL_CODER_PREFS_CREDENTIAL_TEST_CHILD";
+        if std::env::var_os(CHILD).is_none() {
+            let result = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "tui::prefs::tests::restored_provider_and_endpoint_do_not_inherit_another_explicit_key", "--nocapture"])
+                .env(CHILD, "1")
+                .env("ANTHROPIC_API_KEY", "anthropic-target-placeholder")
+                .env("GEMINI_API_KEY", "gemini-target-placeholder")
+                .env_remove("SPIRAL_CODER_API_KEY")
+                .env_remove("MISTRAL_API_KEY")
+                .output().unwrap();
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+            return;
+        }
+        let original = crate::config::PartialConfig {
+            provider: Some(ProviderKind::OpenAiCompatible),
+            base_url: Some("https://api.openai.com/v1".into()),
+            model: Some("gpt-4.1-mini".into()),
+            api_key: Some("original-explicit-placeholder".into()),
+            ..crate::config::PartialConfig::default()
+        }
+        .resolve_for_interactive_setup()
+        .unwrap();
+        for (provider, base_url, model, expected_key) in [
+            (
+                "anthropic",
+                "https://api.anthropic.com",
+                "test-model",
+                "anthropic-target-placeholder",
+            ),
+            (
+                "openai-compatible",
+                "https://generativelanguage.googleapis.com/v1beta/openai",
+                "test-model",
+                "gemini-target-placeholder",
+            ),
+        ] {
+            let mut cfg = original.clone();
+            let saved = PanePrefs {
+                provider: Some(provider.into()),
+                base_url: Some(base_url.into()),
+                model: Some(model.into()),
+                ..PanePrefs::default()
+            };
+            apply_pane_prefs(PrefPane::Observer, &saved, &mut cfg, None);
+            assert_eq!(cfg.base_url, base_url);
+            assert_eq!(cfg.api_key.as_deref(), Some(expected_key));
+        }
+        let mut cfg = original.clone();
+        apply_pane_prefs(
+            PrefPane::Observer,
+            &snapshot_run_config(&original),
+            &mut cfg,
+            None,
+        );
+        assert_eq!(
+            cfg.api_key.as_deref(),
+            Some("original-explicit-placeholder")
+        );
+        let mut cfg = original.clone();
+        apply_pane_prefs(
+            PrefPane::Observer,
+            &PanePrefs {
+                provider: Some("anthropic".into()),
+                ..PanePrefs::default()
+            },
+            &mut cfg,
+            None,
+        );
+        assert_eq!(cfg.base_url, "https://api.anthropic.com/v1");
+        assert_eq!(cfg.api_key.as_deref(), Some("anthropic-target-placeholder"));
+        let mut cfg = original.clone();
+        apply_pane_prefs(
+            PrefPane::Observer,
+            &PanePrefs {
+                provider: Some("mistral".into()),
+                ..PanePrefs::default()
+            },
+            &mut cfg,
+            None,
+        );
+        assert_eq!(cfg.base_url, "https://api.mistral.ai/v1");
+        assert!(cfg.api_key.is_none());
+        let mut cfg = original.clone();
+        apply_pane_prefs(
+            PrefPane::Observer,
+            &PanePrefs {
+                base_url: Some("file:///tmp/settings".into()),
+                ..PanePrefs::default()
+            },
+            &mut cfg,
+            None,
+        );
+        assert_eq!(cfg.base_url, original.base_url);
+        assert_eq!(cfg.api_key, original.api_key);
+    }
 
     #[test]
     fn prefs_roundtrip_realize_preset() {

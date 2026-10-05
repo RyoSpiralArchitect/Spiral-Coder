@@ -54,8 +54,6 @@ META_PROMPTS_REL = ".spiral-coder/meta_prompts.json"
 
 LOCAL_TOOL_PROMPT = (
     "You are a coding agent with local workspace tools.\n"
-    "Workspace root: {workspace}\n"
-    "Tool root (if set): {tool_root}\n\n"
     "When the user asks to create/edit/read files, use tool calls."
     " Do not claim lack of permission. Use tools first, then summarize results.\n"
     "If the user asks to create a repository/project/app/game, you must actually create "
@@ -1847,9 +1845,11 @@ def _chat_openai_compat(
             0,
             {
                 "role": "system",
-                "content": LOCAL_TOOL_PROMPT.format(
-                    workspace=WORKSPACE_ROOT.as_posix(),
-                    tool_root=tool_root,
+                # JSON examples are literal prompt text, not format fields.
+                "content": (
+                    f"Workspace root: {WORKSPACE_ROOT.as_posix()}\n"
+                    f"Tool root (if set): {tool_root}\n\n"
+                    + LOCAL_TOOL_PROMPT
                 ),
             },
         )
@@ -2653,7 +2653,7 @@ class LiteHandler(BaseHTTPRequestHandler):
             **{
                 f"/assets/{name}": (name, "text/javascript; charset=utf-8")
                 for name in (
-                    "core/state.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
+                    "core/state.js", "core/ui.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
                     "vendor/react.production.min.js", "vendor/react-dom.production.min.js",
                 )
             },

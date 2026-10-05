@@ -22,6 +22,7 @@ const STYLES_CSS: &str = include_str!("../web/styles.css");
 const CORE_SANDBOX_JS: &str = include_str!("../web/core/sandbox.js");
 const CORE_EXEC_JS: &str = include_str!("../web/core/exec.js");
 const CORE_STATE_JS: &str = include_str!("../web/core/state.js");
+const CORE_UI_JS: &str = include_str!("../web/core/ui.js");
 const OBSERVER_LOGIC_JS: &str = include_str!("../web/observer/logic.js");
 const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
@@ -113,6 +114,7 @@ async fn serve_asset(stream: &mut TcpStream, req_path: &str) -> Result<()> {
         "core/sandbox.js" => Some(CORE_SANDBOX_JS.as_bytes()),
         "core/exec.js" => Some(CORE_EXEC_JS.as_bytes()),
         "core/state.js" => Some(CORE_STATE_JS.as_bytes()),
+        "core/ui.js" => Some(CORE_UI_JS.as_bytes()),
         "observer/logic.js" => Some(OBSERVER_LOGIC_JS.as_bytes()),
         "vendor/react.production.min.js" => Some(REACT_JS.as_bytes()),
         "vendor/react-dom.production.min.js" => Some(REACT_DOM_JS.as_bytes()),

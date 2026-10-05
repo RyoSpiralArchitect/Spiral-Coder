@@ -2,8 +2,10 @@
 import importlib.util
 import os
 from pathlib import Path
+import re
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / 'scripts' / 'serve_lite.py'
@@ -31,6 +33,21 @@ class LiteConfigurationTests(unittest.TestCase):
     def test_other_provider_env_names_stay_unchanged(self):
         with patch.dict(os.environ, {'OPENAI_API_KEY': 'test-only'}, clear=True):
             self.assertEqual(lite._env('OPENAI_API_KEY'), 'test-only')
+
+    def test_every_indexed_local_script_has_a_lite_asset_route(self):
+        html = (lite.WEB_ROOT / 'index.html').read_text(encoding='utf-8')
+        assets = re.findall(r'<script src="(/assets/[^"?]+)(?:\?[^" ]*)?"', html)
+        self.assertIn('/assets/core/ui.js', assets)
+        for asset in assets:
+            handler = SimpleNamespace(path=asset, _serve_file=Mock(), _send_bytes=Mock())
+            lite.LiteHandler.do_GET(handler)
+            if asset.endswith('/governor_contract.js'):
+                handler._send_bytes.assert_called_once()
+            else:
+                handler._serve_file.assert_called_once()
+                file_path, content_type = handler._serve_file.call_args.args
+                self.assertTrue(file_path.is_file(), asset)
+                self.assertIn('javascript', content_type)
 
 
 if __name__ == '__main__':

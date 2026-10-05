@@ -4,7 +4,8 @@
   const root = document.getElementById("app-root");
   if (!root) return;
 
-  const { readStoredValue, rootUserTextForRun, serverSupportsFeature } = window.SpiralCoderState;
+  const { readStoredValue, rootUserTextForRun, serverSupportsFeature, configWithoutSecrets, credentialRoute, paneApiKey } = window.SpiralCoderState;
+  const { isComposingKeyEvent, submitComposer, isAutomaticThreadTitle, focusDialog, transcriptMd } = window.SpiralCoderUI;
   const e = React.createElement;
   const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
@@ -23,6 +24,10 @@
   // ── i18n strings (en / ja / fr) ──────────────────────────────────────────────
   const I18N = {
     en: {
+      serverChecking: "Checking connection…",
+      serverConnected: "Connected",
+      serverDisconnected: "Disconnected · Refresh to retry",
+      serverRetry: "Start the local server, then select Refresh.",
       threads: "Threads",
       newThread: "New",
       rename: "Rename",
@@ -194,6 +199,10 @@
       metaViewerRawResponse: "raw_response",
     },
     ja: {
+      serverChecking: "接続を確認中…",
+      serverConnected: "接続済み",
+      serverDisconnected: "切断 · 更新で再接続",
+      serverRetry: "ローカルサーバーを起動して「更新」を押してください。",
       threads: "スレッド",
       newThread: "新規",
       rename: "名前",
@@ -364,6 +373,10 @@
       metaViewerRawResponse: "raw_response",
     },
     fr: {
+      serverChecking: "Connexion en cours…",
+      serverConnected: "Connecté",
+      serverDisconnected: "Déconnecté · Actualiser",
+      serverRetry: "Démarrez le serveur local, puis actualisez.",
       threads: "Fils",
       newThread: "Nouveau",
       rename: "Renommer",
@@ -817,7 +830,7 @@
   }
 
   function titleFrom(text) {
-    const t = String(text || "").trim().replace(/\\s+/g, " ");
+    const t = String(text || "").trim().replace(/\s+/g, " ");
     if (!t) return "Untitled";
     return t.length > 28 ? t.slice(0, 28) + "…" : t;
   }
@@ -834,19 +847,6 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
-  function transcriptMd(thread, meta) {
-    const lines = ["# Spiral-Coder transcript", ""];
-    if (meta) {
-      lines.push("```");
-      Object.keys(meta).forEach((k) => lines.push(`${k}: ${meta[k]}`));
-      lines.push("```", "");
-    }
-    (thread.messages || []).forEach((m) => {
-      const pane = m.pane === "observer" ? "observer" : m.pane === "chat" ? "chat" : "coder";
-      lines.push(`## ${pane} / ${m.role}`, "", String(m.content || "").trimEnd(), "");
-    });
-    return lines.join("\\n");
-  }
 
   async function readFileText(file) {
     return new Promise((resolve, reject) => {
@@ -965,13 +965,13 @@
 
   // ── Provider colors ───────────────────────────────────────────────────────────
   const PROVIDER_COLORS = {
-    "mistral":           "#2dd4bf",
-    "codestral":         "#14b8a6",
-    "mistral-cli":       "#34d399",
-    "openai-compatible": "#60a5fa",
-    "gemini":            "#a3e635",
-    "anthropic":         "#fb7185",
-    "hf":                "#fbbf24",
+    "mistral":           "#b8c6ff",
+    "codestral":         "#b4acf1",
+    "mistral-cli":       "#c9b8fa",
+    "openai-compatible": "#9bbeff",
+    "gemini":            "#a6c9ff",
+    "anthropic":         "#c9b8fa",
+    "hf":                "#b8c6ff",
   };
 
   // ╔══════════════════════════════════════════════════════════╗
@@ -1018,6 +1018,7 @@
   const parseCoderDiagnostic = OBSERVER.parseCoderDiagnostic;
   const parseBenchmarkPlan = OBSERVER.parseBenchmarkPlan;
   const stripObserverMeta = OBSERVER.stripObserverMeta;
+  const hasNextActionAttempt = OBSERVER.hasNextActionAttempt;
   if (
     !normalizeForSim
     || !tokenSetForSim
@@ -1029,6 +1030,7 @@
     || !parseCoderDiagnostic
     || !parseBenchmarkPlan
     || !stripObserverMeta
+    || !hasNextActionAttempt
   ) {
     throw new Error("Spiral-Coder UI: missing observer helpers (observer/logic.js not loaded)");
   }
@@ -1039,12 +1041,14 @@
   const dangerousCommandReason = EXEC.dangerousCommandReason;
   const gitRepoHint = EXEC.gitRepoHint;
   const normalizeExecScript = EXEC.normalizeExecScript;
+  const scaffoldCommand = EXEC.scaffoldCommand;
   if (
     !isWindowsHost
     || !stripShellTranscript
     || !dangerousCommandReason
     || !gitRepoHint
     || !normalizeExecScript
+    || !scaffoldCommand
   ) {
     throw new Error("Spiral-Coder UI: missing exec helpers (core/exec.js not loaded)");
   }
@@ -1077,15 +1081,15 @@
   function renderDiffBody(codeText) {
     const colorOf = (line) => {
       if (/^diff\s/.test(line) || /^index\s/.test(line) || /^new file/.test(line) || /^deleted file/.test(line))
-        return "rgba(96,165,250,0.9)";   // blue  — file header
+        return "rgba(var(--blue-rgb),0.9)";   // blue  — file header
       if (/^(\+\+\+|---)/.test(line))
         return "rgba(255,255,255,0.85)"; // white — path line
       if (/^@@/.test(line))
-        return "rgba(45,212,191,0.9)";  // cyan  — hunk header
+        return "rgba(var(--accent-rgb),0.9)";  // cyan  — hunk header
       if (line.startsWith("+"))
         return "rgba(74,222,128,0.9)";  // green — addition
       if (line.startsWith("-"))
-        return "rgba(251,113,133,0.9)"; // red   — deletion
+        return "rgba(var(--warn-rgb),0.9)"; // red   — deletion
       return "rgba(255,255,255,0.58)";  // faint — context
     };
     return e(
@@ -3704,6 +3708,9 @@
       return v === "ja" || v === "en" || v === "fr" ? v : "ja";
     });
     const [status, setStatus] = useState(null);
+    const [serverConnection, setServerConnection] = useState("checking");
+    const [serverConnectionError, setServerConnectionError] = useState("");
+    const statusRequestRef = useRef(0);
     const harnessSupported = serverSupportsFeature(status, "harness_promotions");
     const mergeGateSupported = serverSupportsFeature(status, "merge_gate");
     const projectScanSupported = serverSupportsFeature(status, "project_scan");
@@ -3711,7 +3718,7 @@
     const [config, setConfig] = useState(() => {
       const v = safeJsonParse(readStoredValue(localStorage, LS.config) || "null", null);
       if (!v || typeof v !== "object") return { ...DEFAULT_CONFIG };
-      const cfg = { ...DEFAULT_CONFIG, ...v };
+      const cfg = { ...DEFAULT_CONFIG, ...configWithoutSecrets(v) };
       if (!cfg.chatModel && cfg.model) cfg.chatModel = cfg.model;
       if (!cfg.codeModel && cfg.model) cfg.codeModel = cfg.model;
       if (!cfg.model && (cfg.chatModel || cfg.codeModel)) cfg.model = cfg.chatModel || cfg.codeModel;
@@ -3785,6 +3792,9 @@
     const [chatApiKey, setChatApiKey] = useState("");
     const [codeApiKey, setCodeApiKey] = useState("");
     const [observerApiKey, setObserverApiKey] = useState("");
+    const apiKeyForPane = (pane) => paneApiKey(config, {
+      chat: chatApiKey, code: codeApiKey, observer: observerApiKey,
+    }, pane);
     const [diff, setDiff] = useState("");
     const [models, setModels] = useState([]);
     const [modelsLoading, setModelsLoading] = useState(false);
@@ -3918,6 +3928,7 @@
     const [editingTitle, setEditingTitle] = useState("");
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [showShortcuts, setShowShortcuts] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [splitPct, setSplitPct] = useState(() => {
       try {
         const v = Number(readStoredValue(localStorage, LS.splitPct));
@@ -3947,6 +3958,16 @@
     const chatBodyRef = useRef(null);
     const toolRootInitRef = useRef(false);
     const ensuredWorkdirRef = useRef({});
+    const proposalDialogRef = useRef(null);
+    const readerDialogRef = useRef(null);
+    const shortcutsDialogRef = useRef(null);
+    const activeDialog = showShortcuts ? "shortcuts" : readerModal ? "reader" : proposalModal ? "proposal" : "";
+
+    useEffect(() => {
+      const ref = activeDialog === "shortcuts" ? shortcutsDialogRef
+        : activeDialog === "reader" ? readerDialogRef : proposalDialogRef;
+      return activeDialog ? focusDialog(ref.current) : undefined;
+    }, [activeDialog]);
 
     // Drag-to-resize pane handler.
     const onSplitDragStart = useCallback((e) => {
@@ -3978,6 +3999,7 @@
     // Global keyboard shortcuts.
     useEffect(() => {
       const onKey = (e) => {
+        if (isComposingKeyEvent(e)) return;
         if (e.key === "?" && !["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
           setShowShortcuts((v) => !v);
         }
@@ -4017,8 +4039,7 @@
     }, [lang]);
 
     useEffect(() => {
-      const safe = { ...config };
-      delete safe.apiKey;
+      const safe = configWithoutSecrets(config);
       localStorage.setItem(LS.config, JSON.stringify(safe));
     }, [config]);
 
@@ -4074,6 +4095,7 @@
       if (sendingObserver || sendingCoder || metaBusy) return;
       const target = findLatestObserverNextActionTarget();
       if (!target) return;
+      if (hasNextActionAttempt(activeThread.messages, target.id)) return;
       const key = `${String(activeThread.id || "")}:${String(target.id || "")}`;
       if (lastObserverNextActionRef.current === key) return;
       lastObserverNextActionRef.current = key;
@@ -4140,22 +4162,15 @@
 
     useEffect(() => {
       const d = Number(loopInfo.depth) || 0;
-      const hue = Math.min(360, d * 20);
       if (typeof document === "undefined" || !document.body) return;
       if (d > 0) {
         document.body.classList.add("looping");
-        document.body.style.setProperty("--loop-hue", hue + "deg");
-        document.body.style.setProperty("--loop-sat", String(1 + Math.min(0.6, d * 0.05)));
       } else {
         document.body.classList.remove("looping");
-        document.body.style.removeProperty("--loop-hue");
-        document.body.style.removeProperty("--loop-sat");
       }
       return () => {
         if (typeof document === "undefined" || !document.body) return;
         document.body.classList.remove("looping");
-        document.body.style.removeProperty("--loop-hue");
-        document.body.style.removeProperty("--loop-sat");
       };
     }, [loopInfo.depth]);
 
@@ -4239,14 +4254,29 @@
         .finally(() => setProjectScanLoading(false));
     }, [config.toolRoot, projectScanSupported]);
 
-    const refreshStatus = () => {
-      fetch("/api/status")
-        .then((r) => r.json())
-        .then((j) => {
-          try { window.__SPIRAL_CODER_HOST_OS = j && j.host_os ? String(j.host_os) : ""; } catch (_) {}
-          setStatus(j);
-        })
-        .catch(() => {});
+    const refreshStatus = async () => {
+      const requestId = ++statusRequestRef.current;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      setServerConnection("checking");
+      setServerConnectionError("");
+      try {
+        const response = await fetch("/api/status", { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const nextStatus = await response.json();
+        if (!nextStatus || nextStatus.ok !== true) throw new Error("Invalid server status");
+        if (requestId !== statusRequestRef.current) return;
+        window.__SPIRAL_CODER_HOST_OS = nextStatus.host_os ? String(nextStatus.host_os) : "";
+        setStatus(nextStatus);
+        setServerConnection("connected");
+      } catch (error) {
+        if (requestId !== statusRequestRef.current) return;
+        setStatus(null);
+        setServerConnection("disconnected");
+        setServerConnectionError(controller.signal.aborted ? "Request timed out" : String(error.message || error));
+      } finally {
+        clearTimeout(timeout);
+      }
     };
 
     const refreshPendingEdits = () => {
@@ -4322,13 +4352,16 @@
       + pendingCommandCount;
 
     const scrollToPanel = (ref, fallbackRef) => {
-      const target = ref.current || (fallbackRef ? fallbackRef.current : null);
-      if (!target || typeof target.scrollIntoView !== "function") return;
-      try {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch (_) {
-        target.scrollIntoView();
-      }
+      setSidebarOpen(true);
+      requestAnimationFrame(() => {
+        const target = ref.current || (fallbackRef ? fallbackRef.current : null);
+        if (!target || typeof target.scrollIntoView !== "function") return;
+        try {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (_) {
+          target.scrollIntoView();
+        }
+      });
     };
 
     const jumpToHarnessReviews = () => scrollToPanel(promotionsPanelRef, settingsPanelRef);
@@ -4467,18 +4500,11 @@
     const codeProvider = String(config.codeProvider || "").trim() || chatProvider;
     const observerProvider = String(config.observerProvider || "").trim() || chatProvider;
 
-    const chatKeyPresent = String(chatApiKey || "").trim().length > 0;
-    const codeKeyPresent = String(codeApiKey || "").trim().length > 0;
-    const observerKeyPresent = String(observerApiKey || "").trim().length > 0;
-
-    const typedKeyFor = (p) => {
-      const pp = String(p || "").trim();
-      if (!pp) return false;
-      if (chatProvider === pp && chatKeyPresent) return true;
-      if (codeProvider === pp && codeKeyPresent) return true;
-      if (observerProvider === pp && observerKeyPresent) return true;
-      if ((chatProvider === pp || codeProvider === pp || observerProvider === pp) && (chatKeyPresent || codeKeyPresent || observerKeyPresent)) return true;
-      return false;
+    const typedKeyFor = (provider) => {
+      const target = String(provider || "").trim();
+      return (chatProvider === target && !!apiKeyForPane("chat"))
+        || (codeProvider === target && !!apiKeyForPane("code"))
+        || (observerProvider === target && !!apiKeyForPane("observer"));
     };
 
     const keyMistralOk = keyMistral || typedKeyFor("mistral");
@@ -4536,15 +4562,26 @@
       el.scrollTop = el.scrollHeight;
     };
 
+    const setRoutingConfig = (next) => {
+      if (credentialRoute(config, "chat") !== credentialRoute(next, "chat")) setChatApiKey("");
+      if (credentialRoute(config, "code") !== credentialRoute(next, "code")) setCodeApiKey("");
+      if (credentialRoute(config, "observer") !== credentialRoute(next, "observer")) setObserverApiKey("");
+      setModels([]);
+      setModelsErr("");
+      setConfig(configWithoutSecrets(next));
+    };
+
     const applyPreset = (kind) => {
       const p = PRESETS[kind];
       if (!p) return;
-      setConfig({ ...DEFAULT_CONFIG, ...p });
+      // Presets change Chat/Coder routing, not workspace or review policy.
+      // Clear a prior Coder override when the new preset inherits Chat routing.
+      setRoutingConfig({ ...config, codeProvider: "", codeBaseUrl: "", ...p });
     };
 
     const setProviderSafe = (provider) => {
       const p = String(provider || "").trim();
-      let next = { ...config, provider: p };
+      let next = { ...config, provider: p, codeProvider: "", codeBaseUrl: "" };
 
       if (p === "mistral") {
         next = { ...next, ...PRESETS.vibe };
@@ -4570,9 +4607,7 @@
         next.codeModel = next.codeModel || next.model;
       }
 
-      setModels([]);
-      setModelsErr("");
-      setConfig(next);
+      setRoutingConfig(next);
     };
 
     const fetchModels = async () => {
@@ -4592,11 +4627,7 @@
           : isObs
             ? (String(config.observerBaseUrl || "").trim() || config.baseUrl)
             : config.baseUrl;
-        const apiKey = isCode
-          ? (String(codeApiKey || "").trim() || String(chatApiKey || "").trim() || String(observerApiKey || "").trim())
-          : isObs
-            ? (String(observerApiKey || "").trim() || String(chatApiKey || "").trim() || String(codeApiKey || "").trim())
-            : (String(chatApiKey || "").trim() || String(codeApiKey || "").trim() || String(observerApiKey || "").trim());
+        const apiKey = apiKeyForPane(isCode ? "code" : isObs ? "observer" : "chat");
         const j = await postJson("/api/models", {
           provider,
           base_url: strOrUndef(baseUrl),
@@ -5242,7 +5273,7 @@
         threads: s.threads.map((t) => {
           if (t.id !== threadId) return t;
           const title = String(t.title || "");
-          const isAuto = title === "Untitled" || /^Thread\\s+\\d+/.test(title) || title.indexOf(autoPrefix) === 0;
+          const isAuto = isAutomaticThreadTitle(title, autoPrefix);
           if (!isAuto) return t;
           return { ...t, title: titleFrom(userText), updatedAt: Date.now() };
         }),
@@ -5711,7 +5742,7 @@
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
       const obsModel = String(config.observerModel || "").trim() || (config.chatModel || config.model);
-      const obsKey = String(observerApiKey || "").trim() || String(chatApiKey || "").trim() || String(codeApiKey || "").trim();
+      const obsKey = apiKeyForPane("observer");
       const prompt = buildMetaDiagnosePrompt(packet);
       const startedAt = new Date().toISOString();
       const targetLabel = `[META-DIAGNOSE] target=${packet.target_message_id} kind=${packet.failure_kind}`;
@@ -5861,7 +5892,7 @@
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
       const obsModel = String(config.observerModel || "").trim() || (config.chatModel || config.model);
-      const obsKey = String(observerApiKey || "").trim() || String(chatApiKey || "").trim() || String(codeApiKey || "").trim();
+      const obsKey = apiKeyForPane("observer");
       const prompt = buildObserverNextActionPrompt(packet, reasonHint);
       const targetLabel = `[NEXT-ACTION] target=${packet.target_message_id} kind=${packet.failure_kind}`;
       const userMsg = {
@@ -9033,9 +9064,6 @@ state: ${agentState}`);
               "- Japonais : README.ja.md",
               "",
             ];
-            const readmeEnPs = "@(" + readmeEn.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath 'README.md' -Encoding UTF8";
-            const readmeJaPs = "@(" + readmeJa.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath 'README.ja.md' -Encoding UTF8";
-            const readmeFrPs = "@(" + readmeFr.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath 'README.fr.md' -Encoding UTF8";
             const gitignoreLines = [
               "# Spiral-Coder scaffold",
               ".DS_Store",
@@ -9047,27 +9075,17 @@ state: ${agentState}`);
               "*.log",
               "",
             ];
-            const gitignorePs = "@(" + gitignoreLines.map(psSingleQuote).join(",") + ") | Set-Content -LiteralPath '.gitignore' -Encoding UTF8";
-            const cmdPs = [
-              "$ErrorActionPreference = 'Stop'",
-              `New-Item -ItemType Directory -Force -Path ${psSingleQuote(safe)} | Out-Null`,
-              `Set-Location ${psSingleQuote(safe)}`,
-              "New-Item -ItemType Directory -Force -Path 'src' | Out-Null",
-              "New-Item -ItemType Directory -Force -Path 'docs' | Out-Null",
-              readmeEnPs,
-              readmeJaPs,
-              readmeFrPs,
-              gitignorePs,
-              "git init | Out-Null",
-              "git branch -M main | Out-Null",
-              "$n = (git config user.name); if (-not $n) { git config user.name 'Spiral-Coder' }",
-              "$e = (git config user.email); if (-not $e) { git config user.email 'spiral-coder@local' }",
-              "git add README.md README.ja.md README.fr.md .gitignore | Out-Null",
-              "git commit -m 'Initial commit' | Out-Null",
-            ].join("; ");
-
             try {
-              const res = await postJson("/api/exec", { command: cmdPs, cwd: baseCwd });
+              const command = scaffoldCommand({
+                name: safe,
+                files: {
+                  "README.md": readmeEn.join("\n"),
+                  "README.ja.md": readmeJa.join("\n"),
+                  "README.fr.md": readmeFr.join("\n"),
+                  ".gitignore": gitignoreLines.join("\n"),
+                },
+              });
+              const res = await postJson("/api/exec", { command, cwd: baseCwd });
               const ok = (res && typeof res.exit_code === "number") ? res.exit_code === 0 : false;
               const out = ok
                 ? `[Spiral-Coder] scaffolded repo: ${safe} (cwd=${String(res.cwd || baseCwd || "")})`
@@ -9109,9 +9127,7 @@ state: ${agentState}`);
         const resolvedProvider = useCode ? (String(coderCfg.codeProvider || "").trim() || coderCfg.provider) : coderCfg.provider;
         const resolvedBaseUrl = useCode ? (String(coderCfg.codeBaseUrl || "").trim() || coderCfg.baseUrl) : coderCfg.baseUrl;
         const resolvedModel = useCode ? (coderCfg.codeModel || coderCfg.model) : (coderCfg.chatModel || coderCfg.model);
-        const resolvedKey = useCode
-          ? (String(codeApiKey || "").trim() || String(chatApiKey || "").trim() || String(observerApiKey || "").trim())
-          : (String(chatApiKey || "").trim() || String(codeApiKey || "").trim() || String(observerApiKey || "").trim());
+        const resolvedKey = apiKeyForPane(useCode ? "code" : "chat");
         const reqCfg = {
           ...coderCfg,
           provider: resolvedProvider,
@@ -9306,7 +9322,7 @@ state: ${agentState}`);
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
       const obsModel = String(config.observerModel || "").trim() || (config.chatModel || config.model);
-      const obsKey = String(observerApiKey || "").trim() || String(chatApiKey || "").trim() || String(codeApiKey || "").trim();
+      const obsKey = apiKeyForPane("observer");
       const obsCfg = {
         ...config,
         mode: config.observerMode,
@@ -9935,7 +9951,7 @@ state: ${agentState}`);
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
       const obsModel = String(config.observerModel || "").trim() || (config.chatModel || config.model);
-      const obsKey = String(observerApiKey || "").trim() || String(chatApiKey || "").trim() || String(codeApiKey || "").trim();
+      const obsKey = apiKeyForPane("observer");
       if (!obsKey) return;
 
       setPlanningTasks(true);
@@ -9993,7 +10009,7 @@ state: ${agentState}`);
       if (!text) return;
       if (!activeThread) return;
       const threadId = activeThread.id;
-      const apiKey = String(chatApiKey || "").trim() || String(codeApiKey || "").trim() || String(observerApiKey || "").trim();
+      const apiKey = apiKeyForPane("chat");
       const chatCfg = { ...config, mode: "会話", cot: "off", autonomy: "off", persona: config.chatPersona || "cheerful" };
       const userMsg = { id: uid(), pane: "chat", role: "user", content: text, ts: Date.now() };
       const asstMsg = { id: uid(), pane: "chat", role: "assistant", content: "", ts: Date.now(), streaming: true };
@@ -10542,6 +10558,14 @@ state: ${agentState}`);
               { className: "pill", title: status && status.workspace_root ? String(status.workspace_root) : "" },
               status && status.version ? `v${status.version}` : "local"
             ),
+            e("span", {
+              className: "pill" + (serverConnection === "disconnected" ? " pill-warn" : ""),
+              role: "status",
+              "aria-live": "polite",
+              title: serverConnection === "disconnected"
+                ? tr(lang, "serverRetry") + (serverConnectionError ? ` (${serverConnectionError})` : "")
+                : undefined,
+            }, tr(lang, "server" + serverConnection[0].toUpperCase() + serverConnection.slice(1))),
             serverOutdated
               ? e(
                   "span",
@@ -10575,6 +10599,14 @@ state: ${agentState}`);
               e("button", { className: "seg-btn " + (lang === "fr" ? "active" : ""), onClick: () => setLang("fr") }, "FR")
             ),
             e("button", { className: "btn", onClick: refreshStatus, type: "button" }, tr(lang, "refresh")),
+            e("button", {
+              className: "btn mobile-settings",
+              type: "button",
+              "aria-controls": "workspace-controls",
+              "aria-expanded": sidebarOpen,
+              "aria-label": tr(lang, "settings") + " · " + tr(lang, "threads"),
+              onClick: () => setSidebarOpen((open) => !open),
+            }, tr(lang, "settings")),
             promotionInboxCount
               ? e(
                   "button",
@@ -10627,10 +10659,10 @@ state: ${agentState}`);
       ),
       e(
         "div",
-        { className: "main" },
+        { className: "main" + (sidebarOpen ? " sidebar-open" : "") },
         e(
           "div",
-          { style: { display: "flex", flexDirection: "column", gap: "14px" } },
+          { className: "workspace-sidebar", id: "workspace-controls" },
           e(
             "div",
             { className: "panel" },
@@ -10654,7 +10686,7 @@ state: ${agentState}`);
                 threadState.threads.map((t) => {
                   const active = t.id === threadState.activeId;
                   const activeStyle = active
-                    ? { borderColor: "rgba(96,165,250,0.60)", background: "rgba(96,165,250,0.10)" }
+                    ? { borderColor: "rgba(var(--blue-rgb),0.60)", background: "rgba(var(--blue-rgb),0.10)" }
                     : null;
                   const msgs = (t.messages || []);
                   const lastMsg = msgs.length ? msgs[msgs.length - 1] : null;
@@ -10690,6 +10722,7 @@ state: ${agentState}`);
                             autoFocus: true,
                             onChange: (ev) => setEditingTitle(ev.target.value),
                             onKeyDown: (ev) => {
+                              if (isComposingKeyEvent(ev)) return;
                               if (ev.key === "Enter") commitRename(t.id);
                               if (ev.key === "Escape") setEditingThreadId(null);
                             },
@@ -10701,7 +10734,7 @@ state: ${agentState}`);
                       ? e(
                           "div",
                           { style: { flex: 1, display: "flex", gap: 6, alignItems: "center" } },
-                          e("span", { style: { flex: 1, fontSize: 12, color: "var(--danger,#f87171)" } }, tr(lang, "delQ")),
+                          e("span", { style: { flex: 1, fontSize: 12, color: "var(--warn)" } }, tr(lang, "delQ")),
                           e("button", { className: "btn btn-warn", style: { padding: "6px 10px" }, onClick: () => confirmDelete(t.id) }, tr(lang, "yes")),
                           e("button", { className: "btn", style: { padding: "6px 10px" }, onClick: () => setConfirmDeleteId(null) }, tr(lang, "no"))
                         )
@@ -10988,11 +11021,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "provider")),
+                  e("label", { htmlFor: "setting-provider" }, tr(lang, "provider")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-provider", className: "select",
                       value: config.provider,
                       onChange: (ev) => setProviderSafe(ev.target.value),
                     },
@@ -11004,9 +11037,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "chatModel")),
+                  e("label", { htmlFor: "setting-chatModel" }, tr(lang, "chatModel")),
                   e("input", {
-                    className: "input",
+                    id: "setting-chatModel", className: "input",
                     value: config.chatModel || "",
                     list: models && models.length ? "models-list" : undefined,
                     onChange: (ev) => setConfig({ ...config, chatModel: ev.target.value }),
@@ -11016,9 +11049,9 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "codeModel")),
+                e("label", { htmlFor: "setting-codeModel" }, tr(lang, "codeModel")),
                 e("input", {
-                  className: "input",
+                  id: "setting-codeModel", className: "input",
                   value: config.codeModel || "",
                   list: models && models.length ? "models-list" : undefined,
                   onChange: (ev) => setConfig({ ...config, codeModel: ev.target.value }),
@@ -11071,11 +11104,11 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "baseUrl")),
+                e("label", { htmlFor: "setting-baseUrl" }, tr(lang, "baseUrl")),
                 e("input", {
-                  className: "input",
+                  id: "setting-baseUrl", className: "input",
                   value: config.baseUrl,
-                  onChange: (ev) => setConfig({ ...config, baseUrl: ev.target.value }),
+                  onChange: (ev) => setRoutingConfig({ ...config, baseUrl: ev.target.value }),
                 })
               ),
               e(
@@ -11084,13 +11117,13 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "codeProvider")),
+                  e("label", { htmlFor: "setting-codeProvider" }, tr(lang, "codeProvider")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-codeProvider", className: "select",
                       value: String(config.codeProvider || ""),
-                      onChange: (ev) => setConfig({ ...config, codeProvider: ev.target.value }),
+                      onChange: (ev) => setRoutingConfig({ ...config, codeProvider: ev.target.value }),
                     },
                     e("option", { value: "" }, tr(lang, "sameAsChat")),
                     PROVIDERS.map((p) => e("option", { key: p.k, value: p.k }, (p.l && p.l[lang]) || p.k))
@@ -11099,11 +11132,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "codeBaseUrl")),
+                  e("label", { htmlFor: "setting-codeBaseUrl" }, tr(lang, "codeBaseUrl")),
                   e("input", {
-                    className: "input",
+                    id: "setting-codeBaseUrl", className: "input",
                     value: String(config.codeBaseUrl || ""),
-                    onChange: (ev) => setConfig({ ...config, codeBaseUrl: ev.target.value }),
+                    onChange: (ev) => setRoutingConfig({ ...config, codeBaseUrl: ev.target.value }),
                     placeholder: tr(lang, "sameAsChat"),
                   })
                 )
@@ -11114,11 +11147,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "mode")),
+                  e("label", { htmlFor: "setting-mode" }, tr(lang, "mode")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-mode", className: "select",
                       value: config.mode,
                       onChange: (ev) => setConfig({ ...config, mode: ev.target.value }),
                     },
@@ -11128,11 +11161,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "persona")),
+                  e("label", { htmlFor: "setting-persona" }, tr(lang, "persona")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-persona", className: "select",
                       value: config.persona,
                       onChange: (ev) => setConfig({ ...config, persona: ev.target.value }),
                     },
@@ -11143,10 +11176,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "observerIntensity")),
+                e("label", { id: "setting-observerIntensity" }, tr(lang, "observerIntensity")),
                 e(
                   "div",
-                  { className: "seg seg-4" },
+                  { role: "group", "aria-labelledby": "setting-observerIntensity", className: "seg seg-4" },
                   e(
                     "button",
                     {
@@ -11179,11 +11212,11 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "observerLang")),
+                e("label", { htmlFor: "setting-observerLang" }, tr(lang, "observerLang")),
                 e(
                   "select",
                   {
-                    className: "select",
+                    id: "setting-observerLang", className: "select",
                     value: String(config.observerLang || "ui"),
                     onChange: (ev) => setConfig({ ...config, observerLang: ev.target.value }),
                   },
@@ -11200,11 +11233,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "observer") + " · " + tr(lang, "mode")),
+                  e("label", { htmlFor: "setting-observerMode" }, tr(lang, "observer") + " · " + tr(lang, "mode")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-observerMode", className: "select",
                       value: config.observerMode,
                       onChange: (ev) => setConfig({ ...config, observerMode: ev.target.value }),
                     },
@@ -11214,11 +11247,11 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "observer") + " · " + tr(lang, "persona")),
+                  e("label", { htmlFor: "setting-observerPersona" }, tr(lang, "observer") + " · " + tr(lang, "persona")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-observerPersona", className: "select",
                       value: config.observerPersona,
                       onChange: (ev) => setConfig({ ...config, observerPersona: ev.target.value }),
                     },
@@ -11232,13 +11265,13 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "observerProvider")),
+                  e("label", { htmlFor: "setting-observerProvider" }, tr(lang, "observerProvider")),
                   e(
                     "select",
                     {
-                      className: "select",
+                      id: "setting-observerProvider", className: "select",
                       value: String(config.observerProvider || ""),
-                      onChange: (ev) => setConfig({ ...config, observerProvider: ev.target.value }),
+                      onChange: (ev) => setRoutingConfig({ ...config, observerProvider: ev.target.value }),
                     },
                     e("option", { value: "" }, tr(lang, "sameAsChat")),
                     PROVIDERS.map((p) => e("option", { key: p.k, value: p.k }, (p.l && p.l[lang]) || p.k))
@@ -11247,9 +11280,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "observerModel")),
+                  e("label", { htmlFor: "setting-observerModel" }, tr(lang, "observerModel")),
                   e("input", {
-                    className: "input",
+                    id: "setting-observerModel", className: "input",
                     value: String(config.observerModel || ""),
                     list: models && models.length ? "models-list" : undefined,
                     onChange: (ev) => setConfig({ ...config, observerModel: ev.target.value }),
@@ -11260,21 +11293,21 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "observerBaseUrl")),
+                e("label", { htmlFor: "setting-observerBaseUrl" }, tr(lang, "observerBaseUrl")),
                 e("input", {
-                  className: "input",
+                  id: "setting-observerBaseUrl", className: "input",
                   value: String(config.observerBaseUrl || ""),
-                  onChange: (ev) => setConfig({ ...config, observerBaseUrl: ev.target.value }),
+                  onChange: (ev) => setRoutingConfig({ ...config, observerBaseUrl: ev.target.value }),
                   placeholder: tr(lang, "sameAsChat"),
                 })
               ),
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "cot")),
+                e("label", { id: "setting-cot" }, tr(lang, "cot")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-cot", className: "seg" },
                   e(
                     "button",
                     {
@@ -11316,10 +11349,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "editApproval")),
+                e("label", { id: "setting-editApproval" }, tr(lang, "editApproval")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-editApproval", className: "seg" },
                   e(
                     "button",
                     {
@@ -11343,10 +11376,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "commandApproval")),
+                e("label", { id: "setting-commandApproval" }, tr(lang, "commandApproval")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-commandApproval", className: "seg" },
                   e(
                     "button",
                     {
@@ -11370,10 +11403,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "autoObserve")),
+                e("label", { id: "setting-autoObserve" }, tr(lang, "autoObserve")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-autoObserve", className: "seg" },
                   e(
                     "button",
                     {
@@ -11397,10 +11430,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "forceAgent")),
+                e("label", { id: "setting-forceAgent" }, tr(lang, "forceAgent")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-forceAgent", className: "seg" },
                   e(
                     "button",
                     {
@@ -11424,9 +11457,9 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "coderMaxIters")),
+                e("label", { htmlFor: "setting-coderMaxIters" }, tr(lang, "coderMaxIters")),
                 e("input", {
-                  className: "input",
+                  id: "setting-coderMaxIters", className: "input",
                   value: String(config.coderMaxIters || ""),
                   onChange: (ev) => setConfig({ ...config, coderMaxIters: ev.target.value }),
                   placeholder: String(DEFAULT_CONFIG.coderMaxIters || "14"),
@@ -11436,16 +11469,16 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "toolRoot")),
+                e("label", { htmlFor: "setting-toolRoot" }, tr(lang, "toolRoot")),
                 e("input", {
-                  className: "input",
+                  id: "setting-toolRoot", className: "input",
                   value: String(config.toolRoot || ""),
                   onChange: (ev) => setConfig({ ...config, toolRoot: ev.target.value }),
                   placeholder: "(optional) subdir (e.g. myrepo)",
                 }),
                 (projectScanLoading || (projectScan && projectScan.stack_label))
                   ? e("div", { style: { marginTop: "4px", fontSize: "0.78rem",
-                                         color: "var(--accent,#2dd4bf)", fontFamily: "monospace" } },
+                                         color: "var(--accent)", fontFamily: "monospace" } },
                       projectScanLoading
                         ? "⟳ scanning…"
                         : e("span", null,
@@ -11457,9 +11490,9 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "workdir")),
+                e("label", { htmlFor: "setting-workdir" }, tr(lang, "workdir")),
                 e("input", {
-                  className: "input",
+                  id: "setting-workdir", className: "input",
                   value: String((activeThread && activeThread.workdir) || ""),
                   onChange: (ev) => {
                     const v = String(ev.target.value || "");
@@ -11480,9 +11513,9 @@ state: ${agentState}`);
                     e(
                       "div",
                       { className: "field" },
-                      e("label", null, tr(lang, "vibeAgent")),
+                      e("label", { htmlFor: "setting-vibeAgent" }, tr(lang, "vibeAgent")),
                       e("input", {
-                        className: "input",
+                        id: "setting-vibeAgent", className: "input",
                         value: String(config.mistralCliAgent || ""),
                         onChange: (ev) => setConfig({ ...config, mistralCliAgent: ev.target.value }),
                         placeholder: "accept-edits / plan / ...",
@@ -11491,9 +11524,9 @@ state: ${agentState}`);
                     e(
                       "div",
                       { className: "field" },
-                      e("label", null, tr(lang, "vibeMaxTurns")),
+                      e("label", { htmlFor: "setting-vibeMaxTurns" }, tr(lang, "vibeMaxTurns")),
                       e("input", {
-                        className: "input",
+                        id: "setting-vibeMaxTurns", className: "input",
                         value: String(config.mistralCliMaxTurns || ""),
                         onChange: (ev) => setConfig({ ...config, mistralCliMaxTurns: ev.target.value }),
                         placeholder: "8",
@@ -11505,10 +11538,10 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "includeCoderContext")),
+                e("label", { id: "setting-includeCoderContext" }, tr(lang, "includeCoderContext")),
                 e(
                   "div",
-                  { className: "seg" },
+                  { role: "group", "aria-labelledby": "setting-includeCoderContext", className: "seg" },
                   e(
                     "button",
                     {
@@ -11535,9 +11568,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "temperature")),
+                  e("label", { htmlFor: "setting-temperature" }, tr(lang, "temperature")),
                   e("input", {
-                    className: "input",
+                    id: "setting-temperature", className: "input",
                     value: config.temperature,
                     onChange: (ev) => setConfig({ ...config, temperature: ev.target.value }),
                     inputMode: "decimal",
@@ -11546,9 +11579,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "maxTokens")),
+                  e("label", { htmlFor: "setting-maxTokens" }, tr(lang, "maxTokens")),
                   e("input", {
-                    className: "input",
+                    id: "setting-maxTokens", className: "input",
                     value: config.maxTokens,
                     onChange: (ev) => setConfig({ ...config, maxTokens: ev.target.value }),
                     inputMode: "numeric",
@@ -11561,9 +11594,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "timeoutSeconds")),
+                  e("label", { htmlFor: "setting-timeoutSeconds" }, tr(lang, "timeoutSeconds")),
                   e("input", {
-                    className: "input",
+                    id: "setting-timeoutSeconds", className: "input",
                     value: config.timeoutSeconds,
                     onChange: (ev) => setConfig({ ...config, timeoutSeconds: ev.target.value }),
                     inputMode: "numeric",
@@ -11572,10 +11605,10 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "stream")),
+                  e("label", { id: "setting-stream" }, tr(lang, "stream")),
                   e(
                     "div",
-                    { className: "seg" },
+                    { role: "group", "aria-labelledby": "setting-stream", className: "seg" },
                     e(
                       "button",
                       {
@@ -11601,9 +11634,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "apiKeyChat")),
+                  e("label", { htmlFor: "setting-apiKeyChat" }, tr(lang, "apiKeyChat")),
                   e("input", {
-                    className: "input",
+                    id: "setting-apiKeyChat", className: "input",
                     type: "password",
                     value: chatApiKey,
                     onChange: (ev) => setChatApiKey(ev.target.value),
@@ -11613,9 +11646,9 @@ state: ${agentState}`);
                 e(
                   "div",
                   { className: "field" },
-                  e("label", null, tr(lang, "apiKeyCode")),
+                  e("label", { htmlFor: "setting-apiKeyCode" }, tr(lang, "apiKeyCode")),
                   e("input", {
-                    className: "input",
+                    id: "setting-apiKeyCode", className: "input",
                     type: "password",
                     value: codeApiKey,
                     onChange: (ev) => setCodeApiKey(ev.target.value),
@@ -11626,9 +11659,9 @@ state: ${agentState}`);
               e(
                 "div",
                 { className: "field", style: { marginTop: "10px" } },
-                e("label", null, tr(lang, "apiKeyObserver")),
+                e("label", { htmlFor: "setting-apiKeyObserver" }, tr(lang, "apiKeyObserver")),
                 e("input", {
-                  className: "input",
+                  id: "setting-apiKeyObserver", className: "input",
                   type: "password",
                   value: observerApiKey,
                   onChange: (ev) => setObserverApiKey(ev.target.value),
@@ -11639,7 +11672,7 @@ state: ${agentState}`);
                 "div",
                 {
                   className: "diffbox",
-                  onDragOver: (ev) => { ev.preventDefault(); ev.currentTarget.style.borderColor = "rgba(45,212,191,0.7)"; ev.currentTarget.style.background = "rgba(45,212,191,0.07)"; },
+                  onDragOver: (ev) => { ev.preventDefault(); ev.currentTarget.style.borderColor = "rgba(var(--accent-rgb),0.7)"; ev.currentTarget.style.background = "rgba(var(--accent-rgb),0.07)"; },
                   onDragLeave: (ev) => { ev.currentTarget.style.borderColor = ""; ev.currentTarget.style.background = ""; },
                   onDrop: async (ev) => {
                     ev.preventDefault();
@@ -11708,7 +11741,7 @@ state: ${agentState}`);
                   providerLabel(coderResolvedProvider(config.mode)) + " · " + modeLabel(config.mode) + " · " + shortModel(coderActiveModel())
                 ),
                 e("button", {
-                  className: "btn btn-icon",
+                  className: "btn btn-icon pane-focus",
                   type: "button",
                   title: tr(lang, "focusCoder"),
                   onClick: () => setSplitPct(70),
@@ -11786,22 +11819,13 @@ state: ${agentState}`);
               { className: "composer" },
               e("textarea", {
                 className: "textarea",
-                value: coderInput,
+                "aria-label": tr(lang, "coder"),
+                      value: coderInput,
                 rows: Math.max(2, Math.min(8, (coderInput.match(/\n/g) || []).length + 1)),
                 style: { resize: "none" },
                 placeholder: tr(lang, "placeholder"),
                 onChange: (ev) => setCoderInput(ev.target.value),
-                onKeyDown: (ev) => {
-                  if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") {
-                    ev.preventDefault();
-                    sendCoder();
-                    return;
-                  }
-                  if (ev.key === "Enter" && !ev.shiftKey) {
-                    ev.preventDefault();
-                    sendCoder();
-                  }
-                },
+                onKeyDown: (ev) => submitComposer(ev, () => sendCoder()),
               }),
               atRefChips.length > 0
                 ? e(
@@ -11813,9 +11837,9 @@ state: ${agentState}`);
                         {
                           key: path,
                           style: {
-                            background: "rgba(45,212,191,0.12)",
-                            color: "var(--accent,#2dd4bf)",
-                            border: "1px solid rgba(45,212,191,0.3)",
+                            background: "rgba(var(--accent-rgb),0.12)",
+                            color: "var(--accent)",
+                            border: "1px solid rgba(var(--accent-rgb),0.3)",
                             borderRadius: "4px",
                             padding: "1px 7px",
                             fontSize: "0.76rem",
@@ -11847,8 +11871,8 @@ state: ${agentState}`);
                 className: "dot" + (sendingCoder ? " streaming" : ""),
                 style: {
                   background: sendingCoder
-                    ? (PROVIDER_COLORS[coderResolvedProvider(config.mode)] || "rgba(45,212,191,0.85)")
-                    : "rgba(45,212,191,0.85)",
+                    ? (PROVIDER_COLORS[coderResolvedProvider(config.mode)] || "rgba(var(--accent-rgb),0.85)")
+                    : "rgba(var(--accent-rgb),0.85)",
                   transition: "background 400ms ease",
                 },
               }),
@@ -11886,8 +11910,8 @@ state: ${agentState}`);
                 e("span", {
                   style: {
                     width: 8, height: 8, borderRadius: "50%", display: "inline-block",
-                    background: PROVIDER_COLORS[observerResolvedProvider()] || "rgba(251, 191, 36, 0.85)",
-                    boxShadow: "0 0 8px " + (PROVIDER_COLORS[observerResolvedProvider()] || "rgba(251, 191, 36, 0.45)") + "88",
+                    background: PROVIDER_COLORS[observerResolvedProvider()] || "var(--observer)",
+                    boxShadow: "0 0 8px " + (PROVIDER_COLORS[observerResolvedProvider()] || "#c9b8fa") + "88",
                     transition: "background 400ms ease, box-shadow 400ms ease",
                   },
                 }),
@@ -11921,7 +11945,7 @@ state: ${agentState}`);
                 observerPhase && e("span", { className: "phase-indicator phase-" + observerPhase }, observerPhase),
                 config.autoObserve && e("span", { className: "pill auto-badge" }, "AUTO"),
                 e("button", {
-                  className: "btn btn-icon",
+                  className: "btn btn-icon pane-focus",
                   type: "button",
                   title: tr(lang, "focusObserver"),
                   onClick: () => setSplitPct(30),
@@ -12045,15 +12069,13 @@ state: ${agentState}`);
                   e("div", { className: "composer chat-composer" },
                     e("textarea", {
                       className: "textarea",
+                      "aria-label": tr(lang, "chat"),
                       value: chatInput,
                       placeholder: lang === "en" ? "Chat…" : lang === "fr" ? "Discuter…" : "話しかける…",
                       rows: Math.max(2, Math.min(8, (chatInput.match(/\n/g) || []).length + 1)),
                       style: { resize: "none" },
                       onChange: (ev) => setChatInput(ev.target.value),
-                      onKeyDown: (ev) => {
-                        if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") { ev.preventDefault(); sendChat(); return; }
-                        if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); sendChat(); }
-                      },
+                      onKeyDown: (ev) => submitComposer(ev, () => sendChat()),
                     }),
                     sendingChat
                       ? e("button", { className: "btn btn-warn", onClick: stopChat }, tr(lang, "stop"))
@@ -12318,7 +12340,7 @@ state: ${agentState}`);
                               p.impact && e("span", { style: { fontSize: 11, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, p.impact),
                             ),
                             p.quote && p.quote !== "n/a" && e("div", {
-                              style: { fontSize: 11, fontFamily: "var(--mono)", color: "rgba(45,212,191,0.7)",
+                              style: { fontSize: 11, fontFamily: "var(--mono)", color: "rgba(var(--accent-rgb),0.7)",
                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 },
                               title: p.quote,
                             }, "❝ " + p.quote),
@@ -12372,26 +12394,17 @@ state: ${agentState}`);
                     { className: "composer" },
                     e("textarea", {
                       className: "textarea",
+                      "aria-label": tr(lang, "observer"),
                       value: observerInput,
                       placeholder: tr(lang, "placeholder"),
                       rows: Math.max(2, Math.min(8, (observerInput.match(/\n/g) || []).length + 1)),
                       style: { resize: "none" },
                       onChange: (ev) => setObserverInput(ev.target.value),
-                      onKeyDown: (ev) => {
-                        if ((ev.metaKey || ev.ctrlKey) && ev.key === "Enter") {
-                          ev.preventDefault();
-                          sendObserver();
-                          return;
-                        }
-                        if (ev.key === "Enter" && !ev.shiftKey) {
-                          ev.preventDefault();
-                          sendObserver();
-                        }
-                      },
+                      onKeyDown: (ev) => submitComposer(ev, () => sendObserver()),
                     }),
                     sendingObserver
                       ? e("button", { className: "btn btn-warn", onClick: stopObserver }, tr(lang, "stop"))
-                      : e("button", { className: "btn btn-primary", onClick: sendObserver }, tr(lang, "send"))
+                      : e("button", { className: "btn btn-primary", onClick: () => sendObserver() }, tr(lang, "send"))
                   ),
                   e(
                     "div",
@@ -12399,7 +12412,7 @@ state: ${agentState}`);
                     e("span", {
                       className: "dot" + (sendingObserver ? " streaming" : ""),
                       style: {
-                        background: PROVIDER_COLORS[observerResolvedProvider()] || (sendingObserver ? "rgba(251, 191, 36, 0.95)" : "rgba(251, 191, 36, 0.85)"),
+                        background: PROVIDER_COLORS[observerResolvedProvider()] || "var(--observer)",
                         transition: "background 400ms ease",
                       },
                     }),
@@ -12407,9 +12420,9 @@ state: ${agentState}`);
                     healthScore && e("span", {
                       className: "pill health-badge",
                       style: {
-                        background: healthScore.score >= 70 ? "rgba(45,212,191,0.15)" : healthScore.score >= 40 ? "rgba(251,191,36,0.15)" : "rgba(251,113,133,0.15)",
-                        borderColor: healthScore.score >= 70 ? "rgba(45,212,191,0.5)" : healthScore.score >= 40 ? "rgba(251,191,36,0.5)" : "rgba(251,113,133,0.5)",
-                        color: healthScore.score >= 70 ? "var(--accent)" : healthScore.score >= 40 ? "#fbbf24" : "var(--warn)",
+                        background: healthScore.score >= 70 ? "rgba(var(--accent-rgb),0.15)" : healthScore.score >= 40 ? "rgba(var(--caution-rgb),0.15)" : "rgba(var(--warn-rgb),0.15)",
+                        borderColor: healthScore.score >= 70 ? "rgba(var(--accent-rgb),0.5)" : healthScore.score >= 40 ? "rgba(var(--caution-rgb),0.5)" : "rgba(var(--warn-rgb),0.5)",
+                        color: healthScore.score >= 70 ? "var(--accent)" : healthScore.score >= 40 ? "var(--caution)" : "var(--warn)",
                       },
                       title: healthScore.rationale,
                     }, "❤ " + healthScore.score),
@@ -12433,10 +12446,10 @@ state: ${agentState}`);
         { className: "modal-overlay", onClick: () => setProposalModal(null) },
         e(
           "div",
-          { className: "modal-box proposal-send-modal", onClick: (ev) => ev.stopPropagation() },
+          { className: "modal-box proposal-send-modal", ref: proposalDialogRef, role: "dialog", "aria-modal": true, "aria-labelledby": "proposal-dialog-title", tabIndex: -1, onClick: (ev) => ev.stopPropagation() },
           e("div", { className: "modal-header" },
             e("div", { style: { display: "flex", flexDirection: "column", gap: 3 } },
-              e("h3", null, String(proposalModal.title || "")),
+              e("h3", { id: "proposal-dialog-title" }, String(proposalModal.title || "")),
               e("span", { style: { fontSize: 11, fontFamily: "var(--mono)", color: "var(--muted)" } },
                 `[${String(proposalModal.severity || "info")}]` +
                 (proposalModal.score != null ? ` · ${proposalModal.score}pt` : "")
@@ -12446,6 +12459,7 @@ state: ${agentState}`);
           ),
           e("textarea", {
             className: "textarea proposal-send-textarea",
+            "aria-labelledby": "proposal-dialog-title",
             value: proposalModalText,
             onChange: (ev) => setProposalModalText(ev.target.value),
             spellCheck: false,
@@ -12472,10 +12486,10 @@ state: ${agentState}`);
         { className: "modal-overlay", onClick: () => setReaderModal(null) },
         e(
           "div",
-          { className: "modal-box reader-modal", onClick: (ev) => ev.stopPropagation() },
+          { className: "modal-box reader-modal", ref: readerDialogRef, role: "dialog", "aria-modal": true, "aria-labelledby": "reader-dialog-title", tabIndex: -1, onClick: (ev) => ev.stopPropagation() },
           e("div", { className: "modal-header" },
             e("div", { style: { display: "flex", flexDirection: "column", gap: 3 } },
-              e("h3", null, String(readerModal.title || tr(lang, "observer"))),
+              e("h3", { id: "reader-dialog-title" }, String(readerModal.title || tr(lang, "observer"))),
               readerModal.ts ? e("span", { style: { fontSize: 11, fontFamily: "var(--mono)", color: "var(--muted)" } }, relativeTime(readerModal.ts, lang)) : null
             ),
             e("button", { className: "btn btn-icon", title: tr(lang, "close"), onClick: () => setReaderModal(null) }, "×")
@@ -12496,9 +12510,9 @@ state: ${agentState}`);
         { className: "modal-overlay", onClick: () => setShowShortcuts(false) },
         e(
           "div",
-          { className: "modal-box shortcuts-modal", onClick: (e) => e.stopPropagation() },
+          { className: "modal-box shortcuts-modal", ref: shortcutsDialogRef, role: "dialog", "aria-modal": true, "aria-labelledby": "shortcuts-dialog-title", tabIndex: -1, onClick: (e) => e.stopPropagation() },
           e("div", { className: "modal-header" },
-            e("h3", null, tr(lang, "shortcuts")),
+            e("h3", { id: "shortcuts-dialog-title" }, tr(lang, "shortcuts")),
             e("button", { className: "btn btn-icon", title: tr(lang, "close"), onClick: () => setShowShortcuts(false) }, "×")
           ),
           e(

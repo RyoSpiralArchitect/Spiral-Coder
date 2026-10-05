@@ -19,6 +19,7 @@ use crate::types::{ChatMessage, ChatRequest};
 
 use super::agent;
 use super::app::{App, Focus, Message, RightTab, Role, Task, TaskPhase, TaskTarget};
+use super::input::{self, HistoryPane, Scroll};
 use super::intent;
 use super::merge_gate;
 use super::prefs;
@@ -389,7 +390,7 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                 partial.model = Some(String::new());
                 partial.chat_model = Some(String::new());
                 partial.code_model = Some(String::new());
-                partial.resolve()
+                partial.resolve_for_interactive_setup()
             }
 
             let cur = match pane {
@@ -476,7 +477,12 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
             fn resolve_with_base_url(cfg: &RunConfig, base_url: &str) -> anyhow::Result<RunConfig> {
                 let mut partial = partial_from_run_config(cfg);
                 partial.base_url = Some(base_url.to_string());
-                partial.resolve()
+                partial.api_key = None;
+                let mut resolved = partial.resolve_for_interactive_setup()?;
+                if resolved.provider == cfg.provider && resolved.base_url == cfg.base_url {
+                    resolved.api_key = cfg.api_key.clone();
+                }
+                Ok(resolved)
             }
 
             let cur = match pane {
@@ -1001,12 +1007,22 @@ Ctrl+R              cycle right pane tab\n"
 pub enum AppEvent {
     Key(KeyEvent),
     Mouse(MouseEvent),
+    Paste(String),
     CoderToken(StreamToken),
     ObserverToken(StreamToken),
     ChatToken(StreamToken),
     TasksPlanned(Vec<Task>),
     TaskPlanError(String),
     Tick,
+}
+
+fn terminal_event(event: Event) -> Option<AppEvent> {
+    match event {
+        Event::Key(key) => Some(AppEvent::Key(key)),
+        Event::Mouse(mouse) => Some(AppEvent::Mouse(mouse)),
+        Event::Paste(text) => Some(AppEvent::Paste(text)),
+        _ => None,
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -1041,8 +1057,10 @@ pub async fn run_event_loop(
         let ev = tokio::select! {
             maybe_key = event_stream.next() => {
                 match maybe_key {
-                    Some(Ok(Event::Key(k)))   => AppEvent::Key(k),
-                    Some(Ok(Event::Mouse(m))) => AppEvent::Mouse(m),
+                    Some(Ok(event)) => match terminal_event(event) {
+                        Some(event) => event,
+                        None => continue,
+                    },
                     Some(Err(e)) => return Err(e.into()),
                     _ => continue,
                 }
@@ -1061,6 +1079,7 @@ pub async fn run_event_loop(
                 }
             }
             AppEvent::Mouse(m) => handle_mouse(m, app),
+            AppEvent::Paste(text) => input::paste(app, &text),
             AppEvent::CoderToken(token) => handle_coder_token(token, app),
             AppEvent::ObserverToken(token) => handle_observer_token(token, app),
             AppEvent::ChatToken(token) => handle_chat_token(token, app),
@@ -1108,28 +1127,30 @@ pub async fn run_event_loop(
 fn handle_mouse(mouse: MouseEvent, app: &mut App) {
     // Query terminal dimensions for hit-testing (fall back to 80×24).
     let (term_w, term_h) = crossterm::terminal::size().unwrap_or((80, 24));
+    handle_mouse_at(mouse, app, term_w, term_h);
+}
 
-    // The layout produced by ui::render:
-    //   row 0-1    → header (2 rows)
-    //   row 2..h-5 → body panes
-    //   row h-5..h-1 → input + footer
-    // Horizontal: left 55 % = Coder, right 45 % = Right tab.
-    let coder_w = (term_w as u32 * 55 / 100) as u16;
-    let body_start: u16 = 2;
-    let body_end: u16 = term_h.saturating_sub(5);
-    let input_start: u16 = term_h.saturating_sub(5);
+fn handle_mouse_at(mouse: MouseEvent, app: &mut App, term_w: u16, term_h: u16) {
+    use super::layout::{contains, right_tab_labels, ScreenLayout};
+    let screen = ratatui::layout::Rect::new(0, 0, term_w, term_h);
+    let layout = ScreenLayout::new(screen, app);
+    let over_coder = contains(layout.coder, mouse.column, mouse.row);
+    let over_right = contains(layout.right_content, mouse.column, mouse.row)
+        || contains(layout.right_tabs, mouse.column, mouse.row);
 
     match mouse.kind {
         // Scroll wheel: scroll whichever pane the cursor is over.
-        MouseEventKind::ScrollUp => {
-            if mouse.column < coder_w {
-                app.coder.scroll = app.coder.scroll.saturating_add(3);
+        MouseEventKind::ScrollUp if over_coder || over_right => {
+            if over_coder {
+                input::scroll_history(app, HistoryPane::Coder, Scroll::Up(3), screen);
             } else {
                 match app.right_tab {
                     RightTab::Observer => {
-                        app.observer.scroll = app.observer.scroll.saturating_add(3)
+                        input::scroll_history(app, HistoryPane::Observer, Scroll::Up(3), screen)
                     }
-                    RightTab::Chat => app.chat.scroll = app.chat.scroll.saturating_add(3),
+                    RightTab::Chat => {
+                        input::scroll_history(app, HistoryPane::Chat, Scroll::Up(3), screen)
+                    }
                     RightTab::Tasks => app.tasks_cursor = app.tasks_cursor.saturating_sub(1),
                     RightTab::Promotions => {
                         app.harness_promotions_cursor =
@@ -1141,15 +1162,17 @@ fn handle_mouse(mouse: MouseEvent, app: &mut App) {
                 }
             }
         }
-        MouseEventKind::ScrollDown => {
-            if mouse.column < coder_w {
-                app.coder.scroll = app.coder.scroll.saturating_sub(3);
+        MouseEventKind::ScrollDown if over_coder || over_right => {
+            if over_coder {
+                input::scroll_history(app, HistoryPane::Coder, Scroll::Down(3), screen);
             } else {
                 match app.right_tab {
                     RightTab::Observer => {
-                        app.observer.scroll = app.observer.scroll.saturating_sub(3)
+                        input::scroll_history(app, HistoryPane::Observer, Scroll::Down(3), screen)
                     }
-                    RightTab::Chat => app.chat.scroll = app.chat.scroll.saturating_sub(3),
+                    RightTab::Chat => {
+                        input::scroll_history(app, HistoryPane::Chat, Scroll::Down(3), screen)
+                    }
                     RightTab::Tasks => {
                         if !app.tasks.is_empty() {
                             app.tasks_cursor =
@@ -1174,55 +1197,43 @@ fn handle_mouse(mouse: MouseEvent, app: &mut App) {
 
         // Left-click in the body: focus that pane.
         MouseEventKind::Down(MouseButton::Left) => {
-            if mouse.row >= body_start && mouse.row < body_end {
-                app.focus = if mouse.column < coder_w {
+            if over_coder || over_right {
+                app.focus = if over_coder {
                     Focus::Coder
                 } else {
                     Focus::Right
                 };
-                if mouse.column >= coder_w && mouse.row == body_start {
-                    let right_width = term_w.saturating_sub(coder_w).max(1);
-                    let rel = mouse.column.saturating_sub(coder_w);
-                    let fifth = (right_width / 5).max(1);
-                    app.right_tab = if rel < fifth {
-                        RightTab::Observer
-                    } else if rel < fifth.saturating_mul(2) {
-                        RightTab::Chat
-                    } else if rel < fifth.saturating_mul(3) {
-                        RightTab::Tasks
-                    } else if rel < fifth.saturating_mul(4) {
-                        RightTab::Promotions
-                    } else {
-                        RightTab::MergeGate
-                    };
-                    let _ = save_current_tui_prefs(app);
-                } else if mouse.column >= coder_w && app.right_tab == RightTab::Promotions {
-                    let promotions_block_top = body_start.saturating_add(1);
-                    let promotions_inner_top = promotions_block_top.saturating_add(1);
-                    let promotions_inner_height = body_end
-                        .saturating_sub(promotions_block_top)
-                        .saturating_sub(2)
-                        as usize;
-                    if mouse.row >= promotions_inner_top
-                        && ((mouse.row - promotions_inner_top) as usize) < promotions_inner_height
+                if contains(layout.right_tabs, mouse.column, mouse.row) {
+                    if let Some(label) = right_tab_labels(layout.right_tabs, app)
+                        .into_iter()
+                        .find(|label| contains(label.area, mouse.column, mouse.row))
                     {
-                        let row_offset = mouse.row.saturating_sub(promotions_inner_top) as usize;
-                        let _ = promotion_gate::select_visible_row(
-                            app,
-                            promotions_inner_height,
-                            row_offset,
-                        );
+                        app.right_tab = label.tab;
+                        let _ = save_current_tui_prefs(app);
                     }
-                } else if mouse.column >= coder_w && app.right_tab == RightTab::MergeGate {
-                    let gate_block_top = body_start.saturating_add(1);
-                    let gate_inner_top = gate_block_top.saturating_add(1);
-                    let gate_inner_height =
-                        body_end.saturating_sub(gate_block_top).saturating_sub(2) as usize;
-                    if mouse.row >= gate_inner_top
-                        && ((mouse.row - gate_inner_top) as usize) < gate_inner_height
-                    {
-                        let row_offset = mouse.row.saturating_sub(gate_inner_top) as usize;
-                        let _ = merge_gate::select_visible_row(app, gate_inner_height, row_offset);
+                } else if over_right {
+                    let inner = ratatui::widgets::Block::default()
+                        .borders(ratatui::widgets::Borders::ALL)
+                        .inner(layout.right_content);
+                    if contains(inner, mouse.column, mouse.row) {
+                        let offset = (mouse.row - inner.y) as usize;
+                        match app.right_tab {
+                            RightTab::Promotions => {
+                                let _ = promotion_gate::select_visible_row(
+                                    app,
+                                    inner.height as usize,
+                                    offset,
+                                );
+                            }
+                            RightTab::MergeGate => {
+                                let _ = merge_gate::select_visible_row(
+                                    app,
+                                    inner.height as usize,
+                                    offset,
+                                );
+                            }
+                            _ => {}
+                        }
                     }
                 }
                 match app.focus {
@@ -1233,12 +1244,9 @@ fn handle_mouse(mouse: MouseEvent, app: &mut App) {
                         RightTab::Tasks | RightTab::Promotions | RightTab::MergeGate => {}
                     },
                 }
-            } else if mouse.row >= input_start {
-                app.focus = if mouse.column < coder_w {
-                    Focus::Coder
-                } else {
-                    Focus::Right
-                };
+            } else if contains(layout.input, mouse.column, mouse.row) {
+                // There is one full-width composer for the current pane. Clicking
+                // its right half must not redirect a draft to another recipient.
                 match app.focus {
                     Focus::Coder => app.coder.welcome_dismissed = true,
                     Focus::Right => match app.right_tab {
@@ -1358,7 +1366,14 @@ async fn handle_key(
 
         // Trigger Observer manually
         KeyCode::Char('o') if ctrl => {
-            send_observer_message(app, observer_tx, None).await;
+            app.right_tab = RightTab::Observer;
+            app.focus = Focus::Right;
+            if let Some(prompt) = input::manual_review_prompt(app) {
+                send_observer_message(app, observer_tx, Some(prompt)).await;
+            } else {
+                app.observer
+                    .push_tool("No completed Coder output to review yet.".to_string());
+            }
         }
 
         // Clear current pane
@@ -1419,7 +1434,7 @@ async fn handle_key(
             } else if app.focus == Focus::Right && app.right_tab == RightTab::MergeGate {
                 app.merge_gate_cursor = app.merge_gate_cursor.saturating_sub(5);
             } else {
-                app.focused_pane_mut().scroll = app.focused_pane_mut().scroll.saturating_add(5);
+                input::scroll_focused_history(app, Scroll::Up(5));
             }
         }
         KeyCode::PageDown => {
@@ -1439,7 +1454,7 @@ async fn handle_key(
                         .min(app.merge_gate.entries.len().saturating_sub(1));
                 }
             } else {
-                app.focused_pane_mut().scroll = app.focused_pane_mut().scroll.saturating_sub(5);
+                input::scroll_focused_history(app, Scroll::Down(5));
             }
         }
         KeyCode::Home => {
@@ -1450,7 +1465,7 @@ async fn handle_key(
             } else if app.focus == Focus::Right && app.right_tab == RightTab::MergeGate {
                 app.merge_gate_cursor = 0;
             } else {
-                app.focused_pane_mut().scroll = usize::MAX; // jump to very top
+                input::scroll_focused_history(app, Scroll::Top);
             }
         }
         KeyCode::End => {
@@ -1468,7 +1483,7 @@ async fn handle_key(
                     app.merge_gate_cursor = app.merge_gate.entries.len().saturating_sub(1);
                 }
             } else {
-                app.focused_pane_mut().scroll = 0; // re-pin to bottom
+                input::scroll_focused_history(app, Scroll::Bottom);
             }
         }
 
@@ -2174,6 +2189,10 @@ async fn send_coder_message(app: &mut App, tx: &mpsc::Sender<StreamToken>) {
     }
 
     if let Some(selector) = parse_meta_diagnose_command(&text) {
+        if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+            app.coder.push_tool(problem);
+            return;
+        }
         app.coder.textarea = tui_textarea::TextArea::default();
         send_meta_diagnose(app, tx, &selector).await;
         return;
@@ -2182,6 +2201,11 @@ async fn send_coder_message(app: &mut App, tx: &mpsc::Sender<StreamToken>) {
     // Handle slash commands before sending to AI.
     if handle_slash_command(&text, app, PaneId::Coder) {
         app.coder.textarea = tui_textarea::TextArea::default();
+        return;
+    }
+
+    if let Some(problem) = validate_pane_ready(app, PaneId::Coder) {
+        app.coder.push_tool(problem);
         return;
     }
 
@@ -3040,6 +3064,11 @@ fn render_observer_suggestion_arg_value(value: &serde_json::Value) -> String {
 }
 
 async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selector: &str) {
+    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+        app.observer.push_tool(problem);
+        return;
+    }
+
     app.right_tab = RightTab::Observer;
     app.observer.scroll = 0;
     let selector = selector.trim();
@@ -3217,6 +3246,11 @@ async fn send_next_action_assist(
     selector: &str,
     reason_hint: &str,
 ) {
+    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+        app.observer.push_tool(problem);
+        return;
+    }
+
     app.right_tab = RightTab::Observer;
     app.observer.scroll = 0;
     let packet = match build_tui_meta_failure_packet_for_selector(app, selector) {
@@ -3324,6 +3358,8 @@ mod tests {
     use crate::config::{ProviderKind, RunConfig};
     use crate::modes::Mode;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    include!("interaction_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3842,6 +3878,10 @@ async fn send_observer_message(
     tx: &mpsc::Sender<StreamToken>,
     override_text: Option<String>,
 ) {
+    if app.observer.streaming {
+        return;
+    }
+    let from_composer = override_text.is_none();
     let text = match override_text {
         Some(t) => t,
         None => {
@@ -3850,6 +3890,10 @@ async fn send_observer_message(
                 return;
             }
             if let Some(selector) = parse_meta_diagnose_command(&t) {
+                if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+                    app.observer.push_tool(problem);
+                    return;
+                }
                 app.observer.textarea = tui_textarea::TextArea::default();
                 send_meta_diagnose(app, tx, &selector).await;
                 return;
@@ -3859,16 +3903,15 @@ async fn send_observer_message(
                 app.observer.textarea = tui_textarea::TextArea::default();
                 return;
             }
-            if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
-                app.observer.push_tool(problem);
-                return;
-            }
-            app.observer.textarea = tui_textarea::TextArea::default();
             t
         }
     };
-    if app.observer.streaming {
+    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+        app.observer.push_tool(problem);
         return;
+    }
+    if from_composer {
+        app.observer.textarea = tui_textarea::TextArea::default();
     }
 
     if let Some(handle) = app.observer_task.take() {
@@ -4424,6 +4467,11 @@ async fn maybe_observer_lang_retry(app: &mut App, observer_tx: &mpsc::Sender<Str
         return;
     }
 
+    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+        app.observer.push_tool(problem);
+        return;
+    }
+
     // Best-effort: abort the previous task handle (it should already be complete).
     if let Some(handle) = app.observer_task.take() {
         handle.abort();
@@ -4531,6 +4579,11 @@ async fn maybe_observer_loop_retry(app: &mut App, observer_tx: &mpsc::Sender<Str
         return;
     };
     if app.observer.streaming {
+        return;
+    }
+
+    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
+        app.observer.push_tool(problem);
         return;
     }
 

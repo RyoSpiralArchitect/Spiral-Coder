@@ -3,6 +3,7 @@ import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { buildScenarioResult, collectBrowserDiagnostics } from "./ui-smoke-result.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -132,39 +133,82 @@ async function captureViewport(page, url, name, viewport, outDir) {
   await page.waitForSelector("h2", { timeout: 15000 });
   await page.waitForTimeout(1200);
 
-  const bodyText = (await page.locator("body").innerText()).replace(/\s+/g, " ");
   const headings = await page.locator("h2").allTextContents();
-  const horizontalOverflow = await page.evaluate(
+  const hasHorizontalOverflow = () => page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth + 4
   );
-
-  const screenshotPath = path.join(outDir, `${name}.png`);
-  await page.screenshot({ path: screenshotPath, fullPage: true });
-
+  const coderInput = page.getByRole("textbox", { name: /^(Coder|コーダー|Codeur)$/ });
+  const minimumCoderWidth = Math.min(280, viewport.width * 0.7);
+  const readCoderViewport = () => coderInput.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+      inViewport:
+        rect.width > 0 && rect.height > 0
+        && rect.left >= 0 && rect.right <= window.innerWidth + 1
+        && rect.top >= 0 && rect.bottom <= window.innerHeight + 1,
+    };
+  });
+  const initialCoder = await readCoderViewport();
   const checks = {
-    harnessReviews: includesAny(bodyText, [
-      "Harness reviews",
-      "ハーネスレビュー",
-      "Revues du harnais",
-    ]),
-    runtimeApprovals: includesAny(bodyText, [
-      "Runtime approvals",
-      "ランタイム承認",
-      "Approbations runtime",
-    ]),
-    settings: includesAny(bodyText, [
-      "Settings",
-      "設定",
-      "Réglages",
-    ]),
-    horizontalOverflow: !horizontalOverflow,
+    coderInitiallyInViewport: initialCoder.inViewport,
+    coderInitiallyWideEnough: initialCoder.width >= minimumCoderWidth,
+    horizontalOverflow: !(await hasHorizontalOverflow()),
   };
+
+  // Capture the initial viewport before any control opens or scrolls the page.
+  const screenshotPath = path.join(outDir, `${name}.png`);
+  await page.screenshot({ path: screenshotPath, fullPage: false });
+
+  const mobile = viewport.width <= 980;
+  const sidebar = page.locator(".workspace-sidebar");
+  const settingsToggle = page.getByRole("button", {
+    name: /^(Settings · Threads|設定 · スレッド|Réglages · Fils)$/,
+  });
+  if (mobile) {
+    checks.sidebarInitiallyHidden = !(await sidebar.isVisible());
+    checks.settingsToggleVisible = await settingsToggle.isVisible();
+    checks.settingsToggleInitiallyCollapsed = (await settingsToggle.getAttribute("aria-expanded")) === "false";
+    await settingsToggle.click();
+    await sidebar.waitFor({ state: "visible", timeout: 5000 });
+    checks.settingsToggleExpanded = (await settingsToggle.getAttribute("aria-expanded")) === "true";
+    checks.settingsOpenWithoutHorizontalOverflow = !(await hasHorizontalOverflow());
+  }
+
+  // These panels remain reachable on mobile through the settings control.
+  checks.harnessReviews = await page.getByRole("heading", {
+    name: /^(Harness reviews|ハーネスレビュー|Revues du harnais)$/,
+  }).isVisible();
+  checks.runtimeApprovals = await page.getByRole("heading", {
+    name: /^(Runtime approvals|ランタイム承認|Approbations runtime)$/,
+  }).isVisible();
+  checks.settings = await page.getByRole("heading", {
+    name: /^(Settings|設定|Réglages)$/,
+  }).isVisible();
+
+  let coderAfterSidebarClose = null;
+  if (mobile) {
+    await settingsToggle.click();
+    await sidebar.waitFor({ state: "hidden", timeout: 5000 });
+    checks.settingsToggleCollapsedAgain = (await settingsToggle.getAttribute("aria-expanded")) === "false";
+    coderAfterSidebarClose = await readCoderViewport();
+    checks.coderVisibleAfterSettingsClose = coderAfterSidebarClose.inViewport;
+    checks.coderWideEnoughAfterSettingsClose = coderAfterSidebarClose.width >= minimumCoderWidth;
+    checks.settingsClosedWithoutHorizontalOverflow = !(await hasHorizontalOverflow());
+  }
 
   return {
     name,
     viewport,
     headings,
     screenshotPath,
+    screenshotState: "initial-coder-viewport",
+    minimumCoderWidth,
+    initialCoder,
+    coderAfterSidebarClose,
     checks,
   };
 }
@@ -289,9 +333,6 @@ async function runServerScenario(name, workspaceRoot, host, port, outDir, execut
     serverStderr += chunk.toString();
   });
 
-  const pageErrors = [];
-  const consoleErrors = [];
-  const badResponses = [];
   let browser;
   try {
     const baseUrl = `http://${host}:${port}/`;
@@ -299,22 +340,7 @@ async function runServerScenario(name, workspaceRoot, host, port, outDir, execut
 
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
-    page.on("pageerror", (err) => {
-      pageErrors.push(String(err.message || err));
-    });
-    page.on("console", (msg) => {
-      if (msg.type() === "error") {
-        consoleErrors.push(msg.text());
-      }
-    });
-    page.on("response", (response) => {
-      if (response.status() >= 400) {
-        badResponses.push({
-          url: response.url(),
-          status: response.status(),
-        });
-      }
-    });
+    const diagnostics = collectBrowserDiagnostics(page);
 
     const result = await execute({
       page,
@@ -322,18 +348,12 @@ async function runServerScenario(name, workspaceRoot, host, port, outDir, execut
       workspaceRoot,
       outDir,
     });
-    return {
+    return buildScenarioResult({
       name,
       workspaceRoot,
-      pageErrors,
-      consoleErrors,
-      badResponses,
-      ok:
-        result.ok
-        && pageErrors.length === 0
-        && badResponses.length === 0,
-      ...result,
-    };
+      result,
+      diagnostics,
+    });
   } finally {
     if (browser) {
       await browser.close();
@@ -361,8 +381,8 @@ async function runBaselineScenario(args, outDir) {
     outDir,
     async ({ page, baseUrl }) => {
       const viewports = [
-        { name: "desktop", viewport: { width: 1440, height: 1600 } },
-        { name: "mobile", viewport: { width: 430, height: 1400 } },
+        { name: "desktop", viewport: { width: 1440, height: 900 } },
+        { name: "mobile", viewport: { width: 390, height: 844 } },
       ];
       const results = [];
       for (const entry of viewports) {

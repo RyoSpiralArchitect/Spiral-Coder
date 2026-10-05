@@ -27,9 +27,32 @@ store state without first choosing the correct owner.
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
 | Web message provenance | `web/app.js` + `web/core/state.js` | Web thread lifetime | browser-local thread state | optional `message.origin` (`user` or `runtime`) for human messages versus runtime handoffs |
+| Web recovery attempt history | `web/app.js` + `web/observer/logic.js` | Web thread lifetime | browser-local thread messages | existing `metaKind=observer_next_action` and `metaTargetId` identify assistance already attempted for a Coder message |
 | Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
 ## Current ownership map
+
+The Web recovery assistant uses its persisted message metadata to avoid retrying
+the same automatic next-action request after a page reload. A recorded Observer
+assistant entry for the same Coder target counts as an attempt even when the
+request failed, was stopped, or was interrupted. A new Coder target can trigger
+new automatic assistance; the explicit next-action button can still retry an
+existing target. No separate retry ledger is stored.
+
+Web provider presets update the Chat/Coder routing fields supplied by that
+preset. They preserve workspace, approval policy, explicit Observer routing,
+and other runtime preferences. Connection checks and dialog focus are transient
+UI state; a failed status refresh clears stale server capabilities and can be
+retried with Refresh.
+
+Explicit Web API keys live only in the three pane input states. Legacy
+`apiKey`, `chatApiKey`, `codeApiKey`, and `observerApiKey` configuration fields
+are excluded when loading and persisting configuration. A routing change
+clears a pane's explicit key when its effective provider or base URL changes,
+including a URL inherited from Chat. Independent Observer routing and its key
+remain intact when their destination is unchanged. Cross-pane key fallback is
+allowed only for the same provider and base URL; an independently configured
+Observer key must never be used for a newly selected Chat/Coder destination.
 
 ### 1. Runtime/provider config
 
@@ -43,6 +66,18 @@ Owns:
 - mode/persona defaults
 - temperature/max_tokens/timeout
 - provider-specific defaulting and normalization
+
+`PartialConfig::resolve()` retains its launch-time authentication checks. TUI
+startup and provider selection use `resolve_for_interactive_setup()`, which
+performs the same structural validation but defers missing Mistral/Anthropic
+credentials until send time so `/keys` remains accessible. Every TUI provider
+request validates the destination pane before starting; a blocked send preserves
+its draft. This adds no persisted credential or readiness state.
+
+Restoring a different TUI provider/base URL or changing `/base_url` resolves the
+new target's environment credential; an explicit key from the previous target
+is not carried across. Unchanged provider/endpoint settings retain their explicit
+key. The preferences JSON format remains unchanged and stores no credentials.
 
 Should not own:
 
