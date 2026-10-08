@@ -268,3 +268,10 @@ The [2026-10-09 recovery comparison](evals/2026-10-09-recovery-focus/README.md)
 adds localized failure retention and fresh runs against the preceding candidate.
 The live traces exercise target rereads, but neither provider completes TUI
 replay; the opposite changes in suite totals do not establish nonregression.
+
+The [plan/replay and Gemini continuation comparison](evals/2026-10-09-plan-replay/README.md)
+preserves three candidates and the corrections each prompted. Final frozen
+results are Mistral 5/6, GPT-4.1 mini 5/6, and Gemini Flash-Lite 3/6. Mistral
+completes replay with a different edit tool but still fails the required
+`patch_file` check. Gemini's benchmark resume passes after eliminating unsigned
+synthetic calls; remaining task failures keep the branch unqualified.
