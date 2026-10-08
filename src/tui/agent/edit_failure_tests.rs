@@ -18,6 +18,7 @@ fn restore(messages: &[Value]) -> EditFailureMemory {
 
 fn call(name: &str, args: Value) -> ToolCallData {
     ToolCallData {
+        thought_signature: None,
         id: "edit".into(),
         name: name.into(),
         arguments: args.to_string(),

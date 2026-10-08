@@ -14,6 +14,7 @@ store state without first choosing the correct owner.
 | Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
 | Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
 | Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
+| Provider tool continuation | `src/streaming/provider_metadata.rs` | resumable exchange | optional `tool_calls[].extra_content.google.thought_signature` | opaque Google metadata attached to the original call; not execution evidence |
 | Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
 | Localized verification failure | `src/tui/agent/recovery_focus.rs` | current human task, resumable | optional local tool-result metadata | failed check, confirmed workspace target, bounded diagnostic and observation state |
 | Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
@@ -164,6 +165,30 @@ Resume repair:
   supply verification or recovery hints. Valid sessions keep their seeded state.
 - Repair changes history, not the filesystem: interrupted tools may have already
   produced side effects. A missing result is not evidence that an action failed.
+
+Provider tool continuation:
+
+- Native and Web streaming share `src/streaming/tool_calls.rs`. Tool indices keep
+  parallel fragments separate; a late Google thought signature stays attached to
+  its original ID, name, and arguments. Repeating the same complete signature is
+  allowed; conflicting or malformed signatures fail without printing their value.
+- `src/streaming/provider_metadata.rs` owns this opaque metadata. Normal and
+  governor-blocked assistant exchanges serialize it unchanged. Session save/load
+  and resume repair preserve it on retained complete exchanges; assistant text
+  compaction skips signed turns. Whole-exchange window pruning remains bounded
+  by the existing retention rules.
+- Gemini tool requests use `tool_choice: "auto"` so the model can emit the
+  required plan/think/evidence text alongside a call. Other compatible providers
+  retain `required`; no governor gate is waived.
+- Native automatic tool rewrites skip signed calls. The ordinary plan, think,
+  evidence, execution, and completion gates still apply. Unsigned legacy history
+  does not acquire a fabricated signature; old sessions are not retroactively
+  certified for Gemini. Runtime-generated calls also remain unsigned.
+- Outgoing native and Web requests include Google metadata only for an HTTPS URL
+  whose exact host is `generativelanguage.googleapis.com`. Switching providers
+  strips it from the request copy, while the saved transcript remains intact.
+  Custom proxy hosts do not receive it. Debug output redacts signature values;
+  session files necessarily retain them for continuation and remain local data.
 
 Native task provenance:
 

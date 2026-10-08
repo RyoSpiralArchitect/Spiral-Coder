@@ -143,13 +143,37 @@ hide the relative source path, line, and cause. Rust source locations and Python
 traceback frames remain adjacent to their diagnostic context. Output shortening
 is not a new source of task instructions or successful execution evidence.
 
+Malformed TUI replay JSON reports a bounded, JSON-escaped excerpt from the exact
+source that failed parsing. A `target_message_contains` failure reports the
+selected message ID and expected fragment, and clarifies that it checks the
+selected message ID. The assertion semantics remain unchanged. Recovery snapshots
+retain a bounded cause plus supporting diagnostic lines, rather than only a
+failure count. Tests require an explicit selector repair to pass the same
+assertion and verify that diagnostics do not modify the replay fixture.
+
+## Provider continuation checks
+
+Gemini's OpenAI-compatible tool responses can contain
+`extra_content.google.thought_signature`. Transport coverage exercises late
+metadata, repeated complete signatures, conflicting signatures, native and Web
+SSE paths, blocked calls, compaction, save/load, resume repair, and provider
+switches. A healthy tool-result round trip is required before model-quality
+comparisons. Gemini uses `tool_choice: "auto"` to permit the explicit protocol
+prelude; `required`/ANY suppressed it in the bounded live probe while AUTO
+returned both text and the same function call. This changes request compatibility,
+not plan/evidence/completion acceptance. An unavailable model or a missing-signature HTTP rejection is a
+transport/access result, not a quality score. Legacy unsigned sessions may still
+need a fresh Gemini run; no signature is fabricated to bypass validation.
+
 ## Command and automatic-test evidence
 
 Colon-delimited protocol blocks recognize only the active block contract's field
 names and aliases at the least-indented field level. A step's literal colon text,
 nested fixture keys, or a more deeply indented recognized label remain part of
 the current value. This keeps multi-step plans intact when a step describes JSON
-or replay fields. Existing XML and bracket-quoted field forms remain supported.
+or replay fields. `Acceptance Criteria:` is an explicit shared alias for the plan
+acceptance field, with the same indentation and validation rules; unrelated
+headings do not satisfy it. Existing XML and bracket-quoted field forms remain supported.
 
 `verified_command_seen` requires an assistant tool call and matching tool result
 ID, an exact successful runtime exit-status header, and current proof. Command

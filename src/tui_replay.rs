@@ -457,7 +457,12 @@ fn evaluate_checks(
                 TuiReplayCheckResult {
                     label: format!("target_message_contains:{value}"),
                     ok: matched,
-                    detail: format!("matched={matched}"),
+                    detail: serde_json::json!({
+                        "matched": matched,
+                        "selected_message_id": outcome.target_message_id,
+                        "expected_id_fragment": value,
+                    })
+                    .to_string(),
                 }
             }
         })
@@ -530,8 +535,8 @@ pub(crate) fn replay_spec_for_test(
 fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     let text = std::fs::read_to_string(path)
         .with_context(|| format!("failed to read tui replay spec: {}", path.display()))?;
-    let spec: TuiReplaySpec =
-        serde_json::from_str(&text).map_err(|error| diagnostics::parse_error(path, error))?;
+    let spec: TuiReplaySpec = serde_json::from_str(&text)
+        .map_err(|error| diagnostics::parse_error(path, &text, error))?;
     if spec.version != 1 {
         anyhow::bail!(
             "unsupported tui replay spec version {} (expected 1)",

@@ -172,3 +172,72 @@ fn target_inference_requires_failure_like_assistant_and_selector_cannot_use_user
         .to_string()
         .contains("not a completed coder assistant message"));
 }
+
+#[test]
+fn syntax_failure_preserves_bounded_source_lines_without_writing_the_fixture() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("broken.json");
+    let source = "{\n  \"version\": 1,\n  \"cases\": []\n}\n{\n  \"id\": \"accidentally appended case\"\n}\n";
+    std::fs::write(&path, source).unwrap();
+    let error = load_spec(&path).unwrap_err().to_string();
+    assert!(error.contains("trailing characters at line 5 column 1"));
+    let lines: Vec<Value> = error
+        .lines()
+        .filter_map(|line| {
+            line.strip_prefix("Error: tui-replay source ")
+                .and_then(|data| serde_json::from_str(data).ok())
+        })
+        .collect();
+    assert!(lines.contains(&serde_json::json!({"line":4,"text":"}"})));
+    assert!(lines.contains(&serde_json::json!({"line":5,"text":"{"})));
+    assert!(lines.len() <= 4);
+    assert!(error.contains("Preserve surrounding JSON delimiters and existing cases"));
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+}
+
+#[test]
+fn target_mismatch_reports_selected_id_and_selector_repair_preserves_the_assertion() {
+    let mut spec = load_spec(&repository_spec_path()).unwrap();
+    spec.cases.truncate(1);
+    let case = &mut spec.cases[0];
+    case.coder_messages = vec![
+        TuiReplayMessage {
+            role: TuiReplayMessageRole::User,
+            content: case.prompt.clone(),
+        },
+        TuiReplayMessage {
+            role: TuiReplayMessageRole::Assistant,
+            content: "[GOVERNOR BLOCK] Missing <plan>".into(),
+        },
+        TuiReplayMessage {
+            role: TuiReplayMessageRole::Assistant,
+            content: "[error] second attempted repair failed".into(),
+        },
+    ];
+    case.checks = vec![TuiReplayCheck::TargetMessageContains {
+        value: "coder-1".into(),
+    }];
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("case.json");
+    let replay = |spec: &TuiReplaySpec| {
+        std::fs::write(&path, serde_json::to_string(spec).unwrap()).unwrap();
+        replay_spec_for_test(&path, root.path(), &root.path().join("reports")).unwrap()
+    };
+    let failed = replay(&spec);
+    assert_eq!(failed.summary.failed, 1);
+    let detail: Value = serde_json::from_str(&failed.cases[0].checks[0].detail).unwrap();
+    assert_eq!(
+        detail,
+        serde_json::json!({"matched":false,"selected_message_id":"coder-2","expected_id_fragment":"coder-1"})
+    );
+    let diagnostic = diagnostics::failed_report(&failed);
+    assert!(diagnostic.contains("coder-2") && diagnostic.contains("coder-1"));
+    assert!(diagnostic.contains("not the case ID or source-file text"));
+    spec.cases[0].selector = Some("msg:coder-1".into());
+    let passed = replay(&spec);
+    assert_eq!(passed.summary.passed, 1);
+    assert_eq!(
+        passed.cases[0].checks[0].label,
+        failed.cases[0].checks[0].label
+    );
+}

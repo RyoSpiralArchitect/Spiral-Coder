@@ -66,6 +66,8 @@ mod outcome;
 mod progress_bridge;
 mod protocol_fields;
 mod provider_compat;
+#[cfg(test)]
+mod provider_signature_tests;
 mod read_only;
 mod recovery;
 mod recovery_focus;
@@ -322,14 +324,7 @@ fn push_blocked_tool_exchange(
     messages.push(json!({
         "role": "assistant",
         "content": assistant_text,
-        "tool_calls": [{
-            "id": tc.id,
-            "type": "function",
-            "function": {
-                "name": tc.name,
-                "arguments": tc.arguments
-            }
-        }]
+        "tool_calls": [tc.to_json()]
     }));
     messages.push(json!({
         "role": "tool",
@@ -681,6 +676,7 @@ fn rewrite_tool_call_to_search_files(
     dir: &str,
 ) -> Option<(ToolCallData, String, String)> {
     let rewritten = ToolCallData {
+        thought_signature: None,
         id: tc.id.clone(),
         name: "search_files".to_string(),
         arguments: json!({
@@ -2267,7 +2263,9 @@ fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
 
     let prune_count = assistant_indices.len() - KEEP_RECENT_ASSISTANT_TURNS;
     for &idx in assistant_indices.iter().take(prune_count) {
-        if !assistant_message_is_compactable(&messages[idx]) {
+        if crate::streaming::provider_metadata::has_signed_call(&messages[idx])
+            || !assistant_message_is_compactable(&messages[idx])
+        {
             continue;
         }
         let Some(summary) = summarize_assistant_message(&messages[idx]) else {
@@ -9196,7 +9194,7 @@ Execute only the new minimal action: {}",
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, canonical)) =
                 rewrite_tool_call_with_resolution(tc, &observation_evidence)
             {
@@ -9217,7 +9215,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_observation_tool_call(
                 &messages,
                 tc,
@@ -9245,7 +9243,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_followup_read_tool_call(
                 &messages,
                 tc,
@@ -9275,7 +9273,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_benchmark_plan_tool_call(
                 task_harness,
                 &messages,
@@ -9307,7 +9305,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 repair_fix_existing_mutation_tool_call(task_harness, &messages, tc, &root_user_text)
             {
@@ -9333,7 +9331,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_fix_existing_blocked_mutation_tool_call(
                     task_harness,
@@ -9365,7 +9363,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_existing_followup_tool_call(&messages, tc, &root_user_text)
             {
@@ -9396,7 +9394,7 @@ Execute only the new minimal action: {}",
             .is_some_and(|tc| matches_required_existing_followup(&messages, tc, &root_user_text));
 
         if !preserves_required_followup {
-            if let Some(tc) = tool_call.as_ref() {
+            if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
                 if let Some((rewritten, original, coerced)) =
                     coerce_fix_existing_literal_mutation_tool_call(
                         task_harness,
@@ -9429,7 +9427,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_fix_existing_tool_call(
                 task_harness,
                 &messages,
@@ -9459,7 +9457,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_artifact_creation_tool_call(task_harness, &messages, tc)
             {
@@ -9484,7 +9482,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_repo_goal_completion_tool_call(
                 task_harness,
                 &messages,
@@ -9514,7 +9512,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = repair_repo_scaffold_write_tool_call(
                 task_harness,
                 &messages,
@@ -10675,14 +10673,7 @@ Execute only the new minimal action: {}",
             messages.push(json!({
                 "role": "assistant",
                 "content": assistant_text_clean,
-                "tool_calls": [{
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {
-                        "name": tc.name,
-                        "arguments": tc.arguments
-                    }
-                }]
+                "tool_calls": [tc.to_json()]
             }));
         } else {
             if let Some(hint) = recovery.focus.hint() {
@@ -11893,6 +11884,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             })
                             .to_string();
                             let tc = ToolCallData {
+                                thought_signature: None,
                                 id: format!(
                                     "auto_ro_diag_search_{}_{}",
                                     iter, read_only_diagnose_rescue_count
@@ -11915,14 +11907,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             messages.push(json!({
                                 "role": "assistant",
                                 "content": "",
-                                "tool_calls": [{
-                                    "id": tc.id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": tc.name,
-                                        "arguments": tc.arguments
-                                    }
-                                }]
+                                "tool_calls": [tc.to_json()]
                             }));
                             step_seq = step_seq.saturating_add(1);
                             let (result, is_error) = crate::file_tools::tool_search_files(
@@ -12052,6 +12037,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             .await;
                             let arguments = json!({ "path": path }).to_string();
                             let tc = ToolCallData {
+                                thought_signature: None,
                                 id: format!(
                                     "auto_ro_diag_read_{}_{}",
                                     iter, read_only_diagnose_rescue_count
@@ -12072,14 +12058,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             messages.push(json!({
                                 "role": "assistant",
                                 "content": "",
-                                "tool_calls": [{
-                                    "id": tc.id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": tc.name,
-                                        "arguments": tc.arguments
-                                    }
-                                }]
+                                "tool_calls": [tc.to_json()]
                             }));
                             step_seq = step_seq.saturating_add(1);
                             let cache_key = crate::file_tools::resolve_safe_path(
@@ -16656,6 +16635,7 @@ verify: exit code is zero\n\
     #[test]
     fn pseudo_plan_tool_call_converts_to_plan_block_text() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan".to_string(),
             arguments: serde_json::json!({
@@ -16678,6 +16658,7 @@ verify: exit code is zero\n\
     #[test]
     fn pseudo_think_tool_call_converts_to_think_block_text() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "think".to_string(),
             arguments: serde_json::json!({
@@ -16710,6 +16691,7 @@ verify: exit code is zero\n\
         .to_string();
         let args = serde_json::json!({"pattern":"/realize","dir":"src"}).to_string();
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "search_files".to_string(),
             arguments: format!("{plan}{args}"),
@@ -16730,6 +16712,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_name_and_nested_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan>goal: locate handler steps: 1) search src 2) read file acceptance: 1) path identified risks: wrong file assumptions: repo is local </plan>".to_string(),
             arguments: serde_json::json!({
@@ -16754,6 +16737,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_with_function_wrapper_arguments() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan><goal>locate handler</goal><steps>1) search src 2) read file</steps><acceptance>1) path identified</acceptance><risks>wrong file</risks><assumptions>repo is local</assumptions></plan>".to_string(),
             arguments: serde_json::json!({
@@ -16781,6 +16765,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_and_nested_think() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan>goal: locate handler steps: 1) search src 2) read file acceptance: 1) path identified risks: wrong file assumptions: repo is local </plan>".to_string(),
             arguments: serde_json::json!({
@@ -16804,6 +16789,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_markdownish_plan_name_and_wrapper_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan**goal:** Locate where the `/realize` slash command is handled in the TUI. **•**steps:** 1) Use `search_files` to search for the literal string `/realize` in `src`. 2) Read the matching file. **•**acceptance:** 1) The file path handling `/realize` is identified. 2) The handler branch is confirmed by `read_file`. **•**risks:** wrong file. **•**assumptions:** observation tools are sufficient. <thinking> **goal:** Find direct matches. **step:** 1. **tool:** `search_files`. **risk:** wrong path. **doubt:** maybe aliased. **next:** Search `/realize` in `src`. **verify:** confirm a TUI match. </thinking>".to_string(),
             arguments: serde_json::json!({
@@ -16831,6 +16817,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_embedded_plan_think_and_tool_name() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan><goal>Locate the exact file and code context where the /realize slash command is handled in the TUI.</goal><steps>1) List the TUI-related directories to confirm structure and naming conventions.</steps><steps>2) Search for the literal \"/realize\" string across Rust files to pinpoint the handler.</steps><acceptance>1) The file path containing the /realize slash command handler is confirmed by search_files evidence.</acceptance><acceptance>2) The handling context is confirmed by read_file evidence.</acceptance><risks>wrong file</risks><assumptions>repo is local</assumptions></plan>teří<think><goal>Confirm TUI directory structure and naming.</goal><step>1</step><tool>list_dir</tool><risk>TUI directory may not exist.</risk><doubt>Directory names may vary.</doubt><next>list_dir src/</next><verify>Directory listing shows TUI directory.</verify></think>teřílist_dir".to_string(),
             arguments: serde_json::json!({"dir":"src"}).to_string(),
@@ -16853,6 +16840,7 @@ verify: exit code is zero\n\
     #[test]
     fn consecutive_missing_plan_blocks_for_tool_counts_same_observation_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"/realize","dir":"src"}).to_string(),
@@ -16945,6 +16933,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_plan_for_tool_turn_after_repeated_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"/realize","dir":"src"}).to_string(),
@@ -16987,6 +16976,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_plan_for_tool_turn_after_mixed_observation_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"prefs","dir":"src/tui"}).to_string(),
@@ -17046,6 +17036,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_plan_for_tool_turn_after_repeated_blocks_for_openai_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -17104,6 +17095,7 @@ verify: exit code is zero\n\
     #[test]
     fn general_plan_rescue_pairs_with_valid_synthetic_think() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"test","dir":"src"}).to_string(),
@@ -17155,6 +17147,7 @@ verify: exit code is zero\n\
         let prompt =
             "Create `notes/todo.txt` containing exactly `ship it`. Verify it before you finish.";
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write_retry".to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -17216,6 +17209,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_after_repeated_blocks_for_openai_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "list_dir".to_string(),
             arguments: serde_json::json!({"dir":"."}).to_string(),
@@ -17238,6 +17232,7 @@ verify: exit code is zero\n\
                 "content": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\n\ntool:\nread_file\narguments:\n{\"path\":\"Cargo.toml\"}"
             })],
             &ToolCallData {
+                thought_signature: None,
                 id: "call_plan".to_string(),
                 name: "read_file".to_string(),
                 arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -17292,6 +17287,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_patch_file() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17340,6 +17336,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_exec() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -17383,6 +17380,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_done() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: serde_json::json!({
@@ -17428,6 +17426,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_reflection_for_tool_turn_synthesizes_valid_reflection_for_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17460,6 +17459,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_impact_for_tool_turn_synthesizes_valid_impact_after_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -17500,6 +17500,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_evidence_for_tool_turn_synthesizes_valid_evidence_for_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17535,6 +17536,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_evidence_for_tool_turn_accepts_truncated_patch_path() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments:
@@ -17569,6 +17571,7 @@ verify: exit code is zero\n\
     #[test]
     fn repair_truncated_patch_tool_call_from_recent_mismatch_recovers_smoke_fix() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: "{\"path\":\"src/lib.rs\",\"search\":\"pub fn greet(name: &str) -> String {\\n    format!(\\\"Hello, {}?\\\", name)\\n}\\n\",\"replace\":\"".to_string(),
@@ -17586,6 +17589,25 @@ verify: exit code is zero\n\
             searches: Vec::new(),
             resolutions: Vec::new(),
         };
+
+        let mut signed = tc.clone();
+        signed.thought_signature =
+            crate::streaming::provider_metadata::ThoughtSignature::from_call(
+                &json!({"extra_content":{"google":{"thought_signature":"opaque-test-signature"}}}),
+            )
+            .unwrap();
+        assert!(
+            repair_truncated_patch_tool_call_from_recent_mismatch(
+                &messages,
+                &signed,
+                false,
+                true,
+                ProviderKind::OpenAiCompatible,
+                &observations,
+            )
+            .is_none(),
+            "A malformed signed call must be rejected, not silently rewritten"
+        );
 
         let (rewritten, original, repaired) =
             repair_truncated_patch_tool_call_from_recent_mismatch(
@@ -17618,6 +17640,7 @@ verify: exit code is zero\n\
     #[test]
     fn consecutive_missing_think_blocks_for_tool_counts_same_observation_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"realize","dir":"src"}).to_string(),
@@ -17710,6 +17733,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_tool_turn_after_repeated_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"realize","dir":"src"}).to_string(),
@@ -17754,6 +17778,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_read_file_is_immediate() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"src/tui/events.rs"}).to_string(),
@@ -17779,6 +17804,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_done_is_immediate_with_strong_evidence() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: serde_json::json!({
@@ -17822,6 +17848,7 @@ verify: exit code is zero\n\
     #[test]
     fn coerce_read_only_observation_tool_call_rewrites_search_pattern_after_repeated_gate_misses() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"pane","dir":"src"}).to_string(),
@@ -17874,6 +17901,7 @@ verify: exit code is zero\n\
     #[test]
     fn coerce_read_only_observation_tool_call_rewrites_list_dir_to_preferred_search() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "list_dir".to_string(),
             arguments: serde_json::json!({"dir":"src"}).to_string(),
@@ -17948,6 +17976,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test\"}".to_string(),
@@ -17978,6 +18007,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test --lib\"}".to_string(),
@@ -18008,6 +18038,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test --lib\"}".to_string(),
@@ -18220,6 +18251,7 @@ verify: exit code is zero\n\
             ..Default::default()
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write".to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -18539,11 +18571,13 @@ verify: exit code is zero\n\
     #[test]
     fn non_done_tool_realizes_latent_but_done_does_not() {
         let read = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/events.rs\"}".to_string(),
         };
         let done = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: "{\"summary\":\"ok\",\"completed_acceptance\":[],\"remaining_acceptance\":[],\"acceptance_evidence\":[]}".to_string(),
@@ -18639,6 +18673,7 @@ verify: exit code is zero\n\
             assumptions: "current repo scan reflects the active workspace".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/events.rs\"}".to_string(),
@@ -18669,6 +18704,7 @@ verify: exit code is zero\n\
             assumptions: "observation tools are sufficient".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "done".to_string(),
             arguments: "{\"summary\":\"ok\",\"completed_acceptance\":[],\"remaining_acceptance\":[],\"acceptance_evidence\":[]}".to_string(),
@@ -18708,6 +18744,7 @@ verify: exit code is zero\n\
             assumptions: "observation tools are sufficient".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: "{\"pattern\":\"test\",\"dir\":\"src\"}".to_string(),
@@ -18778,6 +18815,7 @@ verify: exit code is zero\n\
         let mut evidence = ObservationEvidence::default();
         evidence.remember_resolution("tui/events.rs", "src/tui/events.rs", "repo_map:read_file");
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"tui/events.rs"}).to_string(),
@@ -18860,6 +18898,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             next_probe: "patch the recovery branch".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -18891,6 +18930,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             next_probe: "patch the recovery branch".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -18988,6 +19028,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
         let resolver =
             InstructionResolver::new("Locate the handler without editing files", true, false);
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -19063,6 +19104,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             verify: "exit code is zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo fix"}).to_string(),

@@ -227,6 +227,7 @@ mod tests {
                 artifact_mode: ArtifactMode::ExistingFiles,
             },
             &ToolCallData {
+                thought_signature: None,
                 id: "next".into(),
                 name: name.into(),
                 arguments: arguments.to_string(),

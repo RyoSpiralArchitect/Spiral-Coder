@@ -114,6 +114,45 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
     })
 }
 
+/// Retain a cause together with bounded supporting diagnostics. A one-line
+/// summary such as "1 case failed" is not enough to choose a repair. This is
+/// display data only; it never selects a target or grants verification.
+pub(super) fn recovery_summary(body: &str, primary: Option<&str>) -> String {
+    let digest = error_digest("", body);
+    let mut lines = Vec::new();
+    if let Some(primary) = primary {
+        lines.push(bounded_line(primary.trim(), 256));
+    }
+    for line in digest
+        .as_deref()
+        .into_iter()
+        .flat_map(|s| s.lines().skip(1))
+    {
+        if lines.len() >= 4 {
+            break;
+        }
+        let line = bounded_line(line.trim(), 256);
+        if !lines.contains(&line) {
+            lines.push(line);
+        }
+    }
+    if lines.is_empty() {
+        lines.push(
+            body.lines()
+                .find(|line| !line.trim().is_empty())
+                .unwrap_or("The check failed without a localized diagnostic.")
+                .to_string(),
+        );
+    }
+    // Keep the existing 512-character / 2048-byte local snapshot bound.
+    lines
+        .join(" | ")
+        .chars()
+        .filter(|c| !c.is_control())
+        .take(512)
+        .collect()
+}
+
 /// Shorten only the runtime's exact workspace prefix at a path boundary. This
 /// is display formatting, not filesystem resolution or path authorization.
 fn workspace_relative(source: &str, cwd: &str) -> String {
@@ -173,6 +212,27 @@ pub(super) fn automatic_test_output(stdout: &str, stderr: &str, exit: i32, cwd: 
 mod tests {
     use super::*;
     use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
+
+    #[test]
+    fn pending_recovery_keeps_failed_assertion_evidence_after_output_pruning() {
+        let stderr = "Error: tui replay failed: 1/1 case(s) failed\nError: tui-replay {\"case\":\"replay\",\"check\":\"target_message_contains:coder-1\",\"detail\":\"selected_message_id=coder-2 matched=false\"}\nError: tui-replay inspect selector and coder_messages against the intended assertion";
+        let output = automatic_test_output("", stderr, 1, "/work");
+        let pruned = compact_and_prune(&output);
+        let summary = recovery_summary(&pruned, None);
+        assert!(
+            summary.contains("target_message_contains:coder-1"),
+            "{summary}"
+        );
+        assert!(summary.contains("selected_message_id=coder-2"), "{summary}");
+        assert!(summary.contains("matched=false"));
+        assert!(summary.chars().count() <= 512);
+        assert_eq!(
+            auto_test_outcome("patch_file", &pruned),
+            AutoTestOutcome::Failed
+        );
+        let unicode = recovery_summary(&format!("Error: {}", "🐈‍⬛".repeat(1000)), None);
+        assert!(unicode.len() <= 2048);
+    }
 
     fn compact_and_prune(output: &str) -> String {
         let result = format!("OK: patched 'fixture.json'\n{output}");

@@ -40,6 +40,7 @@ async fn failed_automatic_test_returns_successful_edit_to_diagnosis() {
             "{name}: failed automatic verification must allow diagnostics without a duplicate exec"
         );
         let read = ToolCallData {
+            thought_signature: None,
             id: "read".into(),
             name: "read_file".into(),
             arguments: json!({"path":"fixture.txt"}).to_string(),

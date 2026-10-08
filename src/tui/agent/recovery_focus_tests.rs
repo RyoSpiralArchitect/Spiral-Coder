@@ -6,6 +6,7 @@ const TARGET: &str = ".spiral-coder/tui_replay.json";
 
 fn call(id: &str, name: &str, arguments: Value) -> ToolCallData {
     ToolCallData {
+        thought_signature: None,
         id: id.into(),
         name: name.into(),
         arguments: arguments.to_string(),

@@ -374,6 +374,7 @@ fn correlated_results(messages: &[Value]) -> impl Iterator<Item = (ToolCallData,
             let (name, arguments) = pending.remove(id)?;
             Some((
                 ToolCallData {
+                    thought_signature: None,
                     id: id.into(),
                     name: name.into(),
                     arguments: arguments.into(),
@@ -450,25 +451,14 @@ fn localized_diagnostic(path: &str, body: &str, root: Option<&str>) -> Option<St
         body.lines()
             .find(|line| json_error_matches(path, line, root))
     })?;
-    Some(compact_diagnostic(diagnostic))
-}
-
-fn compact_diagnostic(diagnostic: &str) -> String {
-    diagnostic
-        .chars()
-        .filter(|c| !c.is_control())
-        .take(512)
-        .collect()
+    Some(super::failure_diagnostics::recovery_summary(
+        body,
+        Some(diagnostic),
+    ))
 }
 
 fn fresh_diagnostic(body: &str) -> String {
-    let digest = super::failure_diagnostics::error_digest("", body);
-    let diagnostic = digest
-        .as_deref()
-        .and_then(|digest| digest.lines().nth(1))
-        .or_else(|| body.lines().find(|line| !line.trim().is_empty()))
-        .unwrap_or("The check failed without a localized diagnostic.");
-    compact_diagnostic(diagnostic)
+    super::failure_diagnostics::recovery_summary(body, None)
 }
 
 fn reports_path(line: &str, path: &str, root: Option<&str>) -> bool {

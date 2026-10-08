@@ -20,6 +20,7 @@ fn resumed_action_then_verification_restores_a_validated_impact_plan() {
     assert!(pending.is_some());
     let harness = TaskHarness::infer(prompt, false);
     let tc = ToolCallData {
+        thought_signature: None,
         id: "pending-check".into(),
         name: "exec".into(),
         arguments: json!({"command":"grep -q proof docs/runtime-architecture.md"}).to_string(),
@@ -97,6 +98,7 @@ fn resumed_action_then_verification_restores_a_validated_impact_plan() {
 fn rejection_telemetry_is_bounded_and_omits_raw_responses_and_arguments() {
     let calls = (0..8)
         .map(|_| ToolCallData {
+            thought_signature: None,
             id: "secret-id".into(),
             name: "x".repeat(100),
             arguments: "secret-arguments".into(),

@@ -7,7 +7,8 @@ use tokio::sync::mpsc;
 use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
-mod tool_calls;
+pub(crate) mod provider_metadata;
+pub(crate) mod tool_calls;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReflectionSummary {
@@ -73,6 +74,7 @@ pub struct ToolCallData {
     pub id: String,
     pub name: String,
     pub arguments: String,
+    pub thought_signature: Option<provider_metadata::ThoughtSignature>,
 }
 
 fn stream_chat_urls_for_base_url(base_url: &str) -> Vec<String> {
@@ -339,7 +341,7 @@ pub async fn stream_openai_compat_json(
     tools: Option<&serde_json::Value>,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
-    let provider_messages = crate::task_origin::provider_messages(messages);
+    let provider_messages = provider_metadata::prepare_messages(messages, &cfg.base_url);
     let prepared_messages: Vec<serde_json::Value> = match cfg.provider {
         ProviderKind::Mistral => normalize_mistral_messages(&provider_messages),
         _ => provider_messages,
@@ -356,9 +358,7 @@ pub async fn stream_openai_compat_json(
 
     if let Some(t) = tools {
         payload["tools"] = t.clone();
-        // "required" forces the model to call a tool on every turn,
-        // preventing it from skipping exec and producing text-only responses.
-        payload["tool_choice"] = json!("required");
+        payload["tool_choice"] = json!(provider_metadata::tool_choice(&cfg.base_url));
     }
 
     let label = match cfg.provider {
@@ -624,6 +624,9 @@ pub async fn stream_openai_compat_json(
             }
 
             if finish_reason == "stop" {
+                for call in tool_calls.drain() {
+                    let _ = tx.send(StreamToken::ToolCall(call)).await;
+                }
                 let _ = tx.send(StreamToken::Done).await;
                 return Ok(());
             }

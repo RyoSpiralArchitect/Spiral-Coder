@@ -236,6 +236,7 @@ pub(super) fn rewrite_tool_call_with_resolution(
     let arguments = serde_json::to_string(&args).ok()?;
     Some((
         ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: tc.name.clone(),
             arguments,

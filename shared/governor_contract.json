@@ -40,7 +40,8 @@
         "kind": "list",
         "required": true,
         "aliases": [
-          "acceptance_criteria"
+          "acceptance_criteria",
+          "acceptance criteria"
         ],
         "min_items": 1,
         "max_items": 4
