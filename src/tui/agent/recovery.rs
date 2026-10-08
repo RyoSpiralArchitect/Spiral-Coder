@@ -11,6 +11,14 @@ pub(super) struct RecoveryGovernor {
 }
 
 impl RecoveryGovernor {
+    /// A failed edit survives intervening reads and resume. Re-enter diagnosis
+    /// conservatively without weakening the benchmark repair ownership guard.
+    pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
+        if self.stage.is_none() && edits.count() > 0 {
+            self.stage = Some(RecoveryStage::Diagnose);
+        }
+    }
+
     pub(super) fn on_successful_edit(
         &mut self,
         automatic_test: AutoTestOutcome,

@@ -29,12 +29,7 @@ impl<'a> ExecVerificationContext<'a> {
         configured: Option<&'a str>,
         messages: &[serde_json::Value],
     ) -> Self {
-        let root_user_text = messages
-            .iter()
-            .rev()
-            .find(|message| message["role"].as_str() == Some("user"))
-            .and_then(|message| message["content"].as_str())
-            .unwrap_or("");
+        let root_user_text = crate::task_origin::root_user_text(messages);
         Self::from_root(configured, root_user_text)
     }
 

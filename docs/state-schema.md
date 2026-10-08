@@ -13,6 +13,8 @@ store state without first choosing the correct owner.
 | Provider/runtime config | `src/config.rs` | process / launch | CLI args + env | `PartialConfig`, `RunConfig` |
 | Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
 | Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
+| Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
+| Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
 | Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
 | Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.spiral-coder/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
 | Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
@@ -161,6 +163,43 @@ Resume repair:
   supply verification or recovery hints. Valid sessions keep their seeded state.
 - Repair changes history, not the filesystem: interrupted tools may have already
   produced side effects. A missing result is not evidence that an action failed.
+
+Native task provenance:
+
+- `src/task_origin.rs` selects the latest nonempty human request as the current
+  task contract. CLI resume, implied tool receipts, and
+  goal-check feedback carry `origin: "runtime"` and do not replace that request.
+- A new explicit human message starts a new task scope. Untagged legacy user
+  messages and unknown origin values retain their human meaning. Text prefixes
+  do not infer provenance, so historical untagged runtime messages cannot be
+  retroactively distinguished from genuine human requests.
+- The optional field stays inside the existing session message array; the
+  session version is unchanged. Provider serialization strips local provenance
+  before sending Chat Completions messages. Provider roles are unchanged.
+- Root task inference, final-answer/exact-content requirements, and benchmark
+  command classification share the same selector. This preserves the existing
+  gates; it does not add enforcement to completion paths that lack those gates.
+
+Unresolved edit attempts:
+
+- `src/tui/agent/edit_failure.rs` reconstructs failed `patch_file`, `write_file`,
+  and `apply_diff` attempts from correlated tool calls/results in the current
+  human task. It stores no separate persistent counter.
+- Diagnostic reads neither add to nor clear edit failures. A successful edit
+  clears them even if its subsequent automatic test fails. A successful shell
+  command classified as an action also clears the retry state, permitting a
+  different repair strategy; this classification is not proof of a correct edit.
+  Diagnostic and configured verification commands do not clear it. Verification recovery
+  is owned separately by `RecoveryGovernor`. Rejected or blocked edits are not
+  counted as attempted failures.
+- Two unresolved edit failures require reflection and a bounded strategy hint.
+  Identical decoded arguments are identified explicitly. The hint requests a
+  minimal anchor from current contents and preservation of surrounding fields;
+  it does not rewrite files or certify success. On resume, unresolved edit attempts
+  restore the Diagnose stage, preserving benchmark repair ownership.
+- The latest successful reset exchange is protected during context pruning so
+  retained older failures cannot reappear as unresolved after resume. The legacy
+  telemetry name `file_tool_consec_failures` now reflects unresolved edit attempts.
 
 Autosave ordering:
 

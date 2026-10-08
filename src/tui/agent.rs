@@ -46,6 +46,7 @@ mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
 mod done_gate;
+mod edit_failure;
 mod evaluator_loop;
 mod exact_content;
 mod exec_classification;
@@ -67,6 +68,8 @@ mod provider_compat;
 mod read_only;
 mod recovery;
 mod repo_scaffold;
+#[cfg(test)]
+mod resume_contract_tests;
 mod session_bridge;
 mod task_harness;
 mod tool_result_history;
@@ -82,6 +85,7 @@ use self::done_gate::{
     rescue_invalid_done_payload_for_verified_action, should_prefer_done_after_verified_action,
     synthesize_action_done_summary, validate_done_acceptance,
 };
+use self::edit_failure::EditFailureMemory;
 use self::evaluator_loop::EvaluatorLoop;
 use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
@@ -108,7 +112,9 @@ use self::memory::{
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
     ObservationEvidence, ObservationReadEvidence, ObservationSearchEvidence,
 };
+#[cfg(test)]
 use self::message_window::prune_message_window;
+use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 use self::protocol_fields::parse_tag_fields;
@@ -7684,17 +7690,18 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut tool_calls_this_run: usize = 0;
     // C — token budget guardian
     let mut budget_warned = false;
-    // D — consecutive file-tool failure escalation
-    let mut file_tool_consec_failures: usize = 0;
+    // Diagnostic successes do not resolve failed edits, including after resume.
+    let edit_context = exec_verification::ExecVerificationContext::from_messages(
+        test_cmd.as_deref(),
+        &start.messages,
+    );
+    let mut edit_failures = EditFailureMemory::from_messages(&start.messages, &edit_context);
+    let mut file_tool_consec_failures = edit_failures.count();
+    if let Some(reason) = edit_failures.reflection_reason() {
+        reflection_required = Some(reason);
+    }
 
-    let root_user_text = start
-        .messages
-        .iter()
-        .rev()
-        .find(|m| m["role"].as_str() == Some("user"))
-        .and_then(|m| m["content"].as_str())
-        .unwrap_or("")
-        .to_string();
+    let root_user_text = crate::task_origin::root_user_text(&start.messages).to_string();
     let root_user_text_low = root_user_text.to_ascii_lowercase();
     let root_read_only = is_root_read_only_observation_task(&root_user_text);
     let task_harness = TaskHarness::infer(&root_user_text, root_read_only);
@@ -7773,6 +7780,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut mem = FailureMemory::from_recent_messages(&messages);
     let mut recovery =
         RecoveryGovernor::restore_from_session(&mem, &messages, required_verification);
+    recovery.restore_pending_edits(&edit_failures);
     if recovery.in_recovery() {
         state = AgentState::Recovery;
     }
@@ -8059,7 +8067,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
         // ── Prune old tool results before sending to save context tokens ───
         prune_old_tool_results(&mut messages);
         prune_old_assistant_messages(&mut messages);
-        prune_message_window(&mut messages);
+        prune_message_window_with_context(&mut messages, &exec_verification_context);
         emit_telemetry_event(
             &tx,
             "agent_iter",
@@ -8605,6 +8613,10 @@ This is the LAST model call for this run.\n\
                 "role": "system",
                 "content": build_impact_prompt(reason, active_plan.as_ref(), &working_mem),
             }));
+        }
+
+        if let Some(hint) = edit_failures.strategy_hint() {
+            msgs_for_call.push(json!({"role": "system", "content": hint}));
         }
 
         if let Some(reason) = reflection_required.as_ref() {
@@ -11118,6 +11130,7 @@ Next assistant turn: emit a <think> block and call ONE real tool."
                             // NOTE: do not fabricate tool_call_id. Feed the block back as user text.
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                     im.lang_hint, command, tool_output
@@ -11160,6 +11173,7 @@ Next assistant turn: emit a <think> block and call ONE real tool."
                             // NOTE: do not fabricate tool_call_id. Feed the rejection back as user text.
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                     im.lang_hint, command, tool_output
@@ -11262,6 +11276,7 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
                         // NOTE: do not fabricate tool_call_id. Feed the result back as user text.
                         messages.push(json!({
                             "role": "user",
+                            "origin": crate::task_origin::MessageOrigin::Runtime,
                             "content": format!(
                                 "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                 im.lang_hint, command, tool_output
@@ -11323,6 +11338,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
                                         .await;
                                     messages.push(json!({
                                         "role": "user",
+                                        "origin": crate::task_origin::MessageOrigin::Runtime,
                                         "content": format!(
                                             "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                             path, imf.lang_hint, msg
@@ -11367,6 +11383,7 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                                 );
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, msg
@@ -11402,6 +11419,7 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                                 );
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, msg
@@ -11456,6 +11474,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                 ));
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, r_text
@@ -11478,6 +11497,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                 .await;
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                     path, imf.lang_hint, r_text
@@ -11537,7 +11557,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                     let block = governor_contract::goal_check_repo_missing_message(
                                         missing.join(", ").as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11588,7 +11611,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         governor_contract::goal_check_tests_no_runner_message(
                                             support_line.as_str(),
                                         );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11625,7 +11651,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         goal_check_class_line(&result.error_class).as_str(),
                                         goal_check_digest_line(&result.digest).as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11683,7 +11712,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         governor_contract::goal_check_build_no_runner_message(
                                             support_line.as_str(),
                                         );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11720,7 +11752,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         goal_check_class_line(&result.error_class).as_str(),
                                         goal_check_digest_line(&result.digest).as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -13000,6 +13035,8 @@ Required now: run `{command}`."
                 recovery.on_successful_edit(automatic_test, verified_level);
             }
 
+            edit_failures.on_result(&tc, &result, &exec_verification_context);
+            file_tool_consec_failures = edit_failures.count();
             let first_line = result.lines().next().unwrap_or("").to_string();
             if is_error {
                 let _ = tx
@@ -13009,13 +13046,9 @@ Required now: run `{command}`."
                     .await;
                 state = AgentState::Recovery;
                 if !rejected_by_user {
-                    file_tool_consec_failures += 1;
                     pending_system_hint = Some(format!("apply_diff error: {first_line}"));
-                    if file_tool_consec_failures >= 2 {
-                        reflection_required = Some(format!(
-                            "file tool failures repeated {} times",
-                            file_tool_consec_failures
-                        ));
+                    if let Some(reason) = edit_failures.reflection_reason() {
+                        reflection_required = Some(reason);
                     }
                 } else {
                     pending_system_hint = Some(
@@ -13032,7 +13065,6 @@ Required now: run `{command}`."
                 } else {
                     AgentState::Planning
                 };
-                file_tool_consec_failures = 0;
                 pending_system_hint = if automatic_test
                     == crate::execution_evidence::AutoTestOutcome::Failed
                 {
@@ -13960,19 +13992,12 @@ Action required: call read_file(path) first to confirm current contents, then re
                 }
             };
 
-            // D — track consecutive file-tool failures for escalation.
-            if is_error {
-                if !rejected_by_user {
-                    file_tool_consec_failures += 1;
+            edit_failures.on_result(&tc, &result, &exec_verification_context);
+            file_tool_consec_failures = edit_failures.count();
+            if is_error && !rejected_by_user && tc.name != "read_file" {
+                if let Some(reason) = edit_failures.reflection_reason() {
+                    reflection_required = Some(reason);
                 }
-                if file_tool_consec_failures >= 2 {
-                    reflection_required = Some(format!(
-                        "file tool failures repeated {} times",
-                        file_tool_consec_failures
-                    ));
-                }
-            } else {
-                file_tool_consec_failures = 0;
             }
 
             let automatic_test =
@@ -14026,17 +14051,9 @@ Action required: call read_file(path) first to confirm current contents, then re
                     }
                 }
                 state = AgentState::Recovery;
-                // D — escalate after 3 consecutive file-tool failures.
                 let hint = if rejected_by_user {
                     "The user rejected the edit. Choose a safer alternative or ask again with a smaller change."
                         .to_string()
-                } else if file_tool_consec_failures >= 3 {
-                    format!(
-                        "CRITICAL: {file_tool_consec_failures} consecutive file-tool errors.\n\
-                         You MUST abandon the current approach. Do NOT retry the same operation.\n\
-                         Instead: call read_file to inspect the actual file state, then choose \
-                         a completely different strategy (e.g. write_file instead of patch_file)."
-                    )
                 } else if tc.name.as_str() == "read_file" && repo_map_hint.is_some() {
                     repo_map_hint.unwrap_or_default()
                 } else {
@@ -14606,6 +14623,9 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
             }
             inject_cwd(&out, &cwd_line, note.as_deref())
         };
+
+        edit_failures.on_result(&tc, &tool_output, &exec_verification_context);
+        file_tool_consec_failures = edit_failures.count();
 
         let result_label = if effective_exit_code == 0 {
             format!("[RESULT][{:?}] exit=0\n", state)

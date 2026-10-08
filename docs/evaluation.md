@@ -90,6 +90,31 @@ It omits raw response text, tool arguments, and call IDs.
 validated resume plan is adopted. These events diagnose blocked progress; they
 do not change a case's outcome.
 
+## Resume contracts and repeated edit failures
+
+Native agent-session resume selects the latest human request, excluding explicitly marked
+runtime continuations and feedback. The same root supplies exact file-content,
+requested final-answer, and benchmark verification requirements. New human
+steering replaces the previous root. Legacy untagged messages remain human;
+previously saved runtime messages without provenance cannot be classified safely
+from their wording alone.
+
+A failed edit followed by a successful read remains unresolved. After two failed
+edit attempts, reflection and a strategy-change hint remain active across reads
+and resume. A successful edit or action-classified shell command clears this
+retry counter; diagnostic/verification commands do not. A failing automatic test
+still requires separate verification recovery. Pruning keeps the latest successful
+reset exchange. An action classification is not evidence of a correct repair. Regressions exercise real missing-anchor
+patch failures, read/repair cycles, session round trips, and pruning.
+
+These checks establish contract retention and recovery mechanics. Live model
+completion still requires the unchanged artifact, execution, and outcome checks;
+a helpful hint or an emitted reflection is not a passing evaluation. Read-only
+completion-path coverage, CLI auto-review/TUI automatic handoff task boundaries,
+and Web/native final-handoff parity remain separate work. Auto-review continues
+to start a new task: retaining the original root without resetting its completion
+evidence could close the review round before its fixes are addressed.
+
 ## Command and automatic-test evidence
 
 Colon-delimited protocol blocks recognize only the active block contract's field

@@ -60,12 +60,24 @@ fn removable_exchange_end(messages: &[Value], start: usize) -> Option<usize> {
     pending.is_empty().then_some(end)
 }
 
+#[cfg(test)]
 pub(super) fn prune_message_window(messages: &mut Vec<Value>) {
+    let context = super::exec_verification::ExecVerificationContext::from_messages(None, messages);
+    prune_message_window_with_context(messages, &context);
+}
+
+pub(super) fn prune_message_window_with_context(
+    messages: &mut Vec<Value>,
+    context: &super::exec_verification::ExecVerificationContext<'_>,
+) {
     if messages.len() <= MAX_CONTEXT_MESSAGES {
         return;
     }
     let mut protected = HashSet::new();
-    let proof_ids = super::task_harness::benchmark_plan_protected_call_ids(messages);
+    let mut proof_ids = super::task_harness::benchmark_plan_protected_call_ids(messages);
+    proof_ids.extend(super::edit_failure::protected_reset_call_id(
+        messages, context,
+    ));
     for (idx, msg) in messages.iter().enumerate() {
         if !matches!(msg["role"].as_str(), Some("assistant" | "tool")) {
             protected.insert(idx);

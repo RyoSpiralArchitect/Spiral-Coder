@@ -48,7 +48,7 @@ pub(super) struct ExecProofResult<'a> {
 }
 
 impl<'a> ExecProofResult<'a> {
-    fn from_history(content: &'a str) -> Self {
+    pub(super) fn from_history(content: &'a str) -> Self {
         let (_, stdout, stderr) = parse_exec_tool_output_sections(content);
         Self {
             content,
