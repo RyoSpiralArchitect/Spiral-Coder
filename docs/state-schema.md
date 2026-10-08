@@ -211,21 +211,30 @@ Localized verification failures:
 - Unrelated successful diagnostics do not satisfy inspection of the failed
   target. A read of the target permits repair while retaining the failed check.
   A failed target read must permit broader diagnosis without declaring the
-  original cause fixed. Unlocalizable failures retain generic recovery behavior.
+  original cause fixed. Initially unlocalizable failures retain generic recovery.
+  When the original pending check fails again, its current diagnostic replaces
+  the old cause. Without a confirmed current location, the previous path becomes
+  `last_confirmed` context and exact-path inspection is no longer required.
 - Successful edits do not certify repair. The original automatic test or its
-  exact configured command must pass at the workspace root before this pending
+  exact configured command must pass when launched from the workspace root before this pending
   failure is cleared. A different configured check or another working directory
   cannot discharge the original obligation.
   Unrelated verification cannot authorize automatic closeout or explicit done.
 - Local tool-result metadata preserves validated failure context across a
   save/resume and context pruning, including after the file has changed. This
-  metadata stays out of provider requests and does not grant execution proof.
+  raw metadata stays out of provider requests and does not grant execution proof;
+  bounded diagnostic hints are intentionally visible to the model.
   New human task boundaries discard the previous task's recovery focus.
 - Tool messages may carry `recovery_focus: {version: 1, state: {pending: ...}}`.
-  Pending data contains `path`, `diagnostic`, `check`, and `observation`
-  (`awaiting_read`, `observed`, `repair_attempted`, or `unavailable`). `pending:
-  null` records a clear, not successful execution evidence. This optional field
+  Pending data contains `path`, `diagnostic`, `check`, `observation`
+  (`awaiting_read`, `observed`, `repair_attempted`, `unavailable`, or `unlocalized`),
+  and `location` (`current` or `last_confirmed`; absent defaults to `current`).
+  Reads of a last-confirmed path cannot turn it into current location evidence.
+  `pending: null` records a clear, not successful execution evidence. This optional field
   does not change the session container version.
+  Legacy snapshots without `location` can refresh a stale cause from their
+  correlated failed automatic-test result when the stored and configured check
+  match; missing or mismatched check identity is not guessed.
 - Localization is conservative: a diagnostic must identify the edited workspace
   path, or a pathless JSON parse position must match a bounded parse of the
   current edited JSON inside the canonical workspace. An unrelated failure

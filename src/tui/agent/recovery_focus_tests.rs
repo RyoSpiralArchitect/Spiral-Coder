@@ -258,7 +258,11 @@ fn unrelated_checks_cannot_clear_focus_or_certify_completion() {
         Some(CHECK),
         &ctx,
     );
-    assert!(g.focus.requires_read());
+    assert!(g.focus.is_pending());
+    assert!(
+        !g.focus.requires_read(),
+        "a fresh failure without location needs broader diagnosis"
+    );
     g.focus.record_result(
         &tc,
         "GOVERNOR BLOCKED",
@@ -514,4 +518,220 @@ fn pathless_json_fallback_never_follows_an_outside_root_symlink() {
     let mut focus = RecoveryFocus::default();
     focus.record_result(&tc, &output, root.path().to_str(), Some(CHECK), &context());
     assert!(!focus.is_pending());
+}
+
+#[test]
+fn repaired_schema_error_gives_way_to_current_pathless_cause_through_resume_and_pruning() {
+    let root = tempfile::tempdir().unwrap();
+    let edit = call("schema-edit", "write_file", json!({"path":TARGET}));
+    let content = json!({"version":1,"cases":[{"id":"review-panel-replay-sensitive","prompt":"Test review panel replay","checks":[{"kind":"replay_spec_includes"}],"coder_messages":[{"role":"user","content":"Test review panel replay"}],"observer_response":{"summary":"Review panel replay","suggestions":[]}}]}).to_string();
+    let (mut output, error) =
+        crate::file_tools::tool_write_file(TARGET, &content, root.path().to_str());
+    assert!(!error);
+    output.push_str(&format!("\n[auto-test] ✗ FAILED (exit 1)\nError: failed to parse tui replay spec: unknown variant `replay_spec_includes` at line 1 column 40; path={TARGET}"));
+    let mut g = RecoveryGovernor::default();
+    g.focus.record_result(
+        &edit,
+        &output,
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    g.on_successful_edit(AutoTestOutcome::Failed, None);
+    let mut messages = vec![json!({"role":"user","content":"Repair the replay fixture"})];
+    append(&mut messages, &edit, g.focus.tool_message(&edit, output));
+    read_target(&mut g, root.path());
+    let repair = call("schema-repair", "patch_file", json!({"path":TARGET}));
+    let (mut output, error) = crate::file_tools::tool_patch_file(
+        TARGET,
+        "replay_spec_includes",
+        "suggestion_parsed",
+        root.path().to_str(),
+    );
+    assert!(!error);
+    assert!(serde_json::from_str::<crate::tui_replay::TuiReplaySpec>(
+        &std::fs::read_to_string(root.path().join(TARGET)).unwrap()
+    )
+    .is_ok());
+    output.push_str("\n[auto-test] ✗ FAILED (exit 1)\nError: could not infer a stuck target from coder_messages; {\"roles\":{\"assistant\":0,\"tool\":0,\"user\":1}}\nError: tui-replay target requires a completed failure-like assistant message in top-level coder_messages.");
+    g.focus.record_result(
+        &repair,
+        &output,
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    g.on_successful_edit(AutoTestOutcome::Failed, None);
+    append(
+        &mut messages,
+        &repair,
+        g.focus.tool_message(&repair, output),
+    );
+    assert!(g.focus.is_pending());
+    assert!(!g.focus.requires_read());
+    let hint = g.focus.hint().unwrap();
+    assert!(hint.contains("could not infer a stuck target"));
+    assert!(hint.contains("last_confirmed_path"));
+    assert!(!hint.contains("replay_spec_includes") && !hint.contains("Read this exact path"));
+    let (read, output) = read_target(&mut g, root.path());
+    append(&mut messages, &read, g.focus.tool_message(&read, output));
+    assert_eq!(
+        g.focus.pending.as_ref().unwrap().observation,
+        Observation::Unlocalized
+    );
+    assert_eq!(g.stage, Some(RecoveryStage::Fix));
+    assert!(g.focus.hint().unwrap().contains("last_confirmed_path"));
+    for index in 0..35 {
+        let tc = call(
+            &format!("diagnostic-{index}"),
+            "exec",
+            json!({"command":"pwd"}),
+        );
+        append(
+            &mut messages,
+            &tc,
+            json!({"role":"tool","tool_call_id":tc.id,"content":"OK (exit_code: 0)"}),
+        );
+    }
+    agent::message_window::prune_message_window_with_context(&mut messages, &context());
+    let restored = RecoveryFocus::from_messages(&messages, root.path().to_str(), Some(CHECK));
+    assert_eq!(restored, g.focus);
+    let mut outcome = agent::outcome::TaskOutcome::default();
+    outcome.accept_done(&[]);
+    assert!(!outcome.completed(&messages));
+    let action = call(
+        "repair-attempt",
+        "exec",
+        json!({"command":"python repair_fixture.py"}),
+    );
+    g.focus.record_result(
+        &action,
+        "OK (exit_code: 0)",
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    assert!(g.focus.repaired());
+    assert!(g.focus.hint().unwrap().contains("last_confirmed_path"));
+    append(
+        &mut messages,
+        &action,
+        g.focus.tool_message(&action, "OK (exit_code: 0)".into()),
+    );
+    assert_eq!(RecoveryFocus::from_messages(&messages, None, None), g.focus);
+}
+
+#[test]
+fn original_exec_failures_refresh_cause_and_localization_without_other_checks_replacing_them() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut g, _) = focused(root.path());
+    let check = call("check", "exec", json!({"command":CHECK}));
+    let output = exec_output(
+        "FAILED (exit_code: 1)\nError: could not infer a stuck target from coder_messages",
+        root.path(),
+    );
+    g.focus.record_result(
+        &check,
+        &output,
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    assert!(!g.focus.requires_read());
+    let pending = g.focus.pending.as_ref().unwrap();
+    assert_eq!(pending.location, LocationEvidence::LastConfirmed);
+    assert_eq!(pending.observation, Observation::Unlocalized);
+    assert!(pending.diagnostic.contains("stuck target"));
+    let unchanged = g.focus.clone();
+    let other = call("other-check", "exec", json!({"command":"cargo check"}));
+    g.focus.record_result(
+        &other,
+        &exec_output("FAILED (exit_code: 1)\nError: another cause", root.path()),
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    assert_eq!(g.focus, unchanged);
+    let edit = call(
+        "different-config-edit",
+        "patch_file",
+        json!({"path":TARGET}),
+    );
+    g.focus.record_result(&edit, &format!("OK: patched '{TARGET}'\n[auto-test] ✗ FAILED (exit 1)\nError: another check; path={TARGET}"), root.path().to_str(), Some("cargo check"), &context());
+    assert_eq!(g.focus, unchanged);
+    let current = exec_output(
+        &format!("FAILED (exit_code: 1)\nError: invalid replay data; path={TARGET}"),
+        root.path(),
+    );
+    g.focus.record_result(
+        &check,
+        &current,
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    assert!(g.focus.requires_read());
+    assert_eq!(
+        g.focus.pending.as_ref().unwrap().location,
+        LocationEvidence::Current
+    );
+    assert!(g.focus.hint().unwrap().contains("invalid replay data"));
+    assert!(!g.focus.hint().unwrap().contains("last_confirmed_path"));
+}
+
+#[test]
+fn legacy_stale_snapshot_refreshes_only_with_matching_check_and_correlated_failure() {
+    let root = tempfile::tempdir().unwrap();
+    let (g, mut messages) = focused(root.path());
+    let repair = call("legacy-repair", "patch_file", json!({"path":TARGET}));
+    let (mut output, error) =
+        crate::file_tools::tool_patch_file(TARGET, ",}", "}", root.path().to_str());
+    assert!(!error);
+    output.push_str("\n[auto-test] ✗ FAILED (exit 1)\nError: could not infer a stuck target from coder_messages");
+    let mut legacy = g.focus.tool_message(&repair, output);
+    legacy[METADATA_KEY]["state"]["pending"]
+        .as_object_mut()
+        .unwrap()
+        .remove("location");
+    append(&mut messages, &repair, legacy);
+    let read = call("legacy-read", "read_file", json!({"path":TARGET}));
+    let (output, error) = crate::file_tools::tool_read_file(TARGET, root.path().to_str());
+    assert!(!error);
+    let mut old_read = g.focus.tool_message(&read, output);
+    old_read[METADATA_KEY]["state"]["pending"]
+        .as_object_mut()
+        .unwrap()
+        .remove("location");
+    append(&mut messages, &read, old_read);
+    let action = call(
+        "legacy-action",
+        "exec",
+        json!({"command":"python repair_fixture.py"}),
+    );
+    let mut old_action = g.focus.tool_message(&action, "OK (exit_code: 0)".into());
+    old_action[METADATA_KEY]["state"]["pending"]
+        .as_object_mut()
+        .unwrap()
+        .remove("location");
+    append(&mut messages, &action, old_action);
+    let migrated = RecoveryFocus::from_messages(&messages, root.path().to_str(), Some(CHECK));
+    assert!(migrated.is_pending());
+    assert!(!migrated.requires_read());
+    let hint = migrated.hint().unwrap();
+    assert!(
+        hint.contains("could not infer a stuck target") && hint.contains("last_confirmed_path")
+    );
+    assert!(!hint.contains("expected key"));
+    for check in [None, Some("another check")] {
+        assert_eq!(
+            RecoveryFocus::from_messages(&messages, root.path().to_str(), check),
+            g.focus
+        );
+    }
+    let mut uncorrelated = messages;
+    uncorrelated.push(json!({"role":"tool","tool_call_id":"unknown","content":"OK: patched 'file'\n[auto-test] ✗ FAILED (exit 1)\nError: invented cause"}));
+    assert_eq!(
+        RecoveryFocus::from_messages(&uncorrelated, root.path().to_str(), Some(CHECK)),
+        migrated
+    );
 }
