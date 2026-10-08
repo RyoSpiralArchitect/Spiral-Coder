@@ -846,7 +846,7 @@ mod tests {
                 json!({"role":"system", "content":"system contract"}),
                 user_message("human task", MessageOrigin::User),
                 json!({"role":"assistant", "tool_calls":[{"id":"read-call", "type":"function", "function":{"name":"read_file", "arguments":"{}"}}]}),
-                json!({"role":"tool", "tool_call_id":"read-call", "content":"source evidence"}),
+                json!({"role":"tool", "tool_call_id":"read-call", "content":"source evidence", "recovery_focus":{"version":1,"state":{"pending":null}}}),
                 user_message("runtime continuation", MessageOrigin::Runtime),
             ];
             let cfg = RunConfig {
@@ -878,6 +878,7 @@ mod tests {
             assert_eq!(text, "ok");
             assert_eq!(messages[1]["origin"], "user");
             assert_eq!(messages[4]["origin"], "runtime");
+            assert_eq!(messages[3]["recovery_focus"]["version"], 1);
         }
     }
 

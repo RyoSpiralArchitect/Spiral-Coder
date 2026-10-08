@@ -8,9 +8,28 @@ pub(super) const AUTO_TEST_FAILURE_HINT: &str = "Recovery stage=diagnose: the ed
 pub(super) struct RecoveryGovernor {
     pub(super) stage: Option<RecoveryStage>,
     pub(super) required_verification: VerificationLevel,
+    pub(super) focus: super::recovery_focus::RecoveryFocus,
 }
 
 impl RecoveryGovernor {
+    pub(super) fn restore_focus(
+        &mut self,
+        messages: &[serde_json::Value],
+        root: Option<&str>,
+        check: Option<&str>,
+    ) {
+        self.focus = super::recovery_focus::RecoveryFocus::from_messages(messages, root, check);
+        if self.focus.is_pending() && self.stage != Some(RecoveryStage::Diagnose) {
+            self.stage = Some(if self.focus.repaired() {
+                RecoveryStage::Verify
+            } else if self.focus.observed() {
+                RecoveryStage::Fix
+            } else {
+                RecoveryStage::Diagnose
+            });
+        }
+    }
+
     /// A failed edit survives intervening reads and resume. Re-enter diagnosis
     /// conservatively without weakening the benchmark repair ownership guard.
     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
@@ -52,6 +71,7 @@ impl RecoveryGovernor {
         let mut g = RecoveryGovernor {
             stage: None,
             required_verification,
+            ..Default::default()
         };
         if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
             g.stage = Some(RecoveryStage::Diagnose);
@@ -84,6 +104,12 @@ impl RecoveryGovernor {
                         return None;
                     }
                 }
+                if self.focus.requires_read() {
+                    return self
+                        .focus
+                        .hint()
+                        .map(|hint| format!("[Recovery Gate] stage=diagnose\n{hint}"));
+                }
                 if allows_artifact_creation_during_diagnose(task_harness, tc) {
                     return None;
                 }
@@ -95,6 +121,19 @@ Required now: run diagnostics first (e.g. `pwd`, `ls`/`dir`, `git status`, `git 
             }
             RecoveryStage::Fix => None, // allow edits/commands to fix
             RecoveryStage::Verify => {
+                if self.focus.is_pending() {
+                    if name == "read_file"
+                        || (name == "exec"
+                            && parse_exec_command_from_args(&tc.arguments)
+                                .is_some_and(|command| self.focus.check_matches(&command)))
+                    {
+                        return None;
+                    }
+                    return self
+                        .focus
+                        .hint()
+                        .map(|hint| format!("[Recovery Gate] stage=verify\n{hint}"));
+                }
                 if allows_artifact_creation_during_verify(task_harness, tc)
                     || allow_existing_followup_verify
                 {
@@ -130,7 +169,7 @@ Required now: {}",
             self.stage = Some(RecoveryStage::Diagnose);
             return;
         }
-        if self.stage == Some(RecoveryStage::Diagnose) {
+        if self.stage == Some(RecoveryStage::Diagnose) && !self.focus.requires_read() {
             self.stage = Some(RecoveryStage::Fix);
         }
     }
@@ -144,9 +183,10 @@ Required now: {}",
             self.stage = Some(RecoveryStage::Diagnose);
             return;
         }
-        if verified_level
-            .map(|level| level.satisfies(self.required_verification))
-            .unwrap_or(false)
+        if !self.focus.is_pending()
+            && verified_level
+                .map(|level| level.satisfies(self.required_verification))
+                .unwrap_or(false)
         {
             self.stage = None;
             return;
@@ -170,6 +210,7 @@ Required now: {}",
             return;
         }
         if kind == ExecKind::Verify
+            && !self.focus.is_pending()
             && verify_level
                 .map(|level| level.satisfies(self.required_verification))
                 .unwrap_or(false)
@@ -179,7 +220,9 @@ Required now: {}",
             return;
         }
         match (self.stage, kind) {
-            (Some(RecoveryStage::Diagnose), ExecKind::Diagnostic) => {
+            (Some(RecoveryStage::Diagnose), ExecKind::Diagnostic)
+                if !self.focus.requires_read() =>
+            {
                 self.stage = Some(RecoveryStage::Fix);
             }
             (Some(RecoveryStage::Fix), ExecKind::Action) => {

@@ -115,6 +115,28 @@ and Web/native final-handoff parity remain separate work. Auto-review continues
 to start a new task: retaining the original root without resetting its completion
 evidence could close the review round before its fixes are addressed.
 
+## Localized automatic-test recovery
+
+A localized failed automatic test is a pending check, even after a successful
+repair operation or an unrelated passing command. Recovery retains the workspace
+file and bounded cause, routes diagnosis toward the relevant evidence, and keeps
+completion closed until the failed check itself passes at the workspace root.
+The same command in another directory is a different check; success-looking cwd
+text inside command output cannot replace the runtime working-directory header. This complements edit
+retry tracking: an edit can succeed while its verification remains unresolved.
+
+Regression coverage must include failure → unrelated diagnostic → target read →
+repair → verification, with a session round trip and pruning between those steps.
+A failed target read must not create a permanent inspection lock. Text that looks
+like a success status inside test stdout cannot override the runtime's first
+status, and a path mentioned in unrelated output cannot grant verification.
+
+Automatic-test display keeps a bounded diagnostic before a bounded output tail.
+Workspace prefixes are shortened for display so a long absolute path does not
+hide the relative source path, line, and cause. Rust source locations and Python
+traceback frames remain adjacent to their diagnostic context. Output shortening
+is not a new source of task instructions or successful execution evidence.
+
 ## Command and automatic-test evidence
 
 Colon-delimited protocol blocks recognize only the active block contract's field

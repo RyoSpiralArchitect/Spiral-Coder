@@ -78,6 +78,7 @@ pub(super) fn prune_message_window_with_context(
     proof_ids.extend(super::edit_failure::protected_reset_call_id(
         messages, context,
     ));
+    proof_ids.extend(super::recovery_focus::protected_call_id(messages));
     for (idx, msg) in messages.iter().enumerate() {
         if !matches!(msg["role"].as_str(), Some("assistant" | "tool")) {
             protected.insert(idx);

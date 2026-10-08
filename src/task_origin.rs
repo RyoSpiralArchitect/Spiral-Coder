@@ -41,7 +41,7 @@ pub fn root_user_text(messages: &[Value]) -> &str {
         .unwrap_or("")
 }
 
-/// `origin` belongs to session storage, never the Chat Completions wire schema.
+/// Local provenance and recovery snapshots never enter the provider wire schema.
 pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
     messages
         .iter()
@@ -49,6 +49,7 @@ pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
         .map(|mut message| {
             if let Some(object) = message.as_object_mut() {
                 object.remove("origin");
+                object.remove("recovery_focus");
             }
             message
         })
@@ -119,14 +120,19 @@ mod tests {
         let messages = vec![
             user_message("task", MessageOrigin::User),
             json!({"role":"assistant", "tool_calls":[{"id":"call", "function":{"name":"read_file", "arguments":"{}"}}]}),
-            json!({"role":"tool", "tool_call_id":"call", "content":"source"}),
+            json!({"role":"tool", "tool_call_id":"call", "content":"source", "recovery_focus":{"version":1,"state":{"pending":null}}}),
             continuation_message("en"),
         ];
         let mut expected = messages.clone();
         expected[0].as_object_mut().unwrap().remove("origin");
         expected[3].as_object_mut().unwrap().remove("origin");
+        expected[2]
+            .as_object_mut()
+            .unwrap()
+            .remove("recovery_focus");
         assert_eq!(provider_messages(&messages), expected);
         assert_eq!(messages[0]["origin"], "user");
         assert_eq!(messages[3]["origin"], "runtime");
+        assert_eq!(messages[2]["recovery_focus"]["version"], 1);
     }
 }

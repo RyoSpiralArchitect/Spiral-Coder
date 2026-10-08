@@ -52,6 +52,7 @@ mod exact_content;
 mod exec_classification;
 mod exec_proof;
 mod exec_verification;
+mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
 mod final_handoff;
@@ -67,6 +68,7 @@ mod protocol_fields;
 mod provider_compat;
 mod read_only;
 mod recovery;
+mod recovery_focus;
 mod repo_scaffold;
 #[cfg(test)]
 mod resume_contract_tests;
@@ -1970,61 +1972,10 @@ fn simple_before_after(old: &str, new: &str) -> String {
         .to_string()
 }
 
-/// Extract a compact digest of error lines from command output.
-/// Helps the model see ALL errors even when stdout is very long.
+/// Extract a bounded digest of causes and locations before output shortening.
 /// Returns None when no clear error lines are found.
 fn extract_error_digest(stdout: &str, stderr: &str) -> Option<String> {
-    let patterns: &[&str] = &[
-        "error[e",         // Rust: error[E0XXX]
-        "error: aborting", // Rust: summary line
-        " --> ",           // Rust: file:line pointer
-        "syntaxerror:",    // Python / JS
-        "typeerror:",
-        "nameerror:",
-        "attributeerror:",
-        "valueerror:",
-        "runtimeerror:",
-        "importerror:",
-        "modulenotfounderror:",
-        "referenceerror:", // JS
-        "traceback (most recent call last)",
-        "error: ", // generic (space avoids false positives)
-        "fatal: ",
-        "fatal error:",
-    ];
-
-    let mut lines: Vec<String> = Vec::new();
-    let mut seen = std::collections::HashSet::new();
-
-    for src in [stderr, stdout] {
-        for line in src.lines() {
-            let t = line.trim();
-            if t.is_empty() {
-                continue;
-            }
-            let low = t.to_ascii_lowercase();
-            if patterns.iter().any(|p| low.contains(p)) {
-                if seen.insert(t.to_string()) {
-                    lines.push(t.to_string());
-                    if lines.len() >= 20 {
-                        break;
-                    }
-                }
-            }
-        }
-        if lines.len() >= 20 {
-            break;
-        }
-    }
-
-    if lines.is_empty() {
-        return None;
-    }
-    Some(format!(
-        "[ERROR DIGEST — {} line(s)]\n{}",
-        lines.len(),
-        lines.join("\n")
-    ))
+    failure_diagnostics::error_digest(stdout, stderr)
 }
 
 /// Returns true if a tool result can safely be pruned (= it was a success).
@@ -5183,6 +5134,7 @@ fn maybe_build_verified_action_closeout_text(
 ) -> Option<String> {
     if requires_authored_final_answer(root_user_text)
         || exact_content::validate_exact_content_task(root_user_text, tool_root).is_err()
+        || recovery_focus::RecoveryFocus::from_messages(messages, tool_root, test_cmd).is_pending()
     {
         return None;
     }
@@ -7352,7 +7304,7 @@ async fn run_git_cmd(root: &str, args: &[&str]) -> Option<String> {
 }
 
 /// Run the project's test command after a file edit. Returns a formatted result string.
-/// Capped at 120 seconds; stdout/stderr truncated to MAX_STDOUT_CHARS.
+/// Capped at 120 seconds; preserve bounded diagnostics before shortening output.
 async fn run_test_cmd(cmd: &str, cwd: &str) -> String {
     let fut = tokio::process::Command::new(if cfg!(target_os = "windows") {
         "powershell"
@@ -7369,25 +7321,22 @@ async fn run_test_cmd(cmd: &str, cwd: &str) -> String {
     .stderr(std::process::Stdio::piped())
     .output();
 
-    let result = match tokio::time::timeout(std::time::Duration::from_secs(120), fut).await {
+    match tokio::time::timeout(std::time::Duration::from_secs(120), fut).await {
         Ok(Ok(out)) => {
             let stdout = String::from_utf8_lossy(&out.stdout);
             let stderr = String::from_utf8_lossy(&out.stderr);
-            let combined = format!("{}{}", stdout, stderr);
             let exit = out.status.code().unwrap_or(-1);
-            (combined, exit)
+            failure_diagnostics::automatic_test_output(&stdout, &stderr, exit, cwd)
         }
-        Ok(Err(e)) => (format!("error running test: {e}"), -1),
-        Err(_) => ("test timed out after 120s".to_string(), -1),
-    };
-
-    let (combined, exit) = result;
-    let truncated = truncate_output_tail(&combined, 1200);
-
-    if exit == 0 {
-        format!("\n\n[auto-test] ✓ PASSED (exit 0)\n{truncated}")
-    } else {
-        format!("\n\n[auto-test] ✗ FAILED (exit {exit})\n{truncated}\nFix the test failure before proceeding.")
+        Ok(Err(e)) => failure_diagnostics::automatic_test_output(
+            "",
+            &format!("error running test: {e}"),
+            -1,
+            cwd,
+        ),
+        Err(_) => {
+            failure_diagnostics::automatic_test_output("", "test timed out after 120s", -1, cwd)
+        }
     }
 }
 
@@ -7775,12 +7724,18 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let session_bridge = SessionBridgeView::resolve(start.session_bridge.as_ref(), &messages);
     let mut prompt_cache = StablePromptCache::default();
     let mut prompted_harness_overlay_ids = std::collections::BTreeSet::new();
+    // Normalize before restoring file-localized recovery as well as tool execution.
+    let tool_root_abs = tool_root
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .and_then(absolutize_path);
     // Rebuild loop governor memory from the existing session so resuming runs doesn't
     // repeat the same failures from scratch.
     let mut mem = FailureMemory::from_recent_messages(&messages);
     let mut recovery =
         RecoveryGovernor::restore_from_session(&mem, &messages, required_verification);
     recovery.restore_pending_edits(&edit_failures);
+    recovery.restore_focus(&messages, tool_root_abs.as_deref(), test_cmd.as_deref());
     if recovery.in_recovery() {
         state = AgentState::Recovery;
     }
@@ -7843,12 +7798,6 @@ Execute only the new minimal action: {}",
     )
     .await;
 
-    // Resolve tool_root once (absolute path) and track cwd across tool calls.
-    // This prevents the classic "cd didn't persist, so git add ran in the wrong repo" failure.
-    let tool_root_abs = tool_root
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .and_then(absolutize_path);
     let reflection_ledger_path = tool_root_abs
         .as_deref()
         .map(crate::reflection_ledger::path_for_root);
@@ -8616,6 +8565,9 @@ This is the LAST model call for this run.\n\
         }
 
         if let Some(hint) = edit_failures.strategy_hint() {
+            msgs_for_call.push(json!({"role": "system", "content": hint}));
+        }
+        if let Some(hint) = recovery.focus.hint() {
             msgs_for_call.push(json!({"role": "system", "content": hint}));
         }
 
@@ -10194,6 +10146,7 @@ Execute only the new minimal action: {}",
                 test_cmd.as_deref(),
             )
             .is_none()
+                && !recovery.focus.is_pending()
                 && should_prefer_done_after_verified_action(
                     tc,
                     &candidate_plan,
@@ -10732,6 +10685,25 @@ Execute only the new minimal action: {}",
                 }]
             }));
         } else {
+            if let Some(hint) = recovery.focus.hint() {
+                messages.push(json!({"role":"assistant", "content":assistant_text_clean}));
+                messages.push(crate::task_origin::user_message(
+                    &hint,
+                    crate::task_origin::MessageOrigin::Runtime,
+                ));
+                pending_system_hint = Some(hint);
+                state = AgentState::Recovery;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
+            }
             if realize_cfg.enabled {
                 if let Some(plan) = parsed_plan.as_ref().filter(|plan| {
                     validate_plan_for_task_contract(
@@ -12402,6 +12374,24 @@ Execute this minimal action instead: {}",
             }
         }
 
+        // A generic passing check cannot discharge a localized failed check.
+        if tc.name == "done" && recovery.focus.is_pending() {
+            let block = format!("[Done Gate] {}", recovery.focus.hint().unwrap_or_default());
+            messages.push(json!({"role":"tool", "tool_call_id":tc.id, "content":format!("GOVERNOR BLOCKED\n{block}")}));
+            pending_system_hint = Some(block);
+            state = AgentState::Recovery;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            continue;
+        }
+
         // ── done tool ──────────────────────────────────────────────────────
         if tc.name.as_str() == "done" {
             if realize_cfg.enabled {
@@ -13004,6 +12994,13 @@ Required now: run `{command}`."
                 }
             }
 
+            recovery.focus.record_result(
+                &tc,
+                &result,
+                tool_root_abs.as_deref(),
+                test_cmd.as_deref(),
+                &exec_verification_context,
+            );
             let automatic_test =
                 crate::execution_evidence::auto_test_outcome("apply_diff", &result);
             let verified =
@@ -13128,11 +13125,7 @@ Required now: run `{command}`."
             } else {
                 compact_success_tool_result_for_history("apply_diff", &result)
             };
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": history_result,
-            }));
+            messages.push(recovery.focus.tool_message(&tc, history_result));
             if !is_error && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -13780,7 +13773,13 @@ Required now: run `{command}`."
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
-                    if let Some(cached) = file_cache.get(&cache_key) {
+                    if let Some(result) =
+                        recovery
+                            .focus
+                            .read_for_diagnosis(&tc, base, &mut file_cache)
+                    {
+                        result
+                    } else if let Some(cached) = file_cache.get(&cache_key) {
                         let header = cached.lines().next().unwrap_or(&path).to_string();
                         let _ = tx
                             .send(StreamToken::Delta(format!("[CACHE_HIT] {header}\n")))
@@ -14000,6 +13999,13 @@ Action required: call read_file(path) first to confirm current contents, then re
                 }
             }
 
+            recovery.focus.record_result(
+                &tc,
+                &result,
+                tool_root_abs.as_deref(),
+                test_cmd.as_deref(),
+                &exec_verification_context,
+            );
             let automatic_test =
                 crate::execution_evidence::auto_test_outcome(tc.name.as_str(), &result);
             let verified =
@@ -14166,11 +14172,7 @@ Action required: call read_file(path) first to confirm current contents, then re
             } else {
                 compact_success_tool_result_for_history(tc.name.as_str(), &result)
             };
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": history_result,
-            }));
+            messages.push(recovery.focus.tool_message(&tc, history_result));
             if !is_error && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -14626,6 +14628,13 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
 
         edit_failures.on_result(&tc, &tool_output, &exec_verification_context);
         file_tool_consec_failures = edit_failures.count();
+        recovery.focus.record_result(
+            &tc,
+            &tool_output,
+            tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
+            &exec_verification_context,
+        );
 
         let result_label = if effective_exit_code == 0 {
             format!("[RESULT][{:?}] exit=0\n", state)
@@ -14640,11 +14649,7 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         } else {
             tool_output.clone()
         };
-        messages.push(json!({
-            "role": "tool",
-            "tool_call_id": tc.id,
-            "content": history_tool_output,
-        }));
+        messages.push(recovery.focus.tool_message(&tc, history_tool_output));
         last_exec_step = Some(this_step);
         autosave_best_effort(
             &autosaver,
@@ -18212,6 +18217,7 @@ verify: exit code is zero\n\
         let recovery = RecoveryGovernor {
             stage: Some(RecoveryStage::Diagnose),
             required_verification: VerificationLevel::Behavioral,
+            ..Default::default()
         };
         let tc = ToolCallData {
             id: "call_write".to_string(),

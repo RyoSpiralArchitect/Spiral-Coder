@@ -24,6 +24,7 @@ async fn failed_automatic_test_returns_successful_edit_to_diagnosis() {
         let mut recovery = RecoveryGovernor {
             stage: Some(RecoveryStage::Fix),
             required_verification: VerificationLevel::Behavioral,
+            ..Default::default()
         };
         let verified = crate::execution_evidence::auto_test_succeeded(name, &output);
         let level = verified
@@ -122,6 +123,7 @@ fn automatic_test_states_keep_existing_verification_levels_and_missing_status_ru
         let mut recovery = RecoveryGovernor {
             stage: Some(RecoveryStage::Fix),
             required_verification: VerificationLevel::Behavioral,
+            ..Default::default()
         };
         recovery.on_successful_edit(outcome, level);
         assert_eq!(recovery.stage, expected, "{status}");

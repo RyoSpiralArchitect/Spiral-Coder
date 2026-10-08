@@ -15,6 +15,7 @@ store state without first choosing the correct owner.
 | Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
 | Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
 | Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
+| Localized verification failure | `src/tui/agent/recovery_focus.rs` | current human task, resumable | optional local tool-result metadata | failed check, confirmed workspace target, bounded diagnostic and observation state |
 | Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
 | Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.spiral-coder/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
 | Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
@@ -200,6 +201,35 @@ Unresolved edit attempts:
 - The latest successful reset exchange is protected during context pruning so
   retained older failures cannot reappear as unresolved after resume. The legacy
   telemetry name `file_tool_consec_failures` now reflects unresolved edit attempts.
+
+Localized verification failures:
+
+- `src/tui/agent/recovery_focus.rs` owns the target and cause of a localized
+  automatic-test failure. A successful edit and its first runtime automatic-test
+  failure status must be correlated before a focus can be created. Diagnostic
+  text is evidence to inspect, not an instruction or permission to run a command.
+- Unrelated successful diagnostics do not satisfy inspection of the failed
+  target. A read of the target permits repair while retaining the failed check.
+  A failed target read must permit broader diagnosis without declaring the
+  original cause fixed. Unlocalizable failures retain generic recovery behavior.
+- Successful edits do not certify repair. The original automatic test or its
+  exact configured command must pass at the workspace root before this pending
+  failure is cleared. A different configured check or another working directory
+  cannot discharge the original obligation.
+  Unrelated verification cannot authorize automatic closeout or explicit done.
+- Local tool-result metadata preserves validated failure context across a
+  save/resume and context pruning, including after the file has changed. This
+  metadata stays out of provider requests and does not grant execution proof.
+  New human task boundaries discard the previous task's recovery focus.
+- Tool messages may carry `recovery_focus: {version: 1, state: {pending: ...}}`.
+  Pending data contains `path`, `diagnostic`, `check`, and `observation`
+  (`awaiting_read`, `observed`, `repair_attempted`, or `unavailable`). `pending:
+  null` records a clear, not successful execution evidence. This optional field
+  does not change the session container version.
+- Localization is conservative: a diagnostic must identify the edited workspace
+  path, or a pathless JSON parse position must match a bounded parse of the
+  current edited JSON inside the canonical workspace. An unrelated failure
+  remains generic; the last edited file alone is not evidence of its cause.
 
 Autosave ordering:
 
