@@ -120,7 +120,7 @@ evidence could close the review round before its fixes are addressed.
 A localized failed automatic test is a pending check, even after a successful
 repair operation or an unrelated passing command. Recovery retains the workspace
 file and bounded cause, routes diagnosis toward the relevant evidence, and keeps
-completion closed until the failed check itself passes at the workspace root.
+completion closed until the failed check itself passes when launched from the workspace root.
 The same command in another directory is a different check; success-looking cwd
 text inside command output cannot replace the runtime working-directory header. This complements edit
 retry tracking: an edit can succeed while its verification remains unresolved.
@@ -130,6 +130,12 @@ repair → verification, with a session round trip and pruning between those ste
 A failed target read must not create a permanent inspection lock. Text that looks
 like a success status inside test stdout cannot override the runtime's first
 status, and a path mentioned in unrelated output cannot grant verification.
+
+Repeated failures of the original check must refresh its diagnostic. When the
+new cause has no confirmed location, the old path is only historical context;
+recovery allows broader diagnosis while retaining the verification obligation.
+Regression coverage includes schema repair followed by a pathless semantic
+failure, failed explicit reruns, and preservation of this distinction on resume.
 
 Automatic-test display keeps a bounded diagnostic before a bounded output tail.
 Workspace prefixes are shortened for display so a long absolute path does not
@@ -226,3 +232,8 @@ before diff context. Nonstandard failures retain a representative failure line.
 The [2026-10-08 harness comparison](evals/2026-10-08-harness/README.md)
 records the unchanged six-case baseline/candidate runs and their unresolved live
 failures. It is evidence for review, not runtime promotion.
+
+The [2026-10-09 recovery comparison](evals/2026-10-09-recovery-focus/README.md)
+adds localized failure retention and fresh runs against the preceding candidate.
+The live traces exercise target rereads, but neither provider completes TUI
+replay; the opposite changes in suite totals do not establish nonregression.

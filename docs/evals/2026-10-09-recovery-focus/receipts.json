@@ -1,0 +1,2319 @@
+{
+  "version": 1,
+  "identities": {
+    "baseline": {
+      "source_commit": "37d36ca0d1f916f7ae4c68fd919e3210dbf4926b",
+      "binary_sha256": "b556b8810f4ceb38713e21ad184eed9865d3cbf438780e98b09ab11c932a8754",
+      "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+      "fixture_sha256": {
+        "tests/fixtures/runtime-create-file/.spiral-coder.md": "ca10f79089afcc03fcbd37535c6be57ffaf29dc0ae359820e88b57281c0a4a2c",
+        "tests/fixtures/runtime-create-file/README.md": "3ff481b8cd623b9985358120fb0543393eb69cbc860f51e754ec75c3dac6a387",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-fix-rust/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-fix-rust/README.md": "4f46af2a201e34996ea91406866f5f8487dea3f514ebd1d64cf39575cad25477",
+        "tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json": "ed87b9ca938c13665a4fed37f68e8b8eed62a214683d2a2ba7b674b3844e360d",
+        "tests/fixtures/runtime-fix-rust/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-resume-damaged-exchange/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-resume-damaged-exchange/README.md": "f06054cca4301b788c1b91455f3d7208b408376f6b657ef20b37b382f3947714",
+        "tests/fixtures/runtime-resume-damaged-exchange/interrupted_session.json": "092d39c0e35e8a72f6611facc036311d25c122ca0c2360f88663ac02a05424e3",
+        "tests/fixtures/runtime-resume-damaged-exchange/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder/runtime_eval.json": "8e3d40ac0d96d19643d3aa3ac85eb1ed39d15b4343ea917ec6bd8027595a1daf",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder.md": "84990fe1761f9e06129e0205b7fb1b1eaac578c2cc7eadf46760904a90aaa312",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/docs/runtime-architecture.md": "a89099517dfae738795e7a14a5fbfee838c704f52c9f0c9aa7940a2a381b13df",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json": "275ae0f634fdb9fe6aba4869dc485d17f49ca9a58ba214225dc301564912fd60",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/verification_receipt.txt": "a03f2386ae06b21109577020844df367857b72c2fcce384c1896fed98a89c82b",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md": "926f88966b305c7d14d0873536b44dff38387c347b9d17007d62c4e428946f59",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder/runtime_eval.json": "c271e6ad570dfad445e5983099f545bd5ca054dc3a7489fcad8bafb37165d07b",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md": "f6147ec1d78fea88fcda6b360f68745a0df8a0b158ea20894798a24e904fee21",
+        "tests/fixtures/runtime-self-fix-pr-ready/AGENTS.md": "c9be8c7b0d84ed549fdc695bfae6a0ac20123524fdd89503a2f62520b75a1508",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.lock": "87ea8dea63db21d1b51029b7a8f87e13e1db31cf0eb3a9365ee8a7a6872f1961",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.toml": "f897922eacc2181acc7e8a5d06c359be4847fb18b396bd75281fbdea4c27526b",
+        "tests/fixtures/runtime-self-fix-pr-ready/README.md": "d504e0b8d472985806da77a0635f534175616edd6c4ab1d9cf9cb95da570ab70",
+        "tests/fixtures/runtime-self-fix-pr-ready/docs/state-schema.md": "9816953cea186ff84aec3fa666cd9b9b17c449b157f09624a34ee3dcd5b08ba3",
+        "tests/fixtures/runtime-self-fix-pr-ready/scripts/pr-ready-smoke.sh": "51bcd0fdbdb1a9c2af829c6ab2e624a592f26e75db4965364ad35c1cc351d5dd",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/lib.rs": "fd98585e7f0be0d77226aa797825b20f634118ae6087bfa31e03285f30f8bb59",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/followup_requirements.rs": "a60a49270087d40f66f6772b4c1cdb9c0bca7f553d800a15ac89468ebb96ff29",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/mod.rs": "fe1f7b795383691e0035eec6a91915fc94a1ae8848adf4e0264b390c863be6a0",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/mod.rs": "f0fccc088b01b451f9a7db9578151f3bf5403ec8786a30859e8d00e27cafba78"
+      }
+    },
+    "candidate-revised": {
+      "source_commit": "bed7e03bf7cc1da17784f89e229aa4cdb1c5207c",
+      "binary_sha256": "523aff3b26f133df69357a79842435e2c1ddba82e79c820816763b59fbfb3c5c",
+      "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+      "fixture_sha256": {
+        "tests/fixtures/runtime-create-file/.spiral-coder.md": "ca10f79089afcc03fcbd37535c6be57ffaf29dc0ae359820e88b57281c0a4a2c",
+        "tests/fixtures/runtime-create-file/README.md": "3ff481b8cd623b9985358120fb0543393eb69cbc860f51e754ec75c3dac6a387",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-fix-rust/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-fix-rust/README.md": "4f46af2a201e34996ea91406866f5f8487dea3f514ebd1d64cf39575cad25477",
+        "tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json": "ed87b9ca938c13665a4fed37f68e8b8eed62a214683d2a2ba7b674b3844e360d",
+        "tests/fixtures/runtime-fix-rust/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-resume-damaged-exchange/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-resume-damaged-exchange/README.md": "f06054cca4301b788c1b91455f3d7208b408376f6b657ef20b37b382f3947714",
+        "tests/fixtures/runtime-resume-damaged-exchange/interrupted_session.json": "092d39c0e35e8a72f6611facc036311d25c122ca0c2360f88663ac02a05424e3",
+        "tests/fixtures/runtime-resume-damaged-exchange/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder/runtime_eval.json": "8e3d40ac0d96d19643d3aa3ac85eb1ed39d15b4343ea917ec6bd8027595a1daf",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder.md": "84990fe1761f9e06129e0205b7fb1b1eaac578c2cc7eadf46760904a90aaa312",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/docs/runtime-architecture.md": "a89099517dfae738795e7a14a5fbfee838c704f52c9f0c9aa7940a2a381b13df",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json": "275ae0f634fdb9fe6aba4869dc485d17f49ca9a58ba214225dc301564912fd60",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/verification_receipt.txt": "a03f2386ae06b21109577020844df367857b72c2fcce384c1896fed98a89c82b",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md": "926f88966b305c7d14d0873536b44dff38387c347b9d17007d62c4e428946f59",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder/runtime_eval.json": "c271e6ad570dfad445e5983099f545bd5ca054dc3a7489fcad8bafb37165d07b",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md": "f6147ec1d78fea88fcda6b360f68745a0df8a0b158ea20894798a24e904fee21",
+        "tests/fixtures/runtime-self-fix-pr-ready/AGENTS.md": "c9be8c7b0d84ed549fdc695bfae6a0ac20123524fdd89503a2f62520b75a1508",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.lock": "87ea8dea63db21d1b51029b7a8f87e13e1db31cf0eb3a9365ee8a7a6872f1961",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.toml": "f897922eacc2181acc7e8a5d06c359be4847fb18b396bd75281fbdea4c27526b",
+        "tests/fixtures/runtime-self-fix-pr-ready/README.md": "d504e0b8d472985806da77a0635f534175616edd6c4ab1d9cf9cb95da570ab70",
+        "tests/fixtures/runtime-self-fix-pr-ready/docs/state-schema.md": "9816953cea186ff84aec3fa666cd9b9b17c449b157f09624a34ee3dcd5b08ba3",
+        "tests/fixtures/runtime-self-fix-pr-ready/scripts/pr-ready-smoke.sh": "51bcd0fdbdb1a9c2af829c6ab2e624a592f26e75db4965364ad35c1cc351d5dd",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/lib.rs": "fd98585e7f0be0d77226aa797825b20f634118ae6087bfa31e03285f30f8bb59",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/followup_requirements.rs": "a60a49270087d40f66f6772b4c1cdb9c0bca7f553d800a15ac89468ebb96ff29",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/mod.rs": "fe1f7b795383691e0035eec6a91915fc94a1ae8848adf4e0264b390c863be6a0",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/mod.rs": "f0fccc088b01b451f9a7db9578151f3bf5403ec8786a30859e8d00e27cafba78"
+      }
+    }
+  },
+  "collection": {
+    "generated_at_utc": "2026-10-08T18:23:10.435332+00:00",
+    "baseline_phase": "baseline",
+    "candidate_phase": "candidate-revised",
+    "revised_comparison": true,
+    "prior_candidate_source_commit": "48df8615fe30e4a8869da5371a5abea6cbd28af2",
+    "prior_candidate_receipt": {
+      "filename": "receipts-first-candidate.json",
+      "sha256": "9e986847b9046cdb84c47faa9b88731878a6b2a98710cbf2ee01e61c1534b953"
+    },
+    "known_introduced_failure": {
+      "candidate_source_commit": "48df8615fe30e4a8869da5371a5abea6cbd28af2",
+      "description": "After an unknown-variant failure was repaired, a subsequent pathless target-missing failure retained the old recovery-focus cause.",
+      "provenance": "Confirmed during review of the preserved first candidate run"
+    },
+    "revision_reason": "Correct the introduced stale-cause transition while preserving the original baseline and first candidate evidence.",
+    "models_changed": false,
+    "evaluation_criteria_changed": false
+  },
+  "conditions": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "request_timeout_seconds": 90,
+    "wall_timeout_seconds_per_suite": 900,
+    "filter": "restart-live-v2",
+    "case_max_iters": [
+      14,
+      14,
+      10,
+      8,
+      12,
+      18
+    ],
+    "cargo_target_policy": "per-copied-workspace-default",
+    "provider_order": "baseline then candidate for each provider; different providers may overlap"
+  },
+  "recovery_focus_summary_scope": "Retained correlated tool-message snapshots in final.json only; counts are not complete transition counts, and clear/absent states are not verification or repair proof. The collector summarizes metadata shape; it does not replay runtime restoration. Missing location uses the version1 legacy default current; last_confirmed is lineage only.",
+  "collector_sha256": "c1500e401f52ed107cfc3f4bf2b751aaf7812d0ad4cbae7833a51eee405e2eac",
+  "runs": [
+    {
+      "phase": "baseline",
+      "provider": "mistral",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "mistral-small-2603",
+        "provider": "mistral",
+        "binary_sha256": "b556b8810f4ceb38713e21ad184eed9865d3cbf438780e98b09ab11c932a8754",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 152.754
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 25253.5,
+        "avg_tool_calls": 4.666666666666667,
+        "avg_iterations": 7.5,
+        "avg_messages": 22.0,
+        "avg_transcript_input_tokens_est": 2555.1666666666665,
+        "avg_transcript_output_tokens_est": 1574.5,
+        "avg_transcript_total_tokens_est": 4129.666666666667,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 3.3333333333333335,
+        "avg_reflection_ledger_action_hits": 1.8333333333333333,
+        "avg_recovery_enters": 0.6666666666666666,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true,
+              "detail": "resolved=<case-root>/notes/todo.txt bytes=7 expected_bytes=7 exact_match=true"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 2,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "72575447ca7af6b502a0ec9e8fae268386fa49604133019a456de08820a4737f",
+            "graph.json": "58f58663da6d6c2f22bb85b1eec31ad66afbd04fbf8e8075a650412a9f2fa0a0",
+            "session.json": "9b360629dfeaafaf30f7811960713432f70e1ff906d3d6a986c3b01466d3ab94",
+            "trace.jsonl": "321b22663780a17131f0dad37103b7c653027edc51313436cc8c82e081b4ba7c"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=2"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true,
+              "detail": "count=7"
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/progress.json exists=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 7,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "41e735bbd7089c9c9b91fe199df1c9bb086093ba254c93487e53517a45bcb974",
+            "graph.json": "75c759986fc3b253ae0400c76e02ddd62b612224b5da744910aa62e0976a6e25",
+            "session.json": "7bb8661b0a5914541df96f3b937a31deb1db5b741af7bfb12cf138bb95dc9716",
+            "trace.jsonl": "2253e7446ea81ae945e40096441364eb4037ed5c224316bf0a844aa30f9bd730"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": true,
+              "detail": "resolved=<case-root>/src/lib.rs bytes=228 matched=true"
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": true,
+              "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 2
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "5e1a29d32ae96f4e53df20413294263d4b4633fa17401a3fc9db4f72c0306bcb",
+            "graph.json": "2f5ca3165701176092cd87ffbb21ced9d9b56fa593fd0727c2eb29668cd230a5",
+            "session.json": "5e1a29d32ae96f4e53df20413294263d4b4633fa17401a3fc9db4f72c0306bcb",
+            "trace.jsonl": "8ee43378db4b10c9343281040492ca38aa3f2670af29b0a4d4abca6a108c91d8"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": true,
+              "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": true,
+              "detail": "resolved=<case-root>/verification_receipt.txt bytes=16 matched=true"
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "94960f2121cc46eecd761060217dd2a9b35d45c22b637ca04453c1048b8d8da7",
+            "graph.json": "a94b34ceea7af67121e6437cde26ec8cef284dd1a9cdd1c2e05369b5f3dfb3d8",
+            "session.json": "cc9669c09fba626c9d84c517f97b79d908a565fc3d1702deb771eb7480319d83",
+            "trace.jsonl": "499ed068a683767203643da11728d0997a582dfad38d2be7be855557de9229f0"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=2"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=2"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": false,
+              "detail": "resolved=<case-root>/.spiral-coder/tui_replay.json bytes=2772 matched=false"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "exec": 2,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 5,
+              "fix": 4,
+              "verify": 3
+            },
+            "max_file_tool_consec_failures": 2
+          },
+          "raw_artifact_sha256": {
+            "final.json": "28e51ec034bf8b8fa9df315a00aa3e8b2779a8a8a663d7ab3438bcc26d2f1be3",
+            "graph.json": "b9a1cf94e9384ca91fa7c9f53cc7ea07b077818d955e612b1535381329205a35",
+            "session.json": "2f33f964cefaa83f318daec166fa61b2bca8242a6cf3baf43d36550cf139653a",
+            "trace.jsonl": "118a23965739536cbf898eddaebb96f7c543c94d1e29e1c5fdb83da761b25123"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=5"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1,
+              "patch_file": 3,
+              "read_file": 5
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 13,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 5,
+              "fix": 5
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "02690255ac58ca067ffa7e12af7139355628836d9a571fddd5a008e6ab08fbfe",
+            "graph.json": "c7a75cfc11898ff746c9d62b26db80d71814cd231bca1c4528eed00e355a0a06",
+            "session.json": "a2b836c88ca5436d59a988533cc8f9d78d01e479679f49d9f6c167afa5590ad4",
+            "trace.jsonl": "7e913eed8af50384616d962a859a6d7c6e016555795a80210def64ee6103062c"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        }
+      ],
+      "run_artifact_sha256": {
+        "report.json": "6b321a1c67bc33bb3bfa5aac3ff18f70aaa67a0e1450f26d0deba7b4af217e1b",
+        "run-metadata.json": "5610f12ea449c51827a738aa781f8d42742846cee644ba6492e5356e535dd65e",
+        "spec.json": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "console.log": "76c59ddbc2f758bad936288dda8cdb3a637f084ef12cd6fbcd2e6597dda1e631",
+        "merge_gate.json": "acaf84d8da52b69b10494c1d9a0b282b445c915d0c3b87f6990732675503d586"
+      }
+    },
+    {
+      "phase": "baseline",
+      "provider": "openai",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "gpt-4.1-mini",
+        "provider": "openai",
+        "binary_sha256": "b556b8810f4ceb38713e21ad184eed9865d3cbf438780e98b09ab11c932a8754",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 152.052
+      },
+      "summary": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2,
+        "avg_duration_ms": 25136.166666666668,
+        "avg_tool_calls": 4.833333333333333,
+        "avg_iterations": 7.166666666666667,
+        "avg_messages": 21.833333333333332,
+        "avg_transcript_input_tokens_est": 3508.1666666666665,
+        "avg_transcript_output_tokens_est": 1377.0,
+        "avg_transcript_total_tokens_est": 4885.166666666667,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 0.8333333333333334,
+        "avg_reflection_ledger_action_hits": 0.16666666666666666,
+        "avg_recovery_enters": 0.8333333333333334,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-exec-proof-resume",
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true,
+              "detail": "resolved=<case-root>/notes/todo.txt bytes=7 expected_bytes=7 exact_match=true"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "f5e3bc5299fae1e803873a63c02d25d7c13244ea2e3bf0471f5376d1b13fb64c",
+            "graph.json": "07f2ba8aebe11716a37ede65fa7e52159604bc4b6563ae1035882d58ca53be05",
+            "session.json": "0c21264fc37ba9b1edfd4d9d5c1a3a6b439116cc4d7d41e2c04d1f8281bc4c42",
+            "trace.jsonl": "c35eb7f73e34924bf2fe0d25559dbe98bce1f0778aaab9c25623555376e80a72"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true,
+              "detail": "count=5"
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/progress.json exists=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "507694a3ce71d751e3d6a0ac3bd5d2238cf0ca4d71745600518a9dc27093ed69",
+            "graph.json": "8ee9de2e7d40d92d4dd5bc2dcda65d3c13fdab8699c87dd13657ec057dfcdada",
+            "session.json": "72a145c83e94ad78db29ed6ea53f8f4a75d885e74b80786f26696d78d78366cb",
+            "trace.jsonl": "9ec2e1566f376dafadf03802da24243d8fbf7d409c7a7a395fe5614696513eef"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": true,
+              "detail": "resolved=<case-root>/src/lib.rs bytes=228 matched=true"
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": true,
+              "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "dcee5af6931debc7e255e8024dbd9fc2ede42a103c9d10b88963bcd3f9963b9e",
+            "graph.json": "bcc61af5cd0f4713f2e7a11e01f2fa5ef9935f5ae7617224a20fb1c34b2b83a9",
+            "session.json": "681f72117ebbabaa00587571e2e57f8b3f34941b71912813d57f6d3b7049a3d0",
+            "trace.jsonl": "3acaa9e09f9f61b20f2513402d12bb687700d1b525ce1092c97675626d0e17e1"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=6"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": false,
+              "detail": "resolved=<case-root>/verification_receipt.txt bytes=17 matched=false"
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": false,
+              "detail": "last assistant message missing"
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": false,
+              "detail": "last assistant message missing"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 6
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 8,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "763532554a2ac7973a674755f14f9c58fd08370ab2fdb1fd7426942302cfffbc",
+            "graph.json": "f0d508b4f7da9b52aac1b02b4ea9ac7301723e1e94285f0c59ba7fc67a92ad9e",
+            "session.json": "22df44dc65c45fccccdc539083f9f41d6ba8a46e27e4d58768453900749d056e",
+            "trace.jsonl": "ab5b70cce7f44be555c173618bf27f2fb9386fe5632be9e5199d71848d960b76"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=6"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/tui_replay.json bytes=4723 matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "apply_diff": 2,
+              "patch_file": 3,
+              "read_file": 6
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 7,
+              "fix": 6
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "raw_artifact_sha256": {
+            "final.json": "23083e7dc73477eb5a4a1e7f3f48e691757dd8e04ef2567558f0ecbfc6d79b07",
+            "graph.json": "d4a40f64cba0fff65d83e18fcc9b89827ca1cfbb47e3105dc3151d8fd0c2ee7b",
+            "session.json": "4b573e262f4af471e1129115bd304ba20b971dad2e527a086cce7ed1c38f5a87",
+            "trace.jsonl": "0a49cfd3cd75893feeeb4b6ab2db5c668d9eabfac0887f6b9230cfd72235165c"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 3,
+              "read_file": 3,
+              "search_files": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 10,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "f1108a8c4154345c63fe94614c104030680b829e86afd5e01847fd9b28e14679",
+            "graph.json": "65237f2bc8b1dab5b6eb3a077e5c351932fce231e042fd0d1e9b5f6cc4e8f295",
+            "session.json": "2231b931d7d31760ba0fcfcbe6ec279ff8d86a8b90440ee1a199a9eb51131221",
+            "trace.jsonl": "305b49b774798bb1e0720d270faddf1d0e1991c34babb48455d5ee2b3d19fc71"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        }
+      ],
+      "run_artifact_sha256": {
+        "report.json": "4833fda59895d35b8bc7716afc0ea2bd21c471cf3e66a626d9442693d0e5b7b6",
+        "run-metadata.json": "3dabf92290ddd1a9275e05b68c1d6d5a972a6610c6f6b1543c5e9d746a3543ca",
+        "spec.json": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "console.log": "6554d92b85148510e6f772c40bb5cb10ab291d8246cdd3bc6a981c5a7dc3f65a",
+        "merge_gate.json": "02d4babe12ae5e76bc1cbe4aa31a8320e2aa08d402ef288fc30325c3464ce5c4"
+      }
+    },
+    {
+      "phase": "candidate-revised",
+      "provider": "mistral",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "mistral-small-2603",
+        "provider": "mistral",
+        "binary_sha256": "523aff3b26f133df69357a79842435e2c1ddba82e79c820816763b59fbfb3c5c",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 155.9
+      },
+      "summary": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2,
+        "avg_duration_ms": 25863.833333333332,
+        "avg_tool_calls": 4.166666666666667,
+        "avg_iterations": 7.666666666666667,
+        "avg_messages": 22.833333333333332,
+        "avg_transcript_input_tokens_est": 2859.3333333333335,
+        "avg_transcript_output_tokens_est": 1815.8333333333333,
+        "avg_transcript_total_tokens_est": 4675.166666666667,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 2.6666666666666665,
+        "avg_reflection_ledger_action_hits": 2.0,
+        "avg_recovery_enters": 0.6666666666666666,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true,
+              "detail": "resolved=<case-root>/notes/todo.txt bytes=7 expected_bytes=7 exact_match=true"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 2,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "b8a526fee0716a2a54e9f76551089a0b1a114b7a5b2ba080ec3be29abf71f11f",
+            "graph.json": "b998177f8c5688d42e72884171c71e1e74de9572cdd771e8b36542dc74f082b3",
+            "session.json": "3bae6c134cc1793ef25dc42928476a7fd9264d1d89e90f87eb295e8284b6a842",
+            "trace.jsonl": "69ed8273421ff8e66ea7abf3167f96d9ea5483547b50c1b13a8413314542fd2c"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 3,
+            "correlated_snapshot_count": 3,
+            "recognized_snapshot_count": 3,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 3,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true,
+              "detail": "count=4"
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/progress.json exists=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1,
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 2,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "8cd0870a5a1b0cf8880345a661f7f5554185fae596642f70ba71776bec6c568f",
+            "graph.json": "2949002386e6c8126c60f7f9e4a3e0b713e01d62e492ea9ae6d0a74969a37085",
+            "session.json": "8b6985a3ff9c5007f176a5f5513b4a4e0563e038fcc4e1868867be45233596ff",
+            "trace.jsonl": "5e1413bbb79f4d676e08ab83901c6ee8103224edbec1999aa15fe1eca4e71f10"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 3,
+            "correlated_snapshot_count": 3,
+            "recognized_snapshot_count": 3,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 3,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": false,
+              "detail": "resolved=<case-root>/src/lib.rs bytes=228 matched=false"
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": false,
+              "detail": "matched=false"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {},
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 10,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 10
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "d53c7a7c0c11d41d960cb0215aea9458cee1cfbdff90779a1656af02dccdc8a7",
+            "graph.json": "ad152df8062431aa6355d4dbe96e8e9688df74a8a0a408fafaf2fb0ed084f1be",
+            "session.json": "e5a78eac1cc860abb367d9f101cd5fd5e02c5a3a299bd03fa59d8f684fd01135",
+            "trace.jsonl": "0c8943fa7f0a477da314b4d5d34b223aea5014eb898e1f2098c360ee68346425"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 0,
+            "correlated_snapshot_count": 0,
+            "recognized_snapshot_count": 0,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 0,
+            "latest_snapshot_state": "absent",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": true,
+              "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": true,
+              "detail": "resolved=<case-root>/verification_receipt.txt bytes=16 matched=true"
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "8e49366449087c61312316c73b7e8ac35beaa93f2b7913ac0de9b24c082b553f",
+            "graph.json": "6af9410307623e952ae2e4a5cc752b39b640d330e9012855570605264f6d8d1e",
+            "session.json": "b6cb298b3d06b6d8a056e28a6f2241df38166be0013a066c0a4a7f0f95c21602",
+            "trace.jsonl": "8662b7d89165a50e57cdf9afefbc2da8dd1afec636edfbe41880f9ec158f2198"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 1,
+            "correlated_snapshot_count": 1,
+            "recognized_snapshot_count": 1,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 1,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=2"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "matched=false"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/tui_replay.json bytes=4957 matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "exec": 3,
+              "patch_file": 2,
+              "read_file": 3
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 9,
+              "fix": 4
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "raw_artifact_sha256": {
+            "final.json": "00e8c90ee1933db43b5cb477c1c4fa1e2d89a2a6f42ee7b02d7a112db003ec38",
+            "graph.json": "e352ecc736b5c11a5e7a607fc3fd3383dbfe280a4beb5b84a2dfb09de8ab663e",
+            "session.json": "cc55653d3b7054f508fe9133f0126159b503b74662d0f2ab4151c56506c2e97c",
+            "trace.jsonl": "8c37cd6f1085262c79b5055a21230ba550fb7c65f4d3f231f477aeca81623580"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 9,
+            "correlated_snapshot_count": 9,
+            "recognized_snapshot_count": 9,
+            "observation_counts": {
+              "awaiting_read": 2,
+              "observed": 6
+            },
+            "location_counts": {
+              "current": 8
+            },
+            "clear_snapshot_count": 1,
+            "latest_snapshot_state": "pending",
+            "latest_observation": "observed",
+            "latest_location": "current"
+          }
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=4"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1,
+              "patch_file": 3,
+              "read_file": 4
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 11,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 4,
+              "fix": 4
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "cf5aaec126c33882b3d2e502f9e6f63ce926b93984bf8944b3ba438e58da0cf2",
+            "graph.json": "0a4ae8e01df96a538464d125c661b152f93ebec5ce38df87e2f3987e11cccdb8",
+            "session.json": "25b99d25849f0de4c39e6197afa2e51339daf3f9e3916634760f7b4c85080f2c",
+            "trace.jsonl": "bc4d502ef107e16f5a64e1ec4030ebf3d9e6889bad5f571508d0ed81d0c0312d"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 8,
+            "correlated_snapshot_count": 8,
+            "recognized_snapshot_count": 8,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 8,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        }
+      ],
+      "run_artifact_sha256": {
+        "report.json": "06ca8c88d85c061d695f0b7216452a5c082d67f28b449f4e55dcf729660859d7",
+        "run-metadata.json": "8476f4cb63e431d4b05b7febbecf747431b7557957e4a4072621be19174573c5",
+        "spec.json": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "console.log": "0117332d69630e7359f049a192d4fafa18427cba66b9fe7863c875165ab3448f",
+        "merge_gate.json": "ce248708cc7ed845719968a233b48b59af60c0454f02d66b7b38eea8b7760eee"
+      }
+    },
+    {
+      "phase": "candidate-revised",
+      "provider": "openai",
+      "metadata": {
+        "filter": "restart-live-v2",
+        "requested_model": "gpt-4.1-mini",
+        "provider": "openai",
+        "binary_sha256": "523aff3b26f133df69357a79842435e2c1ddba82e79c820816763b59fbfb3c5c",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "runner_sha256": "8cda8d32603bfacf2515d306987ef7dbc849e135920836e51b745a6af5520708",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 131.695
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 21941.833333333332,
+        "avg_tool_calls": 3.8333333333333335,
+        "avg_iterations": 6.333333333333333,
+        "avg_messages": 20.333333333333332,
+        "avg_transcript_input_tokens_est": 3011.3333333333335,
+        "avg_transcript_output_tokens_est": 1019.1666666666666,
+        "avg_transcript_total_tokens_est": 4030.5,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 0.16666666666666666,
+        "avg_reflection_ledger_action_hits": 0.0,
+        "avg_recovery_enters": 0.8333333333333334,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:write_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "assistant_contains:notes/todo.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "tool_root_file_equals:notes/todo.txt",
+              "ok": true,
+              "detail": "resolved=<case-root>/notes/todo.txt bytes=7 expected_bytes=7 exact_match=true"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "0589cbd4ecaff0d747c81d81d593e5c6c9ad66696c81868c1004dbfb9061e6f1",
+            "graph.json": "4bdba4b7ceaf0ecfaf13baf66455ea5157b79523bbc1c48f71a1fb98a98502e1",
+            "session.json": "6bda81d1d09d19f96aaef7fbb60a3842ede59d9007de0c81d3f3fbd9196d560f",
+            "trace.jsonl": "39d1b7b80c9a6c7afa46759e445330a1a1bc9064d63ab9815beb7fca5d5be2f0"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 1,
+            "correlated_snapshot_count": 1,
+            "recognized_snapshot_count": 1,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 1,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:harness_evolution_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_state_loaded",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "trace_event_seen:progress_bridge_prompted",
+              "ok": true,
+              "detail": "count=5"
+            },
+            {
+              "label": "tool_root_file_exists:.spiral-coder/progress.json",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/progress.json exists=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "9cf3fabedbba3a76f950a20420f0faf2ee8a6dc1cc2faace5eeee3a11ddb7e2c",
+            "graph.json": "b0c7498cb768a7b5c31b6439996bce7aed443e9a85c6fe490681ea00989205c8",
+            "session.json": "8405a7416310461465b2580d0af237fce07259016443daf8c90560d6498564ab",
+            "trace.jsonl": "91706eab5a66c30ae8573920268dd3ac728fd509bfb9734aa4892177af9e7ac3"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 2,
+            "correlated_snapshot_count": 2,
+            "recognized_snapshot_count": 2,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 2,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+              "ok": true,
+              "detail": "resolved=<case-root>/src/lib.rs bytes=228 matched=true"
+            },
+            {
+              "label": "auto_test_passed:cargo test 2>&1",
+              "ok": true,
+              "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:src/lib.rs",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "8b606f7cca128f2bad6e94470c2a71fcd55b11052b3c856f620f3c01d2adab36",
+            "graph.json": "cad05a4a9b1b77264c510add95155c336902ff1da66232a0dc1d5349f70e7efd",
+            "session.json": "95ada8d4a279f457061f286c2b479e2dd8e3a444ec10922e4318edcca08ae953",
+            "trace.jsonl": "c68f23fa9ef6a4e7e274ace5dfaca119a8fa0bfc5c4106848ea6ff55715add63"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 2,
+            "correlated_snapshot_count": 2,
+            "recognized_snapshot_count": 2,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 2,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+              "ok": true,
+              "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+            },
+            {
+              "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+              "ok": true,
+              "detail": "resolved=<case-root>/verification_receipt.txt bytes=16 matched=true"
+            },
+            {
+              "label": "assistant_contains:verification_receipt.txt",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:fresh exec proof",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 3,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "40d8740f29068a706ef271d282d70709554acea3f53011cc78dacbe068593ada",
+            "graph.json": "4106b84ef869adeaf47b9402d43943f9e90822b16709c79714ad93c4d7da9b9e",
+            "session.json": "10dbd345ff6b4ebe459166f73f7944242220c1bd98c36b9a9ca252bc4055cc12",
+            "trace.jsonl": "631bc7a231c6e310058e98f8d6adcd420fa61c6d0605b0a6a5ecc62a2f8a5447"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 1,
+            "correlated_snapshot_count": 1,
+            "recognized_snapshot_count": 1,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 1,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=5"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=2"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            },
+            {
+              "label": "trace_event_seen:task_harness",
+              "ok": true,
+              "detail": "count=1"
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": true,
+              "detail": "resolved=<case-root>/.spiral-coder/tui_replay.json bytes=4146 matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "apply_diff": 2,
+              "patch_file": 2,
+              "read_file": 5,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 7,
+              "fix": 5
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "a5332c66bd13818acc2408dfe0832d9293a9e414e31accd90ef8166a10d06db0",
+            "graph.json": "7cd93dc1fdf5ef687d5ae91d08f299ad640b3a4a459b1858ce3b20f48a003f97",
+            "session.json": "757914540e7a1b7355f36fee62ed0909a91816d3c489da5c45f15d6545edbec3",
+            "trace.jsonl": "e0ea9e3684f4172badadc71d15e4842d663b71d55c38c3627a5e84670fe1603f"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 10,
+            "correlated_snapshot_count": 10,
+            "recognized_snapshot_count": 10,
+            "observation_counts": {
+              "awaiting_read": 3,
+              "observed": 3,
+              "unlocalized": 3
+            },
+            "location_counts": {
+              "current": 6,
+              "last_confirmed": 3
+            },
+            "clear_snapshot_count": 1,
+            "latest_snapshot_state": "pending",
+            "latest_observation": "unlocalized",
+            "latest_location": "last_confirmed"
+          }
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "run_error": null,
+          "checks": [
+            {
+              "label": "completed",
+              "ok": true,
+              "detail": "completed=true agent_outcome=Some(true)"
+            },
+            {
+              "label": "error_free",
+              "ok": true,
+              "detail": "error_count=0"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": true,
+              "detail": "count=3"
+            },
+            {
+              "label": "assistant_contains:src/tui/agent/followup_requirements.rs",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:docs/state-schema.md",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/runtime_eval.json",
+              "ok": true,
+              "detail": "matched=true"
+            },
+            {
+              "label": "assistant_contains:cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+              "ok": true,
+              "detail": "matched=true"
+            }
+          ],
+          "metrics": {
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_histogram": {
+              "patch_file": 3,
+              "read_file": 3,
+              "search_files": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "iteration_count": 10,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "raw_artifact_sha256": {
+            "final.json": "0cdcaebe76ad7976095a500a95ac98d7eea517749dac678988c29d78e363b20c",
+            "graph.json": "b08079c2bab3e8228eea1abe222fa2938f313542236523aea793ee0afc2c193b",
+            "session.json": "bd8c471bea93059f712d318198050dffab801b5916b8969363aa9e8db274322c",
+            "trace.jsonl": "92f79994491450079762f386b1d25eddd680f4a1dcd02f9e574ce8a9e5adc35b"
+          },
+          "recovery_focus_snapshots": {
+            "final_json_available": true,
+            "retained_snapshot_count": 6,
+            "correlated_snapshot_count": 6,
+            "recognized_snapshot_count": 6,
+            "observation_counts": {},
+            "location_counts": {},
+            "clear_snapshot_count": 6,
+            "latest_snapshot_state": "clear",
+            "latest_observation": null,
+            "latest_location": null
+          }
+        }
+      ],
+      "run_artifact_sha256": {
+        "report.json": "b8635050fe04e7af6b58c038108dcd04e701f5e27d1fa103ca005bd983523d2f",
+        "run-metadata.json": "ce8469ccca87fc264a5a777fa21d43f2934923fd0f75b2b22990f7079aa81662",
+        "spec.json": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "console.log": "7a9d0e0e098063c825152814dec99a8f1534fd928a610d9839ba8320f8869fc3",
+        "merge_gate.json": "34de66b4fbe36a96bc00bd48e0cf9121d2388ef7222d0a0b0a1a8a8110474b67"
+      }
+    }
+  ]
+}
