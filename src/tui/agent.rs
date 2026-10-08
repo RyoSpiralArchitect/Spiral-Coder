@@ -68,6 +68,7 @@ mod protocol_fields;
 mod provider_compat;
 #[cfg(test)]
 mod provider_signature_tests;
+mod provider_turn;
 mod read_only;
 mod recovery;
 mod recovery_focus;
@@ -8680,6 +8681,31 @@ This is the LAST model call for this run.\n\
                 ))
                 .await;
             break;
+        }
+
+        if let Some(hint) = provider_turn::retry_text_only_tool_turn(
+            &cfg.base_url,
+            &assistant_text,
+            &tool_calls,
+            &mut messages,
+        ) {
+            pending_system_hint = Some(hint.to_string());
+            let _ = tx
+                .send(StreamToken::Delta(
+                    "\n[provider] No tool executed; requesting a native function call.\n"
+                        .to_string(),
+                ))
+                .await;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            continue;
         }
 
         if tool_calls.is_empty() {

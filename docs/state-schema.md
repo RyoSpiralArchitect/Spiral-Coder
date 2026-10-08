@@ -183,7 +183,11 @@ Provider tool continuation:
 - Native automatic tool rewrites skip signed calls. The ordinary plan, think,
   evidence, execution, and completion gates still apply. Unsigned legacy history
   does not acquire a fabricated signature; old sessions are not retroactively
-  certified for Gemini. Runtime-generated calls also remain unsigned.
+  certified for Gemini. For Google endpoints, `src/tui/agent/provider_turn.rs`
+  intercepts a text-only response before no-tool rescue can synthesize a call.
+  It retains the assistant text and appends runtime-origin feedback requesting a
+  native call; no tool runs and no proof is granted. The normal iteration cap
+  still applies. Other providers retain their existing rescue behavior.
 - Outgoing native and Web requests include Google metadata only for an HTTPS URL
   whose exact host is `generativelanguage.googleapis.com`. Switching providers
   strips it from the request copy, while the saved transcript remains intact.

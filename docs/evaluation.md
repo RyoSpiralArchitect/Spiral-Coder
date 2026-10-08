@@ -163,7 +163,11 @@ prelude; `required`/ANY suppressed it in the bounded live probe while AUTO
 returned both text and the same function call. This changes request compatibility,
 not plan/evidence/completion acceptance. An unavailable model or a missing-signature HTTP rejection is a
 transport/access result, not a quality score. Legacy unsigned sessions may still
-need a fresh Gemini run; no signature is fabricated to bypass validation.
+need a fresh Gemini run; no signature is fabricated to bypass validation. A
+text-only Google response is retained as text and receives runtime feedback
+requesting a native call before any synthetic-tool rescue. A pseudo-call written
+as XML cannot execute a command or create a tool result. Regression coverage
+keeps the human task unchanged and admits the next real signed call.
 
 ## Command and automatic-test evidence
 
