@@ -164,20 +164,23 @@ returned both text and the same function call. This changes request compatibilit
 not plan/evidence/completion acceptance. An unavailable model or a missing-signature HTTP rejection is a
 transport/access result, not a quality score. Legacy unsigned sessions may still
 need a fresh Gemini run; no signature is fabricated to bypass validation. A
-text-only Google response is retained as text and receives runtime feedback
-requesting a native call before any synthetic-tool rescue. A pseudo-call written
+text-only Google response remains eligible for ordinary verified completion.
+Synthetic-tool rescue is disabled for Google; unfinished text turns receive
+runtime feedback requesting a native call after the completion gates. A pseudo-call written
 as XML cannot execute a command or create a tool result. Regression coverage
-keeps the human task unchanged and admits the next real signed call.
+keeps the human task unchanged and does not fabricate a tool result.
 
 ## Command and automatic-test evidence
 
-Colon-delimited protocol blocks recognize only the active block contract's field
+Native colon-delimited protocol blocks recognize only the active block contract's field
 names and aliases at the least-indented field level. A step's literal colon text,
 nested fixture keys, or a more deeply indented recognized label remain part of
 the current value. This keeps multi-step plans intact when a step describes JSON
 or replay fields. `Acceptance Criteria:` is an explicit shared alias for the plan
 acceptance field, with the same indentation and validation rules; unrelated
-headings do not satisfy it. Existing XML and bracket-quoted field forms remain supported.
+headings do not satisfy it. Existing XML and bracket-quoted field forms remain
+supported. The Web parser still uses its earlier colon-field grammar; native/Web
+plan-parser parity is not established by these native runtime runs.
 
 `verified_command_seen` requires an assistant tool call and matching tool result
 ID, an exact successful runtime exit-status header, and current proof. Command

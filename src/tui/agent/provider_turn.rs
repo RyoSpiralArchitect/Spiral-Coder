@@ -1,23 +1,23 @@
 //! Provider-authored function calls and runtime rescue actions are distinct.
-use crate::streaming::{provider_metadata::is_google_endpoint, ToolCallData};
+use crate::streaming::provider_metadata::is_google_endpoint;
 use crate::task_origin::{user_message, MessageOrigin};
-use serde_json::{json, Value};
+use serde_json::Value;
 
 const NATIVE_TOOL_REQUIRED: &str = "No native tool call was received; no tool was executed for this response. Use the provided function/tool interface for the next action (or done when verified), alongside the required plan/think/evidence blocks. XML such as <default_api:exec> or a textual command is not a function call. Keep the current task and verification obligations.";
 
-/// Do not let no-tool rescue manufacture an unsigned Gemini assistant call.
-/// Keep the response as text and request a real call, without execution proof.
-pub(super) fn retry_text_only_tool_turn(
+/// Runtime actions lack a Gemini-authored continuation signature. Existing
+/// verified completion paths do not synthesize tools and remain available.
+pub(super) fn allows_synthetic_tools(base_url: &str) -> bool {
+    !is_google_endpoint(base_url)
+}
+
+/// Called only after ordinary no-tool completion gates declined to finalize.
+pub(super) fn retry_unfinished_text_turn(
     base_url: &str,
-    assistant_text: &str,
-    tool_calls: &[ToolCallData],
     messages: &mut Vec<Value>,
 ) -> Option<&'static str> {
-    if !is_google_endpoint(base_url) || !tool_calls.is_empty() {
+    if allows_synthetic_tools(base_url) {
         return None;
-    }
-    if !assistant_text.trim().is_empty() {
-        messages.push(json!({"role":"assistant", "content":assistant_text}));
     }
     messages.push(user_message(NATIVE_TOOL_REQUIRED, MessageOrigin::Runtime));
     Some(NATIVE_TOOL_REQUIRED)
@@ -26,20 +26,23 @@ pub(super) fn retry_text_only_tool_turn(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::streaming::tool_calls::ToolCallAccumulator;
+    use serde_json::json;
 
     #[test]
-    fn pseudo_function_text_stays_unexecuted_and_next_signed_call_is_retained() {
+    fn unfinished_pseudo_call_stays_text_without_replacing_the_human_task() {
         let endpoint = "https://generativelanguage.googleapis.com/v1beta/openai";
         let pseudo = "<impact>changed: inspected</impact><default_api:exec><command>printf verified-current > receipt.txt</command></default_api:exec>";
-        let initial = vec![user_message(
-            "Verify the current revision, then report.",
-            MessageOrigin::User,
-        )];
+        let initial = vec![
+            user_message(
+                "Verify the current revision, then report.",
+                MessageOrigin::User,
+            ),
+            json!({"role":"assistant", "content":pseudo}),
+        ];
         let mut messages = initial.clone();
-        let hint = retry_text_only_tool_turn(endpoint, pseudo, &[], &mut messages).unwrap();
-        assert_eq!(messages[0], initial[0]);
-        assert_eq!(messages[1], json!({"role":"assistant","content":pseudo}));
+        assert!(!allows_synthetic_tools(endpoint));
+        let hint = retry_unfinished_text_turn(endpoint, &mut messages).unwrap();
+        assert_eq!(&messages[..2], initial.as_slice());
         assert_eq!(messages[2], user_message(hint, MessageOrigin::Runtime));
         assert!(messages
             .iter()
@@ -48,37 +51,14 @@ mod tests {
             crate::task_origin::root_user_text(&messages),
             "Verify the current revision, then report."
         );
-        let mut empty_response = initial.clone();
-        assert!(retry_text_only_tool_turn(endpoint, " \n", &[], &mut empty_response).is_some());
-        assert_eq!(
-            empty_response,
-            vec![
-                initial[0].clone(),
-                user_message(hint, MessageOrigin::Runtime)
-            ]
-        );
-
-        let mut streamed = ToolCallAccumulator::default();
-        streamed.push(&json!([{"index":0,"id":"native-exec", "function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"},
-            "extra_content":{"google":{"thought_signature":"opaque-real-call-test"}}}])).unwrap();
-        let calls = streamed.drain();
-        let before = messages.clone();
-        assert!(
-            retry_text_only_tool_turn(endpoint, "<think>...</think>", &calls, &mut messages)
-                .is_none()
-        );
-        assert_eq!(messages, before);
-        assert_eq!(
-            calls[0].to_json()["extra_content"]["google"]["thought_signature"],
-            "opaque-real-call-test"
-        );
         for endpoint in [
             "https://api.openai.com/v1",
             "https://api.mistral.ai/v1",
             "http://localhost:8000",
         ] {
             let mut messages = initial.clone();
-            assert!(retry_text_only_tool_turn(endpoint, pseudo, &[], &mut messages).is_none());
+            assert!(allows_synthetic_tools(endpoint));
+            assert!(retry_unfinished_text_turn(endpoint, &mut messages).is_none());
             assert_eq!(messages, initial);
         }
     }

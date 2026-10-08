@@ -8683,32 +8683,7 @@ This is the LAST model call for this run.\n\
             break;
         }
 
-        if let Some(hint) = provider_turn::retry_text_only_tool_turn(
-            &cfg.base_url,
-            &assistant_text,
-            &tool_calls,
-            &mut messages,
-        ) {
-            pending_system_hint = Some(hint.to_string());
-            let _ = tx
-                .send(StreamToken::Delta(
-                    "\n[provider] No tool executed; requesting a native function call.\n"
-                        .to_string(),
-                ))
-                .await;
-            autosave_best_effort(
-                &autosaver,
-                &tx,
-                tool_root_abs.as_deref(),
-                checkpoint.as_deref(),
-                cur_cwd.as_deref(),
-                &messages,
-            )
-            .await;
-            continue;
-        }
-
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = meta_harness.synthesize_tool_call(iter) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -8738,7 +8713,7 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = synthesize_fix_existing_no_tool_mutation_tool_call(
                 task_harness,
                 &messages,
@@ -8775,7 +8750,7 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = synthesize_benchmark_plan_no_tool_call(
                 task_harness,
                 &messages,
@@ -11860,6 +11835,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
             }
 
             if root_read_only
+                && provider_turn::allows_synthetic_tools(&cfg.base_url)
                 && (read_only_diagnose_streak >= 2
                     || (tool_calls_this_run == 0 && iter + 1 >= first_action_deadline))
                 && read_only_diagnose_rescue_count < 3
@@ -12219,6 +12195,30 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         }
                     }
                 }
+            }
+
+            // Verified text/read-only completion above remains available. Only an
+            // unfinished no-tool turn needs another native Google function call.
+            if let Some(hint) =
+                provider_turn::retry_unfinished_text_turn(&cfg.base_url, &mut messages)
+            {
+                pending_system_hint = Some(hint.to_string());
+                let _ = tx
+                    .send(StreamToken::Delta(
+                        "\n[provider] No tool executed; requesting a native function call.\n"
+                            .to_string(),
+                    ))
+                    .await;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
             }
 
             // Common failure mode: model "explains what to do" but never calls tools.
