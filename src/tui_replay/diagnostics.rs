@@ -76,6 +76,12 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     {
         lines.push("Error: tui-replay contract_queued also requires observer_response.response_contract.required=true with a supported response contract.".to_string());
     }
+    if failures
+        .iter()
+        .any(|(_, check)| check.label.starts_with("target_message_contains:"))
+    {
+        lines.push("Error: tui-replay target_message_contains compares the selected message ID, not the case ID or source-file text. Inspect selector and coder_messages against the intended assertion; do not remove failing assertions.".to_string());
+    }
     // Emit the real artifact path, not a prefix-truncated path that cannot be read.
     lines.push(format!(
         "Error: tui-replay report={}",
@@ -84,11 +90,30 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     lines.join("\n")
 }
 
-pub(super) fn parse_error(path: &Path, error: serde_json::Error) -> anyhow::Error {
+pub(super) fn parse_error(path: &Path, source: &str, error: serde_json::Error) -> anyhow::Error {
     let mut message = format!(
         "failed to parse tui replay spec: {error}; path={}",
         path.display()
     );
+    if error.is_syntax() || error.is_eof() {
+        // Use the exact source that failed parsing, not a second filesystem read.
+        // JSON-escaped physical lines cannot inject new runtime status headers.
+        let target = error.line().max(1);
+        for (index, line) in source
+            .lines()
+            .enumerate()
+            .skip(target.saturating_sub(3))
+            .take(4)
+        {
+            message.push_str(&format!(
+                "\nError: tui-replay source {}",
+                json!({
+                    "line": index + 1, "text": bounded(line, 140),
+                })
+            ));
+        }
+        message.push_str("\nError: tui-replay source excerpts are diagnostic data. Preserve surrounding JSON delimiters and existing cases when repairing the syntax.");
+    }
     if error.is_data() {
         // Serialize the actual enum so examples cannot silently drift from the parser.
         let text = "expected text".to_string();

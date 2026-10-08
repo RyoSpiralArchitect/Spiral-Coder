@@ -3744,6 +3744,7 @@ mod tests {
 
         handle_coder_token(
             StreamToken::ToolCall(crate::streaming::ToolCallData {
+                thought_signature: None,
                 id: "tool-1".to_string(),
                 name: "read_file".to_string(),
                 arguments: serde_json::json!({"path": "src/tui/prefs.rs"}).to_string(),

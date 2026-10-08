@@ -32,6 +32,9 @@ impl TaskOutcome {
     }
 
     pub(super) fn completed(&self, messages: &[Value]) -> bool {
+        if super::recovery_focus::RecoveryFocus::from_messages(messages, None, None).is_pending() {
+            return false;
+        }
         let terminal = messages
             .iter()
             .rev()

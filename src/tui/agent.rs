@@ -46,11 +46,13 @@ mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
 mod done_gate;
+mod edit_failure;
 mod evaluator_loop;
 mod exact_content;
 mod exec_classification;
 mod exec_proof;
 mod exec_verification;
+mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
 mod final_handoff;
@@ -64,9 +66,15 @@ mod outcome;
 mod progress_bridge;
 mod protocol_fields;
 mod provider_compat;
+#[cfg(test)]
+mod provider_signature_tests;
+mod provider_turn;
 mod read_only;
 mod recovery;
+mod recovery_focus;
 mod repo_scaffold;
+#[cfg(test)]
+mod resume_contract_tests;
 mod session_bridge;
 mod task_harness;
 mod tool_result_history;
@@ -82,6 +90,7 @@ use self::done_gate::{
     rescue_invalid_done_payload_for_verified_action, should_prefer_done_after_verified_action,
     synthesize_action_done_summary, validate_done_acceptance,
 };
+use self::edit_failure::EditFailureMemory;
 use self::evaluator_loop::EvaluatorLoop;
 use self::exec_proof::restore_done_gate_from_messages;
 use self::failure_localization::interesting_failure_line;
@@ -108,7 +117,9 @@ use self::memory::{
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
     ObservationEvidence, ObservationReadEvidence, ObservationSearchEvidence,
 };
+#[cfg(test)]
 use self::message_window::prune_message_window;
+use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 use self::protocol_fields::parse_tag_fields;
@@ -314,14 +325,7 @@ fn push_blocked_tool_exchange(
     messages.push(json!({
         "role": "assistant",
         "content": assistant_text,
-        "tool_calls": [{
-            "id": tc.id,
-            "type": "function",
-            "function": {
-                "name": tc.name,
-                "arguments": tc.arguments
-            }
-        }]
+        "tool_calls": [tc.to_json()]
     }));
     messages.push(json!({
         "role": "tool",
@@ -673,6 +677,7 @@ fn rewrite_tool_call_to_search_files(
     dir: &str,
 ) -> Option<(ToolCallData, String, String)> {
     let rewritten = ToolCallData {
+        thought_signature: None,
         id: tc.id.clone(),
         name: "search_files".to_string(),
         arguments: json!({
@@ -1964,61 +1969,10 @@ fn simple_before_after(old: &str, new: &str) -> String {
         .to_string()
 }
 
-/// Extract a compact digest of error lines from command output.
-/// Helps the model see ALL errors even when stdout is very long.
+/// Extract a bounded digest of causes and locations before output shortening.
 /// Returns None when no clear error lines are found.
 fn extract_error_digest(stdout: &str, stderr: &str) -> Option<String> {
-    let patterns: &[&str] = &[
-        "error[e",         // Rust: error[E0XXX]
-        "error: aborting", // Rust: summary line
-        " --> ",           // Rust: file:line pointer
-        "syntaxerror:",    // Python / JS
-        "typeerror:",
-        "nameerror:",
-        "attributeerror:",
-        "valueerror:",
-        "runtimeerror:",
-        "importerror:",
-        "modulenotfounderror:",
-        "referenceerror:", // JS
-        "traceback (most recent call last)",
-        "error: ", // generic (space avoids false positives)
-        "fatal: ",
-        "fatal error:",
-    ];
-
-    let mut lines: Vec<String> = Vec::new();
-    let mut seen = std::collections::HashSet::new();
-
-    for src in [stderr, stdout] {
-        for line in src.lines() {
-            let t = line.trim();
-            if t.is_empty() {
-                continue;
-            }
-            let low = t.to_ascii_lowercase();
-            if patterns.iter().any(|p| low.contains(p)) {
-                if seen.insert(t.to_string()) {
-                    lines.push(t.to_string());
-                    if lines.len() >= 20 {
-                        break;
-                    }
-                }
-            }
-        }
-        if lines.len() >= 20 {
-            break;
-        }
-    }
-
-    if lines.is_empty() {
-        return None;
-    }
-    Some(format!(
-        "[ERROR DIGEST — {} line(s)]\n{}",
-        lines.len(),
-        lines.join("\n")
-    ))
+    failure_diagnostics::error_digest(stdout, stderr)
 }
 
 /// Returns true if a tool result can safely be pruned (= it was a success).
@@ -2310,7 +2264,9 @@ fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
 
     let prune_count = assistant_indices.len() - KEEP_RECENT_ASSISTANT_TURNS;
     for &idx in assistant_indices.iter().take(prune_count) {
-        if !assistant_message_is_compactable(&messages[idx]) {
+        if crate::streaming::provider_metadata::has_signed_call(&messages[idx])
+            || !assistant_message_is_compactable(&messages[idx])
+        {
             continue;
         }
         let Some(summary) = summarize_assistant_message(&messages[idx]) else {
@@ -5177,6 +5133,7 @@ fn maybe_build_verified_action_closeout_text(
 ) -> Option<String> {
     if requires_authored_final_answer(root_user_text)
         || exact_content::validate_exact_content_task(root_user_text, tool_root).is_err()
+        || recovery_focus::RecoveryFocus::from_messages(messages, tool_root, test_cmd).is_pending()
     {
         return None;
     }
@@ -7346,7 +7303,7 @@ async fn run_git_cmd(root: &str, args: &[&str]) -> Option<String> {
 }
 
 /// Run the project's test command after a file edit. Returns a formatted result string.
-/// Capped at 120 seconds; stdout/stderr truncated to MAX_STDOUT_CHARS.
+/// Capped at 120 seconds; preserve bounded diagnostics before shortening output.
 async fn run_test_cmd(cmd: &str, cwd: &str) -> String {
     let fut = tokio::process::Command::new(if cfg!(target_os = "windows") {
         "powershell"
@@ -7363,25 +7320,22 @@ async fn run_test_cmd(cmd: &str, cwd: &str) -> String {
     .stderr(std::process::Stdio::piped())
     .output();
 
-    let result = match tokio::time::timeout(std::time::Duration::from_secs(120), fut).await {
+    match tokio::time::timeout(std::time::Duration::from_secs(120), fut).await {
         Ok(Ok(out)) => {
             let stdout = String::from_utf8_lossy(&out.stdout);
             let stderr = String::from_utf8_lossy(&out.stderr);
-            let combined = format!("{}{}", stdout, stderr);
             let exit = out.status.code().unwrap_or(-1);
-            (combined, exit)
+            failure_diagnostics::automatic_test_output(&stdout, &stderr, exit, cwd)
         }
-        Ok(Err(e)) => (format!("error running test: {e}"), -1),
-        Err(_) => ("test timed out after 120s".to_string(), -1),
-    };
-
-    let (combined, exit) = result;
-    let truncated = truncate_output_tail(&combined, 1200);
-
-    if exit == 0 {
-        format!("\n\n[auto-test] ✓ PASSED (exit 0)\n{truncated}")
-    } else {
-        format!("\n\n[auto-test] ✗ FAILED (exit {exit})\n{truncated}\nFix the test failure before proceeding.")
+        Ok(Err(e)) => failure_diagnostics::automatic_test_output(
+            "",
+            &format!("error running test: {e}"),
+            -1,
+            cwd,
+        ),
+        Err(_) => {
+            failure_diagnostics::automatic_test_output("", "test timed out after 120s", -1, cwd)
+        }
     }
 }
 
@@ -7684,17 +7638,18 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut tool_calls_this_run: usize = 0;
     // C — token budget guardian
     let mut budget_warned = false;
-    // D — consecutive file-tool failure escalation
-    let mut file_tool_consec_failures: usize = 0;
+    // Diagnostic successes do not resolve failed edits, including after resume.
+    let edit_context = exec_verification::ExecVerificationContext::from_messages(
+        test_cmd.as_deref(),
+        &start.messages,
+    );
+    let mut edit_failures = EditFailureMemory::from_messages(&start.messages, &edit_context);
+    let mut file_tool_consec_failures = edit_failures.count();
+    if let Some(reason) = edit_failures.reflection_reason() {
+        reflection_required = Some(reason);
+    }
 
-    let root_user_text = start
-        .messages
-        .iter()
-        .rev()
-        .find(|m| m["role"].as_str() == Some("user"))
-        .and_then(|m| m["content"].as_str())
-        .unwrap_or("")
-        .to_string();
+    let root_user_text = crate::task_origin::root_user_text(&start.messages).to_string();
     let root_user_text_low = root_user_text.to_ascii_lowercase();
     let root_read_only = is_root_read_only_observation_task(&root_user_text);
     let task_harness = TaskHarness::infer(&root_user_text, root_read_only);
@@ -7768,11 +7723,18 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let session_bridge = SessionBridgeView::resolve(start.session_bridge.as_ref(), &messages);
     let mut prompt_cache = StablePromptCache::default();
     let mut prompted_harness_overlay_ids = std::collections::BTreeSet::new();
+    // Normalize before restoring file-localized recovery as well as tool execution.
+    let tool_root_abs = tool_root
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .and_then(absolutize_path);
     // Rebuild loop governor memory from the existing session so resuming runs doesn't
     // repeat the same failures from scratch.
     let mut mem = FailureMemory::from_recent_messages(&messages);
     let mut recovery =
         RecoveryGovernor::restore_from_session(&mem, &messages, required_verification);
+    recovery.restore_pending_edits(&edit_failures);
+    recovery.restore_focus(&messages, tool_root_abs.as_deref(), test_cmd.as_deref());
     if recovery.in_recovery() {
         state = AgentState::Recovery;
     }
@@ -7835,12 +7797,6 @@ Execute only the new minimal action: {}",
     )
     .await;
 
-    // Resolve tool_root once (absolute path) and track cwd across tool calls.
-    // This prevents the classic "cd didn't persist, so git add ran in the wrong repo" failure.
-    let tool_root_abs = tool_root
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .and_then(absolutize_path);
     let reflection_ledger_path = tool_root_abs
         .as_deref()
         .map(crate::reflection_ledger::path_for_root);
@@ -8059,7 +8015,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
         // ── Prune old tool results before sending to save context tokens ───
         prune_old_tool_results(&mut messages);
         prune_old_assistant_messages(&mut messages);
-        prune_message_window(&mut messages);
+        prune_message_window_with_context(&mut messages, &exec_verification_context);
         emit_telemetry_event(
             &tx,
             "agent_iter",
@@ -8607,6 +8563,13 @@ This is the LAST model call for this run.\n\
             }));
         }
 
+        if let Some(hint) = edit_failures.strategy_hint() {
+            msgs_for_call.push(json!({"role": "system", "content": hint}));
+        }
+        if let Some(hint) = recovery.focus.hint() {
+            msgs_for_call.push(json!({"role": "system", "content": hint}));
+        }
+
         if let Some(reason) = reflection_required.as_ref() {
             let mut reflection_prompt =
                 build_reflection_prompt(reason, &mem, state, file_tool_consec_failures);
@@ -8720,7 +8683,7 @@ This is the LAST model call for this run.\n\
             break;
         }
 
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = meta_harness.synthesize_tool_call(iter) {
                 let synthesized =
                     canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
@@ -8750,7 +8713,7 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = synthesize_fix_existing_no_tool_mutation_tool_call(
                 task_harness,
                 &messages,
@@ -8787,7 +8750,7 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        if tool_calls.is_empty() {
+        if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = synthesize_benchmark_plan_no_tool_call(
                 task_harness,
                 &messages,
@@ -9232,7 +9195,7 @@ Execute only the new minimal action: {}",
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, canonical)) =
                 rewrite_tool_call_with_resolution(tc, &observation_evidence)
             {
@@ -9253,7 +9216,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_observation_tool_call(
                 &messages,
                 tc,
@@ -9281,7 +9244,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_followup_read_tool_call(
                 &messages,
                 tc,
@@ -9311,7 +9274,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_benchmark_plan_tool_call(
                 task_harness,
                 &messages,
@@ -9343,7 +9306,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 repair_fix_existing_mutation_tool_call(task_harness, &messages, tc, &root_user_text)
             {
@@ -9369,7 +9332,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_fix_existing_blocked_mutation_tool_call(
                     task_harness,
@@ -9401,7 +9364,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_existing_followup_tool_call(&messages, tc, &root_user_text)
             {
@@ -9432,7 +9395,7 @@ Execute only the new minimal action: {}",
             .is_some_and(|tc| matches_required_existing_followup(&messages, tc, &root_user_text));
 
         if !preserves_required_followup {
-            if let Some(tc) = tool_call.as_ref() {
+            if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
                 if let Some((rewritten, original, coerced)) =
                     coerce_fix_existing_literal_mutation_tool_call(
                         task_harness,
@@ -9465,7 +9428,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_fix_existing_tool_call(
                 task_harness,
                 &messages,
@@ -9495,7 +9458,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
                 coerce_artifact_creation_tool_call(task_harness, &messages, tc)
             {
@@ -9520,7 +9483,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = coerce_repo_goal_completion_tool_call(
                 task_harness,
                 &messages,
@@ -9550,7 +9513,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref() {
+        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) = repair_repo_scaffold_write_tool_call(
                 task_harness,
                 &messages,
@@ -10182,6 +10145,7 @@ Execute only the new minimal action: {}",
                 test_cmd.as_deref(),
             )
             .is_none()
+                && !recovery.focus.is_pending()
                 && should_prefer_done_after_verified_action(
                     tc,
                     &candidate_plan,
@@ -10710,16 +10674,28 @@ Execute only the new minimal action: {}",
             messages.push(json!({
                 "role": "assistant",
                 "content": assistant_text_clean,
-                "tool_calls": [{
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {
-                        "name": tc.name,
-                        "arguments": tc.arguments
-                    }
-                }]
+                "tool_calls": [tc.to_json()]
             }));
         } else {
+            if let Some(hint) = recovery.focus.hint() {
+                messages.push(json!({"role":"assistant", "content":assistant_text_clean}));
+                messages.push(crate::task_origin::user_message(
+                    &hint,
+                    crate::task_origin::MessageOrigin::Runtime,
+                ));
+                pending_system_hint = Some(hint);
+                state = AgentState::Recovery;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
+            }
             if realize_cfg.enabled {
                 if let Some(plan) = parsed_plan.as_ref().filter(|plan| {
                     validate_plan_for_task_contract(
@@ -11118,6 +11094,7 @@ Next assistant turn: emit a <think> block and call ONE real tool."
                             // NOTE: do not fabricate tool_call_id. Feed the block back as user text.
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                     im.lang_hint, command, tool_output
@@ -11160,6 +11137,7 @@ Next assistant turn: emit a <think> block and call ONE real tool."
                             // NOTE: do not fabricate tool_call_id. Feed the rejection back as user text.
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                     im.lang_hint, command, tool_output
@@ -11262,6 +11240,7 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
                         // NOTE: do not fabricate tool_call_id. Feed the result back as user text.
                         messages.push(json!({
                             "role": "user",
+                            "origin": crate::task_origin::MessageOrigin::Runtime,
                             "content": format!(
                                 "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
                                 im.lang_hint, command, tool_output
@@ -11323,6 +11302,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
                                         .await;
                                     messages.push(json!({
                                         "role": "user",
+                                        "origin": crate::task_origin::MessageOrigin::Runtime,
                                         "content": format!(
                                             "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                             path, imf.lang_hint, msg
@@ -11367,6 +11347,7 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                                 );
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, msg
@@ -11402,6 +11383,7 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                                 );
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, msg
@@ -11456,6 +11438,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                 ));
                                 messages.push(json!({
                                     "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
                                     "content": format!(
                                         "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                         path, imf.lang_hint, r_text
@@ -11478,6 +11461,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                 .await;
                             messages.push(json!({
                                 "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
                                 "content": format!(
                                     "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
                                     path, imf.lang_hint, r_text
@@ -11537,7 +11521,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                     let block = governor_contract::goal_check_repo_missing_message(
                                         missing.join(", ").as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11588,7 +11575,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         governor_contract::goal_check_tests_no_runner_message(
                                             support_line.as_str(),
                                         );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11625,7 +11615,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         goal_check_class_line(&result.error_class).as_str(),
                                         goal_check_digest_line(&result.digest).as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11683,7 +11676,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         governor_contract::goal_check_build_no_runner_message(
                                             support_line.as_str(),
                                         );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11720,7 +11716,10 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                                         goal_check_class_line(&result.error_class).as_str(),
                                         goal_check_digest_line(&result.digest).as_str(),
                                     );
-                                    messages.push(json!({"role":"user","content": block}));
+                                    messages.push(crate::task_origin::user_message(
+                                        &block,
+                                        crate::task_origin::MessageOrigin::Runtime,
+                                    ));
                                     autosave_best_effort(
                                         &autosaver,
                                         &tx,
@@ -11836,6 +11835,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
             }
 
             if root_read_only
+                && provider_turn::allows_synthetic_tools(&cfg.base_url)
                 && (read_only_diagnose_streak >= 2
                     || (tool_calls_this_run == 0 && iter + 1 >= first_action_deadline))
                 && read_only_diagnose_rescue_count < 3
@@ -11886,6 +11886,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             })
                             .to_string();
                             let tc = ToolCallData {
+                                thought_signature: None,
                                 id: format!(
                                     "auto_ro_diag_search_{}_{}",
                                     iter, read_only_diagnose_rescue_count
@@ -11908,14 +11909,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             messages.push(json!({
                                 "role": "assistant",
                                 "content": "",
-                                "tool_calls": [{
-                                    "id": tc.id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": tc.name,
-                                        "arguments": tc.arguments
-                                    }
-                                }]
+                                "tool_calls": [tc.to_json()]
                             }));
                             step_seq = step_seq.saturating_add(1);
                             let (result, is_error) = crate::file_tools::tool_search_files(
@@ -12045,6 +12039,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             .await;
                             let arguments = json!({ "path": path }).to_string();
                             let tc = ToolCallData {
+                                thought_signature: None,
                                 id: format!(
                                     "auto_ro_diag_read_{}_{}",
                                     iter, read_only_diagnose_rescue_count
@@ -12065,14 +12060,7 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             messages.push(json!({
                                 "role": "assistant",
                                 "content": "",
-                                "tool_calls": [{
-                                    "id": tc.id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": tc.name,
-                                        "arguments": tc.arguments
-                                    }
-                                }]
+                                "tool_calls": [tc.to_json()]
                             }));
                             step_seq = step_seq.saturating_add(1);
                             let cache_key = crate::file_tools::resolve_safe_path(
@@ -12207,6 +12195,30 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         }
                     }
                 }
+            }
+
+            // Verified text/read-only completion above remains available. Only an
+            // unfinished no-tool turn needs another native Google function call.
+            if let Some(hint) =
+                provider_turn::retry_unfinished_text_turn(&cfg.base_url, &mut messages)
+            {
+                pending_system_hint = Some(hint.to_string());
+                let _ = tx
+                    .send(StreamToken::Delta(
+                        "\n[provider] No tool executed; requesting a native function call.\n"
+                            .to_string(),
+                    ))
+                    .await;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
             }
 
             // Common failure mode: model "explains what to do" but never calls tools.
@@ -12365,6 +12377,24 @@ Execute this minimal action instead: {}",
                 reflection_guard = None;
                 reflection_trigger_sig = None;
             }
+        }
+
+        // A generic passing check cannot discharge a localized failed check.
+        if tc.name == "done" && recovery.focus.is_pending() {
+            let block = format!("[Done Gate] {}", recovery.focus.hint().unwrap_or_default());
+            messages.push(json!({"role":"tool", "tool_call_id":tc.id, "content":format!("GOVERNOR BLOCKED\n{block}")}));
+            pending_system_hint = Some(block);
+            state = AgentState::Recovery;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            continue;
         }
 
         // ── done tool ──────────────────────────────────────────────────────
@@ -12969,6 +12999,13 @@ Required now: run `{command}`."
                 }
             }
 
+            recovery.focus.record_result(
+                &tc,
+                &result,
+                tool_root_abs.as_deref(),
+                test_cmd.as_deref(),
+                &exec_verification_context,
+            );
             let automatic_test =
                 crate::execution_evidence::auto_test_outcome("apply_diff", &result);
             let verified =
@@ -13000,6 +13037,8 @@ Required now: run `{command}`."
                 recovery.on_successful_edit(automatic_test, verified_level);
             }
 
+            edit_failures.on_result(&tc, &result, &exec_verification_context);
+            file_tool_consec_failures = edit_failures.count();
             let first_line = result.lines().next().unwrap_or("").to_string();
             if is_error {
                 let _ = tx
@@ -13009,13 +13048,9 @@ Required now: run `{command}`."
                     .await;
                 state = AgentState::Recovery;
                 if !rejected_by_user {
-                    file_tool_consec_failures += 1;
                     pending_system_hint = Some(format!("apply_diff error: {first_line}"));
-                    if file_tool_consec_failures >= 2 {
-                        reflection_required = Some(format!(
-                            "file tool failures repeated {} times",
-                            file_tool_consec_failures
-                        ));
+                    if let Some(reason) = edit_failures.reflection_reason() {
+                        reflection_required = Some(reason);
                     }
                 } else {
                     pending_system_hint = Some(
@@ -13032,7 +13067,6 @@ Required now: run `{command}`."
                 } else {
                     AgentState::Planning
                 };
-                file_tool_consec_failures = 0;
                 pending_system_hint = if automatic_test
                     == crate::execution_evidence::AutoTestOutcome::Failed
                 {
@@ -13096,11 +13130,7 @@ Required now: run `{command}`."
             } else {
                 compact_success_tool_result_for_history("apply_diff", &result)
             };
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": history_result,
-            }));
+            messages.push(recovery.focus.tool_message(&tc, history_result));
             if !is_error && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -13748,7 +13778,13 @@ Required now: run `{command}`."
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
-                    if let Some(cached) = file_cache.get(&cache_key) {
+                    if let Some(result) =
+                        recovery
+                            .focus
+                            .read_for_diagnosis(&tc, base, &mut file_cache)
+                    {
+                        result
+                    } else if let Some(cached) = file_cache.get(&cache_key) {
                         let header = cached.lines().next().unwrap_or(&path).to_string();
                         let _ = tx
                             .send(StreamToken::Delta(format!("[CACHE_HIT] {header}\n")))
@@ -13960,21 +13996,21 @@ Action required: call read_file(path) first to confirm current contents, then re
                 }
             };
 
-            // D — track consecutive file-tool failures for escalation.
-            if is_error {
-                if !rejected_by_user {
-                    file_tool_consec_failures += 1;
+            edit_failures.on_result(&tc, &result, &exec_verification_context);
+            file_tool_consec_failures = edit_failures.count();
+            if is_error && !rejected_by_user && tc.name != "read_file" {
+                if let Some(reason) = edit_failures.reflection_reason() {
+                    reflection_required = Some(reason);
                 }
-                if file_tool_consec_failures >= 2 {
-                    reflection_required = Some(format!(
-                        "file tool failures repeated {} times",
-                        file_tool_consec_failures
-                    ));
-                }
-            } else {
-                file_tool_consec_failures = 0;
             }
 
+            recovery.focus.record_result(
+                &tc,
+                &result,
+                tool_root_abs.as_deref(),
+                test_cmd.as_deref(),
+                &exec_verification_context,
+            );
             let automatic_test =
                 crate::execution_evidence::auto_test_outcome(tc.name.as_str(), &result);
             let verified =
@@ -14026,17 +14062,9 @@ Action required: call read_file(path) first to confirm current contents, then re
                     }
                 }
                 state = AgentState::Recovery;
-                // D — escalate after 3 consecutive file-tool failures.
                 let hint = if rejected_by_user {
                     "The user rejected the edit. Choose a safer alternative or ask again with a smaller change."
                         .to_string()
-                } else if file_tool_consec_failures >= 3 {
-                    format!(
-                        "CRITICAL: {file_tool_consec_failures} consecutive file-tool errors.\n\
-                         You MUST abandon the current approach. Do NOT retry the same operation.\n\
-                         Instead: call read_file to inspect the actual file state, then choose \
-                         a completely different strategy (e.g. write_file instead of patch_file)."
-                    )
                 } else if tc.name.as_str() == "read_file" && repo_map_hint.is_some() {
                     repo_map_hint.unwrap_or_default()
                 } else {
@@ -14149,11 +14177,7 @@ Action required: call read_file(path) first to confirm current contents, then re
             } else {
                 compact_success_tool_result_for_history(tc.name.as_str(), &result)
             };
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": history_result,
-            }));
+            messages.push(recovery.focus.tool_message(&tc, history_result));
             if !is_error && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -14607,6 +14631,16 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
             inject_cwd(&out, &cwd_line, note.as_deref())
         };
 
+        edit_failures.on_result(&tc, &tool_output, &exec_verification_context);
+        file_tool_consec_failures = edit_failures.count();
+        recovery.focus.record_result(
+            &tc,
+            &tool_output,
+            tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
+            &exec_verification_context,
+        );
+
         let result_label = if effective_exit_code == 0 {
             format!("[RESULT][{:?}] exit=0\n", state)
         } else {
@@ -14620,11 +14654,7 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         } else {
             tool_output.clone()
         };
-        messages.push(json!({
-            "role": "tool",
-            "tool_call_id": tc.id,
-            "content": history_tool_output,
-        }));
+        messages.push(recovery.focus.tool_message(&tc, history_tool_output));
         last_exec_step = Some(this_step);
         autosave_best_effort(
             &autosaver,
@@ -16631,6 +16661,7 @@ verify: exit code is zero\n\
     #[test]
     fn pseudo_plan_tool_call_converts_to_plan_block_text() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan".to_string(),
             arguments: serde_json::json!({
@@ -16653,6 +16684,7 @@ verify: exit code is zero\n\
     #[test]
     fn pseudo_think_tool_call_converts_to_think_block_text() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "think".to_string(),
             arguments: serde_json::json!({
@@ -16685,6 +16717,7 @@ verify: exit code is zero\n\
         .to_string();
         let args = serde_json::json!({"pattern":"/realize","dir":"src"}).to_string();
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "search_files".to_string(),
             arguments: format!("{plan}{args}"),
@@ -16705,6 +16738,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_name_and_nested_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan>goal: locate handler steps: 1) search src 2) read file acceptance: 1) path identified risks: wrong file assumptions: repo is local </plan>".to_string(),
             arguments: serde_json::json!({
@@ -16729,6 +16763,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_with_function_wrapper_arguments() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan><goal>locate handler</goal><steps>1) search src 2) read file</steps><acceptance>1) path identified</acceptance><risks>wrong file</risks><assumptions>repo is local</assumptions></plan>".to_string(),
             arguments: serde_json::json!({
@@ -16756,6 +16791,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_inline_plan_and_nested_think() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan>goal: locate handler steps: 1) search src 2) read file acceptance: 1) path identified risks: wrong file assumptions: repo is local </plan>".to_string(),
             arguments: serde_json::json!({
@@ -16779,6 +16815,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_markdownish_plan_name_and_wrapper_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan**goal:** Locate where the `/realize` slash command is handled in the TUI. **•**steps:** 1) Use `search_files` to search for the literal string `/realize` in `src`. 2) Read the matching file. **•**acceptance:** 1) The file path handling `/realize` is identified. 2) The handler branch is confirmed by `read_file`. **•**risks:** wrong file. **•**assumptions:** observation tools are sufficient. <thinking> **goal:** Find direct matches. **step:** 1. **tool:** `search_files`. **risk:** wrong path. **doubt:** maybe aliased. **next:** Search `/realize` in `src`. **verify:** confirm a TUI match. </thinking>".to_string(),
             arguments: serde_json::json!({
@@ -16806,6 +16843,7 @@ verify: exit code is zero\n\
     #[test]
     fn normalize_mistral_tool_call_extracts_embedded_plan_think_and_tool_name() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "plan><goal>Locate the exact file and code context where the /realize slash command is handled in the TUI.</goal><steps>1) List the TUI-related directories to confirm structure and naming conventions.</steps><steps>2) Search for the literal \"/realize\" string across Rust files to pinpoint the handler.</steps><acceptance>1) The file path containing the /realize slash command handler is confirmed by search_files evidence.</acceptance><acceptance>2) The handling context is confirmed by read_file evidence.</acceptance><risks>wrong file</risks><assumptions>repo is local</assumptions></plan>teří<think><goal>Confirm TUI directory structure and naming.</goal><step>1</step><tool>list_dir</tool><risk>TUI directory may not exist.</risk><doubt>Directory names may vary.</doubt><next>list_dir src/</next><verify>Directory listing shows TUI directory.</verify></think>teřílist_dir".to_string(),
             arguments: serde_json::json!({"dir":"src"}).to_string(),
@@ -16828,6 +16866,7 @@ verify: exit code is zero\n\
     #[test]
     fn consecutive_missing_plan_blocks_for_tool_counts_same_observation_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"/realize","dir":"src"}).to_string(),
@@ -16920,6 +16959,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_plan_for_tool_turn_after_repeated_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"/realize","dir":"src"}).to_string(),
@@ -16962,6 +17002,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_plan_for_tool_turn_after_mixed_observation_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"prefs","dir":"src/tui"}).to_string(),
@@ -17021,6 +17062,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_plan_for_tool_turn_after_repeated_blocks_for_openai_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -17079,6 +17121,7 @@ verify: exit code is zero\n\
     #[test]
     fn general_plan_rescue_pairs_with_valid_synthetic_think() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"test","dir":"src"}).to_string(),
@@ -17130,6 +17173,7 @@ verify: exit code is zero\n\
         let prompt =
             "Create `notes/todo.txt` containing exactly `ship it`. Verify it before you finish.";
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write_retry".to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -17191,6 +17235,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_after_repeated_blocks_for_openai_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "list_dir".to_string(),
             arguments: serde_json::json!({"dir":"."}).to_string(),
@@ -17213,6 +17258,7 @@ verify: exit code is zero\n\
                 "content": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\n\ntool:\nread_file\narguments:\n{\"path\":\"Cargo.toml\"}"
             })],
             &ToolCallData {
+                thought_signature: None,
                 id: "call_plan".to_string(),
                 name: "read_file".to_string(),
                 arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -17267,6 +17313,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_patch_file() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17315,6 +17362,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_exec() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -17358,6 +17406,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_done() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: serde_json::json!({
@@ -17403,6 +17452,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_reflection_for_tool_turn_synthesizes_valid_reflection_for_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17435,6 +17485,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_impact_for_tool_turn_synthesizes_valid_impact_after_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -17475,6 +17526,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_evidence_for_tool_turn_synthesizes_valid_evidence_for_patch() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -17510,6 +17562,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_missing_evidence_for_tool_turn_accepts_truncated_patch_path() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments:
@@ -17544,6 +17597,7 @@ verify: exit code is zero\n\
     #[test]
     fn repair_truncated_patch_tool_call_from_recent_mismatch_recovers_smoke_fix() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: "{\"path\":\"src/lib.rs\",\"search\":\"pub fn greet(name: &str) -> String {\\n    format!(\\\"Hello, {}?\\\", name)\\n}\\n\",\"replace\":\"".to_string(),
@@ -17561,6 +17615,25 @@ verify: exit code is zero\n\
             searches: Vec::new(),
             resolutions: Vec::new(),
         };
+
+        let mut signed = tc.clone();
+        signed.thought_signature =
+            crate::streaming::provider_metadata::ThoughtSignature::from_call(
+                &json!({"extra_content":{"google":{"thought_signature":"opaque-test-signature"}}}),
+            )
+            .unwrap();
+        assert!(
+            repair_truncated_patch_tool_call_from_recent_mismatch(
+                &messages,
+                &signed,
+                false,
+                true,
+                ProviderKind::OpenAiCompatible,
+                &observations,
+            )
+            .is_none(),
+            "A malformed signed call must be rejected, not silently rewritten"
+        );
 
         let (rewritten, original, repaired) =
             repair_truncated_patch_tool_call_from_recent_mismatch(
@@ -17593,6 +17666,7 @@ verify: exit code is zero\n\
     #[test]
     fn consecutive_missing_think_blocks_for_tool_counts_same_observation_tool() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"realize","dir":"src"}).to_string(),
@@ -17685,6 +17759,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_tool_turn_after_repeated_blocks() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"realize","dir":"src"}).to_string(),
@@ -17729,6 +17804,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_read_file_is_immediate() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"src/tui/events.rs"}).to_string(),
@@ -17754,6 +17830,7 @@ verify: exit code is zero\n\
     #[test]
     fn rescue_read_only_missing_think_for_done_is_immediate_with_strong_evidence() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: serde_json::json!({
@@ -17797,6 +17874,7 @@ verify: exit code is zero\n\
     #[test]
     fn coerce_read_only_observation_tool_call_rewrites_search_pattern_after_repeated_gate_misses() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: serde_json::json!({"pattern":"pane","dir":"src"}).to_string(),
@@ -17849,6 +17927,7 @@ verify: exit code is zero\n\
     #[test]
     fn coerce_read_only_observation_tool_call_rewrites_list_dir_to_preferred_search() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "list_dir".to_string(),
             arguments: serde_json::json!({"dir":"src"}).to_string(),
@@ -17923,6 +18002,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test\"}".to_string(),
@@ -17953,6 +18033,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test --lib\"}".to_string(),
@@ -17983,6 +18064,7 @@ verify: exit code is zero\n\
             verify: "exit zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: "{\"command\":\"cargo test --lib\"}".to_string(),
@@ -18192,8 +18274,10 @@ verify: exit code is zero\n\
         let recovery = RecoveryGovernor {
             stage: Some(RecoveryStage::Diagnose),
             required_verification: VerificationLevel::Behavioral,
+            ..Default::default()
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write".to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -18513,11 +18597,13 @@ verify: exit code is zero\n\
     #[test]
     fn non_done_tool_realizes_latent_but_done_does_not() {
         let read = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/events.rs\"}".to_string(),
         };
         let done = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: "{\"summary\":\"ok\",\"completed_acceptance\":[],\"remaining_acceptance\":[],\"acceptance_evidence\":[]}".to_string(),
@@ -18613,6 +18699,7 @@ verify: exit code is zero\n\
             assumptions: "current repo scan reflects the active workspace".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/events.rs\"}".to_string(),
@@ -18643,6 +18730,7 @@ verify: exit code is zero\n\
             assumptions: "observation tools are sufficient".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "done".to_string(),
             arguments: "{\"summary\":\"ok\",\"completed_acceptance\":[],\"remaining_acceptance\":[],\"acceptance_evidence\":[]}".to_string(),
@@ -18682,6 +18770,7 @@ verify: exit code is zero\n\
             assumptions: "observation tools are sufficient".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_3".to_string(),
             name: "search_files".to_string(),
             arguments: "{\"pattern\":\"test\",\"dir\":\"src\"}".to_string(),
@@ -18752,6 +18841,7 @@ verify: exit code is zero\n\
         let mut evidence = ObservationEvidence::default();
         evidence.remember_resolution("tui/events.rs", "src/tui/events.rs", "repo_map:read_file");
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"tui/events.rs"}).to_string(),
@@ -18834,6 +18924,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             next_probe: "patch the recovery branch".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -18865,6 +18956,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             next_probe: "patch the recovery branch".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -18962,6 +19054,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
         let resolver =
             InstructionResolver::new("Locate the handler without editing files", true, false);
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "patch_file".to_string(),
             arguments: serde_json::json!({
@@ -19037,6 +19130,7 @@ next_probe: patch the recovery branch in run_agentic_json\n\
             verify: "exit code is zero".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_1".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo fix"}).to_string(),

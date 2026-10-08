@@ -177,6 +177,7 @@ Do NOT spend the next turn on another same-target observation unless new tool ou
         let id = format!("meta_harness_call_{iter}");
         if let Some(repo_root) = target.strip_suffix("/.git") {
             return Some(ToolCallData {
+                thought_signature: None,
                 id,
                 name: "exec".to_string(),
                 arguments: serde_json::json!({
@@ -187,6 +188,7 @@ Do NOT spend the next turn on another same-target observation unless new tool ou
         }
         if target.ends_with("/.gitignore") {
             return Some(ToolCallData {
+                thought_signature: None,
                 id,
                 name: "write_file".to_string(),
                 arguments: serde_json::json!({
@@ -197,6 +199,7 @@ Do NOT spend the next turn on another same-target observation unless new tool ou
             });
         }
         Some(ToolCallData {
+            thought_signature: None,
             id,
             name: "write_file".to_string(),
             arguments: serde_json::json!({

@@ -889,6 +889,7 @@ mod tests {
             resolutions: Vec::new(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/intent.rs\"}".to_string(),
@@ -939,6 +940,7 @@ mod tests {
             resolutions: Vec::new(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: "{\"path\":\"src/tui/events.rs\"}".to_string(),

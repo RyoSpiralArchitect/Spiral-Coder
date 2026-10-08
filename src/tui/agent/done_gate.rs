@@ -1785,6 +1785,7 @@ mod tests {
             assumptions: "cargo test is relevant".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -1820,6 +1821,7 @@ mod tests {
             assumptions: "cargo test is relevant".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -1855,6 +1857,7 @@ mod tests {
             assumptions: "cargo test is relevant".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),
@@ -1889,6 +1892,7 @@ mod tests {
             assumptions: "cargo test is relevant".to_string(),
         };
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"Cargo.toml"}).to_string(),

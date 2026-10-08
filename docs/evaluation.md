@@ -90,13 +90,97 @@ It omits raw response text, tool arguments, and call IDs.
 validated resume plan is adopted. These events diagnose blocked progress; they
 do not change a case's outcome.
 
+## Resume contracts and repeated edit failures
+
+Native agent-session resume selects the latest human request, excluding explicitly marked
+runtime continuations and feedback. The same root supplies exact file-content,
+requested final-answer, and benchmark verification requirements. New human
+steering replaces the previous root. Legacy untagged messages remain human;
+previously saved runtime messages without provenance cannot be classified safely
+from their wording alone.
+
+A failed edit followed by a successful read remains unresolved. After two failed
+edit attempts, reflection and a strategy-change hint remain active across reads
+and resume. A successful edit or action-classified shell command clears this
+retry counter; diagnostic/verification commands do not. A failing automatic test
+still requires separate verification recovery. Pruning keeps the latest successful
+reset exchange. An action classification is not evidence of a correct repair. Regressions exercise real missing-anchor
+patch failures, read/repair cycles, session round trips, and pruning.
+
+These checks establish contract retention and recovery mechanics. Live model
+completion still requires the unchanged artifact, execution, and outcome checks;
+a helpful hint or an emitted reflection is not a passing evaluation. Read-only
+completion-path coverage, CLI auto-review/TUI automatic handoff task boundaries,
+and Web/native final-handoff parity remain separate work. Auto-review continues
+to start a new task: retaining the original root without resetting its completion
+evidence could close the review round before its fixes are addressed.
+
+## Localized automatic-test recovery
+
+A localized failed automatic test is a pending check, even after a successful
+repair operation or an unrelated passing command. Recovery retains the workspace
+file and bounded cause, routes diagnosis toward the relevant evidence, and keeps
+completion closed until the failed check itself passes when launched from the workspace root.
+The same command in another directory is a different check; success-looking cwd
+text inside command output cannot replace the runtime working-directory header. This complements edit
+retry tracking: an edit can succeed while its verification remains unresolved.
+
+Regression coverage must include failure → unrelated diagnostic → target read →
+repair → verification, with a session round trip and pruning between those steps.
+A failed target read must not create a permanent inspection lock. Text that looks
+like a success status inside test stdout cannot override the runtime's first
+status, and a path mentioned in unrelated output cannot grant verification.
+
+Repeated failures of the original check must refresh its diagnostic. When the
+new cause has no confirmed location, the old path is only historical context;
+recovery allows broader diagnosis while retaining the verification obligation.
+Regression coverage includes schema repair followed by a pathless semantic
+failure, failed explicit reruns, and preservation of this distinction on resume.
+
+Automatic-test display keeps a bounded diagnostic before a bounded output tail.
+Workspace prefixes are shortened for display so a long absolute path does not
+hide the relative source path, line, and cause. Rust source locations and Python
+traceback frames remain adjacent to their diagnostic context. Output shortening
+is not a new source of task instructions or successful execution evidence.
+
+Malformed TUI replay JSON reports a bounded, JSON-escaped excerpt from the exact
+source that failed parsing. A `target_message_contains` failure reports the
+selected message ID and expected fragment, and clarifies that it checks the
+selected message ID. The assertion semantics remain unchanged. Recovery snapshots
+retain a bounded cause plus supporting diagnostic lines, rather than only a
+failure count. Tests require an explicit selector repair to pass the same
+assertion and verify that diagnostics do not modify the replay fixture.
+
+## Provider continuation checks
+
+Gemini's OpenAI-compatible tool responses can contain
+`extra_content.google.thought_signature`. Transport coverage exercises late
+metadata, repeated complete signatures, conflicting signatures, native and Web
+SSE paths, blocked calls, compaction, save/load, resume repair, and provider
+switches. A healthy tool-result round trip is required before model-quality
+comparisons. Gemini uses `tool_choice: "auto"` to permit the explicit protocol
+prelude; `required`/ANY suppressed it in the bounded live probe while AUTO
+returned both text and the same function call. This changes request compatibility,
+not plan/evidence/completion acceptance. An unavailable model or a missing-signature HTTP rejection is a
+transport/access result, not a quality score. Legacy unsigned sessions may still
+need a fresh Gemini run; no signature is fabricated to bypass validation. A
+text-only Google response remains eligible for ordinary verified completion.
+Synthetic-tool rescue is disabled for Google; unfinished text turns receive
+runtime feedback requesting a native call after the completion gates. A pseudo-call written
+as XML cannot execute a command or create a tool result. Regression coverage
+keeps the human task unchanged and does not fabricate a tool result.
+
 ## Command and automatic-test evidence
 
-Colon-delimited protocol blocks recognize only the active block contract's field
+Native colon-delimited protocol blocks recognize only the active block contract's field
 names and aliases at the least-indented field level. A step's literal colon text,
 nested fixture keys, or a more deeply indented recognized label remain part of
 the current value. This keeps multi-step plans intact when a step describes JSON
-or replay fields. Existing XML and bracket-quoted field forms remain supported.
+or replay fields. `Acceptance Criteria:` is an explicit shared alias for the plan
+acceptance field, with the same indentation and validation rules; unrelated
+headings do not satisfy it. Existing XML and bracket-quoted field forms remain
+supported. The Web parser still uses its earlier colon-field grammar; native/Web
+plan-parser parity is not established by these native runtime runs.
 
 `verified_command_seen` requires an assistant tool call and matching tool result
 ID, an exact successful runtime exit-status header, and current proof. Command
@@ -175,3 +259,19 @@ and this distinction; changing a check's expected value cannot supply a target.
 When an edit succeeds but its automatic test fails, history compaction preserves
 the first status and prioritizes up to four error lines from the test output
 before diff context. Nonstandard failures retain a representative failure line.
+
+The [2026-10-08 harness comparison](evals/2026-10-08-harness/README.md)
+records the unchanged six-case baseline/candidate runs and their unresolved live
+failures. It is evidence for review, not runtime promotion.
+
+The [2026-10-09 recovery comparison](evals/2026-10-09-recovery-focus/README.md)
+adds localized failure retention and fresh runs against the preceding candidate.
+The live traces exercise target rereads, but neither provider completes TUI
+replay; the opposite changes in suite totals do not establish nonregression.
+
+The [plan/replay and Gemini continuation comparison](evals/2026-10-09-plan-replay/README.md)
+preserves three candidates and the corrections each prompted. Final frozen
+results are Mistral 5/6, GPT-4.1 mini 5/6, and Gemini Flash-Lite 3/6. Mistral
+completes replay with a different edit tool but still fails the required
+`patch_file` check. Gemini's benchmark resume passes after eliminating unsigned
+synthetic calls; remaining task failures keep the branch unqualified.

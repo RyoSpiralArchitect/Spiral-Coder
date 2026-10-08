@@ -90,12 +90,14 @@ fn mistral_name_embedded_blocks_and_tool(
 
     let normalized = tool_from_think
         .map(|tool| ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: tool,
             arguments: tc.arguments.clone(),
         })
         .or_else(|| {
             known_runtime_tool_name_from_text(rest).map(|tool| ToolCallData {
+                thought_signature: None,
                 id: tc.id.clone(),
                 name: tool,
                 arguments: tc.arguments.clone(),
@@ -231,6 +233,7 @@ fn mistral_nested_tool_payload(tc: &ToolCallData) -> Option<(Vec<String>, ToolCa
     Some((
         prelude,
         ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: tool_name.to_string(),
             arguments: tool_args.to_string(),
@@ -291,6 +294,7 @@ pub(super) fn normalize_mistral_tool_call(
             return (
                 prelude,
                 Some(ToolCallData {
+                    thought_signature: None,
                     id: tc.id.clone(),
                     name: tc.name.trim_matches(|c| c == '<' || c == '>').to_string(),
                     arguments: last.to_string(),
@@ -302,6 +306,7 @@ pub(super) fn normalize_mistral_tool_call(
     (
         prelude,
         Some(ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: tc.name.trim_matches(|c| c == '<' || c == '>').to_string(),
             arguments: tc.arguments.clone(),
@@ -724,7 +729,7 @@ pub(super) fn repair_truncated_patch_tool_call_from_recent_mismatch(
     provider: ProviderKind,
     observations: &ObservationEvidence,
 ) -> Option<(ToolCallData, String, String)> {
-    if root_read_only || !goal_wants_actions {
+    if root_read_only || !goal_wants_actions || !tc.can_rewrite() {
         return None;
     }
     if !matches!(provider, ProviderKind::OpenAiCompatible) || tc.name != "patch_file" {
@@ -789,6 +794,7 @@ pub(super) fn repair_truncated_patch_tool_call_from_recent_mismatch(
     }
 
     let rewritten = ToolCallData {
+        thought_signature: None,
         id: tc.id.clone(),
         name: tc.name.clone(),
         arguments: json!({
@@ -1335,6 +1341,7 @@ mod tests {
     #[test]
     fn rescue_missing_plan_for_tool_turn_after_repeated_blocks_for_mistral_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"Cargo.toml"}).to_string(),
@@ -1389,6 +1396,7 @@ mod tests {
     #[test]
     fn rescue_missing_plan_for_tool_turn_after_single_mixed_diagnostic_block_for_mistral() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"Cargo.toml"}).to_string(),
@@ -1438,6 +1446,7 @@ mod tests {
     #[test]
     fn rescue_missing_plan_for_tool_turn_after_single_diagnostic_block_for_openai_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/observer/repo_rules.rs"}).to_string(),
@@ -1487,6 +1496,7 @@ mod tests {
     #[test]
     fn rescue_missing_think_for_tool_turn_after_repeated_blocks_for_mistral_actions() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"Cargo.toml"}).to_string(),
@@ -1543,6 +1553,7 @@ mod tests {
     #[test]
     fn rescue_missing_think_for_tool_turn_is_immediate_for_openai_read_file() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_2".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/observer/repo_rules.rs"}).to_string(),

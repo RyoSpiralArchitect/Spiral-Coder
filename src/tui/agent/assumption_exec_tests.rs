@@ -22,6 +22,7 @@ fn attempt(
         verify: "inspect the actual result".into(),
     };
     let tc = ToolCallData {
+        thought_signature: None,
         id: "next".into(),
         name: "exec".into(),
         arguments: json!({"command":command}).to_string(),
