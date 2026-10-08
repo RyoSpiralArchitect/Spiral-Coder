@@ -200,3 +200,7 @@ and this distinction; changing a check's expected value cannot supply a target.
 When an edit succeeds but its automatic test fails, history compaction preserves
 the first status and prioritizes up to four error lines from the test output
 before diff context. Nonstandard failures retain a representative failure line.
+
+The [2026-10-08 harness comparison](evals/2026-10-08-harness/README.md)
+records the unchanged six-case baseline/candidate runs and their unresolved live
+failures. It is evidence for review, not runtime promotion.
