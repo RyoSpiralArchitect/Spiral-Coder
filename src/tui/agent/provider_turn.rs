@@ -5,6 +5,20 @@ use serde_json::Value;
 
 const NATIVE_TOOL_REQUIRED: &str = "No native tool call was received; no tool was executed for this response. Use the provided function/tool interface for the next action (or done when verified), alongside the required plan/think/evidence blocks. XML such as <default_api:exec> or a textual command is not a function call. Keep the current task and verification obligations.";
 
+/// Early reflection/impact rejections happen before the ordinary unfinished
+/// text-turn boundary. Explain the missing transport there as well, without
+/// fabricating a call or changing the rejection/verified-completion decision.
+pub(super) fn tool_count_feedback(
+    reason: String,
+    calls: &[crate::streaming::ToolCallData],
+) -> String {
+    if calls.is_empty() {
+        format!("{reason}\n{NATIVE_TOOL_REQUIRED}")
+    } else {
+        reason
+    }
+}
+
 /// Runtime actions lack a Gemini-authored continuation signature. Existing
 /// verified completion paths do not synthesize tools and remain available.
 pub(super) fn allows_synthetic_tools(base_url: &str) -> bool {

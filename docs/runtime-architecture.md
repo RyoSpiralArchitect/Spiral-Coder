@@ -238,6 +238,16 @@ Repair feedback:
   enum shape before the full schema examples so the bounded automatic-test digest
   and old-result history retain the information needed to repair that check.
   The source remains unchanged and the original failure status is preserved.
+- File-existence refutations recognize canonical `file exists at PATH` and bounded
+  literal aliases such as `PATH exists in the repo`. Exact target dependencies and
+  fresh evidence use the same recognition in live execution and restore. Mentioning
+  that missing path as text in another file does not depend on its existence;
+  patching the missing file itself still does. General prose retains its existing
+  semantic assumption guard.
+- Reflection/impact gates that reject a response with zero native calls explicitly
+  explain the function/tool interface at that early boundary. A textual XML call
+  remains text, the call-count gate still rejects it, and normal verified text
+  completion outside those required gates remains available.
 - [Cross-provider repair analysis](model-independent-recovery.md) separates these
   fixes from remaining edit-preservation, completion-progress, and evaluation
   contract limitations.

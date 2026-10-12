@@ -11,6 +11,8 @@ separate when deciding what to change.
 | A preliminary replay succeeds, then the intended edit is blocked as already fixed | A check's effect is confused with a mutation | `exec_classification/replay.rs` recognizes actual model-free replay execution using the CLI grammar. Recovery, mutation timestamps, edit-failure memory, and resumed proof share the classification. |
 | Successive turns repair goal, step, risk, doubt, next, and verify one at a time | Validation exposes one defect per expensive model turn | `protocol_validation.rs` reports all independent plan/think defects together and supplies field requirements. Accepted inputs and proof requirements stay the same. |
 | A missing check value remains unresolved after rereading the spec | Diagnostic truncation removes the repair-relevant schema | `tui_replay/diagnostics.rs` puts the failing case/check index and matching enum shape before the general examples. Tests exercise automatic-test rendering and old-result pruning. |
+| A refuted `path exists in the repo` claim blocks adding that path as text to another file | Natural-language overlap is mistaken for an actual tool dependency | `assumption_gate.rs` recognizes bounded literal existence claims. The missing path still blocks patching that path, while registry edits remain independent. A fresh matching read/write can confirm the claim; cached evidence cannot. |
+| Repeated reflection/impact responses contain textual pseudo-calls but no native function call | An early gate hides the feedback needed to repair the transport format | `provider_turn.rs` supplies native-call guidance at those already-rejected zero-call boundaries. It neither fabricates calls nor bypasses completion or reflection requirements. |
 | A broad rewrite changes an existing replay case, or an exact edit anchor repeatedly misses | Edit scope and preservation are not explicit enough | Still open. A passing parser does not prove preservation of existing behavior. Keep the artifact audit separate from frozen checks; do not synthesize unrequested assertion changes. |
 | Follow-up work continues after an earlier successful check, then the requested handoff is missing | Work completion, current proof, and final reporting are distinct obligations | Existing `benchmark_proof`, `recovery_focus`, `exec_proof`, and `final_handoff` retain these gates. They reject incomplete work, but do not yet guarantee productive progress under small iteration caps. |
 
@@ -30,6 +32,10 @@ continuation metadata remains opaque and the original call stays intact.
   masking do not become replay verification.
 - Protocol defects are aggregated without accepting a missing field, an invalid
   step, a mismatched tool, an unrelated exec prefix, or an oversized plan.
+- Existence-claim recognition covers explicit English literal forms, not arbitrary
+  prose or compound claims. Nonexistence assertions and broader semantic
+  assumptions keep their prior handling. Provider selection does not change
+  dependency matching or early missing-call guidance.
 - Replay schema examples are examples, not replacements for intended assertions.
   Invalid specs remain invalid; diagnostics do not write the artifact.
 - The frozen suite includes a required `patch_file` call even where the task

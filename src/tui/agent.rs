@@ -8796,7 +8796,10 @@ This is the LAST model call for this run.\n\
             }
 
             if tool_calls.len() != 1 {
-                let msg = governor_contract::reflection_one_tool_message(tool_calls.len());
+                let msg = provider_turn::tool_count_feedback(
+                    governor_contract::reflection_one_tool_message(tool_calls.len()),
+                    &tool_calls,
+                );
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
@@ -9042,7 +9045,10 @@ Execute only the new minimal action: {}",
             }
 
             if tool_calls.len() != 1 {
-                let msg = governor_contract::impact_one_tool_message(tool_calls.len());
+                let msg = provider_turn::tool_count_feedback(
+                    governor_contract::impact_one_tool_message(tool_calls.len()),
+                    &tool_calls,
+                );
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                     .await;

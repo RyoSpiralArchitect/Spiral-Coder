@@ -1,5 +1,104 @@
 use super::*;
 
+#[tokio::test]
+async fn pre_tool_impact_rejection_requests_native_call_without_executing_pseudo_xml() {
+    use httpmock::prelude::*;
+    let server = MockServer::start();
+    let text = concat!(
+        "<plan>\ngoal: Finish the approved benchmark plan and verify the prepared docs and runtime eval artifacts.\n",
+        "steps:\n1. Inspect the prepared benchmark files.\n2. Run the required verification commands.\n",
+        "acceptance:\n- Current checks pass after the latest edit.\nrisks: stale verification\nassumptions: prepared artifacts need rechecking\n</plan>\n",
+        "<impact>\nchanged: prior workspace edit\nprogress: step 1\nremaining_gap: run required checks\n</impact>\n",
+        "<default_api:exec><command>printf forbidden > pseudo-executed</command></default_api:exec>"
+    );
+    let response = format!(
+        "data: {}\n\ndata: [DONE]\n\n",
+        json!({"choices":[{
+            "delta":{"content":text},"finish_reason":"stop"
+        }]})
+    );
+    let first = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .matches(|request| {
+                !String::from_utf8_lossy(request.body.as_deref().unwrap_or_default())
+                    .contains("No native tool call was received")
+            });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(&response);
+    });
+    let retry = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("Impact gate: expected exactly ONE tool call")
+            .body_contains("No native tool call was received")
+            .body_contains("provided function/tool interface");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(&response);
+    });
+    let seed: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json"
+    ))
+    .unwrap();
+    let start = AgenticStartState {
+        messages: seed["messages"].as_array().unwrap().clone(),
+        checkpoint: None,
+        cur_cwd: None,
+        observation_cache: None,
+        session_bridge: None,
+        create_checkpoint: false,
+    };
+    let cfg = RunConfig {
+        provider: ProviderKind::OpenAiCompatible,
+        model: "local-mock".into(),
+        chat_model: "local-mock".into(),
+        code_model: "local-mock".into(),
+        api_key: None,
+        base_url: server.base_url(),
+        mode: crate::modes::Mode::Vibe,
+        persona: String::new(),
+        temperature: 0.0,
+        max_tokens: 512,
+        timeout_seconds: 5,
+        hf_device: "cpu".into(),
+        hf_local_only: true,
+    };
+    let root = tempfile::tempdir().unwrap();
+    let (tx, mut rx) = mpsc::channel(512);
+    run_agentic_json(
+        start,
+        &cfg,
+        root.path().to_str(),
+        2,
+        tx,
+        None,
+        None,
+        None,
+        true,
+        Some(RealizePreset::Off),
+        None,
+        &crate::approvals::AutoApprover,
+    )
+    .await
+    .unwrap();
+    first.assert_hits(1);
+    retry.assert_hits(1);
+    assert!(!root.path().join("pseudo-executed").exists());
+    let mut rejections = 0;
+    while let Some(token) = rx.recv().await {
+        if let StreamToken::Telemetry(event) = token {
+            if event.event == "pre_tool_gate_rejected" {
+                assert_eq!(event.data["gate"], "impact");
+                assert_eq!(event.data["tool_count"], 0);
+                rejections += 1;
+            }
+        }
+    }
+    assert_eq!(rejections, 2);
+}
+
 #[test]
 fn resumed_action_then_verification_restores_a_validated_impact_plan() {
     let prompt = "[Observer benchmark plan approved]\n<observer_benchmark_plan required=\"true\">\nlane: runtime_eval\nobjective: Finish prepared regression artifacts for src/tui/agent/benchmark_proof.rs.\ntarget_files:\n- .spiral-coder/runtime_eval.json\n- docs/runtime-architecture.md\nrequired_checks:\n- grep -q proof docs/runtime-architecture.md\nsuccess_criteria:\n- Current checks pass after the latest edit.\n</observer_benchmark_plan>\nResume the work and complete the required verification.";
