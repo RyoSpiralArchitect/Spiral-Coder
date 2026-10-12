@@ -244,8 +244,8 @@ Repair feedback:
   that missing path as text in another file does not depend on its existence;
   patching the missing file itself still does. General prose retains its existing
   semantic assumption guard.
-- Reflection/impact gates that reject a response with zero native calls explicitly
-  explain the function/tool interface at that early boundary. A textual XML call
+- Reflection/impact gates that reject at their zero-native-call count check explain
+  the function/tool interface at that early boundary. A textual XML call
   remains text, the call-count gate still rejects it, and normal verified text
   completion outside those required gates remains available.
 - [Cross-provider repair analysis](model-independent-recovery.md) separates these
