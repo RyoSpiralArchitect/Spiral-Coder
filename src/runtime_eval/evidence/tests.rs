@@ -174,9 +174,19 @@ fn auto_test_markers_require_correlated_successful_file_edit() {
 
 #[test]
 fn configured_composite_reruns_preserve_auto_test_proof_only_when_not_failed() {
-    for fixture in [
-        include_str!("../../../tests/fixtures/runtime-self-fix-observer-rules/.spiral-coder.md"),
-        include_str!("../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md"),
+    for (fixture, inferred_verification) in [
+        (
+            include_str!(
+                "../../../tests/fixtures/runtime-self-fix-observer-rules/.spiral-coder.md"
+            ),
+            false,
+        ),
+        (
+            include_str!(
+                "../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md"
+            ),
+            true,
+        ),
     ] {
         let command = fixture
             .lines()
@@ -217,8 +227,15 @@ fn configured_composite_reruns_preserve_auto_test_proof_only_when_not_failed() {
             result(&mut messages, "exec", "cargo test", "OK (exit_code: 0)");
             result(&mut messages, "exec", command, "OK (exit_code: 0)");
             let evidence = collect(&messages, &["cargo test".into()], configured);
-            assert!(evidence.verified_commands.is_empty());
-            assert_eq!(evidence.fresh_auto_test_pass_count, 0);
+            if inferred_verification {
+                // A replay/grep composite is no longer an unknown action;
+                // recognition and explicit configured authority share the result.
+                assert_eq!(evidence.verified_commands, ["cargo test"]);
+                assert_eq!(evidence.fresh_auto_test_pass_count, 1);
+            } else {
+                assert!(evidence.verified_commands.is_empty());
+                assert_eq!(evidence.fresh_auto_test_pass_count, 0);
+            }
         }
     }
 }

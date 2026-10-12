@@ -65,6 +65,7 @@ mod meta_harness;
 mod outcome;
 mod progress_bridge;
 mod protocol_fields;
+mod protocol_validation;
 mod provider_compat;
 #[cfg(test)]
 mod provider_signature_tests;
@@ -72,6 +73,8 @@ mod provider_turn;
 mod read_only;
 mod recovery;
 mod recovery_focus;
+#[cfg(test)]
+mod repair_feedback_tests;
 mod repo_scaffold;
 #[cfg(test)]
 mod resume_contract_tests;
@@ -123,6 +126,7 @@ use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 use self::protocol_fields::parse_tag_fields;
+use self::protocol_validation::{validate_plan, validate_think};
 #[cfg(test)]
 use self::provider_compat::compat_synthetic_think;
 use self::provider_compat::{
@@ -5824,61 +5828,6 @@ fn last_impact_step_from_messages(messages: &[serde_json::Value]) -> Option<usiz
     last_impact_step
 }
 
-fn validate_plan(plan: &PlanBlock) -> Result<()> {
-    if plan.goal.trim().is_empty() {
-        return Err(anyhow!(governor_contract::plan_missing_goal_message()));
-    }
-    let min_steps = plan_field_min_items("steps").unwrap_or(2);
-    let max_steps = plan_field_max_items("steps").unwrap_or(7);
-    let min_acceptance = plan_field_min_items("acceptance").unwrap_or(1);
-    let max_acceptance = plan_field_max_items("acceptance").unwrap_or(4);
-    if plan.steps.is_empty() {
-        return Err(anyhow!(governor_contract::plan_missing_steps_message()));
-    }
-    if plan.steps.len() < min_steps {
-        return Err(anyhow!(governor_contract::plan_min_steps_message(
-            min_steps
-        )));
-    }
-    if plan.steps.len() > max_steps {
-        return Err(anyhow!(governor_contract::plan_max_steps_message(
-            max_steps
-        )));
-    }
-    if plan.acceptance_criteria.is_empty() {
-        return Err(anyhow!(governor_contract::plan_missing_acceptance_message()));
-    }
-    if plan.acceptance_criteria.len() < min_acceptance {
-        return Err(anyhow!(governor_contract::plan_min_acceptance_message(
-            min_acceptance
-        )));
-    }
-    if plan.acceptance_criteria.len() > max_acceptance {
-        return Err(anyhow!(governor_contract::plan_max_acceptance_message(
-            max_acceptance
-        )));
-    }
-    if plan.risks.trim().is_empty() {
-        return Err(anyhow!(governor_contract::plan_missing_risks_message()));
-    }
-    if plan.assumptions.trim().is_empty() {
-        return Err(anyhow!(
-            governor_contract::plan_missing_assumptions_message()
-        ));
-    }
-    if plan.steps.iter().any(|step| step.trim().is_empty()) {
-        return Err(anyhow!(governor_contract::plan_empty_step_message()));
-    }
-    if plan
-        .acceptance_criteria
-        .iter()
-        .any(|criterion| criterion.trim().is_empty())
-    {
-        return Err(anyhow!(governor_contract::plan_empty_acceptance_message()));
-    }
-    Ok(())
-}
-
 #[cfg_attr(not(test), allow(dead_code))]
 fn validate_plan_for_task(plan: &PlanBlock, root_read_only: bool) -> Result<()> {
     validate_plan(plan)?;
@@ -5935,54 +5884,6 @@ fn think_next_matches_exec_command(next: &str, command: &str) -> bool {
         .collect::<Vec<_>>()
         .join(" ");
     !next_prefix.is_empty() && next_prefix == cmd_prefix
-}
-
-fn validate_think(think: &ThinkBlock, plan: &PlanBlock, tc: &ToolCallData) -> Result<()> {
-    if think.goal.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_missing_goal_message()));
-    }
-    if think.step == 0 {
-        return Err(anyhow!(governor_contract::think_invalid_step_message()));
-    }
-    if think.step > plan.steps.len() {
-        return Err(anyhow!(governor_contract::think_step_out_of_range_message(
-            think.step,
-            plan.steps.len()
-        )));
-    }
-    if think.tool.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_invalid_tool_message()));
-    }
-    if think.risk.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_missing_risk_message()));
-    }
-    if think.doubt.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_missing_doubt_message()));
-    }
-    if think.next.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_missing_next_message()));
-    }
-    if think.verify.trim().is_empty() {
-        return Err(anyhow!(governor_contract::think_missing_verify_message()));
-    }
-    if think.tool != tc.name {
-        return Err(anyhow!(governor_contract::think_tool_mismatch_message(
-            &think.tool,
-            &tc.name
-        )));
-    }
-
-    if tc.name == "exec" {
-        let command = parse_exec_command_from_args(&tc.arguments)
-            .unwrap_or_else(|| tc.arguments.trim().to_string());
-        if !think_next_matches_exec_command(&think.next, &command) {
-            return Err(anyhow!(
-                governor_contract::think_exec_prefix_mismatch_message()
-            ));
-        }
-    }
-
-    Ok(())
 }
 
 fn validate_reflection(

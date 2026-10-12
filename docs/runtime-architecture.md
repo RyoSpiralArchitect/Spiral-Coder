@@ -204,6 +204,13 @@ Command classification:
   chains. Matching preserves case and quoted whitespace. It does
   not override unsupported shell syntax or known write flags. Approved benchmark
   `required_checks` retain their separate explicit command-evidence contract.
+- `exec_classification/replay.rs` recognizes model-free `spiral-coder tui-replay`
+  through the actual CLI parser, including global options and executable paths.
+  A preliminary replay is verification rather than an action: it cannot advance
+  a mutation timestamp, clear failed-edit memory, or mark a focused fix as written.
+  Exact required checks and pending focused failures remain separate obligations.
+  Other subcommands, help, malformed options, and unsupported shell syntax gain
+  no new verification authority.
 - `src/tui/agent/exec_verification.rs` carries the root task's approved required
   commands alongside project configuration. Exact required-command matches are
   verification in live execution, restored generic proof, and restored working
@@ -220,6 +227,20 @@ Command classification:
   blocks and user rejections preserve evidence. Resume accepts only the strict
   runtime success header (including the pruning suffix); live execution uses its
   effective return status. A fresh applicable check restores verification credit.
+
+Repair feedback:
+
+- `src/tui/agent/protocol_validation.rs` owns native plan/think field validation.
+  It reports independent defects together with field-format guidance while
+  preserving all existing acceptance conditions. Diagnostics never modify model
+  claims, calls, or signatures. This avoids one turn per missing field.
+- Replay data errors put the failing case/check index and the matching typed
+  enum shape before the full schema examples so the bounded automatic-test digest
+  and old-result history retain the information needed to repair that check.
+  The source remains unchanged and the original failure status is preserved.
+- [Cross-provider repair analysis](model-independent-recovery.md) separates these
+  fixes from remaining edit-preservation, completion-progress, and evaluation
+  contract limitations.
 
 ### 5b) Harness Evolution Overlay
 

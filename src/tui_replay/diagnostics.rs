@@ -5,6 +5,11 @@ use std::path::Path;
 
 const MAX_FAILED_CHECKS: usize = 8;
 
+#[cfg(test)]
+pub(crate) fn parse_error_for_test(source: &str, error: serde_json::Error) -> anyhow::Error {
+    parse_error(Path::new("replay.json"), source, error)
+}
+
 fn bounded(text: &str, limit: usize) -> String {
     let mut chars = text.chars();
     let mut result: String = chars.by_ref().take(limit).collect();
@@ -129,6 +134,9 @@ pub(super) fn parse_error(path: &Path, source: &str, error: serde_json::Error) -
                 value: "coder-0".to_string(),
             },
         ];
+        // Put the failing shape first. A list of every example on one long
+        // line loses its later `value` fields in automatic-test/history digests.
+        message.push_str(&check_context(source, &checks));
         message.push_str(&format!(
             "\nError: tui-replay valid top-level checks shapes: {}",
             serde_json::to_string(&checks).expect("check examples serialize")
@@ -136,4 +144,37 @@ pub(super) fn parse_error(path: &Path, source: &str, error: serde_json::Error) -
         message.push_str("\nError: tui-replay target_message_contains matches the selected message ID (for example coder-0), not source-file content. Choose checks for the behavior the case is meant to prove; do not remove failing assertions.");
     }
     anyhow::anyhow!(message)
+}
+
+fn check_context(source: &str, examples: &[TuiReplayCheck]) -> String {
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(source) else {
+        return String::new();
+    };
+    for (case_index, case) in value["cases"].as_array().into_iter().flatten().enumerate() {
+        for (check_index, check) in case["checks"].as_array().into_iter().flatten().enumerate() {
+            let Err(error) = serde_json::from_value::<TuiReplayCheck>(check.clone()) else {
+                continue;
+            };
+            let mut lines = format!(
+                "\nError: tui-replay cases[{case_index}].checks[{check_index}]: {}",
+                // Escape user-controlled unknown variants into one physical line.
+                serde_json::to_string(&bounded(&error.to_string(), 120)).expect("error serializes")
+            );
+            let shapes: Vec<_> = examples
+                .iter()
+                .map(|example| serde_json::to_value(example).expect("check example serializes"))
+                .collect();
+            if let Some(shape) = shapes.iter().find(|shape| shape["kind"] == check["kind"]) {
+                lines.push_str(&format!(
+                    "\nError: tui-replay check shape (example value; preserve intended assertion): {shape}"
+                ));
+            } else {
+                // Both lines fit inside the bounded automatic-test digest.
+                lines.push_str("\nError: tui-replay check kinds: suggestion_parsed, hint_queued, contract_queued (no value field).");
+                lines.push_str("\nError: tui-replay check kinds: observer_contains, coder_system_contains, target_message_contains (require a string value).");
+            }
+            return lines;
+        }
+    }
+    String::new()
 }

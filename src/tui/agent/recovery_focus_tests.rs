@@ -70,6 +70,47 @@ fn read_target(g: &mut RecoveryGovernor, root: &Path) -> (ToolCallData, String) 
 }
 
 #[test]
+fn unrelated_replay_cannot_mark_a_pending_repair_as_written_or_clear_its_check() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut governor, mut messages) = focused(root.path());
+    let (read, output) = read_target(&mut governor, root.path());
+    append(
+        &mut messages,
+        &read,
+        governor.focus.tool_message(&read, output),
+    );
+    let command = "spiral-coder tui-replay --spec other.json --filter existing";
+    let replay = call("preliminary", "exec", json!({"command":command}));
+    let output = exec_output("OK (exit_code: 0)", root.path());
+    let before = governor.focus.clone();
+    governor.focus.record_result(
+        &replay,
+        &output,
+        root.path().to_str(),
+        Some(CHECK),
+        &context(),
+    );
+    let classification = context().classify(command);
+    governor.on_exec_result(classification.kind, classification.verification, true);
+    assert_eq!(governor.focus, before);
+    assert_eq!(governor.stage, Some(RecoveryStage::Fix));
+    assert!(!governor.focus.repaired());
+    append(
+        &mut messages,
+        &replay,
+        governor.focus.tool_message(&replay, output),
+    );
+    let mut resumed = RecoveryGovernor::restore_from_session(
+        &agent::FailureMemory::default(),
+        &messages,
+        VerificationLevel::Behavioral,
+    );
+    resumed.restore_focus(&messages, root.path().to_str(), Some(CHECK));
+    assert_eq!(resumed.focus, before);
+    assert_eq!(resumed.stage, Some(RecoveryStage::Fix));
+}
+
+#[test]
 fn automatic_failure_keeps_exact_diagnosis_through_unrelated_successes_and_allows_read_backed_repair(
 ) {
     let root = tempfile::tempdir().unwrap();
