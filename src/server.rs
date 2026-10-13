@@ -27,6 +27,9 @@ const OBSERVER_LOGIC_JS: &str = include_str!("../web/observer/logic.js");
 const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
 
+#[cfg(test)]
+mod tool_stream_tests;
+
 fn dev_assets_root() -> Option<PathBuf> {
     if let Ok(v) = std::env::var("SPIRAL_CODER_ASSETS_DIR") {
         let p = PathBuf::from(v.trim());
@@ -565,7 +568,7 @@ async fn api_chat_tools(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
 
     let mut payload = json!({
         "model": req.model,
-        "messages": req.messages,
+        "messages": crate::streaming::provider_metadata::prepare_messages(&req.messages, &base_url),
         "temperature": req.temperature.unwrap_or(0.7),
         "max_tokens": req.max_tokens.unwrap_or(4096),
     });
@@ -574,9 +577,8 @@ async fn api_chat_tools(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
     if let Some(tools) = &req.tools {
         if !tools.is_empty() {
             payload["tools"] = json!(tools);
-            // Prefer forcing tool calls for agentic execution; if a provider rejects this,
-            // we will retry once without tool_choice.
-            payload["tool_choice"] = json!("required");
+            payload["tool_choice"] =
+                json!(crate::streaming::provider_metadata::tool_choice(&base_url));
         }
     }
 
@@ -927,7 +929,6 @@ async fn api_observer_engine(stream: &mut TcpStream, body: &[u8]) -> Result<()> 
 
 async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[u8]) -> Result<()> {
     use serde_json::json;
-    use std::collections::HashMap;
 
     #[derive(Deserialize)]
     struct Req {
@@ -1038,7 +1039,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
 
     let mut payload = json!({
         "model": req.model,
-        "messages": injected_messages,
+        "messages": crate::streaming::provider_metadata::prepare_messages(&injected_messages, &base_url),
         "temperature": req.temperature.unwrap_or(0.7),
         "max_tokens": req.max_tokens.unwrap_or(4096),
         "stream": true,
@@ -1048,7 +1049,8 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
     if let Some(tools) = &req.tools {
         if !tools.is_empty() {
             payload["tools"] = json!(tools);
-            payload["tool_choice"] = json!("required");
+            payload["tool_choice"] =
+                json!(crate::streaming::provider_metadata::tool_choice(&base_url));
         }
     }
 
@@ -1301,14 +1303,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
     // Headers OK — switch to SSE mode.
     write_sse_header(stream, 200, "OK").await?;
 
-    #[derive(Default)]
-    struct TcAcc {
-        id: String,
-        name: String,
-        arguments: String,
-    }
-
-    let mut tool_calls: HashMap<usize, TcAcc> = HashMap::new();
+    let mut tool_calls = crate::streaming::tool_calls::ToolCallAccumulator::default();
     let mut finish_reason = String::new();
     let mut buf: Vec<u8> = Vec::new();
     let mut done = false;
@@ -1375,43 +1370,23 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 write_sse_event(stream, "delta", &d).await?;
             }
 
-            // Tool-call delta accumulation (OpenAI streaming format).
-            if let Some(tc_arr) = v
-                .pointer("/choices/0/delta/tool_calls")
-                .and_then(|x| x.as_array())
-            {
-                for tc in tc_arr {
-                    let idx = tc["index"].as_u64().unwrap_or(0) as usize;
-                    let acc = tool_calls.entry(idx).or_default();
-                    if let Some(id) = tc["id"].as_str() {
-                        if !id.is_empty() {
-                            acc.id = id.to_string();
-                        }
-                    }
-                    if let Some(nm) = tc.pointer("/function/name").and_then(|x| x.as_str()) {
-                        acc.name.push_str(nm);
-                    }
-                    if let Some(args) = tc.pointer("/function/arguments").and_then(|x| x.as_str()) {
-                        acc.arguments.push_str(args);
-                    }
+            // Native and Web paths retain the same provider continuation metadata.
+            if let Some(calls) = v.pointer("/choices/0/delta/tool_calls") {
+                if let Err(error) = tool_calls.push(calls) {
+                    let data = serde_json::to_string(&json!({"error": error.to_string()}))?;
+                    write_sse_event(stream, "error", &data).await?;
+                    write_sse_event(stream, "done", "{}").await?;
+                    return Ok(());
                 }
             }
         }
     }
 
     // Emit finish event with accumulated tool calls.
-    let mut tc_sorted: Vec<usize> = tool_calls.keys().copied().collect();
-    tc_sorted.sort_unstable();
-    let tc_json: Vec<serde_json::Value> = tc_sorted
+    let tc_json: Vec<serde_json::Value> = tool_calls
+        .drain()
         .iter()
-        .map(|idx| {
-            let tc = &tool_calls[idx];
-            json!({
-                "id": tc.id,
-                "type": "function",
-                "function": { "name": tc.name, "arguments": tc.arguments }
-            })
-        })
+        .map(crate::streaming::ToolCallData::to_json)
         .collect();
 
     let finish_data = serde_json::to_string(&json!({

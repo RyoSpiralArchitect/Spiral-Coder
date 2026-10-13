@@ -1,3 +1,11 @@
+mod observer_assist;
+pub(crate) mod observer_request;
+use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
+use observer_request::{
+    finalize_observer_next_action_suggestion, maybe_observer_action_repair,
+    send_next_action_assist, ObserverAssistRequest,
+};
+
 use crossterm::event::{
     Event, EventStream, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -1087,6 +1095,7 @@ pub async fn run_event_loop(
             AppEvent::TaskPlanError(e) => handle_task_plan_error(e, app),
             AppEvent::Tick => {
                 app.tick_count = app.tick_count.wrapping_add(1);
+                maybe_observer_action_repair(app, &observer_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
                 maybe_auto_observe(app, &observer_tx).await;
                 maybe_observer_lang_retry(app, &observer_tx).await;
@@ -1417,6 +1426,7 @@ async fn handle_key(
                 if let Some(handle) = app.observer_task.take() {
                     handle.abort();
                 }
+                observer_request::discard_pending_assist(app);
                 app.observer_meta_mode = false;
                 app.observer_next_action_mode = false;
                 app.ignore_observer_tokens = true;
@@ -1897,6 +1907,7 @@ fn handle_observer_token(token: StreamToken, app: &mut App) {
             }
         }
         StreamToken::Error(e) => {
+            observer_request::discard_pending_assist(app);
             app.observer_meta_mode = false;
             app.observer_next_action_mode = false;
             app.observer.push_tool(format!("ERROR: {e}"));
@@ -2016,6 +2027,7 @@ async fn send_coder_with_text(app: &mut App, tx: &mpsc::Sender<StreamToken>, tex
     let intent_anchor =
         intent::apply_intent_update(app.coder_intent_anchor.as_ref(), intent_update, &text);
     let intent_anchor_message = intent::render_intent_anchor(&intent_anchor);
+    observer_request::prepare_coder_continuation(app, &intent_anchor);
     let observer_soft_hint = app.pending_observer_hint.take();
     let observer_contract = app.pending_observer_contract.take();
     if intent_anchor.requires_human_confirmation {
@@ -2557,125 +2569,6 @@ fn save_tui_meta_diagnose_artifact(
     Ok(path)
 }
 
-fn build_tui_meta_failure_packet_for_selector(
-    app: &App,
-    selector: &str,
-) -> Result<serde_json::Value, String> {
-    let target_idx = resolve_tui_meta_target(&app.coder.messages, selector)?;
-    let Some(target_msg) = app.coder.messages.get(target_idx) else {
-        return Err(format!(
-            "meta-diagnose: no coder message found for `coder-{target_idx}`"
-        ));
-    };
-    let start = target_idx.saturating_sub(8);
-    let base = &app.coder.messages[start..=target_idx];
-    let recent_users: Vec<String> = base
-        .iter()
-        .filter(|m| matches!(m.role, Role::User) && m.complete)
-        .rev()
-        .take(3)
-        .map(|m| meta_digest_text(&m.content, 220, 4))
-        .collect::<Vec<_>>()
-        .into_iter()
-        .rev()
-        .collect();
-    let recent_assistant: Vec<String> = base
-        .iter()
-        .enumerate()
-        .filter(|(i, m)| {
-            *i + start != target_idx && matches!(m.role, Role::Assistant) && m.complete
-        })
-        .rev()
-        .take(3)
-        .map(|(_, m)| meta_digest_text(&m.content, 220, 4))
-        .collect::<Vec<_>>()
-        .into_iter()
-        .rev()
-        .collect();
-    let recent_tool_results: Vec<serde_json::Value> = base
-        .iter()
-        .filter(|m| matches!(m.role, Role::Tool) && m.complete)
-        .rev()
-        .take(4)
-        .map(|m| {
-            json!({
-                "digest": meta_digest_text(&m.content, 260, 6),
-                "first_line": meta_first_line(&m.content, 220),
-            })
-        })
-        .collect::<Vec<_>>()
-        .into_iter()
-        .rev()
-        .collect();
-    let intent_anchor = app
-        .coder_intent_anchor
-        .as_ref()
-        .map(|anchor| {
-            json!({
-                "revision": anchor.revision,
-                "goal": anchor.goal,
-                "target": anchor.target,
-                "constraints": anchor.constraints,
-                "success_criteria": anchor.success_criteria,
-                "optimization_hints": anchor.optimization_hints,
-                "ambiguity": anchor.ambiguity,
-                "confidence": anchor.confidence,
-                "requires_human_confirmation": anchor.requires_human_confirmation,
-                "baseline": intent::anchor_baseline(anchor),
-            })
-        })
-        .unwrap_or(serde_json::Value::Null);
-    let actual_outcome = meta_digest_text(&target_msg.content, 320, 8);
-    let system_digest = meta_digest_text(
-        &format!(
-            "coder_mode={:?}\nobserver_mode={:?}\ncoder_provider={}\nobserver_provider={}",
-            app.coder_cfg.mode,
-            app.observer_cfg.mode,
-            app.coder_cfg.provider,
-            app.observer_cfg.provider
-        ),
-        320,
-        8,
-    );
-    Ok(json!({
-        "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
-        "target_message_id": format!("coder-{}", target_idx),
-        "task_summary": recent_users.last().cloned().unwrap_or_default(),
-        "expected_outcome": recent_users.last().cloned().unwrap_or_else(|| "Complete the requested task without failure.".to_string()),
-        "actual_outcome": actual_outcome,
-        "failure_kind": meta_failure_kind(&target_msg.content),
-        "coder_mode": format!("{:?}", app.coder_cfg.mode),
-        "coder_provider": app.coder_cfg.provider.to_string(),
-        "coder_model": app.coder_cfg.model.clone(),
-        "observer_model": app.observer_cfg.model.clone(),
-        "tool_root": app.tool_root.clone(),
-        "cur_cwd": app.tool_root.clone(),
-        "checkpoint": app.last_git_checkpoint.clone(),
-        "system_prompt_digest": system_digest,
-        "project_context_digest": app.project_stack_label.clone(),
-        "intent_anchor": intent_anchor,
-        "agents_md_digest": serde_json::Value::Null,
-        "available_tools": Vec::<String>::new(),
-        "recent_user_messages": recent_users,
-        "recent_assistant_messages": recent_assistant,
-        "recent_tool_calls": Vec::<serde_json::Value>::new(),
-        "recent_tool_results": recent_tool_results,
-        "last_error_digest": meta_first_line(&target_msg.content, 240),
-        "loop_signals": {
-            "same_command_repeats": 0,
-            "same_error_repeats": 0,
-            "same_output_repeats": 0,
-            "ui_loop_depth": 0,
-        },
-        "approval_signals": Vec::<String>::new(),
-        "packet_notes": vec![
-            "tui meta-diagnose packet built from visible coder history".to_string(),
-            "tui path does not preserve structured tool-call snapshots".to_string(),
-            "intent_anchor and recent tool results are included when available".to_string(),
-        ],
-    }))
-}
-
 fn build_tui_meta_diagnose_prompt(packet: &serde_json::Value, lang: &str) -> String {
     let lang_name = match lang {
         "fr" => "French",
@@ -2727,78 +2620,6 @@ failure packet:\n\
     )
 }
 
-fn build_tui_next_action_prompt(
-    packet: &serde_json::Value,
-    lang: &str,
-    reason_hint: &str,
-) -> String {
-    let lang_name = match lang {
-        "fr" => "French",
-        "en" => "English",
-        _ => "Japanese",
-    };
-    let reason = reason_hint.trim();
-    let schema = json!({
-        "summary": format!("{lang_name} summary of the blocker"),
-        "primary_blocker": "missing_concrete_next_step",
-        "scores": {
-            "correctness": 0.82,
-            "security": 0.61,
-            "efficiency": 0.77,
-            "readability": 0.80
-        },
-        "response_contract": {
-            "required": true,
-            "focus_axes": ["security"],
-            "note": format!("{lang_name} note about when to accept, override, or defer")
-        },
-        "suggestions": [{
-            "kind": "read",
-            "reason": format!("{lang_name} reason"),
-            "confidence": 0.84,
-            "suggested_tool": "read_file",
-            "suggested_args": { "path": "src/tui/events.rs" },
-            "based_on": ["intent_anchor", "recent_tool_results"]
-        }],
-        "quickest_check": "read_file(path=src/tui/events.rs)",
-        "why_this_first": format!("{lang_name} why this is the smallest next step"),
-        "fallback": format!("{lang_name} fallback if the first action fails")
-    });
-    format!(
-        "This is intervention mode, not critique.\n\
-Tool calls, code changes, and diff application are forbidden.\n\
-Your task is to help the Coder take the next concrete step only.\n\
-Write all free-text explanations in {lang_name}. Keep enum values, tool names, and file paths in English.\n\
-Return JSON only. No markdown. No backticks. No prose outside JSON.\n\n\
-Output schema:\n\
-{}\n\n\
-Rules:\n\
-- Prefer small, local, reversible actions.\n\
-- Mention exact files, commands, or symbols when possible.\n\
-- Respect intent_anchor.goal/target when present; do not widen scope.\n\
-- If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
-- If the blocker is repo code, say so directly.\n\
-- If the blocker is instruction/harness/tooling, say so directly.\n\
-- Do not broaden into a full review.\n\
-- If evidence is weak, make quickest_check purely diagnostic.\n\
-- scores must be normalized 0..1 floats for: correctness, security, efficiency, readability\n\
-- response_contract.required should be true when the next coder turn must explicitly accept, override, or defer your primary suggestion\n\
-- response_contract.focus_axes should name the dimensions that most need attention (correctness|security|efficiency|readability)\n\
-- response_contract.note should briefly explain when override/defer is acceptable\n\
-- suggestions.kind must be exactly one of: search | read | done | clarify | abandon_path\n\
-- suggestions.suggested_args must be an object (or empty object)\n\
-- suggestions.based_on should cite coarse facts only: intent_anchor, recent_tool_results, recovery_stage, failure_kind\n\
-- Keep suggestions advisory-only; do not claim you already executed anything.\n\n\
-reason_hint: {reason}\n\
-stuck packet:\n\
-<packet>\n\
-{}\n\
-</packet>",
-        serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(packet).unwrap_or_else(|_| "{}".to_string())
-    )
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct TuiNextActionReplayOutcome {
     pub selector: String,
@@ -2808,54 +2629,11 @@ pub(crate) struct TuiNextActionReplayOutcome {
     pub packet: serde_json::Value,
     pub observer_prompt: String,
     pub observer_raw_response: String,
+    pub observer_repair_prompt: Option<String>,
     pub parsed_suggestion: Option<suggestion::ObserverSuggestionEnvelope>,
     pub pending_observer_hint: Option<String>,
     pub pending_observer_contract: Option<suggestion::ObserverSuggestionEnvelope>,
     pub coder_preview_messages: Vec<ChatMessage>,
-}
-
-fn finalize_observer_next_action_suggestion(app: &mut App) {
-    let Some(idx) = app.observer.messages.iter().rposition(|m| {
-        matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
-    }) else {
-        app.last_observer_suggestion = None;
-        return;
-    };
-    let raw = app
-        .observer
-        .messages
-        .get(idx)
-        .map(|m| m.content.clone())
-        .unwrap_or_default();
-    if raw.trim().is_empty() {
-        app.last_observer_suggestion = None;
-        return;
-    }
-    if let Some(parsed) = suggestion::parse_observer_suggestion_envelope(&raw) {
-        let rendered = suggestion::format_observer_suggestion_envelope(&parsed);
-        if let Some(msg) = app.observer.messages.get_mut(idx) {
-            msg.content = rendered;
-        }
-        if let Some(hint) = build_observer_suggestion_soft_hint(&parsed) {
-            app.pending_observer_hint = Some(hint);
-            app.pending_observer_contract = build_observer_response_contract(&parsed);
-            app.coder.push_tool(
-                "(observer suggestion) queued an advisory next step for the next coder continuation."
-                    .to_string(),
-            );
-        } else {
-            app.pending_observer_hint = None;
-            app.pending_observer_contract = None;
-        }
-        app.last_observer_suggestion = Some(parsed);
-    } else {
-        app.last_observer_suggestion = None;
-        app.pending_observer_hint = None;
-        app.pending_observer_contract = None;
-        app.observer.push_tool(
-            "(next-action) structured parse failed; raw Observer output was preserved.".to_string(),
-        );
-    }
 }
 
 pub(crate) fn latest_tui_next_action_target(app: &App) -> Option<(usize, String)> {
@@ -2880,6 +2658,7 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
+    app.observer_assist_request = Some(ObserverAssistRequest::new(app, observer_prompt.clone()));
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
@@ -2905,6 +2684,10 @@ pub(crate) fn replay_observer_next_action_case(
         packet,
         observer_prompt,
         observer_raw_response: observer_response.to_string(),
+        observer_repair_prompt: app
+            .observer_assist_request
+            .as_ref()
+            .and_then(|r| r.pending_repair.clone()),
         parsed_suggestion: app.last_observer_suggestion.clone(),
         pending_observer_hint: app.pending_observer_hint.clone(),
         pending_observer_contract: app.pending_observer_contract.clone(),
@@ -2951,8 +2734,6 @@ fn build_observer_suggestion_soft_hint(
         } else {
             format!("{tool}({args})")
         }
-    } else if !env.quickest_check.is_empty() {
-        env.quickest_check.clone()
     } else {
         primary.reason.clone()
     };
@@ -2990,24 +2771,20 @@ fn build_observer_response_contract_message(
     } else {
         env.response_contract.focus_axes.join(", ")
     };
-    let quickest = if env.quickest_check.trim().is_empty() {
-        suggestion::primary_suggestion(env)
-            .map(|primary| {
-                if let Some(tool) = primary.suggested_tool.as_deref() {
-                    let args = render_observer_suggestion_args(&primary.suggested_args);
-                    if args.is_empty() {
-                        tool.to_string()
-                    } else {
-                        format!("{tool}({args})")
-                    }
+    let quickest = suggestion::primary_suggestion(env)
+        .map(|primary| {
+            if let Some(tool) = primary.suggested_tool.as_deref() {
+                let args = render_observer_suggestion_args(&primary.suggested_args);
+                if args.is_empty() {
+                    tool.to_string()
                 } else {
-                    primary.reason.clone()
+                    format!("{tool}({args})")
                 }
-            })
-            .unwrap_or_else(|| "the primary observer suggestion".to_string())
-    } else {
-        env.quickest_check.clone()
-    };
+            } else {
+                primary.reason.clone()
+            }
+        })
+        .unwrap_or_else(|| "the primary observer suggestion".to_string());
     let note = if env.response_contract.note.is_empty() {
         "If you do not follow the observer's next step on this turn, explicitly choose override or defer and give a short reason."
             .to_string()
@@ -3101,6 +2878,7 @@ async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selec
         .to_string();
 
     app.ignore_observer_tokens = false;
+    observer_request::discard_pending_assist(app);
     app.observer_meta_mode = true;
     app.observer.push_user(format!(
         "[META-DIAGNOSE] target={target_id} kind={failure_kind}"
@@ -3240,118 +3018,6 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     Some((idx, reason))
 }
 
-async fn send_next_action_assist(
-    app: &mut App,
-    tx: &mpsc::Sender<StreamToken>,
-    selector: &str,
-    reason_hint: &str,
-) {
-    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
-        app.observer.push_tool(problem);
-        return;
-    }
-
-    app.right_tab = RightTab::Observer;
-    app.observer.scroll = 0;
-    let packet = match build_tui_meta_failure_packet_for_selector(app, selector) {
-        Ok(packet) => packet,
-        Err(msg) => {
-            app.observer.push_tool(msg);
-            return;
-        }
-    };
-    let target_id = packet
-        .get("target_message_id")
-        .and_then(|v| v.as_str())
-        .unwrap_or("coder");
-    let failure_kind = packet
-        .get("failure_kind")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unclear");
-    let prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
-    let label = format!("[NEXT-ACTION] target={target_id} kind={failure_kind}");
-
-    if let Some(handle) = app.observer_task.take() {
-        handle.abort();
-    }
-
-    app.observer_meta_mode = false;
-    app.observer_next_action_mode = true;
-    app.last_observer_suggestion = None;
-    app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
-    app.ignore_observer_tokens = false;
-    app.observer_loop_retry_budget = 0;
-    app.observer_loop_pending = None;
-    app.observer_lang_retry_budget = 1;
-    app.observer_lang_pending = None;
-    app.observer.push_user(label);
-    app.observer.streaming = true;
-    app.observer
-        .messages
-        .push(Message::new_streaming(Role::Assistant));
-
-    let cfg = {
-        let mut cfg = app.observer_cfg.clone();
-        cfg.temperature = 0.2;
-        cfg.max_tokens = cfg.max_tokens.min(1200);
-        cfg
-    };
-    let tx = tx.clone();
-    let lang = app.lang.clone();
-    let handle = tokio::spawn(async move {
-        use crate::config::ProviderKind;
-        use crate::streaming::{stream_anthropic, stream_openai_compat};
-        let client = reqwest::Client::new();
-        let system = format!(
-            "You are Observer in next-action assist mode.\n\
-Do not perform a broad critique.\n\
-Focus only on the next concrete step.\n\n\
-[Language]\n{}",
-            language_instruction(Some(&lang), &cfg.mode)
-        );
-        let messages = vec![
-            ChatMessage {
-                role: "system".to_string(),
-                content: system,
-            },
-            ChatMessage {
-                role: "user".to_string(),
-                content: prompt,
-            },
-        ];
-        let result = match cfg.provider {
-            ProviderKind::Anthropic => stream_anthropic(&client, &cfg, &messages, tx.clone()).await,
-            ProviderKind::Hf => {
-                let provider = providers::build_provider(client.clone(), &cfg);
-                let req = ChatRequest {
-                    messages: messages.clone(),
-                    temperature: Some(0.2),
-                    max_tokens: Some(cfg.max_tokens),
-                    metadata: None,
-                };
-                match provider.chat(&req).await {
-                    Ok(resp) => {
-                        fake_stream_text(&tx, &resp.content).await;
-                        Ok(())
-                    }
-                    Err(e) => Err(e),
-                }
-            }
-            _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
-        };
-        if let Err(e) = result {
-            let prefix = match lang.as_str() {
-                "fr" => "Observer next-action failed",
-                "en" => "Observer next-action failed",
-                _ => "Observer next-action failed",
-            };
-            let _ = tx.send(StreamToken::Error(format!("{prefix}: {e}"))).await;
-        }
-    });
-    app.observer_task = Some(handle);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3360,6 +3026,8 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     include!("interaction_tests.rs");
+    include!("observer_assist_tests.rs");
+    include!("observer_repair_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3545,7 +3213,7 @@ mod tests {
         assert!(prompt.contains("\"suggestions\""));
         assert!(prompt.contains("\"scores\""));
         assert!(prompt.contains("\"response_contract\""));
-        assert!(prompt.contains("search | read | done | clarify | abandon_path"));
+        assert!(prompt.contains("search | read | edit | verify | done | clarify | abandon_path"));
     }
 
     #[test]
@@ -3744,6 +3412,7 @@ mod tests {
 
         handle_coder_token(
             StreamToken::ToolCall(crate::streaming::ToolCallData {
+                thought_signature: None,
                 id: "tool-1".to_string(),
                 name: "read_file".to_string(),
                 arguments: serde_json::json!({"path": "src/tui/prefs.rs"}).to_string(),
@@ -3918,6 +3587,7 @@ async fn send_observer_message(
         handle.abort();
     }
 
+    observer_request::discard_pending_assist(app);
     app.observer_meta_mode = false;
     app.observer_next_action_mode = false;
     app.observer.scroll = 0;

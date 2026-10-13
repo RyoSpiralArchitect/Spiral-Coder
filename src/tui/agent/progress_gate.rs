@@ -1,6 +1,6 @@
 use super::{
     canonicalize_tool_call_command, classify_verify_level, compact_one_line,
-    infer_fix_existing_focus, is_observation_tool, is_src_read_file_tool_call, observation_history,
+    infer_fix_existing_focus, is_observation_tool, is_src_read_file_tool_call,
     parse_exec_command_from_args, ArtifactMode, FixExistingFocus, RecoveryStage, TaskHarness,
     TaskLane, ToolCallData, Value,
 };
@@ -22,7 +22,8 @@ pub(in super::super) fn build_progress_gate_block(
         return None;
     }
 
-    let history = observation_history(messages);
+    let history =
+        super::super::meta_harness::observation_window_since_last_mutation(messages, test_cmd);
     if file_tool_consec_failures > 0 && is_src_read_file_tool_call(tc) {
         return None;
     }
@@ -59,10 +60,10 @@ pub(in super::super) fn build_progress_gate_block(
             // implementation. Focus inference is a hint, not proof it was read.
             return None;
         }
-        if same_successes == 0 && history.total_successes < 2 {
+        if same_successes == 0 && history.total_successes_since_mutation < 2 {
             return None;
         }
-    } else if history.total_successes < 2 {
+    } else if history.total_successes_since_mutation < 2 {
         return None;
     }
 
@@ -80,7 +81,7 @@ Do NOT rerun verification or widen search until `{}` is read.\n\
 Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
             harness.lane_label(),
             compact_one_line(&attempted, 180),
-            history.total_successes,
+            history.total_successes_since_mutation,
             compact_one_line(path, 140),
             compact_one_line(path, 140),
         ));
@@ -140,7 +141,7 @@ Required now: {}.\n\
 Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
         harness.lane_label(),
         compact_one_line(&attempted, 180),
-        history.total_successes,
+        history.total_successes_since_mutation,
         next_action,
         verify_hint
     ))
@@ -227,6 +228,7 @@ mod tests {
                 artifact_mode: ArtifactMode::ExistingFiles,
             },
             &ToolCallData {
+                thought_signature: None,
                 id: "next".into(),
                 name: name.into(),
                 arguments: arguments.to_string(),

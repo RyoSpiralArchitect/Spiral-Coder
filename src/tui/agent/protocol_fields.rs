@@ -208,6 +208,57 @@ mod tests {
     };
 
     #[test]
+    fn spaced_acceptance_heading_restores_the_live_resume_plan_without_waiving_validation() {
+        let text = r#"<plan>
+Goal: Fix the failing greet test in the Rust project with the smallest possible code change.
+
+Steps:
+1. Inspect the project structure to understand the codebase
+2. Read the failing test to identify what is broken
+3. Read the source code to understand the implementation
+4. Identify the minimal change needed to fix the test
+5. Apply the fix
+6. Run `cargo test` to verify the fix
+7. Document the changed source path
+
+Assumptions:
+- The test failure is related to a "greet" test as mentioned in the prompt
+- The issue is likely in the source code that the test exercises
+- The smallest change means either a bug fix or adjustment to match expected behavior
+
+Risks:
+- Making too large a change that affects other functionality
+- Missing the actual root cause and applying a band-aid fix
+
+Acceptance Criteria:
+1. The failing test passes after the change (verified by running `cargo test`)
+2. No other tests are broken by the change (verified by running `cargo test`)
+3. The change is minimal and focused on the specific issue
+</plan>"#;
+        let plan = parse_plan_block(text).unwrap();
+        let canonical =
+            parse_plan_block(&text.replace("Acceptance Criteria:", "acceptance:")).unwrap();
+        assert_eq!(plan.acceptance_criteria, canonical.acceptance_criteria);
+        assert_eq!(plan.acceptance_criteria.len(), 3);
+        assert_eq!(plan.steps, canonical.steps);
+        assert_eq!(plan.steps.len(), 7);
+        assert_eq!(plan.risks, canonical.risks);
+        assert!(!plan.risks.contains("Acceptance Criteria"));
+        validate_plan(&plan).unwrap();
+
+        for heading in ["Completion wishes:", "  Acceptance Criteria:"] {
+            let invalid = parse_plan_block(&text.replace("Acceptance Criteria:", heading)).unwrap();
+            assert!(invalid.acceptance_criteria.is_empty());
+            assert!(validate_plan(&invalid).is_err());
+        }
+        let empty = format!(
+            "{}</plan>",
+            text.split("Acceptance Criteria:").next().unwrap()
+        );
+        assert!(validate_plan(&parse_plan_block(&empty).unwrap()).is_err());
+    }
+
+    #[test]
     fn plan_keeps_four_steps_with_nested_colon_details_and_recognized_labels() {
         let text = r#"<plan>
     goal: add the replay case

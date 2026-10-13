@@ -5,12 +5,12 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 
 #[derive(Default)]
-pub(super) struct ToolCallAccumulator {
+pub(crate) struct ToolCallAccumulator {
     calls: BTreeMap<u64, ToolCallData>,
 }
 
 impl ToolCallAccumulator {
-    pub(super) fn push(&mut self, delta: &Value) -> Result<()> {
+    pub(crate) fn push(&mut self, delta: &Value) -> Result<()> {
         let Some(calls) = delta.as_array() else {
             return Ok(());
         };
@@ -30,6 +30,7 @@ impl ToolCallAccumulator {
                 id: String::new(),
                 name: String::new(),
                 arguments: String::new(),
+                thought_signature: None,
             });
             if let Some(id) = call
                 .get("id")
@@ -51,11 +52,21 @@ impl ToolCallAccumulator {
             if let Some(arguments) = call.pointer("/function/arguments").and_then(Value::as_str) {
                 pending.arguments.push_str(arguments);
             }
+            if let Some(signature) = super::provider_metadata::ThoughtSignature::from_call(call)? {
+                if pending
+                    .thought_signature
+                    .as_ref()
+                    .is_some_and(|prior| prior != &signature)
+                {
+                    bail!("streamed tool-call thought signature changed at index {index}");
+                }
+                pending.thought_signature = Some(signature);
+            }
         }
         Ok(())
     }
 
-    pub(super) fn drain(&mut self) -> Vec<ToolCallData> {
+    pub(crate) fn drain(&mut self) -> Vec<ToolCallData> {
         std::mem::take(&mut self.calls)
             .into_values()
             .filter(|call| !call.id.is_empty() && !call.name.is_empty())
@@ -132,5 +143,49 @@ mod tests {
             .push(&json!([{"function":{"arguments":"unattributed"}}]))
             .is_err());
         assert!(calls.push(&json!([{"index":0,"id":"other"}])).is_err());
+    }
+
+    #[test]
+    fn late_signatures_stay_with_their_parallel_call_and_are_not_logged() {
+        let mut calls = ToolCallAccumulator::default();
+        calls.push(&json!([
+            {"index":1,"id":"b","function":{"name":"read_file","arguments":"{\"path\":\"b.rs\"}"}},
+            {"index":0,"id":"a","function":{"name":"read_file","arguments":"{\"path\":\"a.rs\"}"}}
+        ])).unwrap();
+        let metadata =
+            json!([{"index":1,"extra_content":{"google":{"thought_signature":"opaque-b"}}}]);
+        calls.push(&metadata).unwrap();
+        calls.push(&metadata).unwrap(); // Complete signatures may be repeated, not concatenated.
+        let ready = calls.drain();
+        assert!(ready[0].can_rewrite());
+        assert!(!ready[1].can_rewrite());
+        assert_eq!(
+            ready[1].to_json(),
+            json!({"id":"b","type":"function",
+            "function":{"name":"read_file","arguments":"{\"path\":\"b.rs\"}"},
+            "extra_content":{"google":{"thought_signature":"opaque-b"}}})
+        );
+        assert!(!format!("{ready:?}").contains("opaque-b"));
+        calls
+            .push(&json!([{"index":0,"id":"next","function":{"name":"done","arguments":"{}"}}]))
+            .unwrap();
+        assert!(calls.drain()[0].thought_signature.is_none());
+    }
+
+    #[test]
+    fn conflicting_or_malformed_signatures_fail_without_exposing_the_value() {
+        for value in [
+            json!("different-private-value"),
+            json!(null),
+            json!(42),
+            json!(""),
+        ] {
+            let mut calls = ToolCallAccumulator::default();
+            calls.push(&json!([{"index":0,"extra_content":{"google":{"thought_signature":"original-private-value"}}}])).unwrap();
+            let error = calls
+                .push(&json!([{"index":0,"extra_content":{"google":{"thought_signature":value}}}]))
+                .unwrap_err();
+            assert!(!error.to_string().contains("private-value"));
+        }
     }
 }

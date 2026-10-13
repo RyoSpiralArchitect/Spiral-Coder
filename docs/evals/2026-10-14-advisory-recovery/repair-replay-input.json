@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "defaults": {
+    "tool_root": ".",
+    "lang": "en"
+  },
+  "cases": [
+    {
+      "id": "missing-tool",
+      "prompt": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet."
+        },
+        {
+          "role": "tool",
+          "content": "OK: patched 'src/parser.rs'"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] [Done Gate] Missing current verification. Required exact command: cargo test -q parser::tests::. No passing result exists after the latest edit."
+        }
+      ],
+      "observer_response": "{\n  \"fallback\": \"Please run the exact test command 'cargo test -q parser::tests::' to verify the fix.\",\n  \"primary_blocker\": \"missing_concrete_next_step\",\n  \"quickest_check\": \"cargo test -q parser::tests::\",\n  \"response_contract\": {\n    \"focus_axes\": [\n      \"security\"\n    ],\n    \"note\": \"Accept this step when the test command runs successfully without errors. Override only if the test command is not applicable or needs adjustment. Defer if more code changes are needed before testing.\",\n    \"required\": true\n  },\n  \"scores\": {\n    \"correctness\": 0.82,\n    \"efficiency\": 0.77,\n    \"readability\": 0.8,\n    \"security\": 0.61\n  },\n  \"suggestions\": [\n    {\n      \"based_on\": [\n        \"intent_anchor\",\n        \"recent_tool_results\"\n      ],\n      \"confidence\": 0.95,\n      \"kind\": \"verify\",\n      \"reason\": \"The required next step is to run the exact test command to verify the fix as per the instructions.\",\n      \"suggested_args\": {\n        \"command\": \"cargo test -q parser::tests::\"\n      }\n    }\n  ],\n  \"summary\": \"The next concrete step is to run the exact test command 'cargo test -q parser::tests::' to verify that the fix is successful.\",\n  \"why_this_first\": \"Running the test command is the smallest, most direct way to confirm the fix before proceeding.\"\n}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ]
+    },
+    {
+      "id": "malformed-json",
+      "prompt": "Fix only src/parser.rs. After a patch search fails, inspect the exact file before revising the edit.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Fix only src/parser.rs. After a patch search fails, inspect the exact file before revising the edit."
+        },
+        {
+          "role": "tool",
+          "content": "Error: patch_file failed for src/parser.rs: search text not found. No file was changed."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] stage=diagnose. The last patch to src/parser.rs failed. Read the exact target before constructing a revised search anchor."
+        }
+      ],
+      "observer_response": "{\n  \"fallback\": \"read_file(path=src/parser.rs)\",\n  \"primary_blocker\": \"missing_concrete_next_step\",\n  \"quickest_check\": \"read_file(path=src/parser.rs)\",\n  \"response_contract\": {\n    \"focus_axes\": [\n      \"correctness\"\n    ],\n    \"note\": \"Accept this suggestion to read src/parser.rs before making any new patch attempts. Override only if the exact file contents are already locally available.\",\n    \"required\": true\n  },\n  \"scores\": {\n    \"correctness\": 0.85,\n    \"efficiency\": 0.8,\n    \"readability\": 0.82,\n    \"security\": 0.75\n  },\n  \"suggestions\": [\n    {\n      \"based_on\": [\n        \"recent_tool_results\",\n        \"intent_anchor\"\n      ],\n      \"confidence\": 0.95,\n      \"kind\": \"read\",\n      \"reason\": \"The previous patch failed because the search text was not found in src/parser.rs. Inspect the file content to verify the exact existing lines before applying another edit.\",\n      \"suggested_args\": {\n        \"path\": \"src/parser.rs\"\n      },\n      \"suggested_tool\": \"read_file\"\n    }\n  ],\n  \"summary\": \"The last patch to src/parser.rs failed with a search text mismatch. The Coder must read src/parser.rs to locate the exact lines before constructing a revised patch.\",\n%   \"why_this_first\": \"Reading the target file is the safest and most direct way to resolve a patch search failure without guessing or looping.\"\n}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ]
+    },
+    {
+      "id": "incompatible-tool",
+      "prompt": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet."
+        },
+        {
+          "role": "tool",
+          "content": "OK: patched 'src/parser.rs'"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] [Done Gate] Missing current verification. Required exact command: cargo test -q parser::tests::. No passing result exists after the latest edit."
+        }
+      ],
+      "observer_response": "{\n  \"fallback\": \"Run cargo test -q parser::tests:: to satisfy the Done Gate verification requirement.\",\n  \"primary_blocker\": \"Missing current verification via cargo test -q parser::tests:: after patching src/parser.rs.\",\n  \"quickest_check\": \"cargo test -q parser::tests::\",\n  \"response_contract\": {\n    \"focus_axes\": [\n      \"correctness\"\n    ],\n    \"note\": \"Accept this step to run the exact required verification command. Override or defer only if you need a different test suite target.\",\n    \"required\": true\n  },\n  \"scores\": {\n    \"correctness\": 0.9,\n    \"efficiency\": 0.9,\n    \"readability\": 0.9,\n    \"security\": 0.8\n  },\n  \"suggestions\": [\n    {\n      \"based_on\": [\n        \"intent_anchor\",\n        \"recent_tool_results\"\n      ],\n      \"confidence\": 0.95,\n      \"kind\": \"clarify\",\n      \"reason\": \"Run the required verification command cargo test -q parser::tests:: without appending any other commands.\",\n      \"suggested_args\": {\n        \"command\": \"cargo test -q parser::tests::\"\n      },\n      \"suggested_tool\": \"bash\"\n    }\n  ],\n  \"summary\": \"The governor blocked the completion because cargo test -q parser::tests:: has not been run yet following the patch to src/parser.rs.\",\n  \"why_this_first\": \"Executing the exact requested test command is the sole missing prerequisite to pass the Done Gate.\"\n}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ]
+    }
+  ]
+}

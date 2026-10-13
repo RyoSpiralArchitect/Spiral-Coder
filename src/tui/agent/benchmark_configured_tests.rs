@@ -67,13 +67,10 @@ fn configured_tui_composite_and_individual_proofs_can_both_finish() {
         crate::tui::agent::restore_done_gate_from_messages(&messages, Some(&configured));
     assert!(verified >= mutation);
     assert_eq!(pending_command(&messages, &prompt, Some(&configured)), None);
-    // Configuration is explicit authority. A missing/different configuration
-    // keeps this unknown custom composite conservative.
+    // The replay/grep composite is now recognized without configuration.
+    // Additional verification must not invalidate either individual proof.
     for config in [None, Some("different check")] {
-        assert_eq!(
-            pending_command(&messages, &prompt, config).as_deref(),
-            Some(required[0].as_str())
-        );
+        assert_eq!(pending_command(&messages, &prompt, config), None);
     }
     result(&mut messages, "exec", &configured, "FAILED (exit_code: 1)");
     let (_, mutation, build, behavioral, _) =

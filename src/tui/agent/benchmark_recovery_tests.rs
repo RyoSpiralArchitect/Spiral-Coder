@@ -22,16 +22,19 @@ fn failed_required_replay_preserves_fix_then_requires_fresh_verification() {
     std::fs::write(temp.path().join(path), invalid).unwrap();
     assert!(serde_json::from_str::<Value>(invalid).is_err());
     let read = ToolCallData {
+        thought_signature: None,
         id: "diagnose".into(),
         name: "read_file".into(),
         arguments: json!({"path":path}).to_string(),
     };
     let verify = ToolCallData {
+        thought_signature: None,
         id: "verify".into(),
         name: "exec".into(),
         arguments: json!({"command":command}).to_string(),
     };
     let repair = ToolCallData {
+        thought_signature: None,
         id: "repair".into(),
         name: "patch_file".into(),
         arguments: json!({"path":path,"search":",}","replace":"}"}).to_string(),
@@ -150,11 +153,13 @@ fn failed_replay_edit_preserves_diagnostics_until_recovery_can_advance() {
     ];
     for requested in [
         ToolCallData {
+            thought_signature: None,
             id: "read-again".into(),
             name: "read_file".into(),
             arguments: json!({"path":".spiral-coder/tui_replay.json"}).to_string(),
         },
         ToolCallData {
+            thought_signature: None,
             id: "diagnose".into(),
             name: "exec".into(),
             arguments: json!({"command":"pwd"}).to_string(),

@@ -7,7 +7,8 @@ use tokio::sync::mpsc;
 use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
-mod tool_calls;
+pub(crate) mod provider_metadata;
+pub(crate) mod tool_calls;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReflectionSummary {
@@ -73,6 +74,7 @@ pub struct ToolCallData {
     pub id: String,
     pub name: String,
     pub arguments: String,
+    pub thought_signature: Option<provider_metadata::ThoughtSignature>,
 }
 
 fn stream_chat_urls_for_base_url(base_url: &str) -> Vec<String> {
@@ -339,9 +341,10 @@ pub async fn stream_openai_compat_json(
     tools: Option<&serde_json::Value>,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
+    let provider_messages = provider_metadata::prepare_messages(messages, &cfg.base_url);
     let prepared_messages: Vec<serde_json::Value> = match cfg.provider {
-        ProviderKind::Mistral => normalize_mistral_messages(messages),
-        _ => messages.to_vec(),
+        ProviderKind::Mistral => normalize_mistral_messages(&provider_messages),
+        _ => provider_messages,
     };
 
     let mut payload = json!({
@@ -355,9 +358,7 @@ pub async fn stream_openai_compat_json(
 
     if let Some(t) = tools {
         payload["tools"] = t.clone();
-        // "required" forces the model to call a tool on every turn,
-        // preventing it from skipping exec and producing text-only responses.
-        payload["tool_choice"] = json!("required");
+        payload["tool_choice"] = json!(provider_metadata::tool_choice(&cfg.base_url));
     }
 
     let label = match cfg.provider {
@@ -623,6 +624,9 @@ pub async fn stream_openai_compat_json(
             }
 
             if finish_reason == "stop" {
+                for call in tool_calls.drain() {
+                    let _ = tx.send(StreamToken::ToolCall(call)).await;
+                }
                 let _ = tx.send(StreamToken::Done).await;
                 return Ok(());
             }
@@ -812,6 +816,74 @@ fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn compatible_requests_keep_runtime_context_without_local_provenance() {
+        use crate::task_origin::{user_message, MessageOrigin};
+        use httpmock::prelude::*;
+
+        for provider in [ProviderKind::OpenAiCompatible, ProviderKind::Mistral] {
+            let server = MockServer::start();
+            let request = server.mock(|when, then| {
+                when.method(POST)
+                    .path("/chat/completions")
+                    .matches(|request| {
+                        let Ok(body) = serde_json::from_slice::<serde_json::Value>(
+                            request.body.as_deref().unwrap_or_default(),
+                        ) else {
+                            return false;
+                        };
+                        body["messages"] == json!([
+                            {"role":"system", "content":"system contract"},
+                            {"role":"user", "content":"human task"},
+                            {"role":"assistant", "tool_calls":[{"id":"read-call", "type":"function", "function":{"name":"read_file", "arguments":"{}"}}]},
+                            {"role":"tool", "tool_call_id":"read-call", "content":"source evidence"},
+                            {"role":"user", "content":"runtime continuation"}
+                        ])
+                    });
+                then.status(200)
+                    .header("content-type", "text/event-stream")
+                    .body("data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n");
+            });
+            let messages = vec![
+                json!({"role":"system", "content":"system contract"}),
+                user_message("human task", MessageOrigin::User),
+                json!({"role":"assistant", "tool_calls":[{"id":"read-call", "type":"function", "function":{"name":"read_file", "arguments":"{}"}}]}),
+                json!({"role":"tool", "tool_call_id":"read-call", "content":"source evidence", "recovery_focus":{"version":1,"state":{"pending":null}}}),
+                user_message("runtime continuation", MessageOrigin::Runtime),
+            ];
+            let cfg = RunConfig {
+                provider,
+                model: "local-mock".into(),
+                chat_model: "local-mock".into(),
+                code_model: "local-mock".into(),
+                api_key: None,
+                base_url: server.base_url(),
+                mode: crate::modes::Mode::Vibe,
+                persona: String::new(),
+                temperature: 0.0,
+                max_tokens: 32,
+                timeout_seconds: 5,
+                hf_device: "cpu".into(),
+                hf_local_only: true,
+            };
+            let (tx, mut rx) = mpsc::channel(32);
+            stream_openai_compat_json(&reqwest::Client::new(), &cfg, &messages, None, tx)
+                .await
+                .unwrap();
+            request.assert_hits(1);
+            let mut text = String::new();
+            while let Some(token) = rx.recv().await {
+                if let StreamToken::Delta(delta) = token {
+                    text.push_str(&delta);
+                }
+            }
+            assert_eq!(text, "ok");
+            assert_eq!(messages[1]["origin"], "user");
+            assert_eq!(messages[4]["origin"], "runtime");
+            assert_eq!(messages[3]["recovery_focus"]["version"], 1);
+        }
+    }
 
     #[test]
     fn normalize_mistral_messages_drops_empty_assistant_without_tool_calls() {

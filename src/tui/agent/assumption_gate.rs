@@ -90,11 +90,69 @@ fn render_conflict(entry: &super::AssumptionEntry) -> String {
 fn refuted_file_existence(text: &str) -> Option<&str> {
     const PREFIX: &str = "file exists at ";
     let text = text.trim();
-    if !text.get(..PREFIX.len())?.eq_ignore_ascii_case(PREFIX) {
-        return None;
+    if text
+        .get(..PREFIX.len())
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case(PREFIX))
+    {
+        let path = text[PREFIX.len()..].trim().trim_matches(['`', '\'', '"']);
+        return (!path.is_empty()).then_some(path);
     }
-    let path = text[PREFIX.len()..].trim().trim_matches(['`', '\'', '"']);
-    (!path.is_empty()).then_some(path)
+    // The ledger also retains model-authored assumptions. Recognize bounded
+    // literal existence claims, not arbitrary prose mentioning a path. Otherwise
+    // the lexical fallback mistakes adding a missing path to a registry for
+    // depending on that path's existence.
+    let text = text.trim_end_matches('.');
+    if let Some(index) = text.to_ascii_lowercase().find(PREFIX) {
+        let description = &text[..index];
+        let words: Vec<_> = description.split_whitespace().collect();
+        // A bounded affirmative noun phrase may describe the file. Negated,
+        // conditional, quantified and compound claims remain semantic claims.
+        let plain_description = description.ends_with(char::is_whitespace)
+            && (1..=6).contains(&words.len())
+            && words.iter().all(|word| {
+                word.len() <= 64
+                    && word.chars().all(|c| c.is_ascii_alphabetic() || c == '-')
+                    && ![
+                        "no", "not", "never", "none", "without", "if", "unless", "whether",
+                        "either", "neither", "and", "or", "but", "only", "one", "all", "any",
+                        "each", "every",
+                    ]
+                    .contains(&word.to_ascii_lowercase().as_str())
+            });
+        let path = text[index + PREFIX.len()..]
+            .trim()
+            .trim_matches(['`', '\'', '"']);
+        if plain_description && literal_path(path) {
+            return Some(path);
+        }
+    }
+    for suffix in [
+        " exists in the repository",
+        " exists in the repo",
+        " exists in repo",
+        " exists",
+    ] {
+        let Some(start) = text.len().checked_sub(suffix.len()) else {
+            continue;
+        };
+        if !text
+            .get(start..)
+            .is_some_and(|ending| ending.eq_ignore_ascii_case(suffix))
+        {
+            continue;
+        }
+        let path = text[..start].trim().trim_matches(['`', '\'', '"']);
+        if literal_path(path) {
+            return Some(path);
+        }
+    }
+    None
+}
+
+fn literal_path(path: &str) -> bool {
+    !path.is_empty()
+        && !path.contains(char::is_whitespace)
+        && (path.contains(['/', '\\']) || std::path::Path::new(path).extension().is_some())
 }
 
 fn same_path(left: &str, right: &str) -> bool {
@@ -227,6 +285,7 @@ mod tests {
 
     fn call(name: &str, args: serde_json::Value) -> ToolCallData {
         ToolCallData {
+            thought_signature: None,
             id: "next".into(),
             name: name.into(),
             arguments: args.to_string(),
@@ -304,6 +363,70 @@ mod tests {
                 &ExecVerificationContext::from_root(None, "")
             )
             .is_none());
+        }
+    }
+
+    #[test]
+    fn model_authored_existence_claims_use_exact_dependencies_and_fresh_evidence() {
+        let missing = "src/runtime/missing.rs";
+        for claim in [
+            format!("file exists at {missing}"),
+            format!("{missing} exists in the repo"),
+            format!("`{missing}` exists in the repository."),
+            format!("\"{missing}\" EXISTS"),
+            format!("PR-ready runtime-sensitive file exists at {missing}"),
+            format!("The generated configuration file exists at `{missing}`."),
+        ] {
+            let mut ledger = AssumptionLedger::default();
+            ledger.mark_refuted(&claim, Some("read returned not found"));
+            let context = ExecVerificationContext::from_root(None, "");
+            for name in ["patch_file", "apply_diff", "write_file"] {
+                let registry = call(
+                    name,
+                    json!({"path":"src/runtime/registry.rs", "replace":missing}),
+                );
+                assert!(
+                    refuted_assumption_conflict(&ledger, &think(name), &registry, &context)
+                        .is_none(),
+                    "{claim}: {name}"
+                );
+            }
+            let repair = call("patch_file", json!({"path":missing}));
+            assert!(
+                refuted_assumption_conflict(&ledger, &think("patch_file"), &repair, &context)
+                    .is_some(),
+                "{claim}"
+            );
+            assert!(needs_fresh_file_read(&ledger, missing));
+            confirm_file_existence_after_result(
+                &mut ledger,
+                "read_file",
+                missing,
+                &format!(
+                    "[{missing}] (1 lines, 1 bytes) [⚡ cached — unchanged since last read]\nx"
+                ),
+            );
+            assert_eq!(ledger.entries[0].status, AssumptionStatus::Refuted);
+            confirm_file_existence_after_result(
+                &mut ledger,
+                "read_file",
+                missing,
+                &format!("[{missing}] (1 lines, 1 bytes)\nx"),
+            );
+            assert_eq!(ledger.entries[0].status, AssumptionStatus::Confirmed);
+        }
+        for unrelated in [
+            "src/lib.rs does not exist",
+            "src/lib.rs exists and is correct",
+            "the API version 1.0 exists",
+            "src/lib.rs exists in a generated workspace",
+            "no file exists at src/lib.rs",
+            "if the file exists at src/lib.rs",
+            "one file exists at src/lib.rs",
+            "the file exists at src/lib.rs and is correct",
+            "another file is missing but the file exists at src/lib.rs",
+        ] {
+            assert_eq!(refuted_file_existence(unrelated), None, "{unrelated}");
         }
     }
 }

@@ -83,6 +83,8 @@ pub struct TuiReplayArtifacts {
     pub case_dir: PathBuf,
     pub packet_path: PathBuf,
     pub observer_prompt_path: PathBuf,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observer_repair_prompt_path: Option<PathBuf>,
     pub observer_response_path: PathBuf,
     pub preview_messages_path: PathBuf,
     pub case_report_path: PathBuf,
@@ -181,7 +183,12 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
         selected.truncate(limit);
     }
     if selected.is_empty() {
-        anyhow::bail!("tui replay selected 0 cases");
+        return Err(diagnostics::empty_selection(
+            &spec_path,
+            &base_root_path,
+            args.filter.as_deref(),
+            &spec.cases,
+        ));
     }
 
     eprintln!(
@@ -204,6 +211,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
             &common,
             &spec.defaults,
             case,
+            &spec_path,
             &base_root_path,
             &out_dir,
         )?;
@@ -235,10 +243,12 @@ fn run_case(
     common: &crate::CommonArgs,
     defaults: &TuiReplayDefaults,
     case: &TuiReplayCase,
+    spec_path: &Path,
     base_root_path: &Path,
     out_dir: &Path,
 ) -> Result<TuiReplayCaseReport> {
-    validate_case(case)?;
+    let input_error = |error| diagnostics::case_input_error(spec_path, base_root_path, case, error);
+    validate_case(case).map_err(input_error)?;
     let root = resolve_case_root(base_root_path, defaults, case);
     let lang = case
         .lang
@@ -257,15 +267,16 @@ fn run_case(
         .map(|m| Message::new_complete(map_role(m.role), m.content.clone()))
         .collect();
 
-    let (selector, reason_hint) = resolve_selector_and_reason(&app, case)?;
-    let observer_response_raw = render_observer_response(&case.observer_response)?;
+    let (selector, reason_hint) = resolve_selector_and_reason(&app, case).map_err(input_error)?;
+    let observer_response_raw =
+        render_observer_response(&case.observer_response).map_err(input_error)?;
     let outcome = events::replay_observer_next_action_case(
         &mut app,
         &selector,
         &reason_hint,
         &observer_response_raw,
     )
-    .map_err(|e| anyhow::anyhow!(e))?;
+    .map_err(|e| input_error(anyhow::anyhow!(e)))?;
 
     let case_dir = out_dir.join(format!("{:03}-{}", idx + 1, sanitize_case_id(&case.id)));
     std::fs::create_dir_all(&case_dir)
@@ -281,6 +292,15 @@ fn run_case(
         .with_context(|| format!("failed to write {}", packet_path.display()))?;
     std::fs::write(&observer_prompt_path, outcome.observer_prompt.as_bytes())
         .with_context(|| format!("failed to write {}", observer_prompt_path.display()))?;
+    let observer_repair_prompt_path = if let Some(prompt) = outcome.observer_repair_prompt.as_ref()
+    {
+        let path = case_dir.join("observer_repair_prompt.txt");
+        std::fs::write(&path, prompt)
+            .with_context(|| format!("failed to write {}", path.display()))?;
+        Some(path)
+    } else {
+        None
+    };
     std::fs::write(
         &observer_response_path,
         outcome.observer_raw_response.as_bytes(),
@@ -319,6 +339,7 @@ fn run_case(
             case_dir: case_dir.clone(),
             packet_path,
             observer_prompt_path,
+            observer_repair_prompt_path,
             observer_response_path,
             preview_messages_path,
             case_report_path: case_report_path.clone(),
@@ -403,23 +424,34 @@ fn evaluate_checks(
     outcome: &events::TuiNextActionReplayOutcome,
     metrics: &TuiReplayMetrics,
 ) -> Vec<TuiReplayCheckResult> {
+    let observer_issue =
+        crate::tui::suggestion::validation_issue_for_raw(&outcome.observer_raw_response);
+    let observer_detail = |label: &str, ok: bool| {
+        let mut detail = format!("{label}={ok}");
+        if !ok {
+            if let Some(issue) = observer_issue.as_ref() {
+                detail.push_str(&format!("; observer_response: {issue}"));
+            }
+        }
+        detail
+    };
     case.checks
         .iter()
         .map(|check| match check {
             TuiReplayCheck::SuggestionParsed => TuiReplayCheckResult {
                 label: "suggestion_parsed".to_string(),
                 ok: metrics.suggestion_parsed,
-                detail: format!("suggestion_parsed={}", metrics.suggestion_parsed),
+                detail: observer_detail("suggestion_parsed", metrics.suggestion_parsed),
             },
             TuiReplayCheck::HintQueued => TuiReplayCheckResult {
                 label: "hint_queued".to_string(),
                 ok: metrics.hint_queued,
-                detail: format!("hint_queued={}", metrics.hint_queued),
+                detail: observer_detail("hint_queued", metrics.hint_queued),
             },
             TuiReplayCheck::ContractQueued => TuiReplayCheckResult {
                 label: "contract_queued".to_string(),
                 ok: metrics.contract_queued,
-                detail: format!("contract_queued={}", metrics.contract_queued),
+                detail: observer_detail("contract_queued", metrics.contract_queued),
             },
             TuiReplayCheck::ObserverContains { value } => {
                 let observed = outcome
@@ -457,7 +489,12 @@ fn evaluate_checks(
                 TuiReplayCheckResult {
                     label: format!("target_message_contains:{value}"),
                     ok: matched,
-                    detail: format!("matched={matched}"),
+                    detail: serde_json::json!({
+                        "matched": matched,
+                        "selected_message_id": outcome.target_message_id,
+                        "expected_id_fragment": value,
+                    })
+                    .to_string(),
                 }
             }
         })
@@ -518,7 +555,7 @@ pub(crate) fn replay_spec_for_test(
         .cases
         .iter()
         .enumerate()
-        .map(|(index, case)| run_case(index, &common, &spec.defaults, case, root, out_dir))
+        .map(|(index, case)| run_case(index, &common, &spec.defaults, case, path, root, out_dir))
         .collect::<Result<Vec<_>>>()?;
     Ok(build_report(
         path.to_path_buf(),
@@ -530,8 +567,8 @@ pub(crate) fn replay_spec_for_test(
 fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
     let text = std::fs::read_to_string(path)
         .with_context(|| format!("failed to read tui replay spec: {}", path.display()))?;
-    let spec: TuiReplaySpec =
-        serde_json::from_str(&text).map_err(|error| diagnostics::parse_error(path, error))?;
+    let spec: TuiReplaySpec = serde_json::from_str(&text)
+        .map_err(|error| diagnostics::parse_error(path, &text, error))?;
     if spec.version != 1 {
         anyhow::bail!(
             "unsupported tui replay spec version {} (expected 1)",

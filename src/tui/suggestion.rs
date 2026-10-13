@@ -1,11 +1,16 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+mod action;
+pub(super) use action::tool_schemas;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ObserverSuggestionKind {
     Search,
     Read,
+    Edit,
+    Verify,
     Done,
     Clarify,
     AbandonPath,
@@ -16,6 +21,8 @@ impl ObserverSuggestionKind {
         match self {
             Self::Search => "search",
             Self::Read => "read",
+            Self::Edit => "edit",
+            Self::Verify => "verify",
             Self::Done => "done",
             Self::Clarify => "clarify",
             Self::AbandonPath => "abandon_path",
@@ -116,7 +123,7 @@ pub struct ObserverSuggestionEnvelope {
     pub response_contract: ObserverResponseContract,
     #[serde(default)]
     pub suggestions: Vec<ObserverSuggestion>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub quickest_check: String,
     #[serde(default)]
     pub why_this_first: String,
@@ -124,14 +131,37 @@ pub struct ObserverSuggestionEnvelope {
     pub fallback: String,
 }
 
+fn display_text<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    // Optional presentation must not discard a valid typed action. Never
+    // coerce an object into an executable suggestion or alter tool arguments.
+    Ok(Value::deserialize(deserializer)?
+        .as_str()
+        .unwrap_or_default()
+        .to_string())
+}
+
 pub fn parse_observer_suggestion_envelope(raw: &str) -> Option<ObserverSuggestionEnvelope> {
+    parse_envelope_checked(raw).ok()
+}
+
+fn parse_envelope_checked(raw: &str) -> Result<ObserverSuggestionEnvelope, String> {
     let json_str = extract_first_json_object(raw).unwrap_or_else(|| raw.trim().to_string());
-    let mut env = serde_json::from_str::<ObserverSuggestionEnvelope>(&json_str).ok()?;
+    let mut env = serde_json::from_str::<ObserverSuggestionEnvelope>(&json_str)
+        .map_err(|error| error.to_string())?;
     normalize_envelope(&mut env);
     if env.summary.is_empty() && env.primary_blocker.is_empty() && env.suggestions.is_empty() {
-        return None;
+        return Err("empty envelope: supply summary, primary_blocker, or suggestions".into());
     }
-    Some(env)
+    Ok(env)
+}
+
+/// Replay diagnostics use the same parser and primary-action validator as the
+/// TUI consumer. Serde supplies accepted kinds/types instead of a second catalog.
+pub(crate) fn validation_issue_for_raw(raw: &str) -> Option<String> {
+    match parse_envelope_checked(raw) {
+        Ok(env) => action_validation_issue(Some(&env)),
+        Err(issue) => Some(issue),
+    }
 }
 
 pub fn format_observer_suggestion_envelope(env: &ObserverSuggestionEnvelope) -> String {
@@ -269,8 +299,22 @@ fn normalize_envelope(env: &mut ObserverSuggestionEnvelope) {
     }
 }
 
+/// Structural repair eligibility is independent of confidence. A valid but
+/// uncertain answer must not be retried merely to cross the forwarding threshold.
+pub(super) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
+    let Some(env) = env else {
+        return Some("structured JSON envelope could not be parsed".into());
+    };
+    let Some(primary) = env.suggestions.first() else {
+        return Some("suggestions must contain a primary next action".into());
+    };
+    action::validation_issue(primary)
+}
+
 pub fn primary_suggestion(env: &ObserverSuggestionEnvelope) -> Option<&ObserverSuggestion> {
-    env.suggestions.first()
+    env.suggestions
+        .first()
+        .filter(|suggestion| action::usable(suggestion))
 }
 
 fn render_suggestion_line(suggestion: &ObserverSuggestion) -> String {

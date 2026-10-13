@@ -579,11 +579,13 @@ mod tests {
             0,
         );
         let repeated = ToolCallData {
+            thought_signature: None,
             id: "call_repeat".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"src/lib.rs"}).to_string(),
         };
         let different = ToolCallData {
+            thought_signature: None,
             id: "call_other".to_string(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({"path":"src/main.rs"}).to_string(),
@@ -620,6 +622,7 @@ mod tests {
             0,
         );
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: serde_json::json!({"dir":"demo_repo","include_hidden":true}).to_string(),
@@ -698,6 +701,7 @@ mod tests {
             0,
         );
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),
@@ -726,6 +730,7 @@ mod tests {
             0,
         );
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({"command":"cargo test 2>&1"}).to_string(),

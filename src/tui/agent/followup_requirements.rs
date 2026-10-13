@@ -33,6 +33,7 @@ pub(super) fn coerce_existing_followup_tool_call(
         synthesize_followup_patch(&requirement, body)?
     } else {
         ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: "read_file".to_string(),
             arguments: json!({ "path": requirement.file_path }).to_string(),
@@ -199,6 +200,7 @@ fn synthesize_followup_patch(
         }
     }?;
     Some(ToolCallData {
+        thought_signature: None,
         id: "synthetic_followup_patch".to_string(),
         name: "patch_file".to_string(),
         arguments: json!({
@@ -574,6 +576,7 @@ mod tests {
             "content": "[auto-test] ✗ FAILED (exit 1)\nmissing docs follow-up for src/tui/review_panel.rs"
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"review_panel"}).to_string(),
@@ -613,6 +616,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -640,6 +644,7 @@ mod tests {
             "content": "[auto-test] ✗ FAILED (exit 1)\nmissing runtime eval follow-up for src/tui/agent/session_bridge.rs"
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"session_bridge"}).to_string(),
@@ -678,6 +683,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -772,6 +778,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read_again".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"docs/runtime-architecture.md"}).to_string(),
@@ -814,6 +821,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch_rules_again".to_string(),
             name: "patch_file".to_string(),
             arguments: json!({"path":"src/observer/repo_rules.rs","search":"old","replace":"new"})
@@ -891,6 +899,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -955,6 +964,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -1028,6 +1038,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch_replay".to_string(),
             name: "patch_file".to_string(),
             arguments: json!({
@@ -1091,6 +1102,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: json!({
@@ -1158,6 +1170,7 @@ mod tests {
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_exec".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh"}).to_string(),

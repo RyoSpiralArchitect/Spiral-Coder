@@ -1,0 +1,4879 @@
+{
+  "version": 1,
+  "scope": "bounded Observer contract repair and recovery-pressure arbitration",
+  "fixed_models": {
+    "mistral": "mistral-small-2603",
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "baseline_runtime_identity": {
+    "source_commit": "c91dc14ed15889410b33c77e8e9fc0b035fd0b49",
+    "binary_sha256": "7abab1b2df737a0171518e4c8ea0e628bda008a9a1d1c32f2a0ca00b935fbc73",
+    "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+    "fixture_sha256": {
+      "tests/fixtures/runtime-create-file/.spiral-coder.md": "ca10f79089afcc03fcbd37535c6be57ffaf29dc0ae359820e88b57281c0a4a2c",
+      "tests/fixtures/runtime-create-file/README.md": "3ff481b8cd623b9985358120fb0543393eb69cbc860f51e754ec75c3dac6a387",
+      "tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+      "tests/fixtures/runtime-fix-rust/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+      "tests/fixtures/runtime-fix-rust/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+      "tests/fixtures/runtime-fix-rust/README.md": "4f46af2a201e34996ea91406866f5f8487dea3f514ebd1d64cf39575cad25477",
+      "tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json": "ed87b9ca938c13665a4fed37f68e8b8eed62a214683d2a2ba7b674b3844e360d",
+      "tests/fixtures/runtime-fix-rust/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+      "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+      "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+      "tests/fixtures/runtime-resume-damaged-exchange/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+      "tests/fixtures/runtime-resume-damaged-exchange/README.md": "f06054cca4301b788c1b91455f3d7208b408376f6b657ef20b37b382f3947714",
+      "tests/fixtures/runtime-resume-damaged-exchange/interrupted_session.json": "092d39c0e35e8a72f6611facc036311d25c122ca0c2360f88663ac02a05424e3",
+      "tests/fixtures/runtime-resume-damaged-exchange/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+      "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder/runtime_eval.json": "8e3d40ac0d96d19643d3aa3ac85eb1ed39d15b4343ea917ec6bd8027595a1daf",
+      "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder.md": "84990fe1761f9e06129e0205b7fb1b1eaac578c2cc7eadf46760904a90aaa312",
+      "tests/fixtures/runtime-benchmark-plan-exec-proof/docs/runtime-architecture.md": "a89099517dfae738795e7a14a5fbfee838c704f52c9f0c9aa7940a2a381b13df",
+      "tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json": "275ae0f634fdb9fe6aba4869dc485d17f49ca9a58ba214225dc301564912fd60",
+      "tests/fixtures/runtime-benchmark-plan-exec-proof/verification_receipt.txt": "a03f2386ae06b21109577020844df367857b72c2fcce384c1896fed98a89c82b",
+      "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+      "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md": "926f88966b305c7d14d0873536b44dff38387c347b9d17007d62c4e428946f59",
+      "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder/runtime_eval.json": "c271e6ad570dfad445e5983099f545bd5ca054dc3a7489fcad8bafb37165d07b",
+      "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md": "f6147ec1d78fea88fcda6b360f68745a0df8a0b158ea20894798a24e904fee21",
+      "tests/fixtures/runtime-self-fix-pr-ready/AGENTS.md": "c9be8c7b0d84ed549fdc695bfae6a0ac20123524fdd89503a2f62520b75a1508",
+      "tests/fixtures/runtime-self-fix-pr-ready/Cargo.lock": "87ea8dea63db21d1b51029b7a8f87e13e1db31cf0eb3a9365ee8a7a6872f1961",
+      "tests/fixtures/runtime-self-fix-pr-ready/Cargo.toml": "f897922eacc2181acc7e8a5d06c359be4847fb18b396bd75281fbdea4c27526b",
+      "tests/fixtures/runtime-self-fix-pr-ready/README.md": "d504e0b8d472985806da77a0635f534175616edd6c4ab1d9cf9cb95da570ab70",
+      "tests/fixtures/runtime-self-fix-pr-ready/docs/state-schema.md": "9816953cea186ff84aec3fa666cd9b9b17c449b157f09624a34ee3dcd5b08ba3",
+      "tests/fixtures/runtime-self-fix-pr-ready/scripts/pr-ready-smoke.sh": "51bcd0fdbdb1a9c2af829c6ab2e624a592f26e75db4965364ad35c1cc351d5dd",
+      "tests/fixtures/runtime-self-fix-pr-ready/src/lib.rs": "fd98585e7f0be0d77226aa797825b20f634118ae6087bfa31e03285f30f8bb59",
+      "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/followup_requirements.rs": "a60a49270087d40f66f6772b4c1cdb9c0bca7f553d800a15ac89468ebb96ff29",
+      "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/mod.rs": "fe1f7b795383691e0035eec6a91915fc94a1ae8848adf4e0264b390c863be6a0",
+      "tests/fixtures/runtime-self-fix-pr-ready/src/tui/mod.rs": "f0fccc088b01b451f9a7db9578151f3bf5403ec8786a30859e8d00e27cafba78"
+    },
+    "source_tree": "b3aae883cc77aa456c4757cf20f7b0f633ae013a",
+    "observer_suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+    "observer_replay_input_sha256": "a5f0d743f336d7acbe619803904a185bbe23a573acfc868d3858debfe0715a05"
+  },
+  "deterministic": {
+    "final": {
+      "rust_passed": 693,
+      "rust_ignored": 1,
+      "integration_passed": 1,
+      "tui_replay_passed": 3,
+      "python_passed": 12,
+      "web_passed": 53,
+      "repo_map_passed": 14,
+      "lite_smoke": "passed"
+    },
+    "log_sha256": {
+      "recovery-policy-red.log": "f9dfe238b99d323bf7244fd6c9d24d41cebb118c728f6e9d9c82b5685cb6c541",
+      "unit-first.log": "368a74fed5dcd048a28e4d8352190f1a55ca97f60a958908c288423ff41236de",
+      "check-local-first.log": "f5150f4d190fa68f2bc4776ee1e756089fe1aa3953557bb517db72e9833d6a85",
+      "check-local.log": "d18b5c89c9725393f6ff838412b385dd462c646e862d445f3d798e0d851dc1c0",
+      "check-local-final.log": "ff22cbeba90ac73306197cdbac6966f94fa368de6603734ead53cc857f1cbeba",
+      "replay-contract-red.log": "f62c9189077801b7dadc2e380c1ae03aba5333f1004524203c0d66843e10085d",
+      "check-local-diagnostics.log": "bcf64641cbd60e773421872fadcde786fffe48f0dda531951f134d5ae3fae4e7",
+      "check-local-qualified.log": "f46e26fa899e108b5c36465c570c3669a5322a91155d31865246eb0eb4d995d2"
+    },
+    "red_reproductions": [
+      "diagnosis versus trace-derived mutation pressure",
+      "pre-mutation reads blocking a new inspection",
+      "missing tool omitted from failed-check detail",
+      "stale Observer kind vocabulary omitted from parser feedback"
+    ],
+    "intermediate_failures": "Broad initial policy suppression broke two new-repo scaffold regressions; scoped suppression to repeated-observation policy, retaining the existing missing-artifact allowance."
+  },
+  "candidates": [
+    {
+      "phase": "candidate",
+      "source_commit": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+      "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+      "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+      "fixture_sha256": {
+        "tests/fixtures/runtime-create-file/.spiral-coder.md": "ca10f79089afcc03fcbd37535c6be57ffaf29dc0ae359820e88b57281c0a4a2c",
+        "tests/fixtures/runtime-create-file/README.md": "3ff481b8cd623b9985358120fb0543393eb69cbc860f51e754ec75c3dac6a387",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-fix-rust/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-fix-rust/README.md": "4f46af2a201e34996ea91406866f5f8487dea3f514ebd1d64cf39575cad25477",
+        "tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json": "ed87b9ca938c13665a4fed37f68e8b8eed62a214683d2a2ba7b674b3844e360d",
+        "tests/fixtures/runtime-fix-rust/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-resume-damaged-exchange/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-resume-damaged-exchange/README.md": "f06054cca4301b788c1b91455f3d7208b408376f6b657ef20b37b382f3947714",
+        "tests/fixtures/runtime-resume-damaged-exchange/interrupted_session.json": "092d39c0e35e8a72f6611facc036311d25c122ca0c2360f88663ac02a05424e3",
+        "tests/fixtures/runtime-resume-damaged-exchange/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder/runtime_eval.json": "8e3d40ac0d96d19643d3aa3ac85eb1ed39d15b4343ea917ec6bd8027595a1daf",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder.md": "84990fe1761f9e06129e0205b7fb1b1eaac578c2cc7eadf46760904a90aaa312",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/docs/runtime-architecture.md": "a89099517dfae738795e7a14a5fbfee838c704f52c9f0c9aa7940a2a381b13df",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json": "275ae0f634fdb9fe6aba4869dc485d17f49ca9a58ba214225dc301564912fd60",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/verification_receipt.txt": "a03f2386ae06b21109577020844df367857b72c2fcce384c1896fed98a89c82b",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md": "926f88966b305c7d14d0873536b44dff38387c347b9d17007d62c4e428946f59",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder/runtime_eval.json": "c271e6ad570dfad445e5983099f545bd5ca054dc3a7489fcad8bafb37165d07b",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md": "f6147ec1d78fea88fcda6b360f68745a0df8a0b158ea20894798a24e904fee21",
+        "tests/fixtures/runtime-self-fix-pr-ready/AGENTS.md": "c9be8c7b0d84ed549fdc695bfae6a0ac20123524fdd89503a2f62520b75a1508",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.lock": "87ea8dea63db21d1b51029b7a8f87e13e1db31cf0eb3a9365ee8a7a6872f1961",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.toml": "f897922eacc2181acc7e8a5d06c359be4847fb18b396bd75281fbdea4c27526b",
+        "tests/fixtures/runtime-self-fix-pr-ready/README.md": "d504e0b8d472985806da77a0635f534175616edd6c4ab1d9cf9cb95da570ab70",
+        "tests/fixtures/runtime-self-fix-pr-ready/docs/state-schema.md": "9816953cea186ff84aec3fa666cd9b9b17c449b157f09624a34ee3dcd5b08ba3",
+        "tests/fixtures/runtime-self-fix-pr-ready/scripts/pr-ready-smoke.sh": "51bcd0fdbdb1a9c2af829c6ab2e624a592f26e75db4965364ad35c1cc351d5dd",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/lib.rs": "fd98585e7f0be0d77226aa797825b20f634118ae6087bfa31e03285f30f8bb59",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/followup_requirements.rs": "a60a49270087d40f66f6772b4c1cdb9c0bca7f553d800a15ac89468ebb96ff29",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/mod.rs": "fe1f7b795383691e0035eec6a91915fc94a1ae8848adf4e0264b390c863be6a0",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/mod.rs": "f0fccc088b01b451f9a7db9578151f3bf5403ec8786a30859e8d00e27cafba78"
+      },
+      "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+      "observer_suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+      "observer_runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+      "repair_suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+      "repair_runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43"
+    },
+    {
+      "phase": "final",
+      "source_commit": "493196fd148ea1b66b39415977935f244d7fb7e0",
+      "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+      "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+      "fixture_sha256": {
+        "tests/fixtures/runtime-create-file/.spiral-coder.md": "ca10f79089afcc03fcbd37535c6be57ffaf29dc0ae359820e88b57281c0a4a2c",
+        "tests/fixtures/runtime-create-file/README.md": "3ff481b8cd623b9985358120fb0543393eb69cbc860f51e754ec75c3dac6a387",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-fix-rust/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-fix-rust/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-fix-rust/README.md": "4f46af2a201e34996ea91406866f5f8487dea3f514ebd1d64cf39575cad25477",
+        "tests/fixtures/runtime-fix-rust/session_bridge_resume_seed.json": "ed87b9ca938c13665a4fed37f68e8b8eed62a214683d2a2ba7b674b3844e360d",
+        "tests/fixtures/runtime-fix-rust/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder/progress.json": "570bfca29442352e9ba8c3a10ecdb1628e2627b8a56a5e39f91d1fe48d95205f",
+        "tests/fixtures/runtime-resume-damaged-exchange/.spiral-coder.md": "a0d634b22ee76e9f9de7d56ea742a94d53ef2e5abe999628c55448d2a450a44e",
+        "tests/fixtures/runtime-resume-damaged-exchange/Cargo.toml": "d3f53348755805b4a5048141ac0af447e32b717949e0267c7068e57d5f0cc421",
+        "tests/fixtures/runtime-resume-damaged-exchange/README.md": "f06054cca4301b788c1b91455f3d7208b408376f6b657ef20b37b382f3947714",
+        "tests/fixtures/runtime-resume-damaged-exchange/interrupted_session.json": "092d39c0e35e8a72f6611facc036311d25c122ca0c2360f88663ac02a05424e3",
+        "tests/fixtures/runtime-resume-damaged-exchange/src/lib.rs": "0bb3788c33d63d3bc3d608753b6e022f20e0306c7b503e65618daef829c354c6",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder/runtime_eval.json": "8e3d40ac0d96d19643d3aa3ac85eb1ed39d15b4343ea917ec6bd8027595a1daf",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/.spiral-coder.md": "84990fe1761f9e06129e0205b7fb1b1eaac578c2cc7eadf46760904a90aaa312",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/docs/runtime-architecture.md": "a89099517dfae738795e7a14a5fbfee838c704f52c9f0c9aa7940a2a381b13df",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/session_seed.json": "275ae0f634fdb9fe6aba4869dc485d17f49ca9a58ba214225dc301564912fd60",
+        "tests/fixtures/runtime-benchmark-plan-exec-proof/verification_receipt.txt": "a03f2386ae06b21109577020844df367857b72c2fcce384c1896fed98a89c82b",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+        "tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md": "926f88966b305c7d14d0873536b44dff38387c347b9d17007d62c4e428946f59",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder/runtime_eval.json": "c271e6ad570dfad445e5983099f545bd5ca054dc3a7489fcad8bafb37165d07b",
+        "tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md": "f6147ec1d78fea88fcda6b360f68745a0df8a0b158ea20894798a24e904fee21",
+        "tests/fixtures/runtime-self-fix-pr-ready/AGENTS.md": "c9be8c7b0d84ed549fdc695bfae6a0ac20123524fdd89503a2f62520b75a1508",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.lock": "87ea8dea63db21d1b51029b7a8f87e13e1db31cf0eb3a9365ee8a7a6872f1961",
+        "tests/fixtures/runtime-self-fix-pr-ready/Cargo.toml": "f897922eacc2181acc7e8a5d06c359be4847fb18b396bd75281fbdea4c27526b",
+        "tests/fixtures/runtime-self-fix-pr-ready/README.md": "d504e0b8d472985806da77a0635f534175616edd6c4ab1d9cf9cb95da570ab70",
+        "tests/fixtures/runtime-self-fix-pr-ready/docs/state-schema.md": "9816953cea186ff84aec3fa666cd9b9b17c449b157f09624a34ee3dcd5b08ba3",
+        "tests/fixtures/runtime-self-fix-pr-ready/scripts/pr-ready-smoke.sh": "51bcd0fdbdb1a9c2af829c6ab2e624a592f26e75db4965364ad35c1cc351d5dd",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/lib.rs": "fd98585e7f0be0d77226aa797825b20f634118ae6087bfa31e03285f30f8bb59",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/followup_requirements.rs": "a60a49270087d40f66f6772b4c1cdb9c0bca7f553d800a15ac89468ebb96ff29",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/agent/mod.rs": "fe1f7b795383691e0035eec6a91915fc94a1ae8848adf4e0264b390c863be6a0",
+        "tests/fixtures/runtime-self-fix-pr-ready/src/tui/mod.rs": "f0fccc088b01b451f9a7db9578151f3bf5403ec8786a30859e8d00e27cafba78"
+      },
+      "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+      "observer_suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+      "observer_runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+      "repair_suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+      "repair_runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43"
+    }
+  ],
+  "coder": [
+    {
+      "phase": "candidate",
+      "provider": "mistral",
+      "report_sha256": "0978c5301185ebaf98652c1b316bc0878c018377ebaee6ad76fa1cf28f29d0cf",
+      "run": {
+        "filter": "",
+        "requested_model": "mistral-small-2603",
+        "provider": "mistral",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://api.mistral.ai/v1",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 145.17
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 24188.833333333332,
+        "avg_tool_calls": 4.666666666666667,
+        "avg_iterations": 7.0,
+        "avg_messages": 21.0,
+        "avg_transcript_input_tokens_est": 2863.1666666666665,
+        "avg_transcript_output_tokens_est": 1741.3333333333333,
+        "avg_transcript_total_tokens_est": 4604.5,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 2.1666666666666665,
+        "avg_reflection_ledger_action_hits": 1.6666666666666667,
+        "avg_recovery_enters": 0.5,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 9415,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 3,
+            "tool_call_histogram": {
+              "exec": 2,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "a8c1b1fd60063e1621f3f6fe0d012e513647b1621ede5c48bdf8d89e02e9ab4f",
+            "session.json": "3127950b2d1271f1ce0b21c349bfbf1f8b78de0f73130500e34fa3916f8caba0",
+            "final.json": "9cb229ea795f30b088928de92b33ec6fc94c658bdf5df3d24d060a04372b19c3"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 21054,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 5,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 7,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "87452f0e6d9012b46ba23b1e0533d633a188b8fee84d00827350e4a8d75807d4",
+            "session.json": "bd9a8ffc451b10e4e1fcd8f69bae05bfea5f021579c5653162166b073f487e37",
+            "final.json": "41b50752cf4ef9b843b7224453f98f0f7d4bae42c6d6eea394d11d56b73c2395"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 11208,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 3,
+            "tool_call_histogram": {
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 2
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "d5bc14a438cdb78fcfce7dcf9c14ea23ea17869c64b7f4a9276a504ce0e39dcf",
+            "session.json": "0333bb4a21fb5e8daf8ab4b069160839192e08896b835221f03a97b5afd48520",
+            "final.json": "669cffd56e6cbe304509c00a1d7a2d5985ae3ad4a02b7927bb96c9bc6ebac569"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 15058,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "4630d3059bee0703f5c363f4b495733c137cfc63a58a14156f151591f2528bcf",
+            "session.json": "cf147ca83aee1b3bfa0b930fb3c8855f9db64ca4cf622a2f0e5e267e662d7d8d",
+            "final.json": "df50cdbdc313b0c902818a9c25fbbe467110da07542a78f0fbb58a0e56e2abb5"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 54149,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 9,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "exec": 2,
+              "patch_file": 1,
+              "read_file": 3,
+              "search_files": 1,
+              "write_file": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 10,
+              "fix": 2
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json\"]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "matched=false"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "9ab7a2b420f59ad07261d73c7ed1f9d9a7f4b5e3bfd3f75d6de945d21728c5c8",
+            "session.json": "ded3760ee32dd90a0b1b17077eb146cf9018faee281254d4a76a0b6e6fb66142",
+            "final.json": "38481460ca4f365a83eef7e81cb03748da667bc4f155ee90515aaf6020a622b6"
+          },
+          "replay_artifact_sha256": "4b090ad8d0553d0e64e10ffd5b8789537fe99c6406edb08726acb1857d15239d",
+          "original_cases_preserved": true,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion",
+            "review-panel-replay-sensitive"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 34249,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 7,
+            "tool_call_histogram": {
+              "exec": 1,
+              "patch_file": 3,
+              "read_file": 3
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 9,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 2,
+              "fix": 2
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "0cfb7355b451d0c6bc2fd41154b48af411eced0b2e1811d8d956a26f71096477",
+            "session.json": "baba39582dc0d0a8185189cbd518727cba1f6c5083a2404e46cc533e1509d32b",
+            "final.json": "1c34aa7686193a8937ec9a72f0e5fdfe062b4fc6c91c39a911f7297d759fe42b"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "candidate",
+      "provider": "openai",
+      "report_sha256": "77813f526852d7c19a970cdf7b70e037a11990d62719c899dc4cf7d3e7b95e84",
+      "run": {
+        "filter": "",
+        "requested_model": "gpt-4.1-mini",
+        "provider": "openai",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://api.openai.com/v1",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 149.419
+      },
+      "summary": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2,
+        "avg_duration_ms": 24897.166666666668,
+        "avg_tool_calls": 3.5,
+        "avg_iterations": 6.166666666666667,
+        "avg_messages": 19.666666666666668,
+        "avg_transcript_input_tokens_est": 3050.6666666666665,
+        "avg_transcript_output_tokens_est": 1170.0,
+        "avg_transcript_total_tokens_est": 4220.666666666667,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 0.8333333333333334,
+        "avg_reflection_ledger_action_hits": 0.6666666666666666,
+        "avg_recovery_enters": 0.8333333333333334,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 14794,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "5170a1d30488a38e19418bdbe2148b844c6d545794a2bc7770a0426e65fb39bf",
+            "session.json": "76e219afb75e197e9be3ab76e7e97f1728b78bf685d8ce9586065e9f55dfdcac",
+            "final.json": "3b1d8c186ad3eef9929b39ebde0e1cf5025a23fa1c68591177b3b83e26edf8b0"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 15155,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "604ca9a66eede7a9ef2e8c5cf6c4432209d5fe96557aed4e3da0534e4f7e2038",
+            "session.json": "da7007ad0ea9bbe636e3021fbaf0979d9c13818dc72ec6aa5b9c2a7a7c7e7787",
+            "final.json": "bceed45c2962812f737a7f68c3497808da07b312ebbba9a29f26c7840b6a7722"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": false,
+          "duration_ms": 11305,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "bf4ef2ecd91454bb679763159b64402f8f33b32e55a1faa42ad70e0e9161d542",
+            "session.json": "a5ee92a58c240c911f46d6e3fee7875463df4d554097bd22791ba265c12fa337",
+            "final.json": "625be035472ddc00870ef4352f31aa538977fb26d945ab8877a834d37c40410d"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 8370,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 2,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "2a015a1b1c99c998a582a8ea4a1db6af984f578b26108cbf75af5b5de1e5b4e5",
+            "session.json": "d5d312d59163db2eb2625e5c8b9a6468e213856a684cb560de388176a583f3af",
+            "final.json": "8a2723efe65b3e35fe20ed512cd6007ed9af127d8179ef06ae3b069c62dd86f4"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 68444,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 8,
+            "tool_call_histogram": {
+              "apply_diff": 3,
+              "read_file": 4,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 8,
+              "fix": 4
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "41e5ffcc8b238891053cac58f57ead101eecf254c0f17a262d1ddb96761c1dc4",
+            "session.json": "02221ab91876a849a50102a54278df59316e6e8e7c33e761ea20cc5d238255ab",
+            "final.json": "c45e0582eeb3a748aaeb1401fb79fe50cc06d1ef9f00a82f18062566f40a20da"
+          },
+          "replay_artifact_sha256": "284844b749cc011213c4446b0d09e3c3ace8bebb0127ef348b8cf69cac8cf39d",
+          "original_cases_preserved": true,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion",
+            "review-panel-replay-sensitive"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 31315,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 7,
+            "tool_call_histogram": {
+              "glob": 1,
+              "patch_file": 3,
+              "read_file": 3
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 10,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 4
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "db056638806fd3bd3284264a08cad9d19c3ce5a0123e2353832285b89897c07c",
+            "session.json": "06826c09c256bebfed91e5c203b90b11a8dbd816e4a0fcda8544be0c0d68062f",
+            "final.json": "3b532fb3b257d6257d7977143acf6ed98923ea6d0b5e306b8bf97add3b7e77c0"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "candidate",
+      "provider": "gemini",
+      "report_sha256": "511d96ab714808e12cc604c0938ade6c7cc3aa808d72daffb89f8dcb614339ff",
+      "run": {
+        "filter": "",
+        "requested_model": "gemini-3.5-flash-lite",
+        "provider": "gemini",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 214.664
+      },
+      "summary": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2,
+        "avg_duration_ms": 35770.5,
+        "avg_tool_calls": 4.333333333333333,
+        "avg_iterations": 9.833333333333334,
+        "avg_messages": 23.5,
+        "avg_transcript_input_tokens_est": 2681.3333333333335,
+        "avg_transcript_output_tokens_est": 1570.5,
+        "avg_transcript_total_tokens_est": 4251.833333333333,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 2.0,
+        "avg_reflection_ledger_action_hits": 1.3333333333333333,
+        "avg_recovery_enters": 1.0,
+        "passed_ids": [
+          "create-single-file",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "fix-failing-rust-test",
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 24376,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 6,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 2
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "2bbff3f877a9943b6a4903cfd0ca23995d1f83a7b3b593f70d29acd103ece86a",
+            "session.json": "b4bffa6e4783effa75da70a55823c0effa13d5bb79e978adede4d0fae459f7df",
+            "final.json": "4c11150558d0e1f9aa7d3a66da77201c80c511b7da0b37aa865ea73036c2a0bb"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": false,
+          "duration_ms": 57586,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 14,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "tool_call_seen:read_file",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "067e0c9869c14012975ccd0c40869bb93d507e172ba76a2d7750dcecd6bf97f6",
+            "session.json": "ba2b9532cc7d382b5d55fc60134d9159551ecebcfb22a1ecd6601f7551143fb3",
+            "final.json": "a7f5984748be426de75e3b02938204c92f54df7607299339e731ecb488917053"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 29961,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "tool_call_histogram": {
+              "exec": 1,
+              "glob": 1,
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 8,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 4,
+              "fix": 2
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "dbf926e68c83648fa297518747c1a65b157b5582e40e9e7267534ea48700001c",
+            "session.json": "2ef59e1067d70aaad8678f96ad2b6804c2c325c80d9f79d2164702d8e4add376",
+            "final.json": "03da838ebd41b33284e95f77850a802ca0be9733cd4ecb0744cfbebf860e5ddd"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 9650,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 3,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "9cfb44e4f0e3466f6d817418a81900860dcaed21217b8451599d8170b83958ac",
+            "session.json": "90898e3726347e87d08db2cfc43673377222b637e241ae8fa018fa418317a08a",
+            "final.json": "629c97b049f0c49a1f138325aff54d9386c9417ad305bfc0ae0bf092d5aeb9fd"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 37338,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 7,
+            "tool_call_histogram": {
+              "exec": 2,
+              "glob": 1,
+              "list_dir": 2,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 5,
+              "fix": 7
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            },
+            {
+              "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+              "ok": false,
+              "detail": "resolved=<eval-root>/candidate-coder-gemini/005-approved-benchmark-plan-tui-replay-smoke/tool_root/.spiral-coder/tui_replay.json bytes=2772 matched=false"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "e0ae9f99dd64e8beffbbf28a866cb71da8ef9f81275b008fc25038a31287ac05",
+            "session.json": "2b09074fa8e13ef083356d04883174bc4cdc3434d5d5d0be24bc49ff1035c316",
+            "final.json": "648bf2c80c38ed0111dd7523c4c9962211cf3b7aa8e784d7e5684f30ad63ae2b"
+          },
+          "replay_artifact_sha256": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+          "original_cases_preserved": true,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 55712,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 11,
+            "tool_call_histogram": {
+              "exec": 1,
+              "glob": 1,
+              "patch_file": 1,
+              "read_file": 5,
+              "search_files": 1,
+              "write_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 16,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 7,
+              "fix": 6
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "75cd3fc82997f3ab6de4e753d814d4ff51d3be418f25aeae441d8ea1e79dccd5",
+            "session.json": "962fb4e0a4b27e89c816e4458174d5c682fdf147d3a63159da293d98680748e5",
+            "final.json": "a904a98f7f96ef64635c3fceafc4fa77980b0da3714d3dfd8ba294cc650f1bd2"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "final",
+      "provider": "mistral",
+      "report_sha256": "7bd1786163cc9b713cb4c8e0d34ed6a12f8c1b42dea76e5e5f8564737d1db94c",
+      "run": {
+        "filter": "",
+        "requested_model": "mistral-small-2603",
+        "provider": "mistral",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://api.mistral.ai/v1",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 155.312
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 25864.0,
+        "avg_tool_calls": 4.833333333333333,
+        "avg_iterations": 7.333333333333333,
+        "avg_messages": 21.0,
+        "avg_transcript_input_tokens_est": 2666.8333333333335,
+        "avg_transcript_output_tokens_est": 1650.3333333333333,
+        "avg_transcript_total_tokens_est": 4317.166666666667,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 2.8333333333333335,
+        "avg_reflection_ledger_action_hits": 1.1666666666666667,
+        "avg_recovery_enters": 0.6666666666666666,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 11839,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 3,
+            "tool_call_histogram": {
+              "exec": 2,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "3a9116c38c8a4821672e1a2c823e2fe442fe6a8ff6a290e7d0e7fd7db2f6ee67",
+            "session.json": "8b5f3aa721870341a71a8e1ec144ae624ea5453de3f5f38661fd57e7dc0e2fed",
+            "final.json": "b421b12a899e95f3925cf91785244f34264227fc0f300b88727bb88b5906be27"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 23582,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "tool_call_histogram": {
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 7,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "8b5562a7e945cca7ff40af453fbf097b06d313b346e82d32518c923c0a38b640",
+            "session.json": "85a7b532bb5672d927006956feb3c63dab0fbfbca22f6b8f7033bbfb9a53ff1c",
+            "final.json": "03039df243dc83ca58aaacef8ddc9eff6662c4e4e56f480499106b263f3e0e56"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 17298,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 4,
+            "tool_call_histogram": {
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 7,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "13a2608cdc299e72026ebc8e1186ce6c2e129aa72f54db2b389e5d5016a2d495",
+            "session.json": "412918ea638f99f08c6b1eb1eff1ba2ec8734a346d4c6ce86c822a504765bc10",
+            "final.json": "141d67ae2308a608f0e76d40ed9db49db6628c0ed7f37ae2ea4be4cc7c799130"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 9948,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "0711cbdfcd2762969a7b28735e00751ba14d19fcea78392e23177fc6631f6b3a",
+            "session.json": "4ec2f10ba5b1b297b13dd1f7f6a54aaeaae53c8a6c6065e4422a829d154d3520",
+            "final.json": "68a6ea3bfb292e3007ff3482525fd9b0dd4d13c3925d8ce83f2dc195b41da1a6"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 57776,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 9,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "exec": 5,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+            ],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 5,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "matched=false"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "b0a8d569df7eb519fc9921782e85a25f07b5a168415f01156f1eb9df0ce84732",
+            "session.json": "f191d42d7cbfa2214433473f8f92c0aa8bb45a28f75a9ef40ca140fcaa0b2684",
+            "final.json": "fc9db3b4ca3618bec5bcb1bd862953bcd3300f44e2fcab724428b16288f4f49d"
+          },
+          "replay_artifact_sha256": "9e68bc3118be83af7fac3758beb06fdac2072e876af79866a1594bf4934a600e",
+          "original_cases_preserved": true,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion",
+            "review-panel-replay-sensitive"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 34741,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 8,
+            "tool_call_histogram": {
+              "exec": 1,
+              "patch_file": 3,
+              "read_file": 4
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 10,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 4,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "b903553ba713cceba31886142996ece4c6b7496a419a7cdf4fb252b61d5f94f1",
+            "session.json": "48361a528f89029bd4dfce0edc1244a6a3f4824208d7874b5e841bab12d7b717",
+            "final.json": "20e75e8022951b8054efea490297cfb34edb6f8000b8ca48c3f52ff7e2ea5cb2"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "final",
+      "provider": "openai",
+      "report_sha256": "29cd6e3dfb5fb487df5d56b4a760da16c916d8395801b5a89a5636c72718eec7",
+      "run": {
+        "filter": "",
+        "requested_model": "gpt-4.1-mini",
+        "provider": "openai",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://api.openai.com/v1",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 141.686
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 23592.0,
+        "avg_tool_calls": 3.8333333333333335,
+        "avg_iterations": 6.166666666666667,
+        "avg_messages": 20.0,
+        "avg_transcript_input_tokens_est": 3234.3333333333335,
+        "avg_transcript_output_tokens_est": 1126.1666666666667,
+        "avg_transcript_total_tokens_est": 4360.5,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 1.3333333333333333,
+        "avg_reflection_ledger_action_hits": 1.1666666666666667,
+        "avg_recovery_enters": 0.8333333333333334,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 13211,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "4970e20cac24d1782761bc77bd7c24c27c5e69e191e4e155f116f2d2439ff297",
+            "session.json": "8433e30c1e898e19ed0bd3af8d4b33dc8d86154a43552e789e2abd81df038b43",
+            "final.json": "eb1c69aafdcf0d567133ae8a25458e49b0b3fe1ced20a09b1c28d3fec271f69e"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 17055,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 5,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "bb7b640877aa4a91b3cfe2d21a8a8b9ba928314994faab8ea708d417219a91c5",
+            "session.json": "2703949ad44a7dc1c74abc0b62d8b2a0edb9193d4b091f314c7441b11152262f",
+            "final.json": "6ad2f9fda7c3cbcd85521a0a3f4c8e0dafe06c159abeb6acadb48f3e33aa0233"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 8926,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 1,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "2d6fd09a12e31be088c080f7e43b43bff7dc383921b9abab410a308f0a897f15",
+            "session.json": "3a77568738d8a46f00192fc9184dd611ee27d187113066573c326851076cc570",
+            "final.json": "d03e18b4297ad2659c4202326b87c790b417e8c9cf6d2f277d5c4695014dc46e"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 10961,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 3,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "80ad365be0e5cfd5d3685f36d63d9f8a6baf6b9863fb1b53b26f74b261ef925f",
+            "session.json": "6b9d67c664fd5c789054d40b28f5e8bb2860662e716144b47a315240f44c64d5",
+            "final.json": "e4ac60e4f7d4559527de3314295253c09bb34725ca3a7c4b14b8e650240b3fb6"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 61276,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 11,
+            "tool_call_histogram": {
+              "apply_diff": 1,
+              "list_dir": 1,
+              "patch_file": 2,
+              "read_file": 6,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 7,
+              "fix": 6
+            },
+            "max_file_tool_consec_failures": 1
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "auto_test_passed",
+              "ok": false,
+              "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+            },
+            {
+              "label": "assistant_contains:.spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "last assistant message missing"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "097c7ae216957cf68cc3a762625b7e554734e5d8def7949435374d48644fd1a5",
+            "session.json": "5981424cbda8de2add85039d3a97ba104d81cf85b04f8334c2216cba7088644f",
+            "final.json": "ca56a14e002c705c087077db65f2ccee96cc31abf21fa13ab3300d08ea7820b0"
+          },
+          "replay_artifact_sha256": "173e4e5a778eb2152896d1b28019b32045481e5fe8da53172ad8a43ea6f4b425",
+          "original_cases_preserved": false,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion",
+            "review-panel-replay-sensitive"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 30123,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 6,
+            "tool_call_histogram": {
+              "patch_file": 3,
+              "read_file": 3
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 9,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 3
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "b2d2262557d042302e8b3e23458cb8731c0e95d2736e115c743fdfb9954a5e19",
+            "session.json": "3bb63657746c68fe5b799a14ed836b19c860344d52988da053a35d3ef9af74b8",
+            "final.json": "201e87df0322b0b1520641fdda5fa32dc053ea284c5aa29aca414c44c3ea9438"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "final",
+      "provider": "gemini",
+      "report_sha256": "a409759d268a38300618ffa74a423dc68ec11d0a5711e3d514685f9dc38c2a32",
+      "run": {
+        "filter": "",
+        "requested_model": "gemini-3.5-flash-lite",
+        "provider": "gemini",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+        "wall_limit_seconds": 900,
+        "cargo_target_policy": "per-copied-workspace-default",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+        "runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+        "returncode": 1,
+        "timed_out": false,
+        "wall_seconds": 219.844
+      },
+      "summary": {
+        "total": 6,
+        "passed": 5,
+        "failed": 1,
+        "avg_duration_ms": 36616.166666666664,
+        "avg_tool_calls": 4.5,
+        "avg_iterations": 9.833333333333334,
+        "avg_messages": 27.0,
+        "avg_transcript_input_tokens_est": 2766.8333333333335,
+        "avg_transcript_output_tokens_est": 1812.0,
+        "avg_transcript_total_tokens_est": 4578.833333333333,
+        "avg_repo_map_fallbacks": 0.0,
+        "avg_provider_retries": 0.0,
+        "avg_provider_retry_delay_ms": 0.0,
+        "avg_reflection_ledger_prompts": 1.5,
+        "avg_reflection_ledger_action_hits": 0.5,
+        "avg_recovery_enters": 0.8333333333333334,
+        "passed_ids": [
+          "create-single-file",
+          "fix-failing-rust-test",
+          "resume-damaged-tool-exchange-fix",
+          "approved-benchmark-plan-exec-proof-resume",
+          "self-fix-pr-ready-runtime-followup"
+        ],
+        "failed_ids": [
+          "approved-benchmark-plan-tui-replay-smoke"
+        ]
+      },
+      "cases": [
+        {
+          "id": "create-single-file",
+          "ok": true,
+          "duration_ms": 26500,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "list_dir": 1,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+            "iteration_count": 7,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 1
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "f10379f9453d431728d05ddccabd9b50c836d48c393b179a1713f3a1bdb3b334",
+            "session.json": "aa617ab49d3c3faec525f8d3b21a9dc67b294bde74c04ff9ca4251b92f3821e1",
+            "final.json": "f748763ba09dc102d6ebd2462280e3b78a3cbabe9edeff6c01303b5805f23d9e"
+          }
+        },
+        {
+          "id": "fix-failing-rust-test",
+          "ok": true,
+          "duration_ms": 38027,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 2,
+            "tool_call_histogram": {
+              "patch_file": 1,
+              "read_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 9,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 3,
+              "fix": 5
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "892864af6ca3d1284f7004db879266b1600b9f345545e394133576ffff776a4e",
+            "session.json": "47252d01f3837b1350fbb930da2278dfe4c3323566d5d9bf3f86a136157aa928",
+            "final.json": "908640c0f53142e1da61df123dbcf8128d70096e2ff5725163b75ad7d8827421"
+          }
+        },
+        {
+          "id": "resume-damaged-tool-exchange-fix",
+          "ok": true,
+          "duration_ms": 29267,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 5,
+            "tool_call_histogram": {
+              "glob": 1,
+              "list_dir": 1,
+              "patch_file": 1,
+              "read_file": 2
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test 2>&1",
+            "iteration_count": 9,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 2,
+              "fix": 5
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "553c19543111d21270bc155b49b6a049eac845c175a9e878e6c3fe31bc9ab52e",
+            "session.json": "45adefe7cbfacbae75498ac37e322078dc902d0075fbd19d8d2df1e855aab4da",
+            "final.json": "292892d28585b89f76161995648973657c6a1ae4508aa688f8bb202b66b783c4"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-exec-proof-resume",
+          "ok": true,
+          "duration_ms": 11319,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 1,
+            "tool_call_histogram": {
+              "exec": 1
+            },
+            "verified_exec_commands": [
+              "grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt"
+            ],
+            "fresh_auto_test_pass_count": 0,
+            "auto_test_command": "grep -q \"src/tui/agent/benchmark_proof.rs\" .spiral-coder/runtime_eval.json",
+            "iteration_count": 4,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {},
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "85a76512c266fb0f4828d80618fe93eb920034408c47d6d80ade4667965603f3",
+            "session.json": "00b2a52b35ac994c0b0fee01870e2bfc4e003261a183eab72f10bd18d0082488",
+            "final.json": "93f10ec10b9da697a06dfa66548a12034847b0118dc5d68beb112dbcdc28f0f4"
+          }
+        },
+        {
+          "id": "approved-benchmark-plan-tui-replay-smoke",
+          "ok": false,
+          "duration_ms": 42395,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": false,
+            "task_completed": false,
+            "error_count": 0,
+            "tool_call_count": 6,
+            "tool_call_histogram": {
+              "glob": 2,
+              "list_dir": 2,
+              "read_file": 1,
+              "write_file": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+            "iteration_count": 12,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 4,
+              "fix": 7
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [
+            {
+              "label": "completed",
+              "ok": false,
+              "detail": "completed=false agent_outcome=Some(false)"
+            },
+            {
+              "label": "tool_call_seen:exec",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "tool_call_seen:patch_file",
+              "ok": false,
+              "detail": "count=0"
+            },
+            {
+              "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            },
+            {
+              "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+              "ok": false,
+              "detail": "verified_exec_commands=[]"
+            }
+          ],
+          "artifacts_sha256": {
+            "trace.jsonl": "14fc169e7512406f40e3d97303a7497d24df05109a16b25dc22b2666cef97207",
+            "session.json": "e81c792d0811e5753bc638bf895db9261996b90d59c8263ca30f3ebea7b662ae",
+            "final.json": "88d2f3aabc53080694a69e0457a8e931adb5f9609e1f733b57b5bcee4c8bcac9"
+          },
+          "replay_artifact_sha256": "ba650f688f9c674f66ccb864dc53fa9d6e9ce9b4399c63e4a57f4feb3d385ca0",
+          "original_cases_preserved": true,
+          "artifact_case_ids": [
+            "pane-prefs-observer-suggestion",
+            "review-panel-replay-sensitive"
+          ]
+        },
+        {
+          "id": "self-fix-pr-ready-runtime-followup",
+          "ok": true,
+          "duration_ms": 72189,
+          "run_error": null,
+          "metrics": {
+            "evaluator_revision": "outcome-proof-v2",
+            "completed": true,
+            "task_completed": true,
+            "error_count": 0,
+            "tool_call_count": 11,
+            "tool_call_histogram": {
+              "exec": 1,
+              "list_dir": 1,
+              "patch_file": 3,
+              "read_file": 5,
+              "search_files": 1
+            },
+            "verified_exec_commands": [],
+            "fresh_auto_test_pass_count": 1,
+            "auto_test_command": "cargo test -q tui::agent::followup_requirements::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh",
+            "iteration_count": 18,
+            "provider_retry_count": 0,
+            "recovery_stage_histogram": {
+              "diagnose": 8,
+              "fix": 6
+            },
+            "max_file_tool_consec_failures": 0
+          },
+          "failed_checks": [],
+          "artifacts_sha256": {
+            "trace.jsonl": "c172178173e1bb4cfc6c1bbda7cbb47680a0c2afd109f854acc19e7bc53a8cb7",
+            "session.json": "d9ac37f6cbc91ab1012b19fc21dc0ae360e7b53a64f6e13254eac2b8d0a22679",
+            "final.json": "4d4f82103a2cdb6199d6545eda7affaa69e945189494ba83c830af1623cb5b6b"
+          }
+        }
+      ]
+    }
+  ],
+  "observer": [
+    {
+      "phase": "candidate",
+      "provider": "mistral",
+      "report_sha256": "b6481d0ef70ecf448c5242dceaea98fae266588ee0c46e9097d28289dfd71242",
+      "identity": {
+        "phase": "candidate",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "2f0613a87c538f46e5fd6acc471eb2fc58f9d7f053418f5da0b408f990b193fc",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3183,
+            "total_tokens": 3545,
+            "completion_tokens": 362,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.98
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.196,
+          "artifacts_sha256": {
+            "request.json": "82b5d65bbd2fb6d171fa22aaede70d088c6fb8cd7860f7521a3fbf7cb1e4f0ac",
+            "response.txt": "fd04231838a3e085769a35f538a6bc2524fd0473b5782b4da92101465fd8b865",
+            "replay.json": "e7d1da57fa171de22c8d41a6bd5827e091856b7c223ffc325c4d8369bd66aa5b",
+            "replay.log": "908d7a6c1c6327f8959b0f16d2735d21f9ae21ad82becb804914a8aa920a9513"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "e5d82e05d573cc11aa5981a7e1000067f0deacca6d8a703ae37c9f92ad3bb687",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3280,
+            "total_tokens": 3659,
+            "completion_tokens": 379,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.92
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.716,
+          "artifacts_sha256": {
+            "request.json": "070626cefb3ddd324747fccb674c5bf3ce10ba910822fd00f5a9c9ee88bf6b35",
+            "response.txt": "5ac947a8e731fa5b6757b82483fb162f4da1df310d4187933fd733fde35b0a29",
+            "replay.json": "6b9b6c705fcb8633195312b0bad8b354ff5fe57f389697e1a767632bccdeeb9c",
+            "replay.log": "317ae33313a089944f67dc0e3b3af20fb6eae1ffd51429e68d7ef467ed950b9d"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "46c67f2418aa91b62eadb8769befded466d702a3c82477d33a3066067f49821d",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3216,
+            "total_tokens": 3554,
+            "completion_tokens": 338,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.312,
+          "artifacts_sha256": {
+            "request.json": "ea7124d11b935b3cd9d6b0c43d28718e77d334bf37832408b8c0e07cc4f6d7e5",
+            "response.txt": "b6d4bb249bb08ef97e6ab82b85b8001b2d947018ac28345e730e42cfc35501ba",
+            "replay.json": "e5f29e45f428b96e9ccd75f0bd697e0b1312e09c38e9a20a5e1a71d08e2e0070",
+            "replay.log": "9a9e5f16a3481047f708e93cf25f36804f7e79dfaee154e2ddb4f7853a76661c"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "d7f93e1f29c0ec5c863f64486437e2d0251e92b706899357a4945385aa6a7367",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3187,
+            "total_tokens": 3553,
+            "completion_tokens": 366,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.99
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.667,
+          "artifacts_sha256": {
+            "request.json": "663831da20e16768204107491c2e353dc698cf8fffdb43c9ffba31c875e10f5b",
+            "response.txt": "e2a68076396be07f44407f8eecf2e75c9eff7c5fd731d4390f84902cd1e1a3aa",
+            "replay.json": "6526142b9e2c5f0029a9ca13cee2e2a3053121bb828dbe36889df711f5f8644a",
+            "replay.log": "a34ecf9529daf4a236557830b043eff5f38f557207b9ba8b1bff44857c3a69d6"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bda146acaa546e5f6768786a4c527acf56c9963e13287f2257906dc33c960f3a",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3388,
+            "total_tokens": 3778,
+            "completion_tokens": 390,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.92
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.746,
+          "artifacts_sha256": {
+            "request.json": "d76025702364da5022aa97c242f5e60914f99a37bc3f575caa9481c8f97473ff",
+            "response.txt": "4bdad4aa8c9d6f15f609d22d8c756fda5c6c2c3b6fe5d76ed080f2a2aa9d47d5",
+            "replay.json": "2c2598968991a1ce93e9fb4d6efc4cce0d77566ba5eb8e6250591966dd780c47",
+            "replay.log": "c1b331964a0604740b0a6b4a3b434648e1e1acaa70acc71d81879416fc5bc225"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "a5a8888fed97c0a49a15744095ba30f198a4ebd6b6af2f55602e7f2afcd5ab19",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3236,
+            "total_tokens": 3537,
+            "completion_tokens": 301,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.99
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.485,
+          "artifacts_sha256": {
+            "request.json": "b85a09c87ee425659529f8f9868782ea4c8b61a2724b8a5395866e38711fc031",
+            "response.txt": "d5ea2003c12aacaed4a5d30f0b89040abcb55e32291589b81b8267c078353512",
+            "replay.json": "b05d16fc304c49ffa8e7cff24ed8a2673d6d5ac74ba2ba2fac777033c0972bb4",
+            "replay.log": "aa1f5796f8b3bcfea7d3a2bde857e96a43e6fb194a33e5e0ce887acb9200efd0"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 6
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "openai",
+      "report_sha256": "241048816489ae7a52bbb2c18e9d4d323f189de96ad9b66114ae0c04f5620120",
+      "identity": {
+        "phase": "candidate",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "2f0613a87c538f46e5fd6acc471eb2fc58f9d7f053418f5da0b408f990b193fc",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3016,
+            "completion_tokens": 350,
+            "total_tokens": 3366,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 8.085,
+          "artifacts_sha256": {
+            "request.json": "e65ea8679f39d42c7a49d7e875ee91a56fbd432ae34e148c6f23eb4f6712900a",
+            "response.txt": "aa8a77a3912f2f2db1c0a161ccccc46e7d2a8551203707bd03cd324985d57f84",
+            "replay.json": "150b71b4febeb5e231414df99bdc1a2e5e19db2198454612af2012d7cf5eab07",
+            "replay.log": "19a9138e00d12cd79f9e2e40abf918c81a3ba210609df5911d565484a7daa65e"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "e5d82e05d573cc11aa5981a7e1000067f0deacca6d8a703ae37c9f92ad3bb687",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3104,
+            "completion_tokens": 331,
+            "total_tokens": 3435,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.687,
+          "artifacts_sha256": {
+            "request.json": "1c26efa120953e6a63e39df0066cdc1e2eb6817d1456bb943e978f1ce412ad17",
+            "response.txt": "04d343463622aa531e23f94809c0886be757c1fd973288cacd7d694b09025166",
+            "replay.json": "5d23aef90dd63ac7a1b18dfb0af5fc33e674a1866d730a121ade48a0172affeb",
+            "replay.log": "3d0cf4b5f63e3fed1327356c8bb8b8004bbb5f45806ad567d2492eb4ed01658a"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "46c67f2418aa91b62eadb8769befded466d702a3c82477d33a3066067f49821d",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3052,
+            "completion_tokens": 326,
+            "total_tokens": 3378,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.33,
+          "artifacts_sha256": {
+            "request.json": "70e075f2eddc86b1035b969750895b86e5b9a5281a38a2998cdb9a08673de01d",
+            "response.txt": "102290eebc74a55e56a2a6d483cfef59c672cea424e4a8a13fa7de38a1689b03",
+            "replay.json": "76b3b346eaad5825f7edd9b65bbc2f07feab8660143942c851a44e5ac7ea4ab6",
+            "replay.log": "4310cea7080edb68c4dc2c50386011596b8be38483781f36bdfd3a18f7994506"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "d7f93e1f29c0ec5c863f64486437e2d0251e92b706899357a4945385aa6a7367",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3028,
+            "completion_tokens": 306,
+            "total_tokens": 3334,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": false,
+            "contract_queued": false,
+            "observer_message_count": 3,
+            "coder_preview_system_count": 2,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": null,
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": false,
+          "ok": false,
+          "seconds": 5.249,
+          "artifacts_sha256": {
+            "request.json": "3a94ee2db1906f095cc5ba8a19e3ad25d5bac59ec671ae804c6122c014f87a37",
+            "response.txt": "2e735bcd5a165529403be3c9189c4e72a9706dc2384a9444d7a6ed76f93d64a6",
+            "replay.json": "2849863326ba6d124dbc49ed3bbf3aceb75fecd526be94b3d77600e53c7e7efd",
+            "replay.log": "bbe602b2efe951620b37ab0ce1ab1c67f241b5ac591d378e897276a16fbd15f2"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bda146acaa546e5f6768786a4c527acf56c9963e13287f2257906dc33c960f3a",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3222,
+            "completion_tokens": 377,
+            "total_tokens": 3599,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 8.486,
+          "artifacts_sha256": {
+            "request.json": "e3abca82c904a6431f25cbaab0c52e11f2e072d5e049f8c08940b02b1808ddbd",
+            "response.txt": "94cb2d9e1c963a70d415b820450cd7870626b4b6689d3ccab51c6ea21f53f84f",
+            "replay.json": "920c44121496ab791ca1878bac751ce5b1a9e86583a83f6ce512b76ee5256ad1",
+            "replay.log": "00a80c1453d1e35740d3cc2bcba86dc636ec1e9e6709e1d034654b8f576548eb"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "a5a8888fed97c0a49a15744095ba30f198a4ebd6b6af2f55602e7f2afcd5ab19",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3068,
+            "completion_tokens": 330,
+            "total_tokens": 3398,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 6.691,
+          "artifacts_sha256": {
+            "request.json": "c18ee8acbca7c187b66f4f6128a146a64dc0e3480f8f28a0623582445aeea83e",
+            "response.txt": "028003e7e3e726fec42645bf0d58514e7a69874f95c159031c78fb10f56aba02",
+            "replay.json": "5e07b221862eb46dd9136ac8939c7d73f49531b03894f1150da0ac27d7ddb7e9",
+            "replay.log": "070e99475bbe85303b86a57b98aba4321f52efd18172b3304bbd27eb58c0b0aa"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 5
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "gemini",
+      "report_sha256": "0bf0580167daa387847120f51ecda9d2338a182388346bbd8cac1120594a6dba",
+      "identity": {
+        "phase": "candidate",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "2f0613a87c538f46e5fd6acc471eb2fc58f9d7f053418f5da0b408f990b193fc",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 378,
+            "prompt_tokens": 3560,
+            "total_tokens": 3938
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.23,
+          "artifacts_sha256": {
+            "request.json": "5a47bec1b8f5b948a1ebf866b09e983f3d8c06036ddd263205cd945a5d60532d",
+            "response.txt": "32e9ce147840a87ddf2a99630567e46f4612895eedf4364d63d656fbffd0f931",
+            "replay.json": "b64706de614ecbfee605e881091e3dac97a74da48efd2a134030a508cd96a591",
+            "replay.log": "9c4fe62abaee152ac3b0736f66bd03d3193f59b77ebacfc0948f7ae985f20127"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "e5d82e05d573cc11aa5981a7e1000067f0deacca6d8a703ae37c9f92ad3bb687",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 410,
+            "prompt_tokens": 3674,
+            "total_tokens": 4084
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.567,
+          "artifacts_sha256": {
+            "request.json": "a398af7d482462583e26281fdceb5c5919df248981654ccd534a9efec7abe134",
+            "response.txt": "bb99bca5484f9272670f0485b271fa856b51157031ddc02985f57cb35a574355",
+            "replay.json": "db0e566c725046e38c60eb9a3a40f00c7073607b184e1099b9496a90e02fcfcb",
+            "replay.log": "4c8f05caaa9b03934cd45e2db6d3c331bfca1cbc36812a0a6c82efb2bc668c93"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "46c67f2418aa91b62eadb8769befded466d702a3c82477d33a3066067f49821d",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 392,
+            "prompt_tokens": 3611,
+            "total_tokens": 4003
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.452,
+          "artifacts_sha256": {
+            "request.json": "536250d85130fcb3cb7bf40bbd70dbdc0555c5308155d2896fc903659f54de9b",
+            "response.txt": "b49358fd0d3ee47be3be8a0813047a572c19342f572d50ee94d0657979b2e42e",
+            "replay.json": "9bbb63e96a6e3601e72444b336fbf8f9e2370076b60a0f602d47a9de61b0f453",
+            "replay.log": "691a6539329fc690b1a8957044268f92fac7952620715951d58f4c769571c210"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "d7f93e1f29c0ec5c863f64486437e2d0251e92b706899357a4945385aa6a7367",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 349,
+            "prompt_tokens": 3550,
+            "total_tokens": 3899
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.657,
+          "artifacts_sha256": {
+            "request.json": "219c19926ebbb90910ec15af0e1f8070bbaa2becd399676d667f159793b3ba15",
+            "response.txt": "562cfb54cf74d45604728ee21e9fc32ef5862da5fda16e86d808f0cb74c0a1ed",
+            "replay.json": "9e81038ab39d55923432f8ea11f2e92bcfd0a8bbf231d2356cd1e7e6f37c7177",
+            "replay.log": "5255b7b6016f1b837025aab3e84ce1508f9f9e3cceab1803cb951ccddcd10f8c"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bda146acaa546e5f6768786a4c527acf56c9963e13287f2257906dc33c960f3a",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 381,
+            "prompt_tokens": 3777,
+            "total_tokens": 4158
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.015,
+          "artifacts_sha256": {
+            "request.json": "5eeeb26479fab8538dbe40b56f2afccf6d38dfaf61549f6b6ea79aa00a0bc8d0",
+            "response.txt": "88ccaa0309fdb9d5e54d4ac55290c8428345ae376764b426602924a585c5967c",
+            "replay.json": "8d999bb85a6c38df292c292cf080ff2402af0c30b98ecc19e48597971f70b021",
+            "replay.log": "fda941471eeb628a95fac965e56694132a4ab01b9595be3483c4bf68669abd46"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "a5a8888fed97c0a49a15744095ba30f198a4ebd6b6af2f55602e7f2afcd5ab19",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 336,
+            "prompt_tokens": 3631,
+            "total_tokens": 3967
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.896,
+          "artifacts_sha256": {
+            "request.json": "437529723c7e8ae2156fbe5653074fdb505c04a5f45ad889a8f4529b8e87b32b",
+            "response.txt": "f3aba35afea7c60d29f2fe09e59359ed7dbdd6ae04f31c23805fbf401eba66f9",
+            "replay.json": "0923ebc84ecc885b885d8fde1df39eaaf277f0d0335bd95ab42da25d815d85b0",
+            "replay.log": "a500ec0348d8128c055226b2389faa0487693fdf85a5f9349ce4d58f31fed8b3"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 6
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "mistral",
+      "report_sha256": "90fbf49087cd771e9d7b65c367e9e32e612f1098637d054fd86b44e51b4d2521",
+      "identity": {
+        "phase": "final",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "58ff15864a27d3e6fd1332a5c9e12dc0805efa60efaf84259cb87fc8ffa159ff",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3183,
+            "total_tokens": 3530,
+            "completion_tokens": 347,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.98
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.73,
+          "artifacts_sha256": {
+            "request.json": "766e367bc07c1e3b4ab56ba7d2351d67e1f08fee337830216572be3e2c5f6079",
+            "response.txt": "91f20bf7264cf1c8a6b4247a550f40caa9b36b028ba6f49e524a9ef6d31fdb4e",
+            "replay.json": "5862c1a7d7fad0c6005a991558764d652262216f1bbbc889ea9913d2446d26cb",
+            "replay.log": "e38904b83218eabfc3def80f9086eefbe1267876fb9ddbedc51eef0b5def4e62"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "5c1bc47e8726b770f290f8df76e132449b31d8b5cc10a6b87b3a824f9e53027c",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3280,
+            "total_tokens": 3633,
+            "completion_tokens": 353,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.925,
+          "artifacts_sha256": {
+            "request.json": "2f1cabd5ff36939b160eb5656ef2aac0df3d70a3db7747e857c3a4f9e86549c3",
+            "response.txt": "b6a56ab4b4eac3d1965cd8d689f62391955122ee82003d6da33e6922b8095f26",
+            "replay.json": "7b07c6f29fe342609338ac7c56ce56d15eddb769898f76f3a24602ef20d70eed",
+            "replay.log": "4b04449175dfbda8fdae413dafa8d2a1ecac86678fbd102c6690c5d814f1e71b"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "53727bd6564ecfcfc92a5946fa02d58f4c327678999acd95429faabc045abf54",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3216,
+            "total_tokens": 3528,
+            "completion_tokens": 312,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.98
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.667,
+          "artifacts_sha256": {
+            "request.json": "12d956aac076787cfed3919182903eeb41d30170eb04cd2e46b87420c16e5c1d",
+            "response.txt": "a5f1f4d3632089fe94e8390cb6aff3f93ac338d1c1c7bee7f3e34c4ba140f5c3",
+            "replay.json": "ed57bc751209f1c62ce6f41c06b9c01710e490277d0f480c85644483e5082e29",
+            "replay.log": "c8db497659250443e708c18d78fe1d1866b906238a64e3a5d8c33bb1019d2722"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "55b4e9741f0681cb00b8ae5eaceb6e2a589297d00a94de9638b9f702c91ef34b",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3187,
+            "total_tokens": 3518,
+            "completion_tokens": 331,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.99
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.506,
+          "artifacts_sha256": {
+            "request.json": "19cd69fa7322b9d369762381aee545f048a8f54210de3cf11d5e262e32bc8a30",
+            "response.txt": "2815f7055fb0cc75c40023b748f1c937e9f6960fef23a766281f5e02542c3dcd",
+            "replay.json": "a629d229559c5559d3edba2f8356f0859981f3a9e7c6cb5d43e34a5fbd83fe55",
+            "replay.log": "e65286a54c31ee5b43a9a7ecbbe3a724b695c81a56b518e12824dcab0ae2fd52"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bee4ec225109d176886bec187674613d4d2cf6e67f4d7edcc3679d4f694acd01",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3388,
+            "total_tokens": 3784,
+            "completion_tokens": 396,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.4,
+          "artifacts_sha256": {
+            "request.json": "d572febb75b7d961ca844942891e43b1714d29427f09b5d69c59ca77d354de85",
+            "response.txt": "1a5d4c3328831b40bb3a40859ae08bfa8a75196a7c74a88f2c663431d14c957c",
+            "replay.json": "8ba6233b67c145fe0d9e3001aad2f9e7867eac9e13f2a33c8e4d40580716e1a6",
+            "replay.log": "af7002afda2001d8731b0deaf335a9bdbeff3bdfd4e5c869d76104fda01b8c33"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "4932146073ecd3fa6f2fa1565f72ab00ea9801922bb8a7986fd4749069d1ad27",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3236,
+            "total_tokens": 3573,
+            "completion_tokens": 337,
+            "prompt_tokens_details": {
+              "cached_tokens": 912
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.99
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.37,
+          "artifacts_sha256": {
+            "request.json": "a50e814e89054d07d38421f06624202e049093070b95228e204d0037cc180ec4",
+            "response.txt": "220f57e281eaaedeb6ac7ac8430bfd063cb3dbda07e6a4048a3ae5c49bc7cea7",
+            "replay.json": "072fab7ccaf3b906848cfd290d9ee2b2723256c89fac5735d06e2a3f6f6a094a",
+            "replay.log": "3269b6652eaaa0263f886a43f8bdb861abc7a9cbbd989dd36d1c6ef884e3e980"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 6
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "openai",
+      "report_sha256": "53d2e0b3ece877aa1ab036455fe2be92646e0fcb6481014a38d20d083e9cea5b",
+      "identity": {
+        "phase": "final",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "58ff15864a27d3e6fd1332a5c9e12dc0805efa60efaf84259cb87fc8ffa159ff",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3016,
+            "completion_tokens": 356,
+            "total_tokens": 3372,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.846,
+          "artifacts_sha256": {
+            "request.json": "b98afb11e39181d01665fbb544674d769e2fec3b45e82ff4551aa3b51a19a72a",
+            "response.txt": "eb874c10e7a16f557264947809018fd41b7d483bdb5f0cc688a39f51058e3e4b",
+            "replay.json": "82fdd70d43b29b696a4677e270c66b0a47516a866ae7d46a5015d10ccd847008",
+            "replay.log": "ab5a60d57a7e5fa08b491c9ea500a25ea98bdbb97c1accbf79b72cd7dd04557d"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "5c1bc47e8726b770f290f8df76e132449b31d8b5cc10a6b87b3a824f9e53027c",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3104,
+            "completion_tokens": 330,
+            "total_tokens": 3434,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.696,
+          "artifacts_sha256": {
+            "request.json": "7367f15c546db7d94c973963eb25eb37a747e8e4071d21950ffb64d255bb2450",
+            "response.txt": "8bf6aa44f46fdbd16f37bf470e1816f05dec2f43badc6a69a884c75d685f3964",
+            "replay.json": "045ff5ea17c083d3318ead73d8887d2b94e2db91239ec3b06359267c6d4c76ef",
+            "replay.log": "5b4bb6e02a825c09e0dd40e4a682d346ec7a9baec2e67f296d15861ed0941095"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "53727bd6564ecfcfc92a5946fa02d58f4c327678999acd95429faabc045abf54",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3052,
+            "completion_tokens": 334,
+            "total_tokens": 3386,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.877,
+          "artifacts_sha256": {
+            "request.json": "b45042b048776829667ade74ae5fda64bfe22ab97a947e03cf5e865fbab4f046",
+            "response.txt": "406c060111935d5d1b38b14c9f0a92b100948d83e5a66e17e4fe48f61c4307d5",
+            "replay.json": "6a1568744799f3e52ad581c600d6e14da8ae373440fd5e201b0bbabb66898980",
+            "replay.log": "10ec89baf7a28b9e014e49b3490bb766f2daaa06d84bd91971e50e937f091d22"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "55b4e9741f0681cb00b8ae5eaceb6e2a589297d00a94de9638b9f702c91ef34b",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3028,
+            "completion_tokens": 319,
+            "total_tokens": 3347,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": false,
+            "contract_queued": false,
+            "observer_message_count": 3,
+            "coder_preview_system_count": 2,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": null,
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": false,
+          "ok": false,
+          "seconds": 5.24,
+          "artifacts_sha256": {
+            "request.json": "9e240458b4c8970394665c8a73adf0f5ddb93435f7663fe1208f47aecad10497",
+            "response.txt": "873c4a0f532d1a992dcb06ee6e1f3ffaf2a5dbf95d6e0f215574e97e0e2fafa6",
+            "replay.json": "6186a1dbef0a4c3b0b15033b7e95a984fe612d7a6cc4786054df5c561dafaf4f",
+            "replay.log": "6eda491d027f79238219969d6041e2f3b1305e451244040e0ec87ef82fa1cd22"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bee4ec225109d176886bec187674613d4d2cf6e67f4d7edcc3679d4f694acd01",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3222,
+            "completion_tokens": 375,
+            "total_tokens": 3597,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 6.388,
+          "artifacts_sha256": {
+            "request.json": "6450a851e230eeef4f0eb38f548a3fc5865165f163c7b4f38310f8f0e177df39",
+            "response.txt": "d51cf3fb64d95e10f86c4a30a239d7fca20d0c86c860c6ac376b04a6603b5705",
+            "replay.json": "646fcdb75e6ecca810cc14bed1d3978363a70620a0e7490f739595deb2f70173",
+            "replay.log": "7eb18457b2b956d8396e2f011926e657533f2f2e2c3124bc02aaed15194d641a"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "4932146073ecd3fa6f2fa1565f72ab00ea9801922bb8a7986fd4749069d1ad27",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3068,
+            "completion_tokens": 319,
+            "total_tokens": 3387,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 9.342,
+          "artifacts_sha256": {
+            "request.json": "436c15a3494c3bc294b867b1194f44492e0795164bc7a008a17c1b504211dd78",
+            "response.txt": "c7044e1cae148053553bf1d67189538bc765bfdad24bba83a21e73d1fe9211e8",
+            "replay.json": "bc519827dacdb5720421e561577594793a686aa2b5d9f81df1cf3f7f268dd532",
+            "replay.log": "7f1d7556050979046eac90adb24276690dbaaec2702616f1af1708cea5e7dafc"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 5
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "gemini",
+      "report_sha256": "405e0571dfed381f7e92ca22d4f8facaf96d3d3131a4c21a293dcc529ba373a9",
+      "identity": {
+        "phase": "final",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "4e0c78213db3f8d73718219f05bd09bbeaa27a4dfac99212641f37f780d3fc6a",
+        "runner_sha256": "fe8ca57f9f933b731a17da0a28a8ffb14dffcb2fb65df574ad6b27446c90ca71",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "repair-anchor-before-retry",
+          "prompt_sha256": "58ff15864a27d3e6fd1332a5c9e12dc0805efa60efaf84259cb87fc8ffa159ff",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 362,
+            "prompt_tokens": 3560,
+            "total_tokens": 3922
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.499,
+          "artifacts_sha256": {
+            "request.json": "b41bc8ee8ea0431c0d7e63e6d60d28c7b25bc158bcde4c213f61242ccfd2d08c",
+            "response.txt": "072503671c6975876dcf5254dae24a1f5c7c3745eb2bea3b86662b7fe54fcee1",
+            "replay.json": "2bc473a9ff23d85c2b408164b95cd175a79de2436cbade93bff087c51dfd806e",
+            "replay.log": "2ea7fb69ea87386614740d5d4aa903fe9499072277f17b0f443384ede7293d1d"
+          }
+        },
+        {
+          "id": "followup-docs-after-source-edit",
+          "prompt_sha256": "5c1bc47e8726b770f290f8df76e132449b31d8b5cc10a6b87b3a824f9e53027c",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "docs/state-schema.md"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 400,
+            "prompt_tokens": 3674,
+            "total_tokens": 4074
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "docs/state-schema.md"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.862,
+          "artifacts_sha256": {
+            "request.json": "f33d58471e57fd4946e2d910260fbf5f1a3c83053f1f5e182db2b77173660ed2",
+            "response.txt": "65ce3bd552e620a37ccf7848f96b7219a805d54fc8bc2a2b116bc2b4da0ec118",
+            "replay.json": "3a7a6011b2c0c1a1203bb95ecc5449ed9d7a0a6bb4591538811a4151856f93f6",
+            "replay.log": "7c3eb83edbb801bfabb6632ebfe6a3b0a03e69a1e791801ebeb96a9cb75fc9ec"
+          }
+        },
+        {
+          "id": "non-git-fixture-diagnosis",
+          "prompt_sha256": "53727bd6564ecfcfc92a5946fa02d58f4c327678999acd95429faabc045abf54",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/lib.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 387,
+            "prompt_tokens": 3611,
+            "total_tokens": 3998
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/lib.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.149,
+          "artifacts_sha256": {
+            "request.json": "810e72b477ec7199c6bd3be538df5dc84da3da4b496ecaccd8d1e26f4cf835c2",
+            "response.txt": "f43278566777123b3289a4686112ec4230acf650c57373fa0dcaa6eff240e8e3",
+            "replay.json": "d0a67ba6137c896e14aba3a92ba770addd50816dbdc6cf0232336980866bcf8c",
+            "replay.log": "53c2064b56124613bd5320667c0ac2a798e1e29a1986f202cdb72cc81dd15de4"
+          }
+        },
+        {
+          "id": "current-exact-verification",
+          "prompt_sha256": "55b4e9741f0681cb00b8ae5eaceb6e2a589297d00a94de9638b9f702c91ef34b",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 357,
+            "prompt_tokens": 3550,
+            "total_tokens": 3907
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.513,
+          "artifacts_sha256": {
+            "request.json": "95183c197afb3d487e7654a7e9cd5c0ee7a6983566d3a1e0246299fedecf4101",
+            "response.txt": "c25ec33af8a91c2608e61eab3c7eec5c25f19ea0d433a4dcb43d073306a0df3d",
+            "replay.json": "6eb226441da23b26c8ba299830143e6855d4d5d4dcdb56898ff3a10fcce0567f",
+            "replay.log": "1d3a4b4a66f30ee0225279aad268eec776e024f4ecfa54156a3a61552813216e"
+          }
+        },
+        {
+          "id": "failed-replay-input-after-long-output",
+          "prompt_sha256": "bee4ec225109d176886bec187674613d4d2cf6e67f4d7edcc3679d4f694acd01",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": ".spiral-coder/tui_replay.json"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 383,
+            "prompt_tokens": 3777,
+            "total_tokens": 4160
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.943,
+          "artifacts_sha256": {
+            "request.json": "f7213fd545eaa7c3161bcc0aaef93bc3ba027b96b8a2c58174aad46d4ae9e5a3",
+            "response.txt": "527231f49b73729852d8fef948658496a5e3dd595fb87a378da87256f7dba5cd",
+            "replay.json": "cbee5965039538926546280f142f24f57402f726eb980972c6c71d4a3f1d9c96",
+            "replay.log": "6bcfac39a9f38899ec452861d8ccfaa9f994cf81b5ece873454bad4883665724"
+          }
+        },
+        {
+          "id": "original-task-after-continuations",
+          "prompt_sha256": "4932146073ecd3fa6f2fa1565f72ab00ea9801922bb8a7986fd4749069d1ad27",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 365,
+            "prompt_tokens": 3631,
+            "total_tokens": 3996
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-11",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.092,
+          "artifacts_sha256": {
+            "request.json": "acb9a4fb2d6f2bedf2d521b016e9ba28673a4f6a1f6df875d4b2205dc2dd6cc9",
+            "response.txt": "fda079d5eedb52b759fad573a1d4acaf10ce1d2ec4078a52eb8a26c19973ee25",
+            "replay.json": "3caf04085ee708c52f71e7c8ee3eb1c02346fab55d2fb580fc57b8b491525ab2",
+            "replay.log": "e398fac718b133b16547e99e7524b5e7650228ab9426de65941bc848083dca30"
+          }
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 6
+      }
+    }
+  ],
+  "repair": [
+    {
+      "phase": "candidate",
+      "provider": "mistral",
+      "report_sha256": "87e6d934da3a089a44b134ee2ffc2f3f2f8ed699622825095304a95fbc4aba41",
+      "identity": {
+        "phase": "candidate",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "46a8d8573d389f3219e07ac4d05a01a6dc76261e31c15fc6a3d9a433c172e18f",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3708,
+            "total_tokens": 4066,
+            "completion_tokens": 358,
+            "prompt_tokens_details": {
+              "cached_tokens": 3168
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.99
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 6.026,
+          "artifacts_sha256": {
+            "request.json": "aa2290d353bbc7b2b26099fa59331192be211a506aa3bd2f27597d4850f725d8",
+            "response.txt": "0678580fda4b69855a80c01cd787553128618eeeefc570ec91b989d4bfade4c2",
+            "replay.json": "dd22df6adeb97c0c687cd6f376751d032a432b50e690219d491d6444a6ae155c",
+            "replay.log": "1dfb1d3bdac7d44c5b4e02e96f2e739a73b732bbdf837e698813f6f3ced44f9e"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "0908b3206eef5e5d9a673b110ee11ab23408035eb5ab952bb0a94e11b4c2ed56",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3701,
+            "total_tokens": 4053,
+            "completion_tokens": 352,
+            "prompt_tokens_details": {
+              "cached_tokens": 3152
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.058,
+          "artifacts_sha256": {
+            "request.json": "a676e96cb23f80c00aff6d5c087490451a148dd700c7a196cb78a05d0ecac972",
+            "response.txt": "90db4a2e4ab44e2b91c0a84c2735dca7ad8fd25d275a31a263af19f11053916e",
+            "replay.json": "6b33334f78f2119dd1168216775494ae15f0a5dd3b0fe7ad64756b1a34166cbd",
+            "replay.log": "bc039f3e262de3020ebd1631e48044c6680ddbd9d2a1961248da5955155dd8c5"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "51f964539bdfa3b34647daf6af1fb02b930ff9439022783ad1a20886658b0ebb",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3705,
+            "total_tokens": 4053,
+            "completion_tokens": 348,
+            "prompt_tokens_details": {
+              "cached_tokens": 3184
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.648,
+          "artifacts_sha256": {
+            "request.json": "433238475ec94e10ef99d6b7a40f1f32b654bc48305c84e9532f9d5263f63ed3",
+            "response.txt": "c0d8bde3545db7a0737a601d68665cf6cc6a8c11f17e208e9a2cd3d967fb9127",
+            "replay.json": "7192a3b06fd4e0b3f13eae4a655ef6aac43a00f1d7191f6d0fac9ea11d11246a",
+            "replay.log": "cab88e61561563ef3bc2e94e899da1514ceafd499040b96fe10c1a928be51692"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "openai",
+      "report_sha256": "687b563765eb03de8fff8a2371d89f0db3f627a38b68bbbc9a84c714a64cff08",
+      "identity": {
+        "phase": "candidate",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "46a8d8573d389f3219e07ac4d05a01a6dc76261e31c15fc6a3d9a433c172e18f",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3523,
+            "completion_tokens": 333,
+            "total_tokens": 3856,
+            "prompt_tokens_details": {
+              "cached_tokens": 2816,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.445,
+          "artifacts_sha256": {
+            "request.json": "dc4994d102eaefa4ce3808e645c0803e660754264078e76bea0d3b9ce775712c",
+            "response.txt": "75b51c74170e317655ed6312faf4b0e33a8181f9cb434eede1a0c235bffa9c73",
+            "replay.json": "ec2d9383190205f63ea7b3df1bd389144f6e3b460bd4efb14bb69077db152f55",
+            "replay.log": "a87d133521558ec40ac8be2e2e1c37848a70eb459f700bb7aff605b90520e034"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "0908b3206eef5e5d9a673b110ee11ab23408035eb5ab952bb0a94e11b4c2ed56",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3503,
+            "completion_tokens": 330,
+            "total_tokens": 3833,
+            "prompt_tokens_details": {
+              "cached_tokens": 2816,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.857,
+          "artifacts_sha256": {
+            "request.json": "c87c83598aae575cf7482fdf1c377aa72d85f3d23db6ee8f5efd3db24315ed2a",
+            "response.txt": "3acd59aa1fa189b53b986c1917ca3517f483daaa14b0842eca646b8cc7d6a5c9",
+            "replay.json": "754c735d55b0bbbdff963e32b747066eb4412a444dc7cb4df9e70deadc9e1326",
+            "replay.log": "ce45486ae62bdff86c5a6e10e5aa81aed749f04237cec6ee03c910dbd42c06bc"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "51f964539bdfa3b34647daf6af1fb02b930ff9439022783ad1a20886658b0ebb",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3521,
+            "completion_tokens": 329,
+            "total_tokens": 3850,
+            "prompt_tokens_details": {
+              "cached_tokens": 1920,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.631,
+          "artifacts_sha256": {
+            "request.json": "3fc8e118b8a5abb08b87cc2a56d3855ae04106005ce287ae23e84fcf3e6d843e",
+            "response.txt": "e2e9320b5fd9005cf69843a730e896cbf01636bfcd68dc111b965e9e57b7993a",
+            "replay.json": "c6e282f3fb804c8963e53646dfc2472d2fe801bb76d4a8f213f72885de90b23a",
+            "replay.log": "e4094b9a9118923d07a0a8fd8fce1c82aacf80d71f4223b4e4af9338fc20beb5"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "gemini",
+      "report_sha256": "d05601d3233afe5ebbcdb7af55f7a24ae4a6ed9464de4ef2b7937427d7c1485b",
+      "identity": {
+        "phase": "candidate",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "source": "6a386e31c2b2451ffe1157c6d39e697a18898421",
+        "binary_sha256": "5ca1a191d95de32af8216678af2b99f29fe248163749e8f977bd945cd0009a7c",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "46a8d8573d389f3219e07ac4d05a01a6dc76261e31c15fc6a3d9a433c172e18f",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 382,
+            "prompt_tokens": 4068,
+            "total_tokens": 4450
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.577,
+          "artifacts_sha256": {
+            "request.json": "b5cdf1005f45537c36dd76140a9249775606e4fcedc9fd6f482d7a6fbf3d3f9e",
+            "response.txt": "65ff8164f40f650abbf77707a017a022a844dd73c8af1f0eb580e2b6f9111083",
+            "replay.json": "eefd99c44f877ae2677935dfc2aaa0cae165b456fc23d21aae63a94dd13bebee",
+            "replay.log": "e045ca29d204e1e05b4798c678a0d697eb653bdca2818d9d7f4e46e6e7f18d6f"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "0908b3206eef5e5d9a673b110ee11ab23408035eb5ab952bb0a94e11b4c2ed56",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 393,
+            "prompt_tokens": 4085,
+            "total_tokens": 4478
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.293,
+          "artifacts_sha256": {
+            "request.json": "8c798e8cca6d7ee0eb2845d055bdd839d407df5e2481152d62101caaa0758547",
+            "response.txt": "90db4a2e4ab44e2b91c0a84c2735dca7ad8fd25d275a31a263af19f11053916e",
+            "replay.json": "6b33334f78f2119dd1168216775494ae15f0a5dd3b0fe7ad64756b1a34166cbd",
+            "replay.log": "6fcaf542f67d1884dae9a4b765685ebb012416bfd99e847483e2229e22b60547"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "51f964539bdfa3b34647daf6af1fb02b930ff9439022783ad1a20886658b0ebb",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 379,
+            "prompt_tokens": 4060,
+            "total_tokens": 4439
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.94,
+          "artifacts_sha256": {
+            "request.json": "f432603dd64393e840c1928e382c9ece2dc1e5499f423e338005704a6ffc0a72",
+            "response.txt": "d00c110afa18f786a6c7e9aac6407f8ca29b561fd53835b33ee6828848f2bf2f",
+            "replay.json": "8084c90dfc953534f32edc51d5163183b013a234efe463dd6520e111a716b770",
+            "replay.log": "218830b54ab2b0db1c0ec1e4a6c9a9e7257f1bb948007d846de516cff31e66b5"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "mistral",
+      "report_sha256": "ace85c05b99d6103feef87e51b7c8e5ebcd93028389db4b09d581bfeeec8ae21",
+      "identity": {
+        "phase": "final",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "4ed4fda038763e7833b5577aec3125f7e850427ab44420f7829f5bcd0bbe5622",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3718,
+            "total_tokens": 4071,
+            "completion_tokens": 353,
+            "prompt_tokens_details": {
+              "cached_tokens": 3168
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.98
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.817,
+          "artifacts_sha256": {
+            "request.json": "90bce47f7e298b98b79738f7cf114833a87b3ef000cdbce3405b5f9ae4baf3fb",
+            "response.txt": "2cf302f5235cebdba3e6a9dda420c69b06735f1a26e2bd71a45bfe1a68b39f4c",
+            "replay.json": "64bdec75e68bc9dbb8383e1267c86ffcc5312e77466646d95b6d646076922b8d",
+            "replay.log": "debc918402da408c0f1ce3ca2eedd7c6772f6044bc48fc0949663b7aee704fee"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "88865602baa24b3e6b4e998e4c963e7fd68ef04244cfbaed96f4f1c69c8b0241",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3709,
+            "total_tokens": 4061,
+            "completion_tokens": 352,
+            "prompt_tokens_details": {
+              "cached_tokens": 3152
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 4.395,
+          "artifacts_sha256": {
+            "request.json": "32de4077c3e18b81135667156c13a978eaea421a90284119c2f946caf77527d6",
+            "response.txt": "90db4a2e4ab44e2b91c0a84c2735dca7ad8fd25d275a31a263af19f11053916e",
+            "replay.json": "6b33334f78f2119dd1168216775494ae15f0a5dd3b0fe7ad64756b1a34166cbd",
+            "replay.log": "2aed8745b0b7d3c7a37dcd9cdadf2d0ee3dd3226645c495825e7910fb2a85e92"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "4e53b8170764aea59c92d4e9d760ee6dfb579e2c886ac1e9927397ffd299cce2",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3715,
+            "total_tokens": 4063,
+            "completion_tokens": 348,
+            "prompt_tokens_details": {
+              "cached_tokens": 3200
+            },
+            "service_tier": "standard"
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.306,
+          "artifacts_sha256": {
+            "request.json": "8f8b396d6c4683f79912e8debfa3164d1eaa4b198c72cc8e9ad2e6a4c4c954a7",
+            "response.txt": "17b8fa843ac2eb3c146ee75033831b9ea67dc4bfdb15d6ec611de7f656700300",
+            "replay.json": "345a122757e8071a100bb32924b59c626f501459eadf277fa7d9532d561068e9",
+            "replay.log": "7493f2951bc4cf9670a24d90ad3a6d3d7daa3f4a22be5286da1b4e4bbe419ecc"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "openai",
+      "report_sha256": "a56ecfb137fca0fe1d80f35a728b47a1c426effcaf5700ae4224d64bccc2ff81",
+      "identity": {
+        "phase": "final",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "4ed4fda038763e7833b5577aec3125f7e850427ab44420f7829f5bcd0bbe5622",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3531,
+            "completion_tokens": 333,
+            "total_tokens": 3864,
+            "prompt_tokens_details": {
+              "cached_tokens": 2816,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 5.786,
+          "artifacts_sha256": {
+            "request.json": "e3130f74dbf05adf76e7ae84767e23d80b0d67fa81b5020d858ea85e25300c34",
+            "response.txt": "75b51c74170e317655ed6312faf4b0e33a8181f9cb434eede1a0c235bffa9c73",
+            "replay.json": "ec2d9383190205f63ea7b3df1bd389144f6e3b460bd4efb14bb69077db152f55",
+            "replay.log": "5f27b20c8b6aabcb301715d418aeb4ee7d251c33bd05fabf13069454b87427b1"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "88865602baa24b3e6b4e998e4c963e7fd68ef04244cfbaed96f4f1c69c8b0241",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3510,
+            "completion_tokens": 330,
+            "total_tokens": 3840,
+            "prompt_tokens_details": {
+              "cached_tokens": 2816,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.84
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 10.299,
+          "artifacts_sha256": {
+            "request.json": "987df7addc3a7871775a5d5159e45413eb1b9303bd7169c755e0f993b7069973",
+            "response.txt": "a60dfbab5b9bb60492725a75f7c03ce0b8feaedb2efea119ac1fc6361dde9d8d",
+            "replay.json": "bff42c6fd56eb9a300777a9dd12c7b0fe5e443c4f4fae53dcd77a0648f061b31",
+            "replay.log": "0825d817710e096500fd892480a27068bd5b39aa35a739957d07fe691a91aada"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "4e53b8170764aea59c92d4e9d760ee6dfb579e2c886ac1e9927397ffd299cce2",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "prompt_tokens": 3529,
+            "completion_tokens": 372,
+            "total_tokens": 3901,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::",
+              "cwd": "<eval-root>/final/repo/."
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 7.864,
+          "artifacts_sha256": {
+            "request.json": "ce3d8785dcd1e7a58f62a2ffbf2699940f8531f07432389cd1bc0bdb344dfff7",
+            "response.txt": "941805ac24311b90b08b23374a47782d290ba390f305083eb9b208254adaaecb",
+            "replay.json": "68c42f941b3eb4cb6c7f584f4674fd5cdc7942c11e063b5e246f8db461d8fb93",
+            "replay.log": "9903bffd831204fd44ef40f3da5fdff419111910a14361c332a731b850668138"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    },
+    {
+      "phase": "final",
+      "provider": "gemini",
+      "report_sha256": "94b98cec77be673b740603d124c110e601d81eff0b7e54354694746aa14fef78",
+      "identity": {
+        "phase": "final",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "source": "493196fd148ea1b66b39415977935f244d7fb7e0",
+        "binary_sha256": "87bbccbb40fd4b49c4219db0aecbb6716740a11990bc3c76ca127fe9f30b62f6",
+        "suite_sha256": "0abc6e300989acd22ab027746c8e520b2ec84add4837fd5fd5bda0971f04d26c",
+        "runner_sha256": "6172e51e20959cb7dd0d1d9a92bea3639f2fd97d858abb06f7d5fc64a91c1f43",
+        "temperature": 0.2,
+        "max_tokens": 1200,
+        "request_timeout_seconds": 90,
+        "transport": "OpenAI-compatible non-streaming HTTP; prompt and consumer from actual TUI replay",
+        "api_retries": 0
+      },
+      "cases": [
+        {
+          "id": "missing-tool",
+          "prompt_sha256": "4ed4fda038763e7833b5577aec3125f7e850427ab44420f7829f5bcd0bbe5622",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 381,
+            "prompt_tokens": 4077,
+            "total_tokens": 4458
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 3.775,
+          "artifacts_sha256": {
+            "request.json": "34717c52a6ee290c6a3abb23a0bf7b03f7ae4cf9d7d48ee24da83fb4e1a6afef",
+            "response.txt": "41abe75cd1a0522966ecd0257d1b91abd80b879bed5ecc060c9ac2847a485691",
+            "replay.json": "13da969ed84cf241ae25b2d7d5b8be29a538ae6104b4ff5a5a2088a6aec7f0ee",
+            "replay.log": "890da447404f3eb618ab28924371b08c97054ea6e61915ee4610574fedefb10f"
+          }
+        },
+        {
+          "id": "malformed-json",
+          "prompt_sha256": "88865602baa24b3e6b4e998e4c963e7fd68ef04244cfbaed96f4f1c69c8b0241",
+          "expected_primary_actions": [
+            {
+              "tool": "read_file",
+              "path": "src/parser.rs"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 393,
+            "prompt_tokens": 4093,
+            "total_tokens": 4486
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "read",
+            "tool": "read_file",
+            "args": {
+              "path": "src/parser.rs"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 6.529,
+          "artifacts_sha256": {
+            "request.json": "1f3eb839c9f79e0c34a633c0ba81e25ecaf7d349149bfc38e7d0365410fc291c",
+            "response.txt": "90db4a2e4ab44e2b91c0a84c2735dca7ad8fd25d275a31a263af19f11053916e",
+            "replay.json": "6b33334f78f2119dd1168216775494ae15f0a5dd3b0fe7ad64756b1a34166cbd",
+            "replay.log": "bad81e050509e093bef45efd4b3fafd33ed93f5553fe0ce73f8b6c122150b2d8"
+          }
+        },
+        {
+          "id": "incompatible-tool",
+          "prompt_sha256": "4e53b8170764aea59c92d4e9d760ee6dfb579e2c886ac1e9927397ffd299cce2",
+          "expected_primary_actions": [
+            {
+              "tool": "exec",
+              "command": "cargo test -q parser::tests::"
+            }
+          ],
+          "finish_reason": "stop",
+          "usage": {
+            "completion_tokens": 377,
+            "prompt_tokens": 4069,
+            "total_tokens": 4446
+          },
+          "native_tool_call_count": 0,
+          "replay_returncode": 0,
+          "metrics": {
+            "suggestion_parsed": true,
+            "hint_queued": true,
+            "contract_queued": true,
+            "observer_message_count": 1,
+            "coder_preview_system_count": 4,
+            "target_message_id": "coder-2",
+            "failure_kind": "tool_error"
+          },
+          "primary": {
+            "kind": "verify",
+            "tool": "exec",
+            "args": {
+              "command": "cargo test -q parser::tests::"
+            },
+            "confidence": 0.95
+          },
+          "primary_matches": true,
+          "ok": true,
+          "seconds": 6.204,
+          "artifacts_sha256": {
+            "request.json": "2209415c330a10b3b188493a9c4c3c28650911334553788725a1b35eddd35b82",
+            "response.txt": "44c8dc9b70cfc4e3e38c6e0810cb5c755db92247d7a5efe1bec746d863e5134c",
+            "replay.json": "c3b55aaf45cc7594b9befcde6fc4bc17477ab5d5d84fd7f811285ad8a4e8e918",
+            "replay.log": "ca88cb3c940df5dacb864dd8d317b36ce8d3ef11e78907e12605b5497df61e1d"
+          }
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3
+      }
+    }
+  ],
+  "repair_provenance": [
+    {
+      "id": "missing-tool",
+      "source_run": "final-observer-openai",
+      "source_case_id": "current-exact-verification",
+      "source_response_sha256": "3615c022cce91a7223d2b5568f699a7e29adce976f2c6f46342c0c135ec3f115"
+    },
+    {
+      "id": "malformed-json",
+      "source_run": "baseline-observer-gemini",
+      "source_case_id": "repair-anchor-before-retry",
+      "source_response_sha256": "05bae6441b7d118b1eeea47b6105e3f6087ce0777bae399a4c75491dc7b29e72"
+    },
+    {
+      "id": "incompatible-tool",
+      "source_run": "baseline-repeat-observer-gemini",
+      "source_case_id": "current-exact-verification",
+      "source_response_sha256": "3417f6ea5a99f25ff1dbf5d87ca27dfc767ab19cdd13d917cfbfd3bfc8c74711"
+    }
+  ],
+  "conditions": {
+    "coder_spec_sha256": "2edcc57bb2291ed10d0130b9a0997e018e52b0593d0fa576e59bc064a66c5db0",
+    "coder_runner_sha256": "72d1ba53a412720a4295f5119dfe4cb1dda314a0b93628a9a9ec399edf3ac3ac",
+    "coder_temperature": 0,
+    "coder_max_tokens": 2048,
+    "coder_request_timeout_seconds": 90,
+    "coder_suite_wall_seconds": 900,
+    "coder_caps": [
+      14,
+      14,
+      10,
+      8,
+      12,
+      18
+    ],
+    "observer": {
+      "temperature": 0.2,
+      "max_tokens": 1200,
+      "request_timeout_seconds": 90,
+      "requests_per_case": 1,
+      "models": {
+        "mistral": "mistral-small-2603",
+        "openai": "gpt-4.1-mini",
+        "gemini": "gemini-3.5-flash-lite"
+      }
+    },
+    "repair_calls_per_captured_failure": 1,
+    "repair_http_retries": 0,
+    "repair_acceptance": "actual parse, exact expected tool/arguments, queued advisory hint, no native tool call",
+    "transport_boundary": "Live Observer probes use non-streaming HTTP with actual exported prompt and Rust replay consumer; local mock covers the two-request TUI streaming lifecycle."
+  },
+  "limitations": [
+    "Small curated panels; no provider ranking or general reliability/nonregression claim.",
+    "No unchanged final-candidate repeat or isolated causal comparison.",
+    "Observer success is advisory delivery, not execution or Coder task completion.",
+    "Frozen tool-use criteria remain unchanged even for otherwise completed apply_diff/write_file repairs.",
+    "GUI receipt parity and buffered-token request-generation isolation are not qualified by these tests."
+  ]
+}

@@ -61,55 +61,7 @@ fn is_broad_search_pattern(pattern: &str) -> bool {
 }
 
 fn looks_like_verification_command(command: &str) -> bool {
-    let cmd = command.trim().to_ascii_lowercase();
-    if cmd.is_empty() {
-        return false;
-    }
-
-    // Git sanity checks.
-    if cmd == "git status" || cmd.starts_with("git status ") {
-        return true;
-    }
-    if cmd == "git diff" || cmd.starts_with("git diff ") {
-        return true;
-    }
-
-    // Rust.
-    if cmd.contains("cargo test")
-        || cmd.contains("cargo check")
-        || cmd.contains("cargo clippy")
-        || cmd.contains("cargo fmt")
-    {
-        return true;
-    }
-
-    // Node.
-    if cmd.contains("npm test")
-        || cmd.contains("pnpm test")
-        || cmd.contains("yarn test")
-        || cmd.contains("bun test")
-        || cmd.contains("vitest")
-        || cmd.contains("jest")
-    {
-        return true;
-    }
-
-    // Python.
-    if cmd.contains("pytest") || cmd.contains("python -m pytest") {
-        return true;
-    }
-
-    // Go.
-    if cmd.contains("go test") {
-        return true;
-    }
-
-    // .NET / Java.
-    if cmd.contains("dotnet test") || cmd.contains("mvn test") || cmd.contains("gradle test") {
-        return true;
-    }
-
-    false
+    crate::tui::agent::exec_classification::is_observed_verification(command)
 }
 
 pub fn analyze(events: &[Event]) -> Vec<Risk> {
@@ -137,6 +89,20 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
 
     for e in events {
         match e {
+            Event::AutomaticTestFailed { path, diagnostic } => push(Risk {
+                axis: RiskAxis::Reliability,
+                severity: Severity::Warn,
+                description: format!("Automatic test failed after editing {path}"),
+                evidence: Some(diagnostic.clone()),
+            }),
+            Event::FileEditUnconfirmed { path } => push(Risk {
+                axis: RiskAxis::Reliability,
+                severity: Severity::Info,
+                description: "File edit outcome is not observed".to_string(),
+                evidence: Some(format!(
+                    "displayed attempt: {path}; no successful file-tool result"
+                )),
+            }),
             Event::CommandExecuted { command } => {
                 if looks_like_heavy_command(command) {
                     let c = command.trim();
@@ -175,8 +141,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
                     let desc = if cmd.is_empty() {
                         "Command failed".to_string()
                     } else {
-                        let clipped = if cmd.len() > 120 {
-                            format!("{}…", &cmd[..120])
+                        let clipped = if cmd.chars().count() > 120 {
+                            format!("{}…", cmd.chars().take(120).collect::<String>())
                         } else {
                             cmd.to_string()
                         };
@@ -192,8 +158,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
             }
             Event::SandboxBreach { command, detail } => {
                 let cmd = command.trim();
-                let clipped = if cmd.len() > 120 {
-                    format!("{}…", &cmd[..120])
+                let clipped = if cmd.chars().count() > 120 {
+                    format!("{}…", cmd.chars().take(120).collect::<String>())
                 } else {
                     cmd.to_string()
                 };
@@ -204,8 +170,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
             }
             Event::DangerousCommand { command, reason } => {
                 let cmd = command.trim();
-                let clipped = if cmd.len() > 120 {
-                    format!("{}…", &cmd[..120])
+                let clipped = if cmd.chars().count() > 120 {
+                    format!("{}…", cmd.chars().take(120).collect::<String>())
                 } else {
                     cmd.to_string()
                 };
@@ -222,8 +188,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
                 hunks,
             } => {
                 let p = path.trim();
-                let p = if p.len() > 160 {
-                    format!("{}…", &p[..160])
+                let p = if p.chars().count() > 160 {
+                    format!("{}…", p.chars().take(160).collect::<String>())
                 } else {
                     p.to_string()
                 };
@@ -237,8 +203,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
                 truncated_to_chars,
             } => {
                 let cmd = command.trim();
-                let clipped = if cmd.len() > 120 {
-                    format!("{}…", &cmd[..120])
+                let clipped = if cmd.chars().count() > 120 {
+                    format!("{}…", cmd.chars().take(120).collect::<String>())
                 } else {
                     cmd.to_string()
                 };
@@ -403,8 +369,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
             evidence_lines.push(format!("max_ms: {}", max_ms));
             evidence_lines.push("top:".to_string());
             for (cmd, ms) in sorted.iter().take(3) {
-                let clipped = if cmd.len() > 120 {
-                    format!("{}…", &cmd[..120])
+                let clipped = if cmd.chars().count() > 120 {
+                    format!("{}…", cmd.chars().take(120).collect::<String>())
                 } else {
                     cmd.to_string()
                 };
@@ -427,7 +393,8 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
     });
     if let Some(idx) = last_edit {
         let has_verify_after = events.iter().skip(idx.saturating_add(1)).any(|e| match e {
-            Event::CommandExecuted { command } => looks_like_verification_command(command),
+            Event::CommandSucceeded { command } => looks_like_verification_command(command),
+            Event::AutomaticTestPassed { .. } => true,
             _ => false,
         });
         if !has_verify_after {
@@ -443,7 +410,7 @@ pub fn analyze(events: &[Event]) -> Vec<Risk> {
                 },
                 description: RISK_MISSING_VERIFICATION.to_string(),
                 evidence: Some(
-                    "No tests/build/status command observed after the last edit.".to_string(),
+                    "No successful tests/build command observed after the last edit.".to_string(),
                 ),
             });
         }

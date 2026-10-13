@@ -5,6 +5,11 @@ use crate::governor_contract;
 
 use super::{ExecKind, VerificationLevel};
 
+mod observed;
+mod replay;
+
+pub(crate) use observed::{is_observed_verification, is_required_harness_check, HarnessCheck};
+
 /// Only simple words, quotes, assignments, `&&`, and `2>&1` are understood.
 /// Reject expansion, pipelines, redirection, multiline scripts, and status masking.
 fn commands(command: &str) -> Option<Vec<Vec<String>>> {
@@ -266,6 +271,9 @@ fn verification(words: &[String]) -> Option<VerificationLevel> {
     if words.is_empty() || forbidden_flags(words) {
         return None;
     }
+    if replay::is_replay(words) {
+        return Some(VerificationLevel::Behavioral);
+    }
     if words[0] == "git" && !diagnostic(words) {
         return None;
     }
@@ -510,9 +518,6 @@ mod tests {
                 "../../../tests/fixtures/runtime-self-fix-observer-rules/.spiral-coder.md"
             ),
             include_str!("../../../tests/fixtures/runtime-self-fix-pr-ready/.spiral-coder.md"),
-            include_str!(
-                "../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder.md"
-            ),
         ] {
             let command = fixture
                 .lines()

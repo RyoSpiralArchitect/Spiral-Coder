@@ -27,6 +27,7 @@ mod runtime_eval;
 mod server;
 mod streaming;
 mod task_graph;
+mod task_origin;
 mod trace_writer;
 mod tui;
 mod tui_replay;
@@ -2745,18 +2746,7 @@ async fn run_agent_with_behavior(
     let json_out_path = json_out.map(|p| resolve_session_path(p, tool_root.as_deref()));
     let graph_out_path = graph_out.map(|p| resolve_session_path(p, tool_root.as_deref()));
 
-    // Build the user prompt text.
-    fn default_continue_prompt(lang: &str) -> String {
-        let l = lang.trim().to_ascii_lowercase();
-        if l == "fr" {
-            "Continue depuis l’état précédent. Reprends la tâche et vérifie avec des commandes/tests.".to_string()
-        } else if l == "en" {
-            "Continue from the previous state. Resume the task and verify with commands/tests."
-                .to_string()
-        } else {
-            "前回の状態から続けて。作業を再開して、コマンド/テストで検証して。".to_string()
-        }
-    }
+    // Runtime continuation is transport input, not a replacement human task.
     let pending_user_turn = resuming
         && start_messages_json
             .as_ref()
@@ -2765,6 +2755,7 @@ async fn run_agent_with_behavior(
             == Some("user");
     let mut used_stdin_as_prompt = false;
     let mut append_user_message = true;
+    let mut user_input_origin = task_origin::MessageOrigin::User;
     let mut user_input = match (prompt, common.stdin) {
         (Some(p), _) => p,
         (None, true) => {
@@ -2777,7 +2768,10 @@ async fn run_agent_with_behavior(
             append_user_message = false;
             String::new()
         }
-        (None, false) if resuming => default_continue_prompt(&lang),
+        (None, false) if resuming => {
+            user_input_origin = task_origin::MessageOrigin::Runtime;
+            task_origin::continuation_prompt(&lang).to_string()
+        }
         (None, false) => {
             anyhow::bail!("missing prompt. Provide a prompt argument or pass --stdin.")
         }
@@ -2868,7 +2862,7 @@ async fn run_agent_with_behavior(
     };
     messages_json.extend(at_ref_messages_json);
     if append_user_message {
-        messages_json.push(json!({"role":"user","content": user_input}));
+        messages_json.push(task_origin::user_message(user_input, user_input_origin));
     }
 
     // Scan project context (stack/git/tree + .spiral-coder.md/AGENTS.md + test_cmd).

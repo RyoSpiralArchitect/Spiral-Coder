@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "scope": "Observed counterexamples and bounded repairs from three additional candidates; no model ranking, causal or general reliability claim.",
+  "previous_ledger": {
+    "path": "../2026-10-13-recovery-cycles/failure-modes.json",
+    "sha256": "7b85cab0a46bb4f868dbbf37401afa089d600b7096f7ff6f28b94874185ef32f",
+    "scope": "Earlier observations remain immutable. A previous_id links related modes, not a claim that earlier examples occurred in these new rounds."
+  },
+  "modes": [
+    {
+      "id": "reflection_action_identity_ignores_edit_payload",
+      "category": "harness_dependency",
+      "status": "repaired_with_deterministic_counterexamples",
+      "observed": "The prior reflection gate treated revised payloads and distinct commands as identical actions.",
+      "examples": [
+        "previous/round4-gemini/approved-benchmark-plan-tui-replay-smoke",
+        "deterministic/reflection_action_tests"
+      ],
+      "repair": {
+        "commit": "493447a2a6ebd62ef5555d86acbf863de3624650",
+        "change": "Compare complete execution-relevant arguments; ignore wire formatting, unused fields, IDs and opaque continuation metadata."
+      },
+      "boundary": "Identical retries remain blocked. Changed arguments grant no diagnosis, repair or verification proof. Zero retained live mismatch messages does not prove every provider exercised the repaired boundary.",
+      "previous_id": "reflection_action_identity_ignores_edit_payload"
+    },
+    {
+      "id": "protocol_feedback_lacks_repair_vocabulary",
+      "category": "harness_feedback",
+      "status": "additional_instance_repaired",
+      "observed": "The retry example supplied free-form last_outcome text rejected by the enum parser.",
+      "examples": [
+        "deterministic/mock-probe",
+        "deterministic/reflection_feedback_offers_parseable_outcomes"
+      ],
+      "repair": {
+        "commit": "493447a2a6ebd62ef5555d86acbf863de3624650",
+        "change": "Generate last_outcome guidance from the accepted shared enum; round-trip every suggested value through the actual parser."
+      },
+      "boundary": "No protocol field is synthesized and accepted inputs do not change.",
+      "previous_id": "protocol_feedback_lacks_repair_vocabulary"
+    },
+    {
+      "id": "early_replay_input_failure_loses_spec_identity",
+      "category": "harness_diagnostics",
+      "status": "repaired_with_replay_and_resume_coverage",
+      "observed": "Before any replay report exists, missing target errors omit the spec and recovery falls back to generic diagnosis.",
+      "examples": [
+        "round1-openai/approved-benchmark-plan-tui-replay-smoke",
+        "deterministic/early_replay_input_failure_survives_long_roots_compaction_and_resume"
+      ],
+      "repair": {
+        "commit": "c63a10e0cccd5915d2b2fe2903654cfa2f098b78",
+        "change": "Retain spec, case and original input error on one line without displacing target guidance under the four-line budget."
+      },
+      "boundary": "An unrelated successful pwd does not discharge the pending input repair; no check or completion is invented.",
+      "previous_id": "semantic_replay_failure_loses_input_context"
+    },
+    {
+      "id": "empty_selection_omits_input_and_filter_context",
+      "category": "harness_diagnostics",
+      "status": "repaired_with_real_runner_coverage",
+      "observed": "Selecting the requested case before adding it reports zero cases without enough input/filter context.",
+      "examples": [
+        "round1-gemini/approved-benchmark-plan-tui-replay-smoke",
+        "deterministic/empty_replay_selection_reports_the_input_and_existing_ids"
+      ],
+      "repair": {
+        "commit": "c63a10e0cccd5915d2b2fe2903654cfa2f098b78",
+        "change": "Show input, filter, bounded existing IDs and total, with explicit no-case/no-check execution."
+      },
+      "boundary": "This diagnostic does not create a case or imply that a source path mentioned in a task exists in the copied workspace."
+    },
+    {
+      "id": "independent_replay_check_defects_disclosed_serially",
+      "category": "harness_diagnostics",
+      "status": "repaired_with_compaction_coverage",
+      "observed": "Unknown file_includes and replay_filter kinds are repaired in separate expensive turns before a later target error.",
+      "examples": [
+        "round2-openai/approved-benchmark-plan-tui-replay-smoke",
+        "deterministic/replay_schema_feedback_lists_independent_defects_within_the_history_budget"
+      ],
+      "repair": {
+        "commit": "a1c797964f5110a36ef567a89cfbe856c7b90fe6",
+        "change": "List up to four invalid check positions, one known shape and the compact enum/value guide within the existing four-line budget; count omitted positions."
+      },
+      "boundary": "No assertion is changed or invalid input accepted. GPT TUI passes in the next candidate but one live sample does not establish causation."
+    },
+    {
+      "id": "described_existence_claim_blocks_unrelated_edit",
+      "category": "harness_dependency",
+      "status": "open_new_wording_after_bounded_repair",
+      "observed": "The file `src/tui/agent/session_bridge.rs` exists in the project. is not recognized by the bounded existence parser. Its overlap fallback blocks patch_file and apply_diff on the separate followup_requirements.rs registry. Only four observation tools execute; there is no mutation or fresh verification.",
+      "examples": [
+        "round3-mistral/self-fix-pr-ready-runtime-followup"
+      ],
+      "repair": null,
+      "boundary": "Earlier recognized literal forms remain covered. This new wording must not be represented as repaired or attributed solely to model compliance.",
+      "previous_id": "described_existence_claim_blocks_unrelated_edit"
+    },
+    {
+      "id": "generic_diagnosis_creates_new_failure",
+      "category": "open_recovery_failure",
+      "status": "open",
+      "observed": "Generic diagnosis recommends Git in a copied non-Git fixture; git status fails and introduces unrelated recovery work.",
+      "examples": [
+        "round1-gemini/resume-damaged-tool-exchange-fix",
+        "round3-gemini/self-fix-pr-ready-runtime-followup"
+      ],
+      "repair": null,
+      "boundary": "Ground diagnosis in observed failure/environment while preserving the requirement to diagnose.",
+      "previous_id": "generic_diagnosis_creates_new_failure"
+    },
+    {
+      "id": "followup_diagnosis_conflicts_with_progress_target",
+      "category": "harness_coordination",
+      "status": "open",
+      "observed": "After a Rust patch, automatic verification fails while docs/spec follow-up is unfinished. Diagnosis blocks a docs edit; progress then blocks a docs read and directs an edit back to the original Rust file.",
+      "examples": [
+        "round3-gemini/self-fix-pr-ready-runtime-followup"
+      ],
+      "repair": null,
+      "boundary": "The final candidate has no current automatic-test pass here. Required follow-up and failure focus must be coordinated without bypassing proof or extending the fixed cap."
+    },
+    {
+      "id": "required_protocol_block_omitted_after_feedback",
+      "category": "open_protocol_failure",
+      "status": "open",
+      "observed": "Protocol-block omissions alternate with discovery despite repair feedback and consume fixed iteration budgets.",
+      "examples": [
+        "round1-gemini/resume-damaged-tool-exchange-fix",
+        "round1-gemini/approved-benchmark-plan-tui-replay-smoke",
+        "round1-gemini/self-fix-pr-ready-runtime-followup"
+      ],
+      "repair": null,
+      "boundary": "Actionable feedback does not establish compliance; do not waive required blocks or manufacture native calls.",
+      "previous_id": "required_protocol_block_omitted_after_feedback"
+    },
+    {
+      "id": "structured_edit_and_target_construction",
+      "category": "open_task_failure",
+      "status": "open",
+      "observed": "Invalid JSON, unmatched anchors, invented check kinds, missing failure-like assistant targets and edits to the wrong artifact prevent TUI construction.",
+      "examples": [
+        "round1-openai/approved-benchmark-plan-tui-replay-smoke",
+        "round2-openai/approved-benchmark-plan-tui-replay-smoke",
+        "round2-gemini/approved-benchmark-plan-tui-replay-smoke",
+        "round3-gemini/approved-benchmark-plan-tui-replay-smoke"
+      ],
+      "repair": null,
+      "boundary": "GPT TUI passes in round 3. Better diagnostics do not prove general construction reliability; preserving the original case alone does not create the requested case.",
+      "previous_id": "structured_edit_and_target_construction"
+    },
+    {
+      "id": "verification_without_final_handoff",
+      "category": "open_completion_failure",
+      "status": "open",
+      "observed": "Round 2 Gemini self-fix edits source/docs/spec and obtains an automatic-test pass but reaches the cap without the required final report.",
+      "examples": [
+        "round2-gemini/self-fix-pr-ready-runtime-followup"
+      ],
+      "repair": null,
+      "boundary": "This observation applies to round 2; round 3 does not obtain a current test pass. Do not substitute an automatic or synthetic report.",
+      "previous_id": "verification_without_final_handoff"
+    },
+    {
+      "id": "required_tool_usage_mismatch",
+      "category": "evaluation_requirement",
+      "status": "criterion_retained",
+      "observed": "An otherwise completed and verified repair uses write_file and fails only the frozen required patch_file criterion.",
+      "examples": [
+        "round2-mistral/approved-benchmark-plan-tui-replay-smoke",
+        "round3-openai/resume-damaged-tool-exchange-fix"
+      ],
+      "repair": null,
+      "boundary": "Keep the failure without mislabeling the artifact broken, waiving the check or adding fixture-specific coercion.",
+      "previous_id": "required_tool_usage_mismatch"
+    },
+    {
+      "id": "exact_required_command_extended",
+      "category": "open_proof_failure",
+      "status": "open",
+      "observed": "Gemini adds && cat verification_receipt.txt to the required command that writes the receipt. This is not the exact required command and the later mutation invalidates earlier proof; the run lacks the current exact second check and final report.",
+      "examples": [
+        "round2-gemini/approved-benchmark-plan-exec-proof-resume",
+        "round3-gemini/approved-benchmark-plan-exec-proof-resume"
+      ],
+      "repair": null,
+      "boundary": "Seeded historical proof is not fresh evidence. Preserve exact command and mutation requirements; command output or assistant claims do not grant authority."
+    }
+  ],
+  "audit_notes": [
+    {
+      "id": "strict_json_object_equality_vs_optional_defaults",
+      "example": "round3-mistral/approved-benchmark-plan-tui-replay-smoke",
+      "strict_original_case_objects_preserved": false,
+      "only_original_case_changes": {
+        "lang": "absent -> null",
+        "reason_hint": "absent -> null",
+        "selector": "absent -> null",
+        "tool_root": "absent -> null"
+      },
+      "typed_interpretation": "All four fields are serde(default) Option<String> in TuiReplayCase. Both representations deserialize to None; every other original case field is equal. This is not evidence of a behavioral regression.",
+      "boundary": "Retain the strict false receipt without changing the score or calling the two JSON objects identical."
+    },
+    {
+      "id": "literal_checks_are_not_completion",
+      "example": "round3-mistral/self-fix-pr-ready-runtime-followup",
+      "observation": "A planning message contains required final path/command strings while no edit or current verification occurred. completed remains false; literal matches alone are not a handoff."
+    }
+  ]
+}

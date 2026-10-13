@@ -116,6 +116,23 @@ Responsibilities:
 - feed proposal recurrence memory into analyzer-stage risk generation so repeated unresolved findings become first-class risks, not just score bumps
 - keep "next improvement" suggestions small enough to feed back into dogfood work
 
+Observer separates attempted actions from successful results. Native results are
+matched to preceding tool calls once; a rejected edit cannot create a mutation
+anchor or satisfy a documentation follow-up. `execution_evidence` supplies the
+same positive write/exec and first automatic-test status checks used by Coder.
+Failed automatic tests preserve the write and its failure diagnostic. A passing
+automatic test without a recorded command supplies no exact replay/eval proof.
+Replay/eval proof requires a successful result and the real CLI grammar for the
+expected spec; printed command names, help, status masking, another spec and
+untracked directory/root changes do not satisfy that requirement. Ordinary
+`git status` and `git diff` are observations, not behavioral verification.
+
+Legacy display transcripts cannot establish a file write from an edit marker
+alone. Such edits are marked unconfirmed and request an artifact read, rather
+than manufacturing a mutation anchor. Command success requires the UI's `exit:`
+metadata outside the output fence. These Observer diagnostics are advisory and
+do not grant Coder proof or completion authority.
+
 Current code:
 - deterministic critique engine: `src/observer/engine.rs`
 - Coder handoff diagnostic contract: `src/observer/coder_diagnostic.rs`
@@ -124,6 +141,13 @@ Current code:
 - recurring critique memory: `src/observer/memory.rs`
 - repo-rule follow-up heuristics: `src/observer/repo_rules.rs`
 - TUI/GUI rendering: `src/tui/ui.rs`, `web/observer/logic.js`, `web/app.js`
+
+TUI next-action transport and repair live in
+`src/tui/events/observer_request.rs`. Invalid action contracts trigger at most one
+model correction using the original packet, schema validation feedback and the
+quoted failed response. Tool identity and arguments are never filled in by the
+runtime. Valid uncertainty does not trigger a confidence-raising retry. Changed
+Coder context invalidates late advice and pending repair.
 
 ### 5) Safety Governor
 
@@ -143,9 +167,19 @@ unrecognized status grants no proof; an untested fix still requires verification
 `src/tui/agent/recovery.rs` owns the phases, and shared file-result accounting
 keeps live and restored verification timestamps consistent.
 
+During `diagnose`, fresh recovery obligations take precedence over
+trace-derived repeated-observation pressure. Repeated-read meta/evaluator
+policies and learned progress prompt overlays are suspended for that phase; saved policies and verification
+requirements remain intact. The progress gate counts successful observations
+since the last confirmed mutation, using the same correlated-result window as
+MetaHarness. Rejected writes cannot reset that window. A real edit permits a
+fresh inspection, while unchanged read loops remain bounded. The separate new-repo scaffold
+policy retains the recovery gate's existing missing-artifact creation allowance.
+
 Current code:
 - `src/tui/agent.rs` (AgentState + error classifier)
 - `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
+- `src/tui/agent/reflection_action.rs` (execution-relevant action identity for reflection alignment)
 - `src/tui/agent/progress_gate.rs` (evidence-aware observation and baseline-check pressure)
 - `src/exec.rs` (dangerous command checks, cwd validation)
 - `web/core/exec.js` (bash→PowerShell normalization, dangerous command guard)
@@ -153,6 +187,26 @@ Current code:
 
 Repetition and progress evidence:
 
+- Reflection `adjust`/`abandon` compares full execution-relevant arguments. A
+  changed patch search/replacement, write content, diff, path, command or requested
+  working directory is a distinct attempt. Case, digits, quoted whitespace,
+  multiline content and suffixes are preserved; call IDs, provider metadata,
+  JSON formatting and ignored fields do not change identity. Display summaries
+  are bounded independently. This in-memory comparison grants no observation,
+  repair, verification or completion evidence and leaves recovery gates intact.
+- Reflection repair feedback gets `last_outcome` choices from the shared enum
+  contract, so its examples survive the same parser used on the next model turn.
+- Replay case-input errors retain the spec, case and original cause before a
+  report exists (including target-selection and Observer-input failures). Their
+  input paths are relative to the execution root when possible, ahead of bounded
+  case labels, so automatic-test digests can retain them in deeply nested runs.
+  Empty filter selections explain the input and existing case IDs; they remain
+  errors and produce neither check results nor completion evidence.
+- Replay schema diagnostics inventory up to four independently invalid check
+  positions before the shared shape/kind guidance. The input identity precedes
+  the long serde error. This fits the existing four-line automatic-test budget,
+  explicitly counts omitted positions, and does not relax validation or edit
+  any assertion on the model's behalf.
 - Repeated output means the same complete command produced the same output
   consecutively. Different successful commands may all be silent; their empty
   output does not require a strategy change. Command identity preserves case,
@@ -204,6 +258,15 @@ Command classification:
   chains. Matching preserves case and quoted whitespace. It does
   not override unsupported shell syntax or known write flags. Approved benchmark
   `required_checks` retain their separate explicit command-evidence contract.
+- Suggested configured checks retain their original case and quoted whitespace;
+  normalized failure-memory signatures are never rendered as executable commands.
+- `exec_classification/replay.rs` recognizes model-free `spiral-coder tui-replay`
+  through the actual CLI parser, including global options and executable paths.
+  A preliminary replay is verification rather than an action: it cannot advance
+  a mutation timestamp, clear failed-edit memory, or mark a focused fix as written.
+  Exact required checks and pending focused failures remain separate obligations.
+  Other subcommands, help, malformed options, and unsupported shell syntax gain
+  no new verification authority.
 - `src/tui/agent/exec_verification.rs` carries the root task's approved required
   commands alongside project configuration. Exact required-command matches are
   verification in live execution, restored generic proof, and restored working
@@ -211,6 +274,11 @@ Command classification:
   scratchpads and command substrings cannot grant this authority. The independent
   benchmark ledger still requires every declared check; finishing its custom
   checks does not create a spurious mutation requiring another composite rerun.
+- The benchmark proof ledger also renders pending exact commands before each
+  model turn and at a rejected `done`. Feedback lists remaining obligations
+  together and separates verification from the final report. Combined or altered
+  calls do not earn individual command proof. The final-turn prompt permits one
+  call and never asks for an extra smoke test followed by a second call.
 
 - `src/tui/agent/exec_proof.rs` shares generic verification timestamp accounting
   between live exec results and resumed transcripts. Any possibly executed action,
@@ -220,6 +288,43 @@ Command classification:
   blocks and user rejections preserve evidence. Resume accepts only the strict
   runtime success header (including the pruning suffix); live execution uses its
   effective return status. A fresh applicable check restores verification credit.
+
+Repair feedback:
+
+- `protocol_lists.rs` owns numbered protocol lists. Positive ordinals must
+  introduce item text; embedded exit statuses, decimal versions and numeric
+  dates do not create extra plan steps or acceptance criteria. Compact `1)Read`
+  remains supported, and real extra criteria still face the same size limits.
+- `src/tui/agent/protocol_validation.rs` owns native plan/think/reflection/impact validation.
+  It reports independent defects together with field-format guidance while
+  preserving all existing acceptance conditions. Diagnostics never modify model
+  claims, calls, or signatures. Reflection feedback includes the exact enum choices;
+  impact feedback lists bounded current plan references without claiming progress.
+  This avoids one turn per missing field or repeating an unexplained invalid value.
+- Replay data errors put the failing case/check index and the matching typed
+  enum shape before the full schema examples so the bounded automatic-test digest
+  and old-result history retain the information needed to repair that check.
+  The source remains unchanged and the original failure status is preserved.
+- Failed semantic replay reports identify the input spec as well as the failed
+  assertion, enabling focused diagnosis of the edited input. Observer parse and
+  Coder-system assertion failures explain their actual input surfaces; neither
+  check results nor fixture contents are changed by this feedback.
+- File-existence refutations recognize canonical `file exists at PATH` and bounded
+  literal aliases such as `PATH exists in the repo` and bounded affirmative file
+  descriptions such as `the generated configuration file exists at PATH`.
+  Negated, conditional, quantified and compound descriptions retain semantic
+  handling. Exact target dependencies and
+  fresh evidence use the same recognition in live execution and restore. Mentioning
+  that missing path as text in another file does not depend on its existence;
+  patching the missing file itself still does. General prose retains its existing
+  semantic assumption guard.
+- Reflection/impact gates that reject missing/invalid blocks or zero native calls explain
+  the function/tool interface at that early boundary. A textual XML call
+  remains text, the call-count gate still rejects it, and normal verified text
+  completion outside those required gates remains available.
+- [Cross-provider repair analysis](model-independent-recovery.md) separates these
+  fixes from remaining edit-preservation, completion-progress, and evaluation
+  contract limitations.
 
 ### 5b) Harness Evolution Overlay
 

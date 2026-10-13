@@ -458,6 +458,7 @@ pub(super) fn coerce_fix_existing_tool_call(
     }
 
     let rewritten = ToolCallData {
+        thought_signature: None,
         id: tc.id.clone(),
         name: "read_file".to_string(),
         arguments: serde_json::json!({ "path": path }).to_string(),
@@ -533,6 +534,7 @@ pub(super) fn coerce_benchmark_plan_tool_call(
         }
 
         let rewritten = ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: "read_file".to_string(),
             arguments: serde_json::json!({ "path": target_path }).to_string(),
@@ -547,6 +549,7 @@ pub(super) fn coerce_benchmark_plan_tool_call(
             return None;
         }
         let rewritten = ToolCallData {
+            thought_signature: None,
             id: tc.id.clone(),
             name: "exec".to_string(),
             arguments: serde_json::json!({ "command": command }).to_string(),
@@ -570,6 +573,7 @@ pub(super) fn synthesize_benchmark_plan_no_tool_call(
         return None;
     }
     let fallback = ToolCallData {
+        thought_signature: None,
         id: "synthetic_benchmark_plan_no_tool".to_string(),
         name: "done".to_string(),
         arguments: serde_json::json!({
@@ -652,6 +656,14 @@ pub(super) fn benchmark_plan_missing_required_exec_proof(
     test_cmd: Option<&str>,
 ) -> bool {
     benchmark_plan_pending_required_exec_command(root_user_text, messages, test_cmd).is_some()
+}
+
+pub(super) fn benchmark_plan_verification_hint(
+    root_user_text: &str,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    benchmark_proof::verification_hint(messages, root_user_text, test_cmd)
 }
 
 pub(super) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
@@ -871,6 +883,7 @@ fn synthesize_benchmark_plan_target_patch(
         return None;
     };
     Some(ToolCallData {
+        thought_signature: None,
         id: "synthetic_benchmark_plan_patch".to_string(),
         name: "patch_file".to_string(),
         arguments: serde_json::json!({
@@ -1967,6 +1980,7 @@ fn synthesize_fix_existing_literal_member_patch(
         .find(|literal| literal.starts_with("src/") && literal != &target_path)?;
     let (search, replace) = synthesize_list_member_insertion(body, missing_literal.as_str())?;
     Some(ToolCallData {
+        thought_signature: None,
         id: "synthetic_fix_existing_patch".to_string(),
         name: "patch_file".to_string(),
         arguments: serde_json::json!({
@@ -2016,6 +2030,7 @@ fn synthesize_failed_status_guard_patch(
     );
     let replace = format!("{function_start}{guard}{review_start}");
     Some(ToolCallData {
+        thought_signature: None,
         id: "synthetic_fix_existing_guard_patch".to_string(),
         name: "patch_file".to_string(),
         arguments: serde_json::json!({
@@ -2127,6 +2142,7 @@ fn repair_blocked_patch_with_prompt_literal(
     let search = format!("{last_item_line}\n{closing_line}");
     let replace = format!("{last_item_line}\n{indent}\"{missing_literal}\",\n{closing_line}");
     Some(ToolCallData {
+        thought_signature: None,
         id: tc.id.clone(),
         name: "patch_file".to_string(),
         arguments: serde_json::json!({
@@ -2177,6 +2193,7 @@ fn first_tool_call_from_message(msg: &Value) -> Option<ToolCallData> {
         return None;
     }
     Some(ToolCallData {
+        thought_signature: None,
         id: id.to_string(),
         name: name.to_string(),
         arguments: arguments.to_string(),
@@ -2483,6 +2500,7 @@ fn next_repo_scaffold_tool_call(
 ) -> Option<ToolCallData> {
     if !status.has_git {
         return Some(ToolCallData {
+            thought_signature: None,
             id: tool_call_id.to_string(),
             name: "exec".to_string(),
             arguments: serde_json::json!({
@@ -2498,6 +2516,7 @@ fn next_repo_scaffold_tool_call(
             scaffold_repo_file_content(target)
         };
         return Some(ToolCallData {
+            thought_signature: None,
             id: tool_call_id.to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -2509,6 +2528,7 @@ fn next_repo_scaffold_tool_call(
     }
     if !status.has_gitignore {
         return Some(ToolCallData {
+            thought_signature: None,
             id: tool_call_id.to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -2522,6 +2542,7 @@ fn next_repo_scaffold_tool_call(
         let readme_path = format!("{}/README.md", status.repo_root);
         let readme_content = scaffold_repo_file_content(readme_path.as_str());
         return Some(ToolCallData {
+            thought_signature: None,
             id: tool_call_id.to_string(),
             name: "write_file".to_string(),
             arguments: serde_json::json!({
@@ -2640,6 +2661,7 @@ required_checks:\n\
             false,
         );
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"runtime eval","path":"src"}).to_string(),
@@ -2675,6 +2697,7 @@ required_checks:\n\
         )
         .unwrap();
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":".spiral-coder"}).to_string(),
@@ -2724,6 +2747,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":".spiral-coder"}).to_string(),
@@ -2761,6 +2785,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_bad_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: "{\"path\":\".spiral-coder/runtime_eval.json\",\"search\":\"{".to_string(),
@@ -2822,6 +2847,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -2878,6 +2904,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"grep -q session_bridge .spiral-coder/runtime_eval.json"})
@@ -2941,6 +2968,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: json!({"summary":"done"}).to_string(),
@@ -3019,6 +3047,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"grep -q session_bridge docs/runtime-architecture.md"})
@@ -3079,6 +3108,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read_docs".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"docs/runtime-architecture.md"}).to_string(),
@@ -3135,6 +3165,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch_docs".to_string(),
             name: "patch_file".to_string(),
             arguments: json!({
@@ -3183,6 +3214,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read_readme".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"README.md"}).to_string(),
@@ -3252,6 +3284,7 @@ success_criteria:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_done".to_string(),
             name: "done".to_string(),
             arguments: json!({"summary":"done"}).to_string(),
@@ -3419,6 +3452,7 @@ required_checks:\n\
             ("exec", json!({"command": "grep -q 'a  b' Spec.json"})),
         ] {
             let candidate = ToolCallData {
+                thought_signature: None,
                 id: "next".to_string(),
                 name: name.to_string(),
                 arguments: args.to_string(),
@@ -3469,6 +3503,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_repeat".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/lib.rs"}).to_string(),
@@ -3524,6 +3559,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"todo","dir":"."}).to_string(),
@@ -3620,6 +3656,7 @@ required_checks:\n\
         messages.push(json!({"role":"tool", "tool_call_id":"baseline",
             "content":"FAILED (exit_code: 1)\nstdout:\ntest failed"}));
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -3677,6 +3714,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read_maze".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/maze.rs"}).to_string(),
@@ -3729,6 +3767,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_reread".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/merge_gate.rs"}).to_string(),
@@ -3836,6 +3875,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_verify".to_string(),
             name: "exec".to_string(),
             arguments: json!({"command":"cargo test 2>&1"}).to_string(),
@@ -3894,6 +3934,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_repeat_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"dir":"src","pattern":"#[test]"}).to_string(),
@@ -3943,6 +3984,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list_observer".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"src/observer"}).to_string(),
@@ -4010,6 +4052,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list_observer_again".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"src/observer","include_hidden":true}).to_string(),
@@ -4057,6 +4100,7 @@ required_checks:\n\
             }]
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_read_repo_rules".to_string(),
             name: "read_file".to_string(),
             arguments: json!({"path":"src/observer/repo_rules.rs"}).to_string(),
@@ -4111,6 +4155,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list_observer".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"src/observer","include_hidden":false}).to_string(),
@@ -4164,6 +4209,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_repeat_search".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"repo_rules","dir":""}).to_string(),
@@ -4220,6 +4266,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search_again".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"review_panel.rs"}).to_string(),
@@ -4264,6 +4311,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_patch".to_string(),
             name: "patch_file".to_string(),
             arguments: "{\"path\":\"src/observer/repo_rules.rs\",\"search\":\"const TUI_REPLAY_PATHS: &[&str] = &[\\n    \\\"src/tui/events.rs\\\",\\n    \\\"src/tui/app.rs\\\",\\n    \\\"src/tui/prefs".to_string(),
@@ -4332,6 +4380,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search_again".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"review_panel.rs"}).to_string(),
@@ -4376,6 +4425,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_search_again".to_string(),
             name: "search_files".to_string(),
             arguments: json!({"pattern":"review_panel.rs"}).to_string(),
@@ -4459,6 +4509,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":".","include_hidden":true}).to_string(),
@@ -4483,6 +4534,7 @@ required_checks:\n\
     #[test]
     fn allows_artifact_creation_during_diagnose_for_new_file_write() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write".to_string(),
             name: "write_file".to_string(),
             arguments: json!({"path":"notes/todo.txt","content":"ship it\n"}).to_string(),
@@ -4499,6 +4551,7 @@ required_checks:\n\
     #[test]
     fn allows_artifact_creation_during_verify_for_new_repo_write() {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_write".to_string(),
             name: "write_file".to_string(),
             arguments: json!({"path":"demo_repo/.gitignore","content":"target/\n"}).to_string(),
@@ -4519,6 +4572,7 @@ required_checks:\n\
             "content": "[goal_check]\nThe task is NOT complete yet.\nMissing: .git\nFix it by using exec/write_file. Do NOT stop until the goals are satisfied."
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"demo_repo","include_hidden":true}).to_string(),
@@ -4567,6 +4621,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"demo_repo","include_hidden":true}).to_string(),
@@ -4602,6 +4657,7 @@ required_checks:\n\
             "content": "[goal_check]\nThe task is NOT complete yet.\nMissing: .git\nFix it by using exec/write_file. Do NOT stop until the goals are satisfied."
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"maze_game","include_hidden":true}).to_string(),
@@ -4640,6 +4696,7 @@ required_checks:\n\
             "content": "[goal_check]\nThe task is NOT complete yet.\nMissing: .git\nFix it by using exec/write_file. Do NOT stop until the goals are satisfied."
         })];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_list".to_string(),
             name: "list_dir".to_string(),
             arguments: json!({"dir":"maze_game","include_hidden":true}).to_string(),
@@ -4685,6 +4742,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_bad".to_string(),
             name: "write_file".to_string(),
             arguments: "{\"path\":\"demo_repo/.git".to_string(),
@@ -4744,6 +4802,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_bad".to_string(),
             name: "write_file".to_string(),
             arguments: json!({"path":"demo_repo/.git","content":"oops"}).to_string(),
@@ -4804,6 +4863,7 @@ required_checks:\n\
             }),
         ];
         let tc = ToolCallData {
+            thought_signature: None,
             id: "call_bad".to_string(),
             name: "write_file".to_string(),
             arguments: "{\"path\":\"demo_repo/.git".to_string(),

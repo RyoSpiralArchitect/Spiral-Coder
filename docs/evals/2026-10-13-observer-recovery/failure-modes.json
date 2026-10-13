@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "prior_ledger": "../2026-10-13-reflection-repair/failure-modes.json",
+  "entries": [
+    {
+      "id": "observer-attempt-as-proof",
+      "class": "runtime_boundary",
+      "status": "repaired_with_regression",
+      "evidence": "Five old-runtime counterexamples fail; positive receipts, preceding one-time correlation and exact CLI verification now separate attempts from proof.",
+      "tests": "src/observer/outcome_tests.rs",
+      "limitation": "Observer diagnostics are advisory and do not grant Coder completion."
+    },
+    {
+      "id": "observer-tool-vocabulary-and-handoff",
+      "class": "runtime_contract",
+      "status": "repaired_with_remaining_counterexample",
+      "evidence": "All corrected baseline models invent a tool in verification-only case; real catalog, edit/verify kinds and kind/tool/argument validation added. Final GPT omits suggested_tool and is correctly withheld.",
+      "cases": [
+        "current-exact-verification"
+      ],
+      "tests": "src/tui/observer_assist_tests.rs",
+      "next": "Repair invalid action responses explicitly; do not infer an executable tool from prose or mark withheld advice as delivered."
+    },
+    {
+      "id": "optional-display-rejects-valid-action",
+      "class": "runtime_contract",
+      "status": "repaired_with_captured_replay",
+      "evidence": "Candidate 1 Mistral supplies object-valued quickest_check twice, despite correct primary reads. Final consumer ignores only non-string optional display metadata; both original responses now queue the valid reads.",
+      "cases": [
+        "followup-docs-after-source-edit",
+        "original-task-after-continuations"
+      ],
+      "negative_control": "Malformed Gemini JSON and wrong actionable argument types remain rejected; display objects never become tool arguments."
+    },
+    {
+      "id": "observer-unicode-and-hidden-cause",
+      "class": "runtime_diagnostic",
+      "status": "repaired_with_regression",
+      "evidence": "Long Unicode commands caused byte-boundary panics and displaced the actual error in bounded evidence. Character-safe clipping and newest/error-first evidence preserve the cause."
+    },
+    {
+      "id": "probe-null-tool-calls",
+      "class": "measurement",
+      "status": "runner_fixed_all_baselines_repeated",
+      "evidence": "Four initial Mistral HTTP responses reached a TypeError in len(None); bodies were not saved. Only the null-safe counter changed before rerunning all baseline providers. Initial failures remain recorded and are not a model-quality estimate."
+    },
+    {
+      "id": "initial-mistral-http-503",
+      "class": "transport",
+      "status": "retained",
+      "evidence": "Two initial Observer requests returned HTTP 503; probe has zero HTTP retries. Corrected baseline and candidate panels completed without these transport errors."
+    },
+    {
+      "id": "replay-target-and-check-semantics",
+      "class": "coder_task",
+      "status": "open",
+      "evidence": "GPT candidate 1 confuses selected message ID with case ID; final GPT and Gemini build unusable assistant targets. Correct diagnostics do not ensure an authored repair before the iteration cap.",
+      "case": "approved-benchmark-plan-tui-replay-smoke"
+    },
+    {
+      "id": "diagnosis-versus-mutation-pressure",
+      "class": "cross_gate_recovery",
+      "status": "open",
+      "evidence": "Candidate 1 Gemini cannot read its needed replay spec after observation pressure. Final GPT alternates a recovery gate requiring diagnosis with a trace-derived policy requiring mutation. Self-fix runs retain unfinished docs/eval follow-ups.",
+      "cases": [
+        "approved-benchmark-plan-tui-replay-smoke",
+        "self-fix-pr-ready-runtime-followup"
+      ]
+    },
+    {
+      "id": "required-tool-versus-artifact-success",
+      "class": "frozen_criterion",
+      "status": "retained_without_loosening",
+      "evidence": "Final Mistral TUI completes, preserves the original case, and runs both exact checks using write_file, but fails the frozen patch_file criterion. No fixture-specific tool coercion added."
+    },
+    {
+      "id": "existing-replay-suggestion-loss",
+      "class": "artifact_preservation",
+      "status": "open_audit",
+      "evidence": "Final Gemini removes the original replay case Observer response second suggestion. Five other artifacts preserve the original object. Audit is independent of fixed scoring."
+    },
+    {
+      "id": "missing-final-handoff",
+      "class": "coder_completion",
+      "status": "open",
+      "evidence": "Final Mistral/Gemini self-fix and GPT/Gemini TUI cases lack required final reporting; partial file changes and preliminary checks are not completion."
+    },
+    {
+      "id": "observer-state-lifetime-followups",
+      "class": "source_audit_backlog",
+      "status": "not_reproduced_or_repaired_this_cycle",
+      "evidence": "Pending advice invalidation on a new human task, historical-failure reconciliation after success, and GUI structured write receipts need dedicated coverage. Do not claim TUI/GUI parity from current deterministic checks."
+    }
+  ],
+  "claim_boundary": "All attempts are retained. Observer primary-action/handoff probes, frozen Coder results, artifact audits and deterministic tests answer different questions. No reliability, provider-ranking, causal or nonregression claim."
+}

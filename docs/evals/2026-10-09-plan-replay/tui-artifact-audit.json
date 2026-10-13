@@ -1,0 +1,160 @@
+{
+  "scope": "Post-run JSON comparison of existing fixture cases; not a new pass criterion or proof of meaningful new coverage.",
+  "fixture_sha256": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+  "runs": [
+    {
+      "phase": "candidate",
+      "provider": "mistral",
+      "artifact_sha256": "5ca592ad76c876a42c1e75526b05263470af322f7df11623b2fea9c06878be5c",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "suggestion_parsed",
+          "hint_queued",
+          "observer_contains",
+          "coder_system_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "openai",
+      "artifact_sha256": "7473f26b2e55ac73fe326d98dd4428b72d57978615431c4646e8160a2c99e914",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "target_message_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate",
+      "provider": "gemini",
+      "artifact_sha256": "4dcbe001f7309af7b8d11a6467afa1ff53e6659c0d44cd4388aa6570b16c3063",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion"
+      ],
+      "new_case_check_kinds": {}
+    },
+    {
+      "phase": "candidate-revised",
+      "provider": "mistral",
+      "artifact_sha256": "5c0bc86d1f7b87a98cef5a5e4afe131234f98c77e2180ab2a7e6d4a2d7b77ce2",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "observer_contains",
+          "coder_system_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate-revised",
+      "provider": "openai",
+      "artifact_sha256": "74998187e0297e1668041561d475dcb9e1bc1f4149dd121785a0a687278ed0c1",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "target_message_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate-revised",
+      "provider": "gemini",
+      "artifact_sha256": "d95881c8fe49f8cb463fec5e9281217382c6798665c9a645bdd87396c87bcd19",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "review-panel-replay-sensitive",
+        "pane-prefs-observer-suggestion"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "observer_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate-final",
+      "provider": "mistral",
+      "artifact_sha256": "ad3c56cf3bfdc974da720140d91c69dc8866a7e2159658e7940b55b8ec655388",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "observer_contains",
+          "coder_system_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate-final",
+      "provider": "openai",
+      "artifact_sha256": "b6560cf8a5a561fdc590b5b90462087727bd8fda1f47a2ae16dde8ee47c57849",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": false,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "observer_contains",
+          "coder_system_contains"
+        ]
+      }
+    },
+    {
+      "phase": "candidate-final",
+      "provider": "gemini",
+      "artifact_sha256": "1de8f56635775fd3b005023b47e7c7508f4334180b16aa5a02bb4a0a69f5aef0",
+      "parseable_json": true,
+      "original_case_count": 1,
+      "existing_cases_unchanged": true,
+      "case_ids": [
+        "pane-prefs-observer-suggestion",
+        "review-panel-replay-sensitive"
+      ],
+      "new_case_check_kinds": {
+        "review-panel-replay-sensitive": [
+          "observer_contains"
+        ]
+      }
+    }
+  ]
+}

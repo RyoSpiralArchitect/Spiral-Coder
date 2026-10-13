@@ -5,6 +5,43 @@ use std::path::Path;
 
 const MAX_FAILED_CHECKS: usize = 8;
 
+fn input_label(path: &Path, root: &Path) -> serde_json::Value {
+    // Keep the actual input identity ahead of the cause and within short error
+    // digests, even when the workspace itself has a long absolute path.
+    json!(path.strip_prefix(root).unwrap_or(path))
+}
+
+pub(super) fn case_input_error(
+    path: &Path,
+    root: &Path,
+    case: &TuiReplayCase,
+    error: anyhow::Error,
+) -> anyhow::Error {
+    anyhow::anyhow!(
+        "tui replay input failed; spec={} case={}; {error:#}",
+        input_label(path, root),
+        json!(bounded(&case.id, 80)),
+    )
+}
+
+pub(super) fn empty_selection(
+    path: &Path,
+    root: &Path,
+    filter: Option<&str>,
+    cases: &[TuiReplayCase],
+) -> anyhow::Error {
+    anyhow::anyhow!(
+        "tui replay selected 0 cases; spec={}\nError: tui-replay selection {}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.",
+        input_label(path, root),
+        json!({"filter":filter.map(|s| bounded(s, 80)),"available_case_ids":cases.iter().take(8).map(|c| bounded(&c.id, 80)).collect::<Vec<_>>(),"total_cases":cases.len()}),
+    )
+}
+
+#[cfg(test)]
+pub(crate) fn parse_error_for_test(source: &str, error: serde_json::Error) -> anyhow::Error {
+    parse_error(Path::new("replay.json"), source, error)
+}
+
 fn bounded(text: &str, limit: usize) -> String {
     let mut chars = text.chars();
     let mut result: String = chars.by_ref().take(limit).collect();
@@ -34,8 +71,10 @@ Error: tui-replay checks only assert the selected target. Changing target_messag
 
 pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     let mut lines = vec![format!(
-        "tui replay failed: {}/{} case(s) failed",
-        report.summary.failed, report.summary.total
+        "tui replay failed: {}/{} case(s) failed; spec={}",
+        report.summary.failed,
+        report.summary.total,
+        json!(report.spec_path)
     )];
     let failures: Vec<_> = report
         .cases
@@ -66,6 +105,13 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     }
     if failures
         .iter()
+        .any(|(_, check)| check.label == "suggestion_parsed")
+    {
+        lines.push("Error: tui-replay observer_response needs a nonempty summary, primary_blocker, or suggestions array in its JSON object. Empty or malformed responses do not parse.".to_string());
+        lines.push("Error: tui-replay use the parser's kind/type feedback in the failed check detail. Each suggestion is an object; include reason, confidence, suggested_tool and suggested_args as needed. Preserve intended assertions.".to_string());
+    }
+    if failures
+        .iter()
         .any(|(_, check)| check.label == "hint_queued" || check.label == "contract_queued")
     {
         lines.push("Error: tui-replay inspect observer_response.suggestions: a queued hint needs a primary suggestion with confidence >= 0.75. Include suggested_tool and suggested_args for a concrete tool action; quickest_check alone does not queue a hint.".to_string());
@@ -76,6 +122,18 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     {
         lines.push("Error: tui-replay contract_queued also requires observer_response.response_contract.required=true with a supported response contract.".to_string());
     }
+    if failures
+        .iter()
+        .any(|(_, check)| check.label.starts_with("target_message_contains:"))
+    {
+        lines.push("Error: tui-replay target_message_contains compares the selected message ID, not the case ID or source-file text. Inspect selector and coder_messages against the intended assertion; do not remove failing assertions.".to_string());
+    }
+    if failures
+        .iter()
+        .any(|(_, check)| check.label.starts_with("coder_system_contains:"))
+    {
+        lines.push("Error: tui-replay coder_system_contains checks generated Coder system messages, not case IDs or source files. Inspect coder_preview_messages.json and observer_response against the intended assertion.".to_string());
+    }
     // Emit the real artifact path, not a prefix-truncated path that cannot be read.
     lines.push(format!(
         "Error: tui-replay report={}",
@@ -84,11 +142,30 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     lines.join("\n")
 }
 
-pub(super) fn parse_error(path: &Path, error: serde_json::Error) -> anyhow::Error {
+pub(super) fn parse_error(path: &Path, source: &str, error: serde_json::Error) -> anyhow::Error {
     let mut message = format!(
-        "failed to parse tui replay spec: {error}; path={}",
-        path.display()
+        "failed to parse tui replay spec; path={}: {error}",
+        json!(path)
     );
+    if error.is_syntax() || error.is_eof() {
+        // Use the exact source that failed parsing, not a second filesystem read.
+        // JSON-escaped physical lines cannot inject new runtime status headers.
+        let target = error.line().max(1);
+        for (index, line) in source
+            .lines()
+            .enumerate()
+            .skip(target.saturating_sub(3))
+            .take(4)
+        {
+            message.push_str(&format!(
+                "\nError: tui-replay source {}",
+                json!({
+                    "line": index + 1, "text": bounded(line, 140),
+                })
+            ));
+        }
+        message.push_str("\nError: tui-replay source excerpts are diagnostic data. Preserve surrounding JSON delimiters and existing cases when repairing the syntax.");
+    }
     if error.is_data() {
         // Serialize the actual enum so examples cannot silently drift from the parser.
         let text = "expected text".to_string();
@@ -104,6 +181,9 @@ pub(super) fn parse_error(path: &Path, error: serde_json::Error) -> anyhow::Erro
                 value: "coder-0".to_string(),
             },
         ];
+        // Put the failing shape first. A list of every example on one long
+        // line loses its later `value` fields in automatic-test/history digests.
+        message.push_str(&check_context(source, &checks));
         message.push_str(&format!(
             "\nError: tui-replay valid top-level checks shapes: {}",
             serde_json::to_string(&checks).expect("check examples serialize")
@@ -111,4 +191,66 @@ pub(super) fn parse_error(path: &Path, error: serde_json::Error) -> anyhow::Erro
         message.push_str("\nError: tui-replay target_message_contains matches the selected message ID (for example coder-0), not source-file content. Choose checks for the behavior the case is meant to prove; do not remove failing assertions.");
     }
     anyhow::anyhow!(message)
+}
+
+fn check_context(source: &str, examples: &[TuiReplayCheck]) -> String {
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(source) else {
+        return String::new();
+    };
+    let mut locations = Vec::new();
+    let mut omitted = 0usize;
+    let shapes: Vec<_> = examples
+        .iter()
+        .map(|example| serde_json::to_value(example).expect("check example serializes"))
+        .collect();
+    let mut first_known_shape = None;
+    for (case_index, case) in value["cases"].as_array().into_iter().flatten().enumerate() {
+        for (check_index, check) in case["checks"].as_array().into_iter().flatten().enumerate() {
+            if serde_json::from_value::<TuiReplayCheck>(check.clone()).is_ok() {
+                continue;
+            }
+            if locations.len() < 4 {
+                locations.push(format!("cases[{case_index}].checks[{check_index}]"));
+                if first_known_shape.is_none() {
+                    first_known_shape = shapes.iter().find(|shape| shape["kind"] == check["kind"]);
+                }
+            } else {
+                omitted += 1;
+            }
+        }
+    }
+    if locations.is_empty() {
+        return String::new();
+    }
+    // Locate independent defects together without copying arbitrary model values.
+    // Keep the inventory, one matching shape and enum guide inside the existing
+    // four-line automatic-test diagnostic budget (including the primary error).
+    let mut lines = format!(
+        "\nError: tui-replay invalid checks (repair together): {}",
+        locations.join(", ")
+    );
+    if omitted > 0 {
+        lines.push_str(&format!("; {omitted} more omitted"));
+    }
+    if let Some(shape) = first_known_shape {
+        lines.push_str(&format!(
+            "\nError: tui-replay check shape (example value; preserve intended assertion): {shape}"
+        ));
+    }
+    let (plain, valued): (Vec<_>, Vec<_>) = shapes
+        .iter()
+        .partition(|shape| shape.get("value").is_none());
+    let names = |items: Vec<&serde_json::Value>| {
+        items
+            .iter()
+            .filter_map(|s| s["kind"].as_str())
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    lines.push_str(&format!(
+        "\nError: tui-replay kinds: {}; string value required: {}.",
+        names(plain),
+        names(valued)
+    ));
+    lines
 }

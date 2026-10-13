@@ -294,10 +294,11 @@ mod tests {
     fn plans_runtime_eval_for_coder_loop_followup() {
         let transcript = r#"
 ✎ patch_file: src/tui/agent/task_harness.rs
+OK: patched 'src/tui/agent/task_harness.rs'
 ```bash
 $ cargo test -q tui::agent::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -319,10 +320,11 @@ exit: 0
     fn plans_recurring_observer_finding_regression() {
         let transcript = r#"
 ✎ patch_file: src/tui/agent/task_harness.rs
+OK: patched 'src/tui/agent/task_harness.rs'
 ```bash
 $ cargo test -q tui::agent::tests::
-exit: 0
 ```
+exit: 0
 "#;
         let mut mem = CritiqueMemory::default();
         let _ = run_observer_from_transcript(transcript, Some(&mut mem));

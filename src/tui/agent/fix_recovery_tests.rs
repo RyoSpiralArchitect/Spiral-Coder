@@ -24,6 +24,7 @@ fn literal_patch_coercion_preserves_diagnosis_and_verification_stages() {
     let (harness, messages, prompt) = setup();
     for name in ["list_dir", "read_file"] {
         let tc = ToolCallData {
+            thought_signature: None,
             id: "next".into(),
             name: name.into(),
             arguments: json!({"dir":"src/runtime","path":"src/runtime/registry.rs"}).to_string(),
@@ -64,6 +65,7 @@ fn blocked_patch_restoration_preserves_diagnosis_and_verification_stages() {
         json!({"role":"tool","tool_call_id":"patch","content":"GOVERNOR BLOCKED\n[Evidence Gate]"}),
     );
     let tc = ToolCallData {
+        thought_signature: None,
         id: "next".into(),
         name: "list_dir".into(),
         arguments: json!({"dir":"src/runtime"}).to_string(),
