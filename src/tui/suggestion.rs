@@ -123,12 +123,21 @@ pub struct ObserverSuggestionEnvelope {
     pub response_contract: ObserverResponseContract,
     #[serde(default)]
     pub suggestions: Vec<ObserverSuggestion>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub quickest_check: String,
     #[serde(default)]
     pub why_this_first: String,
     #[serde(default)]
     pub fallback: String,
+}
+
+fn display_text<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    // Optional presentation must not discard a valid typed action. Never
+    // coerce an object into an executable suggestion or alter tool arguments.
+    Ok(Value::deserialize(deserializer)?
+        .as_str()
+        .unwrap_or_default()
+        .to_string())
 }
 
 pub fn parse_observer_suggestion_envelope(raw: &str) -> Option<ObserverSuggestionEnvelope> {

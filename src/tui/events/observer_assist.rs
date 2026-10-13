@@ -196,6 +196,7 @@ Rules:\n\
 - suggestions.kind must be exactly one of: search | read | edit | verify | done | clarify | abandon_path\n\
 - Match kind to tool: search=search_files/glob/list_dir; read=read_file; edit=patch_file/apply_diff/write_file; verify=exec; done=done. clarify/abandon_path have no tool.\n\
 - suggestions.suggested_args must be an object (or empty object)\n\
+- quickest_check is an optional display string, not an object. Put tool arguments only in suggestions.suggested_args.\n\
 - suggestions.based_on should cite coarse facts only: intent_anchor, recent_tool_results, recovery_stage, failure_kind\n\
 - Keep suggestions advisory-only; do not claim you already executed anything.\n\n\
 reason_hint: {reason}\n\

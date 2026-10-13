@@ -71,6 +71,30 @@ fn observer_no_tool_handoff_does_not_promote_free_text_to_an_action() {
 }
 
 #[test]
+fn observer_optional_display_shape_cannot_discard_or_replace_a_typed_action() {
+    for display in [json!({"tool":"exec","command":"touch unrelated-file"}), json!(["exec"]), json!(null), json!(42)] {
+        let (mut app, root) = interaction_app();
+        app.coder.messages.push(msg(Role::Assistant, "[GOVERNOR BLOCK] Need a source read."));
+        let mut response: serde_json::Value = serde_json::from_str(&suggestion_response("read", "read_file", json!({"path":"src/parser.rs"}))).unwrap();
+        response["quickest_check"] = display.clone();
+        let result = replay_observer_next_action_case(&mut app, "last-fail", "missing_read", &response.to_string()).unwrap();
+        assert!(result.parsed_suggestion.as_ref().unwrap().quickest_check.is_empty());
+        assert!(result.pending_observer_hint.as_ref().unwrap().contains("read_file(path=src/parser.rs)"));
+        let forwarded = result.coder_preview_messages.iter().filter(|message| message.content.contains("<observer_")).collect::<Vec<_>>();
+        assert_eq!(forwarded.len(), 2);
+        for message in forwarded {
+            assert!(message.content.contains("read_file(path=src/parser.rs)"));
+            assert!(!message.content.contains("touch unrelated-file"));
+        }
+        assert!(!root.path().join("unrelated-file").exists());
+        response["suggestions"][0]["suggested_args"] = json!({"path":42});
+        let invalid = replay_observer_next_action_case(&mut app, "last-fail", "missing_read", &response.to_string()).unwrap();
+        assert!(invalid.pending_observer_hint.is_none());
+        assert!(invalid.pending_observer_contract.is_none());
+    }
+}
+
+#[test]
 fn observer_edit_advisory_does_not_execute_or_grant_proof() {
     let (mut app, root) = interaction_app();
     std::fs::write(root.path().join("artifact.txt"), "before").unwrap();

@@ -451,6 +451,12 @@ free-form `quickest_check` remains display text and cannot substitute a differen
 instruction in either forwarded message. A suggestion is advisory, not an executed
 action or verification result.
 
+`quickest_check` is optional display text. A non-string value is ignored instead
+of discarding the independently typed primary action; it is never converted into
+tool arguments. JSON syntax, suggestion kinds, argument types, confidence and
+response-contract rules retain their existing validation. The prompt requests a
+string explicitly. This presentation fallback grants no execution or proof.
+
 ### 5b. Observer benchmark plan contract
 
 Code:
