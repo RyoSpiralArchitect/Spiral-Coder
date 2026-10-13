@@ -79,6 +79,8 @@ mod reflection_action;
 mod reflection_action_tests;
 #[cfg(test)]
 mod repair_feedback_tests;
+#[cfg(test)]
+mod replay_input_tests;
 mod repo_scaffold;
 #[cfg(test)]
 mod resume_contract_tests;

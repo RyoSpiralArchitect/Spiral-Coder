@@ -5,6 +5,38 @@ use std::path::Path;
 
 const MAX_FAILED_CHECKS: usize = 8;
 
+fn input_label(path: &Path, root: &Path) -> serde_json::Value {
+    // Keep the actual input identity ahead of the cause and within short error
+    // digests, even when the workspace itself has a long absolute path.
+    json!(path.strip_prefix(root).unwrap_or(path))
+}
+
+pub(super) fn case_input_error(
+    path: &Path,
+    root: &Path,
+    case: &TuiReplayCase,
+    error: anyhow::Error,
+) -> anyhow::Error {
+    anyhow::anyhow!(
+        "tui replay input failed; spec={} case={}; {error:#}",
+        input_label(path, root),
+        json!(bounded(&case.id, 80)),
+    )
+}
+
+pub(super) fn empty_selection(
+    path: &Path,
+    root: &Path,
+    filter: Option<&str>,
+    cases: &[TuiReplayCase],
+) -> anyhow::Error {
+    anyhow::anyhow!(
+        "tui replay selected 0 cases; spec={}\nError: tui-replay selection {}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.",
+        input_label(path, root),
+        json!({"filter":filter.map(|s| bounded(s, 80)),"available_case_ids":cases.iter().take(8).map(|c| bounded(&c.id, 80)).collect::<Vec<_>>(),"total_cases":cases.len()}),
+    )
+}
+
 #[cfg(test)]
 pub(crate) fn parse_error_for_test(source: &str, error: serde_json::Error) -> anyhow::Error {
     parse_error(Path::new("replay.json"), source, error)

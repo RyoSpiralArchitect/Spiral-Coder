@@ -163,6 +163,12 @@ Repetition and progress evidence:
   repair, verification or completion evidence and leaves recovery gates intact.
 - Reflection repair feedback gets `last_outcome` choices from the shared enum
   contract, so its examples survive the same parser used on the next model turn.
+- Replay case-input errors retain the spec, case and original cause before a
+  report exists (including target-selection and Observer-input failures). Their
+  input paths are relative to the execution root when possible, ahead of bounded
+  case labels, so automatic-test digests can retain them in deeply nested runs.
+  Empty filter selections explain the input and existing case IDs; they remain
+  errors and produce neither check results nor completion evidence.
 - Repeated output means the same complete command produced the same output
   consecutively. Different successful commands may all be silent; their empty
   output does not require a strategy change. Command identity preserves case,

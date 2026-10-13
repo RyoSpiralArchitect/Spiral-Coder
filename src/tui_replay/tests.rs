@@ -34,6 +34,7 @@ fn empty_effective_replay_checks_are_rejected_during_load_and_execution() {
             &common,
             &TuiReplayDefaults::default(),
             &case,
+            &root.path().join("replay.json"),
             root.path(),
             &output,
         )

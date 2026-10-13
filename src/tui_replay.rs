@@ -181,7 +181,12 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
         selected.truncate(limit);
     }
     if selected.is_empty() {
-        anyhow::bail!("tui replay selected 0 cases");
+        return Err(diagnostics::empty_selection(
+            &spec_path,
+            &base_root_path,
+            args.filter.as_deref(),
+            &spec.cases,
+        ));
     }
 
     eprintln!(
@@ -204,6 +209,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
             &common,
             &spec.defaults,
             case,
+            &spec_path,
             &base_root_path,
             &out_dir,
         )?;
@@ -235,10 +241,12 @@ fn run_case(
     common: &crate::CommonArgs,
     defaults: &TuiReplayDefaults,
     case: &TuiReplayCase,
+    spec_path: &Path,
     base_root_path: &Path,
     out_dir: &Path,
 ) -> Result<TuiReplayCaseReport> {
-    validate_case(case)?;
+    let input_error = |error| diagnostics::case_input_error(spec_path, base_root_path, case, error);
+    validate_case(case).map_err(input_error)?;
     let root = resolve_case_root(base_root_path, defaults, case);
     let lang = case
         .lang
@@ -257,15 +265,16 @@ fn run_case(
         .map(|m| Message::new_complete(map_role(m.role), m.content.clone()))
         .collect();
 
-    let (selector, reason_hint) = resolve_selector_and_reason(&app, case)?;
-    let observer_response_raw = render_observer_response(&case.observer_response)?;
+    let (selector, reason_hint) = resolve_selector_and_reason(&app, case).map_err(input_error)?;
+    let observer_response_raw =
+        render_observer_response(&case.observer_response).map_err(input_error)?;
     let outcome = events::replay_observer_next_action_case(
         &mut app,
         &selector,
         &reason_hint,
         &observer_response_raw,
     )
-    .map_err(|e| anyhow::anyhow!(e))?;
+    .map_err(|e| input_error(anyhow::anyhow!(e)))?;
 
     let case_dir = out_dir.join(format!("{:03}-{}", idx + 1, sanitize_case_id(&case.id)));
     std::fs::create_dir_all(&case_dir)
@@ -523,7 +532,7 @@ pub(crate) fn replay_spec_for_test(
         .cases
         .iter()
         .enumerate()
-        .map(|(index, case)| run_case(index, &common, &spec.defaults, case, root, out_dir))
+        .map(|(index, case)| run_case(index, &common, &spec.defaults, case, path, root, out_dir))
         .collect::<Result<Vec<_>>>()?;
     Ok(build_report(
         path.to_path_buf(),
