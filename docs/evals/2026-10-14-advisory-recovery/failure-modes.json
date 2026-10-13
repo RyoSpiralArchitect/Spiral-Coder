@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "prior_ledger": "../2026-10-13-observer-recovery/failure-modes.json",
+  "failure_modes": [
+    {
+      "id": "diagnosis-competes-with-mutation-pressure",
+      "class": "runtime_control",
+      "status": "repaired_with_regression",
+      "evidence": "Required diagnosis permits a fresh read while repeated-observation meta/evaluator and learned prompt pressure are suspended. Concrete new-repo scaffold allowances remain. Final follow-up case passes in all three models; do not infer a causal effect from totals."
+    },
+    {
+      "id": "old-observations-block-new-inspection",
+      "class": "runtime_control",
+      "status": "repaired_with_regression",
+      "evidence": "Observation counts restart after a correlated positive mutation, including a write followed by a failed automatic test. Rejected edits and embedded exec success text cannot reset them."
+    },
+    {
+      "id": "invalid-observer-action-is-terminal",
+      "class": "advisory_recovery",
+      "status": "bounded_repair_added",
+      "evidence": "At most one explicit model correction; the actual action validator still withholds invalid output. Both runtime candidates score 3/3 for each of three models on historical malformed/missing-tool/incompatible-tool responses. Fresh GPT initial answers remain 5/6."
+    },
+    {
+      "id": "stale-or-empty-observer-response",
+      "class": "request_lifetime",
+      "status": "repaired_with_regression",
+      "evidence": "Changed Coder context, new intent, cancellation/error and Observer replacement expire request-scoped repair/advice. Empty current output cannot select a previous successful answer. Same-intent completed advice can still be consumed."
+    },
+    {
+      "id": "stale-or-hidden-replay-contract-feedback",
+      "class": "runtime_diagnostic",
+      "status": "repaired_with_regression",
+      "evidence": "Failed checks carry actual parser and primary-action validation details. Serde supplies supported kinds including edit/verify. Assertions and parse acceptance are unchanged."
+    },
+    {
+      "id": "verified-artifact-without-final-report",
+      "class": "budget_and_completion",
+      "status": "open",
+      "evidence": "Final Mistral completes the TUI artifact and both exact verifications, then exhausts 12 iterations before done and final report. No synthetic completion was granted.",
+      "next": "Reserve sufficient bounded completion capacity without erasing obligations or changing frozen caps silently."
+    },
+    {
+      "id": "replay-target-assertion-and-preservation",
+      "class": "artifact_construction",
+      "status": "open",
+      "evidence": "Final GPT fixes missing target data but compares a selected message ID to a case ID. The existing case also loses suggestions[1].based_on=[recent_tool_results].",
+      "next": "Improve structured artifact construction and preservation while retaining intended assertions and original evidence."
+    },
+    {
+      "id": "automatic-test-is-not-exact-exec-proof",
+      "class": "proof_and_budget",
+      "status": "open",
+      "evidence": "Final Gemini writes a passing TUI fixture on its last iteration but lacks successful native exec evidence for the two required commands and the frozen patch_file criterion.",
+      "next": "Guide the remaining exact checks before the iteration budget ends; do not promote anonymous automatic-test evidence to explicit proof."
+    },
+    {
+      "id": "weak-model-protocol-variation",
+      "class": "bounded_model_failure",
+      "status": "retained",
+      "evidence": "Candidate 1 Gemini spends the Rust repair budget in protocol rejection; candidate 1 GPT repairs a resumed task but uses no patch_file. Both final cases pass; no general reliability claim follows."
+    },
+    {
+      "id": "gui-receipt-parity",
+      "class": "coverage_boundary",
+      "status": "open",
+      "evidence": "This cycle covers native recovery and TUI advice, not GUI write receipts or provider-specific live streaming."
+    }
+  ]
+}

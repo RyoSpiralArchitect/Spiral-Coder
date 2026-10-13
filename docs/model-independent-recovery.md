@@ -22,6 +22,9 @@ separate when deciding what to change.
 | Observer treats a rejected edit or failed check as completed follow-up work | An attempted action is mistaken for positive execution evidence | `observer/detector.rs` correlates preceding native calls once and uses shared positive result headers. `exec_classification/observed.rs` checks actual command grammar and expected spec. Unconfirmed display edits request a read; they do not create a mutation anchor. |
 | Observer invents a tool for the exact remaining check, or forwards contradictory display text | Next-action vocabulary and delivery are detached from real tool contracts | `events/observer_assist.rs` supplies the actual catalog and `edit`/`verify` kinds. `suggestion/action.rs` checks kind/tool/argument shape; both forwarded messages use the same primary action. Missing or invalid tools are withheld, not guessed. |
 | A valid primary read is lost because optional display text is an object | Presentation metadata gates the actionable contract | A non-string `quickest_check` is ignored without converting it to arguments. Captured response replay verifies recovery; invalid JSON and invalid actionable fields remain rejected. |
+| A failed check requires diagnosis while learned read-loop rules demand an edit | Fresh failure obligations conflict with older progress pressure | `recovery.rs` owns diagnostic priority; repeated-observation policies and learned prompt overlays yield during diagnosis. Observation counts restart only after correlated successful mutation, preserving rejection and proof boundaries. |
+| An otherwise useful Observer answer omits its actionable tool | Invalid advisory output needs an explicit bounded correction path | `events/observer_request.rs` asks the model once using the original packet, schemas and quoted failure. Missing tools are never inferred, low confidence is not retried for promotion, and stale request context expires. |
+| Replay reports hint failure without its actual action-contract cause | Schema feedback is detached from the consumer | Failed checks now carry the shared parser/action validator's reason. Actual enum errors include `edit`/`verify`; no duplicate kind list, relaxed check or artifact rewrite is used. |
 
 The policy is to make the next correction actionable without claiming it already
 happened. Validation diagnostics do not fill in reasoning fields, change tool
@@ -72,3 +75,12 @@ response replays are retained. The final missing-tool response is withheld,
 while Coder still exhibits conflicting diagnosis/mutation guidance, unfinished
 follow-ups and missing handoffs. Neither parsed advice nor a passing Observer
 panel establishes completed Coder work.
+
+
+The [bounded-advisory and recovery-precedence record](evals/2026-10-14-advisory-recovery/README.md)
+retains two further runtime candidates, 36 fixed Coder cases, 36 initial Observer
+calls and 18 separately scored repairs of captured invalid responses. Final
+Coder results are 5/6 for all three weak models; the TUI case still exposes
+budget-end reporting, target/assertion construction and exact-proof scheduling.
+Observer correction delivery is not Coder completion. All fixtures, caps and
+acceptance checks remain frozen, and the PR remains Draft.
