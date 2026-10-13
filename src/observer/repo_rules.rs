@@ -122,7 +122,7 @@ fn command_seen_after(events: &[Event], idx: usize, predicate: impl Fn(&str) -> 
         .iter()
         .skip(idx.saturating_add(1))
         .any(|event| match event {
-            Event::CommandExecuted { command } => predicate(command),
+            Event::CommandSucceeded { command } => predicate(command),
             _ => false,
         })
 }
@@ -152,14 +152,13 @@ fn requires_runtime_eval(path: &str) -> bool {
 }
 
 fn is_tui_replay_command(command: &str) -> bool {
-    let low = command.trim().to_ascii_lowercase();
-    low.contains("tui-replay") || low.contains(".spiral-coder/tui_replay.json")
+    use crate::tui::agent::exec_classification::{is_required_harness_check, HarnessCheck};
+    is_required_harness_check(command, HarnessCheck::Replay)
 }
 
 fn is_runtime_eval_command(command: &str) -> bool {
-    let low = command.trim().to_ascii_lowercase();
-    (low.contains(" eval ") || low.starts_with("eval ") || low.contains("spiral-coder eval"))
-        && low.contains("runtime_eval.json")
+    use crate::tui::agent::exec_classification::{is_required_harness_check, HarnessCheck};
+    is_required_harness_check(command, HarnessCheck::RuntimeEval)
 }
 
 #[cfg(test)]
@@ -226,12 +225,12 @@ mod tests {
     }
 
     #[test]
-    fn skips_runtime_eval_risk_when_eval_command_ran() {
+    fn skips_runtime_eval_risk_when_eval_command_succeeded() {
         let events = vec![
             Event::FileWritten {
                 path: "src/tui/agent/task_harness.rs".to_string(),
             },
-            Event::CommandExecuted {
+            Event::CommandSucceeded {
                 command:
                     "cargo run --quiet -- eval --spec .spiral-coder/runtime_eval.json --filter demo"
                         .to_string(),

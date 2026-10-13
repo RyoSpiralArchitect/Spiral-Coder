@@ -7,6 +7,9 @@ pub mod memory;
 pub mod repo_rules;
 pub mod scorer;
 
+#[cfg(test)]
+mod outcome_tests;
+
 use crate::observer::benchmark_plan::BenchmarkPlan;
 use crate::observer::coder_diagnostic::CoderDiagnostic;
 use serde::{Deserialize, Serialize};

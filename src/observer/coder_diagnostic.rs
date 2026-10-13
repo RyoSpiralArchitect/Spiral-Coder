@@ -67,11 +67,13 @@ pub fn diagnose(events: &[Event], critique: &Critique) -> Option<CoderDiagnostic
     let required_followups = required_followups(&critique.proposals, mutation_anchor.as_ref());
     let verification_cmd = verification_cmd(events, mutation_anchor.as_ref(), &required_followups);
     let failure_mode = failure_mode(events, &critique.risks, &required_followups);
-    let next_coder_action = next_coder_action(
-        mutation_anchor.as_ref(),
-        &required_followups,
-        verification_cmd.as_deref(),
-    );
+    let next_coder_action = unconfirmed_edit_action(events).or_else(|| {
+        next_coder_action(
+            mutation_anchor.as_ref(),
+            &required_followups,
+            verification_cmd.as_deref(),
+        )
+    });
     let evidence = evidence(events, &critique.risks, &critique.proposals);
 
     if mutation_anchor.is_none()
@@ -286,26 +288,7 @@ fn suggested_verification_for_path(path: &str) -> Option<String> {
 }
 
 fn looks_like_verification_command(command: &str) -> bool {
-    let cmd = command.trim().to_ascii_lowercase();
-    if cmd.is_empty() {
-        return false;
-    }
-    cmd == "git status"
-        || cmd.starts_with("git status ")
-        || cmd == "git diff"
-        || cmd.starts_with("git diff ")
-        || cmd.contains("cargo test")
-        || cmd.contains("cargo check")
-        || cmd.contains("cargo clippy")
-        || cmd.contains("cargo fmt")
-        || cmd.contains("tui-replay")
-        || cmd.contains("runtime_eval.json")
-        || cmd.contains("pytest")
-        || cmd.contains("python -m pytest")
-        || cmd.contains("npm test")
-        || cmd.contains("pnpm test")
-        || cmd.contains("yarn test")
-        || cmd.contains("go test")
+    crate::tui::agent::exec_classification::is_observed_verification(command)
 }
 
 fn failure_mode(
@@ -313,6 +296,12 @@ fn failure_mode(
     risks: &[Risk],
     required_followups: &[RequiredFollowup],
 ) -> String {
+    if events
+        .iter()
+        .any(|event| matches!(event, Event::FileEditUnconfirmed { .. }))
+    {
+        return "unconfirmed_edit".to_string();
+    }
     if !required_followups.is_empty() {
         return "missing_required_followup".to_string();
     }
@@ -322,10 +311,12 @@ fn failure_mode(
     {
         return "loop_or_stall".to_string();
     }
-    if events
-        .iter()
-        .any(|e| matches!(e, Event::CommandFailure { .. }))
-    {
+    if events.iter().any(|e| {
+        matches!(
+            e,
+            Event::CommandFailure { .. } | Event::AutomaticTestFailed { .. }
+        )
+    }) {
         return "failing_verification".to_string();
     }
     if risks.iter().any(|r| {
@@ -341,6 +332,19 @@ fn failure_mode(
         return "noisy_observation".to_string();
     }
     "needs_coder_followup".to_string()
+}
+
+fn unconfirmed_edit_action(events: &[Event]) -> Option<CoderAction> {
+    events.iter().rev().find_map(|event| match event {
+        Event::FileEditUnconfirmed { path } => Some(CoderAction {
+            tool: "read_file".to_string(),
+            args: json!({"path":path}),
+            reason:
+                "inspect the artifact: a displayed edit attempt is not a successful write receipt"
+                    .to_string(),
+        }),
+        _ => None,
+    })
 }
 
 fn next_coder_action(
@@ -419,7 +423,7 @@ fn push_literal(out: &mut Vec<String>, seen: &mut BTreeSet<String>, literal: &st
 
 fn evidence(events: &[Event], risks: &[Risk], proposals: &[Proposal]) -> Vec<String> {
     let mut out = Vec::new();
-    for event in events {
+    for event in events.iter().rev() {
         match event {
             Event::FileWritten { path } => out.push(format!("edited: {}", path.trim())),
             Event::CommandFailure { command, stderr } => {
@@ -427,8 +431,17 @@ fn evidence(events: &[Event], risks: &[Risk], proposals: &[Proposal]) -> Vec<Str
                 if stderr.is_empty() {
                     out.push(format!("failed: {}", command.trim()));
                 } else {
-                    out.push(format!("failed: {} :: {}", command.trim(), stderr));
+                    out.push(format!("failed: {stderr} :: command={}", command.trim()));
                 }
+            }
+            Event::AutomaticTestFailed { path, diagnostic } => out.push(format!(
+                "automatic test failed: {diagnostic} :: edited={path}"
+            )),
+            Event::AutomaticTestPassed { path } => out.push(format!(
+                "automatic test passed after {path}; exact command is not recorded"
+            )),
+            Event::FileEditUnconfirmed { path } => {
+                out.push(format!("unconfirmed edit attempt: {path}"))
             }
             Event::LoopDetected { reason } => out.push(format!("loop: {}", reason.trim())),
             _ => {}
@@ -493,10 +506,11 @@ mod tests {
     fn diagnoses_runtime_eval_followup_for_agent_edit() {
         let transcript = r#"
 ✎ patch_file: src/tui/agent/task_harness.rs
+OK: patched 'src/tui/agent/task_harness.rs'
 ```bash
 $ cargo test -q tui::agent::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -528,10 +542,11 @@ exit: 0
     fn diagnoses_doc_followup_before_replay_for_tui_state_edit() {
         let transcript = r#"
 ✎ patch_file: src/tui/prefs.rs
+OK: patched 'src/tui/prefs.rs'
 ```bash
 $ cargo test -q tui::events::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -567,11 +582,13 @@ exit: 0
     fn keeps_source_anchor_even_after_doc_followup_edit() {
         let transcript = r#"
 ✎ patch_file: src/tui/prefs.rs
+OK: patched 'src/tui/prefs.rs'
 ✎ patch_file: docs/state-schema.md
+OK: patched 'docs/state-schema.md'
 ```bash
 $ cargo test -q tui::events::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -595,10 +612,11 @@ exit: 0
     fn skips_diagnostic_for_clean_verified_edit() {
         let transcript = r#"
 ✎ patch_file: docs/runtime-architecture.md
+OK: patched 'docs/runtime-architecture.md'
 ```bash
-$ git status --short
-exit: 0
+$ cargo test -q
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);

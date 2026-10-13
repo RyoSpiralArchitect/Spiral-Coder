@@ -49,7 +49,7 @@ mod done_gate;
 mod edit_failure;
 mod evaluator_loop;
 mod exact_content;
-mod exec_classification;
+pub(crate) mod exec_classification;
 mod exec_proof;
 mod exec_verification;
 mod failure_diagnostics;

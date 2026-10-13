@@ -91,8 +91,8 @@ fn slow_commands_summary(events: &[detector::Event]) -> Option<String> {
     let mut out = String::new();
     out.push_str("Slow commands (top 3):\n");
     for (cmd, ms) in timings.iter().take(3) {
-        let clipped = if cmd.len() > 120 {
-            format!("{}…", &cmd[..120])
+        let clipped = if cmd.chars().count() > 120 {
+            format!("{}…", cmd.chars().take(120).collect::<String>())
         } else {
             cmd.to_string()
         };
@@ -437,10 +437,11 @@ mod tests {
     fn observer_transcript_surfaces_repo_rule_followups_for_tui_state_change() {
         let transcript = r#"
 ✎ patch_file: src/tui/prefs.rs
+OK: patched 'src/tui/prefs.rs'
 ```bash
 $ cargo test -q tui::events::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -456,10 +457,11 @@ exit: 0
     fn observer_transcript_surfaces_runtime_eval_followup_for_coder_loop_change() {
         let transcript = r#"
 ✎ patch_file: src/tui/agent/task_harness.rs
+OK: patched 'src/tui/agent/task_harness.rs'
 ```bash
 $ cargo test -q tui::agent::tests::
-exit: 0
 ```
+exit: 0
 "#;
 
         let critique = run_observer_from_transcript(transcript, None);
@@ -549,10 +551,11 @@ exit: 0
     fn observer_memory_becomes_analyzer_risk_for_recurring_findings() {
         let transcript = r#"
 ✎ patch_file: src/tui/agent/task_harness.rs
+OK: patched 'src/tui/agent/task_harness.rs'
 ```bash
 $ cargo test -q tui::agent::tests::
-exit: 0
 ```
+exit: 0
 "#;
         let mut mem = CritiqueMemory::default();
 

@@ -116,6 +116,23 @@ Responsibilities:
 - feed proposal recurrence memory into analyzer-stage risk generation so repeated unresolved findings become first-class risks, not just score bumps
 - keep "next improvement" suggestions small enough to feed back into dogfood work
 
+Observer separates attempted actions from successful results. Native results are
+matched to preceding tool calls once; a rejected edit cannot create a mutation
+anchor or satisfy a documentation follow-up. `execution_evidence` supplies the
+same positive write/exec and first automatic-test status checks used by Coder.
+Failed automatic tests preserve the write and its failure diagnostic. A passing
+automatic test without a recorded command supplies no exact replay/eval proof.
+Replay/eval proof requires a successful result and the real CLI grammar for the
+expected spec; printed command names, help, status masking, another spec and
+untracked directory/root changes do not satisfy that requirement. Ordinary
+`git status` and `git diff` are observations, not behavioral verification.
+
+Legacy display transcripts cannot establish a file write from an edit marker
+alone. Such edits are marked unconfirmed and request an artifact read, rather
+than manufacturing a mutation anchor. Command success requires the UI's `exit:`
+metadata outside the output fence. These Observer diagnostics are advisory and
+do not grant Coder proof or completion authority.
+
 Current code:
 - deterministic critique engine: `src/observer/engine.rs`
 - Coder handoff diagnostic contract: `src/observer/coder_diagnostic.rs`

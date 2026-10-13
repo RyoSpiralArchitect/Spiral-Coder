@@ -5,7 +5,10 @@ use crate::governor_contract;
 
 use super::{ExecKind, VerificationLevel};
 
+mod observed;
 mod replay;
+
+pub(crate) use observed::{is_observed_verification, is_required_harness_check, HarnessCheck};
 
 /// Only simple words, quotes, assignments, `&&`, and `2>&1` are understood.
 /// Reject expansion, pipelines, redirection, multiline scripts, and status masking.

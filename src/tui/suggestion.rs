@@ -1,11 +1,16 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+mod action;
+pub(super) use action::tool_schemas;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ObserverSuggestionKind {
     Search,
     Read,
+    Edit,
+    Verify,
     Done,
     Clarify,
     AbandonPath,
@@ -16,6 +21,8 @@ impl ObserverSuggestionKind {
         match self {
             Self::Search => "search",
             Self::Read => "read",
+            Self::Edit => "edit",
+            Self::Verify => "verify",
             Self::Done => "done",
             Self::Clarify => "clarify",
             Self::AbandonPath => "abandon_path",
@@ -270,7 +277,9 @@ fn normalize_envelope(env: &mut ObserverSuggestionEnvelope) {
 }
 
 pub fn primary_suggestion(env: &ObserverSuggestionEnvelope) -> Option<&ObserverSuggestion> {
-    env.suggestions.first()
+    env.suggestions
+        .first()
+        .filter(|suggestion| action::usable(suggestion))
 }
 
 fn render_suggestion_line(suggestion: &ObserverSuggestion) -> String {

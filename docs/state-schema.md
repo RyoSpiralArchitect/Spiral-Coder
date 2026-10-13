@@ -434,6 +434,23 @@ This is a transient typed contract, not persistent memory. If a diagnostic needs
 to affect later runs, promote the underlying rule through the harness evolution
 queue or store resumable facts in `AgentSession`.
 
+The detector distinguishes executed commands from successful command receipts,
+successful file edits from unconfirmed display markers, and failed/passed
+automatic tests from the edit outcome. These events are reconstructed per run;
+no persistent session fields are added. Native follow-up evidence requires a
+correlated positive result. A legacy transcript without a successful
+edit receipt yields `unconfirmed_edit` with a diagnostic read, not a mutation
+anchor. A passing anonymous automatic test cannot establish an exact command.
+
+TUI next-action suggestions accept `search`, `read`, `edit`, `verify`, `done`,
+`clarify`, and `abandon_path` kinds. Before automatic forwarding, the primary
+kind/tool pair and argument shape must match the actual Coder tool definitions.
+Invalid suggestions remain visible but queue no hint or response contract.
+Both forwarded messages derive their action from that validated primary;
+free-form `quickest_check` remains display text and cannot substitute a different
+instruction in either forwarded message. A suggestion is advisory, not an executed
+action or verification result.
+
 ### 5b. Observer benchmark plan contract
 
 Code:
