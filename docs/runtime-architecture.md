@@ -169,6 +169,11 @@ Repetition and progress evidence:
   case labels, so automatic-test digests can retain them in deeply nested runs.
   Empty filter selections explain the input and existing case IDs; they remain
   errors and produce neither check results nor completion evidence.
+- Replay schema diagnostics inventory up to four independently invalid check
+  positions before the shared shape/kind guidance. The input identity precedes
+  the long serde error. This fits the existing four-line automatic-test budget,
+  explicitly counts omitted positions, and does not relax validation or edit
+  any assertion on the model's behalf.
 - Repeated output means the same complete command produced the same output
   consecutively. Different successful commands may all be silent; their empty
   output does not require a strategy change. Command identity preserves case,

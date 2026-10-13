@@ -141,3 +141,53 @@ async fn empty_replay_selection_reports_the_input_and_existing_ids() {
         source
     );
 }
+
+#[test]
+fn replay_schema_feedback_lists_independent_defects_within_the_history_budget() {
+    for checks in [
+        json!([{"kind":"file_includes"},{"kind":"replay_filter"},{"kind":"target_message_contains"}]),
+        json!(vec![json!({"kind":"target_message_contains"}); 9]),
+    ] {
+        let source = json!({"cases":[{
+            "id":"broken", "prompt":"Inspect the target", "observer_response":{}, "checks":checks,
+        }]})
+        .to_string();
+        let error = serde_json::from_str::<crate::tui_replay::TuiReplaySpec>(&source).unwrap_err();
+        let diagnostic = crate::tui_replay::diagnostics::parse_error_for_test(&source, error);
+        let output = format!(
+            "OK: patched 'replay.json'{}",
+            failure_diagnostics::automatic_test_output(
+                "",
+                &format!("Error: {diagnostic}"),
+                1,
+                "/work"
+            )
+        );
+        let compact = compact_success_tool_result_for_history("patch_file", &output);
+        for expected in [
+            "path=\"replay.json\"",
+            "repair together",
+            "cases[0].checks[0]",
+            "cases[0].checks[1]",
+            "cases[0].checks[2]",
+            "\"kind\":\"target_message_contains\",\"value\":\"coder-0\"",
+            "string value required",
+            "coder_system_contains",
+        ] {
+            assert!(compact.contains(expected), "missing {expected}: {compact}");
+        }
+        if checks.as_array().unwrap().len() == 9 {
+            assert!(compact.contains("cases[0].checks[3]"), "{compact}");
+            assert!(compact.contains("5 more omitted"), "{compact}");
+            assert!(
+                !compact.contains("cases[0].checks[4]"),
+                "bounded inventory: {compact}"
+            );
+        }
+        assert_eq!(
+            crate::execution_evidence::auto_test_outcome("patch_file", &compact),
+            crate::execution_evidence::AutoTestOutcome::Failed
+        );
+        assert!(serde_json::from_str::<crate::tui_replay::TuiReplaySpec>(&source).is_err());
+    }
+}

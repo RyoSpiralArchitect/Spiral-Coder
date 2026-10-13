@@ -144,8 +144,8 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
 
 pub(super) fn parse_error(path: &Path, source: &str, error: serde_json::Error) -> anyhow::Error {
     let mut message = format!(
-        "failed to parse tui replay spec: {error}; path={}",
-        path.display()
+        "failed to parse tui replay spec; path={}: {error}",
+        json!(path)
     );
     if error.is_syntax() || error.is_eof() {
         // Use the exact source that failed parsing, not a second filesystem read.
@@ -197,31 +197,60 @@ fn check_context(source: &str, examples: &[TuiReplayCheck]) -> String {
     let Ok(value) = serde_json::from_str::<serde_json::Value>(source) else {
         return String::new();
     };
+    let mut locations = Vec::new();
+    let mut omitted = 0usize;
+    let shapes: Vec<_> = examples
+        .iter()
+        .map(|example| serde_json::to_value(example).expect("check example serializes"))
+        .collect();
+    let mut first_known_shape = None;
     for (case_index, case) in value["cases"].as_array().into_iter().flatten().enumerate() {
         for (check_index, check) in case["checks"].as_array().into_iter().flatten().enumerate() {
-            let Err(error) = serde_json::from_value::<TuiReplayCheck>(check.clone()) else {
+            if serde_json::from_value::<TuiReplayCheck>(check.clone()).is_ok() {
                 continue;
-            };
-            let mut lines = format!(
-                "\nError: tui-replay cases[{case_index}].checks[{check_index}]: {}",
-                // Escape user-controlled unknown variants into one physical line.
-                serde_json::to_string(&bounded(&error.to_string(), 120)).expect("error serializes")
-            );
-            let shapes: Vec<_> = examples
-                .iter()
-                .map(|example| serde_json::to_value(example).expect("check example serializes"))
-                .collect();
-            if let Some(shape) = shapes.iter().find(|shape| shape["kind"] == check["kind"]) {
-                lines.push_str(&format!(
-                    "\nError: tui-replay check shape (example value; preserve intended assertion): {shape}"
-                ));
-            } else {
-                // Both lines fit inside the bounded automatic-test digest.
-                lines.push_str("\nError: tui-replay check kinds: suggestion_parsed, hint_queued, contract_queued (no value field).");
-                lines.push_str("\nError: tui-replay check kinds: observer_contains, coder_system_contains, target_message_contains (require a string value).");
             }
-            return lines;
+            if locations.len() < 4 {
+                locations.push(format!("cases[{case_index}].checks[{check_index}]"));
+                if first_known_shape.is_none() {
+                    first_known_shape = shapes.iter().find(|shape| shape["kind"] == check["kind"]);
+                }
+            } else {
+                omitted += 1;
+            }
         }
     }
-    String::new()
+    if locations.is_empty() {
+        return String::new();
+    }
+    // Locate independent defects together without copying arbitrary model values.
+    // Keep the inventory, one matching shape and enum guide inside the existing
+    // four-line automatic-test diagnostic budget (including the primary error).
+    let mut lines = format!(
+        "\nError: tui-replay invalid checks (repair together): {}",
+        locations.join(", ")
+    );
+    if omitted > 0 {
+        lines.push_str(&format!("; {omitted} more omitted"));
+    }
+    if let Some(shape) = first_known_shape {
+        lines.push_str(&format!(
+            "\nError: tui-replay check shape (example value; preserve intended assertion): {shape}"
+        ));
+    }
+    let (plain, valued): (Vec<_>, Vec<_>) = shapes
+        .iter()
+        .partition(|shape| shape.get("value").is_none());
+    let names = |items: Vec<&serde_json::Value>| {
+        items
+            .iter()
+            .filter_map(|s| s["kind"].as_str())
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    lines.push_str(&format!(
+        "\nError: tui-replay kinds: {}; string value required: {}.",
+        names(plain),
+        names(valued)
+    ));
+    lines
 }
