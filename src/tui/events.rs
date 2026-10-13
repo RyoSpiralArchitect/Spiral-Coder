@@ -1,5 +1,10 @@
 mod observer_assist;
+pub(crate) mod observer_request;
 use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
+use observer_request::{
+    finalize_observer_next_action_suggestion, maybe_observer_action_repair,
+    send_next_action_assist, ObserverAssistRequest,
+};
 
 use crossterm::event::{
     Event, EventStream, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -1090,6 +1095,7 @@ pub async fn run_event_loop(
             AppEvent::TaskPlanError(e) => handle_task_plan_error(e, app),
             AppEvent::Tick => {
                 app.tick_count = app.tick_count.wrapping_add(1);
+                maybe_observer_action_repair(app, &observer_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
                 maybe_auto_observe(app, &observer_tx).await;
                 maybe_observer_lang_retry(app, &observer_tx).await;
@@ -1420,6 +1426,7 @@ async fn handle_key(
                 if let Some(handle) = app.observer_task.take() {
                     handle.abort();
                 }
+                observer_request::discard_pending_assist(app);
                 app.observer_meta_mode = false;
                 app.observer_next_action_mode = false;
                 app.ignore_observer_tokens = true;
@@ -1900,6 +1907,7 @@ fn handle_observer_token(token: StreamToken, app: &mut App) {
             }
         }
         StreamToken::Error(e) => {
+            observer_request::discard_pending_assist(app);
             app.observer_meta_mode = false;
             app.observer_next_action_mode = false;
             app.observer.push_tool(format!("ERROR: {e}"));
@@ -2019,6 +2027,7 @@ async fn send_coder_with_text(app: &mut App, tx: &mpsc::Sender<StreamToken>, tex
     let intent_anchor =
         intent::apply_intent_update(app.coder_intent_anchor.as_ref(), intent_update, &text);
     let intent_anchor_message = intent::render_intent_anchor(&intent_anchor);
+    observer_request::prepare_coder_continuation(app, &intent_anchor);
     let observer_soft_hint = app.pending_observer_hint.take();
     let observer_contract = app.pending_observer_contract.take();
     if intent_anchor.requires_human_confirmation {
@@ -2620,57 +2629,11 @@ pub(crate) struct TuiNextActionReplayOutcome {
     pub packet: serde_json::Value,
     pub observer_prompt: String,
     pub observer_raw_response: String,
+    pub observer_repair_prompt: Option<String>,
     pub parsed_suggestion: Option<suggestion::ObserverSuggestionEnvelope>,
     pub pending_observer_hint: Option<String>,
     pub pending_observer_contract: Option<suggestion::ObserverSuggestionEnvelope>,
     pub coder_preview_messages: Vec<ChatMessage>,
-}
-
-fn finalize_observer_next_action_suggestion(app: &mut App) {
-    let Some(idx) = app.observer.messages.iter().rposition(|m| {
-        matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
-    }) else {
-        app.last_observer_suggestion = None;
-        return;
-    };
-    let raw = app
-        .observer
-        .messages
-        .get(idx)
-        .map(|m| m.content.clone())
-        .unwrap_or_default();
-    if raw.trim().is_empty() {
-        app.last_observer_suggestion = None;
-        return;
-    }
-    if let Some(parsed) = suggestion::parse_observer_suggestion_envelope(&raw) {
-        let rendered = suggestion::format_observer_suggestion_envelope(&parsed);
-        if let Some(msg) = app.observer.messages.get_mut(idx) {
-            msg.content = rendered;
-        }
-        if let Some(hint) = build_observer_suggestion_soft_hint(&parsed) {
-            app.pending_observer_hint = Some(hint);
-            app.pending_observer_contract = build_observer_response_contract(&parsed);
-            app.coder.push_tool(
-                "(observer suggestion) queued an advisory next step for the next coder continuation."
-                    .to_string(),
-            );
-        } else {
-            app.pending_observer_hint = None;
-            app.pending_observer_contract = None;
-            if !parsed.suggestions.is_empty() && suggestion::primary_suggestion(&parsed).is_none() {
-                app.observer.push_tool("(next-action) suggestion retained for review; invalid tool, kind, or arguments prevented automatic forwarding.".to_string());
-            }
-        }
-        app.last_observer_suggestion = Some(parsed);
-    } else {
-        app.last_observer_suggestion = None;
-        app.pending_observer_hint = None;
-        app.pending_observer_contract = None;
-        app.observer.push_tool(
-            "(next-action) structured parse failed; raw Observer output was preserved.".to_string(),
-        );
-    }
 }
 
 pub(crate) fn latest_tui_next_action_target(app: &App) -> Option<(usize, String)> {
@@ -2695,6 +2658,7 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
+    app.observer_assist_request = Some(ObserverAssistRequest::new(app, observer_prompt.clone()));
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
@@ -2720,6 +2684,10 @@ pub(crate) fn replay_observer_next_action_case(
         packet,
         observer_prompt,
         observer_raw_response: observer_response.to_string(),
+        observer_repair_prompt: app
+            .observer_assist_request
+            .as_ref()
+            .and_then(|r| r.pending_repair.clone()),
         parsed_suggestion: app.last_observer_suggestion.clone(),
         pending_observer_hint: app.pending_observer_hint.clone(),
         pending_observer_contract: app.pending_observer_contract.clone(),
@@ -2910,6 +2878,7 @@ async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selec
         .to_string();
 
     app.ignore_observer_tokens = false;
+    observer_request::discard_pending_assist(app);
     app.observer_meta_mode = true;
     app.observer.push_user(format!(
         "[META-DIAGNOSE] target={target_id} kind={failure_kind}"
@@ -3049,118 +3018,6 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     Some((idx, reason))
 }
 
-async fn send_next_action_assist(
-    app: &mut App,
-    tx: &mpsc::Sender<StreamToken>,
-    selector: &str,
-    reason_hint: &str,
-) {
-    if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
-        app.observer.push_tool(problem);
-        return;
-    }
-
-    app.right_tab = RightTab::Observer;
-    app.observer.scroll = 0;
-    let packet = match build_tui_meta_failure_packet_for_selector(app, selector) {
-        Ok(packet) => packet,
-        Err(msg) => {
-            app.observer.push_tool(msg);
-            return;
-        }
-    };
-    let target_id = packet
-        .get("target_message_id")
-        .and_then(|v| v.as_str())
-        .unwrap_or("coder");
-    let failure_kind = packet
-        .get("failure_kind")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unclear");
-    let prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
-    let label = format!("[NEXT-ACTION] target={target_id} kind={failure_kind}");
-
-    if let Some(handle) = app.observer_task.take() {
-        handle.abort();
-    }
-
-    app.observer_meta_mode = false;
-    app.observer_next_action_mode = true;
-    app.last_observer_suggestion = None;
-    app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
-    app.ignore_observer_tokens = false;
-    app.observer_loop_retry_budget = 0;
-    app.observer_loop_pending = None;
-    app.observer_lang_retry_budget = 1;
-    app.observer_lang_pending = None;
-    app.observer.push_user(label);
-    app.observer.streaming = true;
-    app.observer
-        .messages
-        .push(Message::new_streaming(Role::Assistant));
-
-    let cfg = {
-        let mut cfg = app.observer_cfg.clone();
-        cfg.temperature = 0.2;
-        cfg.max_tokens = cfg.max_tokens.min(1200);
-        cfg
-    };
-    let tx = tx.clone();
-    let lang = app.lang.clone();
-    let handle = tokio::spawn(async move {
-        use crate::config::ProviderKind;
-        use crate::streaming::{stream_anthropic, stream_openai_compat};
-        let client = reqwest::Client::new();
-        let system = format!(
-            "You are Observer in next-action assist mode.\n\
-Do not perform a broad critique.\n\
-Focus only on the next concrete step.\n\n\
-[Language]\n{}",
-            language_instruction(Some(&lang), &cfg.mode)
-        );
-        let messages = vec![
-            ChatMessage {
-                role: "system".to_string(),
-                content: system,
-            },
-            ChatMessage {
-                role: "user".to_string(),
-                content: prompt,
-            },
-        ];
-        let result = match cfg.provider {
-            ProviderKind::Anthropic => stream_anthropic(&client, &cfg, &messages, tx.clone()).await,
-            ProviderKind::Hf => {
-                let provider = providers::build_provider(client.clone(), &cfg);
-                let req = ChatRequest {
-                    messages: messages.clone(),
-                    temperature: Some(0.2),
-                    max_tokens: Some(cfg.max_tokens),
-                    metadata: None,
-                };
-                match provider.chat(&req).await {
-                    Ok(resp) => {
-                        fake_stream_text(&tx, &resp.content).await;
-                        Ok(())
-                    }
-                    Err(e) => Err(e),
-                }
-            }
-            _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
-        };
-        if let Err(e) = result {
-            let prefix = match lang.as_str() {
-                "fr" => "Observer next-action failed",
-                "en" => "Observer next-action failed",
-                _ => "Observer next-action failed",
-            };
-            let _ = tx.send(StreamToken::Error(format!("{prefix}: {e}"))).await;
-        }
-    });
-    app.observer_task = Some(handle);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3170,6 +3027,7 @@ mod tests {
 
     include!("interaction_tests.rs");
     include!("observer_assist_tests.rs");
+    include!("observer_repair_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3729,6 +3587,7 @@ async fn send_observer_message(
         handle.abort();
     }
 
+    observer_request::discard_pending_assist(app);
     app.observer_meta_mode = false;
     app.observer_next_action_mode = false;
     app.observer.scroll = 0;

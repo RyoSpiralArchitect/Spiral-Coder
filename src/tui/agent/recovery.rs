@@ -12,6 +12,12 @@ pub(super) struct RecoveryGovernor {
 }
 
 impl RecoveryGovernor {
+    /// Learned progress pressure cannot supersede an outstanding diagnosis.
+    /// Persisted policies are retained for later use.
+    pub(super) fn allows_progress_pressure(&self) -> bool {
+        self.stage != Some(RecoveryStage::Diagnose)
+    }
+
     pub(super) fn restore_focus(
         &mut self,
         messages: &[serde_json::Value],

@@ -285,6 +285,18 @@ fn normalize_envelope(env: &mut ObserverSuggestionEnvelope) {
     }
 }
 
+/// Structural repair eligibility is independent of confidence. A valid but
+/// uncertain answer must not be retried merely to cross the forwarding threshold.
+pub(super) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
+    let Some(env) = env else {
+        return Some("structured JSON envelope could not be parsed".into());
+    };
+    let Some(primary) = env.suggestions.first() else {
+        return Some("suggestions must contain a primary next action".into());
+    };
+    action::validation_issue(primary)
+}
+
 pub fn primary_suggestion(env: &ObserverSuggestionEnvelope) -> Option<&ObserverSuggestion> {
     env.suggestions
         .first()

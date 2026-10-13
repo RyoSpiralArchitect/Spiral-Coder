@@ -242,6 +242,9 @@ pub struct App {
     /// True while the current Observer response is a next-action assist run.
     /// Used to suppress auto-fix so suggestions are not fed back as critiques.
     pub observer_next_action_mode: bool,
+    /// Transient source-bound request and one explicit action-contract repair.
+    pub(crate) observer_assist_request:
+        Option<super::events::observer_request::ObserverAssistRequest>,
     /// Dedup key for auto-triggered next-action assists.
     pub last_auto_next_action_sig: Option<String>,
 
@@ -319,6 +322,7 @@ impl App {
             observer_lang_pending: None,
             observer_meta_mode: false,
             observer_next_action_mode: false,
+            observer_assist_request: None,
             last_auto_next_action_sig: None,
             planning_tasks: false,
             tasks: Vec::new(),

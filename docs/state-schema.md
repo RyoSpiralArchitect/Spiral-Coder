@@ -31,6 +31,7 @@ store state without first choosing the correct owner.
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
 | Web message provenance | `web/app.js` + `web/core/state.js` | Web thread lifetime | browser-local thread state | optional `message.origin` (`user` or `runtime`) for human messages versus runtime handoffs |
+| TUI next-action repair | `src/tui/events/observer_request.rs` + `src/tui/app.rs` | one Observer assist request | memory only | `ObserverAssistRequest`: source-context stamp, original prompt, one repair budget, pending repair prompt |
 | Web recovery attempt history | `web/app.js` + `web/observer/logic.js` | Web thread lifetime | browser-local thread messages | existing `metaKind=observer_next_action` and `metaTargetId` identify assistance already attempted for a Coder message |
 | Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
@@ -403,6 +404,20 @@ Examples:
 - `EvaluatorLoop`
 - `EvaluatorFinding`
 - `PolicyPatch`
+
+`ObserverAssistRequest` owns one optional action-contract repair. A malformed
+JSON envelope or unusable primary tool action queues one explicit model request;
+valid low-confidence and valid no-tool suggestions do not request repair. Both
+answers remain visible, and only the usual action/argument and confidence checks
+can queue advisory text. The request expires on cancellation, transport error,
+replacement Observer work, or changed Coder transcript/intent/root. New Coder
+work cancels in-flight assistance; completed advice is consumed only for a
+continuation of the same intent. No retry budget or source stamp is persisted.
+
+TUI replay keeps its first-response checks unchanged and additionally exports
+`observer_repair_prompt.txt` and `observer_repair_prompt_path` when repair is
+pending. Replay makes no API request and does not execute the proposed action.
+A separately scored repair evaluation can consume this exact runtime prompt.
 
 This layer should stay transient. If a field must survive restart/resume, it
 likely belongs in prefs or session persistence instead.

@@ -74,6 +74,8 @@ mod provider_turn;
 mod read_only;
 mod recovery;
 mod recovery_focus;
+#[cfg(test)]
+mod recovery_policy_tests;
 mod reflection_action;
 #[cfg(test)]
 mod reflection_action_tests;
@@ -8073,21 +8075,23 @@ This is the LAST model call for this run.\n\
             }));
         }
 
-        if let Some(telemetry) = harness_promoted_overlay.telemetry_payload(task_harness) {
-            emit_telemetry_event(&tx, "harness_evolution_promoted_prompted", telemetry).await;
-        }
-        if let Some(promoted_prompt) = harness_promoted_overlay.prompt(task_harness) {
-            let compact_prompt = harness_promoted_overlay
-                .compact_prompt(task_harness)
-                .unwrap_or_else(|| promoted_prompt.clone());
-            msgs_for_call.push(json!({
-                "role": "system",
-                "content": render_cached_prompt(
-                    &mut prompt_cache.harness_evolution_promoted_hash,
-                    promoted_prompt,
-                    compact_prompt,
-                ),
-            }));
+        if recovery.allows_progress_pressure() {
+            if let Some(telemetry) = harness_promoted_overlay.telemetry_payload(task_harness) {
+                emit_telemetry_event(&tx, "harness_evolution_promoted_prompted", telemetry).await;
+            }
+            if let Some(promoted_prompt) = harness_promoted_overlay.prompt(task_harness) {
+                let compact_prompt = harness_promoted_overlay
+                    .compact_prompt(task_harness)
+                    .unwrap_or_else(|| promoted_prompt.clone());
+                msgs_for_call.push(json!({
+                    "role": "system",
+                    "content": render_cached_prompt(
+                        &mut prompt_cache.harness_evolution_promoted_hash,
+                        promoted_prompt,
+                        compact_prompt,
+                    ),
+                }));
+            }
         }
 
         let current_harness_proposal =
@@ -8114,8 +8118,13 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        let mut harness_overlay =
-            harness_evolution_queue.build_overlay(task_harness, current_harness_proposal.as_ref());
+        let mut harness_overlay = recovery
+            .allows_progress_pressure()
+            .then(|| {
+                harness_evolution_queue
+                    .build_overlay(task_harness, current_harness_proposal.as_ref())
+            })
+            .flatten();
         if let Some(overlay) = harness_overlay.as_ref() {
             let newly_prompted_ids: Vec<String> = overlay
                 .active_ids

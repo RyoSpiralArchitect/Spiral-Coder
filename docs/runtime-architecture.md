@@ -142,6 +142,13 @@ Current code:
 - repo-rule follow-up heuristics: `src/observer/repo_rules.rs`
 - TUI/GUI rendering: `src/tui/ui.rs`, `web/observer/logic.js`, `web/app.js`
 
+TUI next-action transport and repair live in
+`src/tui/events/observer_request.rs`. Invalid action contracts trigger at most one
+model correction using the original packet, schema validation feedback and the
+quoted failed response. Tool identity and arguments are never filled in by the
+runtime. Valid uncertainty does not trigger a confidence-raising retry. Changed
+Coder context invalidates late advice and pending repair.
+
 ### 5) Safety Governor
 
 Responsibilities:
@@ -159,6 +166,15 @@ repairing it without repeating a test already known to fail. A missing or
 unrecognized status grants no proof; an untested fix still requires verification.
 `src/tui/agent/recovery.rs` owns the phases, and shared file-result accounting
 keeps live and restored verification timestamps consistent.
+
+During `diagnose`, fresh recovery obligations take precedence over
+trace-derived repeated-observation pressure. Repeated-read meta/evaluator
+policies and learned progress prompt overlays are suspended for that phase; saved policies and verification
+requirements remain intact. The progress gate counts successful observations
+since the last confirmed mutation, using the same correlated-result window as
+MetaHarness. Rejected writes cannot reset that window. A real edit permits a
+fresh inspection, while unchanged read loops remain bounded. The separate new-repo scaffold
+policy retains the recovery gate's existing missing-artifact creation allowance.
 
 Current code:
 - `src/tui/agent.rs` (AgentState + error classifier)

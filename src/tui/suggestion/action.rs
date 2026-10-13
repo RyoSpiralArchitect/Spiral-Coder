@@ -28,12 +28,20 @@ pub(crate) fn tool_schemas() -> Value {
 }
 
 pub(super) fn usable(suggestion: &ObserverSuggestion) -> bool {
+    validation_issue(suggestion).is_none()
+}
+
+pub(super) fn validation_issue(suggestion: &ObserverSuggestion) -> Option<String> {
     use ObserverSuggestionKind::*;
     let Some(args) = suggestion.suggested_args.as_object() else {
-        return false;
+        return Some("suggested_args must be a JSON object".into());
     };
     let Some(tool) = suggestion.suggested_tool.as_deref() else {
-        return matches!(suggestion.kind, Clarify | AbandonPath | Done) && args.is_empty();
+        return if matches!(suggestion.kind, Clarify | AbandonPath | Done) && args.is_empty() {
+            None
+        } else {
+            Some(format!("suggested_tool is required for kind={}; no-tool clarify/abandon_path/done requires empty suggested_args", suggestion.kind.label()))
+        };
     };
     let compatible = match suggestion.kind {
         Search => matches!(tool, "search_files" | "glob" | "list_dir"),
@@ -44,22 +52,26 @@ pub(super) fn usable(suggestion: &ObserverSuggestion) -> bool {
         Clarify | AbandonPath => false,
     };
     if !compatible {
-        return false;
+        return Some(format!(
+            "suggested_tool={tool} is incompatible with kind={}",
+            suggestion.kind.label()
+        ));
     }
     let catalog = tool_schemas();
     let Some(schema) = catalog
         .as_array()
         .and_then(|schemas| schemas.iter().find(|schema| schema["name"] == tool))
     else {
-        return false;
+        return Some(format!("suggested_tool={tool} is not in available_tools"));
     };
-    matches_schema(&suggestion.suggested_args, &schema["parameters"])
+    let valid = matches_schema(&suggestion.suggested_args, &schema["parameters"])
         && ["path", "command", "pattern", "search", "diff"]
             .iter()
             .all(|key| {
                 args.get(*key)
                     .is_none_or(|value| value.as_str().is_some_and(|text| !text.trim().is_empty()))
-            })
+            });
+    (!valid).then(|| format!("suggested_args for {tool} must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields"))
 }
 
 fn matches_schema(value: &Value, schema: &Value) -> bool {

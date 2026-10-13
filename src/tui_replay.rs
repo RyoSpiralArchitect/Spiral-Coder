@@ -83,6 +83,8 @@ pub struct TuiReplayArtifacts {
     pub case_dir: PathBuf,
     pub packet_path: PathBuf,
     pub observer_prompt_path: PathBuf,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observer_repair_prompt_path: Option<PathBuf>,
     pub observer_response_path: PathBuf,
     pub preview_messages_path: PathBuf,
     pub case_report_path: PathBuf,
@@ -290,6 +292,15 @@ fn run_case(
         .with_context(|| format!("failed to write {}", packet_path.display()))?;
     std::fs::write(&observer_prompt_path, outcome.observer_prompt.as_bytes())
         .with_context(|| format!("failed to write {}", observer_prompt_path.display()))?;
+    let observer_repair_prompt_path = if let Some(prompt) = outcome.observer_repair_prompt.as_ref()
+    {
+        let path = case_dir.join("observer_repair_prompt.txt");
+        std::fs::write(&path, prompt)
+            .with_context(|| format!("failed to write {}", path.display()))?;
+        Some(path)
+    } else {
+        None
+    };
     std::fs::write(
         &observer_response_path,
         outcome.observer_raw_response.as_bytes(),
@@ -328,6 +339,7 @@ fn run_case(
             case_dir: case_dir.clone(),
             packet_path,
             observer_prompt_path,
+            observer_repair_prompt_path,
             observer_response_path,
             preview_messages_path,
             case_report_path: case_report_path.clone(),

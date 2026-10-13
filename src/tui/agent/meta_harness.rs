@@ -231,8 +231,9 @@ struct PendingToolIntent {
 }
 
 #[derive(Debug, Default)]
-struct ObservationWindow {
-    total_successes_since_mutation: usize,
+pub(super) struct ObservationWindow {
+    pub(super) total_successes_since_mutation: usize,
+    pub(super) by_command: BTreeMap<String, usize>,
     repeated_last_command: usize,
     last_command: Option<String>,
 }
@@ -252,7 +253,10 @@ fn detect_repeated_observation_loop(
     test_cmd: Option<&str>,
 ) -> Option<PolicyDelta> {
     if task_harness.artifact_mode == ArtifactMode::ObserveOnly
-        || recovery_stage == Some(RecoveryStage::Verify)
+        // A failure permits a fresh diagnostic even if the target was read
+        // before. Concrete missing new-repo artifacts retain their separate
+        // scaffold policy, matching recovery's artifact-creation allowance.
+        || matches!(recovery_stage, Some(RecoveryStage::Diagnose | RecoveryStage::Verify))
     {
         return None;
     }
@@ -327,7 +331,7 @@ fn detect_repo_scaffold_drift(
     })
 }
 
-fn observation_window_since_last_mutation(
+pub(super) fn observation_window_since_last_mutation(
     messages: &[Value],
     test_cmd: Option<&str>,
 ) -> ObservationWindow {
@@ -411,6 +415,7 @@ fn observation_window_since_last_mutation(
                     .signature
                     .unwrap_or_else(|| intent.path.unwrap_or_else(|| intent.name.clone()));
                 out.total_successes_since_mutation += 1;
+                *out.by_command.entry(command.clone()).or_default() += 1;
                 if out.last_command.as_deref() == Some(command.as_str()) {
                     out.repeated_last_command += 1;
                 } else {
