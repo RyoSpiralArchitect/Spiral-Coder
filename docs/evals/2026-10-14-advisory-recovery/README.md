@@ -3,7 +3,9 @@
 Two runtime candidates continue the [Observer recovery record](../2026-10-13-observer-recovery/README.md).
 Observer can now request one explicit correction of an unusable action contract.
 Coder diagnosis no longer competes with trace-derived repeated-read mutation
-pressure. **Live qualification remains incomplete; PR #16 stays Draft.**
+pressure. **Live qualification remains incomplete.** At evaluation time, PR #16
+remained Draft. The later [merge review](../../reviews/2026-10-14-pr16-fork-review.md)
+records the independent code review and merge decision without changing these results.
 
 ## Runtime changes
 

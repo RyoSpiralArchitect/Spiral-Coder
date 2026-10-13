@@ -83,4 +83,7 @@ calls and 18 separately scored repairs of captured invalid responses. Final
 Coder results are 5/6 for all three weak models; the TUI case still exposes
 budget-end reporting, target/assertion construction and exact-proof scheduling.
 Observer correction delivery is not Coder completion. All fixtures, caps and
-acceptance checks remain frozen, and the PR remains Draft.
+acceptance checks remain frozen. The PR remained Draft at evaluation time.
+The subsequent [fresh review](reviews/2026-10-14-pr16-fork-review.md) records
+the code-review outcome and merge decision; it does not promote these live
+results to a general reliability claim.
