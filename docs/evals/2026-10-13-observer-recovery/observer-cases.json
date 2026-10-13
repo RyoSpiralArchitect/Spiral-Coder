@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "conditions": {
+    "temperature": 0.2,
+    "max_tokens": 1200,
+    "request_timeout_seconds": 90,
+    "requests_per_case": 1,
+    "models": {
+      "mistral": "mistral-small-2603",
+      "openai": "gpt-4.1-mini",
+      "gemini": "gemini-3.5-flash-lite"
+    }
+  },
+  "system_prompt": "You are Observer in next-action assist mode.\nDo not perform a broad critique.\nFocus only on the next concrete step.\n\n[Language]\nLanguage: English. Write the critique in English. Keep proposals block keys in English (title/to_coder/severity/score/phase/impact/cost).",
+  "cases": [
+    {
+      "id": "repair-anchor-before-retry",
+      "prompt": "Fix only src/parser.rs. After a patch search fails, inspect the exact file before revising the edit.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Fix only src/parser.rs. After a patch search fails, inspect the exact file before revising the edit."
+        },
+        {
+          "role": "tool",
+          "content": "Error: patch_file failed for src/parser.rs: search text not found. No file was changed."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] stage=diagnose. The last patch to src/parser.rs failed. Read the exact target before constructing a revised search anchor."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "read_file",
+          "path": "src/parser.rs"
+        }
+      ]
+    },
+    {
+      "id": "followup-docs-after-source-edit",
+      "prompt": "Update the runtime-sensitive registry and its documentation. src/tui/agent/followup_requirements.rs is already patched; inspect docs/state-schema.md to finish the missing follow-up.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Update the runtime-sensitive registry and its documentation. src/tui/agent/followup_requirements.rs is already patched; inspect docs/state-schema.md to finish the missing follow-up."
+        },
+        {
+          "role": "tool",
+          "content": "OK: patched 'src/tui/agent/followup_requirements.rs'\n[auto-test] \u2717 FAILED (exit 1)\nError: docs/state-schema.md is missing the required registry entry."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Verification failed after a successful source edit. The source change landed; documentation follow-up remains. Do not repeat the source patch."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "read_file",
+          "path": "docs/state-schema.md"
+        }
+      ]
+    },
+    {
+      "id": "non-git-fixture-diagnosis",
+      "prompt": "Fix src/lib.rs in this copied workspace. The workspace has no Git metadata; read src/lib.rs to diagnose the failing assertion.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Fix src/lib.rs in this copied workspace. The workspace has no Git metadata; read src/lib.rs to diagnose the failing assertion."
+        },
+        {
+          "role": "tool",
+          "content": "FAILED (exit_code: 128)\nstderr:\nfatal: not a git repository (or any of the parent directories): .git"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] stage=diagnose. git status introduced an unrelated failure. The task remains the failing assertion in src/lib.rs; do not initialize a repository."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "read_file",
+          "path": "src/lib.rs"
+        }
+      ]
+    },
+    {
+      "id": "current-exact-verification",
+      "prompt": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "The artifact is fixed. Run exactly cargo test -q parser::tests:: before closing; do not append another command and do not claim it passed yet."
+        },
+        {
+          "role": "tool",
+          "content": "OK: patched 'src/parser.rs'"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] [Done Gate] Missing current verification. Required exact command: cargo test -q parser::tests::. No passing result exists after the latest edit."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "exec",
+          "command": "cargo test -q parser::tests::"
+        }
+      ]
+    },
+    {
+      "id": "failed-replay-input-after-long-output",
+      "prompt": "Repair the replay input .spiral-coder/tui_replay.json. Its JSON is parseable but the new case has no completed failure-like assistant target. Inspect that input; the source file named in the prompt need not exist.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the replay input .spiral-coder/tui_replay.json. Its JSON is parseable but the new case has no completed failure-like assistant target. Inspect that input; the source file named in the prompt need not exist."
+        },
+        {
+          "role": "tool",
+          "content": "OK: wrote '.spiral-coder/tui_replay.json'\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[diff] unchanged source context\n[auto-test] \u2717 FAILED (exit 1)\nError: tui replay input failed; spec=\".spiral-coder/tui_replay.json\" case=\"review-panel\"; could not infer a stuck target\nError: requires a completed failure-like assistant message in coder_messages."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] The replay check failed. Diagnose the input spec before another edit; do not create src/tui/review_panel.rs."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "read_file",
+          "path": ".spiral-coder/tui_replay.json"
+        }
+      ]
+    },
+    {
+      "id": "original-task-after-continuations",
+      "prompt": "Implement the smallest parser fix in src/parser.rs. The parser file has been located; the next useful action is reading src/parser.rs. Preserve this task over automatic continuation messages.",
+      "lang": "en",
+      "tags": [
+        "observer-assist-v1"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Implement the smallest parser fix in src/parser.rs. The parser file has been located; the next useful action is reading src/parser.rs. Preserve this task over automatic continuation messages."
+        },
+        {
+          "role": "tool",
+          "content": "[src/parser.rs] previously located by search"
+        },
+        {
+          "role": "assistant",
+          "content": "Working toward the parser fix."
+        },
+        {
+          "role": "tool",
+          "content": "read-only observation complete"
+        },
+        {
+          "role": "assistant",
+          "content": "Working toward the parser fix."
+        },
+        {
+          "role": "tool",
+          "content": "read-only observation complete"
+        },
+        {
+          "role": "assistant",
+          "content": "Working toward the parser fix."
+        },
+        {
+          "role": "tool",
+          "content": "read-only observation complete"
+        },
+        {
+          "role": "assistant",
+          "content": "Working toward the parser fix."
+        },
+        {
+          "role": "tool",
+          "content": "read-only observation complete"
+        },
+        {
+          "role": "user",
+          "content": "Continue."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Missing <think>. Choose one concrete next action for the existing task; do not restart broad discovery."
+        }
+      ],
+      "observer_response": {
+        "summary": "placeholder only; replaced by live Observer output",
+        "suggestions": []
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        }
+      ],
+      "expected_primary_actions": [
+        {
+          "tool": "read_file",
+          "path": "src/parser.rs"
+        }
+      ]
+    }
+  ]
+}

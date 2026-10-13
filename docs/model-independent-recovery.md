@@ -19,6 +19,9 @@ separate when deciding what to change.
 | A broad rewrite changes an existing replay case, or an exact edit anchor repeatedly misses | Edit scope and preservation are not explicit enough | Still open. A passing parser does not prove preservation of existing behavior. Keep the artifact audit separate from frozen checks; do not synthesize unrequested assertion changes. |
 | A revised patch to the same file is rejected as an unchanged action | Reflection action identity discards the edit payload | `reflection_action.rs` compares complete execution-relevant arguments, preserving path/command case, digits and payload bytes. Identical retries remain blocked despite changed call IDs or JSON formatting. Revised arguments grant no diagnosis, repair or verification credit. |
 | Follow-up work continues after an earlier successful check, then the requested handoff is missing | Work completion, current proof, and final reporting are distinct obligations | Existing `benchmark_proof`, `recovery_focus`, `exec_proof`, and `final_handoff` retain these gates. They reject incomplete work, but do not yet guarantee productive progress under small iteration caps. |
+| Observer treats a rejected edit or failed check as completed follow-up work | An attempted action is mistaken for positive execution evidence | `observer/detector.rs` correlates preceding native calls once and uses shared positive result headers. `exec_classification/observed.rs` checks actual command grammar and expected spec. Unconfirmed display edits request a read; they do not create a mutation anchor. |
+| Observer invents a tool for the exact remaining check, or forwards contradictory display text | Next-action vocabulary and delivery are detached from real tool contracts | `events/observer_assist.rs` supplies the actual catalog and `edit`/`verify` kinds. `suggestion/action.rs` checks kind/tool/argument shape; both forwarded messages use the same primary action. Missing or invalid tools are withheld, not guessed. |
+| A valid primary read is lost because optional display text is an object | Presentation metadata gates the actionable contract | A non-string `quickest_check` is ignored without converting it to arguments. Captured response replay verifies recovery; invalid JSON and invalid actionable fields remain rejected. |
 
 The policy is to make the next correction actionable without claiming it already
 happened. Validation diagnostics do not fill in reasoning fields, change tool
@@ -49,8 +52,8 @@ continuation metadata remains opaque and the original call stays intact.
   do not infer a new user instruction or add fixture-specific runtime coercion
   just to improve the score.
 
-Native protocol validation is the scope of this change. Web parser/validator
-parity remains separate work. Small live-suite totals cannot establish general
+Native runtime recovery and TUI Observer handoffs are covered here. Web
+parser/validator parity remains separate work. Small live-suite totals cannot establish general
 reliability, provider rankings, or nonregression.
 
 The [four-cycle record](evals/2026-10-13-recovery-cycles/README.md) and the
@@ -61,3 +64,11 @@ between follow-up diagnosis and progress pressure, and exact-command extensions
 that fail current-proof requirements. Strict JSON preservation and equivalent
 optional defaults are distinguished in the artifact audit. A more actionable
 rejection is not itself evidence of model task completion.
+
+The [Observer recovery record](evals/2026-10-13-observer-recovery/README.md)
+separates a new six-case primary-action panel from the unchanged Coder suite.
+All initial measurement/HTTP failures, both runtime candidates and captured
+response replays are retained. The final missing-tool response is withheld,
+while Coder still exhibits conflicting diagnosis/mutation guidance, unfinished
+follow-ups and missing handoffs. Neither parsed advice nor a passing Observer
+panel establishes completed Coder work.
