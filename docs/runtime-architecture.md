@@ -146,6 +146,7 @@ keeps live and restored verification timestamps consistent.
 Current code:
 - `src/tui/agent.rs` (AgentState + error classifier)
 - `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
+- `src/tui/agent/reflection_action.rs` (execution-relevant action identity for reflection alignment)
 - `src/tui/agent/progress_gate.rs` (evidence-aware observation and baseline-check pressure)
 - `src/exec.rs` (dangerous command checks, cwd validation)
 - `web/core/exec.js` (bash→PowerShell normalization, dangerous command guard)
@@ -153,6 +154,15 @@ Current code:
 
 Repetition and progress evidence:
 
+- Reflection `adjust`/`abandon` compares full execution-relevant arguments. A
+  changed patch search/replacement, write content, diff, path, command or requested
+  working directory is a distinct attempt. Case, digits, quoted whitespace,
+  multiline content and suffixes are preserved; call IDs, provider metadata,
+  JSON formatting and ignored fields do not change identity. Display summaries
+  are bounded independently. This in-memory comparison grants no observation,
+  repair, verification or completion evidence and leaves recovery gates intact.
+- Reflection repair feedback gets `last_outcome` choices from the shared enum
+  contract, so its examples survive the same parser used on the next model turn.
 - Repeated output means the same complete command produced the same output
   consecutively. Different successful commands may all be silent; their empty
   output does not require a strategy change. Command identity preserves case,

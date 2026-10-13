@@ -46,13 +46,14 @@ pub(super) fn validate_reflection(
     }
     Err(anyhow!(
         "{}\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\n\
-last_outcome: observed result\n\
+last_outcome: {}\n\
 goal_delta: closer|same|farther\n\
 wrong_assumption: the assumption corrected by evidence (or none)\n\
 strategy_change: keep|adjust|abandon\n\
 next_minimal_action: the next action toward the task\n\
 `continue` is not a strategy_change value. Repeated failure or a non-improving goal requires adjust or abandon. Keep successful evidence; do not redo a successful edit just to repair this block.",
-        errors.join("; ")
+        errors.join("; "),
+        contract::field_allowed_values("reflect", "last_outcome").join("|")
     ))
 }
 

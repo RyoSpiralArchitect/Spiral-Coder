@@ -74,6 +74,9 @@ mod provider_turn;
 mod read_only;
 mod recovery;
 mod recovery_focus;
+mod reflection_action;
+#[cfg(test)]
+mod reflection_action_tests;
 #[cfg(test)]
 mod repair_feedback_tests;
 mod repo_scaffold;
@@ -153,6 +156,7 @@ use self::read_only::{
     synthetic_read_only_observation_plan, ReadOnlyDiagnoseRescueAction,
 };
 use self::recovery::RecoveryGovernor;
+use self::reflection_action::{tool_call_action_sig, ActionIdentity};
 use self::session_bridge::SessionBridgeView;
 use self::task_harness::{
     allows_artifact_creation_during_diagnose, allows_artifact_creation_during_verify,
@@ -6141,31 +6145,6 @@ fn command_sig_with_limit(command: &str, max_len: usize) -> String {
     normalize_for_signature_with_limit(&collapsed, max_len)
 }
 
-fn tool_call_action_sig(tc: &ToolCallData) -> Option<String> {
-    match tc.name.as_str() {
-        "exec" => {
-            let args: serde_json::Value =
-                serde_json::from_str(&tc.arguments).unwrap_or(json!({"command": tc.arguments}));
-            let command = args["command"].as_str().unwrap_or("").trim();
-            if command.is_empty() {
-                None
-            } else {
-                Some(format!("exec:{}", command_sig(command)))
-            }
-        }
-        "read_file" | "write_file" | "patch_file" | "apply_diff" => {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
-            let path = args["path"].as_str().unwrap_or("").trim();
-            if path.is_empty() {
-                None
-            } else {
-                Some(format!("{}:{}", tc.name, normalize_for_signature(path)))
-            }
-        }
-        _ => None,
-    }
-}
-
 fn blocked_tool_call_signature(name: &str, arguments: &str) -> String {
     canonicalize_tool_call_command(name, arguments)
         .unwrap_or_else(|| format!("{name}:{}", normalize_for_signature(arguments)))
@@ -7400,7 +7379,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let mut pending_system_hint: Option<String> = None;
     let mut reflection_required: Option<String> = None;
     let mut impact_required: Option<String> = None;
-    let mut reflection_trigger_sig: Option<String> = None;
+    let mut reflection_trigger_sig: Option<ActionIdentity> = None;
     let mut reflection_guard: Option<ReflectionBlock> = None;
     let mut forced_tool_once = false;
     let mut tool_calls_this_run: usize = 0;
@@ -12168,7 +12147,7 @@ Execute this minimal action instead: {}",
                 || reflection_trigger_sig.is_none()
                 || next_sig
                     .as_ref()
-                    .map(|s| reflection_trigger_sig.as_deref() != Some(s.as_str()))
+                    .map(|s| reflection_trigger_sig.as_ref() != Some(s))
                     .unwrap_or(true)
             {
                 reflection_guard = None;
@@ -12924,8 +12903,7 @@ Required now: run `{command}`.\n{verification_status}"
                         .clone()
                         .unwrap_or_else(|| "apply_diff failed".to_string()),
                 );
-                reflection_trigger_sig =
-                    Some(format!("apply_diff:{}", normalize_for_signature(&path)));
+                reflection_trigger_sig = tool_call_action_sig(&tc);
             }
 
             let history_result = if is_error {
@@ -13967,11 +13945,7 @@ Action required: call read_file(path) first to confirm current contents, then re
                         .clone()
                         .unwrap_or_else(|| "file tool failure".to_string()),
                 );
-                reflection_trigger_sig = Some(format!(
-                    "{}:{}",
-                    tc.name.as_str(),
-                    normalize_for_signature(&path)
-                ));
+                reflection_trigger_sig = tool_call_action_sig(&tc);
             }
 
             // Append tool result to conversation.
@@ -14273,7 +14247,7 @@ Do NOT run the exact same command again without a material change.",
             last_exec_step = Some(this_step);
             pending_system_hint = Some(block.clone());
             reflection_required = Some(block);
-            reflection_trigger_sig = Some(format!("exec:{cmd_sig}"));
+            reflection_trigger_sig = tool_call_action_sig(&tc);
             let _ = tx
                 .send(StreamToken::GovernorState(build_governor_state(
                     state,
@@ -14558,7 +14532,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
                 "stall detected".to_string()
             };
             reflection_required = Some(hint_clone_for_reflect.unwrap_or_else(|| default_reason));
-            reflection_trigger_sig = Some(format!("exec:{}", command_sig(&command)));
+            reflection_trigger_sig = tool_call_action_sig(&tc);
         } else if reflection_guard.is_none() {
             reflection_trigger_sig = None;
         }
