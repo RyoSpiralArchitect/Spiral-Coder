@@ -65,6 +65,7 @@ mod meta_harness;
 mod outcome;
 mod progress_bridge;
 mod protocol_fields;
+mod protocol_lists;
 mod protocol_validation;
 mod provider_compat;
 #[cfg(test)]
@@ -126,6 +127,7 @@ use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 use self::protocol_fields::parse_tag_fields;
+use self::protocol_lists::parse_plan_items;
 use self::protocol_validation::{
     validate_impact, validate_plan, validate_reflection, validate_think,
 };
@@ -5252,66 +5254,6 @@ impl ParsedBlockValue {
             Self::Text(_) | Self::List(_) | Self::Canonical(_) => None,
         }
     }
-}
-
-fn parse_numbered_steps(s: &str) -> Vec<String> {
-    let normalized = s.replace("\r\n", "\n").replace('\n', " ");
-    let bytes = normalized.as_bytes();
-    let mut markers: Vec<(usize, usize)> = Vec::new();
-    let mut i = 0usize;
-
-    while i < bytes.len() {
-        if bytes[i].is_ascii_digit() && (i == 0 || bytes[i - 1].is_ascii_whitespace()) {
-            let marker_start = i;
-            while i < bytes.len() && bytes[i].is_ascii_digit() {
-                i += 1;
-            }
-            if i < bytes.len() && matches!(bytes[i], b')' | b'.' | b':' | b'-') {
-                i += 1;
-                while i < bytes.len() && bytes[i].is_ascii_whitespace() {
-                    i += 1;
-                }
-                markers.push((marker_start, i));
-                continue;
-            }
-        }
-        i += 1;
-    }
-
-    if markers.is_empty() {
-        return Vec::new();
-    }
-
-    let mut steps = Vec::new();
-    for (idx, (_, content_start)) in markers.iter().enumerate() {
-        let content_end = markers
-            .get(idx + 1)
-            .map(|(next_start, _)| *next_start)
-            .unwrap_or(normalized.len());
-        let step = normalized[*content_start..content_end]
-            .trim()
-            .trim_end_matches(';')
-            .trim()
-            .to_string();
-        if !step.is_empty() {
-            steps.push(step);
-        }
-    }
-
-    steps
-}
-
-fn parse_plan_items(s: &str) -> Vec<String> {
-    let numbered = parse_numbered_steps(s);
-    if !numbered.is_empty() {
-        return numbered;
-    }
-
-    s.replace("\r\n", "\n")
-        .split(['\n', ';'])
-        .map(|part| compact_one_line(part.trim(), 120))
-        .filter(|part| part != "-")
-        .collect()
 }
 
 fn parse_assumption_items(s: &str) -> Vec<String> {

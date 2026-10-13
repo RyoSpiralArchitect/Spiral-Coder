@@ -1,6 +1,6 @@
 # Four recovery cycles — 2026-10-13
 
-Three source changes and an independent repeat accumulate failure modes from the
+Four source changes accumulate failure modes from the
 same three weak models. The six-case spec, 33 fixture hashes, acceptance checks,
 and iteration caps remain unchanged. The
 [previous record](../2026-10-13-repair-feedback/README.md) is retained in full.
@@ -12,7 +12,7 @@ and iteration caps remain unchanged. The
 | 1 | `7729b1283da6d6b5c54c9f0a4989303acd7fe6c7` | Aggregate reflection/impact feedback, exact enum choices and current plan references; explain zero native calls even when a block fails first. |
 | 2 | `9e4e7fa7527817923c8ec3d1ebda56d833ba25ed` | Expose all pending exact verification commands, correct the one-call final-turn instruction, localize semantic replay failures and explain Observer/check input surfaces. |
 | 3 | Recorded in receipts | Repair described file-existence dependencies and preserve the exact configured command in verification feedback. |
-| 4 | Same source and binary as round 3 | Independent fresh run; no source or evaluation adjustment. |
+| 4 | Recorded in receipts | Preserve exit statuses and decimal literals inside numbered plan items; valid four-item plans must not be counted as oversized. |
 
 All phases use temperature 0, max output 2,048 tokens, 90-second request timeout,
 900-second outer suite timeout, and case caps 14/14/10/8/12/18. Providers may
@@ -45,6 +45,8 @@ new regression tests and extended coverage include:
   exact edit dependencies and fresh versus cached confirmation;
 - verification suggestions accepted by the same gate, preserving `grep -Fx`,
   mixed-case paths and double spaces inside quoted arguments.
+- Round 4 adds an eighth regression for correct numbered-item boundaries, compact
+  numbered syntax, and unchanged rejection of a real fifth acceptance criterion.
 
 ## Live results
 
@@ -54,4 +56,6 @@ original case and contain two JSON-parseable cases. This supplementary audit is
 separate from task completion and the frozen pass criteria.
 
 No promotion or broad reliability claim follows from local checks or one live
-score. The final repeat is retained even if it worsens the result.
+score. The planned unchanged confirmation runs were replaced by concrete repairs
+after new counterexamples appeared. There is one run per source/provider, so
+this record does not establish repeated reliability or nonregression.

@@ -52,6 +52,6 @@ Native protocol validation is the scope of this change. Web parser/validator
 parity remains separate work. Small live-suite totals cannot establish general
 reliability, provider rankings, or nonregression.
 
-The [four-cycle record](evals/2026-10-13-recovery-cycles/README.md) retains failures,
-deterministic counterexamples and the unchanged final-candidate repeat. A more
+The [four-cycle record](evals/2026-10-13-recovery-cycles/README.md) retains failures
+and deterministic counterexamples from every candidate. A more
 actionable rejection is not itself evidence of model task completion.

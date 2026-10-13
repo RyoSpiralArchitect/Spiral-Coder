@@ -2,6 +2,37 @@
 use super::*;
 
 #[test]
+fn numbered_plan_items_do_not_split_exit_status_or_decimal_literals() {
+    let text = concat!(
+        "<plan>\ngoal: Repair the failing test\nsteps:\n1) Read the source.\n2) Apply and verify the fix.\n",
+        "acceptance:\n1) The test fails before repair.\n",
+        "2) After repair, the test passes (exit_code == 0).\n",
+        "3) Compatibility with version 1.2 is preserved.\n",
+        "4) Report the changed file path.\nrisks: regression\nassumptions: tests are available\n</plan>"
+    );
+    let plan = parse_plan_block(text).unwrap();
+    assert_eq!(
+        plan.acceptance_criteria,
+        [
+            "The test fails before repair.",
+            "After repair, the test passes (exit_code == 0).",
+            "Compatibility with version 1.2 is preserved.",
+            "Report the changed file path.",
+        ]
+    );
+    assert!(validate_plan(&plan).is_ok());
+    assert_eq!(
+        parse_plan_items("1)Read source 2)Verify repair"),
+        ["Read source", "Verify repair"]
+    );
+    let invalid = text.replace(
+        "4) Report the changed file path.",
+        "4) Report the changed file path.\n5) Extra criterion.",
+    );
+    assert!(validate_plan(&parse_plan_block(&invalid).unwrap()).is_err());
+}
+
+#[test]
 fn suggested_verification_command_keeps_the_exact_configured_identity() {
     for command in [
         "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",

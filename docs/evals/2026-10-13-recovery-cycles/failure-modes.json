@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "scope": "Observed counterexamples and bounded implementation repairs; no model ranking or general reliability claim.",
+  "modes": [
+    {
+      "id": "protocol_feedback_lacks_repair_vocabulary",
+      "category": "harness_feedback",
+      "observed": "Repeated invalid reflection enums or current-plan references receive only a short rejection.",
+      "examples": ["previous/candidate-revised-gemini/fix-failing-rust-test", "round1-gemini/approved-benchmark-plan-exec-proof-resume"],
+      "repair_commit": "7729b1283da6d6b5c54c9f0a4989303acd7fe6c7",
+      "repair": "Aggregate independent reflection/impact defects; list exact enum choices and bounded current plan references without changing accepted inputs.",
+      "boundary": "Feedback does not synthesize reflection, progress, native tool calls or execution evidence. Model compliance remains a separate outcome."
+    },
+    {
+      "id": "early_block_hides_missing_native_call",
+      "category": "harness_feedback",
+      "observed": "An invalid or missing protocol block is rejected before the native-call count explanation can run.",
+      "examples": ["previous/candidate-revised-gemini/self-fix-pr-ready-runtime-followup", "round1-gemini/self-fix-pr-ready-runtime-followup"],
+      "repair_commit": "7729b1283da6d6b5c54c9f0a4989303acd7fe6c7",
+      "repair": "Include absent-native-call guidance at missing/invalid block boundaries as well as count rejections.",
+      "boundary": "A mock HTTP retry proves textual XML is not executed. Opaque provider continuation metadata stays unchanged."
+    },
+    {
+      "id": "required_checks_disclosed_one_at_a_time",
+      "category": "harness_feedback",
+      "observed": "A combined check succeeds, but repeated done attempts reveal each missing individual exact command separately and consume the reporting budget.",
+      "examples": ["round1-gemini/approved-benchmark-plan-tui-replay-smoke"],
+      "repair_commit": "9e4e7fa7527817923c8ec3d1ebda56d833ba25ed",
+      "repair": "Render all pending exact commands before each turn and at rejected done; make the final-turn instruction fit one available call.",
+      "boundary": "No combined-command credit, fabricated proof, extra iterations or automatic authored report. Later edits still invalidate prior proof."
+    },
+    {
+      "id": "semantic_replay_failure_loses_input_context",
+      "category": "harness_diagnostics",
+      "observed": "A replay assertion reports suggestion_parsed=false without input identity or the applicable Observer-response shape, then recovery falls back to generic diagnostics.",
+      "examples": ["round1-openai/approved-benchmark-plan-tui-replay-smoke"],
+      "repair_commit": "9e4e7fa7527817923c8ec3d1ebda56d833ba25ed",
+      "repair": "Name the input spec in semantic failure reports and explain Observer/check surfaces; retain input focus through automatic-test compaction and resume.",
+      "boundary": "The failing assertion and artifact are unchanged. Early target-selection failures and arbitrary structured-edit quality remain separate problems."
+    },
+    {
+      "id": "described_existence_claim_blocks_unrelated_edit",
+      "category": "harness_dependency",
+      "observed": "A refuted described file-existence claim blocks adding its path as data in a separate registry or eval file.",
+      "examples": ["round2-mistral/self-fix-pr-ready-runtime-followup"],
+      "repair_commit": "e678081f1ad3ba8092641fe65463eb5c7c4e8ede",
+      "repair": "Recognize bounded affirmative file descriptions and use exact target dependency plus fresh evidence, as for canonical existence claims.",
+      "boundary": "Patching the actual missing path stays blocked. Negative, conditional, quantified, compound and unrecognized claims retain semantic handling. This is not a general natural-language parser."
+    },
+    {
+      "id": "suggested_command_changes_execution_semantics",
+      "category": "harness_command_identity",
+      "observed": "The runtime lowercases its preferred verification command from grep -Fx to grep -fx, then rejects the model for following that command.",
+      "examples": ["round2-gemini/create-single-file"],
+      "repair_commit": "e678081f1ad3ba8092641fe65463eb5c7c4e8ede",
+      "repair": "Render the original configured command, preserving case and quoted whitespace; verify the suggested command through the same classification gate.",
+      "boundary": "Matching remains exact. Arbitrary altered commands do not gain verification authority."
+    },
+    {
+      "id": "structured_edit_and_target_construction",
+      "category": "open_task_failure",
+      "observed": "Unmatched diff anchors, invented check kinds, malformed JSON and missing failure-like assistant targets consume the fixed TUI budget.",
+      "examples": ["round1-openai/approved-benchmark-plan-tui-replay-smoke", "round2-openai/approved-benchmark-plan-tui-replay-smoke"],
+      "repair": null,
+      "boundary": "Diagnostic repairs do not establish successful construction or authorize changing the intended regression. Preserve original-case audits separately from frozen checks."
+    },
+    {
+      "id": "verification_without_final_handoff",
+      "category": "open_completion_failure",
+      "observed": "Required edits or tests may succeed while the run exhausts its cap before the requested final report.",
+      "examples": ["round1-gemini/approved-benchmark-plan-tui-replay-smoke", "round1-gemini/self-fix-pr-ready-runtime-followup"],
+      "repair": "Pending-command feedback and the one-call final-turn instruction address two concrete causes; overall completion still requires live evidence.",
+      "boundary": "Passing an automatic test is not task completion. No iteration-cap extension or synthetic report is used."
+    },
+    {
+      "id": "required_tool_usage_mismatch",
+      "category": "evaluation_requirement",
+      "observed": "An otherwise completed repair uses write_file and fails the frozen required patch_file check.",
+      "examples": ["round2-mistral/approved-benchmark-plan-tui-replay-smoke", "round2-gemini/approved-benchmark-plan-tui-replay-smoke"],
+      "repair": null,
+      "boundary": "Retain the failed criterion. Do not mislabel it as a broken artifact, waive the check, or coerce a fixture-specific tool call to improve the score."
+    },
+    {
+      "id": "generic_diagnosis_creates_new_failure",
+      "category": "open_recovery_failure",
+      "observed": "After a failed Rust test and blocked premature patch, the model chooses git status in a copied fixture without a Git repository and introduces an unrelated failure.",
+      "examples": ["round2-gemini/resume-damaged-tool-exchange-fix"],
+      "repair": null,
+      "boundary": "Further recovery guidance must use observed environment and failure context without bypassing diagnosis or inventing repair evidence."
+    }
+  ]
+}

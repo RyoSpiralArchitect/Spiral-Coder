@@ -237,6 +237,10 @@ Command classification:
 
 Repair feedback:
 
+- `protocol_lists.rs` owns numbered protocol lists. Positive ordinals must
+  introduce item text; embedded exit statuses, decimal versions and numeric
+  dates do not create extra plan steps or acceptance criteria. Compact `1)Read`
+  remains supported, and real extra criteria still face the same size limits.
 - `src/tui/agent/protocol_validation.rs` owns native plan/think/reflection/impact validation.
   It reports independent defects together with field-format guidance while
   preserving all existing acceptance conditions. Diagnostics never modify model
