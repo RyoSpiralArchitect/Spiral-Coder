@@ -126,7 +126,9 @@ use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::progress_bridge::ProgressBridgeView;
 use self::protocol_fields::parse_tag_fields;
-use self::protocol_validation::{validate_plan, validate_think};
+use self::protocol_validation::{
+    validate_impact, validate_plan, validate_reflection, validate_think,
+};
 #[cfg(test)]
 use self::provider_compat::compat_synthetic_think;
 use self::provider_compat::{
@@ -4332,29 +4334,6 @@ fn impact_progress_matches_plan(progress: &str, plan: &PlanBlock) -> bool {
             .any(|criterion| impact_progress_matches_entry(progress, criterion))
 }
 
-fn validate_impact(impact: &ImpactBlock, plan: Option<&PlanBlock>) -> Result<()> {
-    if impact.changed.trim().is_empty() {
-        return Err(anyhow!(governor_contract::impact_missing_changed_message()));
-    }
-    if impact.progress.trim().is_empty() {
-        return Err(anyhow!(governor_contract::impact_missing_progress_message()));
-    }
-    if impact.remaining_gap.trim().is_empty() {
-        return Err(anyhow!(
-            governor_contract::impact_missing_remaining_gap_message()
-        ));
-    }
-    let Some(plan) = plan else {
-        return Err(anyhow!(governor_contract::impact_requires_plan_message()));
-    };
-    if !impact_progress_matches_plan(impact.progress.as_str(), plan) {
-        return Err(anyhow!(
-            governor_contract::impact_invalid_progress_reference_message()
-        ));
-    }
-    Ok(())
-}
-
 fn parse_string_list_arg(value: &serde_json::Value) -> Vec<String> {
     match value {
         serde_json::Value::Array(items) => items
@@ -5884,60 +5863,6 @@ fn think_next_matches_exec_command(next: &str, command: &str) -> bool {
         .collect::<Vec<_>>()
         .join(" ");
     !next_prefix.is_empty() && next_prefix == cmd_prefix
-}
-
-fn validate_reflection(
-    r: &ReflectionBlock,
-    mem: &FailureMemory,
-    file_tool_consec_failures: usize,
-) -> Result<()> {
-    if r.last_outcome.trim().is_empty() {
-        return Err(anyhow!(
-            governor_contract::reflection_missing_last_outcome_message()
-        ));
-    }
-    if r.wrong_assumption.trim().is_empty() {
-        return Err(anyhow!(
-            governor_contract::reflection_missing_wrong_assumption_message()
-        ));
-    }
-    if r.next_minimal_action.trim().is_empty() {
-        return Err(anyhow!(
-            governor_contract::reflection_missing_next_minimal_action_message()
-        ));
-    }
-    if r.goal_delta == GoalDelta::Unknown {
-        return Err(anyhow!(
-            governor_contract::reflection_invalid_goal_delta_message()
-        ));
-    }
-    if r.strategy_change == StrategyChange::Unknown {
-        return Err(anyhow!(
-            governor_contract::reflection_invalid_strategy_change_message()
-        ));
-    }
-
-    let repeated_failure = mem.repeated_failure_or_stall();
-    let repeated_failure = repeated_failure || file_tool_consec_failures >= 2;
-
-    if repeated_failure && r.strategy_change == StrategyChange::Keep {
-        return Err(anyhow!(
-            governor_contract::reflection_requires_strategy_change_message()
-        ));
-    }
-
-    if matches!(r.goal_delta, GoalDelta::Same | GoalDelta::Farther)
-        && matches!(
-            r.strategy_change,
-            StrategyChange::Keep | StrategyChange::Unknown
-        )
-    {
-        return Err(anyhow!(
-            governor_contract::reflection_non_improving_requires_change_message()
-        ));
-    }
-
-    Ok(())
 }
 
 fn build_reflection_prompt(
@@ -8736,8 +8661,10 @@ This is the LAST model call for this run.\n\
                                 .await;
                             reflect
                         } else {
-                            let msg =
-                                governor_contract::reflection_missing_message(reason.as_str());
+                            let msg = provider_turn::tool_count_feedback(
+                                governor_contract::reflection_missing_message(reason.as_str()),
+                                &tool_calls,
+                            );
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                                 .await;
@@ -8755,7 +8682,10 @@ This is the LAST model call for this run.\n\
                             continue;
                         }
                     } else {
-                        let msg = governor_contract::reflection_missing_message(reason.as_str());
+                        let msg = provider_turn::tool_count_feedback(
+                            governor_contract::reflection_missing_message(reason.as_str()),
+                            &tool_calls,
+                        );
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                             .await;
@@ -8776,8 +8706,10 @@ This is the LAST model call for this run.\n\
             };
 
             if let Err(e) = validate_reflection(&reflect, &mem, file_tool_consec_failures) {
-                let msg =
-                    governor_contract::reflection_invalid_message(&e.to_string(), reason.as_str());
+                let msg = provider_turn::tool_count_feedback(
+                    governor_contract::reflection_invalid_message(&e.to_string(), reason.as_str()),
+                    &tool_calls,
+                );
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
                     .await;
@@ -8992,7 +8924,10 @@ Execute only the new minimal action: {}",
                                 .await;
                             impact
                         } else {
-                            let msg = governor_contract::impact_missing_message(reason.as_str());
+                            let msg = provider_turn::tool_count_feedback(
+                                governor_contract::impact_missing_message(reason.as_str()),
+                                &tool_calls,
+                            );
                             let _ = tx
                                 .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                                 .await;
@@ -9010,7 +8945,10 @@ Execute only the new minimal action: {}",
                             continue;
                         }
                     } else {
-                        let msg = governor_contract::impact_missing_message(reason.as_str());
+                        let msg = provider_turn::tool_count_feedback(
+                            governor_contract::impact_missing_message(reason.as_str()),
+                            &tool_calls,
+                        );
                         let _ = tx
                             .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                             .await;
@@ -9031,8 +8969,10 @@ Execute only the new minimal action: {}",
             };
 
             if let Err(e) = validate_impact(&impact, impact_plan.as_ref()) {
-                let msg =
-                    governor_contract::impact_invalid_message(&e.to_string(), reason.as_str());
+                let msg = provider_turn::tool_count_feedback(
+                    governor_contract::impact_invalid_message(&e.to_string(), reason.as_str()),
+                    &tool_calls,
+                );
                 let _ = tx
                     .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
                     .await;

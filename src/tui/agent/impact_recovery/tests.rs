@@ -2,8 +2,6 @@ use super::*;
 
 #[tokio::test]
 async fn pre_tool_impact_rejection_requests_native_call_without_executing_pseudo_xml() {
-    use httpmock::prelude::*;
-    let server = MockServer::start();
     let text = concat!(
         "<plan>\ngoal: Finish the approved benchmark plan and verify the prepared docs and runtime eval artifacts.\n",
         "steps:\n1. Inspect the prepared benchmark files.\n2. Run the required verification commands.\n",
@@ -11,6 +9,24 @@ async fn pre_tool_impact_rejection_requests_native_call_without_executing_pseudo
         "<impact>\nchanged: prior workspace edit\nprogress: step 1\nremaining_gap: run required checks\n</impact>\n",
         "<default_api:exec><command>printf forbidden > pseudo-executed</command></default_api:exec>"
     );
+    assert_impact_retry_guidance(text, "Impact gate: expected exactly ONE tool call").await;
+}
+
+#[tokio::test]
+async fn invalid_impact_and_zero_call_are_explained_in_the_same_retry() {
+    let text = concat!(
+        "<plan>\ngoal: Finish the approved benchmark plan and verify the prepared docs and runtime eval artifacts.\n",
+        "steps:\n1. Inspect the prepared benchmark files.\n2. Run the required verification commands.\n",
+        "acceptance:\n- Current checks pass after the latest edit.\nrisks: stale verification\nassumptions: prepared artifacts need rechecking\n</plan>\n",
+        "<impact>\nchanged: prior workspace edit\nprogress: step 99\nremaining_gap: run required checks\n</impact>\n",
+        "<default_api:exec><command>printf forbidden > pseudo-executed</command></default_api:exec>"
+    );
+    assert_impact_retry_guidance(text, "step 2: Run the required verification commands.").await;
+}
+
+async fn assert_impact_retry_guidance(text: &str, expected: &str) {
+    use httpmock::prelude::*;
+    let server = MockServer::start();
     let response = format!(
         "data: {}\n\ndata: [DONE]\n\n",
         json!({"choices":[{
@@ -31,7 +47,7 @@ async fn pre_tool_impact_rejection_requests_native_call_without_executing_pseudo
     let retry = server.mock(|when, then| {
         when.method(POST)
             .path("/chat/completions")
-            .body_contains("Impact gate: expected exactly ONE tool call")
+            .body_contains(expected)
             .body_contains("No native tool call was received")
             .body_contains("provided function/tool interface");
         then.status(200)

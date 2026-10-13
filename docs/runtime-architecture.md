@@ -230,10 +230,12 @@ Command classification:
 
 Repair feedback:
 
-- `src/tui/agent/protocol_validation.rs` owns native plan/think field validation.
+- `src/tui/agent/protocol_validation.rs` owns native plan/think/reflection/impact validation.
   It reports independent defects together with field-format guidance while
   preserving all existing acceptance conditions. Diagnostics never modify model
-  claims, calls, or signatures. This avoids one turn per missing field.
+  claims, calls, or signatures. Reflection feedback includes the exact enum choices;
+  impact feedback lists bounded current plan references without claiming progress.
+  This avoids one turn per missing field or repeating an unexplained invalid value.
 - Replay data errors put the failing case/check index and the matching typed
   enum shape before the full schema examples so the bounded automatic-test digest
   and old-result history retain the information needed to repair that check.
@@ -244,7 +246,7 @@ Repair feedback:
   that missing path as text in another file does not depend on its existence;
   patching the missing file itself still does. General prose retains its existing
   semantic assumption guard.
-- Reflection/impact gates that reject at their zero-native-call count check explain
+- Reflection/impact gates that reject missing/invalid blocks or zero native calls explain
   the function/tool interface at that early boundary. A textual XML call
   remains text, the call-count gate still rejects it, and normal verified text
   completion outside those required gates remains available.
