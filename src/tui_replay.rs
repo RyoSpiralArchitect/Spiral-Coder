@@ -424,23 +424,34 @@ fn evaluate_checks(
     outcome: &events::TuiNextActionReplayOutcome,
     metrics: &TuiReplayMetrics,
 ) -> Vec<TuiReplayCheckResult> {
+    let observer_issue =
+        crate::tui::suggestion::validation_issue_for_raw(&outcome.observer_raw_response);
+    let observer_detail = |label: &str, ok: bool| {
+        let mut detail = format!("{label}={ok}");
+        if !ok {
+            if let Some(issue) = observer_issue.as_ref() {
+                detail.push_str(&format!("; observer_response: {issue}"));
+            }
+        }
+        detail
+    };
     case.checks
         .iter()
         .map(|check| match check {
             TuiReplayCheck::SuggestionParsed => TuiReplayCheckResult {
                 label: "suggestion_parsed".to_string(),
                 ok: metrics.suggestion_parsed,
-                detail: format!("suggestion_parsed={}", metrics.suggestion_parsed),
+                detail: observer_detail("suggestion_parsed", metrics.suggestion_parsed),
             },
             TuiReplayCheck::HintQueued => TuiReplayCheckResult {
                 label: "hint_queued".to_string(),
                 ok: metrics.hint_queued,
-                detail: format!("hint_queued={}", metrics.hint_queued),
+                detail: observer_detail("hint_queued", metrics.hint_queued),
             },
             TuiReplayCheck::ContractQueued => TuiReplayCheckResult {
                 label: "contract_queued".to_string(),
                 ok: metrics.contract_queued,
-                detail: format!("contract_queued={}", metrics.contract_queued),
+                detail: observer_detail("contract_queued", metrics.contract_queued),
             },
             TuiReplayCheck::ObserverContains { value } => {
                 let observed = outcome

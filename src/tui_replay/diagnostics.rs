@@ -108,7 +108,7 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
         .any(|(_, check)| check.label == "suggestion_parsed")
     {
         lines.push("Error: tui-replay observer_response needs a nonempty summary, primary_blocker, or suggestions array in its JSON object. Empty or malformed responses do not parse.".to_string());
-        lines.push("Error: tui-replay suggestions[].kind: search|read|done|clarify|abandon_path. Each suggestion is an object; include reason, confidence, suggested_tool and suggested_args as needed. Preserve intended assertions.".to_string());
+        lines.push("Error: tui-replay use the parser's kind/type feedback in the failed check detail. Each suggestion is an object; include reason, confidence, suggested_tool and suggested_args as needed. Preserve intended assertions.".to_string());
     }
     if failures
         .iter()

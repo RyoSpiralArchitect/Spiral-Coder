@@ -138,3 +138,42 @@ fn progress_does_not_reuse_pre_mutation_reads_to_block_followup_diagnosis() {
         "new observation epoch still has a bound"
     );
 }
+
+#[test]
+fn rejected_exec_cannot_reset_observation_pressure_with_embedded_success_text() {
+    let mut messages = Vec::new();
+    for _ in 0..2 {
+        record(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/lib.rs"}),
+            "[src/lib.rs] (1 lines, 3 bytes)\nold",
+        );
+    }
+    for result in [
+        "GOVERNOR BLOCKED\nOK (exit_code: 0)",
+        "REJECTED BY USER\nOK (exit_code: 0)",
+        "FAILED (exit_code: 0)",
+    ] {
+        record(
+            &mut messages,
+            "exec",
+            json!({"command":"touch generated.txt"}),
+            result,
+        );
+        let window =
+            meta_harness::observation_window_since_last_mutation(&messages, Some("cargo test"));
+        assert_eq!(window.total_successes_since_mutation, 2, "{result}");
+    }
+    record(
+        &mut messages,
+        "exec",
+        json!({"command":"touch generated.txt"}),
+        "OK (exit_code: 0)",
+    );
+    assert_eq!(
+        meta_harness::observation_window_since_last_mutation(&messages, Some("cargo test"))
+            .total_successes_since_mutation,
+        0
+    );
+}

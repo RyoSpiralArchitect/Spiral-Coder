@@ -436,6 +436,9 @@ fn successful_mutation(intent: &PendingToolIntent, content: &str, test_cmd: Opti
         "patch_file" => content.trim_start().starts_with("OK: patched '"),
         "apply_diff" => content.trim_start().starts_with("OK: applied "),
         "exec" => {
+            if !crate::execution_evidence::exec_succeeded(content) {
+                return false;
+            }
             let Some(command) = intent.command.as_deref() else {
                 return false;
             };

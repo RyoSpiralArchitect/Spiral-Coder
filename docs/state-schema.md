@@ -418,6 +418,9 @@ TUI replay keeps its first-response checks unchanged and additionally exports
 `observer_repair_prompt.txt` and `observer_repair_prompt_path` when repair is
 pending. Replay makes no API request and does not execute the proposed action.
 A separately scored repair evaluation can consume this exact runtime prompt.
+Failed parse/hint/contract checks also carry the actual parser or primary-action
+validation issue in their detail, ahead of long output digests. This changes
+diagnostics only; check success and expected values remain unchanged.
 
 This layer should stay transient. If a field must survive restart/resume, it
 likely belongs in prefs or session persistence instead.

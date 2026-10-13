@@ -141,13 +141,27 @@ fn display_text<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Str
 }
 
 pub fn parse_observer_suggestion_envelope(raw: &str) -> Option<ObserverSuggestionEnvelope> {
+    parse_envelope_checked(raw).ok()
+}
+
+fn parse_envelope_checked(raw: &str) -> Result<ObserverSuggestionEnvelope, String> {
     let json_str = extract_first_json_object(raw).unwrap_or_else(|| raw.trim().to_string());
-    let mut env = serde_json::from_str::<ObserverSuggestionEnvelope>(&json_str).ok()?;
+    let mut env = serde_json::from_str::<ObserverSuggestionEnvelope>(&json_str)
+        .map_err(|error| error.to_string())?;
     normalize_envelope(&mut env);
     if env.summary.is_empty() && env.primary_blocker.is_empty() && env.suggestions.is_empty() {
-        return None;
+        return Err("empty envelope: supply summary, primary_blocker, or suggestions".into());
     }
-    Some(env)
+    Ok(env)
+}
+
+/// Replay diagnostics use the same parser and primary-action validator as the
+/// TUI consumer. Serde supplies accepted kinds/types instead of a second catalog.
+pub(crate) fn validation_issue_for_raw(raw: &str) -> Option<String> {
+    match parse_envelope_checked(raw) {
+        Ok(env) => action_validation_issue(Some(&env)),
+        Err(issue) => Some(issue),
+    }
 }
 
 pub fn format_observer_suggestion_envelope(env: &ObserverSuggestionEnvelope) -> String {

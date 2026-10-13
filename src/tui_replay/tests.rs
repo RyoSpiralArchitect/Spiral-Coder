@@ -113,7 +113,9 @@ fn failed_observer_parse_diagnostic_names_input_and_preserves_failed_assertion()
         path.to_str().unwrap(),
         "suggestion_parsed=false",
         "observer_response",
-        "search|read|done|clarify|abandon_path",
+        "unknown variant `replay`",
+        "`edit`",
+        "`verify`",
     ] {
         assert!(diagnostic.contains(expected), "{diagnostic}");
     }
@@ -267,4 +269,59 @@ fn target_mismatch_reports_selected_id_and_selector_repair_preserves_the_asserti
         passed.cases[0].checks[0].label,
         failed.cases[0].checks[0].label
     );
+}
+
+#[test]
+fn observer_contract_feedback_names_missing_tool_in_the_failed_check() {
+    let mut spec = load_spec(&repository_spec_path()).unwrap();
+    spec.cases.truncate(1);
+    spec.cases[0].observer_response = serde_json::json!({
+        "summary":"Verify the current change.",
+        "suggestions":[{"kind":"verify","confidence":0.95,"reason":"check","suggested_args":{"command":"cargo test"}}]
+    });
+    spec.cases[0].checks = vec![TuiReplayCheck::SuggestionParsed, TuiReplayCheck::HintQueued];
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    let source = serde_json::to_string(&spec).unwrap();
+    std::fs::write(&path, &source).unwrap();
+    let report = replay_spec_for_test(&path, root.path(), &root.path().join("reports")).unwrap();
+    assert_eq!(report.summary.failed, 1);
+    assert!(report.cases[0].checks[0].ok);
+    assert!(report.cases[0].checks[1]
+        .detail
+        .contains("suggested_tool is required for kind=verify"));
+    let first = diagnostics::failed_report(&report)
+        .lines()
+        .nth(1)
+        .unwrap()
+        .to_string();
+    assert!(
+        first.contains("suggested_tool"),
+        "keep the cause inside short error digests"
+    );
+    assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+}
+
+#[test]
+fn observer_contract_feedback_uses_the_actual_kind_parser() {
+    let mut spec = load_spec(&repository_spec_path()).unwrap();
+    spec.cases.truncate(1);
+    spec.cases[0].observer_response = serde_json::json!({
+        "summary":"Read the affected file.",
+        "suggestions":[{"kind":"hint_queued","confidence":0.95,"reason":"read","suggested_tool":"read_file","suggested_args":{"path":"src/lib.rs"}}]
+    });
+    spec.cases[0].checks = vec![TuiReplayCheck::SuggestionParsed];
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    std::fs::write(&path, serde_json::to_string(&spec).unwrap()).unwrap();
+    let report = replay_spec_for_test(&path, root.path(), &root.path().join("reports")).unwrap();
+    assert_eq!(report.summary.failed, 1);
+    let detail = &report.cases[0].checks[0].detail;
+    assert!(detail.contains("unknown variant `hint_queued`"));
+    assert!(detail.contains("`edit`") && detail.contains("`verify`"));
+    assert!(diagnostics::failed_report(&report)
+        .lines()
+        .nth(1)
+        .unwrap()
+        .contains("hint_queued"));
 }
