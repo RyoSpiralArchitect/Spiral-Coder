@@ -2,6 +2,35 @@
 use super::*;
 
 #[test]
+fn suggested_verification_command_keeps_the_exact_configured_identity() {
+    for command in [
+        "test -f notes/todo.txt && grep -Fx \"ship it\" notes/todo.txt",
+        "test -f 'Mixed Case/Result.txt' && grep -Fx 'Ship  It' 'Mixed Case/Result.txt'",
+    ] {
+        let hint = verification_requirement_hint(VerificationLevel::Behavioral, Some(command));
+        let suggested = hint.split('`').nth(1).expect("preferred command");
+        let context = exec_verification::ExecVerificationContext::from_root(
+            Some(command),
+            "verify the created file",
+        );
+        let classification = context.classify(suggested);
+        assert_eq!(
+            classification.kind,
+            ExecKind::Verify,
+            "the gate must accept its own suggestion: {hint}"
+        );
+        assert_eq!(
+            classification.verification,
+            Some(VerificationLevel::Behavioral)
+        );
+        assert_eq!(
+            suggested, command,
+            "case and quoted whitespace carry shell semantics"
+        );
+    }
+}
+
+#[test]
 fn preliminary_checks_preserve_failed_edits_and_do_not_satisfy_required_checks_on_resume() {
     let required = "spiral-coder tui-replay --spec replay.json --filter new-case";
     let preliminary = "spiral-coder tui-replay --spec replay.json --filter existing-case";

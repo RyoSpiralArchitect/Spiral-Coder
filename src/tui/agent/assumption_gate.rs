@@ -102,6 +102,30 @@ fn refuted_file_existence(text: &str) -> Option<&str> {
     // the lexical fallback mistakes adding a missing path to a registry for
     // depending on that path's existence.
     let text = text.trim_end_matches('.');
+    if let Some(index) = text.to_ascii_lowercase().find(PREFIX) {
+        let description = &text[..index];
+        let words: Vec<_> = description.split_whitespace().collect();
+        // A bounded affirmative noun phrase may describe the file. Negated,
+        // conditional, quantified and compound claims remain semantic claims.
+        let plain_description = description.ends_with(char::is_whitespace)
+            && (1..=6).contains(&words.len())
+            && words.iter().all(|word| {
+                word.len() <= 64
+                    && word.chars().all(|c| c.is_ascii_alphabetic() || c == '-')
+                    && ![
+                        "no", "not", "never", "none", "without", "if", "unless", "whether",
+                        "either", "neither", "and", "or", "but", "only", "one", "all", "any",
+                        "each", "every",
+                    ]
+                    .contains(&word.to_ascii_lowercase().as_str())
+            });
+        let path = text[index + PREFIX.len()..]
+            .trim()
+            .trim_matches(['`', '\'', '"']);
+        if plain_description && literal_path(path) {
+            return Some(path);
+        }
+    }
     for suffix in [
         " exists in the repository",
         " exists in the repo",
@@ -118,14 +142,17 @@ fn refuted_file_existence(text: &str) -> Option<&str> {
             continue;
         }
         let path = text[..start].trim().trim_matches(['`', '\'', '"']);
-        if !path.is_empty()
-            && !path.contains(char::is_whitespace)
-            && (path.contains(['/', '\\']) || std::path::Path::new(path).extension().is_some())
-        {
+        if literal_path(path) {
             return Some(path);
         }
     }
     None
+}
+
+fn literal_path(path: &str) -> bool {
+    !path.is_empty()
+        && !path.contains(char::is_whitespace)
+        && (path.contains(['/', '\\']) || std::path::Path::new(path).extension().is_some())
 }
 
 fn same_path(left: &str, right: &str) -> bool {
@@ -347,6 +374,8 @@ mod tests {
             format!("{missing} exists in the repo"),
             format!("`{missing}` exists in the repository."),
             format!("\"{missing}\" EXISTS"),
+            format!("PR-ready runtime-sensitive file exists at {missing}"),
+            format!("The generated configuration file exists at `{missing}`."),
         ] {
             let mut ledger = AssumptionLedger::default();
             ledger.mark_refuted(&claim, Some("read returned not found"));
@@ -391,6 +420,11 @@ mod tests {
             "src/lib.rs exists and is correct",
             "the API version 1.0 exists",
             "src/lib.rs exists in a generated workspace",
+            "no file exists at src/lib.rs",
+            "if the file exists at src/lib.rs",
+            "one file exists at src/lib.rs",
+            "the file exists at src/lib.rs and is correct",
+            "another file is missing but the file exists at src/lib.rs",
         ] {
             assert_eq!(refuted_file_existence(unrelated), None, "{unrelated}");
         }

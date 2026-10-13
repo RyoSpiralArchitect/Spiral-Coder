@@ -204,6 +204,8 @@ Command classification:
   chains. Matching preserves case and quoted whitespace. It does
   not override unsupported shell syntax or known write flags. Approved benchmark
   `required_checks` retain their separate explicit command-evidence contract.
+- Suggested configured checks retain their original case and quoted whitespace;
+  normalized failure-memory signatures are never rendered as executable commands.
 - `exec_classification/replay.rs` recognizes model-free `spiral-coder tui-replay`
   through the actual CLI parser, including global options and executable paths.
   A preliminary replay is verification rather than an action: it cannot advance
@@ -250,7 +252,10 @@ Repair feedback:
   Coder-system assertion failures explain their actual input surfaces; neither
   check results nor fixture contents are changed by this feedback.
 - File-existence refutations recognize canonical `file exists at PATH` and bounded
-  literal aliases such as `PATH exists in the repo`. Exact target dependencies and
+  literal aliases such as `PATH exists in the repo` and bounded affirmative file
+  descriptions such as `the generated configuration file exists at PATH`.
+  Negated, conditional, quantified and compound descriptions retain semantic
+  handling. Exact target dependencies and
   fresh evidence use the same recognition in live execution and restore. Mentioning
   that missing path as text in another file does not depend on its existence;
   patching the missing file itself still does. General prose retains its existing

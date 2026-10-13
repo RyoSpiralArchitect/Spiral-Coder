@@ -6040,13 +6040,13 @@ fn configured_test_cmd_verification_level(test_cmd: Option<&str>) -> Option<Veri
 fn verification_requirement_hint(level: VerificationLevel, test_cmd: Option<&str>) -> String {
     let preferred = test_cmd
         .and_then(|cmd| {
-            let sig = command_sig(cmd);
-            if sig.is_empty() {
+            let cmd = cmd.trim();
+            if cmd.is_empty() {
                 return None;
             }
             let cmd_level = configured_test_cmd_verification_level(Some(cmd))?;
             if cmd_level.satisfies(level) {
-                Some(format!("Preferred: run `{sig}`."))
+                Some(format!("Preferred: run `{cmd}`."))
             } else {
                 None
             }

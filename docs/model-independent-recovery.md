@@ -9,10 +9,13 @@ separate when deciding what to change.
 | Observed failure | General problem | Source boundary and response |
 |---|---|---|
 | A preliminary replay succeeds, then the intended edit is blocked as already fixed | A check's effect is confused with a mutation | `exec_classification/replay.rs` recognizes actual model-free replay execution using the CLI grammar. Recovery, mutation timestamps, edit-failure memory, and resumed proof share the classification. |
-| Successive turns repair goal, step, risk, doubt, next, and verify one at a time | Validation exposes one defect per expensive model turn | `protocol_validation.rs` reports all independent plan/think defects together and supplies field requirements. Accepted inputs and proof requirements stay the same. |
+| Successive turns repair fields individually or repeat an invalid enum/reference | Validation exposes one defect per expensive model turn without the accepted vocabulary | `protocol_validation.rs` reports independent plan/think/reflection/impact defects together, exact enum choices and bounded current plan references. Accepted inputs and proof requirements stay the same. |
 | A missing check value remains unresolved after rereading the spec | Diagnostic truncation removes the repair-relevant schema | `tui_replay/diagnostics.rs` puts the failing case/check index and matching enum shape before the general examples. Tests exercise automatic-test rendering and old-result pruning. |
 | A refuted `path exists in the repo` claim blocks adding that path as text to another file | Natural-language overlap is mistaken for an actual tool dependency | `assumption_gate.rs` recognizes bounded literal existence claims. The missing path still blocks patching that path, while registry edits remain independent. A fresh matching read/write can confirm the claim; cached evidence cannot. |
-| Repeated reflection/impact responses contain textual pseudo-calls but no native function call | An early gate hides the feedback needed to repair the transport format | `provider_turn.rs` supplies native-call guidance at the reflection/impact call-count rejection boundaries. It neither fabricates calls nor bypasses completion or reflection requirements. |
+| Repeated reflection/impact responses contain textual pseudo-calls but no native function call | An early gate hides the feedback needed to repair the transport format | `provider_turn.rs` supplies native-call guidance at missing/invalid-block and call-count rejection boundaries. It neither fabricates calls nor bypasses completion or reflection requirements. |
+| A model obeys `grep -fx` suggested by the gate, which then refuses verification | A diagnostic signature was rendered as an executable command | Suggested configured checks retain exact case and quoted whitespace. Round-trip coverage checks that the gate accepts its own suggested command. |
+| After a combined check, successive `done` attempts reveal one missing exact check at a time | The model sees only part of the remaining proof obligations | `benchmark_proof` exposes all pending checks before each turn and at rejected completion. Existing identity, mutation and success requirements remain authoritative. |
+| A valid JSON replay fails semantically and recovery falls back to unrelated diagnostics | The report loses input identity and the meaning of its failed assertion | Semantic reports name their input spec and explain Observer/check surfaces; failure focus retains this through compaction and resume. |
 | A broad rewrite changes an existing replay case, or an exact edit anchor repeatedly misses | Edit scope and preservation are not explicit enough | Still open. A passing parser does not prove preservation of existing behavior. Keep the artifact audit separate from frozen checks; do not synthesize unrequested assertion changes. |
 | Follow-up work continues after an earlier successful check, then the requested handoff is missing | Work completion, current proof, and final reporting are distinct obligations | Existing `benchmark_proof`, `recovery_focus`, `exec_proof`, and `final_handoff` retain these gates. They reject incomplete work, but do not yet guarantee productive progress under small iteration caps. |
 
@@ -33,7 +36,8 @@ continuation metadata remains opaque and the original call stays intact.
 - Protocol defects are aggregated without accepting a missing field, an invalid
   step, a mismatched tool, an unrelated exec prefix, or an oversized plan.
 - Existence-claim recognition covers explicit English literal forms, not arbitrary
-  prose or compound claims. Nonexistence assertions and broader semantic
+  prose or compound claims. Bounded affirmative file descriptions share the same
+  exact dependencies. Nonexistence assertions and broader semantic
   assumptions keep their prior handling. Provider selection does not change
   dependency matching or early missing-call guidance.
 - Replay schema examples are examples, not replacements for intended assertions.
@@ -47,3 +51,7 @@ continuation metadata remains opaque and the original call stays intact.
 Native protocol validation is the scope of this change. Web parser/validator
 parity remains separate work. Small live-suite totals cannot establish general
 reliability, provider rankings, or nonregression.
+
+The [four-cycle record](evals/2026-10-13-recovery-cycles/README.md) retains failures,
+deterministic counterexamples and the unchanged final-candidate repeat. A more
+actionable rejection is not itself evidence of model task completion.
