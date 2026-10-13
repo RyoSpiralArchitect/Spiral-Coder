@@ -658,6 +658,14 @@ pub(super) fn benchmark_plan_missing_required_exec_proof(
     benchmark_plan_pending_required_exec_command(root_user_text, messages, test_cmd).is_some()
 }
 
+pub(super) fn benchmark_plan_verification_hint(
+    root_user_text: &str,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    benchmark_proof::verification_hint(messages, root_user_text, test_cmd)
+}
+
 pub(super) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
     benchmark_proof::protected_call_ids(messages)
 }

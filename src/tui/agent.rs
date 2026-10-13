@@ -7978,7 +7978,7 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             let final_hint = format!(
                 "[Final Iteration — iter {}/{}]\n\
 This is the LAST model call for this run.\n\
-- If the task is fully done AND verified: run ONE final smoke test (if needed), then call `done`.\n\
+- Only ONE tool call remains. If the task is fully done AND verified, call `done` now with the requested final report. Do not rerun already successful checks just for reporting.\n\
 - If the task is NOT done: call `done` with (1) verified-complete items, (2) satisfied acceptance criteria, (3) remaining acceptance criteria, (4) verification evidence for completed criteria, and (5) the exact next commands/files to continue on the next run.",
                 iter + 1,
                 max_iters
@@ -8077,6 +8077,14 @@ This is the LAST model call for this run.\n\
                 .send(StreamToken::Delta(format!("\n[governor] {h}\n")))
                 .await;
             msgs_for_call.push(json!({"role":"system","content": note}));
+        }
+
+        if let Some(hint) = task_harness::benchmark_plan_verification_hint(
+            &root_user_text,
+            &messages,
+            test_cmd.as_deref(),
+        ) {
+            msgs_for_call.push(json!({"role":"system", "content":hint}));
         }
 
         let resolver_prompt = instruction_resolver.prompt(required_verification);
@@ -12360,9 +12368,15 @@ Required now: {}",
             ) {
                 state = AgentState::Recovery;
                 recovery.stage = Some(RecoveryStage::Verify);
+                let verification_status = task_harness::benchmark_plan_verification_hint(
+                    &root_user_text,
+                    &messages,
+                    test_cmd.as_deref(),
+                )
+                .unwrap_or_default();
                 let block = format!(
                     "[Done Gate] Approved benchmark plan requires explicit verification proof before `done`.\n\
-Required now: run `{command}`."
+Required now: run `{command}`.\n{verification_status}"
                 );
 
                 let _ = tx

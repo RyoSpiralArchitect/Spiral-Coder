@@ -99,13 +99,13 @@ pub(super) fn protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
     ids
 }
 
-/// Return the first check lacking successful evidence after the latest mutation.
+/// Return every check lacking successful evidence after the latest mutation.
 /// Results are correlated by tool-call ID; failed reruns revoke older successes.
-pub(super) fn pending_command(
+fn pending_commands(
     messages: &[Value],
     root_user_text: &str,
     test_cmd: Option<&str>,
-) -> Option<String> {
+) -> Vec<String> {
     let required = required_commands(root_user_text);
     let mut pending = BTreeMap::<String, (String, Option<String>)>::new();
     let mut passed = BTreeSet::<String>::new();
@@ -185,7 +185,48 @@ pub(super) fn pending_command(
     }
     required
         .into_iter()
-        .find(|command| !passed.contains(command))
+        .filter(|command| !passed.contains(command))
+        .collect()
+}
+
+pub(super) fn pending_command(
+    messages: &[Value],
+    root: &str,
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    pending_commands(messages, root, test_cmd)
+        .into_iter()
+        .next()
+}
+
+/// A view of the existing proof ledger, never an alternative source of proof.
+pub(super) fn verification_hint(
+    messages: &[Value],
+    root: &str,
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    if required_commands(root).is_empty() {
+        return None;
+    }
+    let pending = pending_commands(messages, root, test_cmd);
+    if pending.is_empty() {
+        return Some("[Required verification status] All approved benchmark commands have current successful execution evidence. If edits and other task obligations are complete, call done with the requested final report. Do not rerun successful checks just for reporting; a later edit invalidates this evidence.".into());
+    }
+    // Never truncate a command into a different executable command.
+    let mut displayed = Vec::new();
+    let mut bytes = 0;
+    for command in pending.iter().take(8) {
+        let encoded = serde_json::to_string(command).expect("command serializes");
+        if bytes + encoded.len() > 4096 {
+            break;
+        }
+        bytes += encoded.len();
+        displayed.push(command);
+    }
+    Some(format!(
+        "[Required verification status] {} approved checks still lack current exact execution evidence. After completing edits, run each command as a separate exec call, unchanged. Combining checks or adding `&& cat` does not satisfy exact command identity. A passing automatic test alone does not record these individual calls. Then call done with the requested final report.\nPending commands (JSON data; {} shown, consult the approved task for any omitted): {}",
+        pending.len(), displayed.len(), serde_json::to_string(&displayed).expect("commands serialize")
+    ))
 }
 
 #[cfg(test)]
@@ -238,6 +279,40 @@ mod tests {
             pending_command(&messages, &plan, None).as_deref(),
             Some("cargo test")
         );
+    }
+
+    #[test]
+    fn verification_feedback_lists_all_current_obligations_and_tracks_invalidation() {
+        let root = plan(&["cargo fmt --check", "cargo test"]);
+        let mut messages = vec![];
+        let hint = verification_hint(&messages, &root, None).unwrap();
+        assert!(hint.contains("2 approved checks"));
+        assert!(hint.contains("cargo fmt --check") && hint.contains("cargo test"));
+        result(
+            &mut messages,
+            "exec",
+            "cargo fmt --check && cargo test",
+            "OK (exit_code: 0)",
+        );
+        assert_eq!(pending_commands(&messages, &root, None).len(), 2);
+        result(
+            &mut messages,
+            "exec",
+            "cargo fmt --check",
+            "OK (exit_code: 0)",
+        );
+        assert_eq!(pending_commands(&messages, &root, None), ["cargo test"]);
+        result(&mut messages, "exec", "cargo test", "OK (exit_code: 0)");
+        assert!(verification_hint(&messages, &root, None)
+            .unwrap()
+            .contains("call done"));
+        result(&mut messages, "patch_file", "", "OK: patched 'lib.rs'");
+        assert_eq!(pending_commands(&messages, &root, None).len(), 2);
+        assert!(verification_hint(&messages, "ordinary task", None).is_none());
+        let long = plan(&[&"x".repeat(6000)]);
+        let hint = verification_hint(&[], &long, None).unwrap();
+        assert!(hint.contains("0 shown"));
+        assert!(hint.len() < 1000);
     }
 
     #[test]

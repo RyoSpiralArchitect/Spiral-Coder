@@ -97,6 +97,32 @@ fn invalid_check_diagnostics_include_valid_shapes_without_accepting_the_case() {
 }
 
 #[test]
+fn failed_observer_parse_diagnostic_names_input_and_preserves_failed_assertion() {
+    let mut spec = load_spec(&repository_spec_path()).unwrap();
+    spec.cases.truncate(1);
+    spec.cases[0].observer_response = serde_json::json!({"suggestions":[{"kind":"replay"}]});
+    spec.cases[0].checks = vec![TuiReplayCheck::SuggestionParsed];
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("replay.json");
+    std::fs::write(&path, serde_json::to_string(&spec).unwrap()).unwrap();
+    let report = replay_spec_for_test(&path, root.path(), &root.path().join("reports")).unwrap();
+    assert_eq!(report.summary.failed, 1);
+    let diagnostic = diagnostics::failed_report(&report);
+    for expected in [
+        path.to_str().unwrap(),
+        "suggestion_parsed=false",
+        "observer_response",
+        "search|read|done|clarify|abandon_path",
+    ] {
+        assert!(diagnostic.contains(expected), "{diagnostic}");
+    }
+    assert_eq!(
+        load_spec(&path).unwrap().cases[0].observer_response,
+        spec.cases[0].observer_response
+    );
+}
+
+#[test]
 fn failed_replay_reports_actual_checks_and_bounds_model_supplied_labels() {
     let mut spec = load_spec(&repository_spec_path()).unwrap();
     spec.cases.truncate(1);

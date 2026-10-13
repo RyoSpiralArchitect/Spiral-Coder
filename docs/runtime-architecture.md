@@ -218,6 +218,11 @@ Command classification:
   scratchpads and command substrings cannot grant this authority. The independent
   benchmark ledger still requires every declared check; finishing its custom
   checks does not create a spurious mutation requiring another composite rerun.
+- The benchmark proof ledger also renders pending exact commands before each
+  model turn and at a rejected `done`. Feedback lists remaining obligations
+  together and separates verification from the final report. Combined or altered
+  calls do not earn individual command proof. The final-turn prompt permits one
+  call and never asks for an extra smoke test followed by a second call.
 
 - `src/tui/agent/exec_proof.rs` shares generic verification timestamp accounting
   between live exec results and resumed transcripts. Any possibly executed action,
@@ -240,6 +245,10 @@ Repair feedback:
   enum shape before the full schema examples so the bounded automatic-test digest
   and old-result history retain the information needed to repair that check.
   The source remains unchanged and the original failure status is preserved.
+- Failed semantic replay reports identify the input spec as well as the failed
+  assertion, enabling focused diagnosis of the edited input. Observer parse and
+  Coder-system assertion failures explain their actual input surfaces; neither
+  check results nor fixture contents are changed by this feedback.
 - File-existence refutations recognize canonical `file exists at PATH` and bounded
   literal aliases such as `PATH exists in the repo`. Exact target dependencies and
   fresh evidence use the same recognition in live execution and restore. Mentioning

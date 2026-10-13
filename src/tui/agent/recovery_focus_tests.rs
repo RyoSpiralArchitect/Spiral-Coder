@@ -70,6 +70,58 @@ fn read_target(g: &mut RecoveryGovernor, root: &Path) -> (ToolCallData, String) 
 }
 
 #[test]
+fn semantic_replay_failure_retains_exact_input_focus_through_history_and_resume() {
+    let root = tempfile::tempdir().unwrap();
+    let mut spec: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json"
+    ))
+    .unwrap();
+    spec["cases"][0]["observer_response"] = json!({"suggestions":[{"kind":"replay"}]});
+    spec["cases"][0]["checks"] = json!([{"kind":"suggestion_parsed"}]);
+    let source = spec.to_string();
+    let (written, error) =
+        crate::file_tools::tool_write_file(TARGET, &source, root.path().to_str());
+    assert!(!error);
+    let report = crate::tui_replay::replay_spec_for_test(
+        &root.path().join(TARGET),
+        root.path(),
+        &root.path().join("reports"),
+    )
+    .unwrap();
+    assert_eq!(report.summary.failed, 1);
+    let error = format!(
+        "Error: {}",
+        crate::tui_replay::diagnostics::failed_report(&report)
+    );
+    let output = format!(
+        "{written}{}",
+        agent::failure_diagnostics::automatic_test_output(
+            "",
+            &error,
+            1,
+            root.path().to_str().unwrap(),
+        )
+    );
+    let compact = agent::compact_success_tool_result_for_history("write_file", &output);
+    assert!(compact.contains("suggestion_parsed=false"));
+    assert!(compact.contains("observer_response needs"));
+    let tc = call(
+        "semantic-failure",
+        "write_file",
+        json!({"path":TARGET,"content":source}),
+    );
+    let mut focus = RecoveryFocus::default();
+    focus.record_result(&tc, &compact, root.path().to_str(), Some(CHECK), &context());
+    assert!(focus.requires_read());
+    let mut messages = Vec::new();
+    append(&mut messages, &tc, focus.tool_message(&tc, compact));
+    let resumed = RecoveryFocus::from_messages(&messages, root.path().to_str(), Some(CHECK));
+    assert_eq!(resumed, focus);
+    assert!(!resumed.repaired());
+    assert!(resumed.hint().unwrap().contains(TARGET));
+}
+
+#[test]
 fn unrelated_replay_cannot_mark_a_pending_repair_as_written_or_clear_its_check() {
     let root = tempfile::tempdir().unwrap();
     let (mut governor, mut messages) = focused(root.path());

@@ -39,8 +39,10 @@ Error: tui-replay checks only assert the selected target. Changing target_messag
 
 pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     let mut lines = vec![format!(
-        "tui replay failed: {}/{} case(s) failed",
-        report.summary.failed, report.summary.total
+        "tui replay failed: {}/{} case(s) failed; spec={}",
+        report.summary.failed,
+        report.summary.total,
+        json!(report.spec_path)
     )];
     let failures: Vec<_> = report
         .cases
@@ -71,6 +73,13 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
     }
     if failures
         .iter()
+        .any(|(_, check)| check.label == "suggestion_parsed")
+    {
+        lines.push("Error: tui-replay observer_response needs a nonempty summary, primary_blocker, or suggestions array in its JSON object. Empty or malformed responses do not parse.".to_string());
+        lines.push("Error: tui-replay suggestions[].kind: search|read|done|clarify|abandon_path. Each suggestion is an object; include reason, confidence, suggested_tool and suggested_args as needed. Preserve intended assertions.".to_string());
+    }
+    if failures
+        .iter()
         .any(|(_, check)| check.label == "hint_queued" || check.label == "contract_queued")
     {
         lines.push("Error: tui-replay inspect observer_response.suggestions: a queued hint needs a primary suggestion with confidence >= 0.75. Include suggested_tool and suggested_args for a concrete tool action; quickest_check alone does not queue a hint.".to_string());
@@ -86,6 +95,12 @@ pub(crate) fn failed_report(report: &TuiReplayReport) -> String {
         .any(|(_, check)| check.label.starts_with("target_message_contains:"))
     {
         lines.push("Error: tui-replay target_message_contains compares the selected message ID, not the case ID or source-file text. Inspect selector and coder_messages against the intended assertion; do not remove failing assertions.".to_string());
+    }
+    if failures
+        .iter()
+        .any(|(_, check)| check.label.starts_with("coder_system_contains:"))
+    {
+        lines.push("Error: tui-replay coder_system_contains checks generated Coder system messages, not case IDs or source files. Inspect coder_preview_messages.json and observer_response against the intended assertion.".to_string());
     }
     // Emit the real artifact path, not a prefix-truncated path that cannot be read.
     lines.push(format!(
