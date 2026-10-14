@@ -10,6 +10,16 @@ mod replay;
 
 pub(crate) use observed::{is_observed_verification, is_required_harness_check, HarnessCheck};
 
+/// Relative diagnostic paths cannot be attributed to the launch directory when
+/// the shell changes directory. Unsupported syntax supplies no location evidence.
+pub(super) fn preserves_working_directory(command: &str) -> bool {
+    commands(command).is_some_and(|chain| {
+        chain
+            .iter()
+            .all(|words| executable(words).first().map(String::as_str) != Some("cd"))
+    })
+}
+
 /// Only simple words, quotes, assignments, `&&`, and `2>&1` are understood.
 /// Reject expansion, pipelines, redirection, multiline scripts, and status masking.
 fn commands(command: &str) -> Option<Vec<Vec<String>>> {

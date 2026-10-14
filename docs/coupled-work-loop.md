@@ -44,6 +44,13 @@ diagnostic reread of its target even outside `src/`; unrelated diagnostics do
 not substitute for that read, and repeated unchanged reads remain gated.
 Resume restores the completed diagnosis as Fix, so an Observer handoff cannot
 force another read before the same repair. A later failure still takes precedence.
+The first explicit failing verification can establish the same shared recovery
+obligation before an edit. A unique, existing workspace file from a Rust diagnostic
+or innermost Python traceback determines the diagnostic read; ordinary path
+mentions and ambiguous locations do not. Unrelated diagnostics cannot satisfy
+that read, and only the original failed check can clear the obligation. Both
+roles receive this focus after pruning and continuation. Unlocalized recovery
+asks for evidence relevant to the error instead of assuming a Git repository.
 The shared Coder prompt names individual, unchanged exec calls as the exact-proof
 contract before completion is attempted, rather than only after a rejected report.
 The exec wrapper places its location marker on a fresh line even after output

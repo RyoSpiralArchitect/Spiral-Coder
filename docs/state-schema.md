@@ -247,9 +247,15 @@ Unresolved edit attempts:
 Localized verification failures:
 
 - `src/tui/agent/recovery_focus.rs` owns the target and cause of a localized
-  automatic-test failure. A successful edit and its first runtime automatic-test
-  failure status must be correlated before a focus can be created. Diagnostic
-  text is evidence to inspect, not an instruction or permission to run a command.
+  verification failure. A successful edit and its first runtime automatic-test
+  failure status must be correlated before an automatic-test focus is created.
+  `baseline_failure.rs` also retains an explicit failed check before any edit:
+  a correlated, actually executed verification must fail at the workspace root,
+  and its Rust compiler/panic or innermost Python traceback location must name
+  one existing file inside the canonical workspace. Ambiguous locations, outside
+  symlinks, unsupported shell syntax and directory-changing commands retain
+  generic recovery. Diagnostic text is evidence to inspect, not an instruction
+  or permission to run a command.
 - Unrelated successful diagnostics do not satisfy inspection of the failed
   target. A read of the target permits repair while retaining the failed check.
   A failed target read must permit broader diagnosis without declaring the
@@ -257,11 +263,14 @@ Localized verification failures:
   When the original pending check fails again, its current diagnostic replaces
   the old cause. Without a confirmed current location, the previous path becomes
   `last_confirmed` context and exact-path inspection is no longer required.
-- Successful edits do not certify repair. The original automatic test or its
-  exact configured command must pass when launched from the workspace root before this pending
+- Successful edits do not certify repair. The original automatic test or the
+  exact failed explicit command must pass when launched from the workspace root before this pending
   failure is cleared. A different configured check or another working directory
   cannot discharge the original obligation.
   Unrelated verification cannot authorize automatic closeout or explicit done.
+  A baseline failure records the command that actually failed, even when the
+  automatic-test configuration differs (for example, by `2>&1`). A read made
+  before that failure does not count as a fresh diagnosis.
 - Local tool-result metadata preserves validated failure context across a
   save/resume and context pruning, including after the file has changed. This
   raw metadata stays out of provider requests and does not grant execution proof;
@@ -761,7 +770,7 @@ fall back to parsing their assistant plan text; no schema migration is required.
 derived views, not persistent authorities. They are recomputed from the current
 human task and correlated native exchanges. TUI and the Rust browser endpoint
 share this projection; display-packet fields cannot replace native requirements.
-`pending_recovery` carries the current localized automatic-test failure and any
+`pending_recovery` carries the current localized verification failure and any
 unresolved edit's diagnostic/repair requirement. It derives from the existing
 correlated recovery snapshots and edit history, and is shared by both roles.
 Reading the target advances diagnosis but does not remove the repair obligation.

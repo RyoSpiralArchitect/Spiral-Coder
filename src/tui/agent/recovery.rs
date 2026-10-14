@@ -126,7 +126,7 @@ impl RecoveryGovernor {
                 Some(format!(
                     "[Recovery Gate] stage=diagnose\n\
 You are in recovery mode. Do NOT start new work yet.\n\
-Required now: run diagnostics first (e.g. `pwd`, `ls`/`dir`, `git status`, `git rev-parse --show-toplevel`)."
+Required now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
                 ))
             }
             RecoveryStage::Fix => None, // allow edits/commands to fix
