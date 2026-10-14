@@ -10,6 +10,11 @@ TUI autosaves `.spiral-coder/tui-session.json`; the companion `.spiral-coder/tui
 
 Each pane has a request generation. `request_stream.rs` publishes the native snapshot before Done/Error and rejects delayed events from canceled requests. Observer repair remains bounded to one attempt, tied to the source task revision.
 
+New human tasks clear the prior rollback checkpoint before startup and capture
+the current workspace as their own checkpoint. Runtime continuations retain the
+same checkpoint. Changing workspace also clears the UI rollback handle, so a
+failed startup cannot expose the previous task's rollback target.
+
 A runtime iteration-cap marker is an incomplete task even when the last tool succeeded. It remains eligible for Observer handoff while the shared budget allows a continuation. Final-answer requirements stop at their own sentence; separate preservation instructions remain artifact obligations rather than fabricated report literals.
 
 Runtime-validated plans, including compatibility-rescued plans that were never
@@ -64,6 +69,11 @@ results in both UI paths.
 
 `work_budget.rs` owns durable `WorkState`: task identity, workspace, original request, request limit, request receipts, assist receipts, and explicit replay-preservation baselines. It reserves a slot before every supported provider HTTP attempt, including compatibility retries and Observer repair. Interrupted attempts remain spent after restart.
 
+The HF subprocess provider reserves at the same provider boundary before starting
+inference, including initial Observer assistance and its repair. Failed attempts
+remain charged; elapsed time and supplied usage are recorded, while absent usage
+stays null. Canceling or timing out the call drops and terminates its child process.
+
 Request receipts separate estimated input size, nullable provider usage, nullable request duration, and status. Estimated input is a character-based estimate of each transmitted payload, not the retained transcript length. Sum of request durations differs from task wall time. A missing provider usage record is unknown, not zero. Streaming telemetry is best effort; the durable budget is authoritative for the shared cap.
 
 Budget saves carry a task identity and monotonic persistence revision. Stale handles cannot replace a new task's ledger or remove requests recorded after same-task reload. In-process writes are serialized; separate TUI processes should not share the same active session files. Canceling the agent also aborts its nested provider task. Reservations already made remain spent.
@@ -84,11 +94,25 @@ The Rust server exposes `POST /api/observer_action` and `features.observer_actio
 
 `web/core/work-loop.js` owns browser-native task state under `spiral-coder.work.v1.<thread>`. Request metadata selects the server ledger `.spiral-coder/web-budgets/<task-id>.json`; changing the limit/root or reloading cannot refund wire attempts. Native history and assist IDs survive reload. A stale revision or previously consumed suggestion cannot be executed again.
 
+Every browser read rechecks localStorage. A durable write increments
+`persistenceRevision`, separately from the native-message `revision` used by
+advice. Handles whose persisted snapshot changed in another tab cannot reserve,
+save, claim advice or process a late request result. Coder tool requests check
+the active handle before dispatch and after completion. These boundary checks
+do not undo server work already dispatched and do not make localStorage an
+atomic transaction system for simultaneous writers.
+
 Browser next-action continuation is explicit: **Continue with advice** uses the Coder's normal file/command approval policy. An approved command result is correlated back to its original native call before resuming. Pending approval, execution, and completion are displayed separately. Native tool calls are dispatched even when accompanied by `finish_reason=stop`. Usage trailers after stop remain observable. Node's `node --test` is a behavioral verification command in the shared catalog.
 
 `write_file`, `patch_file`, and `apply_diff` all queue previews when edit approval is required. The server retains the original content, prepared content and preservation budget until approval. If the file changed, it requires a fresh preview. Actual approved output is correlated by the native call, action, approval ID and queued path. Budget exhaustion before streaming returns a JSON error rather than silently closing the socket.
 
-Lite serves the browser assets but does not implement the native task/Observer contract. The UI explains that this continuation requires `spiral-coder serve`; it does not fabricate equivalent evidence.
+Lite serves the browser assets but does not implement the native task/Observer contract. The UI gates next-action assistance on `features.observer_action`. Ordinary meta diagnosis still uses `/api/chat` and remains available on Lite.
+Lite also serves the shared governor contract JSON used by diagnostic packets.
+The configuration fingerprint is shared by meta diagnosis and Coder, so saving
+a diagnosis does not depend on entering the Coder execution closure first.
+`features.meta_diagnose_artifacts` distinguishes Rust's file archive from Lite's
+conversation-only diagnosis. The UI never calls absent archive endpoints on Lite
+and releases the busy state after displaying the diagnostic result.
 
 ## Qualification
 

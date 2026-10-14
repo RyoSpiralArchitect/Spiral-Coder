@@ -2667,6 +2667,10 @@ class LiteHandler(BaseHTTPRequestHandler):
             script = "window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__ = " + json.dumps(contract) + ";\n"
             self._send_bytes(200, "text/javascript; charset=utf-8", script.encode("utf-8"))
             return
+        if path == "/api/governor_contract":
+            contract = json.loads((REPO_ROOT / "shared/governor_contract.json").read_text(encoding="utf-8"))
+            self._send_json(200, contract)
+            return
         if path == "/api/status":
             self._send_json(
                 200,
@@ -2683,6 +2687,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                         "project_scan": False,
                         "chat_tools": False,
                         "meta_prompts": True,
+                        "meta_diagnose_artifacts": False,
                         "edit_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True),
                         "command_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True),
                     },

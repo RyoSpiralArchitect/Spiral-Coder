@@ -184,6 +184,9 @@ pub(super) async fn send_coder_input(
         .as_deref()
         .map(|r| PathBuf::from(r).join(".spiral-coder/tui-work.json"));
     let start = coder_session::start_state(app.coder_session.as_ref(), messages, continuing);
+    // Clear the UI rollback handle before startup can fail or be interrupted.
+    // A new task may only publish its newly captured checkpoint.
+    app.last_git_checkpoint = start.checkpoint.clone();
     let root_request = crate::task_origin::root_user_text(&start.messages);
     app.coder_session = Some(crate::agent_session::AgentSession::new(
         tool_root.clone(),

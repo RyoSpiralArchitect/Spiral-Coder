@@ -164,10 +164,15 @@ async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
 
 #[test]
 fn human_steering_changes_the_native_task_boundary_and_never_inherits_completion() {
-    let old = crate::agent_session::AgentSession::new(None, None, None, None, vec![json!({"role":"user","content":"old task"}),json!({"role":"assistant","content":"done"})]);
+    let old = crate::agent_session::AgentSession::new(None, Some("checkpoint-before-task-A".into()), None, None, vec![json!({"role":"user","content":"old task"}),json!({"role":"assistant","content":"done"})]);
     let new = coder_session::start_state(Some(&old), vec![ChatMessage {role:"user".into(),content:"Fix the new review finding and run the new check".into()}], false);
     assert_eq!(crate::task_origin::current_task_messages(&new.messages).len(), 1);
     assert_eq!(new.session_bridge, None);
+    assert_eq!(new.checkpoint, None, "task B must not roll back to the state before task A");
+    assert!(new.create_checkpoint, "capture the completed task A workspace at task B startup");
+    let continued = coder_session::start_state(Some(&old), vec![ChatMessage {role:"user".into(),content:"Continue".into()}], true);
+    assert_eq!(continued.checkpoint, old.checkpoint);
+    assert!(!continued.create_checkpoint, "an Observer handoff stays within task A");
 }
 
 #[test]
@@ -177,10 +182,12 @@ fn workspace_change_invalidates_inflight_native_and_observer_state() {
     app.coder_generation = 3;
     app.observer_generation = 5;
     app.project_test_cmd = Some("old tests".into());
+    app.last_git_checkpoint = Some("old-workspace-checkpoint".into());
     app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, vec![json!({"role":"user","content":"old"})]));
     coder_session::change_root(&mut app);
     request_stream::dispatch(RequestEvent {generation:3, payload:request_stream::Payload::Session(crate::agent_session::AgentSession::new(None,None,None,None,vec![]))}, &mut app, PaneId::Coder);
     assert!(app.coder_session.is_none());
+    assert!(app.last_git_checkpoint.is_none());
     assert!(app.project_test_cmd.is_none());
     assert_eq!(app.work_budget.remaining(), 0);
     assert_eq!(app.observer_generation, 6);

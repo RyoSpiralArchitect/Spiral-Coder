@@ -1,20 +1,40 @@
 (() => {
   "use strict";
-  const cache = new Map();
+  const caches = new WeakMap();
   const clone = value => JSON.parse(JSON.stringify(value));
   const key = id => "spiral-coder.work.v1." + id;
+  function cacheFor(storage) {
+    if (!caches.has(storage)) caches.set(storage, new Map());
+    return caches.get(storage);
+  }
   function read(storage, threadId) {
-    if (cache.has(threadId)) return cache.get(threadId);
+    const cache = cacheFor(storage);
+    let raw;
+    try { raw = storage.getItem(key(threadId)) || null; }
+    catch (_) { cache.delete(threadId); return null; }
+    const cached = cache.get(threadId);
+    // Every read revalidates durable state, even if this tab already has a
+    // handle. A changed task or storage revision invalidates that old handle.
+    if (cached && cached.raw === raw) return cached.work;
     let work = null;
-    try { work = JSON.parse(storage.getItem(key(threadId)) || "null"); } catch (_) {}
-    if (!work || work.version !== 1 || !Array.isArray(work.messages) || !Array.isArray(work.requests)) return null;
-    cache.set(threadId, work);
+    try { work = JSON.parse(raw); } catch (_) {}
+    if (!work || work.version !== 1 || !Array.isArray(work.messages) || !Array.isArray(work.requests)) work = null;
+    cache.set(threadId, { work, raw });
     return work;
   }
   function persist(storage, threadId, work) {
-    if (cache.get(threadId) !== work) return false;
+    const cache = cacheFor(storage);
+    const cached = cache.get(threadId);
+    if (!cached || cached.work !== work) return false;
+    if ((storage.getItem(key(threadId)) || null) !== cached.raw) {
+      read(storage, threadId);
+      return false;
+    }
     // Contains native messages/receipts only, never request bodies or API keys.
-    storage.setItem(key(threadId), JSON.stringify(work));
+    work.persistenceRevision = (Number(work.persistenceRevision) || 0) + 1;
+    const raw = JSON.stringify(work);
+    storage.setItem(key(threadId), raw);
+    cached.raw = raw;
     return true;
   }
   function open(storage, threadId, root, limit, renew) {
@@ -23,47 +43,60 @@
       work = { version: 1, taskId: "work-" + Date.now() + "-" + Math.random().toString(36).slice(2), root,
         limit: Math.max(1, Math.min(64, Number(limit) || 14)), startedAt: Date.now(), revision: 0,
         requests: [], messages: [], assists: [], completed: null };
-      cache.set(threadId, work);
-      persist(storage, threadId, work);
+      const cached = cacheFor(storage).get(threadId);
+      if (!cached) throw new Error("Task storage is unavailable.");
+      cached.work = work;
+      if (!persist(storage, threadId, work)) throw new Error("This task was replaced in another tab.");
     }
     if (!work || work.root !== root) throw new Error("No native task is available to resume; send the full request.");
     return work;
   }
   function reserve(storage, threadId, work, role, messages) {
-    if (cache.get(threadId) !== work) throw new Error("This task was replaced.");
+    if (!isActive(storage, threadId, work)) throw new Error("This task was replaced or updated in another tab.");
     if (work.requests.length >= work.limit) throw new Error("Shared task budget exhausted. Work remains incomplete.");
     const receipt = { id: work.requests.length, role, estimatedInputTokens: Math.ceil(JSON.stringify(messages || []).length / 4),
       startedAt: Date.now(), durationMs: null, providerUsage: null, status: "in_flight_or_interrupted" };
     work.requests.push(receipt);
-    persist(storage, threadId, work);
+    if (!persist(storage, threadId, work)) throw new Error("This task was replaced or updated in another tab.");
     return receipt;
   }
   function finish(storage, threadId, work, receipt, usage, status) {
+    if (!isActive(storage, threadId, work)) return false;
     receipt.durationMs = Date.now() - receipt.startedAt;
     receipt.providerUsage = usage || null;
     receipt.status = status;
-    persist(storage, threadId, work);
+    return persist(storage, threadId, work);
   }
   function snapshot(storage, threadId, work, messages, completed = null) {
-    if (cache.get(threadId) !== work) return;
+    if (!isActive(storage, threadId, work)) return false;
     work.messages = clone(messages);
     work.completed = completed;
     work.revision++;
-    persist(storage, threadId, work);
+    return persist(storage, threadId, work);
+  }
+  function isActive(storage, threadId, work) {
+    return !!work && read(storage, threadId) === work;
+  }
+  async function runCurrent(storage, threadId, work, operation) {
+    const check = () => { if (!isActive(storage, threadId, work)) throw new Error("This task was replaced or updated in another tab."); };
+    check();
+    const result = await operation();
+    check();
+    return result;
   }
   function isCurrent(storage, threadId, taskId, revision) {
     const work = read(storage, threadId);
     return !!work && work.taskId === taskId && work.revision === revision;
   }
   function claimAdvice(storage, threadId, work, assistId) {
+    if (!isActive(storage, threadId, work)) return false;
     if (work.assists.some(a => a.assistId === assistId)) return false;
     work.assists.push({ assistId, requested: true, executed: false, succeeded: null, completed: null });
-    persist(storage, threadId, work);
-    return true;
+    return persist(storage, threadId, work);
   }
 
   function updateAssists(storage, threadId, work, evidence) {
-    if (!evidence || !isCurrent(storage, threadId, work.taskId, work.revision)) return;
+    if (!evidence || !isActive(storage, threadId, work)) return;
     for (const receipt of work.assists) {
       const actions = evidence.actions.filter(a => (receipt.callIds || []).includes(a.call_id));
       if (!actions.length) continue;
@@ -93,8 +126,7 @@
     }
     pending.content = content;
     work.revision++;
-    persist(storage, threadId, work);
-    return true;
+    return persist(storage, threadId, work);
   }
   const streamChatTools = async (payload, signal, onDelta) => {
         const resp = await fetch("/api/chat_tools_stream", {
@@ -147,5 +179,5 @@
         return { text: fullText, finishReason, toolCalls, usage };
       };
 
-  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, claimAdvice, resolveApproval, updateAssists, streamChatTools };
+  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, streamChatTools };
 })();

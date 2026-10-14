@@ -4,7 +4,7 @@
   const root = document.getElementById("app-root");
   if (!root) return;
 
-  const { readStoredValue, rootUserTextForRun, serverSupportsFeature, configWithoutSecrets, credentialRoute, paneApiKey } = window.SpiralCoderState;
+  const { readStoredValue, rootUserTextForRun, serverSupportsFeature, configWithoutSecrets, credentialRoute, paneApiKey, fnv1a64 } = window.SpiralCoderState;
   const { isComposingKeyEvent, submitComposer, isAutomaticThreadTitle, focusDialog, transcriptMd } = window.SpiralCoderUI;
   const e = React.createElement;
   const { useCallback, useEffect, useMemo, useRef, useState } = React;
@@ -4386,7 +4386,7 @@
     useEffect(() => {
       if (observerSubTab !== "meta") return;
       refreshMetaArtifacts(true).catch(() => {});
-    }, [observerSubTab, activeThread && activeThread.id, config.toolRoot]);
+    }, [observerSubTab, activeThread && activeThread.id, config.toolRoot, status && status.features && status.features.meta_diagnose_artifacts]);
 
     const resolvePendingEdit = async (id, approve) => {
       const eid = String(id || "").trim();
@@ -5144,7 +5144,11 @@
       const nextActionAssist = (!m.streaming && pane === "observer" && isObserverNextActionMessage(m) && m.role === "assistant")
         ? parseObserverNextAction(s)
         : null;
-      const streamingNode = e("span", null,
+      const streamingNode = (pane === "coder" && m.role === "assistant" && !sendingCoder) ? e("span", { className: "hint" },
+        lang === "ja" ? "この実行は停止しています。最新の会話を表示するには再読み込みしてください。"
+          : lang === "fr" ? "Cette exécution est arrêtée. Rechargez pour afficher la conversation actuelle."
+            : "This run has stopped. Reload to view the latest conversation."
+      ) : e("span", null,
         s || e("span", { className: "thinking" }, tr(lang, "streaming")),
         e("span", { className: "cursor-blink" }, "▊")
       );
@@ -5706,11 +5710,12 @@
     };
 
     const refreshMetaArtifacts = async (preserveSelection) => {
-      if (!activeThread) {
+      if (!activeThread || !serverSupportsFeature(status, "meta_diagnose_artifacts")) {
         setMetaArtifacts([]);
         setMetaArtifactRoot("");
         setMetaArtifactSelectedName("");
         setMetaArtifactDetail(null);
+        setMetaArtifactsError(activeThread ? "File archives are unavailable on this server. Diagnoses remain in the conversation." : "");
         return;
       }
       const root = currentMetaArtifactRoot();
@@ -5744,7 +5749,6 @@
     const runMetaDiagnoseForPacket = async (packet) => {
       if (!activeThread || !packet || typeof packet !== "object") return;
       if (sendingObserver || metaBusy) return;
-      if (!status || !status.features || !status.features.observer_action) { showToast("Next-action continuation requires the current Rust server (spiral-coder serve).", "info"); return; }
       const threadId = activeThread.id;
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
@@ -5866,10 +5870,13 @@
         };
         try {
           const saveRoot = packet.tool_root || resolvedThreadRoot(config.toolRoot, threadId) || "";
-          const saved = await saveMetaDiagnoseArtifact(saveRoot, artifact);
+          const supportsArchive = serverSupportsFeature(status, "meta_diagnose_artifacts");
+          const saved = supportsArchive ? await saveMetaDiagnoseArtifact(saveRoot, artifact) : null;
           if (saved && saved.path) {
             showToast(`${tr(lang, "metaDiagnoseSaved")}: ${String(saved.path)}`, "success");
             if (observerSubTab === "meta") await refreshMetaArtifacts(true);
+          } else if (!supportsArchive) {
+            showToast("Diagnosis is in this conversation. File archives are unavailable on this server.", "info");
           }
         } catch (saveErr) {
           showToast(`${tr(lang, "metaDiagnoseSaveFailed")}: ${prettyErr(saveErr)}`, "error");
@@ -5895,6 +5902,7 @@
     const runObserverNextActionAssistForPacket = async (packet, reasonHint) => {
       if (!activeThread || !packet || typeof packet !== "object") return;
       if (sendingObserver || metaBusy) return;
+      if (!status || !status.features || !status.features.observer_action) { showToast("Next-action continuation is unavailable on this server. Meta diagnosis is still available.", "info"); return; }
       const threadId = activeThread.id;
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
@@ -5904,7 +5912,7 @@
       const work = window.SpiralCoderWork.read(localStorage, threadId);
       const revision = work && work.revision;
       const current = () => !ac.signal.aborted && abortObserverRef.current === ac
-        && currentThreadRef.current === threadId && (!work || window.SpiralCoderWork.isCurrent(localStorage, threadId, work.taskId, revision));
+        && currentThreadRef.current === threadId && (!work || (window.SpiralCoderWork.isActive(localStorage, threadId, work) && window.SpiralCoderWork.isCurrent(localStorage, threadId, work.taskId, revision)));
       const targetLabel = `[NEXT-ACTION] target=${packet.target_message_id} kind=${packet.failure_kind}`;
       const userMsg = {
         id: uid(),
@@ -6258,8 +6266,11 @@
     };
 
       const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir, rootUserText, work, origin, observerAdvice) => {
+      const current = () => !ac.signal.aborted && abortCoderRef.current === ac
+        && window.SpiralCoderWork.isActive(localStorage, threadId, work);
       const budgetMeta = () => ({ task_id: work.taskId, root: work.root, limit: work.limit, role: "coder", tool_root: resolvedThreadRoot(reqCfg.toolRoot, threadId) });
-      const taskPost = (url, body, signal) => postJson(url, { ...body, work_budget: budgetMeta() }, signal);
+      const taskPost = (url, body, signal) => window.SpiralCoderWork.runCurrent(localStorage, threadId, work,
+        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, work_budget: budgetMeta() }, signal); });
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
       const configuredIterations = (() => {
@@ -6748,18 +6759,6 @@
             )),
           }));
         } catch (_) {}
-      };
-
-      const fnv1a64 = (s) => {
-        // FNV-1a 64-bit (BigInt) hash. Cheap and stable for stuck detection.
-        let h = 0xcbf29ce484222325n;
-        const prime = 0x100000001b3n;
-        const str = String(s || "");
-        for (let i = 0; i < str.length; i++) {
-          h ^= BigInt(str.charCodeAt(i) & 0xff);
-          h = (h * prime) & 0xffffffffffffffffn;
-        }
-        return h;
       };
 
       const governor = {
@@ -7441,7 +7440,7 @@
       ];
       const authoredLength = messages.length;
       const saveNative = (completed = null) => {
-        if (abortCoderRef.current !== ac) return;
+        if (!current()) return;
         window.SpiralCoderWork.snapshot(localStorage, threadId, work, messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), completed);
       };
       saveNative();
@@ -7474,7 +7473,7 @@
       let display = "";
       let awaitingApproval = false;
       const flush = (extra) => {
-        if (ac.signal.aborted || abortCoderRef.current !== ac) return;
+        if (!current()) return;
         saveNative();
         setMsg(threadId, asstMsgId, (display + (extra || "")).trim() || "…", coderBodyRef);
       };
@@ -7707,7 +7706,7 @@
 
       let checkpointCaptured = false;
       for (let iter = 0; iter < MAX_ITERS; iter++) {
-        if (ac.signal.aborted) break;
+        if (!current()) break;
         pruneToolMessages(messages);
         pruneAssistantMessages(messages);
         pruneMessageWindow(messages);
@@ -7895,7 +7894,7 @@ state: ${agentState}`);
           break;
         }
 
-        if (ac.signal.aborted || abortCoderRef.current !== ac) break;
+        if (!current()) break;
         if (requestReceipt) window.SpiralCoderWork.finish(localStorage, threadId, work, requestReceipt, streamResult.usage, "completed");
         const { text: asstText, finishReason, toolCalls: asstToolCalls } = streamResult;
         const parsedPlanForTurn = parsePlanBlock(asstText, governorContract);
@@ -8966,7 +8965,7 @@ state: ${agentState}`);
 
       // Persist per-thread failure memory once per run to avoid re-render churn.
       saveNative(agentState === "done" && !awaitingApproval && !ac.signal.aborted);
-      if (!ac.signal.aborted && abortCoderRef.current === ac) {
+      if (current()) {
         const outcome = await taskPost("/api/observer_action", { packet: {}, messages: work.messages, lang }, ac.signal);
         if (!ac.signal.aborted && abortCoderRef.current === ac) window.SpiralCoderWork.updateAssists(localStorage, threadId, work, outcome.packet.execution_evidence);
         persistFailureMemory();

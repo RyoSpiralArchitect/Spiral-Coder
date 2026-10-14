@@ -749,7 +749,7 @@ If the answer is not clear, document it here first.
 ## Web server capabilities
 
 `GET /api/status` owns explicit `features.harness_promotions`,
-`features.merge_gate`, and `features.project_scan` booleans. The Rust server
+`features.merge_gate`, `features.project_scan`, and `features.meta_diagnose_artifacts` booleans. The Rust server
 provides these capabilities; the Lite server reports them as unavailable.
 The Web UI waits for status before polling optional endpoints and shows an
 explanation for unavailable review panels rather than an HTTP error.
@@ -757,6 +757,19 @@ explanation for unavailable review panels rather than an HTTP error.
 ## Coupled task contracts
 
 See [One task through Coder and Observer](coupled-work-loop.md) for ownership, provenance, generations, request caps, approval feedback, and preservation rules. Browser-native work and the server wire ledger are separate: browser counts logical calls; the server also counts compatibility retries. Neither may represent an unknown usage value as zero.
+
+Browser work's optional `persistenceRevision` starts at zero for older records
+and advances on every durable write. The native-message `revision` retains its
+existing advice-validation meaning. Browser caches compare the durable snapshot
+on every read and before writes; replacement, removal or unavailable storage
+invalidates old handles. In-flight server work is not undone by invalidation.
+The HF provider uses the same `WorkBudget` scope before spawning inference, so
+Observer assistance and repair consume their task's shared cap without HTTP.
+
+TUI rollback checkpoints belong to the current human task. New human steering
+drops the previous checkpoint and requests a fresh one; runtime continuation
+retains it. Both new-task startup and workspace changes clear stale UI rollback
+handles before further asynchronous execution.
 
 Optional `accepted_plan` metadata on an admitted native assistant message is
 owned by `tui/agent/plan_resume.rs`. It contains the runtime-validated goal,

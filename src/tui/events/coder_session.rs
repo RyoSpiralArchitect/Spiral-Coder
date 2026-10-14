@@ -73,7 +73,9 @@ pub(super) fn start_state(
     }
     agent::AgenticStartState {
         messages,
-        checkpoint: previous.and_then(|s| s.checkpoint.clone()),
+        checkpoint: continuing
+            .then(|| previous.and_then(|s| s.checkpoint.clone()))
+            .flatten(),
         cur_cwd: previous.and_then(|s| s.cur_cwd.clone()),
         observation_cache: continuing
             .then(|| previous.and_then(|s| s.observation_cache.clone()))
@@ -81,7 +83,7 @@ pub(super) fn start_state(
         session_bridge: continuing
             .then(|| previous.and_then(|s| s.session_bridge.clone()))
             .flatten(),
-        create_checkpoint: previous.is_none(),
+        create_checkpoint: !continuing || previous.is_none(),
     }
 }
 
@@ -104,6 +106,7 @@ pub(super) fn change_root(app: &mut App) {
     app.observer.finish_stream();
     observer_request::discard_pending_assist(app);
     app.coder_session = None;
+    app.last_git_checkpoint = None;
     app.coder_intent_anchor = None;
     app.coder_completed = None;
     app.active_observer_contract = None;

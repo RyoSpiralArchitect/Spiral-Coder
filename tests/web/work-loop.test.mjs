@@ -47,6 +47,104 @@ test('a late old-task snapshot cannot overwrite a new human task', () => {
   assert.throws(() => api.reserve(storage, 'thread', old, 'coder', []), /replaced/);
 });
 
+test('another tab replacing a task invalidates cached reads and every stale writer', () => {
+  const first = setup();
+  const second = setup(first.entries);
+  const old = first.api.open(first.storage, 'thread', 'old', 4, true);
+  const receipt = first.api.reserve(first.storage, 'thread', old, 'coder', []);
+  const newer = second.api.open(second.storage, 'thread', 'new', 6, true);
+  const saved = first.entries.get('spiral-coder.work.v1.thread');
+  assert.equal(first.api.persist(first.storage, 'thread', old), false);
+  assert.equal(first.api.isCurrent(first.storage, 'thread', old.taskId, old.revision), false);
+  assert.equal(first.api.isActive(first.storage, 'thread', old), false);
+  assert.equal(first.api.snapshot(first.storage, 'thread', old, [{ role: 'assistant', content: 'stale' }], true), false);
+  assert.equal(first.api.finish(first.storage, 'thread', old, receipt, { tokens: 123 }, 'completed'), false);
+  assert.equal(first.api.claimAdvice(first.storage, 'thread', old, 'stale-assist'), false);
+  assert.throws(() => first.api.reserve(first.storage, 'thread', old, 'observer', []), /replaced/);
+  assert.equal(first.entries.get('spiral-coder.work.v1.thread'), saved);
+  assert.equal(first.api.read(first.storage, 'thread').taskId, newer.taskId);
+});
+
+test('same-task writes in another tab invalidate stale handles without losing receipts', () => {
+  const first = setup();
+  const old = first.api.open(first.storage, 'thread', 'same', 4, true);
+  const second = setup(first.entries);
+  const continued = second.api.open(second.storage, 'thread', 'same', 4, false);
+  second.api.reserve(second.storage, 'thread', continued, 'observer', []);
+  assert.equal(first.api.persist(first.storage, 'thread', old), false);
+  assert.throws(() => first.api.reserve(first.storage, 'thread', old, 'coder', []), /updated/);
+  const latest = first.api.read(first.storage, 'thread');
+  assert.equal(latest.requests.length, 1);
+  assert.equal(latest.requests[0].role, 'observer');
+  assert.equal(latest.persistenceRevision, continued.persistenceRevision);
+  assert.notEqual(latest, old);
+  first.api.reserve(first.storage, 'thread', latest, 'coder', []);
+  assert.equal(first.api.read(first.storage, 'thread'), latest, 'same-tab reads preserve the active handle');
+});
+
+test('a replaced task cannot start a tool request or consume a late async result', async () => {
+  const first = setup();
+  const old = first.api.open(first.storage, 'thread', 'old', 4, true);
+  let resolve, calls = 0;
+  const pending = first.api.runCurrent(first.storage, 'thread', old, () => {
+    calls++; return new Promise(r => { resolve = r; });
+  });
+  const second = setup(first.entries);
+  second.api.open(second.storage, 'thread', 'new', 4, true);
+  resolve({ tool_calls: ['stale-edit'] });
+  await assert.rejects(pending, /replaced/);
+  await assert.rejects(first.api.runCurrent(first.storage, 'thread', old, () => { calls++; }), /replaced/);
+  assert.equal(calls, 1);
+});
+
+test('missing or unavailable durable state cannot keep an old task current', () => {
+  for (const removed of ['missing', 'invalid', 'unavailable']) {
+    const { api, storage, entries } = setup();
+    const work = api.open(storage, 'thread', 'task', 4, true);
+    if (removed === 'missing') entries.clear();
+    if (removed === 'invalid') entries.set('spiral-coder.work.v1.thread', '{invalid');
+    if (removed === 'unavailable') storage.getItem = () => { throw new Error('unavailable'); };
+    assert.equal(api.isCurrent(storage, 'thread', work.taskId, work.revision), false);
+    assert.throws(() => api.reserve(storage, 'thread', work, 'coder', []), /replaced/);
+  }
+});
+
+test('Lite supports meta diagnosis but refuses next-action before creating a request', async () => {
+  const app = readFileSync(new URL('../../web/app.js', import.meta.url), 'utf8');
+  const pick = (name, end) => app.slice(app.indexOf('    const ' + name + ' ='), app.indexOf('    const ' + end + ' ='));
+  const meta = pick('runMetaDiagnoseForPacket', 'runMetaDiagnose');
+  // Use the function's actual async body until its first state change. Reaching
+  // apiKeyForPane proves the capability gate did not reject ordinary diagnosis.
+  const prefix = meta.slice(0, meta.indexOf('      const obsKey =')) + '      return "diagnosis-enabled"; };';
+  const context = { activeThread: { id: 'thread' }, sendingObserver: false, metaBusy: false,
+    status: { features: { chat: true } }, config: {}, showToast: () => { throw new Error('wrong gate'); } };
+  vm.createContext(context);
+  vm.runInContext(prefix + '\nthis.meta = runMetaDiagnoseForPacket;', context);
+  assert.equal(await context.meta({ failure_kind: 'test' }), 'diagnosis-enabled');
+  const next = pick('runObserverNextActionAssistForPacket', 'runObserverNextActionAssist');
+  const nextPrefix = next.slice(0, next.indexOf('      const threadId =')) + '      throw new Error("unsupported request started"); };';
+  let warning = '';
+  context.showToast = text => { warning = text; };
+  vm.runInContext(nextPrefix + '\nthis.next = runObserverNextActionAssistForPacket;', context);
+  await context.next({ failure_kind: 'test' });
+  assert.match(warning, /Meta diagnosis is still available/);
+});
+
+test('meta diagnosis can compute its save digest outside the Coder execution closure', () => {
+  const app = readFileSync(new URL('../../web/app.js', import.meta.url), 'utf8');
+  const start = app.indexOf('    const metaConfigDigest =');
+  const end = app.indexOf('    const saveMetaDiagnoseArtifact =', start);
+  const context = { window: {}, config: { observerMode: 'Observer', requireEditApproval: true } };
+  vm.createContext(context);
+  vm.runInContext(readFileSync(new URL('../../web/core/state.js', import.meta.url), 'utf8'), context);
+  vm.runInContext('const { fnv1a64 } = window.SpiralCoderState;\n' + app.slice(start, end) + '\nthis.digest = metaConfigDigest;', context);
+  assert.equal(context.window.SpiralCoderState.fnv1a64('hello').toString(16), 'a430d84680aabd0b');
+  const digest = context.digest({ thread_id: 'task', coder_mode: 'VIBE' }, 'test-provider', 'small-model');
+  assert.match(digest, /^[0-9a-f]{16}$/);
+  assert.equal(context.digest({ thread_id: 'task', coder_mode: 'VIBE' }, 'test-provider', 'small-model'), digest);
+  assert.notEqual(context.digest({ thread_id: 'task', coder_mode: 'VIBE' }, 'test-provider', 'different-model'), digest);
+});
+
 test('native stop calls and a later usage trailer survive fragmented SSE', async () => {
   const stream = 'event: delta\ndata: {"delta":"hello"}\n\nevent: finish\ndata: {"finish_reason":"stop","tool_calls":[{"id":"c1","function":{"name":"read_file","arguments":"{}"}}]}\n\nevent: usage\ndata: {"prompt_tokens":7,"completion_tokens":2}\n\n';
   const chunks = [stream.slice(0,17), stream.slice(17,73), stream.slice(73)];

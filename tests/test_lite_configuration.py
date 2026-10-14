@@ -1,5 +1,6 @@
 """Offline compatibility checks; importing the Lite runtime must not create directories."""
 import importlib.util
+import json
 import os
 from pathlib import Path
 import re
@@ -17,6 +18,12 @@ with patch.object(Path, 'mkdir') as mkdir:
 
 
 class LiteConfigurationTests(unittest.TestCase):
+    def test_governor_contract_endpoint_matches_the_browser_fallback(self):
+        handler = SimpleNamespace(path='/api/governor_contract', _send_json=Mock())
+        lite.LiteHandler.do_GET(handler)
+        expected = json.loads((lite.REPO_ROOT / 'shared/governor_contract.json').read_text())
+        handler._send_json.assert_called_once_with(200, expected)
+
     def test_import_does_not_create_the_default_workspace(self):
         self.assertEqual(IMPORT_MKDIR_CALLS, 0)
 
