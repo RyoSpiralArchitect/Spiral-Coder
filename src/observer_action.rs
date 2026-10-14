@@ -78,6 +78,10 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
     if !request.messages.is_empty() {
         let evidence =
             agent::evidence_packet::project(&request.messages, request.test_command.as_deref());
+        if !request.packet["approval_signals"].is_object() {
+            request.packet["approval_signals"] = json!({});
+        }
+        request.packet["approval_signals"]["rejections"] = json!(evidence.approval_rejections());
         request.packet["recent_tool_calls"] = json!(evidence.actions);
         request.packet["execution_evidence"] = json!(evidence);
     }
@@ -92,8 +96,8 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         .and_then(suggestion::parse_observer_suggestion_envelope);
     let issue = request
         .response
-        .as_ref()
-        .and_then(|_| suggestion::action_validation_issue(envelope.as_ref()));
+        .as_deref()
+        .and_then(suggestion::validation_issue_for_raw);
     let hint = if issue.is_none() {
         envelope
             .as_ref()

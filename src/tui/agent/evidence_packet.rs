@@ -21,6 +21,20 @@ pub(crate) struct ExecutionPacket {
     pub pending_exact_checks: Vec<String>,
 }
 
+impl ExecutionPacket {
+    pub(crate) fn approval_rejections(&self) -> Vec<&ActionEvidence> {
+        self.actions
+            .iter()
+            .filter(|action| {
+                action
+                    .result
+                    .as_deref()
+                    .is_some_and(|result| result.starts_with("REJECTED BY USER"))
+            })
+            .collect()
+    }
+}
+
 pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) -> ExecutionPacket {
     let messages = crate::task_origin::current_task_messages(messages);
     let mut actions = Vec::<ActionEvidence>::new();

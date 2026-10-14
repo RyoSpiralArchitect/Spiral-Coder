@@ -12,11 +12,14 @@ pub(super) fn from_message(message: &Value) -> Option<PlanBlock> {
         .or_else(|| parse_plan_block(message["content"].as_str().unwrap_or("")))
 }
 
-pub(super) fn latest(messages: &[Value]) -> Option<PlanBlock> {
+pub(super) fn latest_valid(
+    messages: &[Value],
+    validate: impl Fn(&PlanBlock) -> bool,
+) -> Option<PlanBlock> {
     crate::task_origin::current_task_messages(messages)
         .iter()
         .rev()
-        .find_map(from_message)
+        .find_map(|message| from_message(message).filter(&validate))
 }
 
 #[cfg(test)]
@@ -47,7 +50,7 @@ mod tests {
         let resumed: crate::agent_session::AgentSession =
             serde_json::from_str(&serde_json::to_string(&session).unwrap()).unwrap();
         assert_eq!(
-            serde_json::to_value(latest(&resumed.messages)).unwrap(),
+            serde_json::to_value(latest_valid(&resumed.messages, |_| true)).unwrap(),
             json!(plan)
         );
         assert!(crate::task_origin::provider_messages(&resumed.messages)
@@ -55,6 +58,6 @@ mod tests {
             .all(|m| m.get("accepted_plan").is_none()));
         let mut new_task = resumed.messages;
         new_task.push(user_message("Read another file", MessageOrigin::User));
-        assert!(latest(&new_task).is_none());
+        assert!(latest_valid(&new_task, |_| true).is_none());
     }
 }

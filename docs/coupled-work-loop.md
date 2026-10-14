@@ -15,7 +15,8 @@ A runtime iteration-cap marker is an incomplete task even when the last tool suc
 Runtime-validated plans, including compatibility-rescued plans that were never
 present in the model's text, are recorded as local `accepted_plan` metadata on
 the admitted assistant action. Resume revalidates the plan against the current
-task contract. Pruning preserves the latest snapshot; new human steering starts
+task contract, scanning past rejected invalid revisions to the last valid plan.
+Pruning preserves the latest snapshot; new human steering starts
 a new plan boundary. This metadata is removed from provider wire messages.
 
 `task_scope.rs` reads explicit `target_files` from a complete approved benchmark
@@ -31,6 +32,11 @@ uses the done gate's parser. A projection neither executes advice nor certifies
 artifact completion; all existing proof and acceptance gates remain active.
 The Observer output description is a JSON Schema, avoiding a hard-coded read
 action and made-up example scores that could bias the selected next action.
+Both UI paths preserve concrete JSON parser diagnostics in the one permitted
+repair request, including invalid enum values and their allowed variants.
+Historical governor blocks remain in native evidence; they are not labeled as
+human approval rejections. The latter list is derived from actual user-rejection
+results in both UI paths.
 
 ## Receipts and budget
 

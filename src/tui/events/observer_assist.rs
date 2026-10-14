@@ -132,7 +132,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
             "same_output_repeats": app.coder_governor.as_ref().map(|g| g.same_output_repeats),
             "ui_loop_depth": serde_json::Value::Null,
         },
-        "approval_signals": {"policy": "tui_auto_approver", "rejections": native_actions.map(|actions| actions.iter().filter(|a| a.executed == Some(false)).collect::<Vec<_>>())},
+        "approval_signals": {"policy": "tui_auto_approver", "rejections": execution.as_ref().map(|e| e.approval_rejections())},
         "packet_notes": vec![
             "tui meta-diagnose packet built from visible coder history".to_string(),
             "native tool calls and correlated results are authoritative; null means unknown".to_string(),
@@ -195,6 +195,7 @@ Rules:\n\
 - Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
 - If latest_action_feedback rejects only the final report and pending_exact_checks is empty, suggest done with the required literals in summary, not another inspection or verification. Preserve exact case and spaces.\n\
 - If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
+- execution_evidence.actions is chronological history. An earlier governor rejection is not a current blocker or a user approval rejection; use the latest action feedback and current pending checks.\n\
 - Use tool_argument_schemas as the tool catalog. Shell programs such as cargo are commands for exec, not tool names.\n\
 - If the only gap is a required verification, suggest kind=verify with exec and the exact required command. Do not substitute another read or append commands.\n\
 - Use kind=edit only when the packet supports the exact edit arguments; otherwise read the target first.\n\

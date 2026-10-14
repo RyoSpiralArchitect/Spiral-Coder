@@ -36,6 +36,12 @@ async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: b
             "acceptance_criteria":["inspection complete"],
             "risks":"none", "assumptions":"note.txt was read"
         });
+        // A later rejected revision never replaced the admitted runtime plan.
+        // Resume must scan past it, just as the uninterrupted loop does.
+        app.coder_session.as_mut().unwrap().messages.extend([
+            json!({"role":"assistant","content":"<plan>\ngoal: incomplete replacement\n</plan>","tool_calls":[{"id":"rejected-revision","type":"function","function":{"name":"read_file","arguments":"{\"path\":\"note.txt\"}"}}]}),
+            json!({"role":"tool","tool_call_id":"rejected-revision","content":"GOVERNOR BLOCKED\nInvalid plan: missing steps"}),
+        ]);
     }
     app.work_budget = crate::work_budget::WorkBudget::new(goal, 4, None);
     for _ in 0..spent { drop(app.work_budget.begin("coder", &json!({})).unwrap()); }

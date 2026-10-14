@@ -5518,10 +5518,6 @@ fn parse_reflection_block(text: &str) -> Option<ReflectionBlock> {
     })
 }
 
-fn last_plan_from_messages(messages: &[serde_json::Value]) -> Option<PlanBlock> {
-    plan_resume::latest(messages)
-}
-
 fn last_think_from_messages(messages: &[serde_json::Value]) -> Option<ThinkBlock> {
     for msg in messages.iter().rev() {
         if msg.get("role").and_then(|r| r.as_str()) != Some("assistant") {
@@ -7450,7 +7446,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             json!({"role":"system","content": read_only_task_addon()}),
         );
     }
-    let mut active_plan = last_plan_from_messages(&messages).filter(|plan| {
+    let mut active_plan = plan_resume::latest_valid(&messages, |plan| {
         validate_plan_for_task_contract(plan, root_read_only, &task_contract, &instruction_resolver)
             .is_ok()
     });

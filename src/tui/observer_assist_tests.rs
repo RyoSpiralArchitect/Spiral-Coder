@@ -141,3 +141,28 @@ fn observer_native_task_projection_overrides_a_misleading_display_target() {
     assert_eq!(packet["task_obligations"]["artifact_scope"]["referenced_subjects"], json!(["src/view.rs"]));
     assert_eq!(packet["task_obligations"]["pending_exact_checks"], json!(["verify replay"]));
 }
+
+#[test]
+fn past_governor_failures_are_not_presented_as_human_approval_rejections() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Fix src/lib.rs and run cargo test"}),
+        json!({"role":"assistant","tool_calls":[{"id":"protocol","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"protocol","content":"GOVERNOR BLOCKED\nMissing plan"}),
+        json!({"role":"assistant","tool_calls":[{"id":"approval","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"approval","content":"REJECTED BY USER"}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, messages.clone()));
+    let tui = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"approval_signals":{"rejections":["untrusted display"]}}), messages,
+        test_command:None, lang:"en".into(), reason:"stalled".into(), response:None, final_summary:None, repair_native:false,
+    }).packet;
+    for packet in [tui, web] {
+        let rejections = packet["approval_signals"]["rejections"].as_array().unwrap();
+        assert_eq!(rejections.len(), 1);
+        assert_eq!(rejections[0]["call_id"], "approval");
+        assert_eq!(packet["execution_evidence"]["actions"].as_array().unwrap().len(), 2);
+    }
+}
