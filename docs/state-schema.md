@@ -739,3 +739,16 @@ explanation for unavailable review panels rather than an HTTP error.
 ## Coupled task contracts
 
 See [One task through Coder and Observer](coupled-work-loop.md) for ownership, provenance, generations, request caps, approval feedback, and preservation rules. Browser-native work and the server wire ledger are separate: browser counts logical calls; the server also counts compatibility retries. Neither may represent an unknown usage value as zero.
+
+Optional `accepted_plan` metadata on an admitted native assistant message is
+owned by `tui/agent/plan_resume.rs`. It contains the runtime-validated goal,
+steps, acceptance criteria, risks and assumptions, including a plan restored by
+compatibility rescue. It survives `AgentSession` JSON round trips and message
+pruning, is revalidated on resume, and never crosses a new human task boundary.
+`task_origin::provider_messages` strips it from provider requests. Older sessions
+fall back to parsing their assistant plan text; no schema migration is required.
+
+`task_scope::ArtifactScope` and `agent/task_obligations::TaskObligations` are
+derived views, not persistent authorities. They are recomputed from the current
+human task and correlated native exchanges. TUI and the Rust browser endpoint
+share this projection; display-packet fields cannot replace native requirements.

@@ -72,6 +72,20 @@ pub(super) fn requires_authored_final_answer(root: &str) -> bool {
     !instructions(root).is_empty()
 }
 
+/// The same bounded clauses/literals used by the done gate, available to both roles.
+pub(super) fn report_requirements(root: &str) -> serde_json::Value {
+    let clauses = instructions(root);
+    let mut literals = quoted_literals(&clauses);
+    literals.extend(explicit_paths(&clauses));
+    literals.extend(named_values(&clauses));
+    serde_json::json!({
+        "clauses": clauses,
+        "required_literals": literals,
+        "path_categories": path_kinds(&clauses).iter().map(|kind| kind.label()).collect::<Vec<_>>(),
+        "cite_current_verification_command": clauses.iter().any(|clause| clause.to_ascii_lowercase().contains("verification command")),
+    })
+}
+
 pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
     let clauses = instructions(root);
     (!clauses.is_empty()).then(|| format!(

@@ -64,6 +64,7 @@ mod memory;
 mod message_window;
 mod meta_harness;
 mod outcome;
+mod plan_resume;
 mod progress_bridge;
 mod protocol_fields;
 mod protocol_lists;
@@ -89,6 +90,7 @@ mod repo_scaffold;
 mod resume_contract_tests;
 mod session_bridge;
 mod task_harness;
+pub(crate) mod task_obligations;
 mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
@@ -2761,7 +2763,7 @@ impl StrategyChange {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct PlanBlock {
     goal: String,
     steps: Vec<String>,
@@ -3238,7 +3240,9 @@ impl AssumptionLedger {
         for msg in messages {
             if msg.get("role").and_then(|v| v.as_str()) == Some("assistant") {
                 let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if let Some(plan) = parse_plan_block(content).filter(|p| validate_plan(p).is_ok()) {
+                if let Some(plan) =
+                    plan_resume::from_message(msg).filter(|p| validate_plan(p).is_ok())
+                {
                     ledger.sync_to_plan(&plan);
                 }
                 if let Some(reflect) = parse_reflection_block(content) {
@@ -5515,16 +5519,7 @@ fn parse_reflection_block(text: &str) -> Option<ReflectionBlock> {
 }
 
 fn last_plan_from_messages(messages: &[serde_json::Value]) -> Option<PlanBlock> {
-    for msg in messages.iter().rev() {
-        if msg.get("role").and_then(|r| r.as_str()) != Some("assistant") {
-            continue;
-        }
-        let content = msg.get("content").and_then(|c| c.as_str()).unwrap_or("");
-        if let Some(plan) = parse_plan_block(content) {
-            return Some(plan);
-        }
-    }
-    None
+    plan_resume::latest(messages)
 }
 
 fn last_think_from_messages(messages: &[serde_json::Value]) -> Option<ThinkBlock> {
@@ -8020,6 +8015,9 @@ This is the LAST model call for this run.\n\
         // ── Stream from model ──────────────────────────────────────────────
         // Inject a one-shot governor hint if we detected a repeated failure pattern.
         let mut msgs_for_call = messages.clone();
+        if let Some(hint) = task_obligations::prompt(&messages, test_cmd.as_deref()) {
+            msgs_for_call.push(json!({"role":"system", "content":hint}));
+        }
         if let Some(h) = pending_system_hint.take() {
             let note = format!(
                 "[Loop Governor]\nstate: {:?}\nrecovery_stage: {}\n{}\n\nYou MUST incorporate this hint in your next tool call.\nDo not repeat the same failing command.",
@@ -10492,7 +10490,8 @@ Execute only the new minimal action: {}",
             messages.push(json!({
                 "role": "assistant",
                 "content": assistant_text_clean,
-                "tool_calls": [tc.to_json()]
+                "tool_calls": [tc.to_json()],
+                "accepted_plan": validated_plan_for_turn
             }));
         } else {
             if let Some(hint) = recovery.focus.hint() {

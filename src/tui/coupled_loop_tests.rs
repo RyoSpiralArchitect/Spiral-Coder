@@ -1,14 +1,19 @@
 #[tokio::test]
 async fn observer_continuation_keeps_native_evidence_and_finishes_the_original_request() {
-    assert_native_continuation("[GOVERNOR BLOCK] Missing final report.", 0).await;
+    assert_native_continuation("[GOVERNOR BLOCK] Missing final report.", 0, false).await;
 }
 
 #[tokio::test]
 async fn a_successful_tool_at_the_chunk_cap_still_reaches_observer_and_final_report() {
-    assert_native_continuation("[RESULT][Verifying] exit=0\n[agent] iteration cap (4) reached.", 2).await;
+    assert_native_continuation("[RESULT][Verifying] exit=0\n[agent] iteration cap (4) reached.", 2, false).await;
 }
 
-async fn assert_native_continuation(display: &str, spent: usize) {
+#[tokio::test]
+async fn runtime_accepted_plan_survives_observer_continuation_without_replanning() {
+    assert_native_continuation("[agent] iteration cap (4) reached.", 2, true).await;
+}
+
+async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -24,6 +29,14 @@ async fn assert_native_continuation(display: &str, spent: usize) {
         json!({"role":"assistant","tool_calls":[{"id":"retained-read","type":"function","function":{"name":"read_file","arguments":"{\"path\":\"note.txt\"}"}}]}),
         json!({"role":"tool","tool_call_id":"retained-read","content":"[note.txt]\nretained evidence"}),
     ]));
+    if rescued_plan {
+        app.coder_session.as_mut().unwrap().messages[1]["accepted_plan"] = json!({
+            "goal":"Report inspected note.txt",
+            "steps":["Inspect note.txt", "Report retained evidence"],
+            "acceptance_criteria":["inspection complete"],
+            "risks":"none", "assumptions":"note.txt was read"
+        });
+    }
     app.work_budget = crate::work_budget::WorkBudget::new(goal, 4, None);
     for _ in 0..spent { drop(app.work_budget.begin("coder", &json!({})).unwrap()); }
     for cfg in [&mut app.observer_cfg, &mut app.coder_cfg] {
@@ -37,6 +50,7 @@ async fn assert_native_continuation(display: &str, spent: usize) {
     let coder = server.mock(|when, then| {
         when.method(POST).path("/chat/completions").body_contains("tool_call_id").body_contains("retained-read").body_contains("inspection complete");
         let content = "<plan>\ngoal: report the inspected note.txt\nsteps:\n1. Inspect the retained note.txt result\n2. Report retained evidence\nacceptance: inspection complete\nrisks: none\nassumptions: note.txt was read\n</plan>\n<think>\ngoal: report inspection\nstep: 2\ntool: done\nrisk: none\ndoubt: none\nnext: report retained evidence\nverify: prior native read\n</think>\n[Observer response]\ndecision: accept\nreason: evidence is already available";
+        let content = if rescued_plan { content.split_once("</plan>").unwrap().1 } else { content };
         then.status(200).header("content-type", "text/event-stream").body(sse(json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"final-report","type":"function","function":{"name":"done","arguments":json!({"summary":"inspection complete: note.txt contains retained evidence","completed_acceptance":["inspection complete"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"inspection complete","command":"read_file note.txt","evidence":"retained evidence"}]}).to_string()}}]},"finish_reason":"stop"}]})));
     });
     async fn drain(app: &mut App, rx: &mut mpsc::Receiver<RequestEvent>, pane: PaneId) {

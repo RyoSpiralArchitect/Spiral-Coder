@@ -12,6 +12,26 @@ Each pane has a request generation. `request_stream.rs` publishes the native sna
 
 A runtime iteration-cap marker is an incomplete task even when the last tool succeeded. It remains eligible for Observer handoff while the shared budget allows a continuation. Final-answer requirements stop at their own sentence; separate preservation instructions remain artifact obligations rather than fabricated report literals.
 
+Runtime-validated plans, including compatibility-rescued plans that were never
+present in the model's text, are recorded as local `accepted_plan` metadata on
+the admitted assistant action. Resume revalidates the plan against the current
+task contract. Pruning preserves the latest snapshot; new human steering starts
+a new plan boundary. This metadata is removed from provider wire messages.
+
+`task_scope.rs` reads explicit `target_files` from a complete approved benchmark
+plan. Those paths override the heuristic first-mentioned path in the intent
+anchor and Coder's artifact routing. Paths in the objective remain referenced
+subjects, without inferred existence or edit permission. Plans without explicit
+targets retain the existing fallback; this is not a general prose interpreter.
+
+`agent/task_obligations.rs` projects the same artifact scope, exact checks still
+missing native proof, final-answer clauses/literals, and latest action feedback
+for Coder, TUI Observer and the browser endpoint. The final-answer projection
+uses the done gate's parser. A projection neither executes advice nor certifies
+artifact completion; all existing proof and acceptance gates remain active.
+The Observer output description is a JSON Schema, avoiding a hard-coded read
+action and made-up example scores that could bias the selected next action.
+
 ## Receipts and budget
 
 `work_budget.rs` owns durable `WorkState`: task identity, workspace, original request, request limit, request receipts, assist receipts, and explicit replay-preservation baselines. It reserves a slot before every supported provider HTTP attempt, including compatibility retries and Observer repair. Interrupted attempts remain spent after restart.

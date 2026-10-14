@@ -739,6 +739,9 @@ fn benchmark_plan_spec_path(root_user_text: &str) -> Option<String> {
 }
 
 fn benchmark_plan_target_paths(root_user_text: &str) -> Vec<String> {
+    if let Some(scope) = crate::task_scope::artifact_scope(root_user_text) {
+        return scope.target_files;
+    }
     let mut out = Vec::new();
     if let Some(path) = benchmark_plan_spec_path(root_user_text) {
         push_unique_path(&mut out, path);

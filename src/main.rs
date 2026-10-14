@@ -30,6 +30,7 @@ mod server;
 mod streaming;
 mod task_graph;
 mod task_origin;
+mod task_scope;
 mod trace_writer;
 mod tui;
 mod tui_replay;

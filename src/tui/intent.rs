@@ -98,7 +98,10 @@ fn first_slash_command(text: &str) -> Option<String> {
 }
 
 fn extract_target(text: &str) -> Option<String> {
-    first_pathish_token(text).or_else(|| first_slash_command(text))
+    crate::task_scope::artifact_scope(text)
+        .and_then(|scope| scope.target_files.into_iter().next())
+        .or_else(|| first_pathish_token(text))
+        .or_else(|| first_slash_command(text))
 }
 
 fn extract_constraints(text: &str) -> Vec<String> {

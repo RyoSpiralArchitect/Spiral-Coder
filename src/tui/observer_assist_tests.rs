@@ -125,3 +125,19 @@ fn observer_packet_retains_task_and_late_diagnostic_without_inventing_execution(
     assert!(packet["recent_tool_calls"].is_null());
     assert!(packet["recovery_stage"].is_null());
 }
+
+#[test]
+fn observer_native_task_projection_overrides_a_misleading_display_target() {
+    let (mut app, _root) = interaction_app();
+    let root = "<observer_benchmark_plan>\nobjective: Add coverage for src/view.rs.\ntarget_files:\n- .spiral-coder/tui_replay.json\nrequired_checks:\n- verify replay\n</observer_benchmark_plan>\nFinal answer must include .spiral-coder/tui_replay.json.";
+    let anchor = intent::apply_intent_update(None, intent::normalize_intent_update(root, None), root);
+    assert_eq!(anchor.target.as_deref(), Some(".spiral-coder/tui_replay.json"));
+    app.coder_intent_anchor = Some(anchor);
+    app.coder_intent_anchor.as_mut().unwrap().target = Some("src/view.rs".into());
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, vec![json!({"role":"user","content":root})]));
+    app.coder.messages.push(msg(Role::Assistant, "[agent] iteration cap (7) reached."));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    assert_eq!(packet["task_obligations"]["artifact_scope"]["target_files"], json!([".spiral-coder/tui_replay.json"]));
+    assert_eq!(packet["task_obligations"]["artifact_scope"]["referenced_subjects"], json!(["src/view.rs"]));
+    assert_eq!(packet["task_obligations"]["pending_exact_checks"], json!(["verify replay"]));
+}

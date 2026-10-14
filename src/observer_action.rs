@@ -63,6 +63,10 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         json!(crate::work_budget::current().and_then(|c| c.budget.preservation_issue()));
     request.packet["artifact_guidance"] =
         json!(agent::evidence_packet::artifact_guidance(&request.messages));
+    request.packet["task_obligations"] = json!(agent::task_obligations::project(
+        &request.messages,
+        request.test_command.as_deref()
+    ));
     let schemas = suggestion::tool_schemas();
     request.packet["available_tools"] = json!(schemas
         .as_array()
@@ -119,5 +123,34 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         repair_prompt,
         native_messages: request.messages,
         completion_issue,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn browser_task_obligations_come_from_native_request_not_display_packet() {
+        let root = "<observer_benchmark_plan>\nobjective: Cover src/example.rs.\ntarget_files:\n- cases.json\nrequired_checks:\n- verify cases\n</observer_benchmark_plan>\nFinal answer must include `exact report`.";
+        let response = evaluate(Request {
+            packet: json!({"task_obligations":{"pending_exact_checks":[]}}),
+            messages: vec![json!({"role":"user","content":root})],
+            test_command: None,
+            lang: "en".into(),
+            reason: "stalled".into(),
+            response: None,
+            final_summary: None,
+            repair_native: true,
+        });
+        assert_eq!(
+            response.packet["task_obligations"]["pending_exact_checks"],
+            json!(["verify cases"])
+        );
+        assert_eq!(
+            response.packet["task_obligations"]["artifact_scope"]["target_files"],
+            json!(["cases.json"])
+        );
+        assert!(response.prompt.contains("exact report"));
     }
 }
