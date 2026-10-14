@@ -36,11 +36,15 @@ impl RecoveryGovernor {
         }
     }
 
-    /// A failed edit survives intervening reads and resume. Re-enter diagnosis
-    /// conservatively without weakening the benchmark repair ownership guard.
+    /// Keep both the failed edit and completed diagnosis across a role handoff.
+    /// A later failure's active recovery stage still takes precedence.
     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
         if self.stage.is_none() && edits.count() > 0 {
-            self.stage = Some(RecoveryStage::Diagnose);
+            self.stage = Some(if edits.target_was_read() {
+                RecoveryStage::Fix
+            } else {
+                RecoveryStage::Diagnose
+            });
         }
     }
 

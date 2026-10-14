@@ -42,6 +42,13 @@ explain that checks must be a nonempty array beside `observer_response`, so
 file-localized recovery can survive a role handoff. A failed edit permits one
 diagnostic reread of its target even outside `src/`; unrelated diagnostics do
 not substitute for that read, and repeated unchanged reads remain gated.
+Resume restores the completed diagnosis as Fix, so an Observer handoff cannot
+force another read before the same repair. A later failure still takes precedence.
+The shared Coder prompt names individual, unchanged exec calls as the exact-proof
+contract before completion is attempted, rather than only after a rejected report.
+The exec wrapper places its location marker on a fresh line even after output
+without a trailing newline. Directory changes and root escapes remain observable,
+and the wrapped command's exit status is retained.
 Historical governor blocks remain in native evidence; they are not labeled as
 human approval rejections. The latter list is derived from actual user-rejection
 results in both UI paths.

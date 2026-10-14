@@ -163,6 +163,10 @@ impl EditFailureMemory {
         self.failures
     }
 
+    pub(super) fn target_was_read(&self) -> bool {
+        self.read_since_failure
+    }
+
     /// One successful target read after each failed edit is diagnosis, including
     /// JSON/config/docs outside src/. Unrelated diagnostics do not consume it.
     pub(super) fn needs_target_read(&self, name: &str, arguments: &str) -> bool {

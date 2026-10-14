@@ -329,7 +329,13 @@ fn resumed_failed_edit_after_read_keeps_benchmark_repair_ahead_of_verification()
     .expect("matching text alone would prematurely request verification");
     assert_eq!(wrong.name, "exec");
     recovery.restore_pending_edits(&edits);
-    assert_eq!(recovery.stage, Some(RecoveryStage::Diagnose));
+    assert_eq!(recovery.stage, Some(RecoveryStage::Fix));
+    assert!(
+        recovery
+            .maybe_block_tool(&repair, None, harness, false)
+            .is_none(),
+        "the target was already read before the role handoff"
+    );
     assert!(coerce_benchmark_plan_tool_call(
         harness,
         &messages,
@@ -340,8 +346,6 @@ fn resumed_failed_edit_after_read_keeps_benchmark_repair_ahead_of_verification()
         None
     )
     .is_none());
-    recovery.on_diagnostic_result(true);
-    assert_eq!(recovery.stage, Some(RecoveryStage::Fix));
     assert!(coerce_benchmark_plan_tool_call(
         harness,
         &messages,
@@ -356,4 +360,66 @@ fn resumed_failed_edit_after_read_keeps_benchmark_repair_ahead_of_verification()
     assert!(!error, "{output}");
     let repaired = std::fs::read_to_string(dir.path().join(path)).unwrap();
     assert!(serde_json::from_str::<Value>(&repaired).is_ok());
+}
+
+#[test]
+fn restoring_an_edit_diagnosis_does_not_clear_a_later_failure_or_invent_proof() {
+    let path = "config.json";
+    let mut messages = vec![json!({"role":"user","content":"Repair config.json"})];
+    record(
+        &mut messages,
+        &call(
+            "patch_file",
+            json!({"path":path,"search":"absent","replace":"fixed"}),
+        ),
+        "ERROR: search string not found",
+    );
+    let edits = restore(&messages);
+    let mut g = RecoveryGovernor::default();
+    g.restore_pending_edits(&edits);
+    assert_eq!(g.stage, Some(RecoveryStage::Diagnose));
+    for output in ["GOVERNOR BLOCKED", "ERROR: unable to read"] {
+        record(
+            &mut messages,
+            &call("read_file", json!({"path":path})),
+            output,
+        );
+        assert!(!restore(&messages).target_was_read());
+    }
+    record(
+        &mut messages,
+        &call("read_file", json!({"path":path})),
+        "[config.json] (1 lines, 3 bytes)\n{}",
+    );
+    let edits = restore(&messages);
+    assert!(edits.target_was_read());
+    g.restore_pending_edits(&edits);
+    assert_eq!(
+        g.stage,
+        Some(RecoveryStage::Diagnose),
+        "an existing recovery cause must not be overwritten"
+    );
+    g.stage = None;
+    g.restore_pending_edits(&edits);
+    assert_eq!(g.stage, Some(RecoveryStage::Fix));
+    assert_eq!(edits.count(), 1);
+    record(
+        &mut messages,
+        &call("exec", json!({"command":"check-config"})),
+        "FAILED (exit_code: 1)\nnew error",
+    );
+    let mut resumed = RecoveryGovernor::restore_from_session(
+        &FailureMemory::default(),
+        &messages,
+        super::super::VerificationLevel::Behavioral,
+    );
+    resumed.restore_pending_edits(&restore(&messages));
+    assert_eq!(resumed.stage, Some(RecoveryStage::Diagnose));
+    let (_, _, build, behavioral, _) =
+        super::super::restore_done_gate_from_messages(&messages, None);
+    assert_eq!(
+        (build, behavioral),
+        (None, None),
+        "diagnosis creates no verification proof"
+    );
 }

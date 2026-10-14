@@ -51,6 +51,8 @@ mod evaluator_loop;
 pub(crate) mod evidence_packet;
 mod exact_content;
 pub(crate) mod exec_classification;
+#[cfg(test)]
+mod exec_location_tests;
 mod exec_proof;
 mod exec_verification;
 mod failure_diagnostics;
@@ -2521,7 +2523,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
             "try {",
             raw,
             "} finally {",
-            &format!("Write-Output (\"{}\" + (Get-Location).Path)", PWD_MARKER),
+            &format!("Write-Output (\"`n{}\" + (Get-Location).Path)", PWD_MARKER),
             "}",
         ]
         .join("\n");
@@ -2529,7 +2531,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
 
     // POSIX: keep behavior simple while preserving the wrapped command's exit status.
     format!(
-        "{{\n{raw}\n__spiral_coder_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
+        "{{\n{raw}\n__spiral_coder_status=$?\nprintf '\\n%s\\n' \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
     )
 }
 

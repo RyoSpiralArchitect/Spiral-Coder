@@ -231,7 +231,9 @@ Unresolved edit attempts:
   Identical decoded arguments are identified explicitly. The hint requests a
   minimal anchor from current contents and preservation of surrounding fields;
   it does not rewrite files or certify success. On resume, unresolved edit attempts
-  restore the Diagnose stage, preserving benchmark repair ownership.
+  restore Diagnose when the target has not been read since the failure, or Fix
+  after that successful read, preserving benchmark repair ownership. A later
+  failure's existing recovery stage takes precedence over the older diagnosis.
 - The failed edit's target receives one successful diagnostic reread before the
   progress gate asks for a repair, including JSON/config/docs outside `src/`.
   Unrelated commands and refused reads do not consume that allowance. The read
