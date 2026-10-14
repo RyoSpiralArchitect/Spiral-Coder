@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "failure_modes": [
+    {
+      "id": "continuation-loses-native-task",
+      "status": "deterministic-regression-covered",
+      "repair": "Keep native AgentSession and runtime origin across Observer-to-Coder continuation; invalidate old request generations and project state on root changes.",
+      "evidence": "Real HTTP integration retains the original read/tool ID and required final phrase through an Observer intervention."
+    },
+    {
+      "id": "stale-request-refunds-or-replaces-budget",
+      "status": "deterministic-regression-covered-after-round-4",
+      "repair": "Abort the nested provider task with its parent; serialize budget writes and reject stale task identities or persistence revisions.",
+      "evidence": "Late canceled request receipts cannot overwrite a replacement task or erase requests made after same-task reload."
+    },
+    {
+      "id": "lossy-replay-rewrite",
+      "status": "guarded-with-bounded-live-evidence",
+      "observed": "Round 1 OpenAI replay rewrote the old case; typed append could discard extension fields and nested provenance.",
+      "repair": "Compare full JSON baselines, preserve raw existing values when appending, block direct destructive writes and fail completion after shell damage.",
+      "evidence": "All replay outputs in rounds 2, 3 and 4 preserve the baseline; valid new artifacts remain separately scored."
+    },
+    {
+      "id": "incomplete-oracle-and-missing-trace-configuration",
+      "status": "instrumentation-repaired",
+      "observed": "Round 1 initially omitted fixed case checks; rounds 1 and 2 omitted the configured automatic test command from the trace.",
+      "repair": "Use the existing case evaluator, require the requested new replay case and emit verification_config. Retain independent oracle output after timeout.",
+      "evidence": "Round 1 strict re-adjudication is 2/9, not its original completion-only 5/9. Old failed checks remain failed."
+    },
+    {
+      "id": "final-report-clause-spills-into-preservation-instructions",
+      "status": "deterministic-regression-covered-before-round-4",
+      "observed": "Round 3 requested literal report fragments such as including every assertion from a separate preservation sentence.",
+      "repair": "Stop final-answer clauses at unquoted sentence boundaries while keeping quoted phrases and multiple explicit report instructions.",
+      "evidence": "Report-clause tests keep the explicit path obligation and omit unrelated artifact instructions; aggregate round 4 qualification still declines."
+    },
+    {
+      "id": "successful-tool-at-chunk-cap-strands-reserve",
+      "status": "deterministic-regression-covered-after-round-4",
+      "observed": "Round 4 Gemini exact-proof case stops after four of eight allowed requests because the last tool succeeded and the Observer selector calls it not failure-like.",
+      "repair": "Classify the runtime iteration-cap marker as incomplete_task and permit the normal Observer handoff.",
+      "evidence": "Actual HTTP Observer-to-Coder continuation finishes with exactly two remaining requests. No post-repair live score is claimed."
+    },
+    {
+      "id": "browser-approval-result-and-edit-policy-divergence",
+      "status": "deterministic-and-gui-covered",
+      "observed": "Approved commands/edits left pending native results; patch and diff bypassed the edit-approval setting; Node native tests were not in the verification catalog.",
+      "repair": "Correlate approval IDs with native calls, route all native edit tools through approval, reject stale previews and recognize node --test.",
+      "evidence": "Real browser command flow completes at 8/8 shared calls; edit/command approval flow completes at 4/8. Patch bytes remain unchanged until approval."
+    },
+    {
+      "id": "observer-target-and-action-selection",
+      "status": "open",
+      "observed": "A source path mentioned as the subject of a replay benchmark is treated as a source file to inspect, displacing the actual artifact repair or final report.",
+      "next": "Separate requested artifact paths, referenced subjects, outstanding exact checks and report obligations in the common task packet. Validate advice against the current native evidence without guessing unsupported actions."
+    },
+    {
+      "id": "edit-protocol-and-closeout-budget-failures",
+      "status": "open",
+      "observed": "Patch anchor failures, protocol/recovery cycles and report errors still exhaust caps. Otherwise valid artifacts sometimes omit the fixed patch_file requirement.",
+      "next": "Retain the existing tool-use, exact-proof and literal-report checks; reduce repeated ineffective actions within the same shared cap. Repeat the panel with predeclared conditions rather than stopping at a favorable sample."
+    }
+  ]
+}

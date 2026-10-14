@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "deterministic_log_sha256": "8ae6f1b90b8263b8f502a4e0937635d456addc017008f34cbf1abb7dc1e1fb83",
+  "final_deterministic_binary_sha256": "9c01de828d35d8a055ef587752c7ba0acd21e4543380005d144d27cb365a1e54",
+  "last_live_round": 4,
+  "final_chunk_handoff_fix_live_qualified": false,
+  "checks": {
+    "rust_passed": 712,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "tui_replay_passed": 3,
+    "python_passed": 15,
+    "web_passed": 61,
+    "repo_map_passed": 14,
+    "lite_asset_count": 11
+  },
+  "browser": {
+    "backend": "real Rust server on loopback, deterministic HTTP model fixture",
+    "viewports": [
+      {
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "document_scroll_width": 385
+      }
+    ],
+    "console_errors_and_warnings": 0,
+    "scenarios": [
+      "Observer advice followed through explicit Coder continuation, command approval, executed=true and completed=true, then page reload with consumed advice disabled",
+      "patch_file remains pending with unchanged bytes, approval commits the edit, command approval runs Node test, native done completes"
+    ],
+    "ledgers": [
+      {
+        "root": "Read note.txt, run node --test note.test.mjs and report the result. Final answer must include \"inspection complete\".",
+        "limit": 8,
+        "wire_requests": 8,
+        "roles": {
+          "coder": 7,
+          "observer": 1
+        },
+        "provider_usage_known_requests": 1
+      },
+      {
+        "root": "Change note.txt from retained evidence to edited evidence using patch_file. Run node --test note-edit.test.mjs and report the result. Final answer must include \"edit complete\".",
+        "limit": 8,
+        "wire_requests": 4,
+        "roles": {
+          "coder": 4
+        },
+        "provider_usage_known_requests": 0
+      }
+    ]
+  },
+  "final_cancellation_fix_live_qualified": false,
+  "final_deterministic_runtime_commit": "3f3a5a58fd4e703d50194b76bfd0d54c9d6b7ac7"
+}
