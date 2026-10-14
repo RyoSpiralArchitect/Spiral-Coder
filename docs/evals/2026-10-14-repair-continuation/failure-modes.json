@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "failure_modes": [
+    {
+      "id": "artifact-reread-blocked-by-source-only-progress-exception",
+      "status": "regression-covered",
+      "observed": "Round 7 Mistral replay cannot reread .spiral-coder/tui_replay.json after an edit failure and unrelated diagnostics.",
+      "repair": "Reconstruct the failed edit target and one successful subsequent read; support artifacts outside src/ without allowing unlimited rereads."
+    },
+    {
+      "id": "completed-edit-diagnosis-lost-on-role-handoff",
+      "status": "regression-covered-after-round-9",
+      "observed": "Rounds 8-9 GPT replay reads the failed target, then continuation restores Diagnose and blocks repair repeatedly.",
+      "repair": "Restore Fix after the correlated successful target read; preserve later failures and all verification gates. Actual HTTP TUI regression executes the repair after Observer handoff."
+    },
+    {
+      "id": "missing-replay-checks-without-input-identity",
+      "status": "regression-covered",
+      "observed": "Round 7 GPT places checks inside observer_response. The loader error omits the spec path; advice proposes an empty checks array.",
+      "repair": "Wrap load-time case validation with input identity and explain that assertions must be a nonempty case-level sibling of observer_response. Preserve intended checks."
+    },
+    {
+      "id": "optional-display-null-masks-action-contract-error",
+      "status": "regression-covered",
+      "observed": "Round 7 Mistral nullable fallback hides invalid kind=patch_file until the single repair attempt.",
+      "repair": "Ignore non-string optional presentation fields; report the actual strict action-kind/argument error. Never normalize tool names into action kinds."
+    },
+    {
+      "id": "newline-free-output-hides-exec-location",
+      "status": "regression-covered-after-round-9",
+      "observed": "Round 9 Gemini proof task emits verified-current immediately followed by the internal cwd marker, so the parser misses it.",
+      "repair": "Place the marker on a fresh line while retaining command status. Actual shell regressions cover directory changes and an outside-root destination."
+    },
+    {
+      "id": "replay-edit-and-final-protocol-budget",
+      "status": "open",
+      "observed": "Rounds 8-9 replay strict success is 0/6. Final round 10 GPT replay passes all fixed checks in 11/12 requests, but final panel overall is only 5/9. Mistral misses case-sensitive report text; Gemini exhausts recovery or exact-check requirements.",
+      "boundary": "Deterministic repairs and one successful episode do not establish reliability, model rankings or Observer causality.",
+      "next": "Localize initial failed checks as well as automatic-test failures, avoid irrelevant repository diagnostics, and reduce malformed JSON and report-protocol loops without changing caps or assertions."
+    },
+    {
+      "id": "required-tool-omitted-despite-valid-artifact",
+      "status": "open",
+      "observed": "All three Mistral replay episodes in rounds 8-10 complete and pass full old+new replay and exact checks, but use apply_diff instead of the frozen required patch_file.",
+      "boundary": "Keep strict failures. Do not change the assertion or issue gratuitous patches to manufacture a pass."
+    }
+  ]
+}
