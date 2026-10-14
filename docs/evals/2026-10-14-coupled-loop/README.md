@@ -1,5 +1,7 @@
 # Integrated task continuation — 2026-10-14
 
+Historical rounds 1–4 are retained below. See [the follow-up record for rounds 5–7](../2026-10-14-task-obligations/README.md) for the current candidate and qualification.
+
 Coder and Observer now continue one native task with correlated execution
 evidence and one durable request cap. The five planned changes are implemented:
 native continuation, assist receipts, shared accounting, full JSON preservation,

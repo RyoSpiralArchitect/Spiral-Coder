@@ -1,0 +1,4704 @@
+{
+  "version": 1,
+  "unit": "strict completion of the original task with fixed checks and independent artifact oracles",
+  "conditions": {
+    "models_in_both_roles": true,
+    "temperature": 0,
+    "max_tokens": 2048,
+    "request_timeout_seconds": 90,
+    "episode_wall_seconds": 600,
+    "caps": [
+      10,
+      8,
+      12
+    ],
+    "observer_disabled_control": false
+  },
+  "rounds": [
+    {
+      "round": 5,
+      "candidate_commit": "0ebbe4c905797d41eb469f8245152952882eaadf",
+      "predeclaration": {
+        "declared_at": "2026-10-14T02:07:17.299740+00:00",
+        "commit": "0ebbe4c905797d41eb469f8245152952882eaadf",
+        "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+        "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+        "rounds": [
+          5,
+          6
+        ],
+        "models": {
+          "mistral": "mistral-small-2603",
+          "openai": "gpt-4.1-mini",
+          "gemini": "gemini-3.5-flash-lite"
+        },
+        "cases_per_model_per_round": 3,
+        "caps": [
+          10,
+          8,
+          12
+        ],
+        "temperature": 0,
+        "max_tokens": 2048,
+        "request_timeout_seconds": 90,
+        "wall_seconds": 600,
+        "observer_disabled_control": false,
+        "policy": "Same candidate and full panel twice; retain all failures; no between-round changes."
+      },
+      "models": [
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "mistral",
+          "model": "mistral-small-2603",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 5,
+              "assists": [],
+              "wall_seconds": 7.447,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/mistral/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4779,
+                  "duration_ms": 2186,
+                  "provider_usage": {
+                    "completion_tokens": 187,
+                    "prompt_tokens": 4448,
+                    "service_tier": "standard",
+                    "total_tokens": 4635,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4769,
+                  "duration_ms": 1004,
+                  "provider_usage": {
+                    "completion_tokens": 14,
+                    "prompt_tokens": 4498,
+                    "service_tier": "standard",
+                    "total_tokens": 4512,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3712
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4638,
+                  "duration_ms": 673,
+                  "provider_usage": {
+                    "completion_tokens": 13,
+                    "prompt_tokens": 4430,
+                    "service_tier": "standard",
+                    "total_tokens": 4443,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3968
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5754,
+                  "duration_ms": 1368,
+                  "provider_usage": {
+                    "completion_tokens": 130,
+                    "prompt_tokens": 5484,
+                    "service_tier": "standard",
+                    "total_tokens": 5614,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4032
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5795,
+                  "duration_ms": 1362,
+                  "provider_usage": {
+                    "completion_tokens": 124,
+                    "prompt_tokens": 5526,
+                    "service_tier": "standard",
+                    "total_tokens": 5650,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4128
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 5
+              },
+              "request_input_estimate_sum": 25735,
+              "provider_usage_known_requests": 5,
+              "request_duration_sum_ms": 6593,
+              "duration_known_requests": 5,
+              "task_wall_ms": 6920,
+              "accepted_plan_snapshots": 4,
+              "native_tool_counts": {
+                "list_dir": 1,
+                "read_file": 2,
+                "apply_diff": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 8,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "QSs3NXgtX",
+                    "suOsuuVex",
+                    "arztaUllj"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "defer",
+                  "executed": false,
+                  "pending_exact_checks": [],
+                  "succeeded": false
+                }
+              ],
+              "wall_seconds": 16.228,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/mistral/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6415,
+                  "duration_ms": 1931,
+                  "provider_usage": {
+                    "completion_tokens": 205,
+                    "prompt_tokens": 5745,
+                    "service_tier": "standard",
+                    "total_tokens": 5950,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6293,
+                  "duration_ms": 1699,
+                  "provider_usage": {
+                    "completion_tokens": 156,
+                    "prompt_tokens": 5663,
+                    "service_tier": "standard",
+                    "total_tokens": 5819,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4224
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6436,
+                  "duration_ms": 1520,
+                  "provider_usage": {
+                    "completion_tokens": 156,
+                    "prompt_tokens": 5838,
+                    "service_tier": "standard",
+                    "total_tokens": 5994,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4496
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6876,
+                  "duration_ms": 2131,
+                  "provider_usage": {
+                    "completion_tokens": 163,
+                    "prompt_tokens": 6200,
+                    "service_tier": "standard",
+                    "total_tokens": 6363,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 7532,
+                  "duration_ms": 3588,
+                  "provider_usage": {
+                    "completion_tokens": 434,
+                    "prompt_tokens": 7031,
+                    "service_tier": "standard",
+                    "total_tokens": 7465,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8196,
+                  "duration_ms": 1835,
+                  "provider_usage": {
+                    "completion_tokens": 186,
+                    "prompt_tokens": 7195,
+                    "service_tier": "standard",
+                    "total_tokens": 7381,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8068,
+                  "duration_ms": 1567,
+                  "provider_usage": {
+                    "completion_tokens": 170,
+                    "prompt_tokens": 7074,
+                    "service_tier": "standard",
+                    "total_tokens": 7244,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 7,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8265,
+                  "duration_ms": 1859,
+                  "provider_usage": {
+                    "completion_tokens": 176,
+                    "prompt_tokens": 7292,
+                    "service_tier": "standard",
+                    "total_tokens": 7468,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5840
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 58081,
+              "provider_usage_known_requests": 8,
+              "request_duration_sum_ms": 16130,
+              "duration_known_requests": 8,
+              "task_wall_ms": 16219,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 4,
+                "exec": 7,
+                "write_file": 2
+              },
+              "observer_primary_actions": [
+                "1. [clarify 0.95] Governor explicitly requires a valid <plan> with goal/steps/acceptance/risks/assumptions before any further tool calls."
+              ],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "KQs9d5qlF",
+                    "WWZelTHP0",
+                    "5xVd4T9RR"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "accept",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 35.999,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": false,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=4"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": false,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=3074 matched=false"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6193,
+                  "duration_ms": 2953,
+                  "provider_usage": {
+                    "completion_tokens": 408,
+                    "prompt_tokens": 5827,
+                    "service_tier": "standard",
+                    "total_tokens": 6235,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7183,
+                  "duration_ms": 4330,
+                  "provider_usage": {
+                    "completion_tokens": 910,
+                    "prompt_tokens": 6758,
+                    "service_tier": "standard",
+                    "total_tokens": 7668,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4512
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9109,
+                  "duration_ms": 1804,
+                  "provider_usage": {
+                    "completion_tokens": 74,
+                    "prompt_tokens": 8825,
+                    "service_tier": "standard",
+                    "total_tokens": 8899,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5680
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9918,
+                  "duration_ms": 3168,
+                  "provider_usage": {
+                    "completion_tokens": 553,
+                    "prompt_tokens": 9328,
+                    "service_tier": "standard",
+                    "total_tokens": 9881,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 6720
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11080,
+                  "duration_ms": 6779,
+                  "provider_usage": {
+                    "completion_tokens": 1470,
+                    "prompt_tokens": 10520,
+                    "service_tier": "standard",
+                    "total_tokens": 11990,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 15143,
+                  "duration_ms": 1315,
+                  "provider_usage": {
+                    "completion_tokens": 45,
+                    "prompt_tokens": 14369,
+                    "service_tier": "standard",
+                    "total_tokens": 14414,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 14459,
+                  "duration_ms": 1989,
+                  "provider_usage": {
+                    "completion_tokens": 73,
+                    "prompt_tokens": 13618,
+                    "service_tier": "standard",
+                    "total_tokens": 13691,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 18578,
+                  "duration_ms": 3640,
+                  "provider_usage": {
+                    "completion_tokens": 345,
+                    "prompt_tokens": 18122,
+                    "service_tier": "standard",
+                    "total_tokens": 18467,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 14761,
+                  "duration_ms": 1462,
+                  "provider_usage": {
+                    "completion_tokens": 97,
+                    "prompt_tokens": 13844,
+                    "service_tier": "standard",
+                    "total_tokens": 13941,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 32
+                    }
+                  }
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 13895,
+                  "duration_ms": 5150,
+                  "provider_usage": {
+                    "completion_tokens": 1167,
+                    "prompt_tokens": 13187,
+                    "service_tier": "standard",
+                    "total_tokens": 14354,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 2368
+                    }
+                  }
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 13338,
+                  "duration_ms": 1354,
+                  "provider_usage": {
+                    "completion_tokens": 79,
+                    "prompt_tokens": 12710,
+                    "service_tier": "standard",
+                    "total_tokens": 12789,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 2448
+                    }
+                  }
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 15218,
+                  "duration_ms": 1863,
+                  "provider_usage": {
+                    "completion_tokens": 159,
+                    "prompt_tokens": 14343,
+                    "service_tier": "standard",
+                    "total_tokens": 14502,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3136
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 148875,
+              "provider_usage_known_requests": 12,
+              "request_duration_sum_ms": 35807,
+              "duration_known_requests": 12,
+              "task_wall_ms": 35980,
+              "accepted_plan_snapshots": 10,
+              "native_tool_counts": {
+                "read_file": 4,
+                "apply_diff": 1,
+                "patch_file": 1,
+                "write_file": 1,
+                "exec": 3
+              },
+              "observer_primary_actions": [
+                "1. [verify 0.95] exec(command=grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json)"
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        },
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 3,
+              "assists": [],
+              "wall_seconds": 5.488,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/openai/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4776,
+                  "duration_ms": 2298,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4421,
+                  "duration_ms": 1170,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4926,
+                  "duration_ms": 1121,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 3
+              },
+              "request_input_estimate_sum": 14123,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 4589,
+              "duration_known_requests": 3,
+              "task_wall_ms": 5446,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 2,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 2,
+              "assists": [],
+              "wall_seconds": 3.638,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/openai/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6375,
+                  "duration_ms": 1410,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6061,
+                  "duration_ms": 2183,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 2
+              },
+              "request_input_estimate_sum": 12436,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 3593,
+              "duration_known_requests": 2,
+              "task_wall_ms": 3629,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 2,
+                "exec": 5,
+                "done": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 9,
+              "assists": [],
+              "wall_seconds": 27.698,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": false,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": false,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/openai/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=3074 matched=false"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6196,
+                  "duration_ms": 999,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5922,
+                  "duration_ms": 1282,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7285,
+                  "duration_ms": 5052,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8753,
+                  "duration_ms": 1381,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9324,
+                  "duration_ms": 4314,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10493,
+                  "duration_ms": 1147,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10573,
+                  "duration_ms": 1146,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 12966,
+                  "duration_ms": 6594,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 14201,
+                  "duration_ms": 5672,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7,
+                "observer": 2
+              },
+              "request_input_estimate_sum": 85713,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 27587,
+              "duration_known_requests": 9,
+              "task_wall_ms": 27681,
+              "accepted_plan_snapshots": 5,
+              "native_tool_counts": {
+                "read_file": 5,
+                "apply_diff": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": [
+                "(next-action) invalid response prevented automatic forwarding: structured JSON envelope could not be parsed; raw Observer output was preserved.",
+                "(next-action) invalid response prevented automatic forwarding: structured JSON envelope could not be parsed; raw Observer output was preserved."
+              ]
+            }
+          ]
+        },
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 7,
+              "assists": [],
+              "wall_seconds": 11.324,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/gemini/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4777,
+                  "duration_ms": 1425,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4447,
+                  "duration_ms": 1278,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4873,
+                  "duration_ms": 1563,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4804,
+                  "duration_ms": 2095,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5133,
+                  "duration_ms": 1612,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6098,
+                  "duration_ms": 1524,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6163,
+                  "duration_ms": 1375,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7
+              },
+              "request_input_estimate_sum": 36295,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 10872,
+              "duration_known_requests": 7,
+              "task_wall_ms": 11272,
+              "accepted_plan_snapshots": 4,
+              "native_tool_counts": {
+                "list_dir": 4,
+                "read_file": 1,
+                "exec": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 4,
+              "assists": [],
+              "wall_seconds": 7.131,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/gemini/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6376,
+                  "duration_ms": 1652,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6565,
+                  "duration_ms": 2106,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5917,
+                  "duration_ms": 1508,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7295,
+                  "duration_ms": 1808,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 4
+              },
+              "request_input_estimate_sum": 26153,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 7074,
+              "duration_known_requests": 4,
+              "task_wall_ms": 7123,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 3,
+                "exec": 5,
+                "done": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_298068",
+                    "call_255422",
+                    "call_291811",
+                    "call_331399"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "override",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 17.831,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": false,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "matched=false"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": false,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r5/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=3074 matched=false"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6198,
+                  "duration_ms": 1005,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5910,
+                  "duration_ms": 1340,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6364,
+                  "duration_ms": 999,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6381,
+                  "duration_ms": 1403,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6605,
+                  "duration_ms": 1721,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6824,
+                  "duration_ms": 1167,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8126,
+                  "duration_ms": 1251,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 7742,
+                  "duration_ms": 2251,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8716,
+                  "duration_ms": 961,
+                  "provider_usage": null
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7932,
+                  "duration_ms": 1626,
+                  "provider_usage": null
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8953,
+                  "duration_ms": 1477,
+                  "provider_usage": null
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9476,
+                  "duration_ms": 2523,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 89227,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 17724,
+              "duration_known_requests": 12,
+              "task_wall_ms": 17816,
+              "accepted_plan_snapshots": 5,
+              "native_tool_counts": {
+                "list_dir": 4,
+                "glob": 6,
+                "read_file": 1
+              },
+              "observer_primary_actions": [
+                "1. [search 0.95] list_dir(dir=.spiral-coder, include_hidden=true)"
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "candidate_commit": "0ebbe4c905797d41eb469f8245152952882eaadf",
+      "predeclaration": {
+        "declared_at": "2026-10-14T02:07:17.299740+00:00",
+        "commit": "0ebbe4c905797d41eb469f8245152952882eaadf",
+        "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+        "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+        "rounds": [
+          5,
+          6
+        ],
+        "models": {
+          "mistral": "mistral-small-2603",
+          "openai": "gpt-4.1-mini",
+          "gemini": "gemini-3.5-flash-lite"
+        },
+        "cases_per_model_per_round": 3,
+        "caps": [
+          10,
+          8,
+          12
+        ],
+        "temperature": 0,
+        "max_tokens": 2048,
+        "request_timeout_seconds": 90,
+        "wall_seconds": 600,
+        "observer_disabled_control": false,
+        "policy": "Same candidate and full panel twice; retain all failures; no between-round changes."
+      },
+      "models": [
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "mistral",
+          "model": "mistral-small-2603",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 3,
+              "assists": [],
+              "wall_seconds": 6.322,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/mistral/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4779,
+                  "duration_ms": 1983,
+                  "provider_usage": {
+                    "completion_tokens": 200,
+                    "prompt_tokens": 4448,
+                    "service_tier": "standard",
+                    "total_tokens": 4648,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4801,
+                  "duration_ms": 1278,
+                  "provider_usage": {
+                    "completion_tokens": 96,
+                    "prompt_tokens": 4517,
+                    "service_tier": "standard",
+                    "total_tokens": 4613,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3712
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4799,
+                  "duration_ms": 2108,
+                  "provider_usage": {
+                    "completion_tokens": 168,
+                    "prompt_tokens": 4570,
+                    "service_tier": "standard",
+                    "total_tokens": 4738,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3968
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 3
+              },
+              "request_input_estimate_sum": 14379,
+              "provider_usage_known_requests": 3,
+              "request_duration_sum_ms": 5369,
+              "duration_known_requests": 3,
+              "task_wall_ms": 5691,
+              "accepted_plan_snapshots": 3,
+              "native_tool_counts": {
+                "list_dir": 1,
+                "read_file": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 8,
+              "assists": [
+                {
+                  "assist_id": 2,
+                  "call_ids": [
+                    "PcvEypBUa",
+                    "xjEHZPKdT"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "override",
+                  "executed": true,
+                  "pending_exact_checks": [],
+                  "succeeded": false
+                }
+              ],
+              "wall_seconds": 16.872,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/mistral/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6415,
+                  "duration_ms": 1835,
+                  "provider_usage": {
+                    "completion_tokens": 208,
+                    "prompt_tokens": 5745,
+                    "service_tier": "standard",
+                    "total_tokens": 5953,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 16
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6322,
+                  "duration_ms": 834,
+                  "provider_usage": {
+                    "completion_tokens": 15,
+                    "prompt_tokens": 5690,
+                    "service_tier": "standard",
+                    "total_tokens": 5705,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4224
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6125,
+                  "duration_ms": 1041,
+                  "provider_usage": {
+                    "completion_tokens": 16,
+                    "prompt_tokens": 5554,
+                    "service_tier": "standard",
+                    "total_tokens": 5570,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4512
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6375,
+                  "duration_ms": 2112,
+                  "provider_usage": {
+                    "completion_tokens": 199,
+                    "prompt_tokens": 5792,
+                    "service_tier": "standard",
+                    "total_tokens": 5991,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4544
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 7465,
+                  "duration_ms": 4891,
+                  "provider_usage": {
+                    "completion_tokens": 830,
+                    "prompt_tokens": 7067,
+                    "service_tier": "standard",
+                    "total_tokens": 7897,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 1424
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8623,
+                  "duration_ms": 2271,
+                  "provider_usage": {
+                    "completion_tokens": 388,
+                    "prompt_tokens": 8080,
+                    "service_tier": "standard",
+                    "total_tokens": 8468,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 7040
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7949,
+                  "duration_ms": 1910,
+                  "provider_usage": {
+                    "completion_tokens": 230,
+                    "prompt_tokens": 7043,
+                    "service_tier": "standard",
+                    "total_tokens": 7273,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 2480
+                    }
+                  }
+                },
+                {
+                  "id": 7,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7715,
+                  "duration_ms": 1881,
+                  "provider_usage": {
+                    "completion_tokens": 161,
+                    "prompt_tokens": 6851,
+                    "service_tier": "standard",
+                    "total_tokens": 7012,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5280
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 6,
+                "observer": 2
+              },
+              "request_input_estimate_sum": 56989,
+              "provider_usage_known_requests": 8,
+              "request_duration_sum_ms": 16775,
+              "duration_known_requests": 8,
+              "task_wall_ms": 16861,
+              "accepted_plan_snapshots": 4,
+              "native_tool_counts": {
+                "read_file": 3,
+                "exec": 9
+              },
+              "observer_primary_actions": [
+                "1. [read 0.85] read_file(path=docs/runtime-architecture.md)"
+              ],
+              "observer_validation_failures": [
+                "(next-action) invalid response prevented automatic forwarding: structured JSON envelope could not be parsed; raw Observer output was preserved."
+              ]
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 7,
+              "assists": [],
+              "wall_seconds": 17.039,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": true,
+                "all_old_and_new_replay_cases_pass": true
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json\", \"spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\"]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json\", \"spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\"]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=4623 matched=true"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6193,
+                  "duration_ms": 2194,
+                  "provider_usage": {
+                    "completion_tokens": 312,
+                    "prompt_tokens": 5827,
+                    "service_tier": "standard",
+                    "total_tokens": 6139,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 1472
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7124,
+                  "duration_ms": 4242,
+                  "provider_usage": {
+                    "completion_tokens": 848,
+                    "prompt_tokens": 6719,
+                    "service_tier": "standard",
+                    "total_tokens": 7567,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4512
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9072,
+                  "duration_ms": 1116,
+                  "provider_usage": {
+                    "completion_tokens": 78,
+                    "prompt_tokens": 8826,
+                    "service_tier": "standard",
+                    "total_tokens": 8904,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5584
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9808,
+                  "duration_ms": 5474,
+                  "provider_usage": {
+                    "completion_tokens": 1442,
+                    "prompt_tokens": 9231,
+                    "service_tier": "standard",
+                    "total_tokens": 10673,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 6608
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11485,
+                  "duration_ms": 1149,
+                  "provider_usage": {
+                    "completion_tokens": 86,
+                    "prompt_tokens": 10945,
+                    "service_tier": "standard",
+                    "total_tokens": 11031,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 7488
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10257,
+                  "duration_ms": 1102,
+                  "provider_usage": {
+                    "completion_tokens": 40,
+                    "prompt_tokens": 9872,
+                    "service_tier": "standard",
+                    "total_tokens": 9912,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4848
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10417,
+                  "duration_ms": 1596,
+                  "provider_usage": {
+                    "completion_tokens": 204,
+                    "prompt_tokens": 10002,
+                    "service_tier": "standard",
+                    "total_tokens": 10206,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 8528
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7
+              },
+              "request_input_estimate_sum": 64356,
+              "provider_usage_known_requests": 7,
+              "request_duration_sum_ms": 16873,
+              "duration_known_requests": 7,
+              "task_wall_ms": 17013,
+              "accepted_plan_snapshots": 7,
+              "native_tool_counts": {
+                "read_file": 2,
+                "apply_diff": 1,
+                "write_file": 1,
+                "exec": 2,
+                "done": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            }
+          ]
+        },
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 4,
+              "assists": [],
+              "wall_seconds": 4.195,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/openai/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4776,
+                  "duration_ms": 1068,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4421,
+                  "duration_ms": 674,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4786,
+                  "duration_ms": 631,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4770,
+                  "duration_ms": 801,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 4
+              },
+              "request_input_estimate_sum": 18753,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 3174,
+              "duration_known_requests": 4,
+              "task_wall_ms": 3569,
+              "accepted_plan_snapshots": 3,
+              "native_tool_counts": {
+                "read_file": 2,
+                "list_dir": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 7,
+              "assists": [],
+              "wall_seconds": 11.127,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=4"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/openai/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6375,
+                  "duration_ms": 1425,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6061,
+                  "duration_ms": 1839,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6874,
+                  "duration_ms": 1035,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7172,
+                  "duration_ms": 1168,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8065,
+                  "duration_ms": 2334,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7735,
+                  "duration_ms": 1330,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6802,
+                  "duration_ms": 1897,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 6,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 49084,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 11028,
+              "duration_known_requests": 7,
+              "task_wall_ms": 11119,
+              "accepted_plan_snapshots": 6,
+              "native_tool_counts": {
+                "read_file": 2,
+                "exec": 8,
+                "done": 2
+              },
+              "observer_primary_actions": [
+                "1. [verify 1.00] exec(command=grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt)"
+              ],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_xcCa93KWg4GQ5yZ2SAHusMkA",
+                    "call_imuG41L5zIra7HdjagVwLsQB",
+                    "call_FZkIbMsQ7wQvBZoLo9KSF4xA",
+                    "call_SlY3ddL6O2xTHbrVGQ57O2t3"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "accept",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 30.238,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": true,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=5"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/openai/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=4548 matched=true"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6196,
+                  "duration_ms": 1008,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5922,
+                  "duration_ms": 840,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7285,
+                  "duration_ms": 3895,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8668,
+                  "duration_ms": 1081,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9282,
+                  "duration_ms": 3748,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10365,
+                  "duration_ms": 1167,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10488,
+                  "duration_ms": 4522,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 13448,
+                  "duration_ms": 3427,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 12338,
+                  "duration_ms": 1022,
+                  "provider_usage": null
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11542,
+                  "duration_ms": 4468,
+                  "provider_usage": null
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 12636,
+                  "duration_ms": 920,
+                  "provider_usage": null
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 12444,
+                  "duration_ms": 3985,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 120614,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 30083,
+              "duration_known_requests": 12,
+              "task_wall_ms": 30223,
+              "accepted_plan_snapshots": 10,
+              "native_tool_counts": {
+                "read_file": 6,
+                "apply_diff": 2,
+                "patch_file": 3
+              },
+              "observer_primary_actions": [
+                "1. [read 0.95] read_file(path=.spiral-coder/tui_replay.json)"
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        },
+        {
+          "binary_sha256": "ca881b7b53fd356a24028c7a2d168b8b7056bff56c193acfaf4743252639b649",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 7,
+              "assists": [],
+              "wall_seconds": 13.263,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/gemini/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4777,
+                  "duration_ms": 1605,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4447,
+                  "duration_ms": 1410,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4873,
+                  "duration_ms": 2009,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4805,
+                  "duration_ms": 1057,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5163,
+                  "duration_ms": 1549,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6144,
+                  "duration_ms": 2910,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6126,
+                  "duration_ms": 1364,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7
+              },
+              "request_input_estimate_sum": 36335,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 11904,
+              "duration_known_requests": 7,
+              "task_wall_ms": 12631,
+              "accepted_plan_snapshots": 4,
+              "native_tool_counts": {
+                "list_dir": 2,
+                "glob": 2,
+                "read_file": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 8,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_332816",
+                    "call_296862",
+                    "call_284495"
+                  ],
+                  "completed": true,
+                  "continuation_id": 2,
+                  "decision": "accept",
+                  "executed": true,
+                  "pending_exact_checks": [],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 19.37,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/gemini/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6376,
+                  "duration_ms": 2033,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6565,
+                  "duration_ms": 2193,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6827,
+                  "duration_ms": 2895,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7972,
+                  "duration_ms": 1941,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8479,
+                  "duration_ms": 2079,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8498,
+                  "duration_ms": 2441,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9714,
+                  "duration_ms": 3164,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9213,
+                  "duration_ms": 2526,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 63644,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 19272,
+              "duration_known_requests": 8,
+              "task_wall_ms": 19361,
+              "accepted_plan_snapshots": 6,
+              "native_tool_counts": {
+                "read_file": 2,
+                "exec": 7,
+                "done": 3
+              },
+              "observer_primary_actions": [
+                "1. [verify 1.00] exec(command=grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt)"
+              ],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_404246",
+                    "call_366766",
+                    "call_494977",
+                    "call_431943"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "override",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 16.445,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": false,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": false,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r6/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=3074 matched=false"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6198,
+                  "duration_ms": 1167,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5937,
+                  "duration_ms": 1406,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6413,
+                  "duration_ms": 1153,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7254,
+                  "duration_ms": 1358,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7382,
+                  "duration_ms": 1129,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7595,
+                  "duration_ms": 1455,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8602,
+                  "duration_ms": 1148,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8457,
+                  "duration_ms": 2255,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8739,
+                  "duration_ms": 867,
+                  "provider_usage": null
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7451,
+                  "duration_ms": 1050,
+                  "provider_usage": null
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8534,
+                  "duration_ms": 1980,
+                  "provider_usage": null
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7911,
+                  "duration_ms": 1329,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 90473,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 16297,
+              "duration_known_requests": 12,
+              "task_wall_ms": 16428,
+              "accepted_plan_snapshots": 7,
+              "native_tool_counts": {
+                "list_dir": 2,
+                "read_file": 2,
+                "exec": 1,
+                "search_files": 2,
+                "glob": 4
+              },
+              "observer_primary_actions": [
+                "1. [read 0.95] read_file(path=.spiral-coder/tui_replay.json)"
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "candidate_commit": "16bb83c780948956e53817cfc6437d7203e86651",
+      "predeclaration": {
+        "declared_at": "2026-10-14T02:20:34.570570+00:00",
+        "commit": "16bb83c780948956e53817cfc6437d7203e86651",
+        "binary_sha256": "91c171ad5853b53ace4a55b1d50c85179d30a537af3f3661cbb9c5c97ba1fd40",
+        "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+        "rounds": [
+          7
+        ],
+        "models": {
+          "mistral": "mistral-small-2603",
+          "openai": "gpt-4.1-mini",
+          "gemini": "gemini-3.5-flash-lite"
+        },
+        "cases_per_model_per_round": 3,
+        "caps": [
+          10,
+          8,
+          12
+        ],
+        "temperature": 0,
+        "max_tokens": 2048,
+        "request_timeout_seconds": 90,
+        "wall_seconds": 600,
+        "observer_disabled_control": false,
+        "policy": "One full panel after rounds 5-6 diagnostic fixes; same assertions and caps. Adaptive follow-up, not part of the unchanged repeated pair."
+      },
+      "models": [
+        {
+          "binary_sha256": "91c171ad5853b53ace4a55b1d50c85179d30a537af3f3661cbb9c5c97ba1fd40",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "mistral",
+          "model": "mistral-small-2603",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 3,
+              "assists": [],
+              "wall_seconds": 17.262,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/mistral/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4779,
+                  "duration_ms": 10699,
+                  "provider_usage": {
+                    "completion_tokens": 237,
+                    "prompt_tokens": 4448,
+                    "service_tier": "standard",
+                    "total_tokens": 4685,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4839,
+                  "duration_ms": 2196,
+                  "provider_usage": {
+                    "completion_tokens": 98,
+                    "prompt_tokens": 4574,
+                    "service_tier": "standard",
+                    "total_tokens": 4672,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 3712
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4839,
+                  "duration_ms": 2386,
+                  "provider_usage": {
+                    "completion_tokens": 179,
+                    "prompt_tokens": 4617,
+                    "service_tier": "standard",
+                    "total_tokens": 4796,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4016
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 3
+              },
+              "request_input_estimate_sum": 14457,
+              "provider_usage_known_requests": 3,
+              "request_duration_sum_ms": 15281,
+              "duration_known_requests": 3,
+              "task_wall_ms": 16334,
+              "accepted_plan_snapshots": 3,
+              "native_tool_counts": {
+                "list_dir": 1,
+                "read_file": 1,
+                "apply_diff": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 7,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "VAz2hplIH",
+                    "ruoANKUS3"
+                  ],
+                  "completed": true,
+                  "continuation_id": 2,
+                  "decision": "override",
+                  "executed": true,
+                  "pending_exact_checks": [],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 13.789,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/mistral/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6415,
+                  "duration_ms": 2199,
+                  "provider_usage": {
+                    "completion_tokens": 204,
+                    "prompt_tokens": 5745,
+                    "service_tier": "standard",
+                    "total_tokens": 5949,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6330,
+                  "duration_ms": 788,
+                  "provider_usage": {
+                    "completion_tokens": 15,
+                    "prompt_tokens": 5690,
+                    "service_tier": "standard",
+                    "total_tokens": 5705,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4224
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6129,
+                  "duration_ms": 895,
+                  "provider_usage": {
+                    "completion_tokens": 16,
+                    "prompt_tokens": 5553,
+                    "service_tier": "standard",
+                    "total_tokens": 5569,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6379,
+                  "duration_ms": 1849,
+                  "provider_usage": {
+                    "completion_tokens": 230,
+                    "prompt_tokens": 5791,
+                    "service_tier": "standard",
+                    "total_tokens": 6021,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4544
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8126,
+                  "duration_ms": 2688,
+                  "provider_usage": {
+                    "completion_tokens": 398,
+                    "prompt_tokens": 7406,
+                    "service_tier": "standard",
+                    "total_tokens": 7804,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8543,
+                  "duration_ms": 1469,
+                  "provider_usage": {
+                    "completion_tokens": 52,
+                    "prompt_tokens": 7497,
+                    "service_tier": "standard",
+                    "total_tokens": 7549,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 2480
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7301,
+                  "duration_ms": 3419,
+                  "provider_usage": {
+                    "completion_tokens": 240,
+                    "prompt_tokens": 6520,
+                    "service_tier": "standard",
+                    "total_tokens": 6760,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5376
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 6,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 49223,
+              "provider_usage_known_requests": 7,
+              "request_duration_sum_ms": 13307,
+              "duration_known_requests": 7,
+              "task_wall_ms": 13744,
+              "accepted_plan_snapshots": 6,
+              "native_tool_counts": {
+                "read_file": 3,
+                "exec": 7,
+                "done": 2
+              },
+              "observer_primary_actions": [
+                "1. [verify 1.00] exec(command=grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt)"
+              ],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 9,
+              "assists": [],
+              "wall_seconds": 28.616,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": false,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": false,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=3074 matched=false"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6193,
+                  "duration_ms": 2095,
+                  "provider_usage": {
+                    "completion_tokens": 289,
+                    "prompt_tokens": 5827,
+                    "service_tier": "standard",
+                    "total_tokens": 6116,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 0
+                    }
+                  }
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7096,
+                  "duration_ms": 3833,
+                  "provider_usage": {
+                    "completion_tokens": 701,
+                    "prompt_tokens": 6691,
+                    "service_tier": "standard",
+                    "total_tokens": 7392,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4512
+                    }
+                  }
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8931,
+                  "duration_ms": 6127,
+                  "provider_usage": {
+                    "completion_tokens": 1430,
+                    "prompt_tokens": 8710,
+                    "service_tier": "standard",
+                    "total_tokens": 10140,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 5568
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 13512,
+                  "duration_ms": 1169,
+                  "provider_usage": {
+                    "completion_tokens": 10,
+                    "prompt_tokens": 12945,
+                    "service_tier": "standard",
+                    "total_tokens": 12955,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 6432
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11199,
+                  "duration_ms": 1135,
+                  "provider_usage": {
+                    "completion_tokens": 17,
+                    "prompt_tokens": 10750,
+                    "service_tier": "standard",
+                    "total_tokens": 10767,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 9360
+                    }
+                  }
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10583,
+                  "duration_ms": 966,
+                  "provider_usage": {
+                    "completion_tokens": 19,
+                    "prompt_tokens": 10322,
+                    "service_tier": "standard",
+                    "total_tokens": 10341,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 4816
+                    }
+                  }
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11310,
+                  "duration_ms": 1038,
+                  "provider_usage": {
+                    "completion_tokens": 17,
+                    "prompt_tokens": 10999,
+                    "service_tier": "standard",
+                    "total_tokens": 11016,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 9056
+                    }
+                  }
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 13200,
+                  "duration_ms": 6856,
+                  "provider_usage": {
+                    "completion_tokens": 1023,
+                    "prompt_tokens": 13324,
+                    "service_tier": "standard",
+                    "total_tokens": 14347,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 1344
+                    }
+                  }
+                },
+                {
+                  "id": 8,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 14576,
+                  "duration_ms": 4672,
+                  "provider_usage": {
+                    "completion_tokens": 900,
+                    "prompt_tokens": 14698,
+                    "service_tier": "standard",
+                    "total_tokens": 15598,
+                    "completion_tokens_details": {
+                      "reasoning_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                      "cached_tokens": 13296
+                    }
+                  }
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7,
+                "observer": 2
+              },
+              "request_input_estimate_sum": 96600,
+              "provider_usage_known_requests": 9,
+              "request_duration_sum_ms": 27891,
+              "duration_known_requests": 9,
+              "task_wall_ms": 28533,
+              "accepted_plan_snapshots": 6,
+              "native_tool_counts": {
+                "read_file": 2,
+                "apply_diff": 1,
+                "write_file": 1,
+                "exec": 3
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": [
+                "(next-action) invalid response prevented automatic forwarding: invalid type: null, expected a string at line 2 column 18; raw Observer output was preserved.",
+                "(next-action) invalid response prevented automatic forwarding: unknown variant `patch_file`, expected one of `search`, `read`, `edit`, `verify`, `done`, `clarify`, `abandon_path` at line 26 column 26; raw Observer output was preserved."
+              ]
+            }
+          ]
+        },
+        {
+          "binary_sha256": "91c171ad5853b53ace4a55b1d50c85179d30a537af3f3661cbb9c5c97ba1fd40",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 4,
+              "assists": [],
+              "wall_seconds": 8.319,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/openai/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4776,
+                  "duration_ms": 1449,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4421,
+                  "duration_ms": 679,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4786,
+                  "duration_ms": 777,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4770,
+                  "duration_ms": 1027,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 4
+              },
+              "request_input_estimate_sum": 18753,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 3932,
+              "duration_known_requests": 4,
+              "task_wall_ms": 7232,
+              "accepted_plan_snapshots": 3,
+              "native_tool_counts": {
+                "read_file": 2,
+                "list_dir": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 2,
+              "assists": [],
+              "wall_seconds": 6.941,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/openai/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6375,
+                  "duration_ms": 1391,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6061,
+                  "duration_ms": 5190,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 2
+              },
+              "request_input_estimate_sum": 12436,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 6581,
+              "duration_known_requests": 2,
+              "task_wall_ms": 6889,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 2,
+                "exec": 5,
+                "done": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_GIgwyenPD13HyE56fchkFdeW",
+                    "call_dS4j0CVTSo9o08vnhb4WjEDr",
+                    "call_GACPgS1EKnjb5V49MGlh0wRt",
+                    "call_Xev3XTHzKbsOtiVXIw46npYZ"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "override",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": false
+                }
+              ],
+              "wall_seconds": 27.58,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": true,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json\"]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json\"]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/openai/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=4509 matched=true"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6196,
+                  "duration_ms": 1098,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5922,
+                  "duration_ms": 948,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7285,
+                  "duration_ms": 4634,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8784,
+                  "duration_ms": 1015,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9340,
+                  "duration_ms": 3770,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10395,
+                  "duration_ms": 1154,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10532,
+                  "duration_ms": 3873,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 13005,
+                  "duration_ms": 4723,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 12051,
+                  "duration_ms": 1396,
+                  "provider_usage": null
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9867,
+                  "duration_ms": 1205,
+                  "provider_usage": null
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10390,
+                  "duration_ms": 1371,
+                  "provider_usage": null
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 10264,
+                  "duration_ms": 1251,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 114031,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 26438,
+              "duration_known_requests": 12,
+              "task_wall_ms": 27448,
+              "accepted_plan_snapshots": 10,
+              "native_tool_counts": {
+                "read_file": 4,
+                "apply_diff": 1,
+                "patch_file": 4,
+                "exec": 2
+              },
+              "observer_primary_actions": [
+                "1. [edit 0.95] patch_file(path=.spiral-coder/tui_replay.json, replace=\"id\": \"review-panel-replay-sensitive\","
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        },
+        {
+          "binary_sha256": "91c171ad5853b53ace4a55b1d50c85179d30a537af3f3661cbb9c5c97ba1fd40",
+          "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite",
+          "without_observer": false,
+          "cases": [
+            {
+              "id": "coupled-resume-damaged-tool-exchange-fix",
+              "requests": 7,
+              "assists": [],
+              "wall_seconds": 12.722,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true,
+                "independent_tests_pass": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_root_file_contains:src/lib.rs:Hello, {}!",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/gemini/coupled-resume-damaged-tool-exchange-fix/workspace/src/lib.rs bytes=228 matched=true"
+                },
+                {
+                  "label": "auto_test_passed:cargo test 2>&1",
+                  "ok": true,
+                  "detail": "fresh_auto_test_pass_count=1 test_command=Some(\"cargo test 2>&1\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:src/lib.rs",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 10,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4777,
+                  "duration_ms": 1504,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4447,
+                  "duration_ms": 1091,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4873,
+                  "duration_ms": 1100,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 4804,
+                  "duration_ms": 1694,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5132,
+                  "duration_ms": 1670,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6106,
+                  "duration_ms": 2171,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6166,
+                  "duration_ms": 1437,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 7
+              },
+              "request_input_estimate_sum": 36305,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 10667,
+              "duration_known_requests": 7,
+              "task_wall_ms": 11848,
+              "accepted_plan_snapshots": 4,
+              "native_tool_counts": {
+                "list_dir": 4,
+                "read_file": 1,
+                "exec": 1,
+                "patch_file": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-exec-proof-resume",
+              "requests": 3,
+              "assists": [],
+              "wall_seconds": 4.104,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": true,
+                "runtime_completed": true,
+                "within_shared_cap": true,
+                "exact_checks_current": true,
+                "process_ok": true
+              },
+              "strict_ok": true,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": true,
+                  "detail": "completed=true agent_outcome=Some(true)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/agent/benchmark_proof.rs\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt",
+                  "ok": true,
+                  "detail": "verified_exec_commands=[\"grep -q \\\"src/tui/agent/benchmark_proof.rs\\\" docs/runtime-architecture.md && printf verified-current > verification_receipt.txt\"]"
+                },
+                {
+                  "label": "tool_root_file_contains:verification_receipt.txt:verified-current",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/gemini/coupled-approved-benchmark-plan-exec-proof-resume/workspace/verification_receipt.txt bytes=16 matched=true"
+                },
+                {
+                  "label": "assistant_contains:verification_receipt.txt",
+                  "ok": true,
+                  "detail": "matched=true"
+                },
+                {
+                  "label": "assistant_contains:fresh exec proof",
+                  "ok": true,
+                  "detail": "matched=true"
+                }
+              ],
+              "request_limit": 8,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6376,
+                  "duration_ms": 1224,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6100,
+                  "duration_ms": 1208,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7116,
+                  "duration_ms": 1401,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 3
+              },
+              "request_input_estimate_sum": 19592,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 3833,
+              "duration_known_requests": 3,
+              "task_wall_ms": 4062,
+              "accepted_plan_snapshots": 2,
+              "native_tool_counts": {
+                "read_file": 3,
+                "exec": 5,
+                "done": 1
+              },
+              "observer_primary_actions": [],
+              "observer_validation_failures": []
+            },
+            {
+              "id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+              "requests": 12,
+              "assists": [
+                {
+                  "assist_id": 1,
+                  "call_ids": [
+                    "call_285160",
+                    "call_330903",
+                    "call_326364",
+                    "call_286694"
+                  ],
+                  "completed": false,
+                  "continuation_id": 2,
+                  "decision": "accept",
+                  "executed": true,
+                  "pending_exact_checks": [
+                    "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                    "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+                  ],
+                  "succeeded": null
+                }
+              ],
+              "wall_seconds": 21.392,
+              "timed_out": false,
+              "checks": {
+                "all_fixed_case_checks": false,
+                "runtime_completed": false,
+                "within_shared_cap": true,
+                "exact_checks_current": false,
+                "process_ok": true,
+                "preserved_existing_cases": true,
+                "requested_new_case_exists": true,
+                "all_old_and_new_replay_cases_pass": false
+              },
+              "strict_ok": false,
+              "fixed_checks": [
+                {
+                  "label": "completed",
+                  "ok": false,
+                  "detail": "completed=false agent_outcome=Some(false)"
+                },
+                {
+                  "label": "error_free",
+                  "ok": true,
+                  "detail": "error_count=0"
+                },
+                {
+                  "label": "tool_call_seen:read_file",
+                  "ok": true,
+                  "detail": "count=3"
+                },
+                {
+                  "label": "tool_call_seen:exec",
+                  "ok": true,
+                  "detail": "count=1"
+                },
+                {
+                  "label": "tool_call_seen:patch_file",
+                  "ok": false,
+                  "detail": "count=0"
+                },
+                {
+                  "label": "verified_command_seen:grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "verified_command_seen:spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive",
+                  "ok": false,
+                  "detail": "verified_exec_commands=[]"
+                },
+                {
+                  "label": "auto_test_passed",
+                  "ok": false,
+                  "detail": "fresh_auto_test_pass_count=0 test_command=Some(\"grep -q \\\"src/tui/review_panel.rs\\\" .spiral-coder/tui_replay.json && spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive\") command_ok=true"
+                },
+                {
+                  "label": "assistant_contains:.spiral-coder/tui_replay.json",
+                  "ok": false,
+                  "detail": "last assistant message missing"
+                },
+                {
+                  "label": "trace_event_seen:task_harness",
+                  "ok": true,
+                  "detail": "count=2"
+                },
+                {
+                  "label": "tool_root_file_contains:.spiral-coder/tui_replay.json:src/tui/review_panel.rs",
+                  "ok": true,
+                  "detail": "resolved=LOCAL_RAW/coupled-20261014-r7/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json bytes=5072 matched=true"
+                }
+              ],
+              "request_limit": 12,
+              "wire_receipts": [
+                {
+                  "id": 0,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6198,
+                  "duration_ms": 1903,
+                  "provider_usage": null
+                },
+                {
+                  "id": 1,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 5937,
+                  "duration_ms": 1166,
+                  "provider_usage": null
+                },
+                {
+                  "id": 2,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 6413,
+                  "duration_ms": 1438,
+                  "provider_usage": null
+                },
+                {
+                  "id": 3,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7254,
+                  "duration_ms": 1132,
+                  "provider_usage": null
+                },
+                {
+                  "id": 4,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7665,
+                  "duration_ms": 1052,
+                  "provider_usage": null
+                },
+                {
+                  "id": 5,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7921,
+                  "duration_ms": 1702,
+                  "provider_usage": null
+                },
+                {
+                  "id": 6,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8765,
+                  "duration_ms": 1672,
+                  "provider_usage": null
+                },
+                {
+                  "id": 7,
+                  "role": "observer",
+                  "status": "completed",
+                  "estimated_input_tokens": 8580,
+                  "duration_ms": 2223,
+                  "provider_usage": null
+                },
+                {
+                  "id": 8,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 8139,
+                  "duration_ms": 1705,
+                  "provider_usage": null
+                },
+                {
+                  "id": 9,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 7598,
+                  "duration_ms": 929,
+                  "provider_usage": null
+                },
+                {
+                  "id": 10,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 9639,
+                  "duration_ms": 4040,
+                  "provider_usage": null
+                },
+                {
+                  "id": 11,
+                  "role": "coder",
+                  "status": "completed",
+                  "estimated_input_tokens": 11711,
+                  "duration_ms": 1643,
+                  "provider_usage": null
+                }
+              ],
+              "role_request_counts": {
+                "coder": 11,
+                "observer": 1
+              },
+              "request_input_estimate_sum": 95820,
+              "provider_usage_known_requests": 0,
+              "request_duration_sum_ms": 20605,
+              "duration_known_requests": 12,
+              "task_wall_ms": 21303,
+              "accepted_plan_snapshots": 7,
+              "native_tool_counts": {
+                "list_dir": 4,
+                "read_file": 3,
+                "exec": 1,
+                "glob": 2,
+                "write_file": 1
+              },
+              "observer_primary_actions": [
+                "1. [read 0.95] read_file(path=.spiral-coder/tui_replay.json)"
+              ],
+              "observer_validation_failures": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "runtime_commit": "16bb83c780948956e53817cfc6437d7203e86651",
+  "binary_sha256": "91c171ad5853b53ace4a55b1d50c85179d30a537af3f3661cbb9c5c97ba1fd40",
+  "deterministic_command": "bash scripts/check-local.sh",
+  "deterministic_log": "LOCAL_RAW/coupled-20261014-r7/check-local.log",
+  "deterministic_log_sha256": "5e4c6b40bfd806d038541792f84d81477a34efd7c0adc9846f9f84fbf4874e55",
+  "environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "checks": {
+    "rust_passed": 721,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "tui_replay_passed": 3,
+    "python_passed": 15,
+    "web_passed": 61,
+    "repo_map_passed": 14,
+    "lite_asset_count": 11
+  },
+  "covered_regressions": [
+    "Original task artifact targets outweigh earlier source references in native TUI and Web packets",
+    "Proof becomes pending again after a mutation; a new human request resets the projection",
+    "Accepted plan survives native save/load, pruning and provider metadata stripping",
+    "Actual HTTP Observer-to-Coder closeout preserves an accepted plan even after a newer rejected plan revision",
+    "Concrete invalid enum diagnostics reach the one-repair prompt in both TUI and browser",
+    "Historical governor blocks are not classified as human approval rejections"
+  ],
+  "live_rounds": [
+    5,
+    6,
+    7
+  ],
+  "unmodified_spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+}

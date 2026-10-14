@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "failure_modes": [
+    {
+      "id": "artifact-subject-scope-confusion",
+      "status": "shared-projection-regression-covered",
+      "repair": "Honor explicit approved target_files in intent and Coder routing; share original task obligations with both roles.",
+      "boundary": "This does not certify correct edits or useful advice."
+    },
+    {
+      "id": "accepted-plan-lost-or-shadowed-on-resume",
+      "status": "regression-covered",
+      "observed": "Compatibility rescues have no assistant plan text; rounds 5-6 also expose later rejected revisions hiding earlier valid plans.",
+      "repair": "Persist local accepted_plan snapshots and select the last plan passing the current task contract. New human requests reset scope."
+    },
+    {
+      "id": "observer-parser-diagnostic-discarded",
+      "status": "regression-covered-after-round-6",
+      "observed": "Round 5 GPT replay advice uses kind=patch_file; one repair receives only generic parse-failure feedback and cannot produce a valid envelope.",
+      "repair": "Use the actual shared parser error in TUI and browser repair requests; retain the one-repair bound and raw failures."
+    },
+    {
+      "id": "historical-governor-block-as-approval-rejection",
+      "status": "regression-covered-after-round-6",
+      "observed": "Round 5 Mistral proof/report advice cites a historical plan-gate block in approval_signals.rejections.",
+      "repair": "Derive approval rejections only from actual user-rejection results; keep governor failures as chronological execution evidence."
+    },
+    {
+      "id": "replay-edit-and-protocol-budget",
+      "status": "open",
+      "observed": "All six replay tasks in rounds 5-6 fail strict qualification; only round-6 Mistral creates a fully passing old+new artifact. In round 7 GPT and Gemini add the new case but fail complete replay; Mistral creates no new case. All nine replay outputs preserve existing JSON.",
+      "next": "Reduce ineffective artifact edits and scope-insensitive protocol cycles without relaxing preserved JSON, exact checks, or total caps."
+    },
+    {
+      "id": "required-tool-omitted-despite-valid-artifact",
+      "status": "open",
+      "observed": "Round-5 Mistral resume and round-6 Mistral replay complete but fail fixed patch_file assertions. Round-7 Mistral resume uses apply_diff and passes independent source tests, still missing patch_file.",
+      "boundary": "Alternative tool success is retained separately from strict pass."
+    },
+    {
+      "id": "observer-repair-model-noncompliance",
+      "status": "open",
+      "observed": "Round 7 Mistral replay first fails a nullable optional display field, then the single repair returns kind=patch_file instead of the allowed edit kind. Both parser errors are retained.",
+      "boundary": "Precise error feedback is verified; a successful repair or completed task is not established."
+    }
+  ]
+}
