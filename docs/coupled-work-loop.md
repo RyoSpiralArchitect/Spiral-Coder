@@ -26,7 +26,8 @@ subjects, without inferred existence or edit permission. Plans without explicit
 targets retain the existing fallback; this is not a general prose interpreter.
 
 `agent/task_obligations.rs` projects the same artifact scope, exact checks still
-missing native proof, final-answer clauses/literals, and latest action feedback
+missing native proof, final-answer clauses/literals, latest action feedback,
+and pending diagnosis/repair requirements
 for Coder, TUI Observer and the browser endpoint. The final-answer projection
 uses the done gate's parser. A projection neither executes advice nor certifies
 artifact completion; all existing proof and acceptance gates remain active.
@@ -34,6 +35,13 @@ The Observer output description is a JSON Schema, avoiding a hard-coded read
 action and made-up example scores that could bias the selected next action.
 Both UI paths preserve concrete JSON parser diagnostics in the one permitted
 repair request, including invalid enum values and their allowed variants.
+Optional display fields such as `fallback: null` cannot mask those actionable
+errors or discard a valid primary action. Tool arguments and suggestion kinds
+remain strictly validated. Replay loader errors identify the input file and
+explain that checks must be a nonempty array beside `observer_response`, so
+file-localized recovery can survive a role handoff. A failed edit permits one
+diagnostic reread of its target even outside `src/`; unrelated diagnostics do
+not substitute for that read, and repeated unchanged reads remain gated.
 Historical governor blocks remain in native evidence; they are not labeled as
 human approval rejections. The latter list is derived from actual user-rejection
 results in both UI paths.

@@ -232,6 +232,12 @@ Unresolved edit attempts:
   minimal anchor from current contents and preservation of surrounding fields;
   it does not rewrite files or certify success. On resume, unresolved edit attempts
   restore the Diagnose stage, preserving benchmark repair ownership.
+- The failed edit's target receives one successful diagnostic reread before the
+  progress gate asks for a repair, including JSON/config/docs outside `src/`.
+  Unrelated commands and refused reads do not consume that allowance. The read
+  state is reconstructed from native exchanges; it neither clears the edit
+  failure nor creates proof. Truncated legacy tool arguments retain the existing
+  Rust-source-read fallback, also bounded by one successful read.
 - The latest successful reset exchange is protected during context pruning so
   retained older failures cannot reappear as unresolved after resume. The legacy
   telemetry name `file_tool_consec_failures` now reflects unresolved edit attempts.
@@ -472,7 +478,8 @@ free-form `quickest_check` remains display text and cannot substitute a differen
 instruction in either forwarded message. A suggestion is advisory, not an executed
 action or verification result.
 
-`quickest_check` is optional display text. A non-string value is ignored instead
+`summary`, `primary_blocker`, `quickest_check`, `why_this_first`, and `fallback`
+are optional display text. A non-string value is ignored instead
 of discarding the independently typed primary action; it is never converted into
 tool arguments. JSON syntax, suggestion kinds, argument types, confidence and
 response-contract rules retain their existing validation. The prompt requests a
@@ -752,3 +759,7 @@ fall back to parsing their assistant plan text; no schema migration is required.
 derived views, not persistent authorities. They are recomputed from the current
 human task and correlated native exchanges. TUI and the Rust browser endpoint
 share this projection; display-packet fields cannot replace native requirements.
+`pending_recovery` carries the current localized automatic-test failure and any
+unresolved edit's diagnostic/repair requirement. It derives from the existing
+correlated recovery snapshots and edit history, and is shared by both roles.
+Reading the target advances diagnosis but does not remove the repair obligation.

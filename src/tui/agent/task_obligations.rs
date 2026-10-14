@@ -11,11 +11,16 @@ pub(crate) struct TaskObligations {
     pub pending_exact_checks: Vec<String>,
     pub final_answer: Value,
     pub latest_action_feedback: Option<evidence_packet::ActionEvidence>,
+    pub pending_recovery: Vec<String>,
 }
 
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
     let root = crate::task_origin::root_user_text(messages);
     let evidence = evidence_packet::project(messages, test_cmd);
+    let context =
+        super::exec_verification::ExecVerificationContext::from_messages(test_cmd, messages);
+    let edits = super::edit_failure::EditFailureMemory::from_messages(messages, &context);
+    let focus = super::recovery_focus::RecoveryFocus::from_messages(messages, None, test_cmd);
     TaskObligations {
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
@@ -26,12 +31,18 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("ERROR:")
             })
         }),
+        pending_recovery: focus
+            .hint()
+            .into_iter()
+            .chain(edits.diagnostic_hint())
+            .collect(),
     }
 }
 
 pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
     let obligations = project(messages, test_cmd);
     if obligations.artifact_scope.is_none()
+        && obligations.pending_recovery.is_empty()
         && obligations.final_answer["clauses"]
             .as_array()
             .is_none_or(Vec::is_empty)
@@ -39,7 +50,7 @@ pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<Strin
         return None;
     }
     Some(format!(
-        "[Shared task obligations]\nUse explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Put required_literals exactly in done.summary, with their original case.\n{}",
+        "[Shared task obligations]\nUse explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow pending_recovery before starting more checks. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Put required_literals exactly in done.summary, with their original case.\n{}",
         serde_json::to_string(&obligations).expect("task projection serializes")
     ))
 }

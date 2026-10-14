@@ -350,21 +350,6 @@ pub(super) fn approved_benchmark_required_commands(root_user_text: &str) -> Vec<
     }
 }
 
-fn is_src_read_file_tool_call(tc: &ToolCallData) -> bool {
-    if tc.name != "read_file" {
-        return false;
-    }
-    serde_json::from_str::<Value>(tc.arguments.as_str())
-        .ok()
-        .and_then(|value| {
-            value
-                .get("path")
-                .and_then(|v| v.as_str())
-                .map(str::to_string)
-        })
-        .is_some_and(|path| path.starts_with("src/") && path.ends_with(".rs"))
-}
-
 pub(super) fn coerce_artifact_creation_tool_call(
     harness: TaskHarness,
     messages: &[Value],
