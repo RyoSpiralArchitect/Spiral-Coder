@@ -48,6 +48,7 @@ mod auto_test_recovery_tests;
 mod done_gate;
 mod edit_failure;
 mod evaluator_loop;
+pub(crate) mod evidence_packet;
 mod exact_content;
 pub(crate) mod exec_classification;
 mod exec_proof;
@@ -7299,6 +7300,7 @@ async fn run_goal_check_command(
 
 /// Run the agentic loop.  Sends StreamToken events to `tx` for the TUI to display.
 /// The caller builds the initial messages (system + history + user).
+#[allow(dead_code)]
 pub async fn run_agentic(
     messages_in: Vec<ChatMessage>,
     cfg: &RunConfig,
@@ -7441,6 +7443,11 @@ Fix: use --provider openai-compatible (or --provider mistral).",
 
     // Keep messages as serde_json::Value throughout to preserve tool_call_id.
     let mut messages: Vec<serde_json::Value> = start.messages;
+    if let Some(guidance) = task_harness::benchmark_replay::guidance(&root_user_text) {
+        if !has_system_prefix(&messages, "[Replay case format]") {
+            messages.push(json!({"role":"system","content":guidance,"ui_context":true}));
+        }
+    }
     if root_read_only && !has_system_prefix(&messages, "[Read-Only Task Contract]") {
         let pos = messages.len().min(4);
         messages.insert(
@@ -7845,10 +7852,32 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             ));
         }
 
+        let remaining_calls = crate::work_budget::current()
+            .map(|c| c.budget.remaining())
+            .unwrap_or(max_iters - iter)
+            .min(max_iters - iter);
+        let pending_checks = task_harness::benchmark_proof::pending_commands(
+            crate::task_origin::current_task_messages(&messages),
+            &root_user_text,
+            test_cmd.as_deref(),
+        );
+        let closing = remaining_calls <= pending_checks.len().saturating_add(3);
+        if closing {
+            let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
+            match pending_system_hint.as_mut() {
+                Some(existing) => {
+                    existing.push_str("\n\n");
+                    existing.push_str(&hint);
+                }
+                None => pending_system_hint = Some(hint),
+            }
+        }
+
         // ── Progress checkpoint every 3 iterations ────────────────────────
         // Require a reflection so the model re-evaluates goal distance and next action.
         // Only fires when no higher-priority hint/reflection is already pending.
         if iter > 0
+            && !closing
             && iter % 3 == 0
             && pending_system_hint.is_none()
             && reflection_required.is_none()
@@ -8367,7 +8396,8 @@ This is the LAST model call for this run.\n\
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
 
-        let stream_task = tokio::spawn(async move {
+        let request_context = crate::work_budget::current();
+        let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
             stream_openai_compat_json(
                 &client_clone,
                 &cfg_clone,
@@ -8376,7 +8406,8 @@ This is the LAST model call for this run.\n\
                 token_tx,
             )
             .await
-        });
+        }));
+        let _cancel_stream = crate::streaming::request_guard::AbortOnDrop::new(&stream_task);
 
         let mut assistant_text = String::new();
         let mut tool_calls: Vec<ToolCallData> = Vec::new();

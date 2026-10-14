@@ -50,6 +50,7 @@ pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
             if let Some(object) = message.as_object_mut() {
                 object.remove("origin");
                 object.remove("recovery_focus");
+                object.remove("ui_context");
             }
             message
         })

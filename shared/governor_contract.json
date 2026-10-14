@@ -530,6 +530,7 @@
       "git diff --check"
     ],
     "behavioral_command_signatures": [
+      "node --test",
       "cargo test",
       "cargo nextest",
       "npm test",

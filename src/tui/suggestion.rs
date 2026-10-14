@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod action;
-pub(super) use action::tool_schemas;
+pub(crate) use action::tool_schemas;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -301,7 +301,7 @@ fn normalize_envelope(env: &mut ObserverSuggestionEnvelope) {
 
 /// Structural repair eligibility is independent of confidence. A valid but
 /// uncertain answer must not be retried merely to cross the forwarding threshold.
-pub(super) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
+pub(crate) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
     let Some(env) = env else {
         return Some("structured JSON envelope could not be parsed".into());
     };

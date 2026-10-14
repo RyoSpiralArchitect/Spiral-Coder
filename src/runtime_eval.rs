@@ -98,6 +98,10 @@ pub enum RuntimeEvalCheck {
         path: String,
         value: String,
     },
+    JsonCasesPreserved {
+        path: String,
+        baseline: Value,
+    },
     MessagesMin {
         min: usize,
     },
@@ -167,6 +171,14 @@ pub struct RuntimeEvalMetrics {
     pub realize_mean_latency_last: Option<f64>,
     pub realize_missing_last: Option<usize>,
     pub realize_early_leakage_last: Option<usize>,
+    #[serde(default)]
+    pub cumulative_request_input_tokens_est: usize,
+    #[serde(default)]
+    pub wire_request_count: usize,
+    #[serde(default)]
+    pub request_duration_sum_ms: u64,
+    #[serde(default)]
+    pub provider_usage_receipts: Vec<Value>,
     pub transcript_input_tokens_est: usize,
     pub transcript_output_tokens_est: usize,
     pub transcript_total_tokens_est: usize,
@@ -671,6 +683,17 @@ fn collect_metrics(
                 metrics.round_count += 1;
                 metrics.task_completed = None;
             }
+            "request_started" => {
+                metrics.wire_request_count += 1;
+                metrics.cumulative_request_input_tokens_est +=
+                    line.data["estimated_input_tokens"].as_u64().unwrap_or(0) as usize;
+            }
+            "request_usage" => {
+                metrics.request_duration_sum_ms += line.data["duration_ms"].as_u64().unwrap_or(0);
+                metrics
+                    .provider_usage_receipts
+                    .push(line.data["provider_usage"].clone());
+            }
             "agent_outcome" => {
                 metrics.task_completed = line.data.get("completed").and_then(Value::as_bool);
             }
@@ -905,6 +928,19 @@ fn evaluate_check(
     run_error: Option<&str>,
 ) -> RuntimeEvalCheckResult {
     match check {
+        RuntimeEvalCheck::JsonCasesPreserved { path, baseline } => {
+            let result = std::fs::read_to_string(Path::new(root).join(path))
+                .map_err(anyhow::Error::from)
+                .and_then(|body| serde_json::from_str::<Value>(&body).map_err(anyhow::Error::from))
+                .and_then(|candidate| crate::artifact_preservation::check(baseline, &candidate));
+            RuntimeEvalCheckResult {
+                label: format!("json_cases_preserved:{path}"),
+                ok: result.is_ok(),
+                detail: result.err().map(|e| e.to_string()).unwrap_or_else(|| {
+                    "all baseline cases preserved including nested evidence".into()
+                }),
+            }
+        }
         RuntimeEvalCheck::Completed => RuntimeEvalCheckResult {
             label: "completed".to_string(),
             ok: metrics.completed,

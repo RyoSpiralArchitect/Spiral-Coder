@@ -122,6 +122,6 @@ fn observer_packet_retains_task_and_late_diagnostic_without_inventing_execution(
     assert!(packet["available_tools"].as_array().unwrap().contains(&json!("exec")));
     let catalog = packet["tool_argument_schemas"].as_array().unwrap();
     assert_eq!(catalog.iter().find(|schema| schema["name"] == "exec").unwrap()["parameters"], agent::exec_tool_def()["function"]["parameters"]);
-    assert!(packet["recent_tool_calls"].as_array().unwrap().is_empty());
+    assert!(packet["recent_tool_calls"].is_null());
     assert!(packet["recovery_stage"].is_null());
 }

@@ -50,12 +50,12 @@ async fn observer_repair_round_trip_is_bounded_and_uses_the_real_transport_and_c
     fn is_repair(request: &HttpMockRequest) -> bool {
         String::from_utf8_lossy(request.body.as_deref().unwrap_or_default()).contains("[Observer action repair:")
     }
-    async fn finish_response(app: &mut App, rx: &mut mpsc::Receiver<StreamToken>) {
+    async fn finish_response(app: &mut App, rx: &mut mpsc::Receiver<RequestEvent>) {
         tokio::time::timeout(std::time::Duration::from_secs(10), async {
             loop {
                 let token = rx.recv().await.expect("response token");
-                let finished = matches!(token, StreamToken::Done | StreamToken::Error(_));
-                handle_observer_token(token, app);
+                let finished = matches!(&token.payload, request_stream::Payload::Token(StreamToken::Done | StreamToken::Error(_)));
+                request_stream::dispatch(token, app, PaneId::Observer);
                 if finished { break; }
             }
         }).await.expect("bounded local response");

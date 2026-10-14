@@ -12,12 +12,12 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[path = "benchmark_proof.rs"]
-mod benchmark_proof;
+pub(super) mod benchmark_proof;
 #[cfg(test)]
 #[path = "benchmark_recovery_tests.rs"]
 mod benchmark_recovery_tests;
 #[path = "benchmark_replay.rs"]
-mod benchmark_replay;
+pub(crate) mod benchmark_replay;
 #[cfg(test)]
 #[path = "fix_recovery_tests.rs"]
 mod fix_recovery_tests;
@@ -904,13 +904,19 @@ fn synthesize_benchmark_plan_json_body(
     let mut value = serde_json::from_str::<Value>(body).ok()?;
     if target.ends_with("/tui_replay.json") {
         // Use the replay contract, not runtime-eval check names or a literal-only update.
-        let mut spec = serde_json::from_value::<crate::tui_replay::TuiReplaySpec>(value).ok()?;
-        spec.cases.push(benchmark_replay::case(
+        // Validate without round-tripping old cases through typed structs:
+        // extension fields and nested evidence must survive byte-for-value.
+        serde_json::from_value::<crate::tui_replay::TuiReplaySpec>(value.clone()).ok()?;
+        let case = benchmark_replay::case(
             benchmark_plan_case_id_hint(root_user_text)
                 .unwrap_or_else(|| "observer-benchmark-plan-regression".to_string()),
             required_path,
-        ));
-        value = serde_json::to_value(spec).ok()?;
+        );
+        let cases = value.get_mut("cases")?.as_array_mut()?;
+        if cases.iter().any(|old| old["id"] == case.id) {
+            return None;
+        }
+        cases.push(serde_json::to_value(case).ok()?);
     } else if let Some(paths) = value.get_mut("paths").and_then(|v| v.as_array_mut()) {
         paths.push(Value::String(required_path.to_string()));
     } else if let Some(cases) = value.get_mut("cases").and_then(|v| v.as_array_mut()) {

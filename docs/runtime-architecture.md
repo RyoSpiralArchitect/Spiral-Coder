@@ -388,3 +388,7 @@ Current code:
 3. Promote TaskRouter outputs into a DAG (dependencies + statuses), persisted into the session.
 4. Formalize governor decisions as structured events (so UI can visualize "why we stopped").
 5. Keep tools stable (their safety properties are the foundation), improve orchestration above them.
+
+## Coupled Coder/Observer task
+
+The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.

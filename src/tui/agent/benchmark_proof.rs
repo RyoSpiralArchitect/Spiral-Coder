@@ -101,7 +101,7 @@ pub(super) fn protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
 
 /// Return every check lacking successful evidence after the latest mutation.
 /// Results are correlated by tool-call ID; failed reruns revoke older successes.
-fn pending_commands(
+pub(in crate::tui::agent) fn pending_commands(
     messages: &[Value],
     root_user_text: &str,
     test_cmd: Option<&str>,

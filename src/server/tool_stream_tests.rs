@@ -5,6 +5,54 @@ use httpmock::prelude::*;
 use serde_json::{json, Value};
 
 #[tokio::test]
+async fn exhausted_retry_returns_budget_error_without_another_wire_request() {
+    let provider = MockServer::start();
+    let mock = provider.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(400).body("unsupported tool_choice");
+    });
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let body = serde_json::to_vec(&json!({"messages":[],"model":"mock",
+        "base_url":provider.base_url(),"tools":[{"type":"function","function":{"name":"exec"}}]}))
+    .unwrap();
+    let budget = crate::work_budget::WorkBudget::new("task", 1, None);
+    let proxy = tokio::spawn(crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: budget.clone(),
+            role: "coder",
+        }),
+        async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let state = AppState {
+                client: reqwest::Client::new(),
+                defaults: PartialConfig::default(),
+                pending_edits: crate::pending_edits::PendingEditStore::new(),
+                pending_commands: crate::pending_commands::PendingCommandStore::new(),
+                workspace_root: PathBuf::new(),
+            };
+            api_chat_tools_stream(&mut socket, state, &body)
+                .await
+                .unwrap();
+        },
+    ));
+    let mut client = TcpStream::connect(address).await.unwrap();
+    let mut wire = String::new();
+    tokio::time::timeout(Duration::from_secs(5), client.read_to_string(&mut wire))
+        .await
+        .unwrap()
+        .unwrap();
+    proxy.await.unwrap();
+    assert!(wire.starts_with("HTTP/1.1 409"), "{wire}");
+    assert!(
+        wire.contains("Shared task request budget exhausted"),
+        "{wire}"
+    );
+    assert_eq!(budget.snapshot().requests.len(), 1);
+    mock.assert_hits(1);
+}
+
+#[tokio::test]
 async fn native_and_web_streams_keep_late_signature_on_original_call() {
     let provider = MockServer::start();
     let original = json!({"id":"signed-read", "type":"function",

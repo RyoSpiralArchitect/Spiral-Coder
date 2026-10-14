@@ -89,6 +89,11 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
     let available_tools = suggestion::tool_schemas();
+    let execution = app.coder_session.as_ref().map(|session| {
+        agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
+    });
+    let native_actions = execution.as_ref().map(|e| &e.actions);
+
     Ok(json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
         "target_message_id": format!("coder-{}", target_idx),
@@ -101,7 +106,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "coder_model": app.coder_cfg.model.clone(),
         "observer_model": app.observer_cfg.model.clone(),
         "tool_root": app.tool_root.clone(),
-        "cur_cwd": app.tool_root.clone(),
+        "cur_cwd": app.coder_session.as_ref().and_then(|s| s.cur_cwd.clone()),
         "checkpoint": app.last_git_checkpoint.clone(),
         "system_prompt_digest": system_digest,
         "project_context_digest": app.project_stack_label.clone(),
@@ -112,25 +117,30 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "recovery_stage": app.coder_governor.as_ref().and_then(|state| state.recovery_stage.as_deref()),
         "recent_user_messages": recent_users,
         "recent_assistant_messages": recent_assistant,
-        "recent_tool_calls": Vec::<serde_json::Value>::new(),
+        "recent_tool_calls": native_actions,
+        "execution_evidence": execution,
+        "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
+        "previous_assist_outcome": app.last_observer_contract_outcome,
+        "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining()},
+        "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
         "last_error_digest": meta_first_line(&target_msg.content, 240),
         "loop_signals": {
-            "same_command_repeats": 0,
-            "same_error_repeats": 0,
-            "same_output_repeats": 0,
-            "ui_loop_depth": 0,
+            "same_command_repeats": app.coder_governor.as_ref().map(|g| g.same_command_repeats),
+            "same_error_repeats": app.coder_governor.as_ref().map(|g| g.same_error_repeats),
+            "same_output_repeats": app.coder_governor.as_ref().map(|g| g.same_output_repeats),
+            "ui_loop_depth": serde_json::Value::Null,
         },
-        "approval_signals": Vec::<String>::new(),
+        "approval_signals": {"policy": "tui_auto_approver", "rejections": native_actions.map(|actions| actions.iter().filter(|a| a.executed == Some(false)).collect::<Vec<_>>())},
         "packet_notes": vec![
             "tui meta-diagnose packet built from visible coder history".to_string(),
-            "tui path does not preserve structured tool-call snapshots".to_string(),
+            "native tool calls and correlated results are authoritative; null means unknown".to_string(),
             "intent_anchor and recent tool results are included when available".to_string(),
         ],
     }))
 }
 
-pub(super) fn build_tui_next_action_prompt(
+pub(crate) fn build_tui_next_action_prompt(
     packet: &serde_json::Value,
     lang: &str,
     reason_hint: &str,

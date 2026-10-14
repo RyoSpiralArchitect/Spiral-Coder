@@ -36,6 +36,11 @@ pub(super) fn is_root_read_only_observation_task(root_user_text: &str) -> bool {
     ]
     .iter()
     .any(|term| low.contains(term));
+    // Explicit execution requests must not become inspection-only because a
+    // filename or required final phrase contains an observation word.
+    if !explicit_no_edit && ["run ", "execute "].iter().any(|term| low.contains(term)) {
+        return false;
+    }
     let strong_mutate_terms = [
         "patch",
         "modify",
@@ -968,5 +973,17 @@ mod tests {
                 .as_deref(),
             Some("src/tui/prefs.rs")
         );
+    }
+}
+
+#[cfg(test)]
+mod task_classification_tests {
+    use super::*;
+    #[test]
+    fn explicit_test_execution_is_not_inferred_as_inspection_only() {
+        assert!(!is_root_read_only_observation_task("Read note.txt, run node --test note.test.mjs. Final answer must include inspection complete."));
+        assert!(is_root_read_only_observation_task(
+            "Read only: inspect note.txt. Do not run tests."
+        ));
     }
 }

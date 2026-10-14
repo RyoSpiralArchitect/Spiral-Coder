@@ -2653,7 +2653,7 @@ class LiteHandler(BaseHTTPRequestHandler):
             **{
                 f"/assets/{name}": (name, "text/javascript; charset=utf-8")
                 for name in (
-                    "core/state.js", "core/ui.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
+                    "core/state.js", "core/work-loop.js", "core/ui.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
                     "vendor/react.production.min.js", "vendor/react-dom.production.min.js",
                 )
             },

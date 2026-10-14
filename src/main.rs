@@ -1,5 +1,6 @@
 mod agent_session;
 mod approvals;
+mod artifact_preservation;
 mod chatbot;
 mod config;
 mod eval_merge_gate;
@@ -14,6 +15,7 @@ mod loop_detect;
 mod merge_gate;
 mod modes;
 mod observer;
+mod observer_action;
 mod pending_commands;
 mod pending_edits;
 mod personas;
@@ -32,6 +34,7 @@ mod trace_writer;
 mod tui;
 mod tui_replay;
 mod types;
+mod work_budget;
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -85,6 +88,9 @@ enum Command {
 
     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
     TuiReplay(TuiReplayArgs),
+
+    /// Run one bounded Coder/Observer task through the native TUI execution loop
+    CoupledRun(tui::events::coupled_run::Args),
 
     /// Print an internal manifest / parity / replay inventory for this repo
     Inventory(InventoryArgs),
@@ -605,6 +611,7 @@ async fn main() -> Result<()> {
         Some(Command::Agent(args)) => run_agent(args, cli.common).await,
         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+        Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
         Some(Command::Inventory(args)) => run_inventory(args).await,
         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,

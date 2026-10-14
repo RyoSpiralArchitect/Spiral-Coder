@@ -196,6 +196,14 @@ a {
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  max-height: calc(100dvh - 98px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-self: start;
+}
+
+.workspace-sidebar > .panel {
+  flex-shrink: 0;
 }
 
 .panel {
@@ -1408,6 +1416,8 @@ body.looping .bubble.assistant {
   }
   .workspace-sidebar {
     display: none;
+    max-height: none;
+    overflow: visible;
   }
   .sidebar-open .workspace-sidebar {
     display: flex;

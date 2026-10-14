@@ -12,7 +12,10 @@ store state without first choosing the correct owner.
 |---|---|---|---|---|
 | Provider/runtime config | `src/config.rs` | process / launch | CLI args + env | `PartialConfig`, `RunConfig` |
 | Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
-| Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
+| Session persistence | `src/agent_session.rs` | resumable run | `session.json`, `.spiral-coder/tui-session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
+| Coupled task budget and receipts | `src/work_budget.rs` | same human task, resumable | `.spiral-coder/tui-work.json` / `.spiral-coder/web-budgets/<task-id>.json` | immutable cap/root, wire requests, assist outcomes, preservation baselines |
+| Browser native task | `web/core/work-loop.js` | thread task, reloadable | `spiral-coder.work.v1.<thread>` localStorage | native calls/results, revision, pending advice, request/assist receipts |
+| Pending browser edits | `src/pending_edits.rs` | server process, until resolved | memory only | original/prepared content, preserved task budget, approval preview and correlated native result |
 | Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
 | Provider tool continuation | `src/streaming/provider_metadata.rs` | resumable exchange | optional `tool_calls[].extra_content.google.thought_signature` | opaque Google metadata attached to the original call; not execution evidence |
 | Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
@@ -732,3 +735,7 @@ If the answer is not clear, document it here first.
 provides these capabilities; the Lite server reports them as unavailable.
 The Web UI waits for status before polling optional endpoints and shows an
 explanation for unavailable review panels rather than an HTTP error.
+
+## Coupled task contracts
+
+See [One task through Coder and Observer](coupled-work-loop.md) for ownership, provenance, generations, request caps, approval feedback, and preservation rules. Browser-native work and the server wire ledger are separate: browser counts logical calls; the server also counts compatibility retries. Neither may represent an unknown usage value as zero.

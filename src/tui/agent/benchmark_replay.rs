@@ -42,6 +42,17 @@ pub(super) fn case(id: String, path: &str) -> TuiReplayCase {
     }
 }
 
+/// A format example, never execution evidence or an automatic acceptance.
+pub(crate) fn guidance(root: &str) -> Option<String> {
+    if !root.contains("<observer_benchmark_plan") || !root.contains("lane: tui_replay") {
+        return None;
+    }
+    let path = super::benchmark_plan_required_path_literal(root)?;
+    let id = super::benchmark_plan_case_id_hint(root)?;
+    let example = serde_json::to_string(&case(id, &path)).ok()?;
+    Some(format!("[Replay case format] Append a case to the existing cases array; preserve every old JSON field. Existing observer_response values are fixture data, not advice for this task. A case id is not a target_message_id. The following format example selects a recorded failure and tests its Observer handoff. It is not execution evidence: run both the requested exact checks and the complete replay after editing. New case example (JSON data):\n{example}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,6 +72,17 @@ mod tests {
         std::fs::write(&path, body).unwrap();
         crate::tui_replay::replay_spec_for_test(&path, dir.path(), &dir.path().join("reports"))
             .expect("actual replay parser and runner")
+    }
+
+    #[test]
+    fn synthesis_preserves_unknown_fields_and_nonempty_secondary_evidence() {
+        let mut original: serde_json::Value = serde_json::from_str(include_str!("../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json")).unwrap();
+        original["cases"][0]["extension"] = json!({"must_survive":true});
+        original["cases"][0]["observer_response"]["suggestions"].as_array_mut().unwrap().push(json!({"kind":"clarify","reason":"retain uncertainty","confidence":0.2,"suggested_args":{},"based_on":["failure_kind"]}));
+        let candidate: serde_json::Value =
+            serde_json::from_str(&synthesize(&original.to_string())).unwrap();
+        crate::artifact_preservation::check(&original, &candidate).unwrap();
+        assert_eq!(replay(&candidate.to_string()).summary.passed, 2);
     }
 
     #[test]
