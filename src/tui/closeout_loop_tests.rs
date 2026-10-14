@@ -12,6 +12,7 @@ async fn assert_authored_closeout_retry(report: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
+    app.tool_root = Some(root.path().display().to_string());
     let suite: serde_json::Value =
         serde_json::from_str(include_str!("../../tests/fixtures/coupled-loop-v1.json")).unwrap();
     let goal = suite["cases"][1]["prompt"].as_str().unwrap();

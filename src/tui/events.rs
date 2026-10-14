@@ -2871,6 +2871,7 @@ mod tests {
     include!("observer_repair_tests.rs");
     include!("coupled_loop_tests.rs");
     include!("closeout_loop_tests.rs");
+    include!("refusal_continuation_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())

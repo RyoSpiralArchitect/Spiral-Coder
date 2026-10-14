@@ -85,6 +85,9 @@ impl FailureMemory {
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_string();
+                if !crate::execution_evidence::exec_may_have_run(&content) {
+                    continue;
+                }
                 let (exit_code, stdout, stderr) = parse_exec_tool_output_sections(&content);
                 let Some(mut effective_exit_code) = exit_code else {
                     continue;

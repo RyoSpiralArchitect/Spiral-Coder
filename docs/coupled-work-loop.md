@@ -31,6 +31,12 @@ task contract, scanning past rejected invalid revisions to the last valid plan.
 Pruning preserves the latest snapshot; new human steering starts
 a new plan boundary. This metadata is removed from provider wire messages.
 
+Recovery restoration skips commands that were blocked or rejected before
+execution. A progress-policy refusal must not invent a new workspace diagnosis
+after an Observer handoff. Earlier actual command or automatic-test failures
+remain visible through those refusals; separate plan, approval, evidence and
+verification gates still apply. Refusal text never supplies successful proof.
+
 `task_scope.rs` reads explicit `target_files` from a complete approved benchmark
 plan. Those paths override the heuristic first-mentioned path in the intent
 anchor and Coder's artifact routing. Paths in the objective remain referenced
