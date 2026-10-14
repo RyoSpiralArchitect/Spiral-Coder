@@ -2,6 +2,13 @@
 
 Coder and Observer are roles in one task. An accepted suggestion is not a completed task. The unit of qualification is the original request, its preserved artifacts, current verification, authored final report, and the total request cap.
 
+When the original task explicitly requires a final report, an empty or text-only
+provider turn cannot complete it through automatic stop checks. The runtime
+retains native proof and requests an authored `done` summary without rerunning
+passed checks for reporting. The retry consumes the existing shared budget; if
+the report never arrives, the task remains incomplete. Runtime goal-check success
+also has no authority to replace that report requirement.
+
 ## State and continuation
 
 `AgentSession` owns the native tool exchanges. `tui/events/coder_session.rs` builds a continuation from that session and marks automatic feedback as `origin=runtime`. Rendered pane history is not replayed as execution evidence. New human steering establishes a new task boundary; old completion cannot satisfy it. Managed system context is replaced on each UI request. Local `origin` and `ui_context` fields are removed before provider requests. Google continuation metadata remains attached to its original tool call.

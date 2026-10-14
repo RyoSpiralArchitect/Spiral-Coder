@@ -11298,6 +11298,32 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                 }
             }
 
+            // An empty/text-only turn cannot trade the original report contract
+            // for an automatic stop check. Keep current proof and request the
+            // native closeout, within the same shared request budget.
+            if let Some(hint) = authored_final_answer_hint(&root_user_text) {
+                let hint = format!("[Closeout retry] No final tool call was received. Complete any pending work and exact checks, then author the required report.\n{hint}");
+                messages.push(crate::task_origin::user_message(
+                    &hint,
+                    crate::task_origin::MessageOrigin::Runtime,
+                ));
+                pending_system_hint = Some(hint);
+                state = AgentState::Planning;
+                let _ = tx.send(StreamToken::Delta(
+                    "\n[agent] Required final report is still pending; requesting native closeout.\n".into(),
+                )).await;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
+            }
+
             if should_auto_run_goal_checks(command_approval_required, max_iters) {
                 if let Some(goal_root) = cur_cwd.as_deref().or(tool_root_abs.as_deref()) {
                     let mut ran_goal_checks = false;
@@ -11582,11 +11608,14 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         continue;
                     }
                     if ran_goal_checks {
-                        task_outcome.verified_goal_checks(&[
-                            (wants_repo_goal, goal_checks.repo.ok),
-                            (wants_test_goal, goal_checks.tests.ok),
-                            (wants_build_goal, goal_checks.build.ok),
-                        ]);
+                        task_outcome.verified_goal_checks(
+                            &root_user_text,
+                            &[
+                                (wants_repo_goal, goal_checks.repo.ok),
+                                (wants_test_goal, goal_checks.tests.ok),
+                                (wants_build_goal, goal_checks.build.ok),
+                            ],
+                        );
                         state = AgentState::Done;
                         let _ = tx
                             .send(StreamToken::Delta(format!(
