@@ -42,14 +42,19 @@ use crate::streaming::{
 use crate::types::ChatMessage;
 use std::path::Path;
 
+mod acceptance_report;
 mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
+pub(crate) mod current_evidence;
 mod done_gate;
 mod edit_failure;
 mod evaluator_loop;
+pub(crate) mod evidence_packet;
 mod exact_content;
 pub(crate) mod exec_classification;
+#[cfg(test)]
+mod exec_location_tests;
 mod exec_proof;
 mod exec_verification;
 mod failure_diagnostics;
@@ -63,6 +68,7 @@ mod memory;
 mod message_window;
 mod meta_harness;
 mod outcome;
+mod plan_resume;
 mod progress_bridge;
 mod protocol_fields;
 mod protocol_lists;
@@ -88,6 +94,7 @@ mod repo_scaffold;
 mod resume_contract_tests;
 mod session_bridge;
 mod task_harness;
+pub(crate) mod task_obligations;
 mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
@@ -98,8 +105,8 @@ use self::done_gate::{
     build_read_only_iteration_cap_final_answer, build_read_only_strong_final_answer,
     canonicalize_known_acceptance_commands, latest_assistant_message_is_done,
     maybe_build_read_only_auto_final_answer, maybe_build_verified_action_auto_final_answer,
-    rescue_invalid_done_payload_for_verified_action, should_prefer_done_after_verified_action,
-    synthesize_action_done_summary, validate_done_acceptance,
+    should_prefer_done_after_verified_action, synthesize_action_done_summary,
+    validate_done_acceptance,
 };
 use self::edit_failure::EditFailureMemory;
 use self::evaluator_loop::EvaluatorLoop;
@@ -2518,7 +2525,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
             "try {",
             raw,
             "} finally {",
-            &format!("Write-Output (\"{}\" + (Get-Location).Path)", PWD_MARKER),
+            &format!("Write-Output (\"`n{}\" + (Get-Location).Path)", PWD_MARKER),
             "}",
         ]
         .join("\n");
@@ -2526,7 +2533,7 @@ fn wrap_exec_with_pwd(cmd: &str) -> String {
 
     // POSIX: keep behavior simple while preserving the wrapped command's exit status.
     format!(
-        "{{\n{raw}\n__spiral_coder_status=$?\necho \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
+        "{{\n{raw}\n__spiral_coder_status=$?\nprintf '\\n%s\\n' \"{PWD_MARKER}$(pwd)\"\nif [ \"$__spiral_coder_status\" -ne 0 ]; then\n  sh -c \"exit $__spiral_coder_status\"\nelse\n  true\nfi\n}}"
     )
 }
 
@@ -2760,7 +2767,7 @@ impl StrategyChange {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct PlanBlock {
     goal: String,
     steps: Vec<String>,
@@ -3237,7 +3244,9 @@ impl AssumptionLedger {
         for msg in messages {
             if msg.get("role").and_then(|v| v.as_str()) == Some("assistant") {
                 let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if let Some(plan) = parse_plan_block(content).filter(|p| validate_plan(p).is_ok()) {
+                if let Some(plan) =
+                    plan_resume::from_message(msg).filter(|p| validate_plan(p).is_ok())
+                {
                     ledger.sync_to_plan(&plan);
                 }
                 if let Some(reflect) = parse_reflection_block(content) {
@@ -4399,7 +4408,7 @@ fn parse_done_acceptance_evidence(value: &serde_json::Value) -> Vec<DoneAcceptan
             let command = map
                 .get("command")
                 .and_then(|v| v.as_str())
-                .map(|v| compact_one_line(v.trim(), 200))
+                .map(|v| v.trim().to_owned())
                 .filter(|v| !v.is_empty())?;
             Some(DoneAcceptanceEvidence { criterion, command })
         })
@@ -5513,19 +5522,6 @@ fn parse_reflection_block(text: &str) -> Option<ReflectionBlock> {
     })
 }
 
-fn last_plan_from_messages(messages: &[serde_json::Value]) -> Option<PlanBlock> {
-    for msg in messages.iter().rev() {
-        if msg.get("role").and_then(|r| r.as_str()) != Some("assistant") {
-            continue;
-        }
-        let content = msg.get("content").and_then(|c| c.as_str()).unwrap_or("");
-        if let Some(plan) = parse_plan_block(content) {
-            return Some(plan);
-        }
-    }
-    None
-}
-
 fn last_think_from_messages(messages: &[serde_json::Value]) -> Option<ThinkBlock> {
     for msg in messages.iter().rev() {
         if msg.get("role").and_then(|r| r.as_str()) != Some("assistant") {
@@ -6131,10 +6127,6 @@ fn should_auto_run_goal_checks(command_approval_required: bool, max_iters: usize
 
 fn command_sig(command: &str) -> String {
     command_sig_with_limit(command, 160)
-}
-
-fn command_sig_full(command: &str) -> String {
-    command_sig_with_limit(command, 4096)
 }
 
 fn command_sig_with_limit(command: &str, max_len: usize) -> String {
@@ -7299,6 +7291,7 @@ async fn run_goal_check_command(
 
 /// Run the agentic loop.  Sends StreamToken events to `tx` for the TUI to display.
 /// The caller builds the initial messages (system + history + user).
+#[allow(dead_code)]
 pub async fn run_agentic(
     messages_in: Vec<ChatMessage>,
     cfg: &RunConfig,
@@ -7441,6 +7434,11 @@ Fix: use --provider openai-compatible (or --provider mistral).",
 
     // Keep messages as serde_json::Value throughout to preserve tool_call_id.
     let mut messages: Vec<serde_json::Value> = start.messages;
+    if let Some(guidance) = task_harness::benchmark_replay::guidance(&root_user_text) {
+        if !has_system_prefix(&messages, "[Replay case format]") {
+            messages.push(json!({"role":"system","content":guidance,"ui_context":true}));
+        }
+    }
     if root_read_only && !has_system_prefix(&messages, "[Read-Only Task Contract]") {
         let pos = messages.len().min(4);
         messages.insert(
@@ -7448,7 +7446,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             json!({"role":"system","content": read_only_task_addon()}),
         );
     }
-    let mut active_plan = last_plan_from_messages(&messages).filter(|plan| {
+    let mut active_plan = plan_resume::latest_valid(&messages, |plan| {
         validate_plan_for_task_contract(plan, root_read_only, &task_contract, &instruction_resolver)
             .is_ok()
     });
@@ -7845,10 +7843,32 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             ));
         }
 
+        let remaining_calls = crate::work_budget::current()
+            .map(|c| c.budget.remaining())
+            .unwrap_or(max_iters - iter)
+            .min(max_iters - iter);
+        let pending_checks = task_harness::benchmark_proof::pending_commands(
+            crate::task_origin::current_task_messages(&messages),
+            &root_user_text,
+            test_cmd.as_deref(),
+        );
+        let closing = remaining_calls <= pending_checks.len().saturating_add(3);
+        if closing {
+            let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
+            match pending_system_hint.as_mut() {
+                Some(existing) => {
+                    existing.push_str("\n\n");
+                    existing.push_str(&hint);
+                }
+                None => pending_system_hint = Some(hint),
+            }
+        }
+
         // ── Progress checkpoint every 3 iterations ────────────────────────
         // Require a reflection so the model re-evaluates goal distance and next action.
         // Only fires when no higher-priority hint/reflection is already pending.
         if iter > 0
+            && !closing
             && iter % 3 == 0
             && pending_system_hint.is_none()
             && reflection_required.is_none()
@@ -7991,6 +8011,9 @@ This is the LAST model call for this run.\n\
         // ── Stream from model ──────────────────────────────────────────────
         // Inject a one-shot governor hint if we detected a repeated failure pattern.
         let mut msgs_for_call = messages.clone();
+        if let Some(hint) = task_obligations::prompt(&messages, test_cmd.as_deref()) {
+            msgs_for_call.push(json!({"role":"system", "content":hint}));
+        }
         if let Some(h) = pending_system_hint.take() {
             let note = format!(
                 "[Loop Governor]\nstate: {:?}\nrecovery_stage: {}\n{}\n\nYou MUST incorporate this hint in your next tool call.\nDo not repeat the same failing command.",
@@ -8367,7 +8390,8 @@ This is the LAST model call for this run.\n\
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
 
-        let stream_task = tokio::spawn(async move {
+        let request_context = crate::work_budget::current();
+        let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
             stream_openai_compat_json(
                 &client_clone,
                 &cfg_clone,
@@ -8376,7 +8400,8 @@ This is the LAST model call for this run.\n\
                 token_tx,
             )
             .await
-        });
+        }));
+        let _cancel_stream = crate::streaming::request_guard::AbortOnDrop::new(&stream_task);
 
         let mut assistant_text = String::new();
         let mut tool_calls: Vec<ToolCallData> = Vec::new();
@@ -10461,7 +10486,8 @@ Execute only the new minimal action: {}",
             messages.push(json!({
                 "role": "assistant",
                 "content": assistant_text_clean,
-                "tool_calls": [tc.to_json()]
+                "tool_calls": [tc.to_json()],
+                "accepted_plan": validated_plan_for_turn
             }));
         } else {
             if let Some(hint) = recovery.focus.hint() {
@@ -11270,6 +11296,32 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                 }
             }
 
+            // An empty/text-only turn cannot trade the original report contract
+            // for an automatic stop check. Keep current proof and request the
+            // native closeout, within the same shared request budget.
+            if let Some(hint) = authored_final_answer_hint(&root_user_text) {
+                let hint = format!("[Closeout retry] No final tool call was received. Complete any pending work and exact checks, then author the required report.\n{hint}");
+                messages.push(crate::task_origin::user_message(
+                    &hint,
+                    crate::task_origin::MessageOrigin::Runtime,
+                ));
+                pending_system_hint = Some(hint);
+                state = AgentState::Planning;
+                let _ = tx.send(StreamToken::Delta(
+                    "\n[agent] Required final report is still pending; requesting native closeout.\n".into(),
+                )).await;
+                autosave_best_effort(
+                    &autosaver,
+                    &tx,
+                    tool_root_abs.as_deref(),
+                    checkpoint.as_deref(),
+                    cur_cwd.as_deref(),
+                    &messages,
+                )
+                .await;
+                continue;
+            }
+
             if should_auto_run_goal_checks(command_approval_required, max_iters) {
                 if let Some(goal_root) = cur_cwd.as_deref().or(tool_root_abs.as_deref()) {
                     let mut ran_goal_checks = false;
@@ -11554,11 +11606,14 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                         continue;
                     }
                     if ran_goal_checks {
-                        task_outcome.verified_goal_checks(&[
-                            (wants_repo_goal, goal_checks.repo.ok),
-                            (wants_test_goal, goal_checks.tests.ok),
-                            (wants_build_goal, goal_checks.build.ok),
-                        ]);
+                        task_outcome.verified_goal_checks(
+                            &root_user_text,
+                            &[
+                                (wants_repo_goal, goal_checks.repo.ok),
+                                (wants_test_goal, goal_checks.tests.ok),
+                                (wants_build_goal, goal_checks.build.ok),
+                            ],
+                        );
                         state = AgentState::Done;
                         let _ = tx
                             .send(StreamToken::Delta(format!(
@@ -12352,16 +12407,13 @@ Required now: run `{command}`.\n{verification_status}"
 
             let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
             let summary = args["summary"].as_str().unwrap_or("").trim();
-            let mut completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
-            let mut remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
-            let mut acceptance_evidence =
-                parse_done_acceptance_evidence(&args["acceptance_evidence"]);
+            let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
+            let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
+            let acceptance_evidence = parse_done_acceptance_evidence(&args["acceptance_evidence"]);
             let next_steps = args["next_steps"].as_str().unwrap_or("").trim();
             let done_plan = validated_plan_for_turn.as_ref().or(active_plan.as_ref());
-            let known_acceptance_commands = canonicalize_known_acceptance_commands(
-                &collect_known_acceptance_commands(&messages, &working_mem, test_cmd.as_deref()),
-                &observation_evidence,
-            );
+            let known_acceptance_commands =
+                acceptance_report::current_commands(&messages, test_cmd.as_deref());
             let read_only_scores = if root_read_only {
                 done_plan
                     .map(|plan| {
@@ -12386,148 +12438,61 @@ Required now: run `{command}`.\n{verification_status}"
             ) {
                 Ok(rows) => rows,
                 Err(e) => {
-                    let rescued_rows =
-                        if let Some((rescued_completed, rescued_remaining, rescued_evidence)) =
-                            rescue_invalid_done_payload_for_verified_action(
-                                done_plan,
-                                &known_acceptance_commands,
-                                &observation_evidence,
-                                required_verification,
-                                test_cmd.as_deref(),
-                                last_mutation_step,
-                                last_verify_ok_step,
-                            )
-                        {
-                            if let Ok(rows) = validate_done_acceptance(
-                                done_plan,
-                                &rescued_completed,
-                                &rescued_remaining,
-                                &rescued_evidence,
-                                &known_acceptance_commands,
-                                &observation_evidence,
-                            ) {
-                                completed_acceptance = rescued_completed;
-                                remaining_acceptance = rescued_remaining;
-                                acceptance_evidence = rescued_evidence;
-                                Some(rows)
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        };
-                    if let Some(rows) = rescued_rows {
-                        let _ = tx
-                            .send(StreamToken::Delta(
-                                "\n[compat] repaired done acceptance payload from current plan and known commands\n"
-                                    .to_string(),
-                            ))
-                            .await;
-                        rows
+                    state = AgentState::Recovery;
+                    recovery.stage = Some(if root_read_only {
+                        RecoveryStage::Diagnose
                     } else {
-                        if root_read_only {
-                            if let Some(plan) = done_plan {
-                                if let Some(final_text) = build_read_only_strong_final_answer(
-                                    &root_user_text,
-                                    plan,
-                                    &observation_evidence,
-                                    &messages,
-                                    &working_mem,
-                                ) {
-                                    task_outcome.finalized(&final_text);
-                                    state = AgentState::Done;
-                                    messages.push(json!({
-                                        "role": "tool",
-                                        "tool_call_id": tc.id,
-                                        "content": "OK: done"
-                                    }));
-                                    messages.push(
-                                        json!({"role": "assistant", "content": final_text.clone()}),
-                                    );
-                                    autosave_best_effort(
-                                        &autosaver,
-                                        &tx,
-                                        tool_root_abs.as_deref(),
-                                        checkpoint.as_deref(),
-                                        cur_cwd.as_deref(),
-                                        &messages,
-                                    )
-                                    .await;
-                                    let _ = tx
-                                        .send(StreamToken::GovernorState(build_governor_state(
-                                            state,
-                                            &recovery,
-                                            &mem,
-                                            file_tool_consec_failures,
-                                            last_mutation_step,
-                                            last_verify_ok_step,
-                                            last_reflection.as_ref(),
-                                        )))
-                                        .await;
-                                    let _ = tx
-                                        .send(StreamToken::Delta(format!(
-                                            "\n[agent] strong read-only evidence rescued invalid done gate; auto-finalized instead.\n\n{final_text}\n"
-                                        )))
-                                        .await;
-                                    break;
-                                }
-                            }
-                        }
-                        state = AgentState::Recovery;
-                        recovery.stage = Some(if root_read_only {
-                            RecoveryStage::Diagnose
-                        } else {
-                            RecoveryStage::Verify
-                        });
-                        let hint = build_done_acceptance_recovery_hint(
-                            &e.to_string(),
-                            &known_acceptance_commands,
-                            &read_only_scores,
-                        );
-                        let block = format!(
-                            "{}{}",
-                            governor_contract::done_invalid_acceptance_message(&e.to_string()),
-                            hint
-                        );
+                        RecoveryStage::Verify
+                    });
+                    let hint = build_done_acceptance_recovery_hint(
+                        &e.to_string(),
+                        &known_acceptance_commands,
+                        &read_only_scores,
+                    );
+                    let block = format!(
+                        "{}{}{}",
+                        governor_contract::done_invalid_acceptance_message(&e.to_string()),
+                        hint,
+                        acceptance_report::hint(done_plan, &known_acceptance_commands)
+                    );
 
-                        let _ = tx
-                            .send(StreamToken::Delta(format!(
-                                "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                            )))
-                            .await;
-
-                        messages.push(json!({
-                            "role": "tool",
-                            "tool_call_id": tc.id,
-                            "content": format!(
-                                "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                                tc.name, tc.arguments
-                            ),
-                        }));
-                        autosave_best_effort(
-                            &autosaver,
-                            &tx,
-                            tool_root_abs.as_deref(),
-                            checkpoint.as_deref(),
-                            cur_cwd.as_deref(),
-                            &messages,
-                        )
+                    let _ = tx
+                        .send(StreamToken::Delta(format!(
+                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                        )))
                         .await;
 
-                        pending_system_hint = Some(block);
-                        let _ = tx
-                            .send(StreamToken::GovernorState(build_governor_state(
-                                state,
-                                &recovery,
-                                &mem,
-                                file_tool_consec_failures,
-                                last_mutation_step,
-                                last_verify_ok_step,
-                                last_reflection.as_ref(),
-                            )))
-                            .await;
-                        continue;
-                    }
+                    messages.push(json!({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": format!(
+                            "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
+                            tc.name, tc.arguments
+                        ),
+                    }));
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+
+                    pending_system_hint = Some(block);
+                    let _ = tx
+                        .send(StreamToken::GovernorState(build_governor_state(
+                            state,
+                            &recovery,
+                            &mem,
+                            file_tool_consec_failures,
+                            last_mutation_step,
+                            last_verify_ok_step,
+                            last_reflection.as_ref(),
+                        )))
+                        .await;
+                    continue;
                 }
             };
 

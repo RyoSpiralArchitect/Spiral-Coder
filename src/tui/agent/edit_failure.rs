@@ -64,6 +64,7 @@ pub(super) struct EditFailureMemory {
     failures: usize,
     last_attempt: Option<(String, Value)>,
     repeated_attempts: usize,
+    read_since_failure: bool,
 }
 
 impl EditFailureMemory {
@@ -128,6 +129,14 @@ impl EditFailureMemory {
             *self = Self::default();
             return;
         }
+        if name == "read_file"
+            && self.needs_target_read(name, arguments)
+            && output.lines().next().is_some_and(|line| {
+                line.starts_with('[') && line.contains(" lines, ") && line.contains(" bytes)")
+            })
+        {
+            self.read_since_failure = true;
+        }
         if !matches!(name, "patch_file" | "apply_diff" | "write_file") {
             return;
         }
@@ -138,6 +147,7 @@ impl EditFailureMemory {
             return;
         }
         self.failures = self.failures.saturating_add(1);
+        self.read_since_failure = false;
         let args = serde_json::from_str(arguments)
             .unwrap_or_else(|_| Value::String(arguments.to_string()));
         let attempt = (name.to_string(), args);
@@ -151,6 +161,54 @@ impl EditFailureMemory {
 
     pub(super) fn count(&self) -> usize {
         self.failures
+    }
+
+    pub(super) fn target_was_read(&self) -> bool {
+        self.read_since_failure
+    }
+
+    /// One successful target read after each failed edit is diagnosis, including
+    /// JSON/config/docs outside src/. Unrelated diagnostics do not consume it.
+    pub(super) fn needs_target_read(&self, name: &str, arguments: &str) -> bool {
+        if name != "read_file" || self.read_since_failure {
+            return false;
+        }
+        let Some((_, failed)) = self.last_attempt.as_ref() else {
+            return false;
+        };
+        let attempted: Value = serde_json::from_str(arguments).unwrap_or_default();
+        match (failed["path"].as_str(), attempted["path"].as_str()) {
+            (Some(failed), Some(attempted)) if !failed.is_empty() => {
+                let components = |path: &str| {
+                    std::path::Path::new(path)
+                        .components()
+                        .filter(|c| *c != std::path::Component::CurDir)
+                        .map(|c| c.as_os_str().to_os_string())
+                        .collect::<Vec<_>>()
+                };
+                components(failed) == components(attempted)
+            }
+            // Legacy sessions can retain truncated tool JSON. Preserve their
+            // existing source-read fallback, bounded by one actual read.
+            (None, Some(attempted)) if failed.is_string() => {
+                attempted.starts_with("src/") && attempted.ends_with(".rs")
+            }
+            _ => false,
+        }
+    }
+
+    pub(super) fn diagnostic_hint(&self) -> Option<String> {
+        let (_, args) = self.last_attempt.as_ref()?;
+        let path = args.get("path")?.as_str()?;
+        let next = if self.read_since_failure {
+            "The target has been read since the failed edit. Repair using that exact content."
+        } else {
+            "Read this exact target before repairing it; pwd/listing/search cannot inspect the failed edit."
+        };
+        Some(format!(
+            "[Pending edit failure] Target path (quoted data): {}. {next} Preserve unrelated content, then run the required checks. A read alone does not resolve the failure.",
+            serde_json::to_string(path).expect("path serializes")
+        ))
     }
 
     pub(super) fn reflection_reason(&self) -> Option<String> {

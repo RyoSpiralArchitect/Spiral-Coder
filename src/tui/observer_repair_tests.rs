@@ -28,6 +28,26 @@ fn observer_repair_keeps_invalid_source_and_never_infers_a_tool() {
 }
 
 #[test]
+fn observer_repair_preserves_the_specific_serde_diagnostic_in_tui_and_browser() {
+    let mut invalid = serde_json::from_str::<serde_json::Value>(&suggestion_response("edit", "patch_file", json!({"path":"artifact.json","search":"old","replace":"new"}))).unwrap();
+    invalid["suggestions"][0]["kind"] = json!("patch_file");
+    let raw = invalid.to_string();
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let outcome = replay_observer_next_action_case(&mut app, "last-fail", "bad_kind", &raw).unwrap();
+    let prompt = outcome.observer_repair_prompt.unwrap();
+    assert!(prompt.contains("unknown variant `patch_file`"), "{prompt}");
+    assert!(prompt.contains("`edit`"));
+    assert!(outcome.pending_observer_hint.is_none());
+    let browser = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet: json!({}), messages: vec![], test_command: None, lang:"en".into(), reason:"bad_kind".into(), response:Some(raw), final_summary:None, repair_native:false,
+    });
+    assert!(browser.issue.unwrap().contains("unknown variant `patch_file`"));
+    assert!(browser.repair_prompt.unwrap().contains("unknown variant `patch_file`"));
+    assert!(browser.hint.is_none());
+}
+
+#[test]
 fn observer_repair_does_not_inflate_uncertainty_or_repair_valid_no_tool_advice() {
     for (kind, confidence) in [("verify", 0.3), ("clarify", 0.95)] {
         let (mut app, _root) = interaction_app();
@@ -50,12 +70,12 @@ async fn observer_repair_round_trip_is_bounded_and_uses_the_real_transport_and_c
     fn is_repair(request: &HttpMockRequest) -> bool {
         String::from_utf8_lossy(request.body.as_deref().unwrap_or_default()).contains("[Observer action repair:")
     }
-    async fn finish_response(app: &mut App, rx: &mut mpsc::Receiver<StreamToken>) {
+    async fn finish_response(app: &mut App, rx: &mut mpsc::Receiver<RequestEvent>) {
         tokio::time::timeout(std::time::Duration::from_secs(10), async {
             loop {
                 let token = rx.recv().await.expect("response token");
-                let finished = matches!(token, StreamToken::Done | StreamToken::Error(_));
-                handle_observer_token(token, app);
+                let finished = matches!(&token.payload, request_stream::Payload::Token(StreamToken::Done | StreamToken::Error(_)));
+                request_stream::dispatch(token, app, PaneId::Observer);
                 if finished { break; }
             }
         }).await.expect("bounded local response");

@@ -7,7 +7,9 @@ use tokio::sync::mpsc;
 use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
+mod accounting;
 pub(crate) mod provider_metadata;
+pub(crate) mod request_guard;
 pub(crate) mod tool_calls;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -372,6 +374,7 @@ pub async fn stream_openai_compat_json(
     let mut want_completions = false;
 
     let mut resp: Option<reqwest::Response> = None;
+    let mut request_meter: Option<accounting::RequestMeter> = None;
 
     let max_connect_retries = max_connect_retries(&cfg.provider);
 
@@ -395,6 +398,8 @@ pub async fn stream_openai_compat_json(
                 req = req.bearer_auth(key);
             }
 
+            drop(request_meter.take());
+            request_meter = Some(accounting::RequestMeter::begin(&payload_try, &tx).await?);
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
@@ -413,6 +418,9 @@ pub async fn stream_openai_compat_json(
             };
 
             let status = r.status();
+            if let Some(meter) = request_meter.as_mut() {
+                meter.status(&format!("http_{}", status.as_u16()));
+            }
             if status.is_success() {
                 resp = Some(r);
                 break;
@@ -506,6 +514,8 @@ pub async fn stream_openai_compat_json(
                 req = req.bearer_auth(key);
             }
 
+            drop(request_meter.take());
+            request_meter = Some(accounting::RequestMeter::begin(&comp_payload, &tx).await?);
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
@@ -521,6 +531,9 @@ pub async fn stream_openai_compat_json(
             };
 
             let status = r.status();
+            if let Some(meter) = request_meter.as_mut() {
+                meter.status(&format!("http_{}", status.as_u16()));
+            }
             if status.is_success() {
                 break r;
             }
@@ -584,6 +597,10 @@ pub async fn stream_openai_compat_json(
                 for call in tool_calls.drain() {
                     let _ = tx.send(StreamToken::ToolCall(call)).await;
                 }
+                if let Some(meter) = request_meter.as_mut() {
+                    meter.status("completed");
+                }
+                drop(request_meter.take());
                 let _ = tx.send(StreamToken::Done).await;
                 return Ok(());
             }
@@ -593,6 +610,11 @@ pub async fn stream_openai_compat_json(
                 Err(_) => continue,
             };
 
+            if let Some(usage) = v.get("usage") {
+                if let Some(meter) = request_meter.as_mut() {
+                    meter.usage(usage);
+                }
+            }
             if let Some(err) = v.get("error") {
                 let _ = tx.send(StreamToken::Error(err.to_string())).await;
                 return Err(anyhow!("provider error: {err}"));
@@ -627,12 +649,14 @@ pub async fn stream_openai_compat_json(
                 for call in tool_calls.drain() {
                     let _ = tx.send(StreamToken::ToolCall(call)).await;
                 }
-                let _ = tx.send(StreamToken::Done).await;
-                return Ok(());
             }
         }
     }
 
+    if let Some(meter) = request_meter.as_mut() {
+        meter.status("completed");
+    }
+    drop(request_meter.take());
     let _ = tx.send(StreamToken::Done).await;
     Ok(())
 }
@@ -674,7 +698,10 @@ pub async fn stream_anthropic(
 
     let max_connect_retries = max_connect_retries(&cfg.provider);
     let mut attempt: usize = 0;
+    let mut request_meter: Option<accounting::RequestMeter> = None;
     let resp = loop {
+        drop(request_meter.take());
+        request_meter = Some(accounting::RequestMeter::begin(&payload, &tx).await?);
         let r = client
             .post(&url)
             .header("x-api-key", api_key)
@@ -776,7 +803,16 @@ pub async fn stream_anthropic(
                 }
             }
 
+            if let Some(usage) = v.get("usage") {
+                if let Some(meter) = request_meter.as_mut() {
+                    meter.usage(usage);
+                }
+            }
             if ty == "message_stop" {
+                if let Some(meter) = request_meter.as_mut() {
+                    meter.status("completed");
+                }
+                drop(request_meter.take());
                 let _ = tx.send(StreamToken::Done).await;
                 return Ok(());
             }

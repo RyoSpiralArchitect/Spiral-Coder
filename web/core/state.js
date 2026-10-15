@@ -1,6 +1,18 @@
 (() => {
   "use strict";
 
+  // Preserve the existing display/config fingerprint algorithm. This is not a
+  // content-integrity or authorization hash. Both Coder and meta diagnosis use it.
+  function fnv1a64(value) {
+    let hash = 0xcbf29ce484222325n;
+    const str = String(value || "");
+    for (let i = 0; i < str.length; i++) {
+      hash ^= BigInt(str.charCodeAt(i) & 0xff);
+      hash = (hash * 0x100000001b3n) & 0xffffffffffffffffn;
+    }
+    return hash;
+  }
+
   // Copy on first read. Existing Spiral-Coder values always win, including empty
   // values. Keep the legacy key so a downgrade cannot discard browser state.
   function readStoredValue(storage, key) {
@@ -67,6 +79,6 @@
 
   window.SpiralCoderState = {
     readStoredValue, rootUserTextForRun, serverSupportsFeature,
-    configWithoutSecrets, credentialRoute, paneApiKey,
+    configWithoutSecrets, credentialRoute, paneApiKey, fnv1a64,
   };
 })();

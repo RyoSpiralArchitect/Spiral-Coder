@@ -275,3 +275,7 @@ results are Mistral 5/6, GPT-4.1 mini 5/6, and Gemini Flash-Lite 3/6. Mistral
 completes replay with a different edit tool but still fails the required
 `patch_file` check. Gemini's benchmark resume passes after eliminating unsigned
 synthetic calls; remaining task failures keep the branch unqualified.
+
+## Coupled Coder/Observer task
+
+The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.

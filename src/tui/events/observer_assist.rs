@@ -89,6 +89,11 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
     let available_tools = suggestion::tool_schemas();
+    let execution = app.coder_session.as_ref().map(|session| {
+        agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
+    });
+    let native_actions = execution.as_ref().map(|e| &e.actions);
+
     Ok(json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
         "target_message_id": format!("coder-{}", target_idx),
@@ -101,7 +106,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "coder_model": app.coder_cfg.model.clone(),
         "observer_model": app.observer_cfg.model.clone(),
         "tool_root": app.tool_root.clone(),
-        "cur_cwd": app.tool_root.clone(),
+        "cur_cwd": app.coder_session.as_ref().and_then(|s| s.cur_cwd.clone()),
         "checkpoint": app.last_git_checkpoint.clone(),
         "system_prompt_digest": system_digest,
         "project_context_digest": app.project_stack_label.clone(),
@@ -112,25 +117,31 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "recovery_stage": app.coder_governor.as_ref().and_then(|state| state.recovery_stage.as_deref()),
         "recent_user_messages": recent_users,
         "recent_assistant_messages": recent_assistant,
-        "recent_tool_calls": Vec::<serde_json::Value>::new(),
+        "recent_tool_calls": native_actions,
+        "execution_evidence": execution,
+        "task_obligations": app.coder_session.as_ref().map(|s| agent::task_obligations::project(&s.messages, app.project_test_cmd.as_deref())),
+        "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
+        "previous_assist_outcome": app.last_observer_contract_outcome,
+        "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining()},
+        "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
         "last_error_digest": meta_first_line(&target_msg.content, 240),
         "loop_signals": {
-            "same_command_repeats": 0,
-            "same_error_repeats": 0,
-            "same_output_repeats": 0,
-            "ui_loop_depth": 0,
+            "same_command_repeats": app.coder_governor.as_ref().map(|g| g.same_command_repeats),
+            "same_error_repeats": app.coder_governor.as_ref().map(|g| g.same_error_repeats),
+            "same_output_repeats": app.coder_governor.as_ref().map(|g| g.same_output_repeats),
+            "ui_loop_depth": serde_json::Value::Null,
         },
-        "approval_signals": Vec::<String>::new(),
+        "approval_signals": {"policy": "tui_auto_approver", "rejections": execution.as_ref().map(|e| e.approval_rejections())},
         "packet_notes": vec![
             "tui meta-diagnose packet built from visible coder history".to_string(),
-            "tui path does not preserve structured tool-call snapshots".to_string(),
+            "native tool calls and correlated results are authoritative; null means unknown".to_string(),
             "intent_anchor and recent tool results are included when available".to_string(),
         ],
     }))
 }
 
-pub(super) fn build_tui_next_action_prompt(
+pub(crate) fn build_tui_next_action_prompt(
     packet: &serde_json::Value,
     lang: &str,
     reason_hint: &str,
@@ -142,30 +153,32 @@ pub(super) fn build_tui_next_action_prompt(
     };
     let reason = reason_hint.trim();
     let schema = json!({
-        "summary": format!("{lang_name} summary of the blocker"),
-        "primary_blocker": "missing_concrete_next_step",
-        "scores": {
-            "correctness": 0.82,
-            "security": 0.61,
-            "efficiency": 0.77,
-            "readability": 0.80
-        },
-        "response_contract": {
-            "required": true,
-            "focus_axes": ["security"],
-            "note": format!("{lang_name} note about when to accept, override, or defer")
-        },
-        "suggestions": [{
-            "kind": "read",
-            "reason": format!("{lang_name} reason"),
-            "confidence": 0.84,
-            "suggested_tool": "read_file",
-            "suggested_args": { "path": "<exact path from packet>" },
-            "based_on": ["intent_anchor", "recent_tool_results"]
-        }],
-        "quickest_check": "<same concrete action as the primary suggestion>",
-        "why_this_first": format!("{lang_name} why this is the smallest next step"),
-        "fallback": format!("{lang_name} fallback if the first action fails")
+        "type": "object",
+        "required": ["summary", "suggestions"],
+        "properties": {
+            "summary": {"type":"string"},
+            "primary_blocker": {"type":"string"},
+            "scores": {"type":"object", "additionalProperties":{"type":"number","minimum":0,"maximum":1}},
+            "response_contract": {"type":"object", "properties":{
+                "required":{"type":"boolean"},
+                "focus_axes":{"type":"array","items":{"enum":["correctness","security","efficiency","readability"]}},
+                "note":{"type":"string"}
+            }},
+            "suggestions": {"type":"array", "minItems":1, "maxItems":3, "items":{
+                "type":"object", "required":["kind","reason","confidence","suggested_tool","suggested_args","based_on"],
+                "properties":{
+                    "kind":{"enum":["search","read","edit","verify","done","clarify","abandon_path"]},
+                    "reason":{"type":"string"},
+                    "confidence":{"type":"number","minimum":0,"maximum":1},
+                    "suggested_tool":{"type":["string","null"]},
+                    "suggested_args":{"type":"object", "description":"Exact arguments supported by the packet, matching tool_argument_schemas"},
+                    "based_on":{"type":"array","items":{"type":"string"}}
+                }
+            }},
+            "quickest_check":{"type":"string"},
+            "why_this_first":{"type":"string"},
+            "fallback":{"type":"string"}
+        }
     });
     format!(
         "This is intervention mode, not critique.\n\
@@ -173,13 +186,16 @@ Tool calls, code changes, and diff application are forbidden.\n\
 Your task is to help the Coder take the next concrete step only.\n\
 Write all free-text explanations in {lang_name}. Keep enum values, tool names, and file paths in English.\n\
 Return JSON only. No markdown. No backticks. No prose outside JSON.\n\n\
-Output schema:\n\
+Output JSON Schema (return an instance, not this schema):\n\
 {}\n\n\
 Rules:\n\
 - Prefer small, local, reversible actions.\n\
 - Mention exact files, commands, or symbols when possible.\n\
-- Respect intent_anchor.goal/target when present; do not widen scope.\n\
+- task_obligations is projected from the original task and native results. Its explicit artifact_scope.target_files takes precedence over a heuristic intent_anchor.target. referenced_subjects are mentioned as data, not assumed source-edit or read dependencies. Do not widen scope.\n\
+- Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
+- If latest_action_feedback rejects only the final report and pending_exact_checks is empty, suggest done with the required literals in summary, not another inspection or verification. Preserve exact case and spaces.\n\
 - If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
+- execution_evidence.actions is chronological history. An earlier governor rejection is not a current blocker or a user approval rejection; use the latest action feedback and current pending checks.\n\
 - Use tool_argument_schemas as the tool catalog. Shell programs such as cargo are commands for exec, not tool names.\n\
 - If the only gap is a required verification, suggest kind=verify with exec and the exact required command. Do not substitute another read or append commands.\n\
 - Use kind=edit only when the packet supports the exact edit arguments; otherwise read the target first.\n\
@@ -197,7 +213,7 @@ Rules:\n\
 - Match kind to tool: search=search_files/glob/list_dir; read=read_file; edit=patch_file/apply_diff/write_file; verify=exec; done=done. clarify/abandon_path have no tool.\n\
 - suggestions.suggested_args must be an object (or empty object)\n\
 - quickest_check is an optional display string, not an object. Put tool arguments only in suggestions.suggested_args.\n\
-- suggestions.based_on should cite coarse facts only: intent_anchor, recent_tool_results, recovery_stage, failure_kind\n\
+- suggestions.based_on should cite coarse facts only: task_obligations, execution_evidence, intent_anchor, recent_tool_results, recovery_stage, failure_kind\n\
 - Keep suggestions advisory-only; do not claim you already executed anything.\n\n\
 reason_hint: {reason}\n\
 stuck packet:\n\
@@ -205,7 +221,7 @@ stuck packet:\n\
 {}\n\
 </packet>",
         serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(packet).unwrap_or_else(|_| "{}".to_string())
+        serde_json::to_string_pretty(&agent::current_evidence::observer_prompt_packet(packet)).unwrap_or_else(|_| "{}".to_string())
     )
 }
 

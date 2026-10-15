@@ -5,17 +5,85 @@ use std::collections::{BTreeMap, BTreeSet};
 const MARKER: &str = "final answer must include";
 
 fn instructions(root: &str) -> Vec<&str> {
-    root.lines()
-        .filter_map(|line| {
-            line.to_ascii_lowercase()
-                .find(MARKER)
-                .map(|i| &line[i + MARKER.len()..])
-        })
-        .collect()
+    let mut clauses = Vec::new();
+    for line in root.lines() {
+        for (start, _) in line.to_ascii_lowercase().match_indices(MARKER) {
+            let tail = &line[start + MARKER.len()..];
+            let mut quote = None;
+            let end = tail
+                .char_indices()
+                .find_map(|(index, ch)| {
+                    if matches!(ch, '`' | '"') {
+                        if quote == Some(ch) {
+                            quote = None;
+                        } else if quote.is_none() {
+                            quote = Some(ch);
+                        }
+                    }
+                    (quote.is_none()
+                        && matches!(ch, '.' | '!' | '?')
+                        && tail[index + ch.len_utf8()..].starts_with(char::is_whitespace))
+                    .then_some(index + ch.len_utf8())
+                })
+                .unwrap_or(tail.len());
+            clauses.push(&tail[..end]);
+        }
+    }
+    clauses
+}
+
+#[cfg(test)]
+mod clause_tests {
+    use super::*;
+
+    #[test]
+    fn preservation_and_target_instructions_are_not_report_literals() {
+        let root = "Final answer must include .spiral-coder/tui_replay.json. Preserve every existing case, including every assertion and nested based_on value. Case IDs identify cases; target_message_id identifies a coder message and is not the case ID.";
+        let clauses = instructions(root);
+        assert_eq!(clauses, [" .spiral-coder/tui_replay.json."]);
+        assert!(named_values(&clauses).is_empty());
+        assert!(validate_authored_done_summary(
+            root,
+            ".spiral-coder/tui_replay.json updated.",
+            ".spiral-coder/tui_replay.json updated.",
+            &[],
+            None
+        )
+        .is_ok());
+        assert!(validate_authored_done_summary(root, "Updated.", "Updated.", &[], None).is_err());
+    }
+
+    #[test]
+    fn quoted_sentences_and_multiple_requirements_keep_their_boundaries() {
+        let clauses = instructions("Final answer must include `Phase 1. Complete` and a.rs. Preserve this. Final answer must include b.rs and fresh exec proof.");
+        assert_eq!(
+            quoted_literals(&clauses),
+            BTreeSet::from(["Phase 1. Complete".into()])
+        );
+        assert_eq!(
+            explicit_paths(&clauses),
+            BTreeSet::from(["a.rs".into(), "b.rs".into()])
+        );
+        assert!(named_values(&clauses).contains("fresh exec proof"));
+    }
 }
 
 pub(super) fn requires_authored_final_answer(root: &str) -> bool {
     !instructions(root).is_empty()
+}
+
+/// The same bounded clauses/literals used by the done gate, available to both roles.
+pub(super) fn report_requirements(root: &str) -> serde_json::Value {
+    let clauses = instructions(root);
+    let mut literals = quoted_literals(&clauses);
+    literals.extend(explicit_paths(&clauses));
+    literals.extend(named_values(&clauses));
+    serde_json::json!({
+        "clauses": clauses,
+        "required_literals": literals,
+        "path_categories": path_kinds(&clauses).iter().map(|kind| kind.label()).collect::<Vec<_>>(),
+        "cite_current_verification_command": clauses.iter().any(|clause| clause.to_ascii_lowercase().contains("verification command")),
+    })
 }
 
 pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
@@ -264,6 +332,10 @@ pub(super) fn validate_authored_done_summary(
     messages: &[Value],
     test_cmd: Option<&str>,
 ) -> Result<(), String> {
+    if let Some(issue) = crate::work_budget::current().and_then(|c| c.budget.preservation_issue()) {
+        return Err(format!("Artifact preservation failed: {issue}"));
+    }
+
     let Some(hint) = authored_final_answer_hint(root) else {
         return Ok(());
     };

@@ -4,7 +4,7 @@
   const root = document.getElementById("app-root");
   if (!root) return;
 
-  const { readStoredValue, rootUserTextForRun, serverSupportsFeature, configWithoutSecrets, credentialRoute, paneApiKey } = window.SpiralCoderState;
+  const { readStoredValue, rootUserTextForRun, serverSupportsFeature, configWithoutSecrets, credentialRoute, paneApiKey, fnv1a64 } = window.SpiralCoderState;
   const { isComposingKeyEvent, submitComposer, isAutomaticThreadTitle, focusDialog, transcriptMd } = window.SpiralCoderUI;
   const e = React.createElement;
   const { useCallback, useEffect, useMemo, useRef, useState } = React;
@@ -2735,6 +2735,7 @@
       "no edits",
       "without editing",
     ].some((term) => low.includes(term));
+    if (!explicitNoEdit && ["run ", "execute "].some(term => low.includes(term))) return false;
     const strongMutateTerms = [
       "patch",
       "modify",
@@ -3656,6 +3657,15 @@
   function parseObserverNextAction(text) {
     const raw = String(text || "").replace(/\r\n/g, "\n").trim();
     if (!raw) return null;
+    try {
+      const envelope = JSON.parse(raw);
+      if (Array.isArray(envelope.suggestions)) return {
+        blocker: envelope.summary || envelope.primary_blocker || "",
+        nextActions: envelope.suggestions.map(s => `${s.kind}: ${s.reason || ""}`),
+        quickestCheck: typeof envelope.quickest_check === "string" ? envelope.quickest_check : "",
+        whyThisFirst: envelope.why_this_first || "", fallback: envelope.fallback || "",
+      };
+    } catch (_) { /* Legacy saved cards remain displayable. */ }
     const headingRe = /^---\s*([a-z_]+)\s*---\s*$/gim;
     const matches = [];
     let match;
@@ -3946,6 +3956,8 @@
       setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
     };
 
+    const currentThreadRef = useRef(threadState.activeId);
+    currentThreadRef.current = threadState.activeId;
     const abortCoderRef = useRef(null);
     const abortObserverRef = useRef(null);
     const loopRef = useRef({ lastChecked: "", depth: 0 });
@@ -4093,6 +4105,9 @@
     useEffect(() => {
       if (!activeThread) return;
       if (sendingObserver || sendingCoder || metaBusy) return;
+      if (!config.autoObserve) return;
+      const work = window.SpiralCoderWork.read(localStorage, activeThread.id);
+      if (!work || work.completed || work.requests.length >= work.limit - 1) return;
       const target = findLatestObserverNextActionTarget();
       if (!target) return;
       if (hasNextActionAttempt(activeThread.messages, target.id)) return;
@@ -4371,7 +4386,7 @@
     useEffect(() => {
       if (observerSubTab !== "meta") return;
       refreshMetaArtifacts(true).catch(() => {});
-    }, [observerSubTab, activeThread && activeThread.id, config.toolRoot]);
+    }, [observerSubTab, activeThread && activeThread.id, config.toolRoot, status && status.features && status.features.meta_diagnose_artifacts]);
 
     const resolvePendingEdit = async (id, approve) => {
       const eid = String(id || "").trim();
@@ -4379,7 +4394,8 @@
       setPendingBusy(true);
       try {
         const resp = await postJson(approve ? "/api/approve_edit" : "/api/reject_edit", { id: eid });
-        if (approve && resp && resp.item && !sendingCoder) {
+        const linked = activeThread && window.SpiralCoderWork.resolveApproval(localStorage, activeThread.id, eid, resp && resp.item, approve);
+        if (approve && linked && resp && resp.item && !sendingCoder) {
           const it = resp.item;
           const action = String(it.action || "").trim();
           const path = String(it.path || "").trim();
@@ -4392,7 +4408,6 @@
             path ? `path: ${path}` : "",
             preview ? ("result:\n" + preview) : "",
           ].filter(Boolean).join("\n");
-          // Best-effort: nudge Coder to resume after approval (Lite server pauses tool loops on approvals).
           sendCoder(msg, { origin: "runtime" });
         }
       } catch (_) {
@@ -4408,7 +4423,8 @@
       setPendingBusy(true);
       try {
         const resp = await postJson(approve ? "/api/approve_command" : "/api/reject_command", { id: cid });
-        if (approve && resp && resp.item && !sendingCoder) {
+        const linked = activeThread && window.SpiralCoderWork.resolveApproval(localStorage, activeThread.id, cid, resp && resp.item, approve);
+        if (approve && linked && resp && resp.item && !sendingCoder) {
           const it = resp.item;
           const command = String(it.command || "").trim();
           const cwd = it.cwd != null ? String(it.cwd || "").trim() : "";
@@ -4839,12 +4855,40 @@
       );
     };
 
-    const renderObserverNextActionCard = (assist) => {
+    const continueObserverAdvice = async (assistId) => {
+      if (sendingCoder || !activeThread) return;
+      const work = window.SpiralCoderWork.read(localStorage, activeThread.id);
+      const advice = work && work.pendingAdvice;
+      if (!advice || advice.assistId !== assistId || !window.SpiralCoderWork.isCurrent(localStorage, activeThread.id, advice.taskId, advice.revision)) {
+        showToast("Advice expired after task progress; request a fresh observation.", "info"); return;
+      }
+      if (!window.SpiralCoderWork.claimAdvice(localStorage, activeThread.id, work, assistId)) return;
+      const beforeIds = new Set(work.messages.flatMap(m => (m.tool_calls || []).map(c => c.id)));
+      delete work.pendingAdvice;
+      window.SpiralCoderWork.persist(localStorage, activeThread.id, work);
+      await sendCoder("Continue the current task using the Observer advice.", { origin: "runtime", observerAdvice: advice.text });
+      const after = window.SpiralCoderWork.read(localStorage, activeThread.id);
+      if (after !== work) return;
+      const contract = await postJson("/api/observer_action", { work_budget: { task_id: work.taskId, root: work.root, limit: work.limit, role: "observer", tool_root: resolvedThreadRoot(config.toolRoot, activeThread.id) }, packet: {}, messages: after.messages, lang });
+      const evidence = contract.packet.execution_evidence;
+      const receipt = after.assists.find(a => a.assistId === assistId);
+      const actions = evidence ? evidence.actions.filter(a => !beforeIds.has(a.call_id)) : [];
+      Object.assign(receipt, { callIds: actions.map(a => a.call_id), executed: actions.some(a => a.executed === true), succeeded: actions.length && actions.every(a => a.succeeded !== null) ? actions.every(a => a.succeeded) : null, completed: after.completed, remainingChecks: evidence ? evidence.pending_exact_checks : null });
+      window.SpiralCoderWork.persist(localStorage, activeThread.id, after);
+      showToast(`Advice result: executed=${receipt.executed}; completed=${receipt.completed}; remaining checks=${JSON.stringify(receipt.remainingChecks)}`, "info");
+    };
+
+    const renderObserverNextActionCard = (assist, message) => {
       if (!assist) return null;
       const nextActions = Array.isArray(assist.nextActions) ? assist.nextActions : [];
+      const work = activeThread && window.SpiralCoderWork.read(localStorage, activeThread.id);
+      const pending = work && work.pendingAdvice && work.pendingAdvice.assistId === message.id;
+      const receipt = work && work.assists.find(a => a.assistId === message.id);
       return e(
         "div",
         { className: "next-action-card" },
+        e("button", { className: "btn", disabled: sendingCoder || !pending, onClick: () => continueObserverAdvice(message.id).catch(error => showToast(prettyErr(error), "error")) }, "Continue with advice"),
+        receipt ? e("div", { className: "next-action-text" }, `Executed: ${receipt.executed}. Completed: ${receipt.completed === null ? "unconfirmed" : receipt.completed}. Remaining checks: ${JSON.stringify(receipt.remainingChecks ?? null)}`) : null,
         e(
           "div",
           { className: "next-action-head" },
@@ -5100,7 +5144,11 @@
       const nextActionAssist = (!m.streaming && pane === "observer" && isObserverNextActionMessage(m) && m.role === "assistant")
         ? parseObserverNextAction(s)
         : null;
-      const streamingNode = e("span", null,
+      const streamingNode = (pane === "coder" && m.role === "assistant" && !sendingCoder) ? e("span", { className: "hint" },
+        lang === "ja" ? "この実行は停止しています。最新の会話を表示するには再読み込みしてください。"
+          : lang === "fr" ? "Cette exécution est arrêtée. Rechargez pour afficher la conversation actuelle."
+            : "This run has stopped. Reload to view the latest conversation."
+      ) : e("span", null,
         s || e("span", { className: "thinking" }, tr(lang, "streaming")),
         e("span", { className: "cursor-blink" }, "▊")
       );
@@ -5192,7 +5240,7 @@
               : metaDiagnosis
                 ? renderMetaDiagnosisCard(metaDiagnosis)
                 : nextActionAssist
-                  ? renderObserverNextActionCard(nextActionAssist)
+                  ? renderObserverNextActionCard(nextActionAssist, m)
                 : renderWithThink(
                     s,
                     execResults[m.id] || {},
@@ -5583,44 +5631,6 @@
       ].join("\n");
     };
 
-    const buildObserverNextActionPrompt = (packet, reasonHint) => {
-      const langName = lang === "fr" ? "French" : lang === "en" ? "English" : "Japanese";
-      const reason = String(reasonHint || packet && packet.failure_kind || "stuck_or_failure").trim();
-      return [
-        "This is intervention mode, not critique.",
-        "Tool calls, code changes, and diff application are forbidden.",
-        "Your task is to help the Coder take the next concrete step only.",
-        `Write explanations in ${langName}. Keep the section headers below in English exactly as written.`,
-        "",
-        "Required output format:",
-        "--- blocker ---",
-        "<1-2 sentences>",
-        "--- next_actions ---",
-        "1. <best next concrete action>",
-        "2. <backup action>",
-        "3. <last resort action>",
-        "--- quickest_check ---",
-        "<one command, file, or symbol to inspect first>",
-        "--- why_this_first ---",
-        "<one sentence>",
-        "--- fallback ---",
-        "<one sentence if the first action fails>",
-        "",
-        "Rules:",
-        "- Prefer small, local, reversible actions.",
-        "- Mention exact files, commands, or symbols when possible.",
-        "- If the blocker is repo code, say so directly.",
-        "- If the blocker is instruction/harness/tooling, say so directly.",
-        "- Do not broaden into a full review.",
-        "- If evidence is weak, make quickest_check purely diagnostic.",
-        "",
-        `reason_hint: ${reason}`,
-        "stuck packet:",
-        "<packet>",
-        JSON.stringify(packet, null, 2),
-        "</packet>",
-      ].join("\n");
-    };
 
     const metaConfigDigest = (packet, obsProvider, obsModel) => {
       const seed = JSON.stringify({
@@ -5700,11 +5710,12 @@
     };
 
     const refreshMetaArtifacts = async (preserveSelection) => {
-      if (!activeThread) {
+      if (!activeThread || !serverSupportsFeature(status, "meta_diagnose_artifacts")) {
         setMetaArtifacts([]);
         setMetaArtifactRoot("");
         setMetaArtifactSelectedName("");
         setMetaArtifactDetail(null);
+        setMetaArtifactsError(activeThread ? "File archives are unavailable on this server. Diagnoses remain in the conversation." : "");
         return;
       }
       const root = currentMetaArtifactRoot();
@@ -5859,10 +5870,13 @@
         };
         try {
           const saveRoot = packet.tool_root || resolvedThreadRoot(config.toolRoot, threadId) || "";
-          const saved = await saveMetaDiagnoseArtifact(saveRoot, artifact);
+          const supportsArchive = serverSupportsFeature(status, "meta_diagnose_artifacts");
+          const saved = supportsArchive ? await saveMetaDiagnoseArtifact(saveRoot, artifact) : null;
           if (saved && saved.path) {
             showToast(`${tr(lang, "metaDiagnoseSaved")}: ${String(saved.path)}`, "success");
             if (observerSubTab === "meta") await refreshMetaArtifacts(true);
+          } else if (!supportsArchive) {
+            showToast("Diagnosis is in this conversation. File archives are unavailable on this server.", "info");
           }
         } catch (saveErr) {
           showToast(`${tr(lang, "metaDiagnoseSaveFailed")}: ${prettyErr(saveErr)}`, "error");
@@ -5888,12 +5902,17 @@
     const runObserverNextActionAssistForPacket = async (packet, reasonHint) => {
       if (!activeThread || !packet || typeof packet !== "object") return;
       if (sendingObserver || metaBusy) return;
+      if (!status || !status.features || !status.features.observer_action) { showToast("Next-action continuation is unavailable on this server. Meta diagnosis is still available.", "info"); return; }
       const threadId = activeThread.id;
       const obsProvider = String(config.observerProvider || "").trim() || config.provider;
       const obsBaseUrl = String(config.observerBaseUrl || "").trim() || config.baseUrl;
       const obsModel = String(config.observerModel || "").trim() || (config.chatModel || config.model);
       const obsKey = apiKeyForPane("observer");
-      const prompt = buildObserverNextActionPrompt(packet, reasonHint);
+      let prompt = "";
+      const work = window.SpiralCoderWork.read(localStorage, threadId);
+      const revision = work && work.revision;
+      const current = () => !ac.signal.aborted && abortObserverRef.current === ac
+        && currentThreadRef.current === threadId && (!work || (window.SpiralCoderWork.isActive(localStorage, threadId, work) && window.SpiralCoderWork.isCurrent(localStorage, threadId, work.taskId, revision)));
       const targetLabel = `[NEXT-ACTION] target=${packet.target_message_id} kind=${packet.failure_kind}`;
       const userMsg = {
         id: uid(),
@@ -5941,17 +5960,44 @@
         chatModel: obsModel,
         codeModel: obsModel,
       };
-      const reqBody = buildReq(obsCfg, obsKey, [], prompt, null);
-      reqBody.lang = String(lang || "ja").trim().toLowerCase();
-      reqBody.force_tools = false;
-      reqBody.temperature = 0.2;
-      reqBody.max_tokens = 1200;
       try {
-        const j = await postJson("/api/chat", reqBody, ac.signal);
-        const text = String((j && j.content) || "").trim() || "[Observer] No concrete next action.";
-        setMsg(threadId, asstId, text, observerBodyRef);
+        const contractInput = { work_budget: work ? { task_id: work.taskId, root: work.root, limit: work.limit, role: "observer", tool_root: resolvedThreadRoot(config.toolRoot, threadId) } : undefined, packet: { ...packet, previous_assist_outcome: work && work.assists, work_budget: work && { limit: work.limit, used: work.requests.length } }, messages: work ? work.messages : [], lang, reason: reasonHint || "" };
+        let contract = await postJson("/api/observer_action", contractInput, ac.signal);
+        if (!current()) return;
+        prompt = contract.prompt;
+        if (!prompt) throw new Error("Observer action contract unavailable; update the server.");
+        let raw = "";
+        for (let attempt = 0; attempt < 2; attempt++) {
+          if (!current()) return;
+          const reqBody = buildReq(obsCfg, obsKey, [], prompt, null);
+          Object.assign(reqBody, { lang, force_tools: false, temperature: 0.2, max_tokens: 1200 });
+          if (work) reqBody.work_budget = { task_id: work.taskId, root: work.root, limit: work.limit, role: attempt ? "observer_repair" : "observer", tool_root: resolvedThreadRoot(config.toolRoot, threadId) };
+          const receipt = work && window.SpiralCoderWork.reserve(localStorage, threadId, work, attempt ? "observer_repair" : "observer", reqBody.messages);
+          const j = await postJson("/api/chat", reqBody, ac.signal);
+          if (receipt) window.SpiralCoderWork.finish(localStorage, threadId, work, receipt, j && j.raw && j.raw.usage, "completed");
+          if (!current()) return;
+          raw = String(j && j.content || "").trim();
+          contract = await postJson("/api/observer_action", { ...contractInput, response: raw }, ac.signal);
+          if (!current()) return;
+          setMsg(threadId, asstId, raw || "[Observer] Empty response", observerBodyRef);
+          if (!contract.issue) break;
+          if (attempt === 0 && contract.repair_prompt) {
+            // Preserve the failed answer as a separate audit message.
+            const failed = { id: uid(), pane: "observer", role: "assistant", content: raw, ts: Date.now(), metaKind: "observer_action_repair_source" };
+            setThreadState(s => ({ ...s, threads: s.threads.map(t => t.id === threadId ? { ...t, messages: [...t.messages, failed] } : t) }));
+            prompt = contract.repair_prompt;
+          } else break;
+        }
+        if (contract.issue) { showToast(contract.issue, "error"); return; }
+        if (work && contract.hint && current()) {
+          work.pendingAdvice = { assistId: asstId, taskId: work.taskId, revision, text: [contract.hint, contract.response_contract].filter(Boolean).join("\n\n") };
+          window.SpiralCoderWork.persist(localStorage, threadId, work);
+          showToast("Advice ready. Continue with advice to apply it through the Coder's normal approvals.", "info");
+        }
+
       } catch (err) {
         const msg = prettyErr(err);
+        if (!current()) return;
         setMsg(
           threadId,
           asstId,
@@ -5959,8 +6005,7 @@
           observerBodyRef
         );
       } finally {
-        setSendingObserver(false);
-        if (abortObserverRef.current === ac) abortObserverRef.current = null;
+        if (abortObserverRef.current === ac) { setSendingObserver(false); abortObserverRef.current = null; }
       }
     };
 
@@ -6220,16 +6265,28 @@
       }
     };
 
-      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir, rootUserText) => {
+      const runCoderAgentic = async (text, threadId, asstMsgId, reqCfg, resolvedKey, history, ac, threadWorkdir, rootUserText, work, origin, observerAdvice) => {
+      const current = () => !ac.signal.aborted && abortCoderRef.current === ac
+        && window.SpiralCoderWork.isActive(localStorage, threadId, work);
+      const budgetMeta = () => ({ task_id: work.taskId, root: work.root, limit: work.limit, role: "coder", tool_root: resolvedThreadRoot(reqCfg.toolRoot, threadId) });
+      const taskPost = (url, body, signal) => window.SpiralCoderWork.runCurrent(localStorage, threadId, work,
+        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, work_budget: budgetMeta() }, signal); });
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
-      const MAX_ITERS = (() => {
+      const configuredIterations = (() => {
         const d = longrun ? 14 : 8;
         const n = numOrUndef(reqCfg && reqCfg.coderMaxIters);
         if (!n) return d;
         const clamped = Math.max(1, Math.min(64, Math.round(n)));
         return longrun ? clamped : Math.min(clamped, 16);
       })();
+      const remainingRequests = work.limit - work.requests.length;
+      const MAX_ITERS = Math.min(configuredIterations, origin === "user" && remainingRequests >= 8 ? remainingRequests - 3 : remainingRequests);
+      if (history.length) {
+        const repaired = await taskPost("/api/observer_action", { packet: {}, messages: history, lang, repair_native: true }, ac.signal);
+        if (ac.signal.aborted || abortCoderRef.current !== ac) return;
+        history = repaired.native_messages;
+      }
       const TRUNC_STDOUT = 2000;
       const TRUNC_STDERR = 800;
       const KEEP_TOOL_TURNS = longrun ? 6 : 3;
@@ -6702,18 +6759,6 @@
             )),
           }));
         } catch (_) {}
-      };
-
-      const fnv1a64 = (s) => {
-        // FNV-1a 64-bit (BigInt) hash. Cheap and stable for stuck detection.
-        let h = 0xcbf29ce484222325n;
-        const prime = 0x100000001b3n;
-        const str = String(s || "");
-        for (let i = 0; i < str.length; i++) {
-          h ^= BigInt(str.charCodeAt(i) & 0xff);
-          h = (h * prime) & 0xffffffffffffffffn;
-        }
-        return h;
       };
 
       const governor = {
@@ -7391,8 +7436,14 @@
       const messages = [
         { role: "system", content: SYSTEM_BASE_TEXT },
         ...history,
-        { role: "user", content: text },
+        { role: "user", origin, content: text },
       ];
+      const authoredLength = messages.length;
+      const saveNative = (completed = null) => {
+        if (!current()) return;
+        window.SpiralCoderWork.snapshot(localStorage, threadId, work, messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), completed);
+      };
+      saveNative();
       const observationEvidence = mergeObservationEvidence(
         activeThread && activeThread.coderObsEvidence,
         collectObservationEvidence(messages),
@@ -7422,6 +7473,8 @@
       let display = "";
       let awaitingApproval = false;
       const flush = (extra) => {
+        if (!current()) return;
+        saveNative();
         setMsg(threadId, asstMsgId, (display + (extra || "")).trim() || "…", coderBodyRef);
       };
 
@@ -7455,7 +7508,7 @@
 
         const cwdUsed = cwdNow();
         const execCmd = wrapExecWithPwd(commandToRun);
-        const execRes = await postJson("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
+        const execRes = await taskPost("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
         const parsed = stripPwdMarker(execRes.stdout);
         const breach = sandboxBreachReason(parsed.pwd);
         maybeUpdateWorkdirFromPwd(parsed.pwd);
@@ -7630,53 +7683,7 @@
       };
 
       // SSE streaming helper — streams token deltas in real-time, returns finish event.
-      const streamChatTools = async (payload, signal, onDelta) => {
-        const resp = await fetch("/api/chat_tools_stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal,
-        });
-        if (!resp.ok) {
-          const errBody = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
-          throw new Error(errBody.error || `HTTP ${resp.status}`);
-        }
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let sseBuffer = "";
-        let fullText = "";
-        let finishReason = "stop";
-        let toolCalls = [];
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            sseBuffer += decoder.decode(value, { stream: true });
-            let sep;
-            while ((sep = sseBuffer.indexOf("\n\n")) !== -1) {
-              const block = sseBuffer.slice(0, sep);
-              sseBuffer = sseBuffer.slice(sep + 2);
-              let evtType = "message", evtData = "";
-              for (const line of block.split("\n")) {
-                if (line.startsWith("event: ")) evtType = line.slice(7).trim();
-                else if (line.startsWith("data: ")) evtData = line.slice(6);
-              }
-              if (evtType === "delta") {
-                try { const { delta } = JSON.parse(evtData); if (delta) { fullText += delta; onDelta(delta); } } catch (_) {}
-              } else if (evtType === "finish") {
-                try { const f = JSON.parse(evtData); finishReason = f.finish_reason || "stop"; toolCalls = f.tool_calls || []; } catch (_) {}
-              } else if (evtType === "error") {
-                let msg = "stream error";
-                try { msg = JSON.parse(evtData).error || msg; } catch (_) {}
-                throw new Error(msg);
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-        }
-        return { text: fullText, finishReason, toolCalls };
-      };
+      const streamChatTools = window.SpiralCoderWork.streamChatTools;
 
       const extractImpliedExecScripts = (txt) => {
         const src = String(txt || "");
@@ -7699,7 +7706,7 @@
 
       let checkpointCaptured = false;
       for (let iter = 0; iter < MAX_ITERS; iter++) {
-        if (ac.signal.aborted) break;
+        if (!current()) break;
         pruneToolMessages(messages);
         pruneAssistantMessages(messages);
         pruneMessageWindow(messages);
@@ -7735,7 +7742,7 @@
 
               const cwdUsed = cwdNow();
               const execCmd = wrapExecWithPwd(diagCmd);
-              const execRes = await postJson("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
+              const execRes = await taskPost("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
               const parsed = stripPwdMarker(execRes.stdout);
               const breach = sandboxBreachReason(parsed.pwd);
               maybeUpdateWorkdirFromPwd(parsed.pwd);
@@ -7853,11 +7860,17 @@ state: ${agentState}`);
         };
         governor.pendingHint = "";
 
+        if (observerAdvice) sysExtras.push(observerAdvice);
+        if (work.limit - work.requests.length <= 4) sysExtras.push("[Closeout budget] Reserve remaining requests for exact verification and an authored final report. Do not rerun current passed checks; report incomplete work truthfully.");
+        messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
         let streamResult;
+        let requestReceipt;
         try {
+          requestReceipt = window.SpiralCoderWork.reserve(localStorage, threadId, work, "coder", messages);
           // Separate text tokens from previous turn with a blank line.
           if (display) display += "\n\n";
            streamResult = await streamChatTools({
+             work_budget: budgetMeta(),
              messages,
             tools: [execTool, writeFileTool, readFileTool, patchFileTool, applyDiffTool, searchFilesTool, listDirTool, globTool, doneTool],
              model: String(reqCfg.codeModel || reqCfg.model || ""),
@@ -7881,6 +7894,8 @@ state: ${agentState}`);
           break;
         }
 
+        if (!current()) break;
+        if (requestReceipt) window.SpiralCoderWork.finish(localStorage, threadId, work, requestReceipt, streamResult.usage, "completed");
         const { text: asstText, finishReason, toolCalls: asstToolCalls } = streamResult;
         const parsedPlanForTurn = parsePlanBlock(asstText, governorContract);
         const planValidationError = parsedPlanForTurn ? validatePlanBlock(governorContract, parsedPlanForTurn) : "";
@@ -7931,7 +7946,7 @@ state: ${agentState}`);
           flush();
         };
 
-        if (finishReason === "tool_calls" && asstToolCalls.length > 0) {
+        if (asstToolCalls.length > 0) {
           if (parsedPlanForTurn && (planValidationError || taskContractPlanError || instructionPlanError)) {
             const block = invalidPlanMessage(
               governorContract,
@@ -8161,6 +8176,12 @@ state: ${agentState}`);
                 break;
               }
 
+              const finalContract = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang, final_summary: summary }, ac.signal);
+              if (ac.signal.aborted || abortCoderRef.current !== ac) break;
+              if (finalContract.completion_issue && !remainingAcceptance.length) {
+                blockCurrentToolCalls(finalContract.completion_issue);
+                break;
+              }
               const evidenceByIdx = validation && validation.evidenceByIdx ? validation.evidenceByIdx : new Map();
               const lines = ["[DONE]"];
               if (summary) lines.push(summary);
@@ -8183,7 +8204,7 @@ state: ${agentState}`);
               messages.push({ role: "assistant", content: finalText });
               display += (display ? "\n\n" : "") + finalText;
               flush();
-              agentState = "done";
+              agentState = remainingAcceptance.length ? "incomplete" : "done";
               doneNow = true;
               break;
             }
@@ -8231,7 +8252,7 @@ state: ${agentState}`);
                   if (canQueue) {
                     try {
                       const cwdUsed = cwdNow();
-                      const q = await postJson("/api/queue_command", { command: commandToRun, cwd: cwdUsed }, ac.signal);
+                      const q = await taskPost("/api/queue_command", { command: commandToRun, cwd: cwdUsed }, ac.signal);
                       const aid = String((q && q.approval_id) || "");
                       refreshPendingCommands();
                       toolResult = aid
@@ -8262,7 +8283,7 @@ state: ${agentState}`);
 
                 const cwdUsed = cwdNow();
                 const execCmd = wrapExecWithPwd(commandToRun);
-                const execRes = await postJson("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
+                const execRes = await taskPost("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
                 const parsed = stripPwdMarker(execRes.stdout);
                 const breach = sandboxBreachReason(parsed.pwd);
                 maybeUpdateWorkdirFromPwd(parsed.pwd);
@@ -8424,7 +8445,7 @@ state: ${agentState}`);
 
                 // Safe overwrite guard: require an explicit read_file before overwriting an existing file.
                 try {
-                  const st = await postJson("/api/stat_path", { path: fullPath }, ac.signal);
+                  const st = await taskPost("/api/stat_path", { path: fullPath }, ac.signal);
                   const exists = !!(st && st.exists);
                   if (exists && !fileReadSet.has(fullPath)) {
                     toolResult = [
@@ -8450,7 +8471,7 @@ state: ${agentState}`);
                 }
 
                 if (config.requireEditApproval) {
-                  const q = await postJson("/api/queue_edit", {
+                  const q = await taskPost("/api/queue_edit", {
                     action: "write_file",
                     path: fullPath,
                     content,
@@ -8458,7 +8479,7 @@ state: ${agentState}`);
                   const aid = String((q && q.approval_id) || "");
                   refreshPendingEdits();
                   toolResult = aid
-                    ? `Awaiting approval via /api/approve_edit\napproval_id: ${aid}`
+                    ? `Awaiting approval via /api/approve_edit\napproval_id: ${aid}\napproval_path: ${q.path || fullPath}`
                     : "Awaiting approval via /api/approve_edit";
                   pushRecentRun({ kind: "write_file", status: "PENDING", path: path0 || fullPath, note: aid ? ("approval_id=" + aid) : "approval queued" });
                   messages.push({ role: "tool", tool_call_id: tc.id, content: toolResult });
@@ -8466,8 +8487,8 @@ state: ${agentState}`);
                   break;
                 }
 
-                const wr = await postJson("/api/write_file", { path: fullPath, content }, ac.signal);
-                toolResult = `OK write_file\nbytes_written: ${wr && wr.bytes_written != null ? wr.bytes_written : content.length}`;
+                const wr = await taskPost("/api/write_file", { path: fullPath, content }, ac.signal);
+                toolResult = `OK: wrote '${path0}'\nbytes_written: ${wr && wr.bytes_written != null ? wr.bytes_written : content.length}`;
                 fileReadSet.add(fullPath);
                 fileToolConsecutiveFailures = 0;
                 requireImpact(`write_file succeeded: ${path0 || fullPath}`);
@@ -8502,7 +8523,7 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
-                const res = await postJson("/api/read_file", { path: fullPath }, ac.signal);
+                const res = await taskPost("/api/read_file", { path: fullPath }, ac.signal);
                 const raw = res && res.content ? res.content : `ERROR: empty response`;
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 if (res && res.content) {
@@ -8537,7 +8558,7 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullDir = joinUnderCwd(dir0);
-                const res = await postJson("/api/list_dir", { dir: fullDir, max_entries, include_hidden }, ac.signal);
+                const res = await taskPost("/api/list_dir", { dir: fullDir, max_entries, include_hidden }, ac.signal);
                 const raw = res && res.output ? res.output : `ERROR: empty response`;
                 toolResult = String(raw || "")
                   .replace(`[list_dir: '${fullDir}'`, `[list_dir: '${shown}'`)
@@ -8567,7 +8588,15 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
-                const res = await postJson("/api/patch_file", { path: fullPath, search, replace }, ac.signal);
+                if (config.requireEditApproval) {
+                  const q = await taskPost("/api/queue_edit", {action: "patch_file", path: fullPath, search, replace}, ac.signal);
+                  refreshPendingEdits();
+                  toolResult = `Awaiting approval via /api/approve_edit\napproval_id: ${q.approval_id}\napproval_path: ${q.path || fullPath}`;
+                  messages.push({role: "tool", tool_call_id: tc.id, content: toolResult});
+                  awaitingApproval = true;
+                  break;
+                }
+                const res = await taskPost("/api/patch_file", { path: fullPath, search, replace }, ac.signal);
                 const raw = res && res.message ? res.message : "OK: patched";
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 fileToolConsecutiveFailures = 0;
@@ -8607,7 +8636,7 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const dir = joinUnderCwd(dir0);
-                const res = await postJson("/api/search_files", { pattern, dir, case_insensitive: ci }, ac.signal);
+                const res = await taskPost("/api/search_files", { pattern, dir, case_insensitive: ci }, ac.signal);
                 toolResult = res && res.output ? res.output : `[search_files] No matches for '${pattern}'`;
                 rememberObservationSearch(
                   `search_files(pattern=${pattern}, dir=${shown})`,
@@ -8641,7 +8670,15 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
-                const res = await postJson("/api/apply_diff", { path: fullPath, diff }, ac.signal);
+                if (config.requireEditApproval) {
+                  const q = await taskPost("/api/queue_edit", {action: "apply_diff", path: fullPath, diff}, ac.signal);
+                  refreshPendingEdits();
+                  toolResult = `Awaiting approval via /api/approve_edit\napproval_id: ${q.approval_id}\napproval_path: ${q.path || fullPath}`;
+                  messages.push({role: "tool", tool_call_id: tc.id, content: toolResult});
+                  awaitingApproval = true;
+                  break;
+                }
+                const res = await taskPost("/api/apply_diff", { path: fullPath, diff }, ac.signal);
                 const raw = res && res.message ? res.message : "OK: diff applied";
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 fileToolConsecutiveFailures = 0;
@@ -8680,7 +8717,7 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const dir = joinUnderCwd(dir0);
-                const res = await postJson("/api/glob_files", { pattern, dir }, ac.signal);
+                const res = await taskPost("/api/glob_files", { pattern, dir }, ac.signal);
                 toolResult = res && res.output ? res.output : `[glob] No files matching '${pattern}'`;
               } catch (e2) {
                 toolResult = `ERROR glob '${pattern}': ${prettyErr(e2)}`;
@@ -8765,7 +8802,7 @@ state: ${agentState}`);
                 if (canQueue) {
                   try {
                     const cwdUsed = cwdNow();
-                    const q = await postJson("/api/queue_command", { command: commandToRun, cwd: cwdUsed }, ac.signal);
+                    const q = await taskPost("/api/queue_command", { command: commandToRun, cwd: cwdUsed }, ac.signal);
                     const aid = String((q && q.approval_id) || "");
                     refreshPendingCommands();
                     resultText = aid
@@ -8802,7 +8839,7 @@ state: ${agentState}`);
 
               const cwdUsed = cwdNow();
               const execCmd = wrapExecWithPwd(commandToRun);
-              const execRes = await postJson("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
+              const execRes = await taskPost("/api/exec", { command: execCmd, cwd: cwdUsed }, ac.signal);
               const parsed = stripPwdMarker(execRes.stdout);
               const breach = sandboxBreachReason(parsed.pwd);
               maybeUpdateWorkdirFromPwd(parsed.pwd);
@@ -8927,8 +8964,13 @@ state: ${agentState}`);
       }
 
       // Persist per-thread failure memory once per run to avoid re-render churn.
-      persistFailureMemory();
-      finishStreaming(threadId, asstMsgId);
+      saveNative(agentState === "done" && !awaitingApproval && !ac.signal.aborted);
+      if (current()) {
+        const outcome = await taskPost("/api/observer_action", { packet: {}, messages: work.messages, lang }, ac.signal);
+        if (!ac.signal.aborted && abortCoderRef.current === ac) window.SpiralCoderWork.updateAssists(localStorage, threadId, work, outcome.packet.execution_evidence);
+        persistFailureMemory();
+        finishStreaming(threadId, asstMsgId);
+      }
     };
 
       const sendCoder = async (overrideText, options = {}) => {
@@ -9139,9 +9181,18 @@ state: ${agentState}`);
 
         const threadId = activeThread.id;
         const coderHistory = paneMessages("coder");
-        const origin = options.origin === "runtime" ? "runtime" : "user";
-        const rootUserText = rootUserTextForRun(text, coderHistory, origin);
-        const history = coderHistory.map((m) => ({ role: m.role, content: m.content }));
+        const origin = options.origin === "runtime" || /^(continue|resume|続けて|続き)[.!。！]?$/i.test(text.trim()) ? "runtime" : "user";
+        const retainedWork = window.SpiralCoderWork.read(localStorage, threadId);
+        const rootUserText = origin === "runtime" && retainedWork ? retainedWork.root : rootUserTextForRun(text, coderHistory, origin);
+        let work;
+        try { work = window.SpiralCoderWork.open(localStorage, threadId, rootUserText, config.coderMaxIters || 14, origin !== "runtime"); }
+        catch (error) { showToast(error.message, "error"); return; }
+        if (origin !== "runtime" && abortObserverRef.current) stopObserver();
+        const nativeHistory = work.messages;
+        // Conversation context survives a new human turn; execution proof does not.
+        const history = coderHistory
+          .filter(m => !m.streaming && m.content && (m.role === "user" || m.role === "assistant"))
+          .map(m => ({ role: m.role, content: m.content }));
 
       const userMsg = { id: uid(), pane: "coder", role: "user", origin, content: text, ts: Date.now() };
       const asstMsg = { id: uid(), pane: "coder", role: "assistant", content: "", ts: Date.now(), streaming: true };
@@ -9166,10 +9217,10 @@ state: ${agentState}`);
       abortCoderRef.current = ac;
 
       try {
-          const supportsTools = resolvedProvider === "openai-compatible" || resolvedProvider === "mistral" || resolvedProvider === "openai";
+          const supportsTools = ["openai-compatible", "mistral", "openai", "gemini"].includes(resolvedProvider);
           const serverChatTools = !!(status && status.features && status.features.chat_tools);
-          if ((config.forceAgent || wantsMaterial) && supportsTools && serverChatTools) {
-            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir, rootUserText);
+          if ((config.forceAgent || wantsMaterial || origin === "runtime") && supportsTools && serverChatTools) {
+            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, nativeHistory, ac, activeThread && activeThread.workdir, rootUserText, work, origin, options.observerAdvice);
           } else if (config.stream) {
           await streamChat(
             reqBody,
@@ -9206,8 +9257,7 @@ state: ${agentState}`);
           setMsg(threadId, asstMsg.id, `[${tr(lang, "error")}] ${msg}`, coderBodyRef);
         }
       } finally {
-        setSendingCoder(false);
-        abortCoderRef.current = null;
+        if (abortCoderRef.current === ac) { setSendingCoder(false); abortCoderRef.current = null; }
         refreshPendingEdits();
       }
     };

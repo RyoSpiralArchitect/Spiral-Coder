@@ -89,7 +89,11 @@ pub(super) fn parse_tag_fields(body: &str, tag: &str) -> Vec<(String, String)> {
 
         if current_key.is_some() && !line.is_empty() {
             if !current_value.is_empty() {
-                current_value.push(' ');
+                let is_list = current_key
+                    .as_deref()
+                    .and_then(|key| governor_contract::block_field(tag, key))
+                    .is_some_and(|field| field.kind.as_deref() == Some("list"));
+                current_value.push(if is_list { '\n' } else { ' ' });
             }
             current_value.push_str(line);
         }

@@ -51,13 +51,23 @@ impl OpenAICompatibleProvider {
             req = req.bearer_auth(key);
         }
 
+        let meter = crate::work_budget::begin(payload)?;
         let resp = req.send().await.context("request failed")?;
         let status = resp.status();
+        if let Some(meter) = &meter {
+            meter.status(&format!("http_{}", status.as_u16()));
+        }
         let body = resp.text().await.unwrap_or_default();
         if !status.is_success() {
             return Ok(Err((status, body)));
         }
         let data: Value = serde_json::from_str(&body).context("invalid JSON response")?;
+        if let Some(meter) = &meter {
+            if let Some(usage) = data.get("usage") {
+                meter.usage(usage);
+            }
+            meter.status("completed");
+        }
         Ok(Ok(data))
     }
 }
@@ -505,5 +515,34 @@ mod tests {
             0.4,
         );
         assert!(payload.get("temperature").is_none());
+    }
+    #[tokio::test]
+    async fn compatibility_retry_spends_the_same_shared_request_cap() {
+        let server = MockServer::start();
+        let wire = server.mock(|when, then| {
+            when.method(POST).path("/chat/completions");
+            then.status(400)
+                .body("Unsupported parameter: 'max_tokens'. Use 'max_completion_tokens' instead.");
+        });
+        let provider = OpenAICompatibleProvider::new(
+            reqwest::Client::new(),
+            "test",
+            "test".into(),
+            None,
+            server.base_url(),
+            Duration::from_secs(3),
+        );
+        let budget = crate::work_budget::WorkBudget::new("task", 1, None);
+        let result = crate::work_budget::scope(
+            Some(crate::work_budget::Context {
+                budget: budget.clone(),
+                role: "observer_repair",
+            }),
+            provider.chat(&make_request("task")),
+        )
+        .await;
+        assert!(format!("{:?}", result.err().unwrap()).contains("budget exhausted"));
+        wire.assert_hits(1);
+        assert_eq!(budget.snapshot().requests[0].role, "observer_repair");
     }
 }

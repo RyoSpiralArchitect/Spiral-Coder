@@ -122,6 +122,75 @@ fn observer_packet_retains_task_and_late_diagnostic_without_inventing_execution(
     assert!(packet["available_tools"].as_array().unwrap().contains(&json!("exec")));
     let catalog = packet["tool_argument_schemas"].as_array().unwrap();
     assert_eq!(catalog.iter().find(|schema| schema["name"] == "exec").unwrap()["parameters"], agent::exec_tool_def()["function"]["parameters"]);
-    assert!(packet["recent_tool_calls"].as_array().unwrap().is_empty());
+    assert!(packet["recent_tool_calls"].is_null());
     assert!(packet["recovery_stage"].is_null());
+}
+
+#[test]
+fn observer_native_task_projection_overrides_a_misleading_display_target() {
+    let (mut app, _root) = interaction_app();
+    let root = "<observer_benchmark_plan>\nobjective: Add coverage for src/view.rs.\ntarget_files:\n- .spiral-coder/tui_replay.json\nrequired_checks:\n- verify replay\n</observer_benchmark_plan>\nFinal answer must include .spiral-coder/tui_replay.json.";
+    let anchor = intent::apply_intent_update(None, intent::normalize_intent_update(root, None), root);
+    assert_eq!(anchor.target.as_deref(), Some(".spiral-coder/tui_replay.json"));
+    app.coder_intent_anchor = Some(anchor);
+    app.coder_intent_anchor.as_mut().unwrap().target = Some("src/view.rs".into());
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, vec![json!({"role":"user","content":root})]));
+    app.coder.messages.push(msg(Role::Assistant, "[agent] iteration cap (7) reached."));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    assert_eq!(packet["task_obligations"]["artifact_scope"]["target_files"], json!([".spiral-coder/tui_replay.json"]));
+    assert_eq!(packet["task_obligations"]["artifact_scope"]["referenced_subjects"], json!(["src/view.rs"]));
+    assert_eq!(packet["task_obligations"]["pending_exact_checks"], json!(["verify replay"]));
+}
+
+#[test]
+fn past_governor_failures_are_not_presented_as_human_approval_rejections() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Fix src/lib.rs and run cargo test"}),
+        json!({"role":"assistant","tool_calls":[{"id":"protocol","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"protocol","content":"GOVERNOR BLOCKED\nMissing plan"}),
+        json!({"role":"assistant","tool_calls":[{"id":"approval","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"approval","content":"REJECTED BY USER"}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, messages.clone()));
+    let tui = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"approval_signals":{"rejections":["untrusted display"]}}), messages,
+        test_command:None, lang:"en".into(), reason:"stalled".into(), response:None, final_summary:None, repair_native:false,
+    }).packet;
+    for packet in [tui, web] {
+        let rejections = packet["approval_signals"]["rejections"].as_array().unwrap();
+        assert_eq!(rejections.len(), 1);
+        assert_eq!(rejections[0]["call_id"], "approval");
+        assert_eq!(packet["execution_evidence"]["actions"].as_array().unwrap().len(), 2);
+    }
+}
+
+#[test]
+fn both_observer_surfaces_use_current_native_receipts_over_stale_display_data() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Produce receipt.txt"}),
+        json!({"role":"assistant","tool_calls":[{"id":"old","function":{"name":"read_file","arguments":"{\"path\":\"receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"old","content":"[receipt.txt] (1 lines, 13 bytes)\nunique-old-stale"}),
+        json!({"role":"assistant","tool_calls":[{"id":"edit","function":{"name":"exec","arguments":"{\"command\":\"printf current > receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"edit","content":"OK (exit_code: 0)"}),
+        json!({"role":"assistant","tool_calls":[{"id":"new","function":{"name":"read_file","arguments":"{\"path\":\"receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"new","content":"[receipt.txt] (1 lines, 7 bytes)\nunique-fresh-current"}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,messages.clone()));
+    let tui = build_tui_meta_failure_packet_for_selector(&app,"last-fail").unwrap();
+    // The audit packet retains the old result; only the provider projection omits it.
+    assert!(tui.to_string().contains("unique-old-stale"));
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"recent_tool_results":["unique-old-stale"]}), messages,
+        test_command:None, lang:"en".into(), reason:"stalled".into(), response:None, final_summary:None, repair_native:false,
+    });
+    for prompt in [build_tui_next_action_prompt(&tui,"en","stalled"), web.prompt] {
+        assert!(prompt.contains("unique-fresh-current"));
+        assert!(!prompt.contains("unique-old-stale"));
+        assert!(prompt.contains("historical_action_count"));
+    }
 }

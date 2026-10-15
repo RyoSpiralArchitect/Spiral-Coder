@@ -1,8 +1,7 @@
 use super::{
     canonicalize_tool_call_command, classify_verify_level, compact_one_line,
-    infer_fix_existing_focus, is_observation_tool, is_src_read_file_tool_call,
-    parse_exec_command_from_args, ArtifactMode, FixExistingFocus, RecoveryStage, TaskHarness,
-    TaskLane, ToolCallData, Value,
+    infer_fix_existing_focus, is_observation_tool, parse_exec_command_from_args, ArtifactMode,
+    FixExistingFocus, RecoveryStage, TaskHarness, TaskLane, ToolCallData, Value,
 };
 use crate::execution_evidence::exec_may_have_run;
 
@@ -24,8 +23,15 @@ pub(in super::super) fn build_progress_gate_block(
 
     let history =
         super::super::meta_harness::observation_window_since_last_mutation(messages, test_cmd);
-    if file_tool_consec_failures > 0 && is_src_read_file_tool_call(tc) {
-        return None;
+    if file_tool_consec_failures > 0 {
+        let context = super::super::exec_verification::ExecVerificationContext::from_messages(
+            test_cmd, messages,
+        );
+        let edits =
+            super::super::edit_failure::EditFailureMemory::from_messages(messages, &context);
+        if edits.needs_target_read(&tc.name, &tc.arguments) {
+            return None;
+        }
     }
     let verify_without_mutation = harness.artifact_mode == ArtifactMode::ExistingFiles
         && last_mutation_step.is_none()
@@ -239,6 +245,69 @@ mod tests {
             None,
             0,
         )
+    }
+
+    #[test]
+    fn failed_edit_allows_one_target_reread_after_unrelated_diagnostics() {
+        for path in [
+            ".spiral-coder/tui_replay.json",
+            "docs/plan.md",
+            "src/lib.rs",
+        ] {
+            let mut messages =
+                vec![json!({"role":"user","content":"Repair the existing artifact"})];
+            let read = json!({"path":path});
+            let output = format!("[{path}] (2 lines, 30 bytes)\noriginal content");
+            tool(&mut messages, "read_file", read.clone(), &output);
+            tool(
+                &mut messages,
+                "patch_file",
+                json!({"path":path,"search":"missing","replace":"after"}),
+                "ERROR: search string not found",
+            );
+            tool(
+                &mut messages,
+                "exec",
+                json!({"command":"pwd"}),
+                "OK (exit_code: 0)\n/tmp/work",
+            );
+            let attempt = ToolCallData {
+                thought_signature: None,
+                id: "next".into(),
+                name: "read_file".into(),
+                arguments: json!({"path":format!("./{path}")}).to_string(),
+            };
+            let check = |messages: &[Value]| {
+                build_progress_gate_block(
+                    TaskHarness {
+                        lane: TaskLane::BenchmarkPlan,
+                        artifact_mode: ArtifactMode::ExistingFiles,
+                    },
+                    &attempt,
+                    messages,
+                    Some(RecoveryStage::Fix),
+                    None,
+                    None,
+                    1,
+                )
+            };
+            assert!(check(&messages).is_none(), "failed target reread: {path}");
+            tool(&mut messages, "read_file", read.clone(), "GOVERNOR BLOCKED");
+            assert!(
+                check(&messages).is_none(),
+                "blocked read cannot consume diagnosis"
+            );
+            tool(
+                &mut messages,
+                "read_file",
+                json!({"path":format!("./{path}")}),
+                &output,
+            );
+            assert!(
+                check(&messages).is_some(),
+                "successful diagnosis must not allow endless rereads"
+            );
+        }
     }
 
     #[test]

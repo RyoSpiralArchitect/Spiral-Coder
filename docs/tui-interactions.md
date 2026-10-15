@@ -81,3 +81,7 @@ keyboard encodings. The `TestBackend` and production input-handler checks cover
 rendering and routing contracts without asserting desktop computer-use coverage.
 A PTY smoke can additionally verify process startup, key input, terminal resizing,
 and terminal-mode restoration on exit.
+
+## Coupled Coder/Observer task
+
+The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.

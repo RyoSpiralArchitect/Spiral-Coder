@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "runtime_commit": "7efd46d8366a0fdb8d3ff5b839197908873627bb",
+  "binary_sha256": "efb34e29937d010c603e99380142587da431cb52cd44f1747fd8dab6efca61bb",
+  "deterministic_command": "bash scripts/check-local.sh",
+  "deterministic_log": "LOCAL_RAW/coupled-20261014-r14/check-local.log",
+  "deterministic_log_sha256": "e850c89364f47775fec2c07a346360799659b3875e15f8097cb9140b8f27ccc4",
+  "environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "checks": {
+    "rust_passed": 739,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "tui_replay_passed": 3,
+    "python_passed": 16,
+    "web_passed": 67,
+    "repo_map_passed": 14,
+    "lite_asset_count": 11
+  },
+  "covered_regressions": [
+    "Actual initial Cargo failure retains its unique workspace file and original check through pruning and role handoff; unrelated tools cannot diagnose it or clear proof obligations",
+    "New human task captures a new rollback checkpoint and clears the previous UI handle even before startup can fail; runtime continuations retain their checkpoint",
+    "Independent browser storage contexts reject replaced tasks and same-task stale receipts; late native Coder replies dispatch no mutations after replacement",
+    "HF subprocess reserves before inference and charges Observer repair and failures; exhausted budget spawns nothing and records supplied usage and elapsed time",
+    "Lite diagnosis has the shared hash and governor contract, gates only unsupported next-action and archive routes, and leaves busy state after showing a result",
+    "Actual HTTP TUI empty responses cannot replace the authored report with automatic checks; a following native report completes and repeated empty responses remain incomplete within the same cap",
+    "Actual HTTP TUI continuation after a progress-policy refusal executes the already diagnosed patch in one request without falsely completing verification; refusal cannot erase older real failures"
+  ],
+  "gui": {
+    "candidate_commit": "dff6f6517ca157ff18ab307b0ee232ec0bfe6ffb",
+    "result": "LOCAL_RAW/coupled-20261014-qa-r11/results.json",
+    "result_sha256": "dcfcb3fc809dba7bf9c6f89ef000e35b48b95921889dd4ab0445c9ddb388408d",
+    "manifest": "LOCAL_RAW/coupled-20261014-qa-r11/manifest.json",
+    "manifest_sha256": "f6932ed490de08909e3c4d0b14a4c3f518067320a7c306cf005e7f51a62e8a04",
+    "browser": "Browser plugin not available; bundled Playwright 1.62.1 and installed Chrome",
+    "viewports": [
+      "1440x1000",
+      "390x844"
+    ],
+    "provider": "local mock responses; separate from live model panels",
+    "checks": [
+      "page identity and meaningful content",
+      "no framework error overlay",
+      "no relevant application console errors; known favicon 404",
+      "Lite diagnosis button displays a result and clears busy state without calling absent endpoints",
+      "Rust diagnosis is saved and can be opened in the Meta archive",
+      "two real tabs: held old native reply cannot mutate files or overwrite a newly persisted task",
+      "desktop and mobile screenshots, no horizontal mobile overflow"
+    ],
+    "limits": [
+      "other browser engines and full mobile archive interaction not exercised",
+      "already dispatched server work is not undone",
+      "localStorage checks are not an atomic cross-tab transaction"
+    ]
+  },
+  "live_rounds": [
+    11,
+    12,
+    13,
+    14
+  ],
+  "unmodified_spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+}

@@ -10,6 +10,9 @@ use super::ChatProvider;
 
 pub const ANTHROPIC_VERSION: &str = "2023-06-01";
 
+#[cfg(test)]
+mod budget_tests;
+
 pub struct AnthropicProvider {
     client: reqwest::Client,
     model: String,
@@ -98,6 +101,7 @@ impl ChatProvider for AnthropicProvider {
             }
         }
 
+        let meter = crate::work_budget::begin(&payload)?;
         let resp = self
             .client
             .post(url)
@@ -111,12 +115,21 @@ impl ChatProvider for AnthropicProvider {
             .context("request failed")?;
 
         let status = resp.status();
+        if let Some(meter) = &meter {
+            meter.status(&format!("http_{}", status.as_u16()));
+        }
         if !status.is_success() {
             let body = resp.text().await.unwrap_or_default();
             return Err(http_error(status, &body));
         }
 
         let data: Value = resp.json().await.context("invalid JSON response")?;
+        if let Some(meter) = &meter {
+            if let Some(usage) = data.get("usage") {
+                meter.usage(usage);
+            }
+            meter.status("completed");
+        }
         let blocks = data
             .get("content")
             .and_then(|x| x.as_array())

@@ -579,7 +579,14 @@ fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
         anyhow::bail!("tui replay spec contains no cases");
     }
     for case in &spec.cases {
-        validate_case(case)?;
+        validate_case(case).map_err(|error| {
+            diagnostics::case_input_error(
+                path,
+                &std::env::current_dir().unwrap_or_default(),
+                case,
+                error,
+            )
+        })?;
     }
     Ok(spec)
 }
@@ -587,7 +594,8 @@ fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
 fn validate_case(case: &TuiReplayCase) -> Result<()> {
     if case.checks.is_empty() {
         anyhow::bail!(
-            "tui replay case '{}' requires at least one top-level checks entry; nested replay.checks is not part of the case schema",
+            "tui replay case '{}' requires at least one top-level checks entry; nested replay.checks or observer_response.checks is not part of the case schema.\n\
+Error: tui-replay checks must be a nonempty array on the case object, alongside id, coder_messages and observer_response. Move misplaced intended assertions to that array; an empty checks array does not repair this error. Preserve existing cases and assertions.",
             case.id
         );
     }

@@ -25,7 +25,10 @@ impl RecoveryGovernor {
         check: Option<&str>,
     ) {
         self.focus = super::recovery_focus::RecoveryFocus::from_messages(messages, root, check);
-        if self.focus.is_pending() && self.stage != Some(RecoveryStage::Diagnose) {
+        if self.focus.is_pending()
+            && (self.stage != Some(RecoveryStage::Diagnose)
+                || self.focus.progress_survives(messages, root, check))
+        {
             self.stage = Some(if self.focus.repaired() {
                 RecoveryStage::Verify
             } else if self.focus.observed() {
@@ -36,11 +39,15 @@ impl RecoveryGovernor {
         }
     }
 
-    /// A failed edit survives intervening reads and resume. Re-enter diagnosis
-    /// conservatively without weakening the benchmark repair ownership guard.
+    /// Keep both the failed edit and completed diagnosis across a role handoff.
+    /// A later failure's active recovery stage still takes precedence.
     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
         if self.stage.is_none() && edits.count() > 0 {
-            self.stage = Some(RecoveryStage::Diagnose);
+            self.stage = Some(if edits.target_was_read() {
+                RecoveryStage::Fix
+            } else {
+                RecoveryStage::Diagnose
+            });
         }
     }
 
@@ -122,7 +129,7 @@ impl RecoveryGovernor {
                 Some(format!(
                     "[Recovery Gate] stage=diagnose\n\
 You are in recovery mode. Do NOT start new work yet.\n\
-Required now: run diagnostics first (e.g. `pwd`, `ls`/`dir`, `git status`, `git rev-parse --show-toplevel`)."
+Required now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
                 ))
             }
             RecoveryStage::Fix => None, // allow edits/commands to fix
@@ -240,11 +247,10 @@ Required now: {}",
 }
 
 fn last_tool_looks_failed(messages: &[serde_json::Value]) -> bool {
-    let Some(last_tool) = messages
-        .iter()
-        .rev()
-        .find(|m| m.get("role").and_then(|v| v.as_str()) == Some("tool"))
-    else {
+    let Some(last_tool) = messages.iter().rev().find(|m| {
+        m["role"].as_str() == Some("tool")
+            && crate::execution_evidence::exec_may_have_run(m["content"].as_str().unwrap_or(""))
+    }) else {
         return false;
     };
     let content = last_tool
@@ -266,8 +272,40 @@ fn last_tool_looks_failed(messages: &[serde_json::Value]) -> bool {
         }
     }
     let low = content.to_ascii_lowercase();
-    low.contains("failed (exit_code:")
-        || low.contains("governor blocked")
-        || low.contains("rejected by user")
-        || low.contains("[result_file_err]")
+    low.contains("failed (exit_code:") || low.contains("[result_file_err]")
+}
+
+#[cfg(test)]
+mod refusal_tests {
+    use super::*;
+
+    fn exchange(messages: &mut Vec<serde_json::Value>, tool: &str, result: &str) {
+        let id = format!("call-{}", messages.len());
+        messages.push(json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":"{\"command\":\"cargo test\",\"path\":\"src/lib.rs\"}"}}]}));
+        messages.push(json!({"role":"tool","tool_call_id":id,"content":result}));
+    }
+
+    #[test]
+    fn refusals_do_not_create_execution_failure_or_erase_an_earlier_failure() {
+        for refusal in [
+            "GOVERNOR BLOCKED\n[Evaluator Loop]\nRequired now: patch_file\narguments: FAILED (exit_code: 7)",
+            "REJECTED BY USER\nFAILED (exit_code: 7)",
+        ] {
+            for (tool, result, failed) in [
+                ("read_file", "[src/lib.rs] (1 lines, 5 bytes)\nready", false),
+                ("exec", "OK (exit_code: 0)\nstdout:\nREJECTED BY USER", false),
+                ("exec", "FAILED (exit_code: 1)\nstderr:\nGOVERNOR BLOCKED", true),
+                ("patch_file", "OK: patched 'src/lib.rs'\n[auto-test] ✗ FAILED (exit 1)", true),
+            ] {
+                let mut messages = Vec::new();
+                exchange(&mut messages, tool, result);
+                exchange(&mut messages, "exec", refusal);
+                let mem = FailureMemory::from_recent_messages(&messages);
+                assert_eq!(mem.consecutive_failures, usize::from(tool == "exec" && failed));
+                let governor = RecoveryGovernor::restore_from_session(&mem, &messages, VerificationLevel::Behavioral);
+                assert_eq!(governor.stage, failed.then_some(RecoveryStage::Diagnose), "{result} followed by {refusal}");
+                assert!(!crate::execution_evidence::exec_succeeded(refusal));
+            }
+        }
+    }
 }

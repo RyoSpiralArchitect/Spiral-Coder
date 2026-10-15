@@ -122,6 +122,67 @@ fn semantic_replay_failure_retains_exact_input_focus_through_history_and_resume(
 }
 
 #[test]
+fn empty_replay_checks_localize_real_loader_error_and_survive_role_handoff() {
+    let root = tempfile::tempdir().unwrap();
+    let mut spec: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/runtime-benchmark-plan-tui-replay/.spiral-coder/tui_replay.json"
+    ))
+    .unwrap();
+    spec["cases"][0]["observer_response"]["checks"] = spec["cases"][0]["checks"].take();
+    spec["cases"][0].as_object_mut().unwrap().remove("checks");
+    let source = spec.to_string();
+    let (written, failed) =
+        crate::file_tools::tool_write_file(TARGET, &source, root.path().to_str());
+    assert!(!failed);
+    let error = crate::tui_replay::replay_spec_for_test(
+        &root.path().join(TARGET),
+        root.path(),
+        &root.path().join("reports"),
+    )
+    .unwrap_err();
+    let output = format!(
+        "{written}{}",
+        agent::failure_diagnostics::automatic_test_output(
+            "",
+            &format!("Error: {error}"),
+            1,
+            root.path().to_str().unwrap()
+        )
+    );
+    let compact = agent::compact_success_tool_result_for_history("write_file", &output);
+    let tc = call(
+        "missing-checks",
+        "write_file",
+        json!({"path":TARGET,"content":source}),
+    );
+    let mut focus = RecoveryFocus::default();
+    focus.record_result(&tc, &compact, root.path().to_str(), Some(CHECK), &context());
+    assert!(focus.requires_read(), "{compact}");
+    let mut messages = vec![json!({"role":"user","content":"Repair replay"})];
+    append(&mut messages, &tc, focus.tool_message(&tc, compact));
+    let obligations = agent::task_obligations::project(&messages, Some(CHECK));
+    assert_eq!(obligations.pending_recovery, vec![focus.hint().unwrap()]);
+    assert!(obligations.pending_recovery[0].contains("nonempty array"));
+    let mut g = RecoveryGovernor::default();
+    g.restore_focus(&messages, root.path().to_str(), Some(CHECK));
+    assert_eq!(g.stage, Some(RecoveryStage::Diagnose));
+    g.on_diagnostic_result(true);
+    assert_eq!(
+        g.stage,
+        Some(RecoveryStage::Diagnose),
+        "unrelated diagnostics cannot replace the required read"
+    );
+    let (read, output) = read_target(&mut g, root.path());
+    append(&mut messages, &read, g.focus.tool_message(&read, output));
+    assert_eq!(g.stage, Some(RecoveryStage::Fix));
+    assert!(
+        agent::task_obligations::project(&messages, Some(CHECK)).pending_recovery[0]
+            .contains("has been read")
+    );
+    assert!(g.focus.is_pending(), "a read is not a verified repair");
+}
+
+#[test]
 fn unrelated_replay_cannot_mark_a_pending_repair_as_written_or_clear_its_check() {
     let root = tempfile::tempdir().unwrap();
     let (mut governor, mut messages) = focused(root.path());

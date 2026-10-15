@@ -190,6 +190,10 @@ async fn serve_smoke_assets() {
         true,
         "/api/status features.meta_prompts should be true"
     );
+    assert_eq!(
+        status_json.pointer("/features/meta_diagnose_artifacts"),
+        Some(&serde_json::Value::Bool(true))
+    );
 
     let pending_json: serde_json::Value = client
         .get(format!("{base}/api/pending_edits"))

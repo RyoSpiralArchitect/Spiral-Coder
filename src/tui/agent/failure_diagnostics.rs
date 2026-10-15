@@ -79,13 +79,13 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
             }
             if exception
                 || line.starts_with("--> ")
+                || (line.starts_with("thread '") && line.contains(" panicked at "))
                 || [
                     "error[e",
                     "error: ",
                     "fatal: ",
                     "fatal error:",
                     "traceback (most recent call last)",
-                    "' panicked at ",
                 ]
                 .iter()
                 .any(|pattern| low.contains(pattern))
@@ -262,6 +262,20 @@ mod tests {
         );
         assert!(pruned.contains("--> src/compute.rs:41:9"), "{pruned}");
         assert!(!pruned.contains(&cwd));
+    }
+
+    #[test]
+    fn rust_panic_with_thread_id_keeps_location_before_a_noisy_output_tail() {
+        for thread in ["thread 'tests::greet'", "thread 'tests::greet' (461239)"] {
+            let stdout = format!(
+                "{thread} panicked at src/lib.rs:11:9:\nassertion `left == right` failed\n{}",
+                "cleanup progress\n".repeat(1000)
+            );
+            let output = super::super::build_failed_tool_output(&stdout, "error: test failed", 101);
+            assert!(output.contains("panicked at src/lib.rs:11:9:"), "{output}");
+            let summary = recovery_summary(&output, None);
+            assert!(summary.contains("src/lib.rs:11:9:"), "{summary}");
+        }
     }
 
     #[test]

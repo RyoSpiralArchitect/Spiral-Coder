@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "failure_modes": [
+    {
+      "id": "initial-check-failure-loses-target",
+      "status": "regression-covered",
+      "observed": "Round 10 Gemini source failure led to unrelated repository diagnostics; the initial explicit check had no shared localized recovery focus.",
+      "repair": "Localize conservative Rust/Python diagnostics to a unique existing workspace file, retain the original failed command, and require fresh target diagnosis before repair. Real Cargo, pruning, correlated history, and negative-location tests cover it.",
+      "commit": "7b49d96"
+    },
+    {
+      "id": "automatic-stop-checks-bypass-authored-report",
+      "status": "regression-covered-after-round-12",
+      "observed": "Round 11 Gemini proof task was runtime-completed after an empty response and automatic checks, with no final assistant message. Strict qualification remained failed.",
+      "repair": "An explicit final-report contract keeps no-tool closeout pending; a native report can complete within the same cap. Repeated empty responses cannot be promoted by automatic goal checks.",
+      "commit": "7b951b7"
+    },
+    {
+      "id": "control-refusal-restores-false-diagnosis",
+      "status": "regression-covered-after-round-13",
+      "observed": "Round 13 Gemini source task was told to patch by an evaluator policy, but continuation treated that non-executed refusal as a new execution failure and blocked the patch with Diagnose.",
+      "repair": "Skip non-executed refusals when restoring execution failures, retaining prior actual failures and keeping separate approval, plan, evidence and verification gates. Actual HTTP continuation now executes the already diagnosed patch within one request.",
+      "commit": "7efd46d"
+    },
+    {
+      "id": "required-tool-omission",
+      "status": "open",
+      "observed": "R11/R14 Mistral replay and R12/R13 Mistral source repairs pass artifact-oriented checks but omit the frozen patch_file requirement.",
+      "boundary": "Keep all strict failures. Do not loosen the requirement or manufacture a redundant patch."
+    },
+    {
+      "id": "artifact-edit-shape-and-budget",
+      "status": "open",
+      "observed": "R11/R13 GPT replay attempts malformed JSON or mismatched anchors. Final Gemini source uses an ineffective patch and exhausts the cap during diagnosis; final replay chases a referenced source and never adds the requested case.",
+      "next": "Improve error-specific next-action selection and recognition of artifact versus referenced subject, keeping complete baseline preservation and fixed caps."
+    },
+    {
+      "id": "acceptance-evidence-mapping-and-closeout",
+      "status": "open",
+      "observed": "Mistral proof/report tasks in all four rounds have current exact checks, but spend requests rechecking and leave acceptance items pending. R12 Observer advice claims stale receipt content after newer successful execution/read evidence.",
+      "next": "Ground acceptance mapping and Observer claims in the newest correlated evidence; remove redundant validation work without granting unproven completion."
+    },
+    {
+      "id": "general-quality-qualification",
+      "status": "open",
+      "observed": "Unchanged R11/R12 candidate scores 10/18; adaptive follow-ups score 4/9 and 5/9. All 12 replay outputs preserve old JSON, 7 add valid replay, and only 4 meet every frozen task requirement.",
+      "boundary": "No Observer-disabled control, reliability claim, general nonregression claim or model ranking."
+    }
+  ],
+  "review_fixes": [
+    {
+      "review_comment": 4267214478,
+      "priority": "P1",
+      "id": "previous-task-rollback-checkpoint",
+      "commit": "dff6f65",
+      "repair": "Clear the old checkpoint on a new task and before startup; capture current workspace for new task rollback; clear on root change."
+    },
+    {
+      "review_comment": 4267214504,
+      "priority": "P1",
+      "id": "stale-browser-tab-overwrites-work",
+      "commit": "dff6f65",
+      "repair": "Revalidate durable task snapshots before reserve, persist, advice and tool dispatch; stop old replies after another tab replaces task. Real two-tab delayed-reply QA confirms zero stale mutations."
+    },
+    {
+      "review_comment": 4267214490,
+      "priority": "P2",
+      "id": "lite-diagnosis-capability-gate",
+      "commit": "dff6f65",
+      "repair": "Gate next-action assistance at its endpoint, preserve ordinary diagnosis; repair shared hash, governor-contract route and explicit archive capability found in rendered QA."
+    },
+    {
+      "review_comment": 4267214515,
+      "priority": "P2",
+      "id": "hf-observer-budget-bypass",
+      "commit": "dff6f65",
+      "repair": "Reserve before subprocess spawn for all HF inference, including Observer and repair. Record failures, optional usage and elapsed time; terminate child on drop."
+    }
+  ]
+}

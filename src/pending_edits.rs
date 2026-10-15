@@ -26,7 +26,26 @@ struct PendingEditItem {
 
     // Internal payload (not sent to UI).
     content: String,
+    original: Option<String>,
+    budget: Option<crate::work_budget::WorkBudget>,
+    message: String,
     result: Option<serde_json::Value>,
+}
+
+struct PreparedEdit {
+    action: String,
+    path: String,
+    content: String,
+    original: Option<String>,
+    message: String,
+}
+
+fn read_optional(path: &Path) -> Result<Option<String>> {
+    match std::fs::read_to_string(path) {
+        Ok(content) => Ok(Some(content)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error.into()),
+    }
 }
 
 #[derive(Serialize, Clone)]
@@ -117,6 +136,65 @@ fn simple_diff(old: &str, new: &str) -> String {
 }
 
 impl PendingEditStore {
+    /// Prepare a native edit without mutating the workspace. Approval commits
+    /// this exact content only while the original file still matches.
+    pub async fn queue_tool_edit(
+        &self,
+        workspace_root: &Path,
+        request: &serde_json::Value,
+    ) -> Result<(String, String)> {
+        let field = |name: &str| {
+            request[name]
+                .as_str()
+                .ok_or_else(|| anyhow!("missing {name}"))
+        };
+        let action = request["action"].as_str().unwrap_or("write_file");
+        let path = field("path")?;
+        let abs = crate::file_tools::resolve_safe_path(path, workspace_root.to_str())?;
+        let path = abs
+            .strip_prefix(workspace_root)?
+            .to_string_lossy()
+            .into_owned();
+        let original = read_optional(&abs)?;
+        let existing = || {
+            original
+                .as_deref()
+                .ok_or_else(|| anyhow!("file does not exist: {path}"))
+        };
+        let (content, message) = match action {
+            "write_file" => (
+                field("content")?.to_string(),
+                format!("OK: wrote '{path}' (approved edit)"),
+            ),
+            "patch_file" => (
+                crate::file_tools::edit_preview::patch(
+                    &path,
+                    existing()?,
+                    field("search")?,
+                    field("replace")?,
+                )?,
+                format!("OK: patched '{path}' (approved edit)"),
+            ),
+            "apply_diff" => {
+                crate::file_tools::edit_preview::diff(&path, existing()?, field("diff")?)?
+            }
+            _ => return Err(anyhow!("unsupported edit action: {action}")),
+        };
+        let id = self
+            .queue_prepared(
+                workspace_root,
+                PreparedEdit {
+                    action: action.into(),
+                    path: path.clone(),
+                    content,
+                    original,
+                    message,
+                },
+            )
+            .await?;
+        Ok((id, path))
+    }
+
     pub fn new() -> Self {
         Self {
             items: Arc::new(Mutex::new(Vec::new())),
@@ -147,17 +225,37 @@ impl PendingEditStore {
         content: &str,
         action: &str,
     ) -> Result<String> {
-        let rel = Path::new(rel_path);
-        if !is_safe_rel_path(rel) {
-            return Err(anyhow!(
-                "unsafe path (must be relative, no '..'): {rel_path}"
-            ));
-        }
+        anyhow::ensure!(
+            is_safe_rel_path(Path::new(rel_path)),
+            "unsafe relative path: {rel_path}"
+        );
+        self.queue_prepared(
+            workspace_root,
+            PreparedEdit {
+                action: action.into(),
+                path: rel_path.into(),
+                content: content.into(),
+                original: read_optional(&workspace_root.join(rel_path))?,
+                message: format!("OK: wrote '{rel_path}' ({} bytes)", content.len()),
+            },
+        )
+        .await
+    }
 
+    async fn queue_prepared(&self, workspace_root: &Path, edit: PreparedEdit) -> Result<String> {
+        let rel = Path::new(&edit.path);
+        anyhow::ensure!(
+            is_safe_rel_path(rel),
+            "unsafe path (must be relative, no '..'): {}",
+            edit.path
+        );
         let abs = workspace_root.join(rel);
-        let old = std::fs::read_to_string(&abs).unwrap_or_default();
-        let preview = truncate_preview(content, 2200, 80);
-        let diff = simple_diff(&old, content);
+        let budget = crate::work_budget::current().map(|c| c.budget);
+        if let Some(budget) = &budget {
+            budget.check_write(&abs, &edit.content)?;
+        }
+        let preview = truncate_preview(&edit.content, 2200, 80);
+        let diff = simple_diff(edit.original.as_deref().unwrap_or_default(), &edit.content);
 
         let seq = self.seq.fetch_add(1, Ordering::Relaxed);
         let id = make_id(seq);
@@ -165,13 +263,16 @@ impl PendingEditStore {
         let mut items = self.items.lock().await;
         items.push(PendingEditItem {
             id: id.clone(),
-            action: action.to_string(),
+            action: edit.action,
             status: "pending".to_string(),
-            path: rel_path.to_string(),
+            path: edit.path,
             preview,
             diff,
             created_at_ms: now_ms(),
-            content: content.to_string(),
+            content: edit.content,
+            original: edit.original,
+            budget,
+            message: edit.message,
             result: None,
         });
 
@@ -224,6 +325,14 @@ impl PendingEditStore {
             ));
         }
         let abs = workspace_root.join(rel);
+        let current = read_optional(&abs)?;
+        anyhow::ensure!(
+            current == it.original,
+            "file changed since approval was requested; queue a fresh edit"
+        );
+        if let Some(budget) = &it.budget {
+            budget.check_write(&abs, &it.content)?;
+        }
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent)
                 .with_context(|| format!("create_dir_all failed: {}", parent.display()))?;
@@ -236,6 +345,7 @@ impl PendingEditStore {
         it.result = Some(serde_json::json!({
             "ok": true,
             "bytes_written": it.content.as_bytes().len(),
+            "message": it.message,
         }));
 
         Ok(PendingEditResolvedItem {
@@ -245,5 +355,40 @@ impl PendingEditStore {
             path: it.path.clone(),
             result: it.result.clone(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[tokio::test]
+    async fn all_native_edits_wait_for_approval_and_reject_stale_previews() {
+        for action in ["write_file", "patch_file", "apply_diff"] {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("note.txt");
+            std::fs::write(&path, "old\n").unwrap();
+            let store = PendingEditStore::new();
+            let request = json!({"action":action,"path":path,"content":"new\n",
+                "search":"old","replace":"new","diff":"@@ -1 +1 @@\n-old\n+new\n"});
+            let (id, relative) = store.queue_tool_edit(dir.path(), &request).await.unwrap();
+            assert_eq!(relative, "note.txt");
+            assert_eq!(std::fs::read_to_string(&path).unwrap(), "old\n");
+            std::fs::write(&path, "concurrent change\n").unwrap();
+            assert!(store.approve(dir.path(), &id).await.is_err());
+            assert_eq!(
+                std::fs::read_to_string(&path).unwrap(),
+                "concurrent change\n"
+            );
+            std::fs::write(&path, "old\n").unwrap();
+            let receipt = store.approve(dir.path(), &id).await.unwrap();
+            let result = receipt.result.unwrap();
+            assert!(crate::execution_evidence::file_edit_succeeded(
+                action,
+                result["message"].as_str().unwrap()
+            ));
+            assert_eq!(std::fs::read_to_string(&path).unwrap(), "new\n");
+        }
     }
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod action;
-pub(super) use action::tool_schemas;
+pub(crate) use action::tool_schemas;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -113,9 +113,9 @@ pub struct ObserverSuggestion {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ObserverSuggestionEnvelope {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub summary: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub primary_blocker: String,
     #[serde(default)]
     pub scores: ObserverScoreVector,
@@ -125,9 +125,9 @@ pub struct ObserverSuggestionEnvelope {
     pub suggestions: Vec<ObserverSuggestion>,
     #[serde(default, deserialize_with = "display_text")]
     pub quickest_check: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub why_this_first: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "display_text")]
     pub fallback: String,
 }
 
@@ -301,7 +301,7 @@ fn normalize_envelope(env: &mut ObserverSuggestionEnvelope) {
 
 /// Structural repair eligibility is independent of confidence. A valid but
 /// uncertain answer must not be retried merely to cross the forwarding threshold.
-pub(super) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
+pub(crate) fn action_validation_issue(env: Option<&ObserverSuggestionEnvelope>) -> Option<String> {
     let Some(env) = env else {
         return Some("structured JSON envelope could not be parsed".into());
     };
@@ -412,6 +412,31 @@ observer note
         assert_eq!(
             parsed.suggestions[0].suggested_tool.as_deref(),
             Some("read_file")
+        );
+    }
+
+    #[test]
+    fn optional_presentation_does_not_hide_invalid_action_from_bounded_repair() {
+        let mut raw = serde_json::json!({
+            "summary":null, "primary_blocker":null, "quickest_check":{},
+            "why_this_first":null, "fallback":null,
+            "suggestions":[{"kind":"patch_file","reason":"repair JSON","confidence":0.9,
+                "suggested_tool":"patch_file","suggested_args":{"path":"replay.json","search":"before","replace":"after"}}]
+        });
+        let issue = validation_issue_for_raw(&raw.to_string()).unwrap();
+        assert!(issue.contains("unknown variant `patch_file`"), "{issue}");
+        raw["suggestions"][0]["kind"] = serde_json::json!("edit");
+        assert!(validation_issue_for_raw(&raw.to_string()).is_none());
+        let parsed = parse_observer_suggestion_envelope(&raw.to_string()).unwrap();
+        assert!(parsed.fallback.is_empty());
+        assert_eq!(
+            primary_suggestion(&parsed).unwrap(),
+            &serde_json::from_value::<ObserverSuggestion>(raw["suggestions"][0].clone()).unwrap()
+        );
+        raw["suggestions"][0]["suggested_args"] = serde_json::json!(null);
+        assert!(
+            validation_issue_for_raw(&raw.to_string()).is_some(),
+            "action arguments remain strict"
         );
     }
 

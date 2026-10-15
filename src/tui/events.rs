@@ -1,4 +1,13 @@
-mod observer_assist;
+mod coder_run;
+use coder_run::{
+    build_coder_request_messages, send_coder_input, send_coder_message, send_coder_with_text,
+};
+mod coder_session;
+pub(crate) mod coupled_run;
+mod request_stream;
+use coder_session::CoderInput;
+use request_stream::RequestEvent;
+pub(crate) mod observer_assist;
 pub(crate) mod observer_request;
 use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
 use observer_request::{
@@ -820,6 +829,7 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                 let r = app.tool_root.as_deref().unwrap_or("(default: current dir)");
                 push!(format!("tool_root: {r}"));
             } else {
+                coder_session::change_root(app);
                 app.tool_root = Some(arg.to_string());
                 app.prefs_root = Some(arg.to_string());
                 let _ = std::fs::create_dir_all(arg);
@@ -1016,9 +1026,9 @@ pub enum AppEvent {
     Key(KeyEvent),
     Mouse(MouseEvent),
     Paste(String),
-    CoderToken(StreamToken),
-    ObserverToken(StreamToken),
-    ChatToken(StreamToken),
+    CoderToken(RequestEvent),
+    ObserverToken(RequestEvent),
+    ChatToken(RequestEvent),
     TasksPlanned(Vec<Task>),
     TaskPlanError(String),
     Tick,
@@ -1051,9 +1061,9 @@ pub async fn run_event_loop(
     app: &mut App,
     terminal: &mut ratatui::Terminal<impl ratatui::backend::Backend>,
 ) -> anyhow::Result<()> {
-    let (coder_tx, mut coder_rx) = mpsc::channel::<StreamToken>(256);
-    let (observer_tx, mut observer_rx) = mpsc::channel::<StreamToken>(256);
-    let (chat_tx, mut chat_rx) = mpsc::channel::<StreamToken>(256);
+    let (coder_tx, mut coder_rx) = mpsc::channel::<RequestEvent>(256);
+    let (observer_tx, mut observer_rx) = mpsc::channel::<RequestEvent>(256);
+    let (chat_tx, mut chat_rx) = mpsc::channel::<RequestEvent>(256);
     // Internal app events (background planners, etc.).
     let (internal_tx, mut internal_rx) = mpsc::channel::<AppEvent>(64);
     let mut event_stream = EventStream::new();
@@ -1088,9 +1098,11 @@ pub async fn run_event_loop(
             }
             AppEvent::Mouse(m) => handle_mouse(m, app),
             AppEvent::Paste(text) => input::paste(app, &text),
-            AppEvent::CoderToken(token) => handle_coder_token(token, app),
-            AppEvent::ObserverToken(token) => handle_observer_token(token, app),
-            AppEvent::ChatToken(token) => handle_chat_token(token, app),
+            AppEvent::CoderToken(token) => request_stream::dispatch(token, app, PaneId::Coder),
+            AppEvent::ObserverToken(token) => {
+                request_stream::dispatch(token, app, PaneId::Observer)
+            }
+            AppEvent::ChatToken(token) => request_stream::dispatch(token, app, PaneId::Chat),
             AppEvent::TasksPlanned(tasks) => handle_tasks_planned(tasks, app),
             AppEvent::TaskPlanError(e) => handle_task_plan_error(e, app),
             AppEvent::Tick => {
@@ -1103,11 +1115,18 @@ pub async fn run_event_loop(
                 // A — consume pending auto-fix (set by handle_observer_token on Done).
                 if let Some(fix_text) = app.pending_auto_fix.take() {
                     if !app.coder.streaming {
-                        send_coder_with_text(app, &coder_tx, fix_text).await;
+                        send_coder_input(app, &coder_tx, fix_text, CoderInput::RuntimeContinuation)
+                            .await;
                     }
                 }
                 if app.pending_observer_hint.is_some() && !app.coder.streaming {
-                    send_coder_with_text(app, &coder_tx, "Continue.".to_string()).await;
+                    send_coder_input(
+                        app,
+                        &coder_tx,
+                        "Continue.".to_string(),
+                        CoderInput::RuntimeContinuation,
+                    )
+                    .await;
                 }
             }
         }
@@ -1277,9 +1296,9 @@ fn handle_mouse_at(mouse: MouseEvent, app: &mut App, term_w: u16, term_h: u16) {
 async fn handle_key(
     key: KeyEvent,
     app: &mut App,
-    coder_tx: &mpsc::Sender<StreamToken>,
-    observer_tx: &mpsc::Sender<StreamToken>,
-    chat_tx: &mpsc::Sender<StreamToken>,
+    coder_tx: &mpsc::Sender<RequestEvent>,
+    observer_tx: &mpsc::Sender<RequestEvent>,
+    chat_tx: &mpsc::Sender<RequestEvent>,
     internal_tx: &mpsc::Sender<AppEvent>,
 ) -> anyhow::Result<bool> {
     use crossterm::event::KeyEventKind;
@@ -1409,6 +1428,7 @@ async fn handle_key(
             if let Some(handle) = app.chat_task.take() {
                 handle.abort();
             }
+            app.chat_generation = app.chat_generation.wrapping_add(1);
             app.ignore_chat_tokens = true;
             app.chat.finish_stream();
             app.chat.push_tool("(stream canceled)".to_string());
@@ -1418,7 +1438,9 @@ async fn handle_key(
                 if let Some(handle) = app.coder_task.take() {
                     handle.abort();
                 }
+                app.coder_generation = app.coder_generation.wrapping_add(1);
                 app.ignore_coder_tokens = true;
+                app.coder_session = None; // Restore the latest autosave on continuation.
                 app.coder.finish_stream();
                 app.coder.push_tool("(stream canceled)".to_string());
             }
@@ -1429,6 +1451,7 @@ async fn handle_key(
                 observer_request::discard_pending_assist(app);
                 app.observer_meta_mode = false;
                 app.observer_next_action_mode = false;
+                app.observer_generation = app.observer_generation.wrapping_add(1);
                 app.ignore_observer_tokens = true;
                 app.observer.finish_stream();
                 app.observer.push_tool("(stream canceled)".to_string());
@@ -1592,7 +1615,7 @@ async fn handle_key(
         // Send message
         KeyCode::Enter if !shift && apply_inline_picker(app, active_pane) => {}
         KeyCode::Enter if !shift => match app.focus {
-            Focus::Coder => send_coder_message(app, coder_tx).await,
+            Focus::Coder => send_coder_message(app, coder_tx, observer_tx).await,
             Focus::Right => match app.right_tab {
                 RightTab::Observer => send_observer_message(app, observer_tx, None).await,
                 RightTab::Chat => send_chat_message(app, chat_tx, internal_tx).await,
@@ -1670,7 +1693,11 @@ fn handle_coder_token(token: StreamToken, app: &mut App) {
         StreamToken::RealizeState(s) => {
             app.coder_realize_state = Some(s);
         }
-        StreamToken::Telemetry(_) => {}
+        StreamToken::Telemetry(event) => {
+            if event.event == "agent_outcome" {
+                app.coder_completed = event.data["completed"].as_bool();
+            }
+        }
         StreamToken::Done => {
             app.coder.finish_stream();
             finalize_active_observer_contract(app);
@@ -1683,6 +1710,8 @@ fn handle_coder_token(token: StreamToken, app: &mut App) {
         StreamToken::Error(e) => {
             app.coder.push_tool(format!("ERROR: {e}"));
             app.coder.finish_stream();
+            app.coder_completed = Some(false);
+            finalize_active_observer_contract(app);
         }
         StreamToken::Checkpoint(hash) => {
             app.last_git_checkpoint = Some(hash);
@@ -1798,7 +1827,47 @@ fn finalize_active_observer_contract(app: &mut App) {
         focus,
         env.primary_blocker
     ));
-    app.coder.push_tool(format!("{note} focus: {focus}"));
+    if let Some(session) = app.coder_session.as_ref() {
+        let evidence =
+            agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref());
+        let actions: Vec<_> = evidence
+            .actions
+            .iter()
+            .filter(|a| !app.active_observer_start.contains(&a.call_id))
+            .collect();
+        let executed = actions.iter().any(|a| a.executed == Some(true));
+        let succeeded = if actions.is_empty() || actions.iter().any(|a| a.succeeded.is_none()) {
+            None
+        } else {
+            Some(actions.iter().all(|a| a.succeeded == Some(true)))
+        };
+        let receipt = crate::work_budget::AssistReceipt {
+            assist_id: app
+                .active_assist_id
+                .take()
+                .unwrap_or(app.observer_generation),
+            continuation_id: app.coder_generation,
+            decision: decision.label().into(),
+            call_ids: actions.iter().map(|a| a.call_id.clone()).collect(),
+            executed,
+            succeeded,
+            completed: app.coder_completed,
+            pending_exact_checks: evidence.pending_exact_checks,
+        };
+        app.last_observer_contract_outcome = serde_json::to_string(&receipt).ok();
+        if let Err(error) = app.work_budget.record_assist(receipt) {
+            app.coder
+                .push_tool(format!("Could not save assist receipt: {error}"));
+        }
+        app.coder.push_tool(format!(
+            "{note} executed={executed} succeeded={succeeded:?} completed={:?}; focus: {focus}",
+            app.coder_completed
+        ));
+    } else {
+        app.coder.push_tool(format!(
+            "{note} Execution evidence unavailable. focus: {focus}"
+        ));
+    }
     app.active_observer_first_tool = None;
 }
 
@@ -1985,246 +2054,6 @@ fn parse_at_refs(text: &str) -> Vec<String> {
     refs
 }
 
-async fn send_coder_with_text(app: &mut App, tx: &mpsc::Sender<StreamToken>, text: String) {
-    let text = text.trim().to_string();
-    if text.is_empty() || app.coder.streaming {
-        return;
-    }
-
-    if let Some(selector) = parse_meta_diagnose_command(&text) {
-        send_meta_diagnose(app, tx, &selector).await;
-        return;
-    }
-
-    // Handle slash commands before sending to AI.
-    if handle_slash_command(&text, app, PaneId::Coder) {
-        return;
-    }
-    if let Some(problem) = validate_pane_ready(app, PaneId::Coder) {
-        app.coder.push_tool(problem);
-        return;
-    }
-
-    // Abort any previous task before starting a new one.
-    if let Some(handle) = app.coder_task.take() {
-        handle.abort();
-    }
-
-    // Reset state for the new send.
-    app.coder_iter = 0;
-    app.coder.scroll = 0; // pin to bottom for new output
-    app.ignore_coder_tokens = false;
-    app.coder_realize_state = None;
-
-    // Resolve tool_root early (needed for @ref file reads below).
-    let tool_root = app.tool_root.clone().or_else(|| {
-        std::env::current_dir()
-            .ok()
-            .map(|p| p.to_string_lossy().into_owned())
-    });
-
-    let intent_update = intent::normalize_intent_update(&text, app.coder_intent_anchor.as_ref());
-    let intent_anchor =
-        intent::apply_intent_update(app.coder_intent_anchor.as_ref(), intent_update, &text);
-    let intent_anchor_message = intent::render_intent_anchor(&intent_anchor);
-    observer_request::prepare_coder_continuation(app, &intent_anchor);
-    let observer_soft_hint = app.pending_observer_hint.take();
-    let observer_contract = app.pending_observer_contract.take();
-    if intent_anchor.requires_human_confirmation {
-        app.coder.push_tool(
-            "[intent] ambiguous update detected; keeping current scope until clarified."
-                .to_string(),
-        );
-    } else if intent_anchor.last_update_no_op {
-        app.coder
-            .push_tool("[intent] continue update preserved current scope.".to_string());
-    }
-    app.coder_intent_anchor = Some(intent_anchor.clone());
-    if observer_soft_hint.is_some() {
-        app.coder.push_tool(
-            "(observer suggestion) advisory applied to this coder continuation turn.".to_string(),
-        );
-    }
-    if observer_contract.is_some() {
-        app.coder.push_tool(
-            "(observer contract) next coder turn should explicitly accept, override, or defer the latest high-confidence observer suggestion."
-                .to_string(),
-        );
-    }
-    app.active_observer_contract = observer_contract.clone();
-    app.active_observer_first_tool = None;
-
-    // Expand @file references: read files and collect system messages to inject.
-    let at_refs = parse_at_refs(&text);
-    let mut at_ref_messages: Vec<ChatMessage> = Vec::new();
-    app.coder.push_user(text.clone());
-    for ref_path in &at_refs {
-        let (content, is_err) = crate::file_tools::tool_read_file(ref_path, tool_root.as_deref());
-        if is_err {
-            app.coder.push_tool(format!("📎 @{ref_path}: not found"));
-        } else {
-            // Header line is "[path] (N lines, B bytes)" — use it as the notification.
-            let header = content
-                .lines()
-                .next()
-                .unwrap_or(ref_path.as_str())
-                .to_string();
-            app.coder.push_tool(format!("📎 injected: {header}"));
-            at_ref_messages.push(ChatMessage {
-                role: "system".to_string(),
-                content: format!("[@{ref_path}]\n{content}"),
-            });
-        }
-    }
-    app.coder.streaming = true;
-    app.coder
-        .messages
-        .push(Message::new_streaming(Role::Assistant));
-
-    let history = app.coder.chat_history();
-    let cfg = app.coder_cfg.clone();
-    let max_iters = app.coder_max_iters.unwrap_or(agent::DEFAULT_MAX_ITERS);
-    let realize_preset = app.coder_realize_preset;
-
-    let persona_prompt = resolve_persona(&cfg.persona)
-        .map(|p| p.prompt)
-        .unwrap_or("");
-    let lang = language_instruction(Some(&app.lang), &cfg.mode);
-    let messages = build_coder_request_messages(
-        lang,
-        realize_preset,
-        &history,
-        intent_anchor_message,
-        observer_soft_hint,
-        observer_contract
-            .as_ref()
-            .map(build_observer_response_contract_message),
-        &at_ref_messages,
-        &text,
-        persona_prompt,
-    );
-
-    // Scan project context once per session (guarded by stack_label being None).
-    let (project_context, agents_md): (Option<String>, Option<String>) =
-        if app.project_stack_label.is_none() {
-            if let Some(ref root) = tool_root {
-                if let Some(ctx) = crate::project::ProjectContext::scan(root).await {
-                    app.project_stack_label = Some(ctx.stack_label());
-                    if app.project_test_cmd.is_none() {
-                        app.project_test_cmd = ctx.test_cmd.clone();
-                    }
-                    let agents = ctx.agents_md.clone();
-                    (Some(ctx.to_context_text()), agents)
-                } else {
-                    (None, None)
-                }
-            } else {
-                (None, None)
-            }
-        } else {
-            (None, None)
-        };
-    let test_cmd = app.project_test_cmd.clone();
-
-    let tx = tx.clone();
-    let handle = tokio::spawn(async move {
-        let approver = crate::approvals::AutoApprover;
-        if let Err(e) = agent::run_agentic(
-            messages,
-            &cfg,
-            tool_root.as_deref(),
-            max_iters,
-            tx.clone(),
-            project_context,
-            agents_md,
-            test_cmd,
-            false,
-            Some(realize_preset),
-            &approver,
-        )
-        .await
-        {
-            let _ = tx.send(StreamToken::Error(format!("{e:#}"))).await;
-        }
-    });
-    app.coder_task = Some(handle);
-}
-
-fn build_coder_request_messages(
-    lang: &str,
-    realize_preset: agent::RealizePreset,
-    history: &[ChatMessage],
-    intent_anchor_message: String,
-    observer_soft_hint: Option<String>,
-    observer_response_contract: Option<String>,
-    at_ref_messages: &[ChatMessage],
-    user_text: &str,
-    persona_prompt: &str,
-) -> Vec<ChatMessage> {
-    let system = agent::coder_system(persona_prompt, lang, Some(realize_preset));
-    let mut messages = vec![ChatMessage {
-        role: "system".to_string(),
-        content: system,
-    }];
-    messages.push(ChatMessage {
-        role: "system".to_string(),
-        content: intent_anchor_message,
-    });
-    if let Some(observer_hint) = observer_soft_hint {
-        messages.push(ChatMessage {
-            role: "system".to_string(),
-            content: observer_hint,
-        });
-    }
-    if let Some(observer_contract) = observer_response_contract {
-        messages.push(ChatMessage {
-            role: "system".to_string(),
-            content: observer_contract,
-        });
-    }
-    let hist_len = history.len();
-    for m in history.iter().take(hist_len.saturating_sub(1)) {
-        messages.push(m.clone());
-    }
-    messages.extend(at_ref_messages.iter().cloned());
-    messages.push(ChatMessage {
-        role: "user".to_string(),
-        content: user_text.to_string(),
-    });
-    messages
-}
-
-async fn send_coder_message(app: &mut App, tx: &mpsc::Sender<StreamToken>) {
-    let text = app.coder.textarea.lines().join("\n").trim().to_string();
-    if text.is_empty() || app.coder.streaming {
-        return;
-    }
-
-    if let Some(selector) = parse_meta_diagnose_command(&text) {
-        if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
-            app.coder.push_tool(problem);
-            return;
-        }
-        app.coder.textarea = tui_textarea::TextArea::default();
-        send_meta_diagnose(app, tx, &selector).await;
-        return;
-    }
-
-    // Handle slash commands before sending to AI.
-    if handle_slash_command(&text, app, PaneId::Coder) {
-        app.coder.textarea = tui_textarea::TextArea::default();
-        return;
-    }
-
-    if let Some(problem) = validate_pane_ready(app, PaneId::Coder) {
-        app.coder.push_tool(problem);
-        return;
-    }
-
-    app.coder.textarea = tui_textarea::TextArea::default();
-    send_coder_with_text(app, tx, text).await;
-}
-
 fn truncate_chars(s: &str, max_chars: usize) -> String {
     let s = s.trim_end();
     let mut it = s.chars();
@@ -2396,6 +2225,7 @@ fn meta_first_line(text: &str, max_chars: usize) -> String {
 fn meta_failure_like(text: &str) -> bool {
     let s = text.to_ascii_lowercase();
     s.contains("failed")
+        || s.contains("[agent] iteration cap (")
         || s.contains("[error]")
         || s.contains("[stop]")
         || s.contains("stderr:")
@@ -2413,7 +2243,9 @@ fn meta_failure_like(text: &str) -> bool {
 
 fn meta_failure_kind(text: &str) -> &'static str {
     let s = text.to_ascii_lowercase();
-    if s.contains("[stop]") || s.contains("no tool call") || s.contains("[goal_check]") {
+    if s.contains("[agent] iteration cap (") {
+        "incomplete_task"
+    } else if s.contains("[stop]") || s.contains("no tool call") || s.contains("[goal_check]") {
         "no_tool"
     } else if s.contains("write_file failed")
         || s.contains("patch_file failed")
@@ -2720,7 +2552,7 @@ fn preview_coder_continuation_messages(app: &App, text: &str) -> Vec<ChatMessage
     )
 }
 
-fn build_observer_suggestion_soft_hint(
+pub(crate) fn build_observer_suggestion_soft_hint(
     env: &suggestion::ObserverSuggestionEnvelope,
 ) -> Option<String> {
     let primary = suggestion::primary_suggestion(env)?;
@@ -2753,7 +2585,7 @@ Why: {reason}\n\
     ))
 }
 
-fn build_observer_response_contract(
+pub(crate) fn build_observer_response_contract(
     env: &suggestion::ObserverSuggestionEnvelope,
 ) -> Option<suggestion::ObserverSuggestionEnvelope> {
     let primary = suggestion::primary_suggestion(env)?;
@@ -2763,7 +2595,7 @@ fn build_observer_response_contract(
     Some(env.clone())
 }
 
-fn build_observer_response_contract_message(
+pub(crate) fn build_observer_response_contract_message(
     env: &suggestion::ObserverSuggestionEnvelope,
 ) -> String {
     let focus = if env.response_contract.focus_axes.is_empty() {
@@ -2840,7 +2672,7 @@ fn render_observer_suggestion_arg_value(value: &serde_json::Value) -> String {
     }
 }
 
-async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selector: &str) {
+async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<RequestEvent>, selector: &str) {
     if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
         app.observer.push_tool(problem);
         return;
@@ -2888,63 +2720,69 @@ async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selec
         .messages
         .push(Message::new_streaming(Role::Assistant));
 
-    let tx = tx.clone();
-    let handle = tokio::spawn(async move {
-        let client = reqwest::Client::new();
-        let provider = providers::build_provider(client, &cfg);
-        let system = format!(
-            "{}\n\n[Language]\n{}",
-            mode_prompt(&cfg.mode),
-            language_instruction(Some(&lang), &cfg.mode)
-        );
-        let req = ChatRequest {
-            messages: vec![
-                ChatMessage {
-                    role: "system".to_string(),
-                    content: system,
-                },
-                ChatMessage {
-                    role: "user".to_string(),
-                    content: prompt.clone(),
-                },
-            ],
-            temperature: Some(0.2),
-            max_tokens: Some(cfg.max_tokens.min(1_800)),
-            metadata: None,
-        };
+    let handle = request_stream::spawn(
+        tx,
+        &mut app.observer_generation,
+        Some(crate::work_budget::Context {
+            budget: app.work_budget.clone(),
+            role: "observer",
+        }),
+        move |tx| async move {
+            let client = reqwest::Client::new();
+            let provider = providers::build_provider(client, &cfg);
+            let system = format!(
+                "{}\n\n[Language]\n{}",
+                mode_prompt(&cfg.mode),
+                language_instruction(Some(&lang), &cfg.mode)
+            );
+            let req = ChatRequest {
+                messages: vec![
+                    ChatMessage {
+                        role: "system".to_string(),
+                        content: system,
+                    },
+                    ChatMessage {
+                        role: "user".to_string(),
+                        content: prompt.clone(),
+                    },
+                ],
+                temperature: Some(0.2),
+                max_tokens: Some(cfg.max_tokens.min(1_800)),
+                metadata: None,
+            };
 
-        let (raw_response, diagnosis, parse_ok, parse_error) = match provider.chat(&req).await {
-            Ok(resp) => {
-                let raw = resp.content.trim().to_string();
-                match serde_json::from_str::<serde_json::Value>(&raw) {
-                    Ok(v) if v.is_object() => (raw, v, true, serde_json::Value::Null),
-                    Ok(_) => (
-                        raw.clone(),
-                        serde_json::Value::Null,
-                        false,
-                        serde_json::Value::String("json_root_not_object".to_string()),
-                    ),
-                    Err(e) => (
-                        raw.clone(),
-                        serde_json::Value::Null,
-                        false,
-                        serde_json::Value::String(format!("invalid_json: {e}")),
-                    ),
+            let (raw_response, diagnosis, parse_ok, parse_error) = match provider.chat(&req).await {
+                Ok(resp) => {
+                    let raw = resp.content.trim().to_string();
+                    match serde_json::from_str::<serde_json::Value>(&raw) {
+                        Ok(v) if v.is_object() => (raw, v, true, serde_json::Value::Null),
+                        Ok(_) => (
+                            raw.clone(),
+                            serde_json::Value::Null,
+                            false,
+                            serde_json::Value::String("json_root_not_object".to_string()),
+                        ),
+                        Err(e) => (
+                            raw.clone(),
+                            serde_json::Value::Null,
+                            false,
+                            serde_json::Value::String(format!("invalid_json: {e}")),
+                        ),
+                    }
                 }
-            }
-            Err(e) => {
-                let msg = format!("[error] {e}");
-                (
-                    msg.clone(),
-                    serde_json::Value::Null,
-                    false,
-                    serde_json::Value::String(format!("request_failed: {e}")),
-                )
-            }
-        };
+                Err(e) => {
+                    let msg = format!("[error] {e}");
+                    (
+                        msg.clone(),
+                        serde_json::Value::Null,
+                        false,
+                        serde_json::Value::String(format!("request_failed: {e}")),
+                    )
+                }
+            };
 
-        let config_digest = {
-            let seed = json!({
+            let config_digest = {
+                let seed = json!({
                 "thread_id": packet.get("thread_id").cloned().unwrap_or(serde_json::Value::Null),
                 "coder_mode": packet.get("coder_mode").cloned().unwrap_or(serde_json::Value::Null),
                 "observer_mode": format!("{:?}", cfg.mode),
@@ -2953,45 +2791,48 @@ async fn send_meta_diagnose(app: &mut App, tx: &mpsc::Sender<StreamToken>, selec
                 "tool_root": tool_root,
             })
             .to_string();
-            let mut hasher = DefaultHasher::new();
-            seed.hash(&mut hasher);
-            format!("{:016x}", hasher.finish())
-        };
+                let mut hasher = DefaultHasher::new();
+                seed.hash(&mut hasher);
+                format!("{:016x}", hasher.finish())
+            };
 
-        let artifact = json!({
-            "ts": started_at,
-            "thread_id": packet.get("thread_id").cloned().unwrap_or(serde_json::Value::Null),
-            "target_message_id": packet.get("target_message_id").cloned().unwrap_or(serde_json::Value::Null),
-            "packet": packet,
-            "observer_prompt": prompt,
-            "raw_response": raw_response,
-            "diagnosis": diagnosis,
-            "parse_ok": parse_ok,
-            "parse_error": if parse_ok { serde_json::Value::Null } else { parse_error },
-            "provider": cfg.provider.to_string(),
-            "model": cfg.model.clone(),
-            "config_digest": config_digest,
-        });
-        let saved_note = match save_tui_meta_diagnose_artifact(tool_root.as_deref(), &artifact) {
-            Ok(path) => format!("\n\n[saved] {}", path.display()),
-            Err(e) => format!("\n\n[save_error] {e}"),
-        };
-        let display = if parse_ok {
-            format!(
-                "{}{}",
-                serde_json::to_string_pretty(
-                    artifact
-                        .get("diagnosis")
-                        .unwrap_or(&serde_json::Value::Null)
+            let artifact = json!({
+                "ts": started_at,
+                "thread_id": packet.get("thread_id").cloned().unwrap_or(serde_json::Value::Null),
+                "target_message_id": packet.get("target_message_id").cloned().unwrap_or(serde_json::Value::Null),
+                "packet": packet,
+                "observer_prompt": prompt,
+                "raw_response": raw_response,
+                "diagnosis": diagnosis,
+                "parse_ok": parse_ok,
+                "parse_error": if parse_ok { serde_json::Value::Null } else { parse_error },
+                "provider": cfg.provider.to_string(),
+                "model": cfg.model.clone(),
+                "config_digest": config_digest,
+            });
+            let saved_note = match save_tui_meta_diagnose_artifact(tool_root.as_deref(), &artifact)
+            {
+                Ok(path) => format!("\n\n[saved] {}", path.display()),
+                Err(e) => format!("\n\n[save_error] {e}"),
+            };
+            let display = if parse_ok {
+                format!(
+                    "{}{}",
+                    serde_json::to_string_pretty(
+                        artifact
+                            .get("diagnosis")
+                            .unwrap_or(&serde_json::Value::Null)
+                    )
+                    .unwrap_or_else(|_| raw_response.clone()),
+                    saved_note
                 )
-                .unwrap_or_else(|_| raw_response.clone()),
-                saved_note
-            )
-        } else {
-            format!("{raw_response}{saved_note}")
-        };
-        fake_stream_text(&tx, &display).await;
-    });
+            } else {
+                format!("{raw_response}{saved_note}")
+            };
+            fake_stream_text(&tx, &display).await;
+            None
+        },
+    );
     app.observer_task = Some(handle);
 }
 
@@ -3028,6 +2869,9 @@ mod tests {
     include!("interaction_tests.rs");
     include!("observer_assist_tests.rs");
     include!("observer_repair_tests.rs");
+    include!("coupled_loop_tests.rs");
+    include!("closeout_loop_tests.rs");
+    include!("refusal_continuation_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3544,7 +3388,7 @@ mod tests {
 
 async fn send_observer_message(
     app: &mut App,
-    tx: &mpsc::Sender<StreamToken>,
+    tx: &mpsc::Sender<RequestEvent>,
     override_text: Option<String>,
 ) {
     if app.observer.streaming {
@@ -3655,76 +3499,87 @@ async fn send_observer_message(
         .cloned()
         .collect();
 
-    let tx = tx.clone();
-    let handle = tokio::spawn(async move {
-        use crate::config::ProviderKind;
-        use crate::streaming::{stream_anthropic, stream_openai_compat};
-        let client = reqwest::Client::new();
+    let handle = request_stream::spawn(
+        tx,
+        &mut app.observer_generation,
+        Some(crate::work_budget::Context {
+            budget: app.work_budget.clone(),
+            role: "observer",
+        }),
+        move |tx| async move {
+            use crate::config::ProviderKind;
+            use crate::streaming::{stream_anthropic, stream_openai_compat};
+            let client = reqwest::Client::new();
 
-        let mut system = system_base;
+            let mut system = system_base;
 
-        // Add project context and AGENTS.md instructions (when tool_root is set).
-        if let Some(ref root) = tool_root {
-            if let Some(ctx) = crate::project::ProjectContext::scan(root).await {
-                let ctx_text = ctx.to_context_text();
-                if !ctx_text.trim().is_empty() {
-                    system.push_str("\n\n");
-                    system.push_str(ctx_text.trim_end());
-                }
-                if let Some(a) = ctx.agents_md.as_deref() {
-                    if !a.trim().is_empty() {
-                        system.push_str("\n\n[Project Instructions]\n");
-                        system.push_str(a.trim_end());
+            // Add project context and AGENTS.md instructions (when tool_root is set).
+            if let Some(ref root) = tool_root {
+                if let Some(ctx) = crate::project::ProjectContext::scan(root).await {
+                    let ctx_text = ctx.to_context_text();
+                    if !ctx_text.trim().is_empty() {
+                        system.push_str("\n\n");
+                        system.push_str(ctx_text.trim_end());
+                    }
+                    if let Some(a) = ctx.agents_md.as_deref() {
+                        if !a.trim().is_empty() {
+                            system.push_str("\n\n[Project Instructions]\n");
+                            system.push_str(a.trim_end());
+                        }
                     }
                 }
             }
-        }
 
-        // Add git diff payload (status + stat + patch) so Observer can quote real code.
-        let mut user_text = text;
-        if let Some(ref root) = tool_root {
-            if let Some(payload) =
-                build_git_diff_payload(root, checkpoint.as_deref(), OBS_GIT_DIFF_MAX_CHARS).await
-            {
-                user_text.push_str("\n\n[git diff payload]\n");
-                user_text.push_str(payload.trim_end());
-            }
-        }
-
-        let mut messages = vec![ChatMessage {
-            role: "system".to_string(),
-            content: system,
-        }];
-        messages.extend(history_prefix);
-        messages.push(ChatMessage {
-            role: "user".to_string(),
-            content: user_text,
-        });
-
-        let result = match cfg.provider {
-            ProviderKind::Anthropic => stream_anthropic(&client, &cfg, &messages, tx.clone()).await,
-            ProviderKind::Hf => {
-                let provider = providers::build_provider(client.clone(), &cfg);
-                let req = ChatRequest {
-                    messages: messages.clone(),
-                    temperature: Some(cfg.temperature),
-                    max_tokens: Some(cfg.max_tokens),
-                    metadata: None,
-                };
-                match provider.chat(&req).await {
-                    Ok(resp) => {
-                        fake_stream_text(&tx, &resp.content).await;
-                        Ok(())
-                    }
-                    Err(e) => Err(e),
+            // Add git diff payload (status + stat + patch) so Observer can quote real code.
+            let mut user_text = text;
+            if let Some(ref root) = tool_root {
+                if let Some(payload) =
+                    build_git_diff_payload(root, checkpoint.as_deref(), OBS_GIT_DIFF_MAX_CHARS)
+                        .await
+                {
+                    user_text.push_str("\n\n[git diff payload]\n");
+                    user_text.push_str(payload.trim_end());
                 }
             }
-            _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
-        };
-        if let Err(e) = result {
-            let _ = tx.send(StreamToken::Error(e.to_string())).await;
-        }
-    });
+
+            let mut messages = vec![ChatMessage {
+                role: "system".to_string(),
+                content: system,
+            }];
+            messages.extend(history_prefix);
+            messages.push(ChatMessage {
+                role: "user".to_string(),
+                content: user_text,
+            });
+
+            let result = match cfg.provider {
+                ProviderKind::Anthropic => {
+                    stream_anthropic(&client, &cfg, &messages, tx.clone()).await
+                }
+                ProviderKind::Hf => {
+                    let provider = providers::build_provider(client.clone(), &cfg);
+                    let req = ChatRequest {
+                        messages: messages.clone(),
+                        temperature: Some(cfg.temperature),
+                        max_tokens: Some(cfg.max_tokens),
+                        metadata: None,
+                    };
+                    match provider.chat(&req).await {
+                        Ok(resp) => {
+                            fake_stream_text(&tx, &resp.content).await;
+                            Ok(())
+                        }
+                        Err(e) => Err(e),
+                    }
+                }
+                _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
+            };
+            if let Err(e) = result {
+                let _ = tx.send(StreamToken::Error(e.to_string())).await;
+            }
+            None
+        },
+    );
     app.observer_task = Some(handle);
 }
 
@@ -3838,7 +3693,7 @@ async fn build_git_diff_payload(
 
 async fn send_chat_message(
     app: &mut App,
-    tx: &mpsc::Sender<StreamToken>,
+    tx: &mpsc::Sender<RequestEvent>,
     internal_tx: &mpsc::Sender<AppEvent>,
 ) {
     let text = app.chat.textarea.lines().join("\n").trim().to_string();
@@ -3906,8 +3761,7 @@ async fn send_chat_message(
         content: text,
     });
 
-    let tx = tx.clone();
-    let handle = tokio::spawn(async move {
+    let handle = request_stream::spawn(tx, &mut app.chat_generation, None, move |tx| async move {
         use crate::config::ProviderKind;
         use crate::streaming::{stream_anthropic, stream_openai_compat};
         let client = reqwest::Client::new();
@@ -3934,6 +3788,7 @@ async fn send_chat_message(
         if let Err(e) = result {
             let _ = tx.send(StreamToken::Error(e.to_string())).await;
         }
+        None
     });
     app.chat_task = Some(handle);
 }
@@ -4077,8 +3932,8 @@ fn extract_first_json_object(s: &str) -> Option<String> {
 
 async fn dispatch_selected_task(
     app: &mut App,
-    coder_tx: &mpsc::Sender<StreamToken>,
-    observer_tx: &mpsc::Sender<StreamToken>,
+    coder_tx: &mpsc::Sender<RequestEvent>,
+    observer_tx: &mpsc::Sender<RequestEvent>,
 ) {
     let Some(t) = app.tasks.get(app.tasks_cursor).cloned() else {
         return;
@@ -4093,7 +3948,10 @@ async fn dispatch_selected_task(
     }
 }
 
-async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<StreamToken>) {
+async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
+    if app.work_budget.remaining() < 2 || app.coder_completed == Some(true) {
+        return;
+    }
     if app.observer.streaming || app.coder.streaming {
         return;
     }
@@ -4110,7 +3968,10 @@ async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender
     send_next_action_assist(app, observer_tx, &selector, &reason_hint).await;
 }
 
-async fn maybe_auto_observe(app: &mut App, observer_tx: &mpsc::Sender<StreamToken>) {
+async fn maybe_auto_observe(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
+    if app.work_budget.remaining() < 2 {
+        return;
+    }
     if let Some((idx, content)) = app.auto_observe_trigger() {
         app.last_auto_obs_idx = Some(idx);
         let snippet = content.chars().take(2000).collect::<String>();
@@ -4129,7 +3990,7 @@ async fn maybe_auto_observe(app: &mut App, observer_tx: &mpsc::Sender<StreamToke
     }
 }
 
-async fn maybe_observer_lang_retry(app: &mut App, observer_tx: &mpsc::Sender<StreamToken>) {
+async fn maybe_observer_lang_retry(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
     let Some(expected) = app.observer_lang_pending.take() else {
         return;
     };
@@ -4207,44 +4068,52 @@ Keep proposals block keys in English (title/to_coder/severity/score/phase/impact
         },
     ];
 
-    let tx = observer_tx.clone();
-    let handle = tokio::spawn(async move {
-        let client = reqwest::Client::new();
-        let provider = crate::providers::build_provider(client, &cfg);
-        let req = crate::types::ChatRequest {
-            messages,
-            temperature: Some(0.0),
-            max_tokens: Some(cfg.max_tokens.min(1024)),
-            metadata: None,
-        };
-        match provider.chat(&req).await {
-            Ok(resp) => {
-                let mut chunk = String::new();
-                let mut n = 0usize;
-                const CHUNK_CHARS: usize = 28;
-                for ch in resp.content.chars() {
-                    chunk.push(ch);
-                    n += 1;
-                    if n >= CHUNK_CHARS {
-                        let _ = tx.send(StreamToken::Delta(chunk.clone())).await;
-                        chunk.clear();
-                        n = 0;
+    let handle = request_stream::spawn(
+        observer_tx,
+        &mut app.observer_generation,
+        Some(crate::work_budget::Context {
+            budget: app.work_budget.clone(),
+            role: "observer",
+        }),
+        move |tx| async move {
+            let client = reqwest::Client::new();
+            let provider = crate::providers::build_provider(client, &cfg);
+            let req = crate::types::ChatRequest {
+                messages,
+                temperature: Some(0.0),
+                max_tokens: Some(cfg.max_tokens.min(1024)),
+                metadata: None,
+            };
+            match provider.chat(&req).await {
+                Ok(resp) => {
+                    let mut chunk = String::new();
+                    let mut n = 0usize;
+                    const CHUNK_CHARS: usize = 28;
+                    for ch in resp.content.chars() {
+                        chunk.push(ch);
+                        n += 1;
+                        if n >= CHUNK_CHARS {
+                            let _ = tx.send(StreamToken::Delta(chunk.clone())).await;
+                            chunk.clear();
+                            n = 0;
+                        }
                     }
+                    if !chunk.is_empty() {
+                        let _ = tx.send(StreamToken::Delta(chunk)).await;
+                    }
+                    let _ = tx.send(StreamToken::Done).await;
                 }
-                if !chunk.is_empty() {
-                    let _ = tx.send(StreamToken::Delta(chunk)).await;
+                Err(e) => {
+                    let _ = tx.send(StreamToken::Error(e.to_string())).await;
                 }
-                let _ = tx.send(StreamToken::Done).await;
             }
-            Err(e) => {
-                let _ = tx.send(StreamToken::Error(e.to_string())).await;
-            }
-        }
-    });
+            None
+        },
+    );
     app.observer_task = Some(handle);
 }
 
-async fn maybe_observer_loop_retry(app: &mut App, observer_tx: &mpsc::Sender<StreamToken>) {
+async fn maybe_observer_loop_retry(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
     let Some(sim) = app.observer_loop_pending.take() else {
         return;
     };
@@ -4352,34 +4221,44 @@ async fn maybe_observer_loop_retry(app: &mut App, observer_tx: &mpsc::Sender<Str
     app.ignore_observer_tokens = false;
     app.observer.streaming = true;
 
-    let tx = observer_tx.clone();
-    let handle = tokio::spawn(async move {
-        use crate::config::ProviderKind;
-        use crate::streaming::{stream_anthropic, stream_openai_compat};
-        let client = reqwest::Client::new();
-        let result = match cfg.provider {
-            ProviderKind::Anthropic => stream_anthropic(&client, &cfg, &messages, tx.clone()).await,
-            ProviderKind::Hf => {
-                let provider = providers::build_provider(client.clone(), &cfg);
-                let req = ChatRequest {
-                    messages: messages.clone(),
-                    temperature: Some(cfg.temperature),
-                    max_tokens: Some(cfg.max_tokens),
-                    metadata: None,
-                };
-                match provider.chat(&req).await {
-                    Ok(resp) => {
-                        fake_stream_text(&tx, &resp.content).await;
-                        Ok(())
-                    }
-                    Err(e) => Err(e),
+    let handle = request_stream::spawn(
+        observer_tx,
+        &mut app.observer_generation,
+        Some(crate::work_budget::Context {
+            budget: app.work_budget.clone(),
+            role: "observer",
+        }),
+        move |tx| async move {
+            use crate::config::ProviderKind;
+            use crate::streaming::{stream_anthropic, stream_openai_compat};
+            let client = reqwest::Client::new();
+            let result = match cfg.provider {
+                ProviderKind::Anthropic => {
+                    stream_anthropic(&client, &cfg, &messages, tx.clone()).await
                 }
+                ProviderKind::Hf => {
+                    let provider = providers::build_provider(client.clone(), &cfg);
+                    let req = ChatRequest {
+                        messages: messages.clone(),
+                        temperature: Some(cfg.temperature),
+                        max_tokens: Some(cfg.max_tokens),
+                        metadata: None,
+                    };
+                    match provider.chat(&req).await {
+                        Ok(resp) => {
+                            fake_stream_text(&tx, &resp.content).await;
+                            Ok(())
+                        }
+                        Err(e) => Err(e),
+                    }
+                }
+                _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
+            };
+            if let Err(e) = result {
+                let _ = tx.send(StreamToken::Error(e.to_string())).await;
             }
-            _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
-        };
-        if let Err(e) = result {
-            let _ = tx.send(StreamToken::Error(e.to_string())).await;
-        }
-    });
+            None
+        },
+    );
     app.observer_task = Some(handle);
 }

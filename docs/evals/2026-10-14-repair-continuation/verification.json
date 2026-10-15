@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "runtime_commit": "fae3ea6e346be26395110a1158181dcd292fa09a",
+  "binary_sha256": "bd716703b9fd3ee0871b234e4e56b129330ddb9ede51bd88aef9313dc96b7340",
+  "deterministic_command": "bash scripts/check-local.sh",
+  "deterministic_log": "LOCAL_RAW/coupled-20261014-r10/check-local.log",
+  "deterministic_log_sha256": "3ebaf701716aaa47032e79cd41b525ad96062043283959ab4adc8a133a31b7e2",
+  "environment": {
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "checks": {
+    "rust_passed": 727,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "tui_replay_passed": 3,
+    "python_passed": 15,
+    "web_passed": 61,
+    "repo_map_passed": 14,
+    "lite_asset_count": 11
+  },
+  "covered_regressions": [
+    "Failed JSON/config/docs edits permit one successful target reread after unrelated or refused diagnostics; repeated unchanged reads remain gated",
+    "Real replay loader errors with misplaced checks retain input path and nonempty-array diagnosis through compact history and native recovery snapshots",
+    "Null optional Observer presentation fields do not hide invalid action kinds or discard valid typed actions; invalid action arguments remain rejected",
+    "Actual HTTP Observer-to-Coder continuation repairs a previously read failed edit within one Coder request, without claiming unperformed verification",
+    "Completed edit diagnosis restores Fix across resume while a later active failure retains Diagnose",
+    "Real shell output without a final newline retains directory changes, root-escape detection and exit status"
+  ],
+  "live_rounds": [
+    8,
+    9,
+    10
+  ],
+  "unmodified_spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+}

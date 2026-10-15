@@ -22,9 +22,10 @@ impl TaskOutcome {
     }
 
     /// Each pair records whether a runtime goal was requested and actually passed.
-    pub(super) fn verified_goal_checks(&mut self, goals: &[(bool, bool)]) {
+    pub(super) fn verified_goal_checks(&mut self, root: &str, goals: &[(bool, bool)]) {
         self.finalized = Some(
-            goals.iter().any(|(requested, _)| *requested)
+            !super::final_handoff::requires_authored_final_answer(root)
+                && goals.iter().any(|(requested, _)| *requested)
                 && goals
                     .iter()
                     .all(|(requested, passed)| !requested || *passed),
@@ -96,11 +97,19 @@ mod tests {
     #[test]
     fn goal_checks_require_every_requested_goal_to_pass() {
         let mut outcome = TaskOutcome::default();
-        outcome.verified_goal_checks(&[(true, false), (true, true)]);
+        outcome.verified_goal_checks("Run tests.", &[(true, false), (true, true)]);
         assert!(!outcome.completed(&[]));
-        outcome.verified_goal_checks(&[(false, false)]);
+        outcome.verified_goal_checks("Run tests.", &[(false, false)]);
         assert!(!outcome.completed(&[]));
-        outcome.verified_goal_checks(&[(true, true), (false, false)]);
+        outcome.verified_goal_checks("Run tests.", &[(true, true), (false, false)]);
         assert!(outcome.completed(&[]));
+        outcome.verified_goal_checks(
+            "Run tests. Final answer must include `review ready`.",
+            &[(true, true)],
+        );
+        assert!(
+            !outcome.completed(&[]),
+            "passing checks cannot replace an authored report"
+        );
     }
 }

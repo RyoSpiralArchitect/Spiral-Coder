@@ -2653,7 +2653,7 @@ class LiteHandler(BaseHTTPRequestHandler):
             **{
                 f"/assets/{name}": (name, "text/javascript; charset=utf-8")
                 for name in (
-                    "core/state.js", "core/ui.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
+                    "core/state.js", "core/work-loop.js", "core/ui.js", "core/sandbox.js", "core/exec.js", "observer/logic.js",
                     "vendor/react.production.min.js", "vendor/react-dom.production.min.js",
                 )
             },
@@ -2666,6 +2666,10 @@ class LiteHandler(BaseHTTPRequestHandler):
             contract = json.loads((REPO_ROOT / "shared/governor_contract.json").read_text(encoding="utf-8"))
             script = "window.__SPIRAL_CODER_GOVERNOR_CONTRACT_FALLBACK__ = " + json.dumps(contract) + ";\n"
             self._send_bytes(200, "text/javascript; charset=utf-8", script.encode("utf-8"))
+            return
+        if path == "/api/governor_contract":
+            contract = json.loads((REPO_ROOT / "shared/governor_contract.json").read_text(encoding="utf-8"))
+            self._send_json(200, contract)
             return
         if path == "/api/status":
             self._send_json(
@@ -2683,6 +2687,7 @@ class LiteHandler(BaseHTTPRequestHandler):
                         "project_scan": False,
                         "chat_tools": False,
                         "meta_prompts": True,
+                        "meta_diagnose_artifacts": False,
                         "edit_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_EDIT_APPROVAL"), True),
                         "command_approval_default": _as_bool(_env("SPIRAL_CODER_REQUIRE_COMMAND_APPROVAL"), True),
                     },

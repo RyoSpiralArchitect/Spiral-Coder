@@ -110,7 +110,7 @@ async fn coder_missing_key_keeps_unsent_draft() {
     let draft = "日本語の下書き\nkeep the second line";
     app.coder.textarea.insert_str(draft);
     let (tx, _rx) = mpsc::channel(8);
-    send_coder_message(&mut app, &tx).await;
+    send_coder_message(&mut app, &tx, &tx).await;
     assert_eq!(app.coder.textarea.lines().join("\n"), draft);
     assert!(app
         .coder
@@ -260,7 +260,7 @@ async fn missing_keys_allow_local_help_but_block_all_pane_sends() {
                 .textarea
                 .insert_str("unsent draft 日本語");
         }
-        send_coder_message(&mut app, &tx).await;
+        send_coder_message(&mut app, &tx, &tx).await;
         send_observer_message(&mut app, &tx, None).await;
         send_chat_message(&mut app, &tx, &internal).await;
         send_observer_message(&mut app, &tx, Some("manual review".into())).await;

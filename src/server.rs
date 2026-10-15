@@ -1,3 +1,4 @@
+mod work_context;
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,7 @@ const STYLES_CSS: &str = include_str!("../web/styles.css");
 const CORE_SANDBOX_JS: &str = include_str!("../web/core/sandbox.js");
 const CORE_EXEC_JS: &str = include_str!("../web/core/exec.js");
 const CORE_STATE_JS: &str = include_str!("../web/core/state.js");
+const CORE_WORK_JS: &str = include_str!("../web/core/work-loop.js");
 const CORE_UI_JS: &str = include_str!("../web/core/ui.js");
 const OBSERVER_LOGIC_JS: &str = include_str!("../web/observer/logic.js");
 const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
@@ -116,6 +118,7 @@ async fn serve_asset(stream: &mut TcpStream, req_path: &str) -> Result<()> {
         "styles.css" => Some(STYLES_CSS.as_bytes()),
         "core/sandbox.js" => Some(CORE_SANDBOX_JS.as_bytes()),
         "core/exec.js" => Some(CORE_EXEC_JS.as_bytes()),
+        "core/work-loop.js" => Some(CORE_WORK_JS.as_bytes()),
         "core/state.js" => Some(CORE_STATE_JS.as_bytes()),
         "core/ui.js" => Some(CORE_UI_JS.as_bytes()),
         "observer/logic.js" => Some(OBSERVER_LOGIC_JS.as_bytes()),
@@ -378,95 +381,146 @@ async fn handle_connection(mut stream: TcpStream, state: AppState) -> Result<()>
         }
     }
 
-    match (req.method.as_str(), req.path.as_str()) {
-        ("GET", "/") => {
-            if let Some(bytes) = read_dev_asset("index.html") {
-                return write_response(&mut stream, 200, "OK", "text/html; charset=utf-8", &bytes)
+    let work_context = match work_context::from_body(&req.body, &state.workspace_root) {
+        Ok(context) => context,
+        Err(error) => {
+            return write_json(
+                &mut stream,
+                400,
+                "Bad Request",
+                &serde_json::json!({"error":error.to_string()}),
+            )
+            .await
+        }
+    };
+    crate::work_budget::scope(work_context, async move {
+        match (req.method.as_str(), req.path.as_str()) {
+            ("GET", "/") => {
+                if let Some(bytes) = read_dev_asset("index.html") {
+                    return write_response(
+                        &mut stream,
+                        200,
+                        "OK",
+                        "text/html; charset=utf-8",
+                        &bytes,
+                    )
                     .await;
+                }
+                write_response(
+                    &mut stream,
+                    200,
+                    "OK",
+                    "text/html; charset=utf-8",
+                    INDEX_HTML.as_bytes(),
+                )
+                .await
             }
-            write_response(
-                &mut stream,
-                200,
-                "OK",
-                "text/html; charset=utf-8",
-                INDEX_HTML.as_bytes(),
-            )
-            .await
+            ("GET", p) if p.starts_with("/assets/") => serve_asset(&mut stream, p).await,
+            ("GET", "/api/status") => api_status(&mut stream, state).await,
+            ("POST", "/api/models") => api_models(&mut stream, state, &req.body).await,
+            ("POST", "/api/chat") => api_chat(&mut stream, state, &req.body).await,
+            ("POST", "/api/chat_stream") => api_chat_stream(&mut stream, state, &req.body).await,
+            ("POST", "/api/exec") => api_exec(&mut stream, &req.body).await,
+            ("POST", "/api/open") => api_open(&mut stream, &req.body).await,
+            ("POST", "/api/chat_tools") => api_chat_tools(&mut stream, state, &req.body).await,
+            ("POST", "/api/chat_tools_stream") => {
+                api_chat_tools_stream(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/observer_action") => {
+                match serde_json::from_slice::<crate::observer_action::Request>(&req.body) {
+                    Ok(request) => {
+                        write_json(
+                            &mut stream,
+                            200,
+                            "OK",
+                            &crate::observer_action::evaluate(request),
+                        )
+                        .await
+                    }
+                    Err(error) => {
+                        write_json(
+                            &mut stream,
+                            400,
+                            "Bad Request",
+                            &serde_json::json!({"error":error.to_string()}),
+                        )
+                        .await
+                    }
+                }
+            }
+            ("POST", "/api/observer_engine") => api_observer_engine(&mut stream, &req.body).await,
+            ("GET", "/api/pending_edits") => api_pending_edits(&mut stream, state).await,
+            ("POST", "/api/queue_edit") => api_queue_edit(&mut stream, state, &req.body).await,
+            ("POST", "/api/approve_edit") => api_approve_edit(&mut stream, state, &req.body).await,
+            ("POST", "/api/reject_edit") => api_reject_edit(&mut stream, state, &req.body).await,
+            ("GET", "/api/pending_commands") => api_pending_commands(&mut stream, state).await,
+            ("POST", "/api/queue_command") => {
+                api_queue_command(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/approve_command") => {
+                api_approve_command(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/reject_command") => {
+                api_reject_command(&mut stream, state, &req.body).await
+            }
+            ("GET", "/api/meta_prompts") => api_meta_prompts_get(&mut stream, state).await,
+            ("POST", "/api/meta_prompts") => {
+                api_meta_prompts_post(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/meta_diagnose/list") => {
+                api_meta_diagnose_list(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/meta_diagnose/read") => {
+                api_meta_diagnose_read(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/meta_diagnose/save") => {
+                api_meta_diagnose_save(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/write_file") => api_write_file(&mut stream, state, &req.body).await,
+            ("POST", "/api/read_file") => api_read_file(&mut stream, state, &req.body).await,
+            ("POST", "/api/patch_file") => api_patch_file(&mut stream, state, &req.body).await,
+            ("POST", "/api/search_files") => {
+                api_search_files_endpoint(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/list_dir") => api_list_dir(&mut stream, state, &req.body).await,
+            ("POST", "/api/glob_files") => api_glob_files(&mut stream, state, &req.body).await,
+            ("POST", "/api/apply_diff") => api_apply_diff(&mut stream, state, &req.body).await,
+            ("POST", "/api/stat_path") => api_stat_path(&mut stream, state, &req.body).await,
+            ("POST", "/api/rollback") => api_rollback(&mut stream, state, &req.body).await,
+            ("GET", "/api/governor_contract") => api_governor_contract(&mut stream, state).await,
+            ("GET", "/api/merge_gate") => api_merge_gate(&mut stream, state).await,
+            ("POST", "/api/merge_gate/approve") => {
+                api_merge_gate_approve(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/merge_gate/hold") => {
+                api_merge_gate_hold(&mut stream, state, &req.body).await
+            }
+            ("GET", "/api/harness_promotions") => api_harness_promotions(&mut stream, state).await,
+            ("POST", "/api/harness_promotions/approve") => {
+                api_harness_promotions_approve(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/harness_promotions/hold") => {
+                api_harness_promotions_hold(&mut stream, state, &req.body).await
+            }
+            ("POST", "/api/harness_promotions/apply") => {
+                api_harness_promotions_apply(&mut stream, state, &req.body).await
+            }
+            ("GET", "/api/project/scan") => {
+                api_project_scan(&mut stream, req.target.as_str()).await
+            }
+            _ => {
+                write_text(
+                    &mut stream,
+                    404,
+                    "Not Found",
+                    "text/plain; charset=utf-8",
+                    "not found\n",
+                )
+                .await
+            }
         }
-        ("GET", p) if p.starts_with("/assets/") => serve_asset(&mut stream, p).await,
-        ("GET", "/api/status") => api_status(&mut stream, state).await,
-        ("POST", "/api/models") => api_models(&mut stream, state, &req.body).await,
-        ("POST", "/api/chat") => api_chat(&mut stream, state, &req.body).await,
-        ("POST", "/api/chat_stream") => api_chat_stream(&mut stream, state, &req.body).await,
-        ("POST", "/api/exec") => api_exec(&mut stream, &req.body).await,
-        ("POST", "/api/open") => api_open(&mut stream, &req.body).await,
-        ("POST", "/api/chat_tools") => api_chat_tools(&mut stream, state, &req.body).await,
-        ("POST", "/api/chat_tools_stream") => {
-            api_chat_tools_stream(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/observer_engine") => api_observer_engine(&mut stream, &req.body).await,
-        ("GET", "/api/pending_edits") => api_pending_edits(&mut stream, state).await,
-        ("POST", "/api/queue_edit") => api_queue_edit(&mut stream, state, &req.body).await,
-        ("POST", "/api/approve_edit") => api_approve_edit(&mut stream, state, &req.body).await,
-        ("POST", "/api/reject_edit") => api_reject_edit(&mut stream, state, &req.body).await,
-        ("GET", "/api/pending_commands") => api_pending_commands(&mut stream, state).await,
-        ("POST", "/api/queue_command") => api_queue_command(&mut stream, state, &req.body).await,
-        ("POST", "/api/approve_command") => {
-            api_approve_command(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/reject_command") => api_reject_command(&mut stream, state, &req.body).await,
-        ("GET", "/api/meta_prompts") => api_meta_prompts_get(&mut stream, state).await,
-        ("POST", "/api/meta_prompts") => api_meta_prompts_post(&mut stream, state, &req.body).await,
-        ("POST", "/api/meta_diagnose/list") => {
-            api_meta_diagnose_list(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/meta_diagnose/read") => {
-            api_meta_diagnose_read(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/meta_diagnose/save") => {
-            api_meta_diagnose_save(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/write_file") => api_write_file(&mut stream, state, &req.body).await,
-        ("POST", "/api/read_file") => api_read_file(&mut stream, state, &req.body).await,
-        ("POST", "/api/patch_file") => api_patch_file(&mut stream, state, &req.body).await,
-        ("POST", "/api/search_files") => {
-            api_search_files_endpoint(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/list_dir") => api_list_dir(&mut stream, state, &req.body).await,
-        ("POST", "/api/glob_files") => api_glob_files(&mut stream, state, &req.body).await,
-        ("POST", "/api/apply_diff") => api_apply_diff(&mut stream, state, &req.body).await,
-        ("POST", "/api/stat_path") => api_stat_path(&mut stream, state, &req.body).await,
-        ("POST", "/api/rollback") => api_rollback(&mut stream, state, &req.body).await,
-        ("GET", "/api/governor_contract") => api_governor_contract(&mut stream, state).await,
-        ("GET", "/api/merge_gate") => api_merge_gate(&mut stream, state).await,
-        ("POST", "/api/merge_gate/approve") => {
-            api_merge_gate_approve(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/merge_gate/hold") => {
-            api_merge_gate_hold(&mut stream, state, &req.body).await
-        }
-        ("GET", "/api/harness_promotions") => api_harness_promotions(&mut stream, state).await,
-        ("POST", "/api/harness_promotions/approve") => {
-            api_harness_promotions_approve(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/harness_promotions/hold") => {
-            api_harness_promotions_hold(&mut stream, state, &req.body).await
-        }
-        ("POST", "/api/harness_promotions/apply") => {
-            api_harness_promotions_apply(&mut stream, state, &req.body).await
-        }
-        ("GET", "/api/project/scan") => api_project_scan(&mut stream, req.target.as_str()).await,
-        _ => {
-            write_text(
-                &mut stream,
-                404,
-                "Not Found",
-                "text/plain; charset=utf-8",
-                "not found\n",
-            )
-            .await
-        }
-    }
+    })
+    .await
 }
 
 #[cfg(test)]
@@ -1058,6 +1112,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
     let mut last_err: Option<String> = None;
     let mut want_completions = false;
     let mut resp: Option<reqwest::Response> = None;
+    let mut wire_request: Option<crate::work_budget::RequestGuard> = None;
 
     const MAX_CONNECT_RETRIES: usize = 3;
 
@@ -1077,6 +1132,21 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 http_req = http_req.bearer_auth(key);
             }
 
+            drop(wire_request.take());
+            wire_request = match crate::work_budget::begin(&payload_try) {
+                Ok(guard) => guard,
+                Err(error) => {
+                    return write_json(
+                        stream,
+                        409,
+                        "Conflict",
+                        &ApiError {
+                            error: error.to_string(),
+                        },
+                    )
+                    .await
+                }
+            };
             let r = match http_req.send().await {
                 Ok(r) => r,
                 Err(e) => {
@@ -1121,6 +1191,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
 
             // Some providers reject tool_choice. Retry once without it.
             if status == reqwest::StatusCode::BAD_REQUEST
+                && payload_try.get("tool_choice").is_some()
                 && body_text.to_ascii_lowercase().contains("tool_choice")
                 && (body_text.to_ascii_lowercase().contains("unsupported")
                     || body_text.to_ascii_lowercase().contains("unknown"))
@@ -1190,6 +1261,21 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
         if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
             http_req = http_req.bearer_auth(key);
         }
+        drop(wire_request.take());
+        wire_request = match crate::work_budget::begin(&comp_payload) {
+            Ok(guard) => guard,
+            Err(error) => {
+                return write_json(
+                    stream,
+                    409,
+                    "Conflict",
+                    &ApiError {
+                        error: error.to_string(),
+                    },
+                )
+                .await
+            }
+        };
         let r = match http_req.send().await {
             Ok(r) => r,
             Err(e) => {
@@ -1226,6 +1312,21 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
                     http_req2 = http_req2.bearer_auth(key);
                 }
+                drop(wire_request.take());
+                wire_request = match crate::work_budget::begin(&comp_payload) {
+                    Ok(guard) => guard,
+                    Err(error) => {
+                        return write_json(
+                            stream,
+                            409,
+                            "Conflict",
+                            &ApiError {
+                                error: error.to_string(),
+                            },
+                        )
+                        .await
+                    }
+                };
                 let r2 = match http_req2.send().await {
                     Ok(r) => r,
                     Err(e) => {
@@ -1300,6 +1401,9 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
         }
     };
 
+    if let Some(meter) = &wire_request {
+        meter.status("streaming");
+    }
     // Headers OK — switch to SSE mode.
     write_sse_header(stream, 200, "OK").await?;
 
@@ -1344,10 +1448,19 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
             if let Some(err) = v.get("error") {
                 let d = serde_json::to_string(&json!({"error": err.to_string()}))?;
                 write_sse_event(stream, "error", &d).await?;
+                if let Some(meter) = &wire_request {
+                    meter.status("completed");
+                }
                 write_sse_event(stream, "done", "{}").await?;
                 return Ok(());
             }
 
+            if let Some(usage) = v.get("usage").filter(|u| !u.is_null()) {
+                if let Some(meter) = &wire_request {
+                    meter.usage(usage);
+                }
+                write_sse_event(stream, "usage", &serde_json::to_string(usage)?).await?;
+            }
             // Track finish_reason.
             if let Some(fr) = v
                 .pointer("/choices/0/finish_reason")
@@ -1375,6 +1488,9 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 if let Err(error) = tool_calls.push(calls) {
                     let data = serde_json::to_string(&json!({"error": error.to_string()}))?;
                     write_sse_event(stream, "error", &data).await?;
+                    if let Some(meter) = &wire_request {
+                        meter.status("completed");
+                    }
                     write_sse_event(stream, "done", "{}").await?;
                     return Ok(());
                 }
@@ -1394,6 +1510,9 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
         "tool_calls": tc_json,
     }))?;
     write_sse_event(stream, "finish", &finish_data).await?;
+    if let Some(meter) = &wire_request {
+        meter.status("completed");
+    }
     write_sse_event(stream, "done", "{}").await?;
     Ok(())
 }
@@ -1883,19 +2002,14 @@ async fn api_pending_edits(stream: &mut TcpStream, state: AppState) -> Result<()
 }
 
 async fn api_queue_edit(stream: &mut TcpStream, state: AppState, body: &[u8]) -> Result<()> {
-    #[derive(Deserialize)]
-    struct Req {
-        action: Option<String>,
-        path: String,
-        content: String,
-    }
     #[derive(Serialize)]
     struct Res {
         ok: bool,
         approval_id: String,
+        path: String,
     }
 
-    let req: Req = match serde_json::from_slice(body) {
+    let req: serde_json::Value = match serde_json::from_slice(body) {
         Ok(r) => r,
         Err(e) => {
             return write_json(
@@ -1910,22 +2024,9 @@ async fn api_queue_edit(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
         }
     };
 
-    let action = req.action.unwrap_or_else(|| "write_file".to_string());
-    let path = req.path.trim();
-    if path.is_empty() {
-        return write_json(
-            stream,
-            400,
-            "Bad Request",
-            &ApiError {
-                error: "path is required".into(),
-            },
-        )
-        .await;
-    }
-    let approval_id = match state
+    let (approval_id, path) = match state
         .pending_edits
-        .queue_write_file(&state.workspace_root, path, &req.content, &action)
+        .queue_tool_edit(&state.workspace_root, &req)
         .await
     {
         Ok(id) => id,
@@ -1949,6 +2050,7 @@ async fn api_queue_edit(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
         &Res {
             ok: true,
             approval_id,
+            path,
         },
     )
     .await
@@ -2795,6 +2897,19 @@ async fn api_write_file(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
             .await;
         }
     }
+    if let Some(context) = crate::work_budget::current() {
+        if let Err(error) = context.budget.check_write(&abs, &req.content) {
+            return write_json(
+                stream,
+                400,
+                "Bad Request",
+                &ApiError {
+                    error: format!("Artifact preservation: {error}"),
+                },
+            )
+            .await;
+        }
+    }
     if let Err(e) = std::fs::write(&abs, req.content.as_bytes()) {
         return write_json(
             stream,
@@ -3389,6 +3504,8 @@ async fn api_status(stream: &mut TcpStream, state: AppState) -> Result<()> {
             pending_commands: true,
             chat_tools: true,
             observer_engine: true,
+            observer_action: true,
+            meta_diagnose_artifacts: true,
             meta_prompts: true,
             open_file: true,
             harness_promotions: true,
@@ -3855,6 +3972,8 @@ struct ApiFeatures {
     pending_commands: bool,
     chat_tools: bool,
     observer_engine: bool,
+    observer_action: bool,
+    meta_diagnose_artifacts: bool,
     meta_prompts: bool,
     open_file: bool,
     harness_promotions: bool,

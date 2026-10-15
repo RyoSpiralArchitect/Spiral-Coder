@@ -44,3 +44,8 @@ MazeGame/
 PuzzleGame/
 maze_game/
 maze-game/
+
+# Per-task native state and request receipts (not evaluation fixtures)
+.spiral-coder/tui-session.json
+.spiral-coder/tui-work.json
+.spiral-coder/web-budgets/

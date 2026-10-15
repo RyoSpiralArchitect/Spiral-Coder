@@ -12,7 +12,10 @@ store state without first choosing the correct owner.
 |---|---|---|---|---|
 | Provider/runtime config | `src/config.rs` | process / launch | CLI args + env | `PartialConfig`, `RunConfig` |
 | Project-local TUI prefs | `src/tui/prefs.rs` | cross-session | `.spiral-coder/tui_prefs.json` | `TuiPrefs`, `PanePrefs`, `coder_realize_preset`, pane model/provider/mode |
-| Session persistence | `src/agent_session.rs` | resumable run | `session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
+| Session persistence | `src/agent_session.rs` | resumable run | `session.json`, `.spiral-coder/tui-session.json` | `AgentSession`, `ObservationCache`, recent reflections, `SessionBridge` |
+| Coupled task budget and receipts | `src/work_budget.rs` | same human task, resumable | `.spiral-coder/tui-work.json` / `.spiral-coder/web-budgets/<task-id>.json` | immutable cap/root, wire requests, assist outcomes, preservation baselines |
+| Browser native task | `web/core/work-loop.js` | thread task, reloadable | `spiral-coder.work.v1.<thread>` localStorage | native calls/results, revision, pending advice, request/assist receipts |
+| Pending browser edits | `src/pending_edits.rs` | server process, until resolved | memory only | original/prepared content, preserved task budget, approval preview and correlated native result |
 | Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
 | Provider tool continuation | `src/streaming/provider_metadata.rs` | resumable exchange | optional `tool_calls[].extra_content.google.thought_signature` | opaque Google metadata attached to the original call; not execution evidence |
 | Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
@@ -228,7 +231,15 @@ Unresolved edit attempts:
   Identical decoded arguments are identified explicitly. The hint requests a
   minimal anchor from current contents and preservation of surrounding fields;
   it does not rewrite files or certify success. On resume, unresolved edit attempts
-  restore the Diagnose stage, preserving benchmark repair ownership.
+  restore Diagnose when the target has not been read since the failure, or Fix
+  after that successful read, preserving benchmark repair ownership. A later
+  failure's existing recovery stage takes precedence over the older diagnosis.
+- The failed edit's target receives one successful diagnostic reread before the
+  progress gate asks for a repair, including JSON/config/docs outside `src/`.
+  Unrelated commands and refused reads do not consume that allowance. The read
+  state is reconstructed from native exchanges; it neither clears the edit
+  failure nor creates proof. Truncated legacy tool arguments retain the existing
+  Rust-source-read fallback, also bounded by one successful read.
 - The latest successful reset exchange is protected during context pruning so
   retained older failures cannot reappear as unresolved after resume. The legacy
   telemetry name `file_tool_consec_failures` now reflects unresolved edit attempts.
@@ -236,9 +247,15 @@ Unresolved edit attempts:
 Localized verification failures:
 
 - `src/tui/agent/recovery_focus.rs` owns the target and cause of a localized
-  automatic-test failure. A successful edit and its first runtime automatic-test
-  failure status must be correlated before a focus can be created. Diagnostic
-  text is evidence to inspect, not an instruction or permission to run a command.
+  verification failure. A successful edit and its first runtime automatic-test
+  failure status must be correlated before an automatic-test focus is created.
+  `baseline_failure.rs` also retains an explicit failed check before any edit:
+  a correlated, actually executed verification must fail at the workspace root,
+  and its Rust compiler/panic or innermost Python traceback location must name
+  one existing file inside the canonical workspace. Ambiguous locations, outside
+  symlinks, unsupported shell syntax and directory-changing commands retain
+  generic recovery. Diagnostic text is evidence to inspect, not an instruction
+  or permission to run a command.
 - Unrelated successful diagnostics do not satisfy inspection of the failed
   target. A read of the target permits repair while retaining the failed check.
   A failed target read must permit broader diagnosis without declaring the
@@ -246,11 +263,14 @@ Localized verification failures:
   When the original pending check fails again, its current diagnostic replaces
   the old cause. Without a confirmed current location, the previous path becomes
   `last_confirmed` context and exact-path inspection is no longer required.
-- Successful edits do not certify repair. The original automatic test or its
-  exact configured command must pass when launched from the workspace root before this pending
+- Successful edits do not certify repair. The original automatic test or the
+  exact failed explicit command must pass when launched from the workspace root before this pending
   failure is cleared. A different configured check or another working directory
   cannot discharge the original obligation.
   Unrelated verification cannot authorize automatic closeout or explicit done.
+  A baseline failure records the command that actually failed, even when the
+  automatic-test configuration differs (for example, by `2>&1`). A read made
+  before that failure does not count as a fresh diagnosis.
 - Local tool-result metadata preserves validated failure context across a
   save/resume and context pruning, including after the file has changed. This
   raw metadata stays out of provider requests and does not grant execution proof;
@@ -469,7 +489,8 @@ free-form `quickest_check` remains display text and cannot substitute a differen
 instruction in either forwarded message. A suggestion is advisory, not an executed
 action or verification result.
 
-`quickest_check` is optional display text. A non-string value is ignored instead
+`summary`, `primary_blocker`, `quickest_check`, `why_this_first`, and `fallback`
+are optional display text. A non-string value is ignored instead
 of discarding the independently typed primary action; it is never converted into
 tool arguments. JSON syntax, suggestion kinds, argument types, confidence and
 response-contract rules retain their existing validation. The prompt requests a
@@ -728,7 +749,76 @@ If the answer is not clear, document it here first.
 ## Web server capabilities
 
 `GET /api/status` owns explicit `features.harness_promotions`,
-`features.merge_gate`, and `features.project_scan` booleans. The Rust server
+`features.merge_gate`, `features.project_scan`, and `features.meta_diagnose_artifacts` booleans. The Rust server
 provides these capabilities; the Lite server reports them as unavailable.
 The Web UI waits for status before polling optional endpoints and shows an
 explanation for unavailable review panels rather than an HTTP error.
+
+## Coupled task contracts
+
+See [One task through Coder and Observer](coupled-work-loop.md) for ownership, provenance, generations, request caps, approval feedback, and preservation rules. Browser-native work and the server wire ledger are separate: browser counts logical calls; the server also counts compatibility retries. Neither may represent an unknown usage value as zero.
+
+Browser work's optional `persistenceRevision` starts at zero for older records
+and advances on every durable write. The native-message `revision` retains its
+existing advice-validation meaning. Browser caches compare the durable snapshot
+on every read and before writes; replacement, removal or unavailable storage
+invalidates old handles. In-flight server work is not undone by invalidation.
+The HF provider uses the same `WorkBudget` scope before spawning inference, so
+Observer assistance and repair consume their task's shared cap without HTTP.
+Anthropic non-streaming calls also reserve through this scope before network
+I/O; HTTP status, available usage, and elapsed time stay in the same ledger.
+The Coder pane's completed plain-text conversation remains available to ordinary
+chat independently of browser-native work. Renewing a human task resets native
+evidence, not the conversation history passed to non-tool chat endpoints.
+
+TUI rollback checkpoints belong to the current human task. New human steering
+drops the previous checkpoint and requests a fresh one; runtime continuation
+retains it. Both new-task startup and workspace changes clear stale UI rollback
+handles before further asynchronous execution.
+
+Optional `accepted_plan` metadata on an admitted native assistant message is
+owned by `tui/agent/plan_resume.rs`. It contains the runtime-validated goal,
+steps, acceptance criteria, risks and assumptions, including a plan restored by
+compatibility rescue. It survives `AgentSession` JSON round trips and message
+pruning, is revalidated on resume, and never crosses a new human task boundary.
+`task_origin::provider_messages` strips it from provider requests. Older sessions
+fall back to parsing their assistant plan text; no schema migration is required.
+
+`task_scope::ArtifactScope` and `agent/task_obligations::TaskObligations` are
+derived views, not persistent authorities. They are recomputed from the current
+human task and correlated native exchanges. TUI and the Rust browser endpoint
+share this projection; display-packet fields cannot replace native requirements.
+`pending_recovery` carries the current localized verification failure and any
+unresolved edit's diagnostic/repair requirement. It derives from the existing
+correlated recovery snapshots and edit history, and is shared by both roles.
+Reading the target advances diagnosis but does not remove the repair obligation.
+On continuation, completed localized diagnosis may advance a generic restored
+`Diagnose` phase only when the latest actual failure belongs to that same check
+or target and is followed by the corresponding read/repair. A different newer
+failure keeps diagnosis pending. Old exec failure counters cannot erase a
+completed diagnosis; no repair or verification proof is fabricated by restoring
+the phase.
+
+`agent/current_evidence.rs` derives `ActionEvidence.result_step` and `freshness`
+from correlated tool results within the current human task. Labels distinguish
+current results, superseded attempts, results before a mutation, unexecuted
+refusals, and pending calls. Reads are conservatively historical after any later
+executed process (including a check that might write a receipt). Required exact
+checks keep their existing independent proof/invalidation rules. The full audit
+packet retains historical results; the Observer prompt drops those results and
+duplicated UI digests, and labels the selected failure as historical context.
+No additional persistent state or proof authority is introduced.
+
+`agent/acceptance_report.rs` projects plan criterion references and currently
+citable commands into `TaskObligations`. Native `done` retains the model's
+completed/remaining decisions. An invalid mapping requests an authored retry
+under the same request cap; it does not infer replacement criteria or assign
+an unrelated observation to them. Shell command references preserve case,
+redirects and full length. A known command is provenance, not a semantic proof
+that an arbitrary criterion is satisfied; the independent task/verification
+gates remain mandatory. Legacy automatic summaries are separate from authored
+`done` and cannot satisfy an explicit authored-report requirement.
+
+Protocol list fields preserve line boundaries. Bulleted acceptance items and
+their continuation lines remain separate criteria, avoiding implicit merging
+and truncation before criterion references are assigned.
