@@ -62,6 +62,30 @@ fn parse_numbered_steps(s: &str) -> Vec<String> {
 }
 
 pub(super) fn parse_plan_items(s: &str) -> Vec<String> {
+    let bullet = |line: &str| {
+        line.trim()
+            .strip_prefix("- ")
+            .or_else(|| line.trim().strip_prefix("* "))
+            .or_else(|| line.trim().strip_prefix("• "))
+            .map(str::to_owned)
+    };
+    if s.lines()
+        .find(|line| !line.trim().is_empty())
+        .is_some_and(|line| bullet(line).is_some())
+    {
+        let mut items = Vec::<String>::new();
+        for line in s.lines().map(str::trim).filter(|line| !line.is_empty()) {
+            if let Some(item) = bullet(line) {
+                items.push(item);
+            } else if let Some(last) = items.last_mut() {
+                last.push(' ');
+                last.push_str(line);
+            } else {
+                items.push(line.into());
+            }
+        }
+        return items;
+    }
     let numbered = parse_numbered_steps(s);
     if !numbered.is_empty() {
         return numbered;

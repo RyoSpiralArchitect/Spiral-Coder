@@ -11,6 +11,9 @@ pub(crate) struct ActionEvidence {
     pub result: Option<String>,
     pub executed: Option<bool>,
     pub succeeded: Option<bool>,
+    /// Tool-result order, not assistant prose or call scheduling order.
+    pub result_step: Option<usize>,
+    pub freshness: super::current_evidence::Freshness,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,6 +25,13 @@ pub(crate) struct ExecutionPacket {
 }
 
 impl ExecutionPacket {
+    pub(crate) fn current_actions(&self) -> Vec<&ActionEvidence> {
+        self.actions
+            .iter()
+            .filter(|action| action.freshness == super::current_evidence::Freshness::Current)
+            .collect()
+    }
+
     pub(crate) fn approval_rejections(&self) -> Vec<&ActionEvidence> {
         self.actions
             .iter()
@@ -38,6 +48,7 @@ impl ExecutionPacket {
 pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) -> ExecutionPacket {
     let messages = crate::task_origin::current_task_messages(messages);
     let mut actions = Vec::<ActionEvidence>::new();
+    let mut result_step = 0;
     for message in messages {
         if let Some(calls) = message["tool_calls"].as_array() {
             for call in calls {
@@ -54,15 +65,18 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                         result: None,
                         executed: None,
                         succeeded: None,
+                        result_step: None,
+                        freshness: super::current_evidence::Freshness::Pending,
                     });
                 }
             }
         }
         if message["role"] == "tool" {
+            result_step += 1;
             let Some(action) = actions
                 .iter_mut()
                 .rev()
-                .find(|a| message["tool_call_id"] == a.call_id)
+                .find(|a| message["tool_call_id"] == a.call_id && a.result.is_none())
             else {
                 continue;
             };
@@ -89,10 +103,12 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 }
             };
             action.result = Some(result.chars().take(2400).collect());
+            action.result_step = Some(result_step);
         }
     }
     let (_, mutation_step, build, behavioral, _) =
         restore_done_gate_from_messages(messages, test_cmd);
+    super::current_evidence::mark(&mut actions, messages, test_cmd, mutation_step);
     ExecutionPacket {
         actions,
         mutation_step,

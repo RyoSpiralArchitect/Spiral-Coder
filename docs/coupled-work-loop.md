@@ -134,3 +134,28 @@ and releases the busy state after displaying the diagnostic result.
 `scripts/run_coupled_pilot.py` runs `tests/fixtures/coupled-loop-v1.json` in isolated copies. Provider keys come only from environment variables and are not written to receipts. The original runtime suite and its `patch_file` requirement remain unchanged. The new suite includes a nonempty secondary provenance list and an unknown JSON field so lossy rewrites cannot pass unnoticed.
 
 Deterministic tests, mock HTTP/UI exercises, and bounded live results are separate evidence classes. See [the current evaluation record](evals/2026-10-14-baseline-and-review/README.md), [repair-continuation rounds](evals/2026-10-14-repair-continuation/README.md), [task-obligation rounds](evals/2026-10-14-task-obligations/README.md), and [earlier rounds](evals/2026-10-14-coupled-loop/README.md) for candidate hashes, fixed caps, failure ledgers, and limitations.
+# Current evidence and authored closeout
+
+The shared task projection supplies stable `acceptance N` references and current
+commands to both roles. A malformed completion payload stays pending so the
+Coder can correct the mapping without rerunning passed checks. The runtime no
+longer reconstructs an authored payload by guessing which check proves each
+criterion. Full shell commands must match recorded evidence, including case and
+redirects. These identities establish provenance; they do not judge the semantic
+sufficiency of every human-language claim.
+
+Observer prompts prioritize current correlated native results and omit old tool
+outputs and duplicate display digests. The selected failure is explicitly
+historical context. Raw audit packets retain the full history for diagnosis.
+This reduces contradictory input but cannot guarantee that a model will draw
+the correct conclusion from the current evidence.
+
+JSON reads expose bounded append recipes for a root array or top-level array
+fields. Each recipe supplies a unique exact `search` and a prefix/suffix around
+the insertion point; the Coder must supply the new JSON item and invoke the
+existing `patch_file` tool. No item is generated or executed by the recipe.
+Malformed candidates blocked by the existing preservation policy report the
+candidate's error location and recipes for the unchanged original. Unknown
+fields, nested evidence, and old assertions remain covered by the same complete
+preservation check. Recipes are intentionally omitted where a bounded unique
+anchor cannot be supplied. They are diagnostic text, not verification evidence.

@@ -1,14 +1,24 @@
 #[tokio::test]
 async fn empty_provider_turn_cannot_complete_a_task_without_its_authored_report() {
-    assert_authored_closeout_retry(false).await;
+    assert_authored_closeout_retry(false, false).await;
 }
 
 #[tokio::test]
 async fn empty_provider_turn_can_recover_to_a_native_authored_report() {
-    assert_authored_closeout_retry(true).await;
+    assert_authored_closeout_retry(true, false).await;
 }
 
-async fn assert_authored_closeout_retry(report: bool) {
+#[tokio::test]
+async fn invalid_authored_acceptance_is_retried_without_reassigning_proof() {
+    assert_authored_closeout_retry(true, true).await;
+}
+
+#[tokio::test]
+async fn repeated_invalid_acceptance_stays_incomplete_within_the_request_cap() {
+    assert_authored_closeout_retry(false, true).await;
+}
+
+async fn assert_authored_closeout_retry(report: bool, invalid_acceptance: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -68,22 +78,26 @@ async fn assert_authored_closeout_retry(report: bool) {
             json!({"choices":[{"delta":delta,"finish_reason":"stop"}]})
         )
     };
+    let marker = if invalid_acceptance { "[Authored acceptance mapping]" } else { "[Closeout retry]" };
+    let content = "<plan>\ngoal: Finish prepared .spiral-coder/runtime_eval.json and docs/runtime-architecture.md artifacts for src/tui/agent/benchmark_proof.rs using current verification evidence\nsteps:\n1. Inspect the retained native verification evidence\n2. Report the verified artifacts\nacceptance:\n- Both artifacts include src/tui/agent/benchmark_proof.rs\n- verification_receipt.txt contains verified-current\n- Fresh exec proof is provided\nrisks: do not claim stale proof\nassumptions: recorded tool results are current\n</plan>\n<think>\ngoal: report verified artifacts\nstep: 2\ntool: done\nrisk: stale proof\ndoubt: none\nnext: finish the original report\nverify: retained native exact checks\n</think>";
+    let payload = |valid: bool| {
+        let mut args = json!({"summary":"verification_receipt.txt contains verified-current; fresh exec proof is recorded.","completed_acceptance":["acceptance 1","acceptance 2","acceptance 3"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"acceptance 1","command":first_check},{"criterion":"acceptance 2","command":last_check},{"criterion":"acceptance 3","command":last_check}]});
+        if !valid { args["acceptance_evidence"][2]["criterion"] = json!("acceptance 1"); }
+        json!({"content":content,"tool_calls":[{"index":0,"id":if valid {"authored-closeout"} else {"invalid-closeout"},"type":"function","function":{"name":"done","arguments":args.to_string()}}]})
+    };
     let empty = server.mock(|when, then| {
-        when.method(POST)
-            .path("/chat/completions")
-            .matches(|request| {
-                !String::from_utf8_lossy(request.body.as_deref().unwrap_or_default())
-                    .contains("[Closeout retry]")
-            });
-        then.status(200)
-            .header("content-type", "text/event-stream")
-            .body(sse(json!({"content":""})));
+        when.method(POST).path("/chat/completions").matches(|request| {
+            let body = String::from_utf8_lossy(request.body.as_deref().unwrap_or_default());
+            !body.contains("[Authored acceptance mapping]") && !body.contains("[Closeout retry]")
+        });
+        then.status(200).header("content-type", "text/event-stream")
+            .body(sse(if invalid_acceptance { payload(false) } else { json!({"content":""}) }));
     });
     let retry = server.mock(|when,then| {
-        when.method(POST).path("/chat/completions").body_contains("[Closeout retry]");
-        let delta = if report {
-            json!({"content":"<plan>\ngoal: Report current verification proof\nsteps:\n1. Inspect the retained native verification evidence\n2. Report the verified artifacts\nacceptance:\n- Both required checks passed after the edit\nrisks: do not claim stale proof\nassumptions: recorded tool results are current\n</plan>\n<think>\ngoal: report verified artifacts\nstep: 2\ntool: done\nrisk: stale proof\ndoubt: none\nnext: finish the original report\nverify: retained native exact checks\n</think>","tool_calls":[{"index":0,"id":"authored-closeout","type":"function","function":{"name":"done","arguments":json!({"summary":"verification_receipt.txt contains verified-current; fresh exec proof is recorded.","completed_acceptance":["Both required checks passed after the edit"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"Both required checks passed after the edit","command":last_check,"evidence":"exit_code: 0"}]}).to_string()}}]})
-        } else { json!({"content":""}) };
+        when.method(POST).path("/chat/completions").body_contains(marker);
+        let delta = if report { payload(true) }
+            else if invalid_acceptance { payload(false) }
+            else { json!({"content":""}) };
         then.status(200).header("content-type","text/event-stream").body(sse(delta));
     });
     let (tx, mut rx) = mpsc::channel(256);
@@ -130,6 +144,10 @@ async fn assert_authored_closeout_retry(report: bool) {
             .count(),
         usize::from(report)
     );
+    if invalid_acceptance {
+        assert!(messages.iter().any(|m| m["tool_call_id"] == "invalid-closeout" && m["content"].as_str().unwrap_or("").starts_with("GOVERNOR BLOCKED")));
+        assert!(!app.coder.messages.iter().any(|m| m.content.contains("[compat] repaired done acceptance")));
+    }
     assert!(
         app.coder
             .messages

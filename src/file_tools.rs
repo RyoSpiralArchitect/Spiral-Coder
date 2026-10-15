@@ -13,6 +13,7 @@ mod diagnostics;
 #[cfg(test)]
 mod diagnostics_tests;
 pub(crate) mod edit_preview;
+mod json_repair;
 
 // ── Path safety ───────────────────────────────────────────────────────────────
 
@@ -117,6 +118,11 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
             let byte_count = content.len();
             let char_count = content.chars().count();
 
+            let json_guidance = if path.ends_with(".json") {
+                json_repair::guidance(&content)
+            } else {
+                String::new()
+            };
             let (shown, truncated) = if char_count > MAX_READ_CHARS {
                 let s: String = content.chars().take(MAX_READ_CHARS).collect();
                 (s, true)
@@ -132,7 +138,7 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
                 String::new()
             };
 
-            (format!("{header}{shown}{trunc_note}"), false)
+            (format!("{header}{shown}{trunc_note}{json_guidance}"), false)
         }
         Err(e) => (format!("ERROR reading '{path}': {e}"), true),
     }
@@ -1242,7 +1248,10 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
 fn check_preserved_write(path: &Path, content: &str) -> anyhow::Result<()> {
     if let Some(context) = crate::work_budget::current() {
-        context.budget.check_write(path, content)?;
+        if let Err(error) = context.budget.check_write(path, content) {
+            let original = std::fs::read_to_string(path).unwrap_or_default();
+            anyhow::bail!("{error}{}", json_repair::rejected(content, &original));
+        }
     }
     Ok(())
 }

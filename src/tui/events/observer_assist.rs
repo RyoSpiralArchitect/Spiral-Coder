@@ -221,7 +221,7 @@ stuck packet:\n\
 {}\n\
 </packet>",
         serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(packet).unwrap_or_else(|_| "{}".to_string())
+        serde_json::to_string_pretty(&agent::current_evidence::observer_prompt_packet(packet)).unwrap_or_else(|_| "{}".to_string())
     )
 }
 

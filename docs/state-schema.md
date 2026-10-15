@@ -787,3 +787,27 @@ share this projection; display-packet fields cannot replace native requirements.
 unresolved edit's diagnostic/repair requirement. It derives from the existing
 correlated recovery snapshots and edit history, and is shared by both roles.
 Reading the target advances diagnosis but does not remove the repair obligation.
+
+`agent/current_evidence.rs` derives `ActionEvidence.result_step` and `freshness`
+from correlated tool results within the current human task. Labels distinguish
+current results, superseded attempts, results before a mutation, unexecuted
+refusals, and pending calls. Reads are conservatively historical after any later
+executed process (including a check that might write a receipt). Required exact
+checks keep their existing independent proof/invalidation rules. The full audit
+packet retains historical results; the Observer prompt drops those results and
+duplicated UI digests, and labels the selected failure as historical context.
+No additional persistent state or proof authority is introduced.
+
+`agent/acceptance_report.rs` projects plan criterion references and currently
+citable commands into `TaskObligations`. Native `done` retains the model's
+completed/remaining decisions. An invalid mapping requests an authored retry
+under the same request cap; it does not infer replacement criteria or assign
+an unrelated observation to them. Shell command references preserve case,
+redirects and full length. A known command is provenance, not a semantic proof
+that an arbitrary criterion is satisfied; the independent task/verification
+gates remain mandatory. Legacy automatic summaries are separate from authored
+`done` and cannot satisfy an explicit authored-report requirement.
+
+Protocol list fields preserve line boundaries. Bulleted acceptance items and
+their continuation lines remain separate criteria, avoiding implicit merging
+and truncation before criterion references are assigned.

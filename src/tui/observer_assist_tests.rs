@@ -166,3 +166,31 @@ fn past_governor_failures_are_not_presented_as_human_approval_rejections() {
         assert_eq!(packet["execution_evidence"]["actions"].as_array().unwrap().len(), 2);
     }
 }
+
+#[test]
+fn both_observer_surfaces_use_current_native_receipts_over_stale_display_data() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Produce receipt.txt"}),
+        json!({"role":"assistant","tool_calls":[{"id":"old","function":{"name":"read_file","arguments":"{\"path\":\"receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"old","content":"[receipt.txt] (1 lines, 13 bytes)\nunique-old-stale"}),
+        json!({"role":"assistant","tool_calls":[{"id":"edit","function":{"name":"exec","arguments":"{\"command\":\"printf current > receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"edit","content":"OK (exit_code: 0)"}),
+        json!({"role":"assistant","tool_calls":[{"id":"new","function":{"name":"read_file","arguments":"{\"path\":\"receipt.txt\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"new","content":"[receipt.txt] (1 lines, 7 bytes)\nunique-fresh-current"}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,messages.clone()));
+    let tui = build_tui_meta_failure_packet_for_selector(&app,"last-fail").unwrap();
+    // The audit packet retains the old result; only the provider projection omits it.
+    assert!(tui.to_string().contains("unique-old-stale"));
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"recent_tool_results":["unique-old-stale"]}), messages,
+        test_command:None, lang:"en".into(), reason:"stalled".into(), response:None, final_summary:None, repair_native:false,
+    });
+    for prompt in [build_tui_next_action_prompt(&tui,"en","stalled"), web.prompt] {
+        assert!(prompt.contains("unique-fresh-current"));
+        assert!(!prompt.contains("unique-old-stale"));
+        assert!(prompt.contains("historical_action_count"));
+    }
+}

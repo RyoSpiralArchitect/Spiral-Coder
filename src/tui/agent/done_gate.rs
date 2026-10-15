@@ -474,8 +474,29 @@ fn resolve_known_acceptance_command<'a>(
     known_commands: &'a [String],
     evidence: &ObservationEvidence,
 ) -> Option<&'a str> {
+    // Shell case, quoting, flags and redirects are part of the proof identity.
+    // A successful compound command never proves an unexecuted substring.
+    if let Some(exact) = known_commands
+        .iter()
+        .find(|candidate| candidate.trim() == command.trim())
+    {
+        return Some(exact);
+    }
     let want = canonicalize_evidence_command_with_resolution(command, evidence);
     if want.is_empty() {
+        return None;
+    }
+    let (want_name, _) = parse_named_command_signature(&want)?;
+    if !matches!(
+        want_name.as_str(),
+        "read_file"
+            | "search_files"
+            | "list_dir"
+            | "glob"
+            | "write_file"
+            | "patch_file"
+            | "apply_diff"
+    ) {
         return None;
     }
 
@@ -486,7 +507,7 @@ fn resolve_known_acceptance_command<'a>(
             if sig.is_empty() {
                 return false;
             }
-            if sig == want || sig.contains(&want) || want.contains(&sig) {
+            if sig == want {
                 return true;
             }
             let Some((want_name, want_args)) = parse_named_command_signature(&want) else {
@@ -905,17 +926,11 @@ fn preferred_action_verification_command(
                 .unwrap_or(false)
         })
     {
-        let configured_sig = command_sig_full(configured);
-        if !configured_sig.is_empty()
-            && known_commands.iter().any(|candidate| {
-                let candidate_sig = command_sig_full(candidate.as_str());
-                !candidate_sig.is_empty()
-                    && (candidate_sig == configured_sig
-                        || candidate_sig.contains(&configured_sig)
-                        || configured_sig.contains(&candidate_sig))
-            })
+        if let Some(candidate) = known_commands
+            .iter()
+            .find(|candidate| candidate.trim() == configured)
         {
-            return Some(configured.to_string());
+            return Some(candidate.clone());
         }
     }
 
@@ -2335,7 +2350,7 @@ mod tests {
     }
 
     #[test]
-    fn preferred_action_verification_command_prefers_configured_case_preserving_test_cmd() {
+    fn preferred_action_verification_command_preserves_the_recorded_command_case() {
         let configured = "test -d maze_game_pygame/.git && test -f maze_game_pygame/README.md && test -f maze_game_pygame/game.py && test -f maze_game_pygame/main.py && test -f maze_game_pygame/test_game.py && cd maze_game_pygame && SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1";
         let lowercased = "test -d maze_game_pygame/.git && test -f maze_game_pygame/readme.md && test -f maze_game_pygame/game.py && test -f maze_game_pygame/main.py && test -f maze_game_pygame/test_game.py && cd maze_game_pygame && sdl_videodriver=dummy python3 -m unittest -q 2>&1";
 
@@ -2346,7 +2361,15 @@ mod tests {
         )
         .expect("verification command");
 
-        assert_eq!(chosen, configured);
+        assert_eq!(chosen, lowercased);
+        assert_eq!(
+            preferred_action_verification_command(
+                &[lowercased.into(), configured.into()],
+                VerificationLevel::Behavioral,
+                Some(configured)
+            ),
+            Some(configured.into())
+        );
     }
 
     #[test]
