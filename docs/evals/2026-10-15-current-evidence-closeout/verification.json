@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "runtime_commit": "6df2e78f2e678acfff7e2de64b3cb1e364ed52d0",
+  "binary_sha256": "b93ccfe4061c0e9e3e1730a6ef64842f167f9fdcca33ac8d07450469cd728d53",
+  "deterministic_command": "bash scripts/check-local.sh",
+  "deterministic_log": "LOCAL_RAW/coupled-20261015-r16/check-local.log",
+  "deterministic_log_sha256": "54a98919edd3420ee26495cfb5d51a4fcdb14c3b8a33da19d20c62521ee8b815",
+  "checks": {
+    "rust_passed": 751,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "tui_replay_passed": 3,
+    "python_passed": 16,
+    "web_passed": 67,
+    "repo_map_passed": 14,
+    "lite_asset_count": 11
+  },
+  "live_rounds": [
+    15,
+    16
+  ],
+  "unmodified_spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+  "covered_regressions": [
+    "Exact JSON append recipes preserve nested unknown fields and escape sequences; an actually rejected protected patch leaves bytes unchanged before a successful recipe-backed patch.",
+    "Both TUI and Web Observer prompt projections omit superseded receipt outputs while retaining raw audit history. Later executed failures invalidate older reads, but pre-execution refusals do not.",
+    "Actual HTTP TUI completion retries preserve all three bulleted acceptance criteria and their authored mappings; repeated invalid reports remain incomplete within the same cap, with no repeated proof runs.",
+    "Full shell proof identity rejects shortened compound commands and case changes; long command text survives the done parser.",
+    "Real Cargo initial failure plus fresh target read restores Fix despite retained exec failure counters; a newer unrelated failure remains Diagnose. Actual HTTP continuation executes the diagnosed patch within one request and leaves verification/report pending."
+  ],
+  "regression_before_log": "LOCAL_RAW/coupled-20261015-r16/regression-before.log",
+  "regression_after_log": "LOCAL_RAW/coupled-20261015-r16/regression-after.log",
+  "gui_note": "No frontend rendering change in these commits. Previous real-browser QA is retained in the 2026-10-14 baseline-and-review record; current checks exercise both backend prompt projections and web unit/smoke suites."
+}

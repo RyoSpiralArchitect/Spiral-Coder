@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "failure_modes": [
+    {
+      "id": "json-edit-bracket-and-anchor-errors",
+      "status": "regression-covered-guidance-not-guarantee",
+      "observed": "R11/R13 GPT malformed JSON or guessed an indentation anchor. R15 Mistral and GPT preserve all old fields and pass the replay task; Gemini never reaches a successful edit.",
+      "repair": "Provide bounded exact append search/prefix/suffix recipes from parsed current JSON; preserve candidate error location and unchanged input when the existing preservation gate rejects a write. No automatic content repair or weakened oracle."
+    },
+    {
+      "id": "stale-observer-evidence",
+      "status": "regression-covered-projection",
+      "observed": "R12 Mistral advice claimed a stale receipt despite a newer native check/read. R15 Mistral Observer instead identifies completion/reporting as the next action.",
+      "repair": "Label native evidence freshness by correlated result order, omit historical outputs and duplicate display digests from the Observer prompt, retain complete audit packets. Conservative read invalidation includes executed checks that can write receipts. No semantic guarantee for generated advice."
+    },
+    {
+      "id": "authored-acceptance-mapping",
+      "status": "regression-covered-runtime-mapping; live-closeout-still-open",
+      "observed": "Malformed authored rows were heuristically reassigned to unrelated checks and completed criteria silently moved to remaining. A multiline bulleted acceptance list could also collapse into one truncated criterion. In R16 Mistral eventually produces a valid mapping but uses Fresh exec proof instead of the exact required fresh exec proof in summary, so strict completion correctly remains false.",
+      "repair": "Preserve list boundaries, expose stable criterion references/current commands, retain full exact shell commands, and request an authored report retry without synthesizing new acceptance mappings. Tests cover successful retry and bounded repeated refusal without rerunning proof. R15 Mistral still repeats a passed check and exhausts the cap before valid native done."
+    },
+    {
+      "id": "baseline-diagnosis-erased-at-handoff",
+      "status": "regression-covered-after-round-15",
+      "observed": "R15 Gemini correctly reads src/lib.rs after cargo test fails, but handoff restores generic Diagnose from the retained failed exec counter and blocks its correct patch. R16 Gemini source completes; this single episode is not reliability evidence.",
+      "repair": "Restore the completed localized diagnosis only when it follows the most recent actual failure of that same check/target. A newer unrelated failure retains Diagnose. Before/after real Cargo regression and actual HTTP continuation are retained."
+    },
+    {
+      "id": "weak-model-protocol-and-scope-instability",
+      "status": "open",
+      "observed": "R15 Gemini replay chooses cargo test in a JSON-only fixture and burns requests on missing Think fields and unrelated diagnostics. Mistral Observer suggests done with duplicate criterion rows, while Coder still rechecks instead of closing.",
+      "boundary": "Keep fixed caps, actual native-call requirements and all strict failures. Do not infer stable task success from deterministic guards or selected passing episodes."
+    },
+    {
+      "id": "required-native-tool-omission",
+      "status": "open",
+      "observed": "R16 Mistral source produces the corrected artifact and passes the independent test, but uses apply_diff without the frozen required patch_file call.",
+      "boundary": "Retain it as a strict failure; no redundant patch or changed assertion."
+    }
+  ]
+}
