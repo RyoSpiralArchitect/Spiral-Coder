@@ -787,6 +787,12 @@ share this projection; display-packet fields cannot replace native requirements.
 unresolved edit's diagnostic/repair requirement. It derives from the existing
 correlated recovery snapshots and edit history, and is shared by both roles.
 Reading the target advances diagnosis but does not remove the repair obligation.
+On continuation, completed localized diagnosis may advance a generic restored
+`Diagnose` phase only when the latest actual failure belongs to that same check
+or target and is followed by the corresponding read/repair. A different newer
+failure keeps diagnosis pending. Old exec failure counters cannot erase a
+completed diagnosis; no repair or verification proof is fabricated by restoring
+the phase.
 
 `agent/current_evidence.rs` derives `ActionEvidence.result_step` and `freshness`
 from correlated tool results within the current human task. Labels distinguish

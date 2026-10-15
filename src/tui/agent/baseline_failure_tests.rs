@@ -80,6 +80,7 @@ fn real_baseline_failure_survives_pruning_and_handoff_until_the_original_check_p
         &exec,
         g.focus.tool_message(&exec, failed_output),
     );
+    let mut immediate_handoff = messages.clone();
     let repair = call(
         "repair",
         "patch_file",
@@ -122,6 +123,49 @@ fn real_baseline_failure_survives_pruning_and_handoff_until_the_original_check_p
         &read,
         resumed.focus.tool_message(&read, diagnosed),
     );
+    append(
+        &mut immediate_handoff,
+        &read,
+        messages.last().unwrap().clone(),
+    );
+    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff);
+    assert!(mem.consecutive_failures > 0);
+    let mut direct = RecoveryGovernor::restore_from_session(
+        &mem,
+        &immediate_handoff,
+        VerificationLevel::Behavioral,
+    );
+    direct.restore_focus(&immediate_handoff, root.path().to_str(), configured);
+    assert_eq!(
+        direct.stage,
+        Some(RecoveryStage::Fix),
+        "completed diagnosis must survive the failed exec still in failure memory"
+    );
+
+    // A different failure must still be diagnosed, even if the old target is read again.
+    let unrelated = call("new-failure", "exec", json!({"command":"git status"}));
+    let new_failure = output(
+        root.path(),
+        "FAILED (exit_code: 128)\nstderr:\nfatal: not a git repository",
+    );
+    append(
+        &mut immediate_handoff,
+        &unrelated,
+        json!({"role":"tool","tool_call_id":unrelated.id,"content":new_failure}),
+    );
+    append(
+        &mut immediate_handoff,
+        &read,
+        messages.last().unwrap().clone(),
+    );
+    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff);
+    let mut new_failure = RecoveryGovernor::restore_from_session(
+        &mem,
+        &immediate_handoff,
+        VerificationLevel::Behavioral,
+    );
+    new_failure.restore_focus(&immediate_handoff, root.path().to_str(), configured);
+    assert_eq!(new_failure.stage, Some(RecoveryStage::Diagnose));
     messages.push(crate::task_origin::user_message(
         "Continue",
         crate::task_origin::MessageOrigin::Runtime,

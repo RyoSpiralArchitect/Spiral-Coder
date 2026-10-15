@@ -15,6 +15,8 @@ use crate::streaming::ToolCallData;
 
 #[path = "baseline_failure.rs"]
 mod baseline_failure;
+#[path = "recovery_progress.rs"]
+mod recovery_progress;
 
 pub(super) const METADATA_KEY: &str = "recovery_focus";
 const MAX_JSON_BYTES: usize = 256 * 1024;
@@ -53,6 +55,15 @@ pub(super) struct RecoveryFocus {
 }
 
 impl RecoveryFocus {
+    pub(super) fn progress_survives(
+        &self,
+        messages: &[Value],
+        root: Option<&str>,
+        check: Option<&str>,
+    ) -> bool {
+        recovery_progress::survives(self, messages, root, check)
+    }
+
     /// Mutation caches may contain raw contents rather than a read header. A
     /// pending diagnosis must observe the actual artifact, never that cache.
     pub(super) fn read_for_diagnosis(

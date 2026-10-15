@@ -25,7 +25,10 @@ impl RecoveryGovernor {
         check: Option<&str>,
     ) {
         self.focus = super::recovery_focus::RecoveryFocus::from_messages(messages, root, check);
-        if self.focus.is_pending() && self.stage != Some(RecoveryStage::Diagnose) {
+        if self.focus.is_pending()
+            && (self.stage != Some(RecoveryStage::Diagnose)
+                || self.focus.progress_survives(messages, root, check))
+        {
             self.stage = Some(if self.focus.repaired() {
                 RecoveryStage::Verify
             } else if self.focus.observed() {
