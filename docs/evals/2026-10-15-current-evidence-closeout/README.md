@@ -59,7 +59,7 @@ made from these small adaptive panels.
 
 ## Verification and receipts
 
-Final runtime `6df2e78` passes `bash scripts/check-local.sh`: **751 Rust tests**
+Panel 16 runtime `6df2e78` passes `bash scripts/check-local.sh`: **751 Rust tests**
 (1 ignored), 1 integration, TUI replay 3/3, Python 16, Web 67, repo-map 14/14,
 syntax checks, 11 Lite assets and the local server smoke. Frontend rendering was
 not changed; prior real-browser QA remains in the
@@ -79,3 +79,34 @@ Dogfooding should begin with small reviewable tasks under the existing shared
 caps, checking the actual diff, executed verification and authored final report.
 The passing deterministic suite is a correctness boundary; weak-model task
 completion remains a measured limitation.
+
+## Post-panel fork-review corrections
+
+A read-only reviewer without the parent conversation reviewed the full PR at
+`9b84c6f` while project-local context files were temporarily hidden. It found two
+P2 defects: ordinary Web Coder requests lost their preceding conversation, and
+Anthropic non-streaming Observer requests bypassed the shared budget. Context
+files were restored before reproducing and repairing either defect.
+
+`4185d4a` separates plain conversation from native evidence and meters Anthropic
+before network I/O. Regression tests fail before the fixes. The final local
+suite passes **755 Rust tests** (1 ignored), 1 integration, TUI replay 3/3,
+Python 16, Web 72, repo-map 14/14, syntax and Lite smoke. Its log SHA-256 is
+`025006da29c3faf57d25ab2e659839446ec689c62cdc6a0b59cfad85e93a912d`.
+Real Lite/Chrome checks reproduce the lost-history behavior, then confirm both
+ordinary and streaming follow-ups preserve context after correction. Native
+new-task isolation and correlated resume are separately regression-tested.
+Anthropic HTTP fixtures verify pre-send exhaustion, persisted usage/duration,
+HTTP errors and invalid JSON; no live Anthropic call is claimed.
+
+A second fresh reviewer inspected the six-file correction and adjacent paths,
+ran 19 Web and 8 Anthropic tests, and reported no actionable findings. This
+follow-up review covers the correction, not another full PR review. Context
+files were again restored without changes.
+
+These review fixes affect Web history and Anthropic non-streaming calls,
+outside the three selected TUI live-provider paths. R15/R16 candidate hashes
+and receipts above remain unchanged; no final-revision live panel is implied.
+GitHub Actions [run 38730470234](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/38730470234)
+could not start either platform job because the account was locked due to a
+billing issue. Local success is not represented as a successful final CI run.
