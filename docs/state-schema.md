@@ -765,6 +765,11 @@ on every read and before writes; replacement, removal or unavailable storage
 invalidates old handles. In-flight server work is not undone by invalidation.
 The HF provider uses the same `WorkBudget` scope before spawning inference, so
 Observer assistance and repair consume their task's shared cap without HTTP.
+Anthropic non-streaming calls also reserve through this scope before network
+I/O; HTTP status, available usage, and elapsed time stay in the same ledger.
+The Coder pane's completed plain-text conversation remains available to ordinary
+chat independently of browser-native work. Renewing a human task resets native
+evidence, not the conversation history passed to non-tool chat endpoints.
 
 TUI rollback checkpoints belong to the current human task. New human steering
 drops the previous checkpoint and requests a fresh one; runtime continuation

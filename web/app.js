@@ -9188,7 +9188,11 @@ state: ${agentState}`);
         try { work = window.SpiralCoderWork.open(localStorage, threadId, rootUserText, config.coderMaxIters || 14, origin !== "runtime"); }
         catch (error) { showToast(error.message, "error"); return; }
         if (origin !== "runtime" && abortObserverRef.current) stopObserver();
-        const history = work.messages.length ? work.messages : [];
+        const nativeHistory = work.messages;
+        // Conversation context survives a new human turn; execution proof does not.
+        const history = coderHistory
+          .filter(m => !m.streaming && m.content && (m.role === "user" || m.role === "assistant"))
+          .map(m => ({ role: m.role, content: m.content }));
 
       const userMsg = { id: uid(), pane: "coder", role: "user", origin, content: text, ts: Date.now() };
       const asstMsg = { id: uid(), pane: "coder", role: "assistant", content: "", ts: Date.now(), streaming: true };
@@ -9216,7 +9220,7 @@ state: ${agentState}`);
           const supportsTools = ["openai-compatible", "mistral", "openai", "gemini"].includes(resolvedProvider);
           const serverChatTools = !!(status && status.features && status.features.chat_tools);
           if ((config.forceAgent || wantsMaterial || origin === "runtime") && supportsTools && serverChatTools) {
-            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, history, ac, activeThread && activeThread.workdir, rootUserText, work, origin, options.observerAdvice);
+            await runCoderAgentic(text, threadId, asstMsg.id, reqCfg, resolvedKey, nativeHistory, ac, activeThread && activeThread.workdir, rootUserText, work, origin, options.observerAdvice);
           } else if (config.stream) {
           await streamChat(
             reqBody,

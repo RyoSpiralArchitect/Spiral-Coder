@@ -82,6 +82,11 @@ results in both UI paths.
 
 `work_budget.rs` owns durable `WorkState`: task identity, workspace, original request, request limit, request receipts, assist receipts, and explicit replay-preservation baselines. It reserves a slot before every supported provider HTTP attempt, including compatibility retries and Observer repair. Interrupted attempts remain spent after restart.
 
+Anthropic non-streaming chat reserves at this same boundary, including TUI
+meta-diagnose and Web Observer calls. An exhausted scope prevents network I/O;
+HTTP errors and invalid responses remain spent. Successful replies record the
+provider's usage object without inventing missing usage.
+
 The HF subprocess provider reserves at the same provider boundary before starting
 inference, including initial Observer assistance and its repair. Failed attempts
 remain charged; elapsed time and supplied usage are recorded, while absent usage
@@ -106,6 +111,11 @@ The evaluator retains a separate baseline outside the model's writable fixture. 
 The Rust server exposes `POST /api/observer_action` and `features.observer_action=true`. It shares the TUI packet projection, JSON validator, confidence/no-tool forwarding behavior, single repair prompt, native exchange repair, and final-report checks. The endpoint never executes advice.
 
 `web/core/work-loop.js` owns browser-native task state under `spiral-coder.work.v1.<thread>`. Request metadata selects the server ledger `.spiral-coder/web-budgets/<task-id>.json`; changing the limit/root or reloading cannot refund wire attempts. Native history and assist IDs survive reload. A stale revision or previously consumed suggestion cannot be executed again.
+
+Ordinary Coder chat, streaming chat and its HTTP fallback retain the completed
+conversation from the Coder pane. This plain-text conversation is separate from
+native execution evidence: a new human task starts with empty native history,
+and only a continuation restores that task's native calls and results.
 
 Every browser read rechecks localStorage. A durable write increments
 `persistenceRevision`, separately from the native-message `revision` used by
