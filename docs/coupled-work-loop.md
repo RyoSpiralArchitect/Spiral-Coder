@@ -55,6 +55,20 @@ report, even when existing tests pass. This parser is not a general interpretati
 of arbitrary requests; an independent task oracle is still needed to establish
 that the requested change was actually made.
 
+An authored-report task also keeps control of its remaining diagnostic and
+repair steps after an intermediate automatic test passes. The legacy eager
+closeout shortcut does not force such a task into `done`; normal recovery,
+progress, approval and budget gates still apply.
+
+`agent/explicit_checks.rs` recognizes positive inline `Run exactly:` directives
+(also `Also/Then/Please run exactly:` or after a sentence boundary) for commands
+in the existing verification catalog. Quoting/case remain exact; duplicates are
+removed. Negated text, quoted examples and fenced blocks do not create checks.
+These commands use the same native-proof ledger as approved benchmark checks:
+automatic tests do not satisfy them, each needs a separate successful exec, and
+later mutations invalidate earlier proof. Arbitrary shell mutations or custom
+commands do not become verification merely because they follow this phrase.
+
 `task_scope.rs` reads explicit `target_files` from a complete approved benchmark
 plan. Those paths override the heuristic first-mentioned path in the intent
 anchor and Coder's artifact routing. Paths in the objective remain referenced

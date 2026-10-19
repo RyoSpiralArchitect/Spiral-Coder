@@ -153,3 +153,87 @@ async fn final_report_wording_cannot_auto_complete_an_unedited_task() {
     assert_eq!(app.work_budget.snapshot().requests.len(), 3);
     wire.assert_hits(3);
 }
+
+#[tokio::test]
+async fn authored_closeout_does_not_block_a_repair_read_after_an_auto_test() {
+    use httpmock::prelude::*;
+    let server = MockServer::start();
+    let (mut app, root) = interaction_app();
+    app.tool_root = Some(root.path().display().to_string());
+    std::fs::write(root.path().join("config.json"), "{\"status\":\"partial\"}").unwrap();
+    let goal = "Finish changing config.json status to after. Your final report must name the changed files and test outcomes.";
+    let plan = "<plan>\ngoal: Finish changing config.json status to after\nsteps:\n1. Inspect config.json\n2. Repair the remaining status value\n3. Verify and report the result\nacceptance:\n1. config.json has the requested status\n2. Verification passes\nrisks: preserve other fields\nassumptions: config.json exists\n</plan>";
+    let messages = vec![
+        crate::task_origin::user_message(goal, crate::task_origin::MessageOrigin::User),
+        json!({"role":"assistant","content":plan,"tool_calls":[{"id":"read","function":{"name":"read_file","arguments":"{\"path\":\"config.json\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"read","content":"[config.json]\n{\"status\":\"before\"}"}),
+        json!({"role":"assistant","tool_calls":[{"id":"patch","function":{"name":"patch_file","arguments":"{\"path\":\"config.json\",\"search\":\"before\",\"replace\":\"partial\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"patch","content":"OK: patched 'config.json'\n[auto-test] ✓ PASSED (exit 0)"}),
+        json!({"role":"assistant","tool_calls":[{"id":"miss","function":{"name":"patch_file","arguments":"{\"path\":\"config.json\",\"search\":\"missing\",\"replace\":\"after\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"miss","content":"ERROR: search string not found in 'config.json'."}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(
+        app.tool_root.clone(),
+        None,
+        app.tool_root.clone(),
+        None,
+        messages,
+    ));
+    app.coder_intent_anchor = Some(intent::apply_intent_update(
+        None,
+        intent::normalize_intent_update(goal, None),
+        goal,
+    ));
+    app.coder.push_user(goal.into());
+    app.coder
+        .messages
+        .push(msg(Role::Assistant, "[agent] iteration cap reached."));
+    app.project_stack_label = Some("fixture".into());
+    app.project_test_cmd = Some("python3 -S -m unittest".into());
+    app.work_budget = crate::work_budget::WorkBudget::new(goal, 1, None);
+    app.coder_cfg.base_url = server.base_url();
+    app.coder_cfg.api_key = Some("local-test-key".into());
+    app.coder_cfg.timeout_seconds = 5;
+    let content = format!("{plan}\n<think>\ngoal: repair config.json\nstep: 2\ntool: read_file\nrisk: none\ndoubt: patch anchor changed\nnext: read config.json to find the current anchor\nverify: read config.json\n</think>");
+    let wire = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(200).header("content-type", "text/event-stream").body(format!("data: {}\n\ndata: [DONE]\n\n", json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"repair-read","type":"function","function":{"name":"read_file","arguments":"{\"path\":\"config.json\"}"}}]},"finish_reason":"stop"}]})));
+    });
+    let (tx, mut rx) = mpsc::channel(256);
+    send_coder_input(
+        &mut app,
+        &tx,
+        "Continue.".into(),
+        CoderInput::RuntimeContinuation,
+    )
+    .await;
+    tokio::time::timeout(std::time::Duration::from_secs(10), async {
+        while let Some(event) = rx.recv().await {
+            let done = matches!(
+                &event.payload,
+                request_stream::Payload::Token(StreamToken::Done)
+            );
+            request_stream::dispatch(event, &mut app, PaneId::Coder);
+            if done {
+                break;
+            }
+        }
+    })
+    .await
+    .unwrap();
+    wire.assert_hits(1);
+    let session = app.coder_session.as_ref().unwrap();
+    let result = session
+        .messages
+        .iter()
+        .find(|m| m["tool_call_id"] == "repair-read")
+        .unwrap();
+    assert!(
+        result["content"]
+            .as_str()
+            .unwrap()
+            .starts_with("[config.json]"),
+        "{result}"
+    );
+    assert_eq!(app.coder_completed, Some(false));
+}

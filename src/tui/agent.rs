@@ -57,6 +57,7 @@ pub(crate) mod exec_classification;
 mod exec_location_tests;
 mod exec_proof;
 mod exec_verification;
+mod explicit_checks;
 mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
@@ -9979,6 +9980,9 @@ Execute only the new minimal action: {}",
             )
             .is_none()
                 && !recovery.focus.is_pending()
+                // An intermediate passing test cannot finish an explicitly
+                // authored task or prevent its next diagnostic/repair step.
+                && !requires_authored_final_answer(&root_user_text)
                 && should_prefer_done_after_verified_action(
                     tc,
                     &candidate_plan,
