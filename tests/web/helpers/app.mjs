@@ -38,6 +38,7 @@ export function mountApp(config = {}, options = {}) {
     setTimeout: () => 0,
     clearTimeout: () => {},
     AbortController,
+    TextDecoder,
     fetch: async (url, options = {}) => {
       requests.push({ url, body: options.body ? JSON.parse(options.body) : null });
       return { ok: true, headers: { get: () => 'application/json' }, json: async () => ({ content: '[Observer] QA response' }) };

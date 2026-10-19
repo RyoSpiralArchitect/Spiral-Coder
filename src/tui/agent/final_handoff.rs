@@ -1,36 +1,7 @@
 //! Final-answer requirements are checked separately from execution proof.
+use super::final_instructions::instructions;
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
-
-const MARKER: &str = "final answer must include";
-
-fn instructions(root: &str) -> Vec<&str> {
-    let mut clauses = Vec::new();
-    for line in root.lines() {
-        for (start, _) in line.to_ascii_lowercase().match_indices(MARKER) {
-            let tail = &line[start + MARKER.len()..];
-            let mut quote = None;
-            let end = tail
-                .char_indices()
-                .find_map(|(index, ch)| {
-                    if matches!(ch, '`' | '"') {
-                        if quote == Some(ch) {
-                            quote = None;
-                        } else if quote.is_none() {
-                            quote = Some(ch);
-                        }
-                    }
-                    (quote.is_none()
-                        && matches!(ch, '.' | '!' | '?')
-                        && tail[index + ch.len_utf8()..].starts_with(char::is_whitespace))
-                    .then_some(index + ch.len_utf8())
-                })
-                .unwrap_or(tail.len());
-            clauses.push(&tail[..end]);
-        }
-    }
-    clauses
-}
 
 #[cfg(test)]
 mod clause_tests {

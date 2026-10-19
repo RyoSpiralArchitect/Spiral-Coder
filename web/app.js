@@ -7947,6 +7947,12 @@ state: ${agentState}`);
         };
 
         if (asstToolCalls.length > 0) {
+          const argumentIssue = asstToolCalls.map(window.SpiralCoderWork.nativeArgumentsIssue).find(Boolean);
+          if (argumentIssue) {
+            blockCurrentToolCalls(argumentIssue);
+            saveNative();
+            continue;
+          }
           if (parsedPlanForTurn && (planValidationError || taskContractPlanError || instructionPlanError)) {
             const block = invalidPlanMessage(
               governorContract,

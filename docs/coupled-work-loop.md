@@ -37,6 +37,24 @@ after an Observer handoff. Earlier actual command or automatic-test failures
 remain visible through those refusals; separate plan, approval, evidence and
 verification gates still apply. Refusal text never supplies successful proof.
 
+`agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+arguments before any tool dispatch or workspace-recovery transition. The whole
+turn remains unexecuted, with the original call IDs, arguments and provider
+metadata paired with refusal results; the attempted provider request stays spent.
+The hint asks for a complete object and smaller edits when output was truncated.
+The runtime never substitutes an empty object or treats unparsed exec arguments
+as a shell command. The browser uses the same boundary in `core/work-loop.js`
+and persists the refusal before retrying. Valid JSON still passes the existing
+tool, plan, approval, evidence and verification gates.
+
+`agent/final_instructions.rs` owns bounded explicit English report clauses:
+“final answer/report/response/summary must” followed by a supported positive verb
+such as include, name, state or disclose. It preserves literal case and sentence
+boundaries for both roles and the done gate. Recognized clauses require an authored
+report, even when existing tests pass. This parser is not a general interpretation
+of arbitrary requests; an independent task oracle is still needed to establish
+that the requested change was actually made.
+
 `task_scope.rs` reads explicit `target_files` from a complete approved benchmark
 plan. Those paths override the heuristic first-mentioned path in the intent
 anchor and Coder's artifact routing. Paths in the objective remain referenced

@@ -128,6 +128,14 @@
     work.revision++;
     return persist(storage, threadId, work);
   }
+  function nativeArgumentsIssue(call) {
+    const fn = call && call.function;
+    let args;
+    try { args = JSON.parse(fn && fn.arguments); } catch (_) {}
+    if (args && typeof args === "object" && !Array.isArray(args)) return null;
+    return "[Tool arguments] " + String(fn && fn.name || "unknown") + ": arguments must be a complete JSON object. The response may have ended at the output limit.\nNo tool was executed and no workspace failure was observed. Retry one native tool call matching its schema. For edits, prefer a small patch_file search/replace and split large edits across calls. Do not send a raw shell command as exec arguments. Preserve the existing task, checks and report obligations.";
+  }
+
   const streamChatTools = async (payload, signal, onDelta) => {
         const resp = await fetch("/api/chat_tools_stream", {
           method: "POST",
@@ -179,5 +187,5 @@
         return { text: fullText, finishReason, toolCalls, usage };
       };
 
-  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, streamChatTools };
+  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools };
 })();

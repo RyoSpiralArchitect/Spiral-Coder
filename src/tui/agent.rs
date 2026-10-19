@@ -61,12 +61,14 @@ mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
 mod final_handoff;
+mod final_instructions;
 mod followup_requirements;
 mod harness_evolution;
 mod impact_recovery;
 mod memory;
 mod message_window;
 mod meta_harness;
+mod native_arguments;
 mod outcome;
 mod plan_resume;
 mod progress_bridge;
@@ -8474,6 +8476,25 @@ This is the LAST model call for this run.\n\
             break;
         }
 
+        if let Some(hint) =
+            native_arguments::block_invalid_turn(&mut messages, &assistant_text, &tool_calls)
+        {
+            let _ = tx.send(StreamToken::Delta(format!("\n{hint}\n"))).await;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            pending_system_hint = Some(hint);
+            // Transport rejection is not an executed edit/command failure. Keep
+            // any real recovery focus and current proof, and spend only this request.
+            continue;
+        }
+
         if tool_calls.is_empty() && provider_turn::allows_synthetic_tools(&cfg.base_url) {
             if let Some(tc) = meta_harness.synthesize_tool_call(iter) {
                 let synthesized =
@@ -12405,7 +12426,7 @@ Required now: run `{command}`.\n{verification_status}"
                 continue;
             }
 
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let summary = args["summary"].as_str().unwrap_or("").trim();
             let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
@@ -12684,7 +12705,7 @@ Required now: run `{command}`.\n{verification_status}"
         }
 
         if tc.name.as_str() == "apply_diff" {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let path = args["path"].as_str().unwrap_or("").to_string();
             let diff = args["diff"].as_str().unwrap_or("").to_string();
 
@@ -12976,7 +12997,7 @@ Required now: run `{command}`.\n{verification_status}"
         // ── glob tool ─────────────────────────────────────────────────────
         // ── list_dir tool ────────────────────────────────────────────────────
         if tc.name.as_str() == "list_dir" {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let dir = args["dir"].as_str().unwrap_or("").to_string();
             let max_entries = args["max_entries"].as_u64().unwrap_or(200) as usize;
             let include_hidden = args["include_hidden"].as_bool().unwrap_or(false);
@@ -13157,7 +13178,7 @@ Required now: run `{command}`.\n{verification_status}"
         }
 
         if tc.name.as_str() == "glob" {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let pattern = args["pattern"].as_str().unwrap_or("").to_string();
             let dir = args["dir"].as_str().unwrap_or("").to_string();
 
@@ -13330,7 +13351,7 @@ Required now: run `{command}`.\n{verification_status}"
 
         // ── search_files tool ─────────────────────────────────────────────
         if tc.name.as_str() == "search_files" {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let pattern = args["pattern"].as_str().unwrap_or("").to_string();
             let dir = args["dir"].as_str().unwrap_or("").to_string();
             let ci = args["case_insensitive"].as_bool().unwrap_or(false);
@@ -13508,7 +13529,7 @@ Required now: run `{command}`.\n{verification_status}"
 
         // ── File tools: read_file / write_file / patch_file ────────────────
         if matches!(tc.name.as_str(), "read_file" | "write_file" | "patch_file") {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments).unwrap_or(json!({}));
+            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
             let path = args["path"].as_str().unwrap_or("").to_string();
 
             // Emit annotation (visible in TUI).
@@ -14065,8 +14086,7 @@ Action required: call read_file(path) first to confirm current contents, then re
             return Err(anyhow!("unknown tool: {}", tc.name));
         }
 
-        let args: serde_json::Value =
-            serde_json::from_str(&tc.arguments).unwrap_or(json!({"command": tc.arguments}));
+        let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
         let command = args["command"].as_str().unwrap_or("").to_string();
 
         // Resolve an optional cwd (absolute or relative). Relative cwd is resolved against
