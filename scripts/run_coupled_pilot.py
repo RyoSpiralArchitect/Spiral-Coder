@@ -58,16 +58,25 @@ def main():
     parser.add_argument("--model", required=True)
     parser.add_argument("--wall-seconds", type=int, default=600)
     parser.add_argument("--without-observer", action="store_true")
+    parser.add_argument("--case", action="append", default=[], metavar="CASE_ID",
+                        help="Run only these cases, in suite order; repeat to select more (duplicates ignored)")
     args = parser.parse_args()
     binary, repo, out = [p.resolve() for p in (args.binary, args.repo, args.out)]
     if out.exists():
         raise SystemExit("Output exists; preserve receipts and choose a new directory")
     spec_bytes = (repo / "tests/fixtures/coupled-loop-v1.json").read_bytes()
+    cases = json.loads(spec_bytes)["cases"]
+    requested = set(args.case)
+    unknown = requested - {case["id"] for case in cases}
+    if unknown:
+        parser.error("Unknown case ID(s): " + ", ".join(sorted(unknown)))
+    selected = [case for case in cases if not requested or case["id"] in requested]
     out.mkdir(parents=True)
     (out / "spec.json").write_bytes(spec_bytes)
     metadata = {"binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
                 "spec_sha256": hashlib.sha256(spec_bytes).hexdigest(), "provider": args.provider,
-                "model": args.model, "without_observer": args.without_observer}
+                "model": args.model, "without_observer": args.without_observer,
+                "selected_case_ids": [case["id"] for case in selected]}
     (out / "metadata.json").write_text(json.dumps(metadata, indent=2))
     env = dict(os.environ)
     env.pop("CARGO_TARGET_DIR", None)
@@ -80,7 +89,7 @@ def main():
     if not secret:
         raise SystemExit("Selected provider credential is unavailable")
     results = []
-    for case in json.loads(spec_bytes)["cases"]:
+    for case in selected:
         case_out = out / case["id"]
         case_out.mkdir()
         root = case_out / "workspace"

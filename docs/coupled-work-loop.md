@@ -149,6 +149,12 @@ conversation from the Coder pane. This plain-text conversation is separate from
 native execution evidence: a new human task starts with empty native history,
 and only a continuation restores that task's native calls and results.
 
+Visible thread history still debounces ordinary saves, but `pagehide` flushes
+the latest snapshot and selected thread before navigation/reload. This keeps
+the conversation reachable when native receipts were already saved but the
+350 ms display-save timer had not fired. It does not promise durability after
+a browser/process crash that prevents lifecycle events or a failed storage write.
+
 Every browser read rechecks localStorage. A durable write increments
 `persistenceRevision`, separately from the native-message `revision` used by
 advice. Handles whose persisted snapshot changed in another tab cannot reserve,
@@ -175,7 +181,25 @@ and releases the busy state after displaying the diagnostic result.
 
 `scripts/run_coupled_pilot.py` runs `tests/fixtures/coupled-loop-v1.json` in isolated copies. Provider keys come only from environment variables and are not written to receipts. The original runtime suite and its `patch_file` requirement remain unchanged. The new suite includes a nonempty secondary provenance list and an unknown JSON field so lossy rewrites cannot pass unnoticed.
 
+Use repeatable `--case CASE_ID` flags to rerun only selected cases. Selection
+keeps suite order and ignores repeated IDs; omitting the flag runs the full suite.
+Unknown IDs fail before output creation or model execution. `metadata.json` and
+`summary.json` both record `selected_case_ids`, including for unfiltered runs.
+The saved spec remains the full original suite, with its original hash and caps.
+Always choose a fresh output directory to preserve earlier receipts. For example:
+
+```sh
+python3 -S scripts/run_coupled_pilot.py \
+  --binary target/debug/spiral-coder --repo . --out .tmp/pilot-selected \
+  --provider mistral --model mistral-small-2603 \
+  --case coupled-approved-benchmark-plan-tui-replay-smoke
+```
+
 Deterministic tests, mock HTTP/UI exercises, and bounded live results are separate evidence classes. See [the current evaluation record](evals/2026-10-14-baseline-and-review/README.md), [repair-continuation rounds](evals/2026-10-14-repair-continuation/README.md), [task-obligation rounds](evals/2026-10-14-task-obligations/README.md), and [earlier rounds](evals/2026-10-14-coupled-loop/README.md) for candidate hashes, fixed caps, failure ledgers, and limitations.
+
+The [first real-repository dogfood task](evals/2026-10-19-real-repo-dogfood/README.md)
+uses a separate frozen prompt and CLI oracle. Its nine live episodes do not pass
+the task; the manually completed integration is recorded separately.
 # Current evidence and authored closeout
 
 The shared task projection supplies stable `acceptance N` references and current
