@@ -4057,13 +4057,20 @@
 
     useEffect(() => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
+      const persist = () => {
         try {
           localStorage.setItem(LS.threads, JSON.stringify(threadState.threads));
           localStorage.setItem(LS.active, threadState.activeId);
         } catch (_) {}
-      }, 350);
-      return () => saveTimer.current && clearTimeout(saveTimer.current);
+      };
+      saveTimer.current = setTimeout(persist, 350);
+      // Native receipts are already durable; keep their visible conversation
+      // reachable when reload/navigation occurs before the display debounce.
+      window.addEventListener("pagehide", persist);
+      return () => {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        window.removeEventListener("pagehide", persist);
+      };
     }, [threadState]);
 
     useEffect(() => {

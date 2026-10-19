@@ -10,6 +10,7 @@ export function mountApp(config = {}, options = {}) {
   let tree;
   let effects = [];
   const requests = [];
+  const windowListeners = new Map();
   const entries = new Map([
     ['spiral-coder.lang.v1', 'en'],
     ['spiral-coder.config.v1', JSON.stringify({
@@ -22,7 +23,13 @@ export function mountApp(config = {}, options = {}) {
     return [values[index], next => { values[index] = typeof next === 'function' ? next(values[index]) : next; }];
   }
   const context = {
-    window: {},
+    window: {
+      addEventListener: (type, listener) => {
+        if (!windowListeners.has(type)) windowListeners.set(type, new Set());
+        windowListeners.get(type).add(listener);
+      },
+      removeEventListener: (type, listener) => windowListeners.get(type)?.delete(listener),
+    },
     document: { getElementById: () => ({}) },
     localStorage: { getItem: key => entries.get(key) ?? null, setItem: (key, value) => entries.set(key, value) },
     React: {
@@ -73,6 +80,7 @@ export function mountApp(config = {}, options = {}) {
     config: () => values.find(value => value?.provider && value?.toolRoot),
     effects: () => effects,
     storage: entries,
+    dispatchWindowEvent: type => { for (const listener of windowListeners.get(type) || []) listener(); },
   };
 }
 
