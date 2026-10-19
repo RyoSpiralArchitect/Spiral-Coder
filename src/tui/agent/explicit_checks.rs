@@ -24,6 +24,11 @@ pub(super) fn commands(root: &str) -> Vec<String> {
             {
                 continue;
             }
+            if prefix.ends_with(['.', '!', '?'])
+                && preceding_sentence_is_example_or_negation(&lower, start)
+            {
+                continue;
+            }
             let tail = line[start + "run exactly:".len()..].trim();
             let command = tail
                 .strip_prefix('`')
@@ -41,4 +46,24 @@ pub(super) fn commands(root: &str) -> Vec<String> {
         }
     }
     commands
+}
+
+fn preceding_sentence_is_example_or_negation(lower: &str, start: usize) -> bool {
+    let prefix = lower[..start].trim().trim_end_matches(&['.', '!', '?'][..]);
+    let sentence_start = prefix.rfind(['.', '!', '?']).map(|i| i + 1).unwrap_or(0);
+    let sentence = prefix[sentence_start..].trim_start();
+    is_example_or_negation_sentence(sentence)
+}
+
+fn is_example_or_negation_sentence(sentence: &str) -> bool {
+    let first = sentence.split_whitespace().next().unwrap_or("");
+    sentence.starts_with("for example")
+        || sentence.starts_with("e.g.")
+        || sentence.starts_with("for instance")
+        || first == "not"
+        || first == "not:"
+        || first == "don't"
+        || sentence.starts_with("do not")
+        || first == "never"
+        || first == "no"
 }
