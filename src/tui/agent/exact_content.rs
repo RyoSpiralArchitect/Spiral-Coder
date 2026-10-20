@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn automatic_closeout_checks_current_bytes_despite_passing_line_test() {
         use super::super::{
-            maybe_build_verified_action_closeout_text, ObservationEvidence, PlanBlock,
+            done_gate::maybe_build_verified_action_closeout_text, ObservationEvidence, PlanBlock,
             VerificationLevel, WorkingMemory,
         };
         use serde_json::json;
