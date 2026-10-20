@@ -49,6 +49,7 @@ pub(super) struct Check {
 pub(crate) struct Status {
     pub declared: bool,
     pub pending: Vec<String>,
+    pub pending_baselines: Vec<String>,
     requirements: Vec<Value>,
 }
 
@@ -164,6 +165,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
             return Status {
                 declared: true,
                 pending: vec![format!("Invalid task requirements: {error}")],
+                pending_baselines: vec![],
                 requirements: vec![],
             }
         }
@@ -223,6 +225,9 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                         .as_deref()
                         .is_some_and(|r| r.starts_with("FAILED (exit_code:"))
                 }) {
+                    if !status.pending_baselines.contains(&check.command) {
+                        status.pending_baselines.push(check.command.clone());
+                    }
                     missing.push(format!(
                         "failing baseline before the first mutation: {}",
                         check.command
@@ -240,6 +245,43 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
             .push(serde_json::json!({"requirement":requirement,"pending":missing}));
     }
     status
+}
+
+pub(super) fn is_pending_baseline(
+    tc: &crate::streaming::ToolCallData,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> bool {
+    tc.name == "exec"
+        && super::parse_exec_command_from_args(&tc.arguments).is_some_and(|command| {
+            project(messages, test_cmd)
+                .pending_baselines
+                .contains(&command)
+        })
+}
+
+pub(super) fn mutation_issue(
+    tc: &crate::streaming::ToolCallData,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    let context =
+        super::exec_verification::ExecVerificationContext::from_messages(test_cmd, messages);
+    let mutates = matches!(tc.name.as_str(), "write_file" | "patch_file" | "apply_diff")
+        || (tc.name == "exec"
+            && super::parse_exec_command_from_args(&tc.arguments)
+                .is_some_and(|command| context.classify(&command).kind == super::ExecKind::Action));
+    if !mutates {
+        return None;
+    }
+    let status = project(messages, test_cmd);
+    if !status.pending_baselines.is_empty() {
+        return Some(format!(
+            "[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\n{}\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.",
+            status.pending_baselines.join("\n")
+        ));
+    }
+    None
 }
 
 pub(super) fn issue(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
@@ -294,6 +336,37 @@ mod tests {
         let mut outcome = super::super::outcome::TaskOutcome::default();
         outcome.accept_done(&[]);
         assert!(!outcome.completed(&messages));
+    }
+
+    #[test]
+    fn editing_cannot_destroy_an_unrecorded_baseline() {
+        let mut messages = vec![json!({"role":"user","content":root()})];
+        let mut call = crate::streaming::ToolCallData {
+            id: "edit".into(),
+            name: "patch_file".into(),
+            thought_signature: None,
+            arguments: json!({"path":"src/runner.py","search":"old","replace":"new"}).to_string(),
+        };
+        let harness = super::super::task_harness::TaskHarness::infer(&root(), false);
+        let blocked = super::super::task_harness::build_progress_gate_block(
+            harness, &call, &messages, None, None, None, 0,
+        )
+        .unwrap();
+        assert!(blocked.contains("Before editing"));
+        call.name = "exec".into();
+        call.arguments = json!({"command":"python3 acceptance.py"}).to_string();
+        assert!(is_pending_baseline(&call, &messages, None));
+        assert!(mutation_issue(&call, &messages, None).is_none());
+        exchange(
+            &mut messages,
+            "red",
+            "exec",
+            json!({"command":"python3 acceptance.py"}),
+            "FAILED (exit_code: 1)",
+        );
+        assert!(!is_pending_baseline(&call, &messages, None));
+        call.name = "patch_file".into();
+        assert!(mutation_issue(&call, &messages, None).is_none());
     }
     #[test]
     fn red_then_edits_then_green_survives_resume_and_invalidates_after_another_edit_or_failed_rerun(

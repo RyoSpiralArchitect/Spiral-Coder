@@ -62,7 +62,7 @@ test('actual Gemini App retries a rejected flat done, then persists successful n
     if (url === '/api/status') return json({ ok: true, features: { chat_tools: true } });
     if (url === '/api/governor_contract') return json(JSON.parse(readFileSync(new URL('../../shared/governor_contract.json', import.meta.url), 'utf8')));
     if (url === '/api/observer_action') return json({ native_messages: body.messages, packet: { task_obligations: { current_commands: body.messages.some(m => m.tool_call_id === 'native-1' && m.content.startsWith('OK (')) ? [command] : [] } }, completion_issue: null });
-    if (url === '/api/exec') return json({ ok: true, exit_code: 0, stdout: 'Ran 1 test\nOK', stderr: '' });
+    if (url === '/api/exec') return json({ ok: true, exit_code: 0, stdout: '', stderr: 'Ran 1 test\nOK' });
     if (url === '/api/chat_tools_stream') {
       turn++;
       const tool = turn === 1 ? 'exec' : 'done';
@@ -90,5 +90,32 @@ test('actual Gemini App retries a rejected flat done, then persists successful n
   assert.equal(calls.length, 3);
   assert.ok(calls[2].body.messages.some(m => m.tool_call_id === 'native-2' && m.content.includes('evidence_row_shape')));
   assert.ok(work.messages.some(m => m.tool_call_id === 'native-3' && m.content === 'OK: done'));
+  assert.ok(work.messages.some(m => m.tool_call_id === 'native-1' && m.content.includes('stderr: Ran 1 test')), 'preserve successful unittest output in native proof');
   assert.ok(app.requests.filter(r => r.url === '/api/observer_action').every(r => r.body.packet.coder_base_url === google));
+});
+
+test('App refuses an edit before the native required baseline without dispatching it', async () => {
+  const json = data => new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
+  const app = mountApp({ forceAgent: true, coderMaxIters: 1, autonomy: 'off' }, {
+    fetch: async (url, options) => {
+      const body = options.body ? JSON.parse(options.body) : {};
+      if (url === '/api/status') return json({ ok: true, features: { chat_tools: true } });
+      if (url === '/api/governor_contract') return json(JSON.parse(readFileSync(new URL('../../shared/governor_contract.json', import.meta.url), 'utf8')));
+      if (url === '/api/observer_action') return json({ packet: { task_obligations: { task_requirements: { pending_baselines: ['python3 acceptance.py'] } } }, native_messages: body.messages });
+      if (url === '/api/chat_tools_stream') {
+        const call = { id: 'early-edit', type: 'function', function: { name: 'patch_file', arguments: JSON.stringify({ path: 'runner.py', search: 'old', replace: 'new' }) } };
+        const text = plan + think('patch_file').replace('next: done', 'next: patch_file runner.py');
+        return new Response(`event: delta\ndata: ${JSON.stringify({ delta: text })}\n\nevent: finish\ndata: ${JSON.stringify({ finish_reason: 'tool_calls', tool_calls: [call] })}\n\n`, { headers: { 'content-type': 'text/event-stream' } });
+      }
+      return json({});
+    },
+  });
+  await app.all(node => node.type === 'button' && textOf(node) === 'Refresh')[0].props.onClick(); app.render();
+  app.all(node => node.type === 'textarea' && node.props['aria-label'] === 'Coder')[0].props.onChange({ target: { value: 'Run the tests and fix runner.py.' } }); app.render();
+  await app.all(node => node.type === 'button' && textOf(node) === 'Send')[0].props.onClick();
+  const work = JSON.parse(app.storage.get('spiral-coder.work.v1.' + app.threadState().threads[0].id));
+  assert.ok(work.messages.some(m => m.tool_call_id === 'early-edit' && m.content.includes('[Requirement Gate]')));
+  assert.ok(!app.requests.some(r => r.url === '/api/patch_file' || r.url === '/api/pending_edits/queue'));
+  assert.equal(work.completed, false);
+  assert.equal(api.baselineMutationIssue({ required_exact_checks: ['python3 acceptance.py'], task_requirements: { pending_baselines: ['python3 acceptance.py'] } }, 'exec', { command: 'python3 acceptance.py' }, 'action'), null);
 });

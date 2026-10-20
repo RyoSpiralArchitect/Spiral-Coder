@@ -2496,7 +2496,7 @@ fn build_failed_tool_output(stdout: &str, stderr: &str, exit_code: i32) -> Strin
          ⚠ STOP — diagnosis required before your next action:\n\
          1. Quote the exact line causing the error.\n\
          2. Identify the root cause in one sentence.\n\
-         3. Fix it with a single corrected command.\n\
+         3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\n\
          Do NOT continue the original plan until the fix succeeds.\n"
     );
 
@@ -10287,7 +10287,9 @@ Execute only the new minimal action: {}",
                 continue;
             }
 
-            if let Some(block) = evaluator_loop.build_violation_block(tc) {
+            if let Some(block) = evaluator_loop.build_violation_block(tc).filter(|_| {
+                !requirement_proof::is_pending_baseline(tc, &messages, test_cmd.as_deref())
+            }) {
                 state = AgentState::Recovery;
                 let _ = tx
                     .send(StreamToken::Delta(format!(

@@ -14,6 +14,12 @@ pub(in super::super) fn build_progress_gate_block(
     last_mutation_step: Option<usize>,
     file_tool_consec_failures: usize,
 ) -> Option<String> {
+    if let Some(issue) = super::super::requirement_proof::mutation_issue(tc, messages, test_cmd) {
+        return Some(issue);
+    }
+    if super::super::requirement_proof::is_pending_baseline(tc, messages, test_cmd) {
+        return None;
+    }
     if recovery_stage != Some(RecoveryStage::Fix) {
         return None;
     }

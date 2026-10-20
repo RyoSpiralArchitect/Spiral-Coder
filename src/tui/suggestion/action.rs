@@ -93,6 +93,16 @@ pub(super) fn validation_issue(suggestion: &ObserverSuggestion) -> Option<String
                     .get("json_value")
                     .and_then(Value::as_str)
                     .is_some_and(|s| serde_json::from_str::<Value>(s).is_ok())
+                && if args["json_pointer"]
+                    .as_str()
+                    .is_some_and(|s| s.ends_with("/-"))
+                {
+                    args.get("json_expected").is_none()
+                } else {
+                    args.get("json_expected")
+                        .and_then(Value::as_str)
+                        .is_some_and(|s| serde_json::from_str::<Value>(s).is_ok())
+                }
         } else {
             args.get("search").is_some_and(Value::is_string)
                 && args.get("replace").is_some_and(Value::is_string)
@@ -178,6 +188,22 @@ mod tests {
                 "path":"replay.json","json_pointer":"/cases/-","json_value":"{\"id\":\"new\"}"
             }),
         );
+        assert!(validation_issue(&edit).is_none());
+        edit.suggested_args["json_expected"] = json!("null");
+        assert!(
+            validation_issue(&edit).is_some(),
+            "append must omit expected"
+        );
+        edit.suggested_args
+            .as_object_mut()
+            .unwrap()
+            .remove("json_expected");
+        edit.suggested_args["json_pointer"] = json!("/cases/0");
+        assert!(
+            validation_issue(&edit).is_some(),
+            "replacement requires expected"
+        );
+        edit.suggested_args["json_expected"] = json!("{\"id\":\"old\"}");
         assert!(validation_issue(&edit).is_none());
         edit.suggested_args["search"] = json!("whole file");
         assert!(validation_issue(&edit).is_some());

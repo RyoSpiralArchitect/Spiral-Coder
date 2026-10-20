@@ -7860,11 +7860,13 @@ state: ${agentState}`);
         if (work.limit - work.requests.length <= 4) sysExtras.push("[Closeout budget] Reserve remaining requests for exact verification and an authored final report. Do not rerun current passed checks; report incomplete work truthfully.");
         messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
         let streamResult;
+        let sharedObligations;
         let requestReceipt;
         try {
           const shared = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang }, ac.signal);
           if (!current()) break;
           const obligations = shared.packet?.task_obligations;
+          sharedObligations = obligations;
           if (obligations) {
             sysExtras.push("[Shared task obligations] Requirements are fixed by the original human request. Run baseline_failure checks before editing. Use native file tools for declared artifacts, then run each pending exact check separately. Your plan cannot waive these obligations.\n" + JSON.stringify(obligations));
             messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
@@ -8102,6 +8104,13 @@ state: ${agentState}`);
           );
           if (resolverConflict) {
             blockCurrentToolCalls(resolverConflict);
+            continue;
+          }
+
+          const nativeArgs = JSON.parse(actualToolArgs);
+          const baselineIssue = window.SpiralCoderWork.baselineMutationIssue(sharedObligations, actualToolName, nativeArgs, classifyExecKind(nativeArgs.command || "", governorContract));
+          if (baselineIssue) {
+            blockCurrentToolCalls(baselineIssue);
             continue;
           }
 
@@ -8383,7 +8392,7 @@ state: ${agentState}`);
 
 	                toolResult = failed
 	                  ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
-	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}`;
+	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	                if (stdout) display += "\n" + stdout;
 	                if (stderr) display += "\nstderr: " + stderr;
@@ -8936,7 +8945,7 @@ state: ${agentState}`);
 
 	              resultText = failed
 	                ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}`
-	                : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}`;
+	                : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	              if (stdout) display += "\n" + stdout;
 	              if (stderr) display += "\nstderr: " + stderr;

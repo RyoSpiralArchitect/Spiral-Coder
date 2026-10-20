@@ -41,7 +41,9 @@ For each declared requirement the completion gate requires:
 2. A current successful native `exec` result for every exact check, after the last
    mutation. A later mutation or failed rerun invalidates that success.
 3. When `baseline_failure` is true, a failed native run of that check before the
-   first mutation. The last pre-mutation attempt must have failed. If the check
+   first mutation. The last pre-mutation attempt must have failed. Native edits
+   are blocked until this baseline is recorded; missing baseline checks remain
+   allowed through observation-loop policies. If the check
    already passes, the caller must revise the task/check; fabricating a failure
    or silently removing the requirement cannot qualify the task.
 

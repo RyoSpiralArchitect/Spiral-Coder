@@ -3,6 +3,15 @@
   const caches = new WeakMap();
   const clone = value => JSON.parse(JSON.stringify(value));
   const key = id => "spiral-coder.work.v1." + id;
+  function baselineMutationIssue(obligations, tool, args, execKind) {
+    const checks = obligations?.task_requirements?.pending_baselines || [];
+    const mutates = ["write_file", "patch_file", "apply_diff"].includes(tool)
+      || (tool === "exec" && execKind === "action" && !(obligations?.required_exact_checks || []).includes(String(args.command || "").trim()));
+    return checks.length && mutates
+      ? "[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\n" + checks.join("\n") + "\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed."
+      : null;
+  }
+
   function flatDoneEvidence(baseUrl, provider = "") {
     return String(baseUrl || "").includes("generativelanguage.googleapis.com") ||
       (!String(baseUrl || "").trim() && provider === "gemini");
@@ -222,5 +231,5 @@
         return { text: fullText, finishReason, toolCalls, usage };
       };
 
-  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools, flatDoneEvidence, doneEvidenceItems, parseDoneEvidence, doneEvidenceHint };
+  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools, baselineMutationIssue, flatDoneEvidence, doneEvidenceItems, parseDoneEvidence, doneEvidenceHint };
 })();
