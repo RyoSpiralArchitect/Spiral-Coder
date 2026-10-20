@@ -73,6 +73,7 @@ mod native_arguments;
 mod outcome;
 mod plan_resume;
 mod progress_bridge;
+mod prose_context;
 mod protocol_fields;
 mod protocol_lists;
 mod protocol_validation;
