@@ -64,6 +64,12 @@ oracle's SHA-256 stayed
 Because the prompt/contract differs from the old panel, this is not a controlled
 comparison with the earlier 0/9 result.
 
+The JSON declarations inherited unused repository-panel prompt/overlay fields
+from a shared template. The original records remain intact;
+`declaration-corrections.json` explicitly identifies those fields and verifies the
+actual executed prompt, spec and binary hashes against every provider receipt.
+This post-run annotation is not a new predeclaration.
+
 The JSON panel uses the unchanged
 `coupled-approved-benchmark-plan-tui-replay-smoke` case and pilot runner. Its
 fixture is smaller than the display limit; the 28 KB edit path is covered by

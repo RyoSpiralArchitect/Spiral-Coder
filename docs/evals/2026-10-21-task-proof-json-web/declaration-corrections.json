@@ -1,0 +1,41 @@
+{
+  "reason": "The JSON-panel declarations inherited repository-panel fields from the shared template. Those fields were not used by the JSON runner. Keep the original declarations; bind the executed JSON inputs below to the original spec and per-run metadata. This annotation is post-run, not a replacement predeclaration.",
+  "ignored_inherited_fields": [
+    "prompt_sha256",
+    "original_prompt_sha256",
+    "oracle_sha256",
+    "configuration_overlay",
+    "scope",
+    "overlay_source_commit",
+    "overlay_sha256",
+    "panel_note"
+  ],
+  "panels": [
+    {
+      "panel": "json-r1",
+      "raw_declaration_sha256": "c4657ff8f01e9b64575558a7bc22fedc85260c771bb3450bc924100a85a280e0",
+      "case_id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+      "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+      "binary_sha256": "ae6b0b2c1340abd7b6c79862af6e9877262069f4d26813b4c7a8041ebfcf6bfe",
+      "executed_prompt_sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275",
+      "providers": [
+        "mistral",
+        "openai",
+        "gemini"
+      ]
+    },
+    {
+      "panel": "json-r2",
+      "raw_declaration_sha256": "eea33a4644726ff920a919e7805d344ba6a916b1530bcaec429cfe0248af745f",
+      "case_id": "coupled-approved-benchmark-plan-tui-replay-smoke",
+      "spec_sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752",
+      "binary_sha256": "82569ae25e9460df390d8ccec847cfa39fc84abe28810e642bd6c1c2b0eb8c19",
+      "executed_prompt_sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275",
+      "providers": [
+        "mistral",
+        "openai",
+        "gemini"
+      ]
+    }
+  ]
+}
