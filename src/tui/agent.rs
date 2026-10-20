@@ -12522,7 +12522,11 @@ Required now: run `{command}`.\n{verification_status}"
             )
             .err();
             let needs_artifact_repair = exact_content_error.is_some();
-            let handoff_error = exact_content_error.or_else(|| {
+            let requirement_error = remaining_acceptance
+                .is_empty()
+                .then(|| requirement_proof::issue(&messages, test_cmd.as_deref()))
+                .flatten();
+            let handoff_error = exact_content_error.or(requirement_error).or_else(|| {
                 if root_read_only {
                     None
                 } else {

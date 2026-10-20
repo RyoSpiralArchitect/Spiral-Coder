@@ -1,5 +1,11 @@
 #[tokio::test]
 async fn task_requirement_gate_survives_resume_and_reaches_both_roles() {
+    for claim_complete in [true, false] {
+        check_task_requirement_handoff(claim_complete).await;
+    }
+}
+
+async fn check_task_requirement_handoff(claim_complete: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -30,7 +36,11 @@ async fn task_requirement_gate_survives_resume_and_reaches_both_roles() {
     let wire = server.mock(|when,then| {
         when.method(POST).path("/chat/completions").body_contains("task_requirements");
         let content=format!("{plan}\n<think>\ngoal: report selection\nstep: 2\ntool: done\nrisk: incomplete work\ndoubt: none\nnext: report\nverify: python3 acceptance.py\n</think>");
-        let args=json!({"summary":"Everything implemented and verified.","completed_acceptance":["acceptance 1"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"acceptance 1","command":"python3 acceptance.py"}]});
+        let args = if claim_complete {
+            json!({"summary":"Everything implemented and verified.","completed_acceptance":["acceptance 1"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"acceptance 1","command":"python3 acceptance.py"}]})
+        } else {
+            json!({"summary":"Incomplete. test_runner.py and usage.md still need edits.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[]})
+        };
         then.status(200).header("content-type","text/event-stream").body(format!("data: {}\n\ndata: [DONE]\n\n",json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"overclaim","type":"function","function":{"name":"done","arguments":args.to_string()}}]},"finish_reason":"stop"}]})));
     });
     let (tx,mut rx)=mpsc::channel(256);
@@ -46,7 +56,11 @@ async fn task_requirement_gate_survives_resume_and_reaches_both_roles() {
     assert_eq!(app.coder_completed,Some(false));
     let messages=&app.coder_session.as_ref().unwrap().messages;
     assert!(agent::evidence_packet::project(messages,None).pending_exact_checks.is_empty());
-    assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"].as_str().unwrap_or("").contains("[Requirement Gate]")), "{messages:?}");
+    if claim_complete {
+        assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"].as_str().unwrap_or("").contains("[Requirement Gate]")), "{messages:?}");
+    } else {
+        assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"]=="OK: done"), "an honest partial report may stop, remaining incomplete: {messages:?}");
+    }
     let view=serde_json::to_value(agent::task_obligations::project(messages,None)).unwrap();
     assert!(view["task_requirements"]["pending"].to_string().contains("test_runner.py"));
     let browser=crate::observer_action::evaluate(crate::observer_action::Request {

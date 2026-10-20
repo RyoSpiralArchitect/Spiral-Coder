@@ -134,6 +134,9 @@ pub(crate) fn completion_issue(
             evidence.pending_exact_checks.join("; ")
         ));
     }
+    if let Some(issue) = super::requirement_proof::issue(messages, test_cmd) {
+        return Some(issue);
+    }
     validate_authored_done_summary(root, summary, summary, messages, test_cmd)
         .err()
         .map(|e| e.to_string())

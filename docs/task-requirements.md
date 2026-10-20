@@ -57,6 +57,8 @@ Assistant plans and Observer suggestions cannot replace them; a new human task
 creates a new scope. Invalid blocks fail closed. Fenced examples do not declare
 obligations. Both roles receive the same pending list, and the native Web
 completion endpoint uses the same gate.
+An authored `done` with remaining acceptance criteria can stop with an incomplete
+outcome; it does not discharge pending requirements or become a successful task.
 
 This is an explicit contract, not automatic semantic understanding of arbitrary
 prose. Editing a test file does not prove its quality; a green command does not
