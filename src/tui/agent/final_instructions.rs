@@ -1,12 +1,13 @@
 //! Bounded explicit final-report clauses, shared by prompting and validation.
 
+use super::prose_context;
+
 pub(super) fn instructions(root: &str) -> Vec<&str> {
     let mut clauses = Vec::new();
     let mut fence = None;
     for line in root.lines() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
-            let marker = &trimmed[..3];
+        if prose_context::is_fence_line(line) {
+            let marker = prose_context::fence_marker(line);
             if fence == Some(marker) {
                 fence = None;
             } else if fence.is_none() {
@@ -26,7 +27,9 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
             "final summary must ",
         ] {
             for (start, _) in lower.match_indices(marker) {
-                if is_quoted_or_example_context(line, start) {
+                if prose_context::is_inside_inline_quote(line, start)
+                    || is_example_or_negation_context(&lower, start)
+                {
                     continue;
                 }
                 let tail = &lower[start + marker.len()..];
@@ -75,41 +78,11 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
     clauses
 }
 
-fn is_quoted_or_example_context(line: &str, start: usize) -> bool {
-    let prefix = &line[..start];
-    let mut quote = None;
-    for ch in prefix.chars() {
-        if matches!(ch, '`' | '"') {
-            if quote == Some(ch) {
-                quote = None;
-            } else if quote.is_none() {
-                quote = Some(ch);
-            }
-        }
-    }
-    if quote.is_some() {
-        return true;
-    }
-    let lower_prefix = prefix.to_ascii_lowercase();
-    let sentence_start = lower_prefix
-        .rfind(['.', '!', '?'])
-        .map(|i| i + 1)
-        .unwrap_or(0);
-    let sentence = lower_prefix[sentence_start..].trim_start();
-    is_example_or_negation_sentence(sentence)
-}
-
-fn is_example_or_negation_sentence(sentence: &str) -> bool {
-    let first = sentence.split_whitespace().next().unwrap_or("");
-    sentence.starts_with("for example")
-        || sentence.starts_with("e.g.")
-        || sentence.starts_with("for instance")
-        || first == "not"
-        || first == "not:"
-        || first == "don't"
-        || sentence.starts_with("do not")
-        || first == "never"
-        || first == "no"
+fn is_example_or_negation_context(lower: &str, start: usize) -> bool {
+    let prefix = &lower[..start];
+    let sentence_start = prefix.rfind(['.', '!', '?']).map(|i| i + 1).unwrap_or(0);
+    let sentence = prefix[sentence_start..].trim_start();
+    prose_context::is_example_or_negation_sentence(sentence)
 }
 
 #[cfg(test)]

@@ -1,11 +1,13 @@
 //! Bounded positive prose check directives; never infer commands from examples.
 
+use super::prose_context;
+
 pub(super) fn commands(root: &str) -> Vec<String> {
     let mut commands = Vec::new();
     let mut fence = None;
     for line in root.lines().map(str::trim) {
-        if line.starts_with("```") || line.starts_with("~~~") {
-            let marker = &line[..3];
+        if prose_context::is_fence_line(line) {
+            let marker = prose_context::fence_marker(line);
             if fence == Some(marker) {
                 fence = None;
             } else if fence.is_none() {
@@ -52,18 +54,5 @@ fn preceding_sentence_is_example_or_negation(lower: &str, start: usize) -> bool 
     let prefix = lower[..start].trim().trim_end_matches(&['.', '!', '?'][..]);
     let sentence_start = prefix.rfind(['.', '!', '?']).map(|i| i + 1).unwrap_or(0);
     let sentence = prefix[sentence_start..].trim_start();
-    is_example_or_negation_sentence(sentence)
-}
-
-fn is_example_or_negation_sentence(sentence: &str) -> bool {
-    let first = sentence.split_whitespace().next().unwrap_or("");
-    sentence.starts_with("for example")
-        || sentence.starts_with("e.g.")
-        || sentence.starts_with("for instance")
-        || first == "not"
-        || first == "not:"
-        || first == "don't"
-        || sentence.starts_with("do not")
-        || first == "never"
-        || first == "no"
+    prose_context::is_example_or_negation_sentence(sentence)
 }
