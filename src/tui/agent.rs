@@ -1582,9 +1582,33 @@ pub fn glob_tool_def() -> serde_json::Value {
     })
 }
 
-pub fn done_tool_def() -> serde_json::Value {
+pub fn done_tool_def(base_url: &str) -> serde_json::Value {
     let acceptance_evidence_required = governor_contract::done_acceptance_evidence_fields();
     let required_args = governor_contract::done_required_args();
+    // Gemini's OpenAI-compatible endpoint frequently drops nested function-call
+    // arguments as MALFORMED_FUNCTION_CALL, producing an empty turn. Offer a
+    // flattened string-row schema there; the parser accepts both forms.
+    let evidence_items = if base_url.contains("generativelanguage.googleapis.com") {
+        json!({
+            "type": "string",
+            "description": "One row per completed criterion, formatted as '<criterion reference> | <verification command>'."
+        })
+    } else {
+        json!({
+            "type": "object",
+            "properties": {
+                "criterion": {
+                    "type": "string",
+                    "description": "Acceptance criterion reference by number and/or text."
+                },
+                "command": {
+                    "type": "string",
+                    "description": "Verification command that already succeeded for this criterion."
+                }
+            },
+            "required": acceptance_evidence_required
+        })
+    };
     json!({
         "type": "function",
         "function": {
@@ -1615,20 +1639,7 @@ pub fn done_tool_def() -> serde_json::Value {
                     "acceptance_evidence": {
                         "type": "array",
                         "description": "For each completed acceptance criterion, cite the real verification command that proved it.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "criterion": {
-                                    "type": "string",
-                                    "description": "Acceptance criterion reference by number and/or text."
-                                },
-                                "command": {
-                                    "type": "string",
-                                    "description": "Verification command that already succeeded for this criterion."
-                                }
-                            },
-                            "required": acceptance_evidence_required
-                        }
+                        "items": evidence_items
                     },
                     "next_steps": {
                         "type": "string",
@@ -4399,20 +4410,34 @@ fn parse_done_acceptance_evidence(value: &serde_json::Value) -> Vec<DoneAcceptan
     items
         .iter()
         .filter_map(|item| {
-            let serde_json::Value::Object(map) = item else {
-                return None;
-            };
-            let criterion = map
-                .get("criterion")
-                .and_then(|v| v.as_str())
-                .map(|v| compact_one_line(v.trim(), 160))
-                .filter(|v| !v.is_empty())?;
-            let command = map
-                .get("command")
-                .and_then(|v| v.as_str())
-                .map(|v| v.trim().to_owned())
-                .filter(|v| !v.is_empty())?;
-            Some(DoneAcceptanceEvidence { criterion, command })
+            if let serde_json::Value::Object(map) = item {
+                let criterion = map
+                    .get("criterion")
+                    .and_then(|v| v.as_str())
+                    .map(|v| compact_one_line(v.trim(), 160))
+                    .filter(|v| !v.is_empty())?;
+                let command = map
+                    .get("command")
+                    .and_then(|v| v.as_str())
+                    .map(|v| v.trim().to_owned())
+                    .filter(|v| !v.is_empty())?;
+                return Some(DoneAcceptanceEvidence { criterion, command });
+            }
+            // Flattened form for providers that emit string rows:
+            // "<criterion> | <command>".
+            if let serde_json::Value::String(row) = item {
+                let (criterion, command) = row.split_once('|')?;
+                let criterion = criterion.trim();
+                let command = command.trim();
+                if criterion.is_empty() || command.is_empty() {
+                    return None;
+                }
+                return Some(DoneAcceptanceEvidence {
+                    criterion: compact_one_line(criterion, 160),
+                    command: command.to_owned(),
+                });
+            }
+            None
         })
         .collect()
 }
@@ -7326,7 +7351,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         search_files_tool_def(),
         list_dir_tool_def(),
         glob_tool_def(),
-        done_tool_def(),
+        done_tool_def(&cfg.base_url),
     ]);
     let mut state = AgentState::Planning;
     let mut task_outcome = outcome::TaskOutcome::default();

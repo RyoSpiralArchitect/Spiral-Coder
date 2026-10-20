@@ -1212,7 +1212,7 @@ fn build_inventory_tools() -> serde_json::Value {
         crate::tui::agent::apply_diff_tool_def(),
         crate::tui::agent::list_dir_tool_def(),
         crate::tui::agent::glob_tool_def(),
-        crate::tui::agent::done_tool_def(),
+        crate::tui::agent::done_tool_def(""),
     ];
     let tools = defs
         .into_iter()

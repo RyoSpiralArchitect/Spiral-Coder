@@ -573,6 +573,8 @@ pub async fn stream_openai_compat_json(
     };
 
     let mut tool_calls = tool_calls::ToolCallAccumulator::default();
+    let mut saw_output = false;
+    let mut last_finish_reason = String::new();
 
     let mut buf: Vec<u8> = Vec::new();
     while let Some(chunk) = resp.chunk().await? {
@@ -595,7 +597,11 @@ pub async fn stream_openai_compat_json(
             let data = data_lines.join("\n");
             if data.trim() == "[DONE]" {
                 for call in tool_calls.drain() {
+                    saw_output = true;
                     let _ = tx.send(StreamToken::ToolCall(call)).await;
+                }
+                if let Some(note) = abnormal_empty_finish_note(&last_finish_reason, saw_output) {
+                    let _ = tx.send(StreamToken::Delta(note)).await;
                 }
                 if let Some(meter) = request_meter.as_mut() {
                     meter.status("completed");
@@ -624,6 +630,9 @@ pub async fn stream_openai_compat_json(
                 .pointer("/choices/0/finish_reason")
                 .and_then(|x| x.as_str())
                 .unwrap_or("");
+            if !finish_reason.is_empty() {
+                last_finish_reason = finish_reason.to_string();
+            }
 
             let delta_text = v
                 .pointer("/choices/0/delta/content")
@@ -632,6 +641,7 @@ pub async fn stream_openai_compat_json(
                 .or_else(|| v.pointer("/choices/0/text").and_then(|x| x.as_str()))
                 .unwrap_or("");
             if !delta_text.is_empty() {
+                saw_output = true;
                 let _ = tx.send(StreamToken::Delta(delta_text.to_string())).await;
             }
 
@@ -639,26 +649,43 @@ pub async fn stream_openai_compat_json(
                 tool_calls.push(calls)?;
             }
 
-            if finish_reason == "tool_calls" {
+            if finish_reason == "tool_calls" || finish_reason == "stop" {
                 for call in tool_calls.drain() {
-                    let _ = tx.send(StreamToken::ToolCall(call)).await;
-                }
-            }
-
-            if finish_reason == "stop" {
-                for call in tool_calls.drain() {
+                    saw_output = true;
                     let _ = tx.send(StreamToken::ToolCall(call)).await;
                 }
             }
         }
     }
 
+    if let Some(note) = abnormal_empty_finish_note(&last_finish_reason, saw_output) {
+        let _ = tx.send(StreamToken::Delta(note)).await;
+    }
     if let Some(meter) = request_meter.as_mut() {
         meter.status("completed");
     }
     drop(request_meter.take());
     let _ = tx.send(StreamToken::Done).await;
     Ok(())
+}
+
+/// Some providers (e.g. Gemini's OpenAI-compatible endpoint) end a stream with
+/// an empty message when the generated tool call is filtered or malformed.
+/// Surface that finish_reason as a visible note so the agent can retry with a
+/// different shape instead of silently burning an empty turn.
+fn abnormal_empty_finish_note(finish_reason: &str, saw_output: bool) -> Option<String> {
+    if saw_output
+        || finish_reason.is_empty()
+        || finish_reason == "stop"
+        || finish_reason == "tool_calls"
+    {
+        return None;
+    }
+    Some(format!(
+        "\n[provider] Empty response: finish_reason={finish_reason}. \
+The provider dropped the generated output (e.g. a malformed or filtered tool call); \
+retry with simpler valid tool arguments or plain text.\n"
+    ))
 }
 
 /// Send streaming tokens from the Anthropic provider.
@@ -919,6 +946,54 @@ mod tests {
             assert_eq!(messages[4]["origin"], "runtime");
             assert_eq!(messages[3]["recovery_focus"]["version"], 1);
         }
+    }
+
+    #[tokio::test]
+    async fn abnormal_empty_finish_surfaces_provider_note() {
+        use httpmock::prelude::*;
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/chat/completions");
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body("data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"function_call_filter: MALFORMED_FUNCTION_CALL\"}]}\n\ndata: [DONE]\n\n");
+        });
+        let cfg = RunConfig {
+            provider: ProviderKind::OpenAiCompatible,
+            model: "local-mock".into(),
+            chat_model: "local-mock".into(),
+            code_model: "local-mock".into(),
+            api_key: None,
+            base_url: server.base_url(),
+            mode: crate::modes::Mode::Vibe,
+            persona: String::new(),
+            temperature: 0.0,
+            max_tokens: 32,
+            timeout_seconds: 5,
+            hf_device: "cpu".into(),
+            hf_local_only: true,
+        };
+        let (tx, mut rx) = mpsc::channel(32);
+        stream_openai_compat_json(&reqwest::Client::new(), &cfg, &[], None, tx)
+            .await
+            .unwrap();
+        let mut text = String::new();
+        while let Some(token) = rx.recv().await {
+            if let StreamToken::Delta(delta) = token {
+                text.push_str(&delta);
+            }
+        }
+        assert!(text.contains("MALFORMED_FUNCTION_CALL"), "{text}");
+        assert!(text.contains("Empty response"), "{text}");
+    }
+
+    #[test]
+    fn abnormal_empty_finish_note_is_quiet_for_normal_stops() {
+        assert!(abnormal_empty_finish_note("stop", false).is_none());
+        assert!(abnormal_empty_finish_note("tool_calls", false).is_none());
+        assert!(abnormal_empty_finish_note("length", true).is_none());
+        assert!(abnormal_empty_finish_note("length", false).is_some());
+        assert!(abnormal_empty_finish_note("", false).is_none());
     }
 
     #[test]
