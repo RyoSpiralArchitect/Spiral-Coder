@@ -3,7 +3,7 @@ use serde_json::json;
 
 #[test]
 fn prose_exact_checks_preserve_identity_and_exclude_negation_or_examples() {
-    let root = "Use the Python-only configuration. Run exactly: python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'\nAlso run exactly: `git diff --check`\nRun exactly: git diff --check\nDo not run exactly: cargo test Nope\nExample: Run exactly: cargo test Nope\nFor example, use this instruction. Run exactly: cargo test Nope\n```text\nRun exactly: cargo test Nope\n```\n> Run exactly: cargo test Nope\nRun exactly: printf changed > source.rs\nThen run exactly: cargo test 'KeepCase'";
+    let root = "Use the Python-only configuration. Run exactly: python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'\nAlso run exactly: `git diff --check`\nRun exactly: git diff --check\nDo not run exactly: cargo test Nope\nExample: Run exactly: cargo test Nope\nFor example, use this instruction. Run exactly: cargo test Nope\nNo. Run exactly: cargo test Nope\n```text\nRun exactly: cargo test Nope\n```\n> Run exactly: cargo test Nope\nRun exactly: printf changed > source.rs\nThen run exactly: cargo test 'KeepCase'";
     assert_eq!(
         required_commands(root),
         [

@@ -143,5 +143,6 @@ mod tests {
             ),
             [" real.rs."]
         );
+        assert!(instructions("```rust\n// final report must state PASS.\n```").is_empty());
     }
 }
