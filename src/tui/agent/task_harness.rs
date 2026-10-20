@@ -294,6 +294,7 @@ Move to `patch_file`/`apply_diff`, or run verification if you believe the fix is
 If lane is `runtime_eval`, update `.spiral-coder/runtime_eval.json` and any smallest required fixture.\n\
 If lane is `tui_replay`, update `.spiral-coder/tui_replay.json`.\n\
 If lane is `observer_unit` or `unit`, add the smallest targeted regression test instead.\n\
+For JSON spec files such as `.spiral-coder/tui_replay.json` or `.spiral-coder/runtime_eval.json`, read the file, then rewrite the complete valid JSON with `write_file` rather than using `patch_file` on nested arrays; this preserves structure and avoids subtle syntax errors.\n\
 Prefer the `required_checks` listed in the approved plan.\n\
 Do not only explain the benchmark plan; create or edit the regression artifact.\n",
                     );
