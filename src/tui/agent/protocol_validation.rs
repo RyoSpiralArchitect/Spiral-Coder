@@ -147,7 +147,7 @@ pub(super) fn validate_plan(plan: &PlanBlock) -> Result<()> {
         return Ok(());
     }
     Err(anyhow!(
-        "{}\nRepair all listed fields together. Use one field per line: goal, steps ({min_steps}..{max_steps} numbered items), acceptance ({min_acceptance}..{max_acceptance} items), risks, assumptions. Keep the user's task and acceptance obligations.",
+        "{}\nRepair all listed fields together. Use one field per line: goal, steps ({min_steps}..{max_steps} numbered items), acceptance ({min_acceptance}..{max_acceptance} items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>",
         errors.join("; ")
     ))
 }
@@ -352,5 +352,25 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("at least 2"));
+    }
+
+    #[test]
+    fn plan_repair_message_shows_minimal_valid_shape() {
+        let mut plan = plan();
+        plan.goal.clear();
+        plan.risks.clear();
+        let error = validate_plan(&plan).unwrap_err().to_string();
+        for detail in [
+            "Minimal valid shape",
+            "goal: <one sentence>",
+            "steps:",
+            "1) <first action>",
+            "acceptance:",
+            "risks: <main risk>",
+            "assumptions: <main assumption>",
+            "no markdown bullets or bold",
+        ] {
+            assert!(error.contains(detail), "{error}");
+        }
     }
 }
