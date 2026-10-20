@@ -1,4 +1,4 @@
-use super::task_harness::ArtifactMode;
+use super::task_harness::{benchmark_plan_missing_required_exec_proof, ArtifactMode};
 use super::*;
 use crate::agent_session::AgentSession;
 use crate::task_origin::{continuation_prompt, root_user_text, user_message, MessageOrigin};

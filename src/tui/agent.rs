@@ -107,10 +107,9 @@ use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
     build_read_only_completion_hint, build_read_only_evidence_scores,
     build_read_only_iteration_cap_final_answer, build_read_only_strong_final_answer,
-    canonicalize_known_acceptance_commands, latest_assistant_message_is_done,
-    maybe_build_read_only_auto_final_answer, maybe_build_verified_action_auto_final_answer,
-    should_prefer_done_after_verified_action, synthesize_action_done_summary,
-    validate_done_acceptance,
+    canonicalize_known_acceptance_commands, maybe_build_read_only_auto_final_answer,
+    maybe_build_verified_action_auto_final_answer, should_prefer_done_after_verified_action,
+    synthesize_action_done_summary, validate_done_acceptance,
 };
 use self::edit_failure::EditFailureMemory;
 use self::evaluator_loop::EvaluatorLoop;
@@ -175,14 +174,13 @@ use self::reflection_action::{tool_call_action_sig, ActionIdentity};
 use self::session_bridge::SessionBridgeView;
 use self::task_harness::{
     allows_artifact_creation_during_diagnose, allows_artifact_creation_during_verify,
-    allows_benchmark_plan_followup_during_verify, benchmark_plan_missing_required_exec_proof,
-    benchmark_plan_pending_required_exec_command, build_fix_stage_progress_hint,
-    build_progress_gate_block, coerce_artifact_creation_tool_call, coerce_benchmark_plan_tool_call,
-    coerce_fix_existing_blocked_mutation_tool_call, coerce_fix_existing_literal_mutation_tool_call,
-    coerce_fix_existing_tool_call, coerce_repo_goal_completion_tool_call,
-    repair_fix_existing_mutation_tool_call, repair_repo_scaffold_write_tool_call,
-    synthesize_benchmark_plan_no_tool_call, synthesize_fix_existing_no_tool_mutation_tool_call,
-    TaskHarness,
+    allows_benchmark_plan_followup_during_verify, benchmark_plan_pending_required_exec_command,
+    build_fix_stage_progress_hint, build_progress_gate_block, coerce_artifact_creation_tool_call,
+    coerce_benchmark_plan_tool_call, coerce_fix_existing_blocked_mutation_tool_call,
+    coerce_fix_existing_literal_mutation_tool_call, coerce_fix_existing_tool_call,
+    coerce_repo_goal_completion_tool_call, repair_fix_existing_mutation_tool_call,
+    repair_repo_scaffold_write_tool_call, synthesize_benchmark_plan_no_tool_call,
+    synthesize_fix_existing_no_tool_mutation_tool_call, TaskHarness,
 };
 
 #[derive(Debug, Clone)]
@@ -5125,51 +5123,6 @@ fn collect_known_acceptance_commands(
     commands
 }
 
-fn maybe_build_verified_action_closeout_text(
-    root_user_text: &str,
-    tool_root: Option<&str>,
-    plan: Option<&PlanBlock>,
-    messages: &[serde_json::Value],
-    working_mem: &WorkingMemory,
-    observation_evidence: &ObservationEvidence,
-    required_verification: VerificationLevel,
-    test_cmd: Option<&str>,
-    last_mutation_step: Option<usize>,
-    last_verify_ok_step: Option<usize>,
-) -> Option<String> {
-    if requires_authored_final_answer(root_user_text)
-        || exact_content::validate_exact_content_task(root_user_text, tool_root).is_err()
-        || recovery_focus::RecoveryFocus::from_messages(messages, tool_root, test_cmd).is_pending()
-    {
-        return None;
-    }
-    if latest_assistant_message_is_done(messages) {
-        return None;
-    }
-    if required_existing_followup_no_tool_hint(messages, root_user_text).is_some() {
-        return None;
-    }
-    if benchmark_plan_missing_required_exec_proof(root_user_text, messages, test_cmd) {
-        return None;
-    }
-
-    let known_acceptance_commands = canonicalize_known_acceptance_commands(
-        &collect_known_acceptance_commands(messages, working_mem, test_cmd),
-        observation_evidence,
-    );
-
-    maybe_build_verified_action_auto_final_answer(
-        plan,
-        messages,
-        &known_acceptance_commands,
-        observation_evidence,
-        required_verification,
-        test_cmd,
-        last_mutation_step,
-        last_verify_ok_step,
-    )
-}
-
 fn build_impact_prompt(
     reason: &str,
     plan: Option<&PlanBlock>,
@@ -7783,7 +7736,7 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
         )
         .await;
 
-        if let Some(final_text) = maybe_build_verified_action_closeout_text(
+        if let Some(final_text) = done_gate::maybe_build_verified_action_closeout_text(
             &root_user_text,
             tool_root_abs.as_deref(),
             active_plan.as_ref(),
@@ -14560,7 +14513,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         }
     }
 
-    if let Some(final_text) = maybe_build_verified_action_closeout_text(
+    if let Some(final_text) = done_gate::maybe_build_verified_action_closeout_text(
         &root_user_text,
         tool_root_abs.as_deref(),
         active_plan.as_ref(),
@@ -15799,167 +15752,6 @@ remaining_gap: still need to run cargo test\n\
 
         assert!(final_text.starts_with("[DONE]"));
         assert!(final_text.contains("src/tui/events.rs"));
-    }
-
-    #[test]
-    fn maybe_build_verified_action_closeout_text_finalizes_pygame_repo_after_verify() {
-        let plan = PlanBlock {
-            goal: "Create a small pygame maze game repo and verify it.".to_string(),
-            steps: vec![
-                "initialize the repo".to_string(),
-                "write the pygame gameplay files".to_string(),
-                "run the unittest smoke".to_string(),
-                "call done with verification evidence".to_string(),
-            ],
-            acceptance_criteria: vec![
-                "maze_game_pygame/README.md explains the controls".to_string(),
-                "maze_game_pygame/game.py contains the maze gameplay logic".to_string(),
-                "maze_game_pygame/main.py launches the game loop".to_string(),
-                "maze_game_pygame/test_game.py passes under SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1".to_string(),
-            ],
-            risks: "wrong repo layout".to_string(),
-            assumptions: "pygame is available".to_string(),
-        };
-        let verify_command = "test -d maze_game_pygame/.git && test -f maze_game_pygame/README.md && test -f maze_game_pygame/game.py && test -f maze_game_pygame/main.py && test -f maze_game_pygame/test_game.py && cd maze_game_pygame && SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1";
-        let messages = vec![
-            json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": "call_game",
-                    "type": "function",
-                    "function": {
-                        "name": "write_file",
-                        "arguments": "{\"path\":\"maze_game_pygame/game.py\",\"content\":\"class MazeGame:\\n    pass\\n\"}"
-                    }
-                }]
-            }),
-            json!({
-                "role": "tool",
-                "tool_call_id": "call_game",
-                "content": "OK: wrote 'maze_game_pygame/game.py' (2 lines, 25 bytes)"
-            }),
-            json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": "call_main",
-                    "type": "function",
-                    "function": {
-                        "name": "write_file",
-                        "arguments": "{\"path\":\"maze_game_pygame/main.py\",\"content\":\"from game import MazeGame\\n\\nif __name__ == \\\"__main__\\\":\\n    MazeGame().run()\\n\"}"
-                    }
-                }]
-            }),
-            json!({
-                "role": "tool",
-                "tool_call_id": "call_main",
-                "content": "OK: wrote 'maze_game_pygame/main.py' (4 lines, 67 bytes)"
-            }),
-            json!({
-                "role": "assistant",
-                "tool_calls": [{
-                    "id": "call_verify",
-                    "type": "function",
-                    "function": {
-                        "name": "exec",
-                        "arguments": format!("{{\"command\":{}}}", serde_json::to_string(verify_command).expect("json"))
-                    }
-                }]
-            }),
-            json!({
-                "role": "tool",
-                "tool_call_id": "call_verify",
-                "content": "OK (exit_code: 0)\nstdout:\nRan 3 tests in 0.002s\n\nOK"
-            }),
-        ];
-        let mut working_mem = WorkingMemory::default();
-        working_mem.remember_successful_verification(verify_command);
-
-        let final_text = maybe_build_verified_action_closeout_text(
-            "Create a pygame maze game repo.",
-            None,
-            Some(&plan),
-            &messages,
-            &working_mem,
-            &ObservationEvidence::default(),
-            VerificationLevel::Behavioral,
-            Some("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"),
-            Some(7),
-            Some(7),
-        )
-        .expect("auto final answer");
-
-        assert!(final_text.starts_with("[DONE]"));
-        assert!(final_text.contains("maze_game_pygame/game.py"));
-        assert!(final_text.contains("maze_game_pygame/main.py"));
-        assert!(final_text.contains("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"));
-
-        let explicit_handoff = maybe_build_verified_action_closeout_text(
-            "Create a pygame maze game repo. Final answer must include verification_receipt.txt and fresh exec proof.",
-            None,
-            Some(&plan),
-            &messages,
-            &working_mem,
-            &ObservationEvidence::default(),
-            VerificationLevel::Behavioral,
-            Some("SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1"),
-            Some(7),
-            Some(7),
-        );
-        assert!(
-            explicit_handoff.is_none(),
-            "an explicit handoff must reach the model's done summary"
-        );
-    }
-
-    #[test]
-    fn maybe_build_verified_action_closeout_text_waits_for_required_followups() {
-        let plan = PlanBlock {
-            goal: "Fix the PR-ready merge approval handoff.".to_string(),
-            steps: vec![
-                "inspect merge approval code".to_string(),
-                "patch the smallest bug".to_string(),
-                "verify the configured smoke".to_string(),
-                "call done with handoff paths".to_string(),
-            ],
-            acceptance_criteria: vec![
-                "the requested change is implemented".to_string(),
-                "the verification command passes".to_string(),
-            ],
-            risks: "missing follow-up paths".to_string(),
-            assumptions: "configured smoke is relevant".to_string(),
-        };
-        let messages = vec![
-            json!({
-                "role":"assistant",
-                "tool_calls":[{
-                    "id":"call_patch_merge",
-                    "type":"function",
-                    "function":{"name":"patch_file","arguments":"{\"path\":\"src/tui/agent/merge_approval.rs\",\"search\":\"old\",\"replace\":\"new\"}"}
-                }]
-            }),
-            json!({
-                "role":"tool",
-                "tool_call_id":"call_patch_merge",
-                "content":"OK: patched 'src/tui/agent/merge_approval.rs' (+1 lines, 99 total)\n[auto-test] ✓ PASSED (exit 0)"
-            }),
-        ];
-        let test_cmd =
-            "cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh";
-
-        let final_text = maybe_build_verified_action_closeout_text(
-            "Update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to include `src/tui/agent/merge_approval.rs`.",
-            None,
-            Some(&plan),
-            &messages,
-            &WorkingMemory::default(),
-            &ObservationEvidence::default(),
-            VerificationLevel::Behavioral,
-            Some(test_cmd),
-            Some(1),
-            Some(1),
-        );
-
-        assert!(final_text.is_none());
     }
 
     #[test]
