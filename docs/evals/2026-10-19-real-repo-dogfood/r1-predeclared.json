@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "repository_commit": "7862e3d3b7270b01992398b4ccd551a6807d77e3",
+  "binary_sha256": "53cf40f5fa3ba9f57c765fef0dbfa6a348c6f6e3d173d2b2c291c7add70b49e6",
+  "archive_sha256": "54301462fb08333ceb4321419a6339de5d829fbfe2a931eaabe582ca1447d916",
+  "prompt_sha256": "fb37fc5581ab3b51b227f8bfc01ba5b0351049fbe57c097e0c81e5c2bd8e4787",
+  "oracle_sha256": "f3b108e044b333993210d05ce5964912820e3f190068c1bbc924e102b3f1e79c",
+  "configuration_overlay": "test_cmd: python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'\n\nThis dogfooding task changes the Python pilot script only; keep the configured command unchanged.\n",
+  "models": {
+    "mistral": "mistral-small-2603",
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "request_limit": 18,
+  "wall_seconds": 600,
+  "temperature": 0,
+  "max_tokens": 2048,
+  "scope": [
+    "scripts/run_coupled_pilot.py",
+    "tests/test_coupled_pilot.py",
+    "docs/coupled-work-loop.md"
+  ],
+  "historical_suite_modified": false
+}

@@ -1,0 +1,141 @@
+{
+  "local_command": "bash scripts/check-local.sh",
+  "local_exit_code": 0,
+  "rust_tests_passed": 765,
+  "rust_tests_ignored": 1,
+  "integration_tests_passed": 1,
+  "tui_replay_passed": 3,
+  "python_tests_passed": 20,
+  "web_tests_passed": 76,
+  "repo_map_passed": 14,
+  "lite_assets": 11,
+  "lite_smoke_passed": true,
+  "checked_source_sha256": {
+    "scripts/run_coupled_pilot.py": "0db35d7aa67a1569fcb5a14de9de67faab9eae3e80b5d77cec110e095fb42098",
+    "src/tui/agent.rs": "cdb77eaf0616d76296a46cda3c73e880f4b5624461537c49f1323037171dc354",
+    "src/tui/agent/benchmark_proof.rs": "5405bc2dce2de06669e0fdd17f0e31f17a47a56f6e5d7450136cd77a51f86f9c",
+    "src/tui/agent/explicit_check_tests.rs": "5d38507e25806909055eae56f0a1e96415a650f30a7ac15cb12977c28cc5ea36",
+    "src/tui/agent/explicit_checks.rs": "8a641d8d20de2d1da88432537a33951c7cca7ec7eec3ce9a2ccd8a9e8555ff05",
+    "src/tui/agent/final_handoff.rs": "1d3e690581a8ac725f9f09cc82fe6164a31149e695ed2941b9d7f122b5510d6c",
+    "src/tui/agent/final_instructions.rs": "8fc8b555d4880b77a84a9fa22487d289c13e2ca957694b072713f957676f48d5",
+    "src/tui/agent/native_arguments.rs": "8aad5763bea07d92fce74e668c804a04cb8daf321ec5c64da967e382e43c4cce",
+    "src/tui/dogfood_boundary_tests.rs": "276c92a0a885e3cde3c745ddd7995d14b7c6d19f145c43e9cbb48e6b7c6f9c41",
+    "src/tui/events.rs": "1470a99242f214ad8b951704a44feb60b62333931dcff9b83a8add36bcc167e0",
+    "tests/test_coupled_pilot.py": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+    "tests/web/helpers/app.mjs": "97cde9463ac28a538a55509efdc7f6e94239d46e2798a1bd3f9f82d61a8a5c19",
+    "tests/web/native-arguments.test.mjs": "4467a734a9e480bdb263395adcd89aad3e3d851fb1d17c2513fdf615df763394",
+    "tests/web/thread-persistence.test.mjs": "ef1e2939dc7594679b8d1003deaec1fa1faaf916d35ffa4627e86d10e2912bf2",
+    "web/app.js": "aa315a7f2e761e50afae24479c22f72d798da9db9099541d69e3217b1e677f9d",
+    "web/core/work-loop.js": "cdfa2715015a2064e2af208f82b5fc0515fc445b21f7033e804247df50e5b007"
+  },
+  "local_log": {
+    "path": "LOCAL_RAW/check-final-persistence.log",
+    "sha256": "81b34528f1a2f8df451a2484cc8a8d0d4360ef80d4c6f7cc48414c785e25d9a1"
+  },
+  "integrated_cli_oracle": {
+    "ok": true,
+    "checks": {
+      "default": {
+        "status": true,
+        "exact_execution_order": true,
+        "metadata.json_selection": true,
+        "summary.json_selection": true,
+        "summary_cases": true
+      },
+      "single": {
+        "status": true,
+        "exact_execution_order": true,
+        "metadata.json_selection": true,
+        "summary.json_selection": true,
+        "summary_cases": true
+      },
+      "ordered_unique": {
+        "status": true,
+        "exact_execution_order": true,
+        "metadata.json_selection": true,
+        "summary.json_selection": true,
+        "summary_cases": true
+      },
+      "unknown": {
+        "status": true,
+        "no_output_directory": true,
+        "no_subprocess": true,
+        "error_identifies_case": true
+      }
+    },
+    "log_sha256": "452633bdcf0ba7d499ac6213af65ddaf36d4e872b1bb211735fafeda79fd2a61"
+  },
+  "browser": {
+    "browser": "Browser plugin not available; bundled Playwright with installed Chrome",
+    "url": "http://127.0.0.1:18443/",
+    "viewport": [
+      1440,
+      1000
+    ],
+    "flow": "Coder send -> truncated native patch -> visible refusal -> bounded retry -> persisted incomplete task",
+    "errors": [],
+    "requests": [
+      "/api/status",
+      "/api/governor_contract",
+      "/api/chat_tools_stream",
+      "/api/chat_tools_stream",
+      "/api/observer_action",
+      "/api/status"
+    ],
+    "title": "Spiral-Coder",
+    "notBlank": true,
+    "refusalVisible": true,
+    "calls": 2,
+    "budgetSpent": 2,
+    "completed": false,
+    "correlatedRefusals": [
+      "bad-1",
+      "bad-2"
+    ],
+    "frameworkOverlay": 0,
+    "dispatchedTools": [],
+    "persistedAfterReload": true,
+    "conversationVisibleAfterReload": true,
+    "mobileBrandCount": 1,
+    "mobileOverflow": false,
+    "passed": true
+  },
+  "browser_scope": "Real App served by Lite, native response/status endpoints mocked; no provider or Rust tool execution. Server outdated notice is expected from the minimal status fixture.",
+  "browser_evidence": [
+    {
+      "path": "LOCAL_RAW/browser.json",
+      "sha256": "4e4d2fcf20105c77820a1cafeb41f277556fe4e5f002badbb96f929d6654be2c"
+    },
+    {
+      "path": "LOCAL_RAW/native-arguments-desktop.png",
+      "sha256": "da91369e236eb50eb5081a646f7e37da095d411abfc6be14d984cb033df0839e"
+    },
+    {
+      "path": "LOCAL_RAW/native-arguments-mobile.png",
+      "sha256": "18e90fb5408745da80272f532c8c4bea9f9efd08385d8e04dd912c10c21ba4e8"
+    },
+    {
+      "path": "LOCAL_RAW/before-persistence-browser.json",
+      "sha256": "9e347daf1acbc4d790af485bf5ee75002b4980de960be1ff87670ace19f02950"
+    },
+    {
+      "path": "LOCAL_RAW/before-persistence-native-arguments-mobile.png",
+      "sha256": "ec455ced7e7bbf37b37ccceb4872560e6c70cdc30b2cd3539c73b5375eff6727"
+    }
+  ],
+  "historical_fixture_changed": false,
+  "main_hosted_ci": {
+    "run": 38733164793,
+    "attempt": 2,
+    "commit": "7862e3d3b7270b01992398b4ccd551a6807d77e3",
+    "ubuntu": "success",
+    "macos": "success"
+  },
+  "live_qualification": {
+    "episodes": 9,
+    "cli_passes": 0,
+    "provider_requests": 130,
+    "runtime_completed": 4,
+    "final_round_false_completions": 1
+  }
+}

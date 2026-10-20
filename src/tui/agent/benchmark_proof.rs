@@ -1,4 +1,4 @@
-//! Explicit command evidence for approved Observer benchmark plans.
+//! Explicit command evidence for approved plans and positive prose checks.
 //!
 //! Keep this separate from diagnostic command signatures: shell command case,
 //! quoting, and internal whitespace can change what a check actually verifies.
@@ -9,6 +9,10 @@ use std::collections::{BTreeMap, BTreeSet};
 #[cfg(test)]
 #[path = "benchmark_configured_tests.rs"]
 mod configured_tests;
+
+#[cfg(test)]
+#[path = "explicit_check_tests.rs"]
+mod explicit_check_tests;
 
 pub(super) fn commands_match(actual: &str, required: &str) -> bool {
     !actual.trim().is_empty() && actual.trim() == required.trim()
@@ -52,6 +56,11 @@ pub(in crate::tui::agent) fn required_commands(root_user_text: &str) -> Vec<Stri
             }
         } else if !line.is_empty() {
             in_checks = false;
+        }
+    }
+    for command in super::super::explicit_checks::commands(root_user_text) {
+        if !commands.contains(&command) {
+            commands.push(command);
         }
     }
     commands

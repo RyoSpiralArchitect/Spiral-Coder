@@ -1,0 +1,410 @@
+{
+  "root": "~/.cache/spiral-coder/dogfood-20261019",
+  "files": [
+    {
+      "path": "LOCAL_RAW/r1/predeclared.json",
+      "bytes": 1017,
+      "sha256": "a1965b5ac919dcfe6c4a576df568952584e9d77fde4ab7a8557318f9c103496e"
+    },
+    {
+      "path": "LOCAL_RAW/r1/task.txt",
+      "bytes": 1471,
+      "sha256": "fb37fc5581ab3b51b227f8bfc01ba5b0351049fbe57c097e0c81e5c2bd8e4787"
+    },
+    {
+      "path": "LOCAL_RAW/r1/spiral-coder",
+      "bytes": 42914000,
+      "sha256": "53cf40f5fa3ba9f57c765fef0dbfa6a348c6f6e3d173d2b2c291c7add70b49e6"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/process.json",
+      "bytes": 184,
+      "sha256": "8e840f49a13af86348194355a58e59fe400833ccfa762e15fa6397bb7ff882a1"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/console.log",
+      "bytes": 160,
+      "sha256": "68c50414457fa5ddc0b5e25541cf48e95270afbe26bea82afa5e7440ab72ca62"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/trace.jsonl",
+      "bytes": 56963,
+      "sha256": "3b71fb1a7ff817d6fdfce07da428a7d5c9fb79f8818a07752ea5a6a66d78201e"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/session.json",
+      "bytes": 134553,
+      "sha256": "01f00d93bd1425e78bcd17128da9bad588341fcf0f3ba90ac8c74c632bc1f714"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/report.json",
+      "bytes": 64217,
+      "sha256": "13182a7eb4d6c8ee9316e333fedab8cbc602d16410fe7a058e81d16c39a81f2a"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/workspace/.spiral-coder/tui-work.json",
+      "bytes": 10546,
+      "sha256": "ff03789c419e2fe04641e61c5ae90b855f42faab8cc74445421d714fd7c14af6"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/process.json",
+      "bytes": 177,
+      "sha256": "9ca10b4b486c3867a65c859712e5c5e4567184214427e53ed7d58963ac8caf62"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/console.log",
+      "bytes": 159,
+      "sha256": "c4b01270f8b118be56588d9f0bab7f040537fd305b4407735af724ecd2f060de"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/trace.jsonl",
+      "bytes": 62796,
+      "sha256": "63d8c16b5b6b3707962d8e30a6af5968477fe3d6464eb5bbb3dbef7e91f52580"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/session.json",
+      "bytes": 130542,
+      "sha256": "a79895f765a8d5ac3895b5ea79bd47bdd532c6b3058dd3a86d35100168038b1e"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/report.json",
+      "bytes": 43429,
+      "sha256": "de2ff3eec845ba235c4ab35eaafbc8d2f4b3c5184d6e770aad8f9c42cc0841fa"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/workspace/.spiral-coder/tui-work.json",
+      "bytes": 5268,
+      "sha256": "db0a4ffa42b8917283e9797b624df76c1a80f8b0f87a69f606388f67e85c2283"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/process.json",
+      "bytes": 183,
+      "sha256": "8d33f10a8473fd718d62ceb3817193f96fbd80a02c18371dd3b3973c338810a9"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/console.log",
+      "bytes": 156,
+      "sha256": "428f9d966e5215811bac53d99e40cc584e6ef2e1d264ae0afd74422fe85551a7"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/trace.jsonl",
+      "bytes": 2441,
+      "sha256": "4ed6145c5fe2d4ed9c0b9cb7fc531ee1155b26573090b4448577fb796409b66b"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/session.json",
+      "bytes": 15139,
+      "sha256": "7635c7333b7087d93d78e3b8b04c6efa2fe8048c2dbd37d2c79d493c009d61c1"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/report.json",
+      "bytes": 7551,
+      "sha256": "7fc6c4fba055e15cb2b4e301e4891f0f4cb72581ba9723dabe7af8fb2d3fcb66"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/workspace/.spiral-coder/tui-work.json",
+      "bytes": 2142,
+      "sha256": "4540e678560e738077db0dc8a1665d47d3d37f79ee8d4478c9adb7b847c7857d"
+    },
+    {
+      "path": "LOCAL_RAW/r2/predeclared.json",
+      "bytes": 1017,
+      "sha256": "68f8fd6ab49caee6bfcd79b617a41125c583d8aa170569864dd09f25281ce2eb"
+    },
+    {
+      "path": "LOCAL_RAW/r2/task.txt",
+      "bytes": 1471,
+      "sha256": "fb37fc5581ab3b51b227f8bfc01ba5b0351049fbe57c097e0c81e5c2bd8e4787"
+    },
+    {
+      "path": "LOCAL_RAW/r2/spiral-coder",
+      "bytes": 42929264,
+      "sha256": "48b94897cdd00ed4d1ecc35af8fe8ce13e2fd4cf463debaf0f2922b96657207e"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/process.json",
+      "bytes": 182,
+      "sha256": "426432ad7fdad63387f831b846c33f0822ace63d1fd778678a3a36ffabe87926"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/console.log",
+      "bytes": 158,
+      "sha256": "44ed144016ad5c0373ff89f8a0eb558f7befddbe12ab31611e86121eae60e300"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/candidate.patch",
+      "bytes": 2598,
+      "sha256": "bffdccde95eaf3525ec864282119085419aeb29d91d9f0c651cee2923eac8239"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/oracle.json",
+      "bytes": 1963,
+      "sha256": "c1f4d3a59d478368dc5cf3445d815cac95e520329f326690f4b871c43e005354"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/trace.jsonl",
+      "bytes": 25044,
+      "sha256": "1bea3f05c7fe2c56d2af9a58ac6f06f9e73451df0364b788e62770c9a218f1e6"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/session.json",
+      "bytes": 59344,
+      "sha256": "92b5e9739eb52fafe1e117b3e6122bd62360e4765b85b21cf85305085bb497c3"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/report.json",
+      "bytes": 54747,
+      "sha256": "43304a303bb76f2bb38d5c1799ffd378b16548ebc30626809eafec55804bc928"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/workspace/.spiral-coder/tui-work.json",
+      "bytes": 8378,
+      "sha256": "d58cc613293ca81ee4d58c7d4cf13831266d1936c54d8dee99bd372d5b7fcbed"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/process.json",
+      "bytes": 174,
+      "sha256": "b08a7f1a3afbf91f248a16fc507e0163f9225939a8b23d198c77b3d010e306e0"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/console.log",
+      "bytes": 156,
+      "sha256": "637e19d1642414a20996ba058353958cad983befa1a4d057e373f67df2514973"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/candidate.patch",
+      "bytes": 1050,
+      "sha256": "97443fe7d14c9ed916e0c97b573dbe820f0e192c37f85a24efd388c01e738289"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/trace.jsonl",
+      "bytes": 16434,
+      "sha256": "cd5ae2f0477400abe2df07c5e04f32b5ae8dce57ea2fb2c64ec37766517d9ea9"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/session.json",
+      "bytes": 48720,
+      "sha256": "7f64037e09c4056c7b751c05c0ad470bd63feb8ca3aee2a1ee38dd5de1f3fa00"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/report.json",
+      "bytes": 27762,
+      "sha256": "3ca4c85566caa85e8f83173c9a802762d7b7be1e3bfbc0a99d1081f3d51d58ec"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/workspace/.spiral-coder/tui-work.json",
+      "bytes": 3191,
+      "sha256": "92e17d3e0ca7660ee940018101eae88f2d0ab430a98e7eda5cc1ce33660dddb1"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/process.json",
+      "bytes": 185,
+      "sha256": "c547d9153fc5ba795420575d1a71cb2b1b3d6217f959c8034e4f9fd7574181ff"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/console.log",
+      "bytes": 158,
+      "sha256": "6521541cbfea4919ae273f6f056eb30521a87b8310b9a5d307ff369fd7220c3d"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/trace.jsonl",
+      "bytes": 37843,
+      "sha256": "f583dbe1c6c31eb4a37258c9b4ece11c08deba6bedd2ce478275c42beb9b7ca1"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/session.json",
+      "bytes": 79506,
+      "sha256": "19116df7dfcad214b82daf7ce6915f6fa91798ac5d1bd8657019476438ef68a9"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/report.json",
+      "bytes": 48333,
+      "sha256": "36726b108dfe92812921120b03c471b547665a4505f5865415faf515b5787ebd"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/workspace/.spiral-coder/tui-work.json",
+      "bytes": 5224,
+      "sha256": "cb122a05af4626981ed0c409c174a82a5a9e58cc15e5bf881944193f6b6b85e5"
+    },
+    {
+      "path": "LOCAL_RAW/r3/predeclared.json",
+      "bytes": 1017,
+      "sha256": "079dfe4d680aa3850a5933f646b1ad27fe4eeab9f62e34f09719e5891968ad6d"
+    },
+    {
+      "path": "LOCAL_RAW/r3/task.txt",
+      "bytes": 1471,
+      "sha256": "fb37fc5581ab3b51b227f8bfc01ba5b0351049fbe57c097e0c81e5c2bd8e4787"
+    },
+    {
+      "path": "LOCAL_RAW/r3/spiral-coder",
+      "bytes": 42931792,
+      "sha256": "30bbfec3e23fc25d08f0065517a7bf6c295024cd39e039c752d97a4e4b942adf"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/process.json",
+      "bytes": 183,
+      "sha256": "b9ce54eb386e36e09d1b13a2f40294a4064e1285041aa124d278de87aaca2bf1"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/console.log",
+      "bytes": 159,
+      "sha256": "6db528a1be97665ea465535c404562f67c5abad1eb34a800e99aa08c873c9647"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/candidate.patch",
+      "bytes": 2578,
+      "sha256": "8c838fdce76106bc7910d72f5b2cd8934a3da96c0a4866a772a7f71ea2f166f5"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/oracle.json",
+      "bytes": 1443,
+      "sha256": "75e0c3056b26d85effef711cb0906c59f45dc6982736f85f4e5ee2981e70eaef"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/run/trace.jsonl",
+      "bytes": 29491,
+      "sha256": "a2c2723fe45e814ff366b9ed3e4fd5a0cc7445629264ed6d8bd7a5fa253da965"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/run/session.json",
+      "bytes": 72539,
+      "sha256": "95fc47c21948445c650ca1d4a129c017ded4adaa70bcf415961a19030eda8a59"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/run/report.json",
+      "bytes": 62553,
+      "sha256": "795566e1d7b998cf1ab156d748f83488cf347441d04bcdaaac52db462d596ea6"
+    },
+    {
+      "path": "LOCAL_RAW/r3/mistral/workspace/.spiral-coder/tui-work.json",
+      "bytes": 9589,
+      "sha256": "b7e0d98755b38d2f68466f740a6bb332be9c8c86c5364e24e35b276d2a237191"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/process.json",
+      "bytes": 177,
+      "sha256": "46ef1581426001299d78f4a09d086f68b51b8cc907c29737bf3ce1fa7c175f53"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/console.log",
+      "bytes": 159,
+      "sha256": "6de4f0ad39cb08a4835fe124de5fe39eb0049c7fae83c2f89dd8fd2f17673327"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/run/trace.jsonl",
+      "bytes": 39168,
+      "sha256": "88bc81754312d7d9fa911ead3599afa6c192eb9e2872fc912d1fb5d2f570e524"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/run/session.json",
+      "bytes": 118399,
+      "sha256": "92fdbf458804bbb7b83cbd493262410ab929c11593a65a2762cf4f9680c3afd1"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/run/report.json",
+      "bytes": 44840,
+      "sha256": "b552c4977ef44b8cb1ec772cd1a6e43b5c651b567b986fc258f8ba9d8e565a19"
+    },
+    {
+      "path": "LOCAL_RAW/r3/openai/workspace/.spiral-coder/tui-work.json",
+      "bytes": 5354,
+      "sha256": "d91f5ad9328d604f78080e22eae1a2ca8a9a8cbfe1f9ef32856af94830d4c236"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/process.json",
+      "bytes": 185,
+      "sha256": "8d432e4e6b505ab70f3cff100ed86ee8ebacfa245160b29f4479827add359f5d"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/console.log",
+      "bytes": 158,
+      "sha256": "9ec3a72b7565af0f3eafa7f6fc797b0a5bbabd4beabeefe0090595c33a734678"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/run/trace.jsonl",
+      "bytes": 30791,
+      "sha256": "6edb0e20449bf748309b6472c9c3e805ea3dd2becf42a9d7e3d274a15d11c664"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/run/session.json",
+      "bytes": 44342,
+      "sha256": "dc9cbe1536f383d836121caae2148d3b33c23a647f727624693e3f415f4533ef"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/run/report.json",
+      "bytes": 36660,
+      "sha256": "5c08a883876d5ede48b9d2797e9a2de48ecb86265a598e808a4142c67854a283"
+    },
+    {
+      "path": "LOCAL_RAW/r3/gemini/workspace/.spiral-coder/tui-work.json",
+      "bytes": 5306,
+      "sha256": "b78b56b0500c0df1d51d04bd5358c05c4d77fdccf512f76d4ba5006a3fd83241"
+    }
+  ]
+}

@@ -1,0 +1,3038 @@
+[
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 137.761,
+    "completed": false,
+    "requests": 18,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r1",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5224,
+        "duration_ms": 5798,
+        "provider_usage": {
+          "completion_tokens": 417,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 4975,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 5392
+        },
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5515,
+        "duration_ms": 3820,
+        "provider_usage": {
+          "completion_tokens": 395,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5328,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 5723
+        },
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6101,
+        "duration_ms": 4419,
+        "provider_usage": {
+          "completion_tokens": 382,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5839,
+          "prompt_tokens_details": {
+            "cached_tokens": 4896
+          },
+          "service_tier": "standard",
+          "total_tokens": 6221
+        },
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9136,
+        "duration_ms": 3514,
+        "provider_usage": {
+          "completion_tokens": 166,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8575,
+          "prompt_tokens_details": {
+            "cached_tokens": 5424
+          },
+          "service_tier": "standard",
+          "total_tokens": 8741
+        },
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10228,
+        "duration_ms": 12369,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9671,
+          "prompt_tokens_details": {
+            "cached_tokens": 7840
+          },
+          "service_tier": "standard",
+          "total_tokens": 11719
+        },
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 11781,
+        "duration_ms": 4509,
+        "provider_usage": {
+          "completion_tokens": 443,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11279,
+          "prompt_tokens_details": {
+            "cached_tokens": 8480
+          },
+          "service_tier": "standard",
+          "total_tokens": 11722
+        },
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 12886,
+        "duration_ms": 3520,
+        "provider_usage": {
+          "completion_tokens": 18,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12190,
+          "prompt_tokens_details": {
+            "cached_tokens": 10528
+          },
+          "service_tier": "standard",
+          "total_tokens": 12208
+        },
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 13048,
+        "duration_ms": 12702,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12386,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 14434
+        },
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 14184,
+        "duration_ms": 4458,
+        "provider_usage": {
+          "completion_tokens": 191,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13559,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13750
+        },
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 14318,
+        "duration_ms": 4018,
+        "provider_usage": {
+          "completion_tokens": 56,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13567,
+          "prompt_tokens_details": {
+            "cached_tokens": 4512
+          },
+          "service_tier": "standard",
+          "total_tokens": 13623
+        },
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 16891,
+        "duration_ms": 7286,
+        "provider_usage": {
+          "completion_tokens": 809,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 16032,
+          "prompt_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "service_tier": "standard",
+          "total_tokens": 16841
+        },
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 17445,
+        "duration_ms": 6190,
+        "provider_usage": {
+          "completion_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 16734,
+          "prompt_tokens_details": {
+            "cached_tokens": 4736
+          },
+          "service_tier": "standard",
+          "total_tokens": 16821
+        },
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 19278,
+        "duration_ms": 14058,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 18236,
+          "prompt_tokens_details": {
+            "cached_tokens": 6816
+          },
+          "service_tier": "standard",
+          "total_tokens": 20284
+        },
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 20356,
+        "duration_ms": 13306,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 19421,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 21469
+        },
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 22127,
+        "duration_ms": 5601,
+        "provider_usage": {
+          "completion_tokens": 56,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 21282,
+          "prompt_tokens_details": {
+            "cached_tokens": 4672
+          },
+          "service_tier": "standard",
+          "total_tokens": 21338
+        },
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "observer",
+        "estimated_input_tokens": 7032,
+        "duration_ms": 8361,
+        "provider_usage": {
+          "completion_tokens": 355,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6563,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6918
+        },
+        "status": "completed"
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 25914,
+        "duration_ms": 16070,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 24627,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 26675
+        },
+        "status": "completed"
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 26564,
+        "duration_ms": 5784,
+        "provider_usage": {
+          "completion_tokens": 56,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 25654,
+          "prompt_tokens_details": {
+            "cached_tokens": 7920
+          },
+          "service_tier": "standard",
+          "total_tokens": 25710
+        },
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 170.818,
+    "completed": false,
+    "requests": 18,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r1",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5237,
+        "duration_ms": 4914,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5008,
+        "duration_ms": 2436,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 5541,
+        "duration_ms": 7267,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 6472,
+        "duration_ms": 2424,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 9442,
+        "duration_ms": 17181,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 10778,
+        "duration_ms": 2414,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 13440,
+        "duration_ms": 17449,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 15295,
+        "duration_ms": 3340,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 15893,
+        "duration_ms": 17565,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 17936,
+        "duration_ms": 3107,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 18350,
+        "duration_ms": 4153,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 18010,
+        "duration_ms": 17558,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 20066,
+        "duration_ms": 4086,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 22887,
+        "duration_ms": 23391,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 22971,
+        "duration_ms": 5996,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "observer",
+        "estimated_input_tokens": 5920,
+        "duration_ms": 4547,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 26036,
+        "duration_ms": 7052,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 25542,
+        "duration_ms": 23888,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 11.825,
+    "completed": true,
+    "requests": 2,
+    "assists": 0,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r1",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5238,
+        "duration_ms": 4525,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5025,
+        "duration_ms": 5395,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 74.351,
+    "completed": true,
+    "requests": 14,
+    "assists": 0,
+    "independent_oracle_ok": false,
+    "diff_bytes": 2598,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py"
+    ],
+    "round": "r2",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": false
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Traceback (most recent call last):\n  File \"/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261019/r2/mistral/workspace/scripts/run_coupled_pilot.py\", line 185, in <module>\n    main()\n  File \"/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261019/r2/mistral/workspace/scripts/run_coupled_pilot.py\", line 86, in main\n    print(f\"Error: unknown case ID(s): {', '.join(unknown)}\", file=sys.stderr)\n                                                                   ^^^\nNameError: name 'sys' is not defined. Did you forget to import 'sys'?\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "other",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "error",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": true
+      },
+      {
+        "tool": "done",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5623,
+        "duration_ms": 5764,
+        "provider_usage": {
+          "completion_tokens": 522,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5287,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 5809
+        },
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6207,
+        "duration_ms": 4234,
+        "provider_usage": {
+          "completion_tokens": 448,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5944,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6392
+        },
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6870,
+        "duration_ms": 4205,
+        "provider_usage": {
+          "completion_tokens": 435,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6526,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6961
+        },
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 7484,
+        "duration_ms": 4422,
+        "provider_usage": {
+          "completion_tokens": 435,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7066,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 7501
+        },
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 8123,
+        "duration_ms": 3753,
+        "provider_usage": {
+          "completion_tokens": 379,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7625,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8004
+        },
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 11168,
+        "duration_ms": 3637,
+        "provider_usage": {
+          "completion_tokens": 114,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10313,
+          "prompt_tokens_details": {
+            "cached_tokens": 4992
+          },
+          "service_tier": "standard",
+          "total_tokens": 10427
+        },
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 11664,
+        "duration_ms": 3011,
+        "provider_usage": {
+          "completion_tokens": 71,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10948,
+          "prompt_tokens_details": {
+            "cached_tokens": 9120
+          },
+          "service_tier": "standard",
+          "total_tokens": 11019
+        },
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 14533,
+        "duration_ms": 12781,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13565,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 15613
+        },
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 15883,
+        "duration_ms": 4702,
+        "provider_usage": {
+          "completion_tokens": 173,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14982,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 15155
+        },
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 14248,
+        "duration_ms": 4855,
+        "provider_usage": {
+          "completion_tokens": 359,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13461,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 13820
+        },
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 13889,
+        "duration_ms": 5665,
+        "provider_usage": {
+          "completion_tokens": 252,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13176,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 13428
+        },
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 11731,
+        "duration_ms": 4258,
+        "provider_usage": {
+          "completion_tokens": 170,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11258,
+          "prompt_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "service_tier": "standard",
+          "total_tokens": 11428
+        },
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 12345,
+        "duration_ms": 3663,
+        "provider_usage": {
+          "completion_tokens": 77,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11978,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 12055
+        },
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 13590,
+        "duration_ms": 6538,
+        "provider_usage": {
+          "completion_tokens": 448,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12787,
+          "prompt_tokens_details": {
+            "cached_tokens": 5056
+          },
+          "service_tier": "standard",
+          "total_tokens": 13235
+        },
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 46.195,
+    "completed": true,
+    "requests": 8,
+    "assists": 0,
+    "independent_oracle_ok": false,
+    "diff_bytes": 1050,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py"
+    ],
+    "round": "r2",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": true
+      },
+      {
+        "tool": "done",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5633,
+        "duration_ms": 4715,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5549,
+        "duration_ms": 1734,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6010,
+        "duration_ms": 8631,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 7814,
+        "duration_ms": 2519,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 9889,
+        "duration_ms": 16535,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 11915,
+        "duration_ms": 4190,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 12563,
+        "duration_ms": 2459,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 13355,
+        "duration_ms": 4630,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 77.333,
+    "completed": false,
+    "requests": 18,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r2",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5634,
+        "duration_ms": 3904,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5561,
+        "duration_ms": 5496,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8935,
+        "duration_ms": 2348,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9869,
+        "duration_ms": 3218,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10103,
+        "duration_ms": 5147,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 9626,
+        "duration_ms": 4274,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 8328,
+        "duration_ms": 2844,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 7862,
+        "duration_ms": 7461,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 8527,
+        "duration_ms": 2415,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 8825,
+        "duration_ms": 3125,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 8932,
+        "duration_ms": 3762,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 11585,
+        "duration_ms": 3166,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 11815,
+        "duration_ms": 3364,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 11767,
+        "duration_ms": 4324,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 12993,
+        "duration_ms": 3663,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "observer",
+        "estimated_input_tokens": 5367,
+        "duration_ms": 5258,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 12107,
+        "duration_ms": 7059,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 14398,
+        "duration_ms": 5204,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 107.236,
+    "completed": true,
+    "requests": 16,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 2578,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py"
+    ],
+    "round": "r3",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "no_output_directory": false,
+            "no_subprocess": true,
+            "error_identifies_case": false
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Selected provider credential is unavailable\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "other",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "done",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "done",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5816,
+        "duration_ms": 8513,
+        "provider_usage": {
+          "completion_tokens": 549,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5462,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6011
+        },
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6430,
+        "duration_ms": 6517,
+        "provider_usage": {
+          "completion_tokens": 401,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6146,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 6547
+        },
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6902,
+        "duration_ms": 4754,
+        "provider_usage": {
+          "completion_tokens": 401,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6553,
+          "prompt_tokens_details": {
+            "cached_tokens": 5024
+          },
+          "service_tier": "standard",
+          "total_tokens": 6954
+        },
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9857,
+        "duration_ms": 4695,
+        "provider_usage": {
+          "completion_tokens": 393,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9181,
+          "prompt_tokens_details": {
+            "cached_tokens": 5520
+          },
+          "service_tier": "standard",
+          "total_tokens": 9574
+        },
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 11284,
+        "duration_ms": 15077,
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10587,
+          "prompt_tokens_details": {
+            "cached_tokens": 7952
+          },
+          "service_tier": "standard",
+          "total_tokens": 12635
+        },
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 13427,
+        "duration_ms": 6678,
+        "provider_usage": {
+          "completion_tokens": 811,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12703,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13514
+        },
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 14860,
+        "duration_ms": 5036,
+        "provider_usage": {
+          "completion_tokens": 80,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14052,
+          "prompt_tokens_details": {
+            "cached_tokens": 8816
+          },
+          "service_tier": "standard",
+          "total_tokens": 14132
+        },
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 11779,
+        "duration_ms": 3405,
+        "provider_usage": {
+          "completion_tokens": 13,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11126,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 11139
+        },
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 10649,
+        "duration_ms": 4880,
+        "provider_usage": {
+          "completion_tokens": 282,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10095,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 10377
+        },
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 10949,
+        "duration_ms": 3346,
+        "provider_usage": {
+          "completion_tokens": 76,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10385,
+          "prompt_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "service_tier": "standard",
+          "total_tokens": 10461
+        },
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 13051,
+        "duration_ms": 10757,
+        "provider_usage": {
+          "completion_tokens": 606,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12217,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 12823
+        },
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 13807,
+        "duration_ms": 4695,
+        "provider_usage": {
+          "completion_tokens": 83,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13062,
+          "prompt_tokens_details": {
+            "cached_tokens": 4640
+          },
+          "service_tier": "standard",
+          "total_tokens": 13145
+        },
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 13130,
+        "duration_ms": 6305,
+        "provider_usage": {
+          "completion_tokens": 13,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12462,
+          "prompt_tokens_details": {
+            "cached_tokens": 4336
+          },
+          "service_tier": "standard",
+          "total_tokens": 12475
+        },
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "observer",
+        "estimated_input_tokens": 6033,
+        "duration_ms": 5281,
+        "provider_usage": {
+          "completion_tokens": 579,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5613,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6192
+        },
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 14875,
+        "duration_ms": 7333,
+        "provider_usage": {
+          "completion_tokens": 566,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13761,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 14327
+        },
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 17444,
+        "duration_ms": 6778,
+        "provider_usage": {
+          "completion_tokens": 351,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 16209,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 16560
+        },
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 207.245,
+    "completed": false,
+    "requests": 18,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r3",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": true,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5823,
+        "duration_ms": 5058,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5739,
+        "duration_ms": 3443,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6199,
+        "duration_ms": 8413,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 8101,
+        "duration_ms": 3767,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10127,
+        "duration_ms": 16351,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12182,
+        "duration_ms": 15558,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 14502,
+        "duration_ms": 14766,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 16795,
+        "duration_ms": 14643,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 17187,
+        "duration_ms": 16442,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 19575,
+        "duration_ms": 18438,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 21964,
+        "duration_ms": 15118,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 24353,
+        "duration_ms": 17361,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 26870,
+        "duration_ms": 17424,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "observer",
+        "estimated_input_tokens": 5426,
+        "duration_ms": 4902,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 30160,
+        "duration_ms": 8956,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 29605,
+        "duration_ms": 9357,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 29680,
+        "duration_ms": 6719,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 29721,
+        "duration_ms": 8176,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": []
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 76.312,
+    "completed": false,
+    "requests": 18,
+    "assists": 1,
+    "independent_oracle_ok": false,
+    "diff_bytes": 0,
+    "changed_files": [],
+    "round": "r3",
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "task_qualified": false,
+    "actions": [
+      {
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "glob",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "search_files",
+        "result_kind": "observation",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      },
+      {
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "malformed_arguments_rejected": false,
+        "forced_closeout": false
+      }
+    ],
+    "requests_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 5824,
+        "duration_ms": 3197,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 5750,
+        "duration_ms": 2673,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 6264,
+        "duration_ms": 3775,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 6213,
+        "duration_ms": 3065,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 7065,
+        "duration_ms": 2157,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 6554,
+        "duration_ms": 7277,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 7355,
+        "duration_ms": 2297,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 7621,
+        "duration_ms": 3154,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 8083,
+        "duration_ms": 3076,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 8099,
+        "duration_ms": 2753,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 10577,
+        "duration_ms": 3150,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 11196,
+        "duration_ms": 5209,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 12,
+        "role": "coder",
+        "estimated_input_tokens": 13541,
+        "duration_ms": 5811,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 13,
+        "role": "observer",
+        "estimated_input_tokens": 7324,
+        "duration_ms": 4168,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 14739,
+        "duration_ms": 7313,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 11820,
+        "duration_ms": 3264,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 12015,
+        "duration_ms": 8161,
+        "provider_usage": null,
+        "status": "completed"
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 10441,
+        "duration_ms": 3452,
+        "provider_usage": null,
+        "status": "completed"
+      }
+    ],
+    "pending_exact_checks": [
+      "git diff --check"
+    ]
+  }
+]

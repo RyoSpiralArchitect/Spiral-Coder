@@ -37,6 +37,38 @@ after an Observer handoff. Earlier actual command or automatic-test failures
 remain visible through those refusals; separate plan, approval, evidence and
 verification gates still apply. Refusal text never supplies successful proof.
 
+`agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+arguments before any tool dispatch or workspace-recovery transition. The whole
+turn remains unexecuted, with the original call IDs, arguments and provider
+metadata paired with refusal results; the attempted provider request stays spent.
+The hint asks for a complete object and smaller edits when output was truncated.
+The runtime never substitutes an empty object or treats unparsed exec arguments
+as a shell command. The browser uses the same boundary in `core/work-loop.js`
+and persists the refusal before retrying. Valid JSON still passes the existing
+tool, plan, approval, evidence and verification gates.
+
+`agent/final_instructions.rs` owns bounded explicit English report clauses:
+“final answer/report/response/summary must” followed by a supported positive verb
+such as include, name, state or disclose. It preserves literal case and sentence
+boundaries for both roles and the done gate. Recognized clauses require an authored
+report, even when existing tests pass. This parser is not a general interpretation
+of arbitrary requests; an independent task oracle is still needed to establish
+that the requested change was actually made.
+
+An authored-report task also keeps control of its remaining diagnostic and
+repair steps after an intermediate automatic test passes. The legacy eager
+closeout shortcut does not force such a task into `done`; normal recovery,
+progress, approval and budget gates still apply.
+
+`agent/explicit_checks.rs` recognizes positive inline `Run exactly:` directives
+(also `Also/Then/Please run exactly:` or after a sentence boundary) for commands
+in the existing verification catalog. Quoting/case remain exact; duplicates are
+removed. Negated text, quoted examples and fenced blocks do not create checks.
+These commands use the same native-proof ledger as approved benchmark checks:
+automatic tests do not satisfy them, each needs a separate successful exec, and
+later mutations invalidate earlier proof. Arbitrary shell mutations or custom
+commands do not become verification merely because they follow this phrase.
+
 `task_scope.rs` reads explicit `target_files` from a complete approved benchmark
 plan. Those paths override the heuristic first-mentioned path in the intent
 anchor and Coder's artifact routing. Paths in the objective remain referenced
@@ -117,6 +149,12 @@ conversation from the Coder pane. This plain-text conversation is separate from
 native execution evidence: a new human task starts with empty native history,
 and only a continuation restores that task's native calls and results.
 
+Visible thread history still debounces ordinary saves, but `pagehide` flushes
+the latest snapshot and selected thread before navigation/reload. This keeps
+the conversation reachable when native receipts were already saved but the
+350 ms display-save timer had not fired. It does not promise durability after
+a browser/process crash that prevents lifecycle events or a failed storage write.
+
 Every browser read rechecks localStorage. A durable write increments
 `persistenceRevision`, separately from the native-message `revision` used by
 advice. Handles whose persisted snapshot changed in another tab cannot reserve,
@@ -143,7 +181,25 @@ and releases the busy state after displaying the diagnostic result.
 
 `scripts/run_coupled_pilot.py` runs `tests/fixtures/coupled-loop-v1.json` in isolated copies. Provider keys come only from environment variables and are not written to receipts. The original runtime suite and its `patch_file` requirement remain unchanged. The new suite includes a nonempty secondary provenance list and an unknown JSON field so lossy rewrites cannot pass unnoticed.
 
+Use repeatable `--case CASE_ID` flags to rerun only selected cases. Selection
+keeps suite order and ignores repeated IDs; omitting the flag runs the full suite.
+Unknown IDs fail before output creation or model execution. `metadata.json` and
+`summary.json` both record `selected_case_ids`, including for unfiltered runs.
+The saved spec remains the full original suite, with its original hash and caps.
+Always choose a fresh output directory to preserve earlier receipts. For example:
+
+```sh
+python3 -S scripts/run_coupled_pilot.py \
+  --binary target/debug/spiral-coder --repo . --out .tmp/pilot-selected \
+  --provider mistral --model mistral-small-2603 \
+  --case coupled-approved-benchmark-plan-tui-replay-smoke
+```
+
 Deterministic tests, mock HTTP/UI exercises, and bounded live results are separate evidence classes. See [the current evaluation record](evals/2026-10-14-baseline-and-review/README.md), [repair-continuation rounds](evals/2026-10-14-repair-continuation/README.md), [task-obligation rounds](evals/2026-10-14-task-obligations/README.md), and [earlier rounds](evals/2026-10-14-coupled-loop/README.md) for candidate hashes, fixed caps, failure ledgers, and limitations.
+
+The [first real-repository dogfood task](evals/2026-10-19-real-repo-dogfood/README.md)
+uses a separate frozen prompt and CLI oracle. Its nine live episodes do not pass
+the task; the manually completed integration is recorded separately.
 # Current evidence and authored closeout
 
 The shared task projection supplies stable `acceptance N` references and current
