@@ -4402,46 +4402,6 @@ struct StablePromptCache {
     verification_hash: Option<u64>,
 }
 
-fn parse_done_acceptance_evidence(value: &serde_json::Value) -> Vec<DoneAcceptanceEvidence> {
-    let serde_json::Value::Array(items) = value else {
-        return Vec::new();
-    };
-
-    items
-        .iter()
-        .filter_map(|item| {
-            if let serde_json::Value::Object(map) = item {
-                let criterion = map
-                    .get("criterion")
-                    .and_then(|v| v.as_str())
-                    .map(|v| compact_one_line(v.trim(), 160))
-                    .filter(|v| !v.is_empty())?;
-                let command = map
-                    .get("command")
-                    .and_then(|v| v.as_str())
-                    .map(|v| v.trim().to_owned())
-                    .filter(|v| !v.is_empty())?;
-                return Some(DoneAcceptanceEvidence { criterion, command });
-            }
-            // Flattened form for providers that emit string rows:
-            // "<criterion> | <command>".
-            if let serde_json::Value::String(row) = item {
-                let (criterion, command) = row.split_once('|')?;
-                let criterion = criterion.trim();
-                let command = command.trim();
-                if criterion.is_empty() || command.is_empty() {
-                    return None;
-                }
-                return Some(DoneAcceptanceEvidence {
-                    criterion: compact_one_line(criterion, 160),
-                    command: command.to_owned(),
-                });
-            }
-            None
-        })
-        .collect()
-}
-
 fn keyword_tokens(s: &str) -> std::collections::BTreeSet<String> {
     s.split(|ch: char| !ch.is_ascii_alphanumeric())
         .map(|part| part.trim().to_ascii_lowercase())
@@ -12420,7 +12380,8 @@ Required now: run `{command}`.\n{verification_status}"
             let summary = args["summary"].as_str().unwrap_or("").trim();
             let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
-            let acceptance_evidence = parse_done_acceptance_evidence(&args["acceptance_evidence"]);
+            let acceptance_evidence =
+                acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
             let next_steps = args["next_steps"].as_str().unwrap_or("").trim();
             let done_plan = validated_plan_for_turn.as_ref().or(active_plan.as_ref());
             let known_acceptance_commands =
@@ -12460,6 +12421,7 @@ Required now: run `{command}`.\n{verification_status}"
                         done_plan,
                         &known_acceptance_commands,
                         &read_only_scores,
+                        cfg.base_url.contains("generativelanguage.googleapis.com"),
                     );
                     let block = format!(
                         "{}{}{}",

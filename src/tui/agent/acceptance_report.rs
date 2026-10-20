@@ -2,6 +2,52 @@
 //! currently citable native receipts. Never guess which criterion a check proves.
 use super::*;
 
+/// Parse `done.acceptance_evidence` rows. Object rows
+/// (`{"criterion": ..., "command": ...}`) are the canonical contract; flat
+/// string rows (`"<criterion> | <command>"`) are accepted for providers whose
+/// tool-call layer is advertised the flattened schema (e.g. Gemini's
+/// OpenAI-compatible endpoint, which can otherwise drop nested calls as
+/// MALFORMED_FUNCTION_CALL).
+pub(super) fn parse_done_acceptance_evidence(
+    value: &serde_json::Value,
+) -> Vec<DoneAcceptanceEvidence> {
+    let serde_json::Value::Array(items) = value else {
+        return Vec::new();
+    };
+
+    items
+        .iter()
+        .filter_map(|item| {
+            if let serde_json::Value::Object(map) = item {
+                let criterion = map
+                    .get("criterion")
+                    .and_then(|v| v.as_str())
+                    .map(|v| compact_one_line(v.trim(), 160))
+                    .filter(|v| !v.is_empty())?;
+                let command = map
+                    .get("command")
+                    .and_then(|v| v.as_str())
+                    .map(|v| v.trim().to_owned())
+                    .filter(|v| !v.is_empty())?;
+                return Some(DoneAcceptanceEvidence { criterion, command });
+            }
+            if let serde_json::Value::String(row) = item {
+                let (criterion, command) = row.split_once('|')?;
+                let criterion = criterion.trim();
+                let command = command.trim();
+                if criterion.is_empty() || command.is_empty() {
+                    return None;
+                }
+                return Some(DoneAcceptanceEvidence {
+                    criterion: compact_one_line(criterion, 160),
+                    command: command.to_owned(),
+                });
+            }
+            None
+        })
+        .collect()
+}
+
 pub(super) fn criteria(plan: Option<&PlanBlock>) -> Vec<serde_json::Value> {
     plan.into_iter().flat_map(|plan| plan.acceptance_criteria.iter().enumerate()
         .map(|(idx, criterion)| json!({"reference":format!("acceptance {}", idx + 1),"criterion":criterion})))
