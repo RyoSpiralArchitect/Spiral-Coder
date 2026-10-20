@@ -1,0 +1,43 @@
+{
+  "candidate": "f420ea43c3577dfd63e090d460c4db03be0c79b6",
+  "regression_before": "da4b08763e72480b074e3b1cbe36cf3d90d2238b",
+  "red_regressions": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 101
+  },
+  "check_local_exit_code": 0,
+  "rust": {
+    "passed": 791,
+    "ignored": 1
+  },
+  "integration_passed": 1,
+  "python_passed": 20,
+  "web_passed": 79,
+  "tui_replay": {
+    "passed": 3,
+    "total": 3
+  },
+  "repo_map": {
+    "passed": 14,
+    "total": 14
+  },
+  "syntax_and_lite_smoke_passed": true,
+  "logs": [
+    {
+      "local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021-review-baseline/spiral-pr31-review-red.log",
+      "sha256": "d38ae82b49440dc5930c60a91ec92d68cd32fd6e4f0b1996928e72de0797f037",
+      "bytes": 2321
+    },
+    {
+      "local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021-review-baseline/spiral-pr31-review-focused.log",
+      "sha256": "368100128a119c243a510025371cc1be2f792f95c8eece24e287f3e9756d9091",
+      "bytes": 1413
+    },
+    {
+      "local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021-review-baseline/spiral-pr31-review-check-local.log",
+      "sha256": "ccf4d8c975ff04f182a266c6fa06fd02008e87217d527dd47ff35fa240f929a0",
+      "bytes": 88323
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Task proof, small JSON edits, and Gemini Web parity
 
+The later [review baseline follow-up](../2026-10-21-review-baseline/README.md)
+records the diagnostic-prefix correction and a separate small live task. The
+original candidates, declarations and results below remain unchanged.
+
 ## Scope and evidence boundary
 
 Coder and Observer are one work unit: each episode uses the same selected model
