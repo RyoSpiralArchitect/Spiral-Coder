@@ -712,11 +712,48 @@ fn evidence_score_label(score: f32) -> &'static str {
 
 pub(super) fn build_done_acceptance_recovery_hint(
     error_text: &str,
+    plan: Option<&PlanBlock>,
     known_commands: &[String],
     read_only_scores: &[CriterionEvidenceScore],
 ) -> String {
     let mut lines = Vec::new();
     let low = error_text.to_ascii_lowercase();
+
+    if let Some(plan) = plan.filter(|plan| !plan.acceptance_criteria.is_empty()) {
+        lines.push(
+            "Valid acceptance criteria (reference each as \"acceptance N\" or its exact text):"
+                .to_string(),
+        );
+        for (idx, criterion) in plan.acceptance_criteria.iter().enumerate() {
+            lines.push(format!(
+                "- acceptance {}: {}",
+                idx + 1,
+                compact_one_line(criterion, 200)
+            ));
+        }
+        let completed_refs = plan
+            .acceptance_criteria
+            .iter()
+            .enumerate()
+            .map(|(idx, _)| format!("\"acceptance {}\"", idx + 1))
+            .collect::<Vec<_>>()
+            .join(",");
+        let evidence_rows = plan
+            .acceptance_criteria
+            .iter()
+            .enumerate()
+            .map(|(idx, _)| {
+                format!(
+                    "{{\"criterion\":\"acceptance {}\",\"command\":\"<paste a command from the list below, exactly>\"}}",
+                    idx + 1
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",");
+        lines.push(format!(
+            "Example done arguments: completed_acceptance=[{completed_refs}], remaining_acceptance=[], acceptance_evidence=[{evidence_rows}]"
+        ));
+    }
 
     if low.contains("cover every completed acceptance criterion exactly once") {
         lines.push(
@@ -1727,6 +1764,42 @@ mod tests {
                 (1, "read_file(path=src/tui/agent.rs)".to_string()),
             ]
         );
+    }
+
+    #[test]
+    fn done_acceptance_recovery_hint_lists_valid_criterion_references() {
+        let plan = PlanBlock {
+            goal: "Add a replay case".into(),
+            steps: vec!["Edit spec".into(), "Verify".into()],
+            acceptance_criteria: vec![
+                "the requested change is implemented and confirmed by a passing behavioral verification command".into(),
+                "the final result cites the exact passing behavioral verification command".into(),
+            ],
+            risks: "stale proof".into(),
+            assumptions: "native evidence".into(),
+        };
+        let hint = build_done_acceptance_recovery_hint(
+            "done.completed_acceptance must reference a real current acceptance criterion",
+            Some(&plan),
+            &["grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json".into()],
+            &[],
+        );
+        assert!(hint.contains("acceptance 1: the requested change is implemented"));
+        assert!(hint.contains("acceptance 2: the final result cites"));
+        assert!(hint.contains("\"criterion\":\"acceptance 1\""));
+        assert!(hint.contains("\"criterion\":\"acceptance 2\""));
+        assert!(hint.contains("grep -q \"src/tui/review_panel.rs\""));
+    }
+
+    #[test]
+    fn done_acceptance_recovery_hint_omits_criteria_list_without_plan() {
+        let hint = build_done_acceptance_recovery_hint(
+            "done requires a valid current plan",
+            None,
+            &[],
+            &[],
+        );
+        assert!(!hint.contains("Valid acceptance criteria"));
     }
 
     #[test]

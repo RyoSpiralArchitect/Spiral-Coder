@@ -12432,6 +12432,7 @@ Required now: run `{command}`.\n{verification_status}"
                     });
                     let hint = build_done_acceptance_recovery_hint(
                         &e.to_string(),
+                        done_plan,
                         &known_acceptance_commands,
                         &read_only_scores,
                     );
