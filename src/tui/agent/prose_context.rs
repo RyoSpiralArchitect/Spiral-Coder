@@ -101,4 +101,14 @@ mod tests {
         assert!(!is_inside_inline_quote("`closed` final report must x", 15));
         assert!(!is_inside_inline_quote("final report must x", 5));
     }
+
+    #[test]
+    fn recognizes_example_variants_with_punctuation() {
+        assert!(is_example_or_negation_sentence(
+            "e.g., run exactly: cargo test"
+        ));
+        assert!(is_example_or_negation_sentence(
+            "for example: final report must state PASS."
+        ));
+    }
 }
