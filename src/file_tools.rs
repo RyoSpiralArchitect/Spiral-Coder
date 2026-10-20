@@ -221,6 +221,14 @@ pub fn tool_patch_file(
     write_patch_result(path, &abs_path, &content, &new_content)
 }
 
+fn json_spec_rewrite_hint(path: &str) -> &'static str {
+    if path.ends_with(".json") {
+        "\nHint: for JSON spec edits, do not retry patch_file/apply_diff — read the file, then call write_file with the complete corrected JSON document."
+    } else {
+        ""
+    }
+}
+
 fn write_patch_result(
     path: &str,
     abs_path: &Path,
@@ -229,7 +237,10 @@ fn write_patch_result(
 ) -> (String, bool) {
     if let Err(error) = check_preserved_write(abs_path, new_content) {
         return (
-            format!("ERROR: preservation check blocked patch: {error}"),
+            format!(
+                "ERROR: preservation check blocked patch: {error}{}",
+                json_spec_rewrite_hint(path)
+            ),
             true,
         );
     }
@@ -744,7 +755,10 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
     // Atomic write.
     if let Err(error) = check_preserved_write(&abs_path, &new_content) {
         return (
-            format!("ERROR: preservation check blocked diff: {error}"),
+            format!(
+                "ERROR: preservation check blocked diff: {error}{}",
+                json_spec_rewrite_hint(path)
+            ),
             true,
         );
     }
@@ -1188,6 +1202,12 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
         assert!(r.contains("not found"), "{r}");
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn json_spec_rewrite_hint_targets_json_only() {
+        assert!(json_spec_rewrite_hint(".spiral-coder/tui_replay.json").contains("write_file"));
+        assert!(json_spec_rewrite_hint("src/lib.rs").is_empty());
     }
 
     #[test]

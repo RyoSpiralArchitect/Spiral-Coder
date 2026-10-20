@@ -731,28 +731,9 @@ pub(super) fn build_done_acceptance_recovery_hint(
                 compact_one_line(criterion, 200)
             ));
         }
-        let completed_refs = plan
-            .acceptance_criteria
-            .iter()
-            .enumerate()
-            .map(|(idx, _)| format!("\"acceptance {}\"", idx + 1))
-            .collect::<Vec<_>>()
-            .join(",");
-        let evidence_rows = plan
-            .acceptance_criteria
-            .iter()
-            .enumerate()
-            .map(|(idx, _)| {
-                format!(
-                    "{{\"criterion\":\"acceptance {}\",\"command\":\"<paste a command from the list below, exactly>\"}}",
-                    idx + 1
-                )
-            })
-            .collect::<Vec<_>>()
-            .join(",");
-        lines.push(format!(
-            "Example done arguments: completed_acceptance=[{completed_refs}], remaining_acceptance=[], acceptance_evidence=[{evidence_rows}]"
-        ));
+        lines.push(
+            "Example shape (keep your own completed/remaining split; cite only criteria that actually have proof): completed_acceptance=[\"acceptance 1\", ...only criteria with proof], remaining_acceptance=[<each unproven \"acceptance N\">], acceptance_evidence=[{\"criterion\":\"acceptance 1\",\"command\":\"<paste a command from the list below, exactly>\"}, ...one row per completed criterion]".to_string(),
+        );
     }
 
     if low.contains("cover every completed acceptance criterion exactly once") {
@@ -1787,7 +1768,9 @@ mod tests {
         assert!(hint.contains("acceptance 1: the requested change is implemented"));
         assert!(hint.contains("acceptance 2: the final result cites"));
         assert!(hint.contains("\"criterion\":\"acceptance 1\""));
-        assert!(hint.contains("\"criterion\":\"acceptance 2\""));
+        assert!(hint.contains("only criteria with proof"));
+        assert!(hint.contains("unproven \"acceptance N\""));
+        assert!(!hint.contains("\"criterion\":\"acceptance 2\""));
         assert!(hint.contains("grep -q \"src/tui/review_panel.rs\""));
     }
 
