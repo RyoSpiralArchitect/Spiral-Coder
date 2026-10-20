@@ -962,6 +962,99 @@ fn benchmark_plan_case_id_hint(root_user_text: &str) -> Option<String> {
     })
 }
 
+/// Return a concrete example snippet to guide weak models when adding a new
+/// Observer benchmark plan case to a JSON spec file.
+pub(super) fn benchmark_plan_example_hint(root_user_text: &str) -> Option<String> {
+    let low = root_user_text.to_ascii_lowercase();
+    let case_id = benchmark_plan_case_id_hint(root_user_text)?;
+    let required_path = benchmark_plan_required_path_literal(root_user_text)?;
+
+    if low.contains("lane: tui_replay") || low.contains("\"lane\": \"tui_replay\"") {
+        let prompt = format!(
+            "Find the role of `{}`. Read the target before widening the search.",
+            required_path
+        );
+        let json_example = serde_json::json!({
+            "id": "{CASE_ID}",
+            "prompt": "{PROMPT}",
+            "tool_root": null,
+            "lang": "en",
+            "selector": null,
+            "reason_hint": null,
+            "tags": ["benchmark-plan", "observer-handoff"],
+            "coder_messages": [
+                {"role": "user", "content": "{PROMPT}"},
+                {"role": "assistant", "content": "read_file(path={REQUIRED_PATH})"}
+            ],
+            "observer_response": {
+                "summary": "Read the requested target before broadening the search.",
+                "primary_blocker": "missing_concrete_next_step",
+                "quickest_check": "read_file(path={REQUIRED_PATH})",
+                "why_this_first": "Keep the continuation attached to the approved target.",
+                "suggestions": [
+                    {
+                        "kind": "read",
+                        "reason": "The approved benchmark names this target as the next focused read.",
+                        "confidence": 0.9,
+                        "suggested_tool": "read_file",
+                        "suggested_args": {"path": "{REQUIRED_PATH}"},
+                        "based_on": ["intent_anchor", "failure_kind"]
+                    }
+                ]
+            },
+            "checks": [
+                {"kind": "suggestion_parsed"},
+                {"kind": "hint_queued"},
+                {"kind": "observer_contains", "value": "{REQUIRED_PATH}"},
+                {"kind": "coder_system_contains", "value": "read_file(path={REQUIRED_PATH})"}
+            ]
+        })
+        .to_string()
+        .replace("{CASE_ID}", &case_id)
+        .replace("{PROMPT}", &prompt)
+        .replace("{REQUIRED_PATH}", &required_path);
+
+        let action_example = format!(
+            "\n[Benchmark plan action example]\n\
+For the first tool call, emit a valid `<plan>` block, then a literal tab/newline/think block, then call `read_file(path={})`:\n\
+<plan>\n\
+goal: Add the smallest TUI replay regression for `{}` to `.spiral-coder/tui_replay.json`.\n\
+steps:\n\
+1) Read `.spiral-coder/tui_replay.json` to understand the existing case shape.\n\
+2) Append a new case with id `{}` that targets `{}`.\n\
+3) Confirm `{}` appears in `.spiral-coder/tui_replay.json`.\n\
+4) Run the required tui-replay check to verify the new case passes.\n\
+acceptance:\n\
+1) `.spiral-coder/tui_replay.json` contains `{}`.\n\
+2) The required replay check passes.\n\
+risks: corrupting existing cases or using patch_file on nested JSON arrays.\n\
+assumptions: the existing spec version and defaults remain valid.\n\
+</plan>\n\
+\t\n\
+goal: Add the smallest TUI replay regression for `{}`.\n\
+step: 1\n\
+tool: read_file\n\
+risk: misreading the JSON structure\n\
+doubt: none\n\
+next: read the current `.spiral-coder/tui_replay.json` content\n\
+verify: see the existing cases list\n\
+\t\n",
+            required_path, required_path, case_id, required_path, required_path, required_path,
+            required_path
+        );
+        Some(format!(
+            "\n[Benchmark plan example]\n\
+When appending to `.spiral-coder/tui_replay.json`, add one new case object like this (replace `<case-id>` with the actual `case_id_hint` value and `<target-path>` with the required path):\n\
+{}\n\
+Preserve all existing cases unchanged; only append this new case.\n\
+{}",
+            json_example, action_example
+        ))
+    } else {
+        None
+    }
+}
+
 pub(super) fn coerce_fix_existing_blocked_mutation_tool_call(
     harness: TaskHarness,
     messages: &[Value],
