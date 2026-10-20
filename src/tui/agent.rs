@@ -8148,13 +8148,20 @@ This is the LAST model call for this run.\n\
             }));
         }
 
-        let harness_prompt = task_harness.prompt(test_cmd.as_deref());
+        let mut harness_prompt = task_harness.prompt(test_cmd.as_deref());
+        let mut harness_compact = task_harness.compact_prompt(test_cmd.as_deref());
+        if task_harness.lane == task_harness::TaskLane::BenchmarkPlan {
+            if let Some(example) = task_harness::benchmark_plan_example_hint(&root_user_text) {
+                harness_prompt.push_str(&example);
+                harness_compact.push_str(&example);
+            }
+        }
         msgs_for_call.push(json!({
             "role": "system",
             "content": render_cached_prompt(
                 &mut prompt_cache.task_harness_hash,
                 harness_prompt,
-                task_harness.compact_prompt(test_cmd.as_deref()),
+                harness_compact,
             ),
         }));
 
