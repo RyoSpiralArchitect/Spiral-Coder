@@ -54,7 +54,7 @@ def main():
     parser.add_argument("--binary", required=True, type=Path)
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
-    parser.add_argument("--provider", required=True, choices=["openai", "mistral", "gemini"])
+    parser.add_argument("--provider", required=True, choices=["openai", "mistral", "gemini", "anthropic"])
     parser.add_argument("--model", required=True)
     parser.add_argument("--wall-seconds", type=int, default=600)
     parser.add_argument("--without-observer", action="store_true")
@@ -83,8 +83,10 @@ def main():
     env.update(PATH=str(binary.parent) + os.pathsep + env.get("PATH", ""), CARGO_INCREMENTAL="0",
                CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0", PYTHONNOUSERSITE="1")
     base = {"openai": "https://api.openai.com/v1", "mistral": "https://api.mistral.ai/v1",
-            "gemini": "https://generativelanguage.googleapis.com/v1beta/openai"}[args.provider]
-    key_name = {"openai": "OPENAI_API_KEY", "mistral": "MISTRAL_API_KEY", "gemini": "GEMINI_API_KEY"}[args.provider]
+            "gemini": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "anthropic": "https://api.anthropic.com/v1"}[args.provider]
+    key_name = {"openai": "OPENAI_API_KEY", "mistral": "MISTRAL_API_KEY", "gemini": "GEMINI_API_KEY",
+                "anthropic": "ANTHROPIC_API_KEY"}[args.provider]
     secret = env.get(key_name)
     if not secret:
         raise SystemExit("Selected provider credential is unavailable")
