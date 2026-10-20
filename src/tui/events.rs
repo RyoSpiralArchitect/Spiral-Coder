@@ -2873,6 +2873,7 @@ mod tests {
     include!("closeout_loop_tests.rs");
     include!("refusal_continuation_tests.rs");
     include!("dogfood_boundary_tests.rs");
+    include!("task_requirement_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())

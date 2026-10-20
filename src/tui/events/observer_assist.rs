@@ -88,7 +88,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .filter(|goal| !goal.trim().is_empty())
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
-    let available_tools = suggestion::tool_schemas();
+    let available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
     let execution = app.coder_session.as_ref().map(|session| {
         agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
     });

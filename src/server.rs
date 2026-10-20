@@ -2985,8 +2985,8 @@ async fn api_patch_file(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
     #[derive(Deserialize)]
     struct Req {
         path: String,
-        search: String,
-        replace: String,
+        #[serde(flatten)]
+        arguments: serde_json::Map<String, serde_json::Value>,
     }
     #[derive(Serialize)]
     struct Res {
@@ -3009,8 +3009,11 @@ async fn api_patch_file(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
         }
     };
     let base = state.workspace_root.to_string_lossy().into_owned();
-    let (msg, is_err) =
-        crate::file_tools::tool_patch_file(&req.path, &req.search, &req.replace, Some(&base));
+    let (msg, is_err) = crate::file_tools::tool_patch_file_args(
+        &req.path,
+        &serde_json::Value::Object(req.arguments),
+        Some(&base),
+    );
     if is_err {
         return write_json(stream, 400, "Bad Request", &ApiError { error: msg }).await;
     }

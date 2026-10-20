@@ -79,7 +79,7 @@ pub(super) fn guidance(content: &str) -> String {
     if recipes.is_empty() {
         return String::new();
     }
-    format!("\n[JSON append guidance — diagnostic only]\nIf the requested change appends an item, choose its array pointer below. Use patch_file with search unchanged and replace = replace_prefix + your complete JSON-encoded new item + replace_suffix. Concatenate decoded strings, not their JSON escape notation. Do not replace an array closing bracket with an object brace. Preserve every existing field. These recipes contain no new task content and grant no execution or verification proof.\n{}\n", serde_json::to_string(&recipes).unwrap())
+    format!("\n[JSON append guidance — diagnostic only]\nPrefer patch_file with json_pointer set to an array pointer plus /- and json_value set to only your JSON-encoded new item. Omit search/replace; the runtime preserves the full document, including data beyond the read limit. For a text-patch alternative, choose an array recipe below. Use patch_file with search unchanged and replace = replace_prefix + your complete JSON-encoded new item + replace_suffix. Concatenate decoded strings, not their JSON escape notation. Do not replace an array closing bracket with an object brace. Preserve every existing field. These recipes contain no new task content and grant no execution or verification proof.\n{}\n", serde_json::to_string(&recipes).unwrap())
 }
 
 pub(super) fn rejected(candidate: &str, original: &str) -> String {

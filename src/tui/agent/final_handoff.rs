@@ -40,7 +40,7 @@ mod clause_tests {
 }
 
 pub(super) fn requires_authored_final_answer(root: &str) -> bool {
-    !instructions(root).is_empty()
+    !instructions(root).is_empty() || super::requirement_proof::declared(root)
 }
 
 /// The same bounded clauses/literals used by the done gate, available to both roles.
@@ -303,6 +303,9 @@ pub(super) fn validate_authored_done_summary(
     messages: &[Value],
     test_cmd: Option<&str>,
 ) -> Result<(), String> {
+    if let Some(issue) = super::requirement_proof::issue(messages, test_cmd) {
+        return Err(issue);
+    }
     if let Some(issue) = crate::work_budget::current().and_then(|c| c.budget.preservation_issue()) {
         return Err(format!("Artifact preservation failed: {issue}"));
     }

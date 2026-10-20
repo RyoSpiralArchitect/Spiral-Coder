@@ -33,6 +33,9 @@ impl TaskOutcome {
     }
 
     pub(super) fn completed(&self, messages: &[Value]) -> bool {
+        if super::requirement_proof::issue(messages, None).is_some() {
+            return false;
+        }
         if super::recovery_focus::RecoveryFocus::from_messages(messages, None, None).is_pending() {
             return false;
         }

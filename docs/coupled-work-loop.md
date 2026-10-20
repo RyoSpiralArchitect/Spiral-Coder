@@ -2,6 +2,12 @@
 
 Coder and Observer are roles in one task. An accepted suggestion is not a completed task. The unit of qualification is the original request, its preserved artifacts, current verification, authored final report, and the total request cap.
 
+For new maintenance behavior, [explicit task requirements](task-requirements.md)
+bind source/test/doc artifacts to caller-chosen checks and optional failing
+baselines. Both roles see the pending obligations; editing the model's plan
+cannot waive them. This contract also documents small JSON edits that preserve
+the complete file without asking the model to reprint it.
+
 When the original task explicitly requires a final report, an empty or text-only
 provider turn cannot complete it through automatic stop checks. The runtime
 retains native proof and requests an authored `done` summary without rerunning

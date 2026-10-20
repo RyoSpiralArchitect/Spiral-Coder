@@ -67,7 +67,8 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         &request.messages,
         request.test_command.as_deref()
     ));
-    let schemas = suggestion::tool_schemas();
+    let schemas =
+        suggestion::tool_schemas_for(request.packet["coder_base_url"].as_str().unwrap_or(""));
     request.packet["available_tools"] = json!(schemas
         .as_array()
         .unwrap()

@@ -76,6 +76,16 @@ schema is the only provider-specific part. Validation rules (one evidence row
 per completed criterion, command must be a recorded successful verification)
 are identical for both representations.
 
+Rust and Web advertise matching provider-specific shapes and use matching
+recovery examples. Both parsers retain complete command strings, including
+internal whitespace and shell pipelines. Observer tool catalogs use the Coder
+endpoint's shape; suggestions accept either representation.
+
+For feature work, use [task requirements](task-requirements.md) and a frozen
+acceptance check that fails before editing. Legacy tests passing cannot replace
+the declared artifact/check obligations. This is an opt-in explicit contract;
+unstructured requests are not automatically semantically qualified.
+
 Recovery stages take precedence over benchmark-plan tool coercion. In Diagnose,
 requested diagnostic commands and file reads stay intact after a failed edit.
 In Fix, the model's repair remains intact instead of being replaced by a generic

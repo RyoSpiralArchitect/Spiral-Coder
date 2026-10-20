@@ -1911,16 +1911,7 @@
   }
 
   function parseDoneAcceptanceEvidence(value, contract) {
-    if (!Array.isArray(value)) return [];
-    const [criterionKey, commandKey] = doneEvidenceFields(contract);
-    return value
-      .map((item) => {
-        const obj = item && typeof item === "object" ? item : null;
-        const criterion = obj ? String(obj[criterionKey] || "").trim().replace(/\s+/g, " ") : "";
-        const command = obj ? String(obj[commandKey] || "").trim().replace(/\s+/g, " ") : "";
-        return criterion && command ? { criterion, command } : null;
-      })
-      .filter(Boolean);
+    return window.SpiralCoderWork.parseDoneEvidence(value, doneEvidenceFields(contract));
   }
 
   function resolveAcceptanceReference(reference, plan) {
@@ -5555,6 +5546,8 @@
         failure_kind: detectMetaFailureKind(target.content),
         coder_mode: String(config.mode || "").trim(),
         coder_provider: String(config.codeProvider || config.provider || "").trim(),
+        coder_base_url: String(config.codeBaseUrl || config.baseUrl || "").trim()
+          || ((config.codeProvider || config.provider) === "gemini" ? "https://generativelanguage.googleapis.com/v1beta/openai" : ""),
         coder_model: String(coderActiveModel() || "").trim(),
         observer_model: String(observerActiveModel() || "").trim(),
         tool_root: resolvedThreadRoot(config.toolRoot, activeThread.id) || null,
@@ -6277,7 +6270,7 @@
         && window.SpiralCoderWork.isActive(localStorage, threadId, work);
       const budgetMeta = () => ({ task_id: work.taskId, root: work.root, limit: work.limit, role: "coder", tool_root: resolvedThreadRoot(reqCfg.toolRoot, threadId) });
       const taskPost = (url, body, signal) => window.SpiralCoderWork.runCurrent(localStorage, threadId, work,
-        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, work_budget: budgetMeta() }, signal); });
+        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, ...(url === "/api/observer_action" ? { packet: { ...(body.packet || {}), coder_base_url: reqCfg.baseUrl || (reqCfg.provider === "gemini" ? "https://generativelanguage.googleapis.com/v1beta/openai" : "") } } : {}), work_budget: budgetMeta() }, signal); });
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
       const configuredIterations = (() => {
@@ -7322,15 +7315,18 @@
         type: "function",
         function: {
           name: "patch_file",
-          description: "Edit a file by replacing an exact text snippet. The search string must appear exactly once. Call read_file first to see the exact current text. For whole-file rewrites use write_file.",
+          description: "Edit a file by replacing an exact text snippet. The search string must appear exactly once. Call read_file first to see the exact current text. For JSON, supply json_pointer and json_value instead of search/replace; do not rewrite a truncated document.",
           parameters: {
             type: "object",
             properties: {
               path: { type: "string", description: "Relative file path under tool_root" },
               search: { type: "string", description: "Exact text to find (must be unique in the file)" },
               replace: { type: "string", description: "Text to replace it with" },
+              json_pointer: { type: "string", description: "JSON pointer: append at /cases/- or replace an existing member. Omit search/replace." },
+              json_value: { type: "string", description: "Only the new JSON value, encoded as a string. The runtime preserves the document." },
+              json_expected: { type: "string", description: "Current JSON value encoded as a string, required for replacement. Omit for append." },
             },
-            required: ["path", "search", "replace"],
+            required: ["path"],
           },
         },
       };
@@ -7423,14 +7419,7 @@
               },
               acceptance_evidence: {
                 type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    [criterionField]: { type: "string" },
-                    [commandField]: { type: "string" },
-                  },
-                  required: doneEvidenceFields(governorContract),
-                },
+                items: window.SpiralCoderWork.doneEvidenceItems(reqCfg.baseUrl, reqCfg.provider, doneEvidenceFields(governorContract)),
                 description: "For each completed criterion, the verification command that already succeeded."
               },
               next_steps: { type: "string", description: "Exact follow-up commands or remaining work." },
@@ -7873,6 +7862,13 @@ state: ${agentState}`);
         let streamResult;
         let requestReceipt;
         try {
+          const shared = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang }, ac.signal);
+          if (!current()) break;
+          const obligations = shared.packet?.task_obligations;
+          if (obligations) {
+            sysExtras.push("[Shared task obligations] Requirements are fixed by the original human request. Run baseline_failure checks before editing. Use native file tools for declared artifacts, then run each pending exact check separately. Your plan cannot waive these obligations.\n" + JSON.stringify(obligations));
+            messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
+          }
           requestReceipt = window.SpiralCoderWork.reserve(localStorage, threadId, work, "coder", messages);
           // Separate text tokens from previous turn with a blank line.
           if (display) display += "\n\n";
@@ -8171,16 +8167,20 @@ state: ${agentState}`);
                 break;
               }
 
+              const finalContract = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang, final_summary: summary }, ac.signal);
+              if (!current()) break;
+              const nativeCommands = finalContract.packet?.task_obligations?.current_commands;
+              const completionCommands = Array.isArray(nativeCommands) ? nativeCommands : knownGoodVerificationCommands;
               const validation = validateDoneAcceptance(
                 governorContract,
                 activePlan,
                 completedAcceptance,
                 remainingAcceptance,
                 acceptanceEvidence,
-                knownGoodVerificationCommands,
+                completionCommands,
               );
               if (validation && validation.error) {
-                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error);
+                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands);
                 messages.push({ role: "tool", tool_call_id: tc.id, content: "GOVERNOR BLOCKED\n\n" + toolResult });
                 display += (display ? "\n\n" : "") + "[GOVERNOR BLOCK]\n" + toolResult;
                 flush();
@@ -8189,8 +8189,6 @@ state: ${agentState}`);
                 break;
               }
 
-              const finalContract = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang, final_summary: summary }, ac.signal);
-              if (ac.signal.aborted || abortCoderRef.current !== ac) break;
               if (finalContract.completion_issue && !remainingAcceptance.length) {
                 blockCurrentToolCalls(finalContract.completion_issue);
                 break;
@@ -8594,22 +8592,21 @@ state: ${agentState}`);
               let args;
               try { args = JSON.parse(tc.function.arguments || "{}"); } catch (_) { args = {}; }
               const path0 = String(args.path || "").trim();
-              const search = String(args.search || "");
-              const replace = String(args.replace || "");
+              const patchArgs = Object.fromEntries(["search", "replace", "json_pointer", "json_value", "json_expected"].filter(key => Object.hasOwn(args, key)).map(key => [key, args[key]]));
               display += (display ? "\n\n" : "") + `✎ patch_file: ${path0}`;
               flush();
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
                 if (config.requireEditApproval) {
-                  const q = await taskPost("/api/queue_edit", {action: "patch_file", path: fullPath, search, replace}, ac.signal);
+                  const q = await taskPost("/api/queue_edit", {action: "patch_file", ...patchArgs, path: fullPath}, ac.signal);
                   refreshPendingEdits();
                   toolResult = `Awaiting approval via /api/approve_edit\napproval_id: ${q.approval_id}\napproval_path: ${q.path || fullPath}`;
                   messages.push({role: "tool", tool_call_id: tc.id, content: toolResult});
                   awaitingApproval = true;
                   break;
                 }
-                const res = await taskPost("/api/patch_file", { path: fullPath, search, replace }, ac.signal);
+                const res = await taskPost("/api/patch_file", { ...patchArgs, path: fullPath }, ac.signal);
                 const raw = res && res.message ? res.message : "OK: patched";
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 fileToolConsecutiveFailures = 0;

@@ -64,8 +64,20 @@ pub(super) fn tool_call_action_sig(call: &ToolCallData) -> Option<ActionIdentity
         },
         "patch_file" => ActionIdentity::Patch {
             path,
-            search: text("search"),
-            replace: text("replace"),
+            search: if args.get("json_pointer").is_some() {
+                format!(
+                    "{} expected={}",
+                    text("json_pointer"),
+                    text("json_expected")
+                )
+            } else {
+                text("search")
+            },
+            replace: if args.get("json_pointer").is_some() {
+                text("json_value")
+            } else {
+                text("replace")
+            },
         },
         "apply_diff" => ActionIdentity::Diff {
             path,

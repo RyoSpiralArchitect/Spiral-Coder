@@ -167,12 +167,7 @@ impl PendingEditStore {
                 format!("OK: wrote '{path}' (approved edit)"),
             ),
             "patch_file" => (
-                crate::file_tools::edit_preview::patch(
-                    &path,
-                    existing()?,
-                    field("search")?,
-                    field("replace")?,
-                )?,
+                crate::file_tools::json_patch::prepare(&path, existing()?, request)?,
                 format!("OK: patched '{path}' (approved edit)"),
             ),
             "apply_diff" => {
@@ -362,6 +357,32 @@ impl PendingEditStore {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[tokio::test]
+    async fn structured_json_edit_waits_for_approval_and_keeps_its_original_baseline() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("spec.json");
+        let original = r#"{"cases":[{"id":"old","unknown":{"keep":true}}]}"#;
+        std::fs::write(&path, original).unwrap();
+        let store = PendingEditStore::new();
+        let request = json!({"action":"patch_file","path":"spec.json","json_pointer":"/cases/-","json_value":"{\"id\":\"new\"}"});
+        let (id, _) = store.queue_tool_edit(dir.path(), &request).await.unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+        std::fs::write(&path, r#"{"cases":[{"id":"concurrent"}]}"#).unwrap();
+        assert!(store.approve(dir.path(), &id).await.is_err());
+        std::fs::write(&path, original).unwrap();
+        let receipt = store.approve(dir.path(), &id).await.unwrap();
+        assert!(receipt.result.unwrap()["message"]
+            .as_str()
+            .unwrap()
+            .starts_with("OK: patched '"));
+        let actual: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        assert_eq!(
+            actual,
+            json!({"cases":[{"id":"old","unknown":{"keep":true}},{"id":"new"}]})
+        );
+    }
 
     #[tokio::test]
     async fn all_native_edits_wait_for_approval_and_reject_stale_previews() {

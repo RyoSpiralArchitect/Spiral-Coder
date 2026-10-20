@@ -3,6 +3,12 @@
 This document defines the main state surfaces in `spiral-coder` and which layer
 owns each kind of data.
 
+Explicit task requirements are owned by `src/tui/agent/requirement_proof.rs`.
+The contract lives in the original human message; pending artifact/check/baseline
+obligations are derived from paired native exchanges. There is no additional
+persistent store. Both Coder and Observer use `TaskObligations.task_requirements`;
+Web completion uses the same native projection. See [task requirements](task-requirements.md).
+
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.
 

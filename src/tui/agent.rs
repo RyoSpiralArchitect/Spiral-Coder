@@ -94,6 +94,7 @@ mod repair_feedback_tests;
 #[cfg(test)]
 mod replay_input_tests;
 mod repo_scaffold;
+mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;
 mod session_bridge;
@@ -1438,8 +1439,9 @@ pub fn patch_file_tool_def() -> serde_json::Value {
             "description": "Edit a file by replacing an exact text snippet. \
                             The search string MUST appear exactly once in the file. \
                             Call read_file first to see the exact current text if unsure. \
-                            For whole-file rewrites use write_file instead. \
-                            Path is relative to tool_root.",
+                            For JSON use json_pointer and JSON-encoded json_value instead of search/replace: \
+                            append at /cases/- or replace an existing member with json_expected. \
+                            Never reprint a large JSON document. Path is relative to tool_root.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1454,9 +1456,12 @@ pub fn patch_file_tool_def() -> serde_json::Value {
                     "replace": {
                         "type": "string",
                         "description": "Text to substitute in place of the search string."
-                    }
+                    },
+                    "json_pointer": {"type":"string", "description":"JSON pointer. Append at an existing array followed by /-, e.g. /cases/-. Omit search/replace."},
+                    "json_value": {"type":"string", "description":"Only the new JSON value, encoded as a string. Existing document is preserved by the runtime."},
+                    "json_expected": {"type":"string", "description":"Required for member replacement: the current JSON value encoded as a string. Omit for append."}
                 },
-                "required": ["path", "search", "replace"]
+                "required": ["path"]
             }
         }
     })
@@ -13636,93 +13641,108 @@ Action required: call read_file(path) first to confirm current contents, then re
                 }
                 _ => {
                     // ── patch_file ─────────────────────────────────────────
-                    let search = args["search"].as_str().unwrap_or("").to_string();
-                    let replace = args["replace"].as_str().unwrap_or("").to_string();
+                    match crate::file_tools::json_patch::text_edit(&path, &args, base) {
+                        Err(error) => (format!("ERROR: {error}"), true),
+                        Ok((search, replace)) => {
+                            if args.get("json_pointer").is_some() {
+                                file_cache.remove(&cache_key);
+                            }
+                            // B — capture old content for diff preview before patching.
+                            let old_content_for_diff =
+                                file_cache.get(&cache_key).cloned().or_else(|| {
+                                    crate::file_tools::resolve_safe_path(&path, base)
+                                        .ok()
+                                        .and_then(|abs| std::fs::read_to_string(&abs).ok())
+                                });
+                            let before_hash = old_content_for_diff
+                                .as_deref()
+                                .map(hash_text)
+                                .unwrap_or_else(|| hash_text(""));
 
-                    // B — capture old content for diff preview before patching.
-                    let old_content_for_diff = file_cache.get(&cache_key).cloned().or_else(|| {
-                        crate::file_tools::resolve_safe_path(&path, base)
-                            .ok()
-                            .and_then(|abs| std::fs::read_to_string(&abs).ok())
-                    });
-                    let before_hash = old_content_for_diff
-                        .as_deref()
-                        .map(hash_text)
-                        .unwrap_or_else(|| hash_text(""));
-
-                    // Approval: show the computed patch diff (or search/replace when diff can't be made).
-                    let mut preview = old_content_for_diff
-                        .as_deref()
-                        .map(|old| crate::file_tools::make_patch_diff(old, &search, &replace))
-                        .unwrap_or_default();
-                    if preview.trim().is_empty() {
-                        let s = truncate_preview(&search, 700, 28);
-                        let r = truncate_preview(&replace, 700, 28);
-                        preview = format!(
+                            // Approval: show the computed patch diff (or search/replace when diff can't be made).
+                            let mut preview = old_content_for_diff
+                                .as_deref()
+                                .map(|old| {
+                                    crate::file_tools::make_patch_diff(old, &search, &replace)
+                                })
+                                .unwrap_or_default();
+                            if preview.trim().is_empty() {
+                                let s = truncate_preview(&search, 700, 28);
+                                let r = truncate_preview(&replace, 700, 28);
+                                preview = format!(
                             "(no context diff available)\n--- search ---\n{s}\n\n--- replace ---\n{r}\n"
                         );
-                    }
-                    let approval = approver
-                        .approve(ApprovalRequest::Edit {
-                            action: "patch_file".to_string(),
-                            path: path.clone(),
-                            preview,
-                        })
-                        .await?;
-                    if approval == ApprovalOutcome::Rejected {
-                        rejected_by_user = true;
-                        (
+                            }
+                            let approval = approver
+                                .approve(ApprovalRequest::Edit {
+                                    action: "patch_file".to_string(),
+                                    path: path.clone(),
+                                    preview,
+                                })
+                                .await?;
+                            if approval == ApprovalOutcome::Rejected {
+                                rejected_by_user = true;
+                                (
                             format!(
                                 "REJECTED BY USER\naction: patch_file\npath: {path}\n(no changes applied)"
                             ),
                             true,
                         )
-                    } else {
-                        let (mut patch_result, patch_err) =
-                            crate::file_tools::tool_patch_file(&path, &search, &replace, base);
+                            } else {
+                                let (mut patch_result, patch_err) =
+                                    crate::file_tools::tool_patch_file(
+                                        &path, &search, &replace, base,
+                                    );
 
-                        if !patch_err {
-                            file_cache.remove(&cache_key); // invalidate stale cache
+                                if !patch_err {
+                                    file_cache.remove(&cache_key); // invalidate stale cache
 
-                            // B — append diff preview (shows exactly what changed).
-                            if let Some(ref old) = old_content_for_diff {
-                                let diff =
-                                    crate::file_tools::make_patch_diff(old, &search, &replace);
-                                if !diff.is_empty() {
-                                    patch_result.push_str(&format!("\n{diff}"));
-                                }
-                            }
+                                    // B — append diff preview (shows exactly what changed).
+                                    if let Some(ref old) = old_content_for_diff {
+                                        let diff = crate::file_tools::make_patch_diff(
+                                            old, &search, &replace,
+                                        );
+                                        if !diff.is_empty() {
+                                            patch_result.push_str(&format!("\n{diff}"));
+                                        }
+                                    }
 
-                            // Gap 7: auto-verify patch was applied correctly.
-                            if let Ok(abs) = crate::file_tools::resolve_safe_path(&path, base) {
-                                if let Ok(new_content) = std::fs::read_to_string(&abs) {
-                                    let after_hash = hash_text(&new_content);
-                                    patch_result.push_str(&format!(
-                                        "\n[hash] before={} after={}",
-                                        fmt_hash(before_hash),
-                                        fmt_hash(after_hash)
-                                    ));
-                                    if replace.is_empty() || new_content.contains(&replace) {
-                                        patch_result
-                                            .push_str("\n✓ auto-verify: patch confirmed in file");
-                                    } else {
-                                        patch_result.push_str(
+                                    // Gap 7: auto-verify patch was applied correctly.
+                                    if let Ok(abs) =
+                                        crate::file_tools::resolve_safe_path(&path, base)
+                                    {
+                                        if let Ok(new_content) = std::fs::read_to_string(&abs) {
+                                            let after_hash = hash_text(&new_content);
+                                            patch_result.push_str(&format!(
+                                                "\n[hash] before={} after={}",
+                                                fmt_hash(before_hash),
+                                                fmt_hash(after_hash)
+                                            ));
+                                            if replace.is_empty() || new_content.contains(&replace)
+                                            {
+                                                patch_result.push_str(
+                                                    "\n✓ auto-verify: patch confirmed in file",
+                                                );
+                                            } else {
+                                                patch_result.push_str(
                                             "\n✗ auto-verify FAILED: replacement text not found — \
                                              file may be in unexpected state; call read_file to inspect",
                                         );
+                                            }
+                                            // Seed cache with the freshly written content.
+                                            file_cache.insert(cache_key.clone(), new_content);
+                                        }
                                     }
-                                    // Seed cache with the freshly written content.
-                                    file_cache.insert(cache_key.clone(), new_content);
+                                    // A — auto-test after successful patch
+                                    if let Some(ref cmd) = test_cmd {
+                                        if let Some(ref root) = tool_root_abs {
+                                            patch_result.push_str(&run_test_cmd(cmd, root).await);
+                                        }
+                                    }
                                 }
-                            }
-                            // A — auto-test after successful patch
-                            if let Some(ref cmd) = test_cmd {
-                                if let Some(ref root) = tool_root_abs {
-                                    patch_result.push_str(&run_test_cmd(cmd, root).await);
-                                }
+                                (patch_result, patch_err)
                             }
                         }
-                        (patch_result, patch_err)
                     }
                 }
             };
