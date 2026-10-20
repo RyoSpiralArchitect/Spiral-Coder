@@ -8,6 +8,10 @@ The contract lives in the original human message; pending artifact/check/baselin
 obligations are derived from paired native exchanges. There is no additional
 persistent store. Both Coder and Observer use `TaskObligations.task_requirements`;
 Web completion uses the same native projection. See [task requirements](task-requirements.md).
+`execution_evidence.rs` parses confirmed exec success/failure from the complete
+correlated runtime result before the advisory packet truncates its display text.
+An unrecognized result has `succeeded: null`; it may have executed but cannot
+prove a required failing baseline. No new persisted status field is introduced.
 
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.

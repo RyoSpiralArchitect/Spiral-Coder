@@ -50,6 +50,10 @@ For each declared requirement the completion gate requires:
 A governor refusal, an approval request, an automatic test or a command printed
 in output is not a baseline. Diagnostic failure does not establish test quality:
 the caller must check that the intended assertion failed.
+The correlated runtime outcome is parsed before display truncation. TUI recovery
+hints and Web error digests may precede a failure header; they do not keep a
+recorded baseline pending. Unknown execution errors remain unconfirmed, and a
+failure-looking line inside successful stdout/stderr cannot supply the baseline.
 
 Requirements are derived from the original request and paired native history.
 They survive resume and protected message pruning without another durable store.

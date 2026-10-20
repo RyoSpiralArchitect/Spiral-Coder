@@ -220,11 +220,9 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                         && a.result_step
                             .is_some_and(|step| first_mutation.is_none_or(|first| step < first))
                 });
-                if !baseline.is_some_and(|a| {
-                    a.result
-                        .as_deref()
-                        .is_some_and(|r| r.starts_with("FAILED (exit_code:"))
-                }) {
+                // The correlated outcome is parsed before the advisory result
+                // is shortened; diagnostic prefixes may exceed that text cap.
+                if !baseline.is_some_and(|a| a.succeeded == Some(false)) {
                     if !status.pending_baselines.contains(&check.command) {
                         status.pending_baselines.push(check.command.clone());
                     }
@@ -288,6 +286,10 @@ pub(super) fn issue(messages: &[Value], test_cmd: Option<&str>) -> Option<String
     let status = project(messages, test_cmd);
     (!status.pending.is_empty()).then(|| format!("[Requirement Gate]\n{}\nRequirements come from the original task, not your plan. Run required failing baselines before editing. Use native file tools for declared artifacts, then execute each exact check after the last edit. A passing old test or a claimed plan criterion cannot replace these receipts.", status.pending.join("\n")))
 }
+
+#[cfg(test)]
+#[path = "requirement_baseline_tests.rs"]
+mod baseline_tests;
 
 #[cfg(test)]
 mod tests {

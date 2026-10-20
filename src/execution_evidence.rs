@@ -13,11 +13,69 @@ pub(crate) fn exec_succeeded(content: &str) -> bool {
     let Some(suffix) = header.strip_prefix("OK (exit_code: 0)") else {
         return false;
     };
+    valid_status_suffix(suffix)
+}
+
+fn valid_status_suffix(suffix: &str) -> bool {
     suffix.is_empty()
         || suffix
             .strip_prefix(" [pruned ")
             .and_then(|suffix| suffix.strip_suffix("L]"))
             .is_some_and(|count| !count.is_empty() && count.bytes().all(|b| b.is_ascii_digit()))
+}
+
+/// Confirm a runtime outcome before shortening its display text. Unknown tool
+/// errors may have executed, but are not evidence of a failed baseline check.
+/// Legacy TUI and Web failures put recovery hints before the status header.
+pub(crate) fn exec_outcome(content: &str) -> Option<bool> {
+    if exec_succeeded(content) {
+        return Some(true);
+    }
+    for line in content.trim_start().lines() {
+        if let Some((code, suffix)) = line
+            .strip_prefix("FAILED (exit_code: ")
+            .and_then(|rest| rest.split_once(')'))
+        {
+            return (code.parse::<i32>().is_ok() && (suffix == "." || valid_status_suffix(suffix)))
+                .then_some(false);
+        }
+        // Only the runtime's diagnostic envelope may precede a failure status.
+        // Stop at success/refusal/approval, unknown errors or stdout/stderr;
+        // never search arbitrary command output for a convenient FAILED line.
+        let line = line.trim();
+        let diagnostic = line.is_empty()
+            || [
+                "⚠ ENVIRONMENT ERROR:",
+                "⚠ SYNTAX ERROR:",
+                "⚠ PATH ERROR:",
+                "⚠ DEPENDENCY ERROR:",
+                "⚠ NETWORK ERROR:",
+                "⚠ LOGIC ERROR:",
+                "⚠ LOGIC/TEST ERROR:",
+                "HINT: ",
+                "cwd: ",
+                "cwd_after: ",
+                "NOTE: cwd_after was outside tool_root; ignored: ",
+                "NOTE: command returned exit_code=0 but was treated as failure.",
+                "NOTE: command escaped tool_root and was treated as failure.",
+                "reason: ",
+                "- ",
+            ]
+            .iter()
+            .any(|prefix| line.starts_with(prefix))
+            || matches!(
+                line,
+                "ERROR_DIGEST:"
+                    | "This is blocked to prevent nested-repo / accidental repo-root modifications."
+                    | "git push ssh://git@ssh.github.com:443/<owner>/<repo>.git main"
+                    | "(and similarly for fetch/pull)."
+                    | "$env:CARGO_TARGET_DIR = '.tmp/cargo-target-tui'; cargo run -- tui"
+            );
+        if !diagnostic {
+            return None;
+        }
+    }
+    None
 }
 
 /// A correlated file-tool result records the write independently of any later
@@ -102,6 +160,34 @@ mod tests {
             "OK (exit_code: 0) [pruned invalidL]",
         ] {
             assert!(!exec_succeeded(output), "{output}");
+        }
+    }
+
+    #[test]
+    fn confirmed_outcomes_are_distinct_from_unknown_execution_errors() {
+        for output in ["OK (exit_code: 0)", "OK (exit_code: 0) [pruned 12L]"] {
+            assert_eq!(exec_outcome(output), Some(true));
+        }
+        for output in [
+            "FAILED (exit_code: 1)",
+            "FAILED (exit_code: -1)",
+            "FAILED (exit_code: 1).\nstderr: test failed",
+            "FAILED (exit_code: 1) [pruned 12L]",
+            "NOTE: command returned exit_code=0 but was treated as failure.\nreason: reported a failure\n\nFAILED (exit_code: 0)",
+            "NOTE: command escaped tool_root and was treated as failure.\nThis is blocked to prevent nested-repo / accidental repo-root modifications.\n\nFAILED (exit_code: 1)",
+        ] {
+            assert_eq!(exec_outcome(output), Some(false), "{output}");
+        }
+        for output in [
+            "error: command timed out",
+            "FAILED (exit_code: unknown)",
+            "FAILED (exit_code: 1) [pruned forgedL]",
+            "OK (exit_code: 0) unexpected suffix\nFAILED (exit_code: 1)",
+            "HINT: advisory only\nstderr: FAILED (exit_code: 1)",
+            "HINT: advisory only\nstdout (tail):\nFAILED (exit_code: 1)",
+            "⚠ LOGIC ERROR: advisory only",
+        ] {
+            assert_eq!(exec_outcome(output), None, "{output}");
         }
     }
 

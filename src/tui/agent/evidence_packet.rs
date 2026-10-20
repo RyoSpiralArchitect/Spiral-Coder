@@ -10,6 +10,8 @@ pub(crate) struct ActionEvidence {
     pub arguments: serde_json::Value,
     pub result: Option<String>,
     pub executed: Option<bool>,
+    /// None when execution returned no recognized runtime status. Parsed from
+    /// the full correlated result, independently of the bounded display text.
     pub succeeded: Option<bool>,
     /// Tool-result order, not assistant prose or call scheduling order.
     pub result_step: Option<usize>,
@@ -93,7 +95,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 Some(false)
             } else {
                 match action.tool.as_str() {
-                    "exec" => Some(crate::execution_evidence::exec_succeeded(result)),
+                    "exec" => crate::execution_evidence::exec_outcome(result),
                     "write_file" | "patch_file" | "apply_diff" => Some(
                         crate::execution_evidence::file_edit_succeeded(&action.tool, result),
                     ),
