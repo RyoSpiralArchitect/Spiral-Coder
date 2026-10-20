@@ -65,6 +65,17 @@ The existing independent final-answer checks remain authoritative. Prompts witho
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.
 
+`done.acceptance_evidence` has two accepted row representations. The canonical
+contract is an array of objects, `{"criterion": ..., "command": ...}`, and is
+what the advertised tool schema declares for most providers. For the Gemini
+OpenAI-compatible base URL the advertised schema is flattened to string rows,
+`"<criterion> | <command>"`, because that endpoint can drop nested
+function-call arguments as `MALFORMED_FUNCTION_CALL` and return an empty turn.
+The runtime parser accepts both forms regardless of provider; the advertised
+schema is the only provider-specific part. Validation rules (one evidence row
+per completed criterion, command must be a recorded successful verification)
+are identical for both representations.
+
 Recovery stages take precedence over benchmark-plan tool coercion. In Diagnose,
 requested diagnostic commands and file reads stay intact after a failed edit.
 In Fix, the model's repair remains intact instead of being replaced by a generic

@@ -715,6 +715,7 @@ pub(super) fn build_done_acceptance_recovery_hint(
     plan: Option<&PlanBlock>,
     known_commands: &[String],
     read_only_scores: &[CriterionEvidenceScore],
+    flat_evidence_rows: bool,
 ) -> String {
     let mut lines = Vec::new();
     let low = error_text.to_ascii_lowercase();
@@ -731,9 +732,14 @@ pub(super) fn build_done_acceptance_recovery_hint(
                 compact_one_line(criterion, 200)
             ));
         }
-        lines.push(
-            "Example shape (keep your own completed/remaining split; cite only criteria that actually have proof): completed_acceptance=[\"acceptance 1\", ...only criteria with proof], remaining_acceptance=[<each unproven \"acceptance N\">], acceptance_evidence=[{\"criterion\":\"acceptance 1\",\"command\":\"<paste a command from the list below, exactly>\"}, ...one row per completed criterion]".to_string(),
-        );
+        let evidence_row = if flat_evidence_rows {
+            "\"acceptance 1 | <paste a command from the list below, exactly>\""
+        } else {
+            "{\"criterion\":\"acceptance 1\",\"command\":\"<paste a command from the list below, exactly>\"}"
+        };
+        lines.push(format!(
+            "Example shape (keep your own completed/remaining split; cite only criteria that actually have proof): completed_acceptance=[\"acceptance 1\", ...only criteria with proof], remaining_acceptance=[<each unproven \"acceptance N\">], acceptance_evidence=[{evidence_row}, ...one row per completed criterion]"
+        ));
     }
 
     if low.contains("cover every completed acceptance criterion exactly once") {
@@ -1764,6 +1770,7 @@ mod tests {
             Some(&plan),
             &["grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json".into()],
             &[],
+            false,
         );
         assert!(hint.contains("acceptance 1: the requested change is implemented"));
         assert!(hint.contains("acceptance 2: the final result cites"));
@@ -1775,12 +1782,33 @@ mod tests {
     }
 
     #[test]
+    fn done_acceptance_recovery_hint_uses_flat_rows_for_flat_schema() {
+        let plan = PlanBlock {
+            goal: "Add a replay case".into(),
+            steps: vec!["Edit spec".into(), "Verify".into()],
+            acceptance_criteria: vec!["verified".into()],
+            risks: "stale proof".into(),
+            assumptions: "native evidence".into(),
+        };
+        let hint = build_done_acceptance_recovery_hint(
+            "done.acceptance_evidence must cover every completed acceptance criterion exactly once",
+            Some(&plan),
+            &["cargo test".into()],
+            &[],
+            true,
+        );
+        assert!(hint.contains("acceptance 1 | <paste a command"), "{hint}");
+        assert!(!hint.contains("\"criterion\":\"acceptance 1\""), "{hint}");
+    }
+
+    #[test]
     fn done_acceptance_recovery_hint_omits_criteria_list_without_plan() {
         let hint = build_done_acceptance_recovery_hint(
             "done requires a valid current plan",
             None,
             &[],
             &[],
+            false,
         );
         assert!(!hint.contains("Valid acceptance criteria"));
     }
