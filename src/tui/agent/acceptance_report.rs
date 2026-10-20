@@ -137,6 +137,22 @@ mod tests {
     }
 
     #[test]
+    fn string_row_evidence_parses_criterion_and_command() {
+        let rows = parse_done_acceptance_evidence(&json!([
+            "acceptance 1 | grep -q \"src/lib.rs\" spec.json",
+            {"criterion": "acceptance 2", "command": "cargo test"},
+            "missing-separator",
+            " | no-criterion",
+            "no-command | ",
+        ]));
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0].criterion, "acceptance 1");
+        assert_eq!(rows[0].command, "grep -q \"src/lib.rs\" spec.json");
+        assert_eq!(rows[1].criterion, "acceptance 2");
+        assert_eq!(rows[1].command, "cargo test");
+    }
+
+    #[test]
     fn shell_proof_cannot_be_shortened_or_case_folded_to_another_command() {
         let plan = PlanBlock {
             goal: "Report proof".into(),

@@ -14,7 +14,7 @@ pub(crate) fn tool_schemas() -> Value {
             agent::search_files_tool_def(),
             agent::glob_tool_def(),
             agent::list_dir_tool_def(),
-            agent::done_tool_def(),
+            agent::done_tool_def(""),
         ]
         .into_iter()
         .map(|definition| {
