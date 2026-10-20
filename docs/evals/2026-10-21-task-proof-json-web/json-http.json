@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "native_endpoint_appended": true,
+    "unchanged_case_preserved": true,
+    "extension_preserved": true,
+    "exactly_one_append": true,
+    "baseline_beyond_display_limit": true,
+    "duplicate_rejected_without_writing": true,
+    "stale_rejected_without_writing": true
+  },
+  "ok": true,
+  "baseline_sha256": "c297b134b2aede9475bca5bdbaf1f5371c2b3fadbe928e4f059dcdf6e4e341e2",
+  "result": {
+    "ok": true,
+    "message": "OK: patched 'browser-workspace/large.json' (+23 lines, 24 total)"
+  },
+  "duplicate": {
+    "error": "ERROR: array already contains this id; read before retrying"
+  },
+  "stale": {
+    "error": "ERROR: json_expected does not match the current value; file unchanged; read before retrying"
+  },
+  "served_candidate_commit": "1023e88668c263b7ba102f15da841895d1c1eb57"
+}

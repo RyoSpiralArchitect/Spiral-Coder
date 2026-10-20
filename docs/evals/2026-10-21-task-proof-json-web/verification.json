@@ -1,0 +1,17 @@
+{
+  "implementation_commit": "93d88ba5d6524ebeaf88812757c312496761a154",
+  "command": "bash scripts/check-local.sh",
+  "result": "passed",
+  "rust_passed": 788,
+  "rust_ignored": 1,
+  "integration_passed": 1,
+  "tui_replay_passed": 3,
+  "python_passed": 20,
+  "web_passed": 79,
+  "repo_map_passed": 14,
+  "lite_smoke": "passed",
+  "log_sha256": "9c5f052ca38e1159da453d99297772a0f403cf1eca801fb1fde6e74d9d087318",
+  "log_local_path": "/tmp/spiral-coder-final-partial-check.log",
+  "last_live_candidate": "74073063c984b7d95596f7bbfc70566841702324",
+  "post_live_change": "Allow an honest partial handoff while keeping completed=false; covered by native HTTP-mock resume integration."
+}

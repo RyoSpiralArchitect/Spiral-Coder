@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "prompt_sha256": "d2c84f512aa6b369354aaebf4a002ddbce6c912083b07592f93b11da7ed08da7",
+  "oracle_sha256": "f3b108e044b333993210d05ce5964912820e3f190068c1bbc924e102b3f1e79c",
+  "configuration_overlay": "test_cmd: python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'\n\nThis dogfooding task changes the Python pilot script only; keep the configured command unchanged.\n",
+  "models": {
+    "mistral": "mistral-small-2603",
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "request_limit": 18,
+  "wall_seconds": 600,
+  "temperature": 0,
+  "max_tokens": 2048,
+  "scope": [
+    "scripts/run_coupled_pilot.py",
+    "tests/test_coupled_pilot.py",
+    "docs/coupled-work-loop.md"
+  ],
+  "historical_suite_modified": false,
+  "original_prompt_sha256": "fb37fc5581ab3b51b227f8bfc01ba5b0351049fbe57c097e0c81e5c2bd8e4787",
+  "overlay_source_commit": "a9b03f9db807bc23d06e844c1c903a6af716bce6",
+  "panel_note": "Current candidate harness, three task files restored before manual implementation; explicit task requirements and external acceptance oracle appended to the old prompt. Adaptive regression, not an identical historical quality comparison.",
+  "repository_commit": "1023e88668c263b7ba102f15da841895d1c1eb57",
+  "binary_sha256": "ae6b0b2c1340abd7b6c79862af6e9877262069f4d26813b4c7a8041ebfcf6bfe",
+  "archive_sha256": "809aa3f383d47944c92518681850ccc8294254f6b1ebf72eea736526b82b8068",
+  "overlay_sha256": {
+    "scripts/run_coupled_pilot.py": "d287102af49027b4cccb24d5b7cc299149c425684afd47fa4a159b4b97ec4a7d",
+    "tests/test_coupled_pilot.py": "9317b1070307a985cdcd22dd776268f74aed029d27d287d468d0315120a72270",
+    "docs/coupled-work-loop.md": "54048384a284e0072d8c10403d308f0f2366c35ae520f9484aff50dcec992cdf"
+  }
+}

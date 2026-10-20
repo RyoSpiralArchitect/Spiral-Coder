@@ -300,3 +300,5 @@ synthetic calls; remaining task failures keep the branch unqualified.
 ## Coupled Coder/Observer task
 
 The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.
+
+The [2026-10-21 coupled task proof / JSON / Web readout](evals/2026-10-21-task-proof-json-web/README.md) records two adaptive three-model rounds, their unchanged oracles and remaining failure modes.

@@ -1,0 +1,132 @@
+{
+  "url": "http://127.0.0.1:18443/",
+  "browser": "Bundled Playwright + installed Chrome; native Rust server, mocked provider SSE only",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "flow": "Send Coder task -> real native verification -> invalid flat done rejected -> corrected flat done -> completed -> reload",
+  "errors": [],
+  "requests": [
+    {
+      "path": "/api/status",
+      "status": 200
+    },
+    {
+      "path": "/api/pending_edits",
+      "status": 200
+    },
+    {
+      "path": "/api/pending_commands",
+      "status": 200
+    },
+    {
+      "path": "/api/harness_promotions",
+      "status": 200
+    },
+    {
+      "path": "/api/merge_gate",
+      "status": 200
+    },
+    {
+      "path": "/api/exec",
+      "status": 200
+    },
+    {
+      "path": "/api/project/scan",
+      "status": 200
+    },
+    {
+      "path": "/api/governor_contract",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/chat_tools_stream",
+      "status": 200
+    },
+    {
+      "path": "/api/exec",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/chat_tools_stream",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/chat_tools_stream",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/observer_action",
+      "status": 200
+    },
+    {
+      "path": "/api/pending_edits",
+      "status": 200
+    },
+    {
+      "path": "/api/status",
+      "status": 200
+    },
+    {
+      "path": "/api/pending_edits",
+      "status": 200
+    },
+    {
+      "path": "/api/pending_commands",
+      "status": 200
+    },
+    {
+      "path": "/api/harness_promotions",
+      "status": 200
+    },
+    {
+      "path": "/api/merge_gate",
+      "status": 200
+    },
+    {
+      "path": "/api/exec",
+      "status": 200
+    },
+    {
+      "path": "/api/project/scan",
+      "status": 200
+    }
+  ],
+  "title": "Spiral-Coder",
+  "notBlank": true,
+  "schemaIsFlat": true,
+  "repairUsesFlatRows": true,
+  "calls": 3,
+  "completed": true,
+  "budgetSpent": 3,
+  "refusalVisible": true,
+  "realExec": true,
+  "correctedDone": true,
+  "frameworkOverlay": 0,
+  "persistedAfterReload": true,
+  "conversationVisibleAfterReload": true,
+  "mobileOverflow": false,
+  "passed": true,
+  "served_candidate_commit": "74073063c984b7d95596f7bbfc70566841702324"
+}

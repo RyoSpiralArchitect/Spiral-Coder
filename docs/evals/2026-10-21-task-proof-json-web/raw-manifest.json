@@ -1,0 +1,815 @@
+{
+  "root": "~/.cache/spiral-coder/dogfood-20261021",
+  "files": [
+    {
+      "path": "LOCAL_RAW/r1/mistral/process.json",
+      "bytes": 184,
+      "sha256": "6dd1c8be9de2d8b6dd081c92c3a509f320f4dc04a108d301f25e33feee84c519"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/console.log",
+      "bytes": 160,
+      "sha256": "78370769f89f9412edb53d45cf2f82a3a60784934222a1b0e6d216527c345fe0"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/candidate.patch",
+      "bytes": 5867,
+      "sha256": "e864a0b658f411dba0ad49224e282ec39fb9e5a7fc00017e7d4509b6d3a531c9"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/oracle.json",
+      "bytes": 1433,
+      "sha256": "261479152402182a1c80b046d51375e1a47fe024fb8b870580dbc0d13e57023c"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/trace.jsonl",
+      "bytes": 33185,
+      "sha256": "bb9f2eeafc226a256dbdc3fc7d3420073e89482c8d1b90de5f16a77dfd4657ae"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/session.json",
+      "bytes": 95136,
+      "sha256": "53464101528ddae0da6021cf6b1aeeed47036c197ac83cd3d97735623597f217"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/run/report.json",
+      "bytes": 78145,
+      "sha256": "f7b902568b6b6cab506e6ddd3866c55e4654648dd3f086490a5b7429b11fb490"
+    },
+    {
+      "path": "LOCAL_RAW/r1/mistral/workspace/.spiral-coder/tui-work.json",
+      "bytes": 12138,
+      "sha256": "463c85478a0613184e6d09d6a46149f0f1e8f276890e2947f787cc8b2b8d60f7"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/process.json",
+      "bytes": 177,
+      "sha256": "869d9526aa05ac1db64f5a15798610b605d837bc44742d2306cc8029d23aa9c5"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/console.log",
+      "bytes": 159,
+      "sha256": "d54639fc0bd002408c971bfb3bfaf0b0486658809ddf5f90746c5b4ab6685152"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/candidate.patch",
+      "bytes": 3751,
+      "sha256": "f79696b839495b50122bcf8848c426c690b6c8d98bdf6410cc01c0a023c52410"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/trace.jsonl",
+      "bytes": 32285,
+      "sha256": "5fc95aae5e7c1aa673b713d4a5dfb410c1249f35402b504cd9bf052d4c6715c5"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/session.json",
+      "bytes": 96614,
+      "sha256": "795d4ef90ac9c1e1fd9194bf02aca068f75e66d367706b25eb17416b02159918"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/run/report.json",
+      "bytes": 61978,
+      "sha256": "c9e6baa57791f20e8fd6b0c56d782604475d171d707db22a17e47e12403b9f56"
+    },
+    {
+      "path": "LOCAL_RAW/r1/openai/workspace/.spiral-coder/tui-work.json",
+      "bytes": 6929,
+      "sha256": "ea2bfea729cb985c67683ab8d2a573e3946d24aca09fd7a3aa8de5b8d61ffa5d"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/process.json",
+      "bytes": 185,
+      "sha256": "1b274cf6b35b7e7a314254fa2d852cb0ebf8432d494cc693a70c69f5246f4755"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/console.log",
+      "bytes": 158,
+      "sha256": "7bfa27d38181aa87b4d53716eca194cd3e06c4aaf26f36d0f0d033207d0cf015"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/candidate.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/trace.jsonl",
+      "bytes": 21981,
+      "sha256": "602462f16f5301a15f38cd6f9f7521c900396a749b9bbb4f3bf388c1a08def9a"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/session.json",
+      "bytes": 59208,
+      "sha256": "178a261d1a9f2aa020df15a534d5f221d92cc17be693830d84cfc12494808a02"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/run/report.json",
+      "bytes": 61420,
+      "sha256": "8e930ed8191da18f86ad84239ab9e88989739d19a06433f4e5143a498b34fd53"
+    },
+    {
+      "path": "LOCAL_RAW/r1/gemini/workspace/.spiral-coder/tui-work.json",
+      "bytes": 6756,
+      "sha256": "875146a7a0c5735ee52fdcebdc61556e704271792b1341fecef0fa45090ab055"
+    },
+    {
+      "path": "LOCAL_RAW/r1/predeclared.json",
+      "bytes": 1775,
+      "sha256": "4e428867a404f9e5fb86b280de13441b3c7aa18ccef68cde90375d0ff54ba8e5"
+    },
+    {
+      "path": "LOCAL_RAW/r1/task.txt",
+      "bytes": 2705,
+      "sha256": "d2c84f512aa6b369354aaebf4a002ddbce6c912083b07592f93b11da7ed08da7"
+    },
+    {
+      "path": "LOCAL_RAW/r1/spiral-coder",
+      "bytes": 43292272,
+      "sha256": "ae6b0b2c1340abd7b6c79862af6e9877262069f4d26813b4c7a8041ebfcf6bfe"
+    },
+    {
+      "path": "LOCAL_RAW/r1/reference-oracle.json",
+      "bytes": 1687,
+      "sha256": "89700c8c067ad2e6074e854e32102ee243c601835855ca7d1fcf395fa986bd4c"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/process.json",
+      "bytes": 184,
+      "sha256": "bd01d61e0cb27fc1336fb7538032f786f843067128f1f4883b6b6105caefc0e8"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/console.log",
+      "bytes": 160,
+      "sha256": "11fe65a8d80f6971778f9cc3725a2548ae2ad919616b4bbc87022f48698879dc"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/candidate.patch",
+      "bytes": 6527,
+      "sha256": "c1181629a2210bc05a307bd3331a3de46523504987ef5c367b10a0bb8e7c31d5"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/oracle.json",
+      "bytes": 1436,
+      "sha256": "aad552b9c316b2b27959fb55eef723599d1a8322a2e12262d3678db1f52dbae1"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/trace.jsonl",
+      "bytes": 36768,
+      "sha256": "00abe980d747257e7b298ab1a0d968c5240dcf4bd3f4dcc6a88428ea801a2525"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/session.json",
+      "bytes": 83769,
+      "sha256": "9880d66f7df15c3276fc7367144a8f0e17c354b2a4e2732657360ca6559fd8da"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/run/report.json",
+      "bytes": 82655,
+      "sha256": "17408899720509c7d71702701b0b0e6b74f3004b71c2015d7eff9284e21cd948"
+    },
+    {
+      "path": "LOCAL_RAW/r2/mistral/workspace/.spiral-coder/tui-work.json",
+      "bytes": 12147,
+      "sha256": "6885a32af1c96ec3d918af69a991a8e9880c53af55714beb4ec2a50d3f4e99f8"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/process.json",
+      "bytes": 177,
+      "sha256": "11fe8d545cee96d6205321d12403691c7211b9a2d11555c6349180c05bc622a3"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/console.log",
+      "bytes": 159,
+      "sha256": "8457ed551bd52a605815bb69547cb3c354e15fa8459c99c0a356e6f8ffec8d50"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/candidate.patch",
+      "bytes": 10740,
+      "sha256": "1fabd42bf46d4ecf2a744b5fd2b723bb68a2e69b7b3fd5fdaf6bf4334d98f3c6"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/oracle.json",
+      "bytes": 1383,
+      "sha256": "22d127e2a6d043312449070604beb1cca169341159c3df9678f1f7f9ca386eb9"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/trace.jsonl",
+      "bytes": 33053,
+      "sha256": "03aa266ffb0f468fcefff1f5e4f9b73c2bd8693c19b8b9729f3154e6c968f42e"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/session.json",
+      "bytes": 81472,
+      "sha256": "3250deb1e1a76b71e05659d10f4882e5de0dad2cdb7959785410f98f8eefce68"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/run/report.json",
+      "bytes": 59596,
+      "sha256": "e660fca928ac32a62b74b1408e8f6f1752e9947d46dfb735e33ab224252b60e7"
+    },
+    {
+      "path": "LOCAL_RAW/r2/openai/workspace/.spiral-coder/tui-work.json",
+      "bytes": 6924,
+      "sha256": "745b122359fdf7e8dcdf3204658698fd7b9407a8730af80fa72c5cfab255199d"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/process.json",
+      "bytes": 185,
+      "sha256": "06658a8af4df0641d7a23b501d5d2490d172d804cd81df552d8852eb3cb1abda"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/console.log",
+      "bytes": 158,
+      "sha256": "905cf759e4e07158613985f00dfd0eddacf7633b9f5e872907d276181cb56a2f"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/candidate.patch",
+      "bytes": 2039,
+      "sha256": "597b40bff0e27066f4b3b9db0766f9b33b463bc0505e5c97604db1f2c744e3d4"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/oracle.json",
+      "bytes": 1475,
+      "sha256": "d945deaf105c83ff25508d78a7d81f832aa3df173b7e2013092c64da34c6b662"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/baseline-oracle.json",
+      "bytes": 2151,
+      "sha256": "ca4e4297adca40c15358aeeca8fb14b61224e99798c0eccc0dc5bd749c3415ef"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/trace.jsonl",
+      "bytes": 29433,
+      "sha256": "76ab9eacb5597ffaf330496074be611a8c47d4e1e5882f35fc9dbcb10591a6a4"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/session.json",
+      "bytes": 75394,
+      "sha256": "5d33c83ce934a1f52584d288521b1d8b5ef5737dcb026d7d4d8b0d9eb1337c99"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/run/report.json",
+      "bytes": 59412,
+      "sha256": "8df0b60790cb57dbd63dd8de958c0a7a649b762940a12f5d723de148e340ebb2"
+    },
+    {
+      "path": "LOCAL_RAW/r2/gemini/workspace/.spiral-coder/tui-work.json",
+      "bytes": 6833,
+      "sha256": "8558807af5eda58bad4711f6617c1c6d8dedfd4015bf1c29fbbe0a580426f4a4"
+    },
+    {
+      "path": "LOCAL_RAW/r2/predeclared.json",
+      "bytes": 1775,
+      "sha256": "ae9150de9f12e20f06afdd660d2d959a4ab2b0b3d5e9e454eefe9b9632917ccd"
+    },
+    {
+      "path": "LOCAL_RAW/r2/task.txt",
+      "bytes": 2705,
+      "sha256": "d2c84f512aa6b369354aaebf4a002ddbce6c912083b07592f93b11da7ed08da7"
+    },
+    {
+      "path": "LOCAL_RAW/r2/spiral-coder",
+      "bytes": 43296096,
+      "sha256": "82569ae25e9460df390d8ccec847cfa39fc84abe28810e642bd6c1c2b0eb8c19"
+    },
+    {
+      "path": "LOCAL_RAW/r2/reference-oracle.json",
+      "bytes": 1687,
+      "sha256": "89700c8c067ad2e6074e854e32102ee243c601835855ca7d1fcf395fa986bd4c"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/metadata.json",
+      "bytes": 346,
+      "sha256": "80924d686f6e5ef2a4112322b24ff59763e2faaf4dde20b0d25f517cddf7b92e"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/summary.json",
+      "bytes": 1272,
+      "sha256": "05b937af45d6f8ab59c004410e3dfb4dcc8c07c7ebc47a92eb660e548eadaa96"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 213,
+      "sha256": "fdd3240caf07a37c3550d022b01a26e492dd99469f3210d2d7a7a44a85275d3a"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 739,
+      "sha256": "9975599eec451931aa9056576b77808bafea26785708bfbfd1143c79de0425e4"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 29161,
+      "sha256": "fbaf53a9db04e6ad0a5cff549da93bde59b751242037d6691a8f058ae70b68d7"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 59454,
+      "sha256": "ab51b13aafa66355e7d601cb9eb82e68a2878e73c14c9cc7aef5eb70f712e860"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 51825,
+      "sha256": "08d1c50a31e7df52f671b747efabdf061fe4833b9d5ef7c8f241f8f536e36fc3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 12433,
+      "sha256": "7783ee5b3430bd8547fad1d4fe7a902265966f4e315df91b4a7422ebcbf35651"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 4815,
+      "sha256": "ffad38d80c1708ac1ee86125f9e5ad6d56438ca2e23740da9913d3e39a3c765c"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/mistral.log",
+      "bytes": 618,
+      "sha256": "0afa80b428ee2972875a8ec4fbbef11f60675929ba2b35433c8f8254b17fc441"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/metadata.json",
+      "bytes": 339,
+      "sha256": "cf79a6dd94cf48132d80fbcad0f22700b374987f2b90c2ae1d9c260d2c9743c8"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/summary.json",
+      "bytes": 890,
+      "sha256": "eb223d06682d8a3f963b7f45dfd6e392227820afa2fc5bbd98810c1854b6e6b0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 211,
+      "sha256": "6c7960bd4605b40bc25f9afdc3114d603a02316e80e4257c3659b2795b44e609"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 1228,
+      "sha256": "28fae539d53423db18ee1ea431c5d07ca35c952b97d8e8abeabde8d4ab590fd0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 11398,
+      "sha256": "afed9dbf381252f82ed867992e905d9c2c5e2ce19808f658aa146caf666c4064"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 39550,
+      "sha256": "e58fa3f9ca9688a2bfdfbe279738d8387ecb39afd3f7d16a478724a355e6cd0d"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 30106,
+      "sha256": "8f3d7c621eb98fbb33684b750e1578ab3b63749466eb59397e58f9809d613ce2"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 7235,
+      "sha256": "7fc0cdfbfebc15a8d999180afac74db25f96bf5266715f2537d5ad864aeea9d0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 4811,
+      "sha256": "b612f94d639c1dd07b7331e577417da0357741a7c9dcd9d51d2cd3b8dd63e859"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/openai.log",
+      "bytes": 409,
+      "sha256": "743b04e20dc7c72f041e85b1eef47b569d749ca872b9811a9c1331b5f5a4c2a6"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/metadata.json",
+      "bytes": 348,
+      "sha256": "ad923c60b05ae8080fac31287f2dea93307c22da043df31bae138a12f3e5d1c2"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/summary.json",
+      "bytes": 1510,
+      "sha256": "8dd3ac19c9d2e60ec0f35d9c42d42200eb60176b70dea67b42bf3672cf89183a"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 212,
+      "sha256": "745bf5d609a3737b74afe9d48ccdf8ab5fe26f497f5adc6564face468a984b37"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 635,
+      "sha256": "494cee0cad365b7f006306979276a493730b9b53407f0f5fa72c1065c21a69ae"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 24676,
+      "sha256": "dae349c4f5c15f4bdffc6bcfee4f8eb7363e45e94840dfee2c7276c26985f02e"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 75632,
+      "sha256": "6e55412b1d738d6cae371b247060a8fa4c7f7633f51efafbf45650e243d3c00e"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 64889,
+      "sha256": "3ac1200fc8636d254a8968c9c22498bdacfbe2fbe1e4aa0776c7d9763fd89c6b"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 8048,
+      "sha256": "59aeba67369f588e89343d56070a6df06f972b10613a162fd14f4e9b5e54fc72"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/gemini.log",
+      "bytes": 818,
+      "sha256": "c732e95c224cd2510d442b23ad4df64bd86a554718a3bd5121b81bc6ea2fa9fc"
+    },
+    {
+      "path": "LOCAL_RAW/json-r1/predeclared.json",
+      "bytes": 2039,
+      "sha256": "c4657ff8f01e9b64575558a7bc22fedc85260c771bb3450bc924100a85a280e0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/metadata.json",
+      "bytes": 346,
+      "sha256": "23024cda3bc6fcb9546663f78f5efea3198d010c6932e2deb585c54640034e71"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/summary.json",
+      "bytes": 1499,
+      "sha256": "c5aa75eea9ad40e0fdd2ca676792e25a96d93a8c12df45c0dca78ac2ce757724"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 213,
+      "sha256": "58b6a68af5cad997a89c8a357340e840a4990efea9bb85e0267f7d5b95da5e26"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 1230,
+      "sha256": "958035457a83800dbe65a680fb5a74fec90a162e37c4e79bd9a0c8ffe992a8dd"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 19876,
+      "sha256": "9099c7421d6e2725432a7faa6123e3aa0f1cec5a5d7dfccfe49077da64e7e091"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 67814,
+      "sha256": "a43072c70664203d79aaf30076f3e9c0b1d1e5fe5d49b075c9abd6d091453ac7"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 58145,
+      "sha256": "324d2b70e4b26e40cc30aed7e788fd311773ecda85c3607e2577497590757c66"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 11278,
+      "sha256": "336461c8ad157af8698ac4a9d2862675edea0b6744271f2792fff13369a787a0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 4924,
+      "sha256": "6c613c32f8f939f4552581d06af5e7c58ada4d7e538506801ec71826bdef0357"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/mistral.log",
+      "bytes": 809,
+      "sha256": "6aaaf111945b8fa5f88e6b8189625992abb3b7903056e41e24b4aaf6a7de30fe"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/metadata.json",
+      "bytes": 339,
+      "sha256": "4b1d726968ad60a0312aa478d9c46f69b800d26f1fa9bbae5a21a54262a1a81f"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/summary.json",
+      "bytes": 1574,
+      "sha256": "29303c2d99601c34bbecd1f2822df0f1558b83dfb75ad0483414ee22f8c31114"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 212,
+      "sha256": "b79ce5f8cd2c98b7a83b99c6c19bd80a1d71481c8904f8c63cd48f3177b0458d"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 1228,
+      "sha256": "164df8d5147f91cf2875078d45b39a864609ca1ddb44823e81dd6090fdecb181"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 17899,
+      "sha256": "aa297a68d3373a051fd81c3a8a589b9b68ad9d1fe29c95227daf40f27c8836ae"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 51859,
+      "sha256": "96e5ded31c72e58b457e0dad30ecba91bee9d5b051dc96b382c7df1f4c3e7898"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 39294,
+      "sha256": "8bb2e97f1414b1803bf77c1a13177b0878e278bb5fbc876f0f05226077ffa9de"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 7386,
+      "sha256": "9be4d9ed7f7a24e4649180bd6ccd136b83d2bdbb0f74451128b2a64643f63fb0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 4811,
+      "sha256": "b612f94d639c1dd07b7331e577417da0357741a7c9dcd9d51d2cd3b8dd63e859"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/openai.log",
+      "bytes": 891,
+      "sha256": "7dbf4640acebff5510f4967e8a21049d2954c53e1d9d491602a38b81d8b59e66"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/metadata.json",
+      "bytes": 348,
+      "sha256": "4827bed9270a8fc0a65af2880691cc4447600c42ee368c50a78d6da73b023c3e"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/spec.json",
+      "bytes": 6069,
+      "sha256": "3c3c24ddec901a769158b6cab126797bdb2427243387b0b9b315e5e3182e4752"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/summary.json",
+      "bytes": 1378,
+      "sha256": "05725d07f5afe42328fcdefda0d50cc38a5d4e965ac73988355cb5166b9d4c48"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/case.json",
+      "bytes": 2310,
+      "sha256": "54be779900d514b0be334185bcf421cafab1464ce539a1f281833589d9a32dd3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/prompt.txt",
+      "bytes": 983,
+      "sha256": "6a30211c1a603213a482035fc4cc4a36c3dc0c9f571565ca33d382a3a6d56275"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/baseline.json",
+      "bytes": 3074,
+      "sha256": "7a2420ffc0e781ebd8d39dcb4b16c2348685fb6f3e1ba9158ad94661da0738e3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/console.log",
+      "bytes": 212,
+      "sha256": "4712959ddce82a46a17030dca74c89909f9730c6301649ac656c3f13f165b036"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/oracle-replay.log",
+      "bytes": 736,
+      "sha256": "4a2fb9aefbfae1cbdf7f4eec31d29e444bd232d2cb0fc49b83cd3318821b17f3"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/trace.jsonl",
+      "bytes": 24043,
+      "sha256": "11cecff7e4351a2b137f8bf921f687fa2987dd0abc80e08f8e88762c405ea81f"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/session.json",
+      "bytes": 57283,
+      "sha256": "b34742c8319b6faec8eced3912c1715dd6d78b5c752007677157862676e888e0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/report.json",
+      "bytes": 49945,
+      "sha256": "e06953cf0a46efa5ee71645d382e951e9b743462b675f8e3cfb43bffc8d7c552"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/run/checks.json",
+      "bytes": 8117,
+      "sha256": "bdf984247fbdbd20495ed35a2dfb7612fe025a6921aaed5e97251a36dff3fd92"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini/coupled-approved-benchmark-plan-tui-replay-smoke/workspace/.spiral-coder/tui_replay.json",
+      "bytes": 5259,
+      "sha256": "925ba884dfb3b6c5b84477904b8b7c245dc520b577e8159de966f39bd5c2bed0"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/gemini.log",
+      "bytes": 698,
+      "sha256": "ee1c6edd74093ec3b862ebf9aaf9e94362b1be4a9a0517ca67c69a5957e4a588"
+    },
+    {
+      "path": "LOCAL_RAW/json-r2/predeclared.json",
+      "bytes": 2039,
+      "sha256": "eea33a4644726ff920a919e7805d344ba6a916b1530bcaec429cfe0248af745f"
+    },
+    {
+      "path": "LOCAL_RAW/oracle.py",
+      "bytes": 3826,
+      "sha256": "f3b108e044b333993210d05ce5964912820e3f190068c1bbc924e102b3f1e79c"
+    },
+    {
+      "path": "LOCAL_RAW/task.txt",
+      "bytes": 2705,
+      "sha256": "d2c84f512aa6b369354aaebf4a002ddbce6c912083b07592f93b11da7ed08da7"
+    },
+    {
+      "path": "LOCAL_RAW/prepare.py",
+      "bytes": 2868,
+      "sha256": "6b2a057c03c4769a0b0c40d9ac97477b84ec8c200d6e29fa8fdd15d5433b35b2"
+    },
+    {
+      "path": "LOCAL_RAW/launch.py",
+      "bytes": 3940,
+      "sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c"
+    },
+    {
+      "path": "LOCAL_RAW/launch_json.py",
+      "bytes": 1607,
+      "sha256": "9c1ed99cba578967822e7ca59148e593726125236c5968482ac537ee6e74983d"
+    },
+    {
+      "path": "LOCAL_RAW/launch_json_r1.py",
+      "bytes": 1522,
+      "sha256": "e7fc461271a96821e3e9241c4d4657019998544c358a47d895c1d47f7c31afc9"
+    },
+    {
+      "path": "LOCAL_RAW/collect.py",
+      "bytes": 1811,
+      "sha256": "b880514d9503dd6c598ae83ea3a8e5fc6d35a00d6e3f98043eab97e3ca15d60b"
+    },
+    {
+      "path": "LOCAL_RAW/publish_receipts.py",
+      "bytes": 5326,
+      "sha256": "893b0a591ea9b68782d2a7f6c25ac941011aa7e7a2bd11e5f09dbf644bd11407"
+    },
+    {
+      "path": "LOCAL_RAW/browser-qa.mjs",
+      "bytes": 6851,
+      "sha256": "88e40352723eaed7c0df405170e1ff6e7c5a1604efe5f08f0bee8ec6a910a8fc"
+    },
+    {
+      "path": "LOCAL_RAW/browser.json",
+      "bytes": 2581,
+      "sha256": "6547f8fe919a5927858b9988a9a34353d3da59fac666550653683b758553edb6"
+    },
+    {
+      "path": "LOCAL_RAW/browser-native.json",
+      "bytes": 12296,
+      "sha256": "70d886009cab87584ce6c69cdfd619277a78b2421d019770d7c448211167b7f9"
+    },
+    {
+      "path": "LOCAL_RAW/json-http.json",
+      "bytes": 812,
+      "sha256": "bdace948c956de31671a6032cfb694e95bfed4c05f345dc7612d1e37b296b134"
+    },
+    {
+      "path": "LOCAL_RAW/gemini-done-desktop.png",
+      "bytes": 724868,
+      "sha256": "4df9aa033be0002db306123884744447c0fa76972a3d1c7ce835e4e8597b4c70"
+    },
+    {
+      "path": "LOCAL_RAW/gemini-done-mobile.png",
+      "bytes": 235487,
+      "sha256": "30d97107a63a5f9d708cdd84b76331b0f0553700d9b6dbe4ffd336dc014a4f8d"
+    }
+  ]
+}
