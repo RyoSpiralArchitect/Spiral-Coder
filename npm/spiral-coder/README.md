@@ -5,17 +5,18 @@ Web UI and a headless CLI.
 
 ## Install and start
 
-Requires **Node.js 20+**. The first registry publication is pending; until then,
-install the `.tgz` inside a successful CI run's `spiral-coder-npm` artifact:
+Requires **Node.js 20+**. Install a published release from npm:
 
 ```sh
-npm install -g ./spiral-coder-0.2.0.tgz
+npm install -g spiral-coder@latest
 cd your-project
 spiral
 ```
 
-After the first registry release, install or update with
-`npm install -g spiral-coder@latest`. Both methods support `--ignore-scripts`.
+The same install command updates an existing installation. For an unpublished
+preview, download the `.tgz` from a successful CI run's `spiral-coder-npm` artifact
+and use `npm install -g ./spiral-coder-0.2.0.tgz` instead.
+Both methods support `--ignore-scripts`.
 No Rust compiler, postinstall script, or additional executable download is needed.
 
 `spiral` starts the TUI in your current directory. Coder and Observer use the same
