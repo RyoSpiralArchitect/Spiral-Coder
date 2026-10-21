@@ -12,6 +12,11 @@ The project began as a two-day Mistral hackathon experiment. It is now being reb
 
 **Renaming an existing installation?** See [migration](docs/migration-spiral-coder.md) for the new command, configuration names, and non-destructive data migration.
 
+**npm / short terminal command:** the [npm distribution](docs/npm-distribution.md)
+adds `spiral`, which starts the Coder + Observer TUI in the current project.
+Until the first registry release is published, install the prepared CI `.tgz`;
+after publication, use `npm install -g spiral-coder`.
+
 ```sh
 cargo install --locked --path .
 spiral-coder --help
