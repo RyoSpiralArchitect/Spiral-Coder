@@ -6,6 +6,8 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { spawn, spawnSync } from 'node:child_process';
 import { prepare } from '../../scripts/prepare-npm.mjs';
+import { verifyRelease, verifyRegistryIntegrity } from '../../scripts/verify-npm.mjs';
+import { createHash } from 'node:crypto';
 const require = createRequire(import.meta.url);
 const { targets, argumentsFor, binaryPath } = require('../../npm/spiral-coder/lib/launcher.cjs');
 
@@ -64,6 +66,44 @@ test('a local smoke package stays private and a mismatched manifest cannot launc
   manifest.binaries[target].file = '../../elsewhere';
   await fs.writeFile(filename, JSON.stringify(manifest));
   assert.throws(() => binaryPath(out), /manifest/);
+});
+
+test('publication verifies the packed payload and rejects local, incomplete or changed releases', async t => {
+  const { root, input } = await fixture(t);
+  const out = path.join(root, 'release');
+  await prepare({ input, out });
+  assert.equal((await verifyRelease(out)).targets.length, 5);
+  const metadata = path.join(out, 'package.json');
+  const original = await fs.readFile(metadata);
+  const info = JSON.parse(original);
+  await fs.writeFile(metadata, JSON.stringify({ ...info, private: true }));
+  await assert.rejects(verifyRelease(out), /Release metadata/);
+  await fs.writeFile(metadata, JSON.stringify({ ...info, scripts: { postinstall: 'unexpected hook' } }));
+  await assert.rejects(verifyRelease(out), /Release metadata/);
+  await fs.writeFile(metadata, original);
+  const manifestPath = path.join(out, 'native-manifest.json');
+  const originalManifest = await fs.readFile(manifestPath);
+  const manifest = JSON.parse(originalManifest);
+  const otherTarget = Object.values(targets).find(target => target !== targets[`${process.platform}-${process.arch}`]);
+  const otherBinary = path.join(out, manifest.binaries[otherTarget].file);
+  delete manifest.binaries[otherTarget];
+  await fs.writeFile(manifestPath, JSON.stringify(manifest));
+  await assert.rejects(verifyRelease(out), /all five targets/);
+  await fs.writeFile(manifestPath, originalManifest);
+  const originalBinary = await fs.readFile(otherBinary);
+  await fs.appendFile(otherBinary, 'corrupted non-host binary');
+  await assert.rejects(verifyRelease(out), /checksum/);
+  await fs.writeFile(otherBinary, originalBinary);
+  const unexpectedFile = path.join(out, 'unexpected.txt');
+  await fs.writeFile(unexpectedFile, 'must not ship');
+  await assert.rejects(verifyRelease(out), /Unexpected or missing files/);
+  await fs.rm(unexpectedFile);
+  await fs.appendFile(path.join(out, 'lib/launcher.cjs'), '// changed');
+  await assert.rejects(verifyRelease(out), /Source mismatch/);
+  const bytes = Buffer.from('a packed release');
+  const record = { dist: { integrity: `sha512-${createHash('sha512').update(bytes).digest('base64')}` } };
+  assert.doesNotThrow(() => verifyRegistryIntegrity(bytes, record));
+  assert.throws(() => verifyRegistryIntegrity(Buffer.from('different release'), record), /differs/);
 });
 
 test('launcher preserves literal arguments, cwd, environment, exit code and signals', { skip: process.platform === 'win32' }, async t => {

@@ -4,13 +4,54 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-Spiral-Coder est un moteur de développement avec des contextes séparés pour **Coder**, **Observer** et **Chat**. Coder agit dans le dépôt, Observer examine les sorties et les preuves de vérification, et Chat accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
+Spiral-Coder associe **Coder + Observer** dans une même boucle de développement, avec des contextes séparés : Coder agit dans le dépôt et Observer examine les sorties et les preuves de vérification. **Chat** accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
 Né d’un prototype réalisé en environ deux jours pour un hackathon Mistral, le projet devient Spiral-Coder. Les priorités sont le choix du fournisseur, la sauvegarde et la reprise des sessions, et des vérifications reproductibles. Des contextes séparés ne garantissent pas à eux seuls une critique indépendante ou correcte.
 
 Pour une installation existante, voir le [guide de migration](docs/migration-spiral-coder.md). Les anciennes données sont conservées.
+
+## Installer avec npm et démarrer
+
+La commande `spiral` ouvre la TUI dans le projet courant. **Node.js 20+** est
+nécessaire ; aucun compilateur Rust n'est requis. Les plateformes prises en charge
+sont macOS Apple Silicon/Intel, Linux glibc 2.35+ arm64/x64 et Windows x64.
+
+**La première publication sur le registre npm est en préparation.** Téléchargez
+et décompressez l'artifact `spiral-coder-npm` d'une [exécution npm native package réussie](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml),
+puis installez le fichier `.tgz` :
+
+```sh
+npm install -g ./spiral-coder-0.2.0.tgz
+cd your-project
+spiral
+```
+
+Après la première publication, utilisez `npm install -g spiral-coder@latest`
+pour installer ou mettre à jour. Les deux méthodes acceptent `--ignore-scripts` ;
+les exécutables sont inclus et aucun téléchargement postinstall n'est nécessaire.
+
+| Commande | Fonction |
+| --- | --- |
+| `spiral` | Ouvrir la TUI dans le dossier courant |
+| `spiral -C /path/to/project` | Choisir un autre projet |
+| `spiral --provider gemini` | Choisir le fournisseur, puis `/model` pour le modèle |
+| `spiral --lang fr` | Démarrer avec l'interface française |
+| `spiral serve` | Démarrer l'interface Web locale |
+| `spiral tui --help` | Afficher toutes les options TUI |
+
+Configurez la clé API selon le [démarrage rapide](#demarrage-rapide), ou consultez
+`/keys` dans la TUI. Coder et Observer utilisent le même modèle sélectionné sauf
+configuration explicite. Ctrl+C quitte l'application. `spiral-coder` conserve
+le comportement CLI d'origine, notamment l'interface Web sans arguments.
+
+Pour mettre à jour une version de prévisualisation, installez son nouveau `.tgz`.
+`npm uninstall -g spiral-coder` supprime les commandes sans supprimer vos projets.
+Consultez le [guide de distribution](docs/npm-distribution.md) pour le PATH, les
+permissions, les plateformes et la publication.
+
+### Compiler depuis un checkout du dépôt
 
 ```sh
 cargo install --locked --path .
@@ -368,6 +409,7 @@ Chaque champ est intentionnel. `quote` epingle la ligne exacte incriminee sur la
 
 - OpenAI-compatible : `OPENAI_API_KEY` ou `SPIRAL_CODER_API_KEY`
 - Mistral : `MISTRAL_API_KEY` (ou `SPIRAL_CODER_API_KEY`)
+- Gemini : `GEMINI_API_KEY` ou `GOOGLE_API_KEY`
 - Anthropic (Chat/Observer uniquement) : `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -381,6 +423,9 @@ export OPENAI_API_KEY="..."
 ```
 
 UI Web : collez les cles dans Settings (stocke dans le navigateur et envoye uniquement a votre serveur local).
+
+Après installation avec npm, lancez `spiral` (TUI) ou `spiral serve` (Web) depuis
+votre projet. Les scripts ci-dessous sont des alternatives pour un checkout source.
 
 **UI Web (recommande)**
 ```powershell

@@ -4,13 +4,55 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-Spiral-Coder は、**Coder・Observer・Chat のコンテキストを分けた開発実行基盤**です。Coder がリポジトリ上で作業し、Observer が出力と検証記録を批評し、Chat が設計の対話を担います。CLI・TUI・ローカル Web UI を備えています。
+Spiral-Coder は、**Coder + Observer を一組のコーディングループとして動かす開発実行基盤**です。別々のコンテキストで、Coder がリポジトリ上の作業、Observer が出力と検証記録の批評を担います。**Chat** は設計の対話に使えます。CLI・TUI・ローカル Web UI を備えています。
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
 出発点は、Mistral のハッカソンで約2日間で作った実験でした。Spiral-Coder として、プロバイダー選択、作業の保存・再開、再現できる検証を土台から育て直します。コンテキストの分離だけで、批評の独立性や正しさが保証されるわけではありません。
 
 既存環境からの移行は [移行手順](docs/migration-spiral-coder.md) を参照してください。旧データを残したまま新しい保存先へコピーできます。
+
+## npmでインストールして起動
+
+`spiral` と入力するだけで、今いるプロジェクトのTUIが開きます。
+必要なのは **Node.js 20以上**。Rustのビルド環境は不要です。
+macOS（Apple Silicon / Intel）、Linux glibc 2.35以上（arm64 / x64）、
+Windows（x64）に対応しています。
+
+**npmレジストリへの初回公開は準備中です。** 現在は
+[npm native packageの成功した実行](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml)
+から `spiral-coder-npm` artifactをダウンロード・展開し、中の `.tgz` をインストールします。
+
+```sh
+npm install -g ./spiral-coder-0.2.0.tgz
+cd your-project
+spiral
+```
+
+初回公開後は `npm install -g spiral-coder@latest` でインストール・更新できます。
+どちらの方法も `--ignore-scripts` に対応しており、実行ファイルの追加ダウンロードはありません。
+
+| コマンド | 動作 |
+| --- | --- |
+| `spiral` | 現在のフォルダでTUIを起動 |
+| `spiral -C /path/to/project` | 別のプロジェクトを指定 |
+| `spiral --provider gemini` | プロバイダーを指定。モデルは `/model` で選択 |
+| `spiral --lang ja` | 日本語UIで起動 |
+| `spiral serve` | ローカルWeb UIを起動 |
+| `spiral tui --help` | TUIの全オプションを表示 |
+
+APIキーは[クイックスタート](#クイックスタート)に沿って設定します。
+TUIの `/keys` でも設定方法を確認できます。CoderとObserverは、明示的に変更しなければ
+同じ選択モデルを使います。終了はCtrl+Cです。従来のCLI互換コマンド
+`spiral-coder` も入り、引数なしではWeb UIが起動します。
+
+プレビュー版の更新は新しい `.tgz` のインストール、削除は
+`npm uninstall -g spiral-coder` で行えます。プロジェクトのファイルは残ります。
+PATH・権限・対応環境・公開手順は[配布ガイド](docs/npm-distribution.md)を参照してください。
+
+### ソースからビルドする場合
+
+リポジトリのチェックアウト内で実行します。
 
 ```sh
 cargo install --locked --path .
@@ -368,6 +410,7 @@ score: 41  rationale: コアロジックは動くが、インジェクション�
 
 - OpenAI互換: `OPENAI_API_KEY` または `SPIRAL_CODER_API_KEY`
 - Mistral: `MISTRAL_API_KEY`（または `SPIRAL_CODER_API_KEY`）
+- Gemini: `GEMINI_API_KEY` または `GOOGLE_API_KEY`
 - Anthropic（Chat/Observerのみ）: `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -381,6 +424,9 @@ export OPENAI_API_KEY="..."
 ```
 
 Web UIは Settings でキーを貼り付け（ブラウザに保存され、ローカルのサーバにだけ送られる）。
+
+npmからインストールした場合は、プロジェクト内で `spiral`（TUI）または
+`spiral serve`（Web UI）を実行します。以下のスクリプトはソースから使う場合の入口です。
 
 **Web UI（推奨）**
 ```powershell

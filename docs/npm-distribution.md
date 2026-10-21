@@ -4,8 +4,12 @@ The npm package is `spiral-coder`; its short command is `spiral`. An installable
 release bundles the native runtimes and a dependency-free Node launcher. The
 private root `package.json` remains the browser-development project.
 
-The first registry publication is a separate release step. Until it happens,
-install a prepared `.tgz` from CI or a local build, not the source package:
+## Install and use
+
+Requires **Node.js 20+**, with npm available in your terminal. The first registry
+publication is pending. Until then, download and unzip the `spiral-coder-npm`
+artifact from a successful [npm native package workflow run](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml).
+In the extracted directory:
 
 ```sh
 npm install -g ./spiral-coder-0.2.0.tgz
@@ -13,16 +17,59 @@ cd your-project
 spiral
 ```
 
-After publication, replace the tarball with `npm install -g spiral-coder`.
-No Rust compiler or install hook is required. `--ignore-scripts` is supported.
+Once the registry release exists, install or update with:
 
-`spiral` and flag-only invocations select the TUI, defaulting its tool root to the
-current directory. `-C`, `--root` and `--tool-root` override that location. Explicit
-native subcommands go first (`spiral agent --provider openai`). `spiral-coder`
-keeps native argument semantics, including its original no-argument Web UI.
-Terminal streams, environment and exit status are inherited; signals are forwarded
-to the native child. Configure API keys through the existing provider environment
-variables or runtime settings; never bake them into a package.
+```sh
+npm install -g spiral-coder@latest
+```
+
+No Rust compiler, install hook, or additional executable download is required.
+Both methods support `--ignore-scripts`. Preview updates use the newer `.tgz`.
+`npm uninstall -g spiral-coder` removes the npm installation; it leaves your
+projects and Spiral-Coder configuration/session data in place.
+
+| Command | Behavior |
+| --- | --- |
+| `spiral` | Open the TUI with the current directory as tool root |
+| `spiral -C /path/to/project` | Choose the project explicitly (`--root` and `--tool-root` also work) |
+| `spiral --provider gemini` | Select a provider for the coding loop |
+| `spiral --lang ja` | Select the UI language (`en`, `ja`, or `fr`) |
+| `spiral tui --help` | List TUI options |
+| `spiral serve` | Start the local Web UI |
+| `spiral agent --help` | List headless agent options |
+| `spiral --version` | Show the installed native version |
+
+Flag-only invocations select the TUI. Explicit native subcommands go first, for
+example `spiral agent --provider openai`. `spiral-coder` is installed too and keeps
+the native CLI's original argument semantics, including its no-argument Web UI.
+Terminal streams, working directory, environment and exit status are inherited;
+signals are forwarded to the native child. Ctrl+C exits the TUI.
+
+Configure your provider before making model requests. Common environment
+variables are `MISTRAL_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` (or
+`GOOGLE_API_KEY`). Set them in the shell that launches `spiral`; the TUI's `/keys`
+command shows setup help and key status. `/provider` and `/model` change the
+selection. **Coder + Observer form one coding loop** and use the same selected
+model unless explicitly overridden. See the [Quickstart](../README.md#quickstart)
+for provider configuration. Never put credentials in a package.
+
+### Installation troubleshooting
+
+- **`spiral` is not found:** inspect `npm prefix -g`. On macOS/Linux, its `bin/`
+  directory must be on `PATH`; on Windows, the prefix directory itself must be
+  on `PATH`. Open a new terminal after changing Node/npm or PATH. Check with
+  `command -v spiral` on macOS/Linux or `Get-Command spiral` in PowerShell.
+- **Global install permission error:** use a Node version manager or a
+  user-owned npm prefix, following [npm's permissions guide](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally/).
+  A one-off Unix install can use `npm install -g --prefix "$HOME/.local" ./spiral-coder-0.2.0.tgz`,
+  with `$HOME/.local/bin` on PATH. Use that same prefix for updates/removal.
+- **PowerShell blocks script execution:** run `spiral.cmd` (the npm-generated
+  command wrapper). There is no need to change the machine's execution policy.
+- **Unsupported platform or checksum error:** check the table below. Reinstall
+  a complete package for a damaged install; do not disable checksum verification.
+  Alpine/musl and Windows arm64 need a source build in this release.
+- **Missing API key:** run `/keys`, set the indicated environment variable and
+  restart `spiral`. Installing the package does not configure provider accounts.
 
 ## Supported first-release targets
 
@@ -40,33 +87,117 @@ launcher checks the selected executable against the manifest packaged alongside
 it. This detects missing/corrupted files; it is not an independent publisher
 signature. npm's package integrity remains the distribution trust boundary.
 
-## Build and release
+## Build and verify a release
 
 `npm native package` builds each target on its native GitHub runner, installs a
 local tarball with scripts disabled, checks both commands, then assembles the
-complete package. A PR produces downloadable artifacts; it never publishes.
-For a release, run the workflow on the intended merged revision and obtain the
-`spiral-coder-npm` artifact. Review its workflow revision and verify the extracted
-files with `sha256sum -c SHA256SUMS` (macOS: `shasum -a 256 -c SHA256SUMS`), then an
-authorized maintainer can run `npm publish ./spiral-coder-0.2.0.tgz --access public`.
-Registry ownership/authentication and public publication are not automated here.
+complete package. PR runs only build and test. A manual run also defaults to
+build-only (`publish: false`). Its `spiral-coder-npm` artifact contains the `.tgz`
+and `SHA256SUMS`, retained for 14 days. Download it from the run page or use
+`gh run download RUN_ID -R RyoSpiralArchitect/Spiral-Coder -n spiral-coder-npm -D .tmp/release-download`
+with the successful run's numeric ID.
 
-The builder requires all five nonempty binaries and matching Cargo/npm versions.
-It refuses to overwrite an output directory. Its source template stays private;
-only a complete release assembly removes that flag. To smoke-test just one native
-build, use `--local-target`; that package stays private and cannot be published.
+Use a checkout of the **same revision** as the workflow run. Verify the archive
+checksum in its download directory (`sha256sum -c SHA256SUMS` on Linux;
+`shasum -a 256 -c SHA256SUMS` on macOS). Then, from the checkout:
+
+```sh
+mkdir -p .tmp/release-unpacked
+tar -xzf .tmp/release-download/spiral-coder-0.2.0.tgz -C .tmp/release-unpacked
+node scripts/verify-npm.mjs --package .tmp/release-unpacked/package
+npm publish .tmp/release-download/spiral-coder-0.2.0.tgz --dry-run --ignore-scripts --access public
+```
+
+The verifier checks matching Cargo/npm versions, exact package metadata, all
+five binary hashes, the file allowlist, and the bundled launcher/README/license
+against the checkout. It rejects private local packages and added install hooks
+or dependencies. CI runs it both before packing and on the extracted tarball;
+the publish job repeats verification on the artifact it will send to npm.
+
+For a local assembly, place the five binaries at
+`.tmp/native/<rust-target>/spiral-coder` (`spiral-coder.exe` for Windows):
+
+```sh
+node scripts/prepare-npm.mjs --input .tmp/native --out .tmp/npm-release
+node scripts/verify-npm.mjs --package .tmp/npm-release
+mkdir -p .tmp/tarballs
+npm pack ./.tmp/npm-release --pack-destination .tmp/tarballs
+```
+
+The builder requires all five nonempty regular files and matching Cargo/npm
+versions. It refuses to overwrite an output directory. Its source template stays
+private; only a complete assembly removes that flag. To smoke-test one native
+build on Apple Silicon instead:
 
 ```sh
 cargo build --locked --release
-mkdir -p .tmp/native/aarch64-apple-darwin
+mkdir -p .tmp/native/aarch64-apple-darwin .tmp/local-tarballs
 cp target/release/spiral-coder .tmp/native/aarch64-apple-darwin/
 node scripts/prepare-npm.mjs --input .tmp/native --out .tmp/npm-local --local-target aarch64-apple-darwin
-npm pack ./.tmp/npm-local
-npm install -g ./spiral-coder-0.2.0.tgz
+npm pack ./.tmp/npm-local --pack-destination .tmp/local-tarballs
+npm install -g ./.tmp/local-tarballs/spiral-coder-0.2.0.tgz
 ```
 
-Use the target matching your host in that example. Test the launcher without
-provider requests using `node --test tests/npm/*.test.mjs`.
+Use your host's target and executable name in that example. A local-target
+package stays private and fails release verification. Run `npm run test:npm` for
+launcher, packaging and integrity tests without provider requests.
+
+## First registry publication
+
+The first publication establishes the npm package and its maintainer access.
+An authorized maintainer must authenticate with npm and publish the verified
+artifact from a green, merged revision. The repository does not contain npm
+credentials, and this implementation does not claim the package is published.
+
+After the verification steps above, from that same checkout:
+
+```sh
+npm login --registry=https://registry.npmjs.org
+npm whoami --registry=https://registry.npmjs.org
+npm publish .tmp/release-download/spiral-coder-0.2.0.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org
+node scripts/verify-npm.mjs --package .tmp/release-unpacked/package --registry --tarball .tmp/release-download/spiral-coder-0.2.0.tgz
+```
+
+The last command compares the published version's SHA-512 integrity with the
+exact uploaded `.tgz`, with bounded retries for registry propagation. If publish
+returns an uncertain result, inspect the registry before taking any further
+publication action; npm versions cannot be overwritten. Confirm a clean
+`npm install -g spiral-coder@0.2.0 --ignore-scripts` and `spiral --version`, then
+replace the pending-publication notes in all three root READMEs and the package
+README with the registry install command.
+
+## Subsequent releases with a trusted publisher
+
+The workflow includes an opt-in publish job using npm's GitHub Actions OIDC
+integration. After the package exists, configure **Settings → Trusted Publisher**
+on npm with these exact values:
+
+| Setting | Value |
+| --- | --- |
+| Provider | GitHub Actions |
+| Organization or user | `RyoSpiralArchitect` |
+| Repository | `Spiral-Coder` |
+| Workflow filename | `npm-package.yml` |
+| Environment | `npm` |
+| Allowed publish action | `npm publish` |
+
+Use the filename only, without `.github/workflows/`. Enable `npm publish` in npm's
+publisher settings; a staging-only configuration will not authorize this job.
+Configure the matching GitHub environment `npm` if it needs release protections.
+The publish job uses a GitHub-hosted runner, Node 24, npm 11.9.0 and
+`id-token: write`, with no long-lived npm token. Follow npm's
+[trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) for account
+setup and current activation requirements.
+
+For each release, bump `Cargo.toml`, the root package entry in `Cargo.lock`, and
+`npm/spiral-coder/package.json` together; update versioned documentation examples.
+Merge the tested change, then dispatch **npm native package** on `main` with
+**publish = true**. The workflow rejects publication from another branch or
+repository, rebuilds/tests all five targets, verifies the resulting archive,
+publishes once with provenance, and checks registry integrity. A normal PR or
+build-only dispatch cannot enter the publish job. The workflow does not create
+Git tags or GitHub releases.
 
 The `bin` mappings follow [npm's package manifest contract](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#bin).
+Publication follows [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/).
 Native build labels follow [GitHub's hosted-runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
