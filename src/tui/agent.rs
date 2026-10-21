@@ -81,6 +81,7 @@ mod provider_compat;
 #[cfg(test)]
 mod provider_signature_tests;
 mod provider_turn;
+mod read_context;
 mod read_only;
 mod recovery;
 mod recovery_focus;
@@ -13588,6 +13589,13 @@ Required now: run `{command}`.\n{verification_status}"
                         .and_then(|abs| abs.metadata().ok())
                         .map(|m| m.is_file())
                         .unwrap_or(false);
+                    if file_exists && !file_cache.contains_key(&cache_key) {
+                        if let Some(snapshot) =
+                            read_context::matching_snapshot(&messages, &path, base)
+                        {
+                            file_cache.insert(cache_key.clone(), snapshot);
+                        }
+                    }
                     if file_exists && !file_cache.contains_key(&cache_key) {
                         (
                             format!(

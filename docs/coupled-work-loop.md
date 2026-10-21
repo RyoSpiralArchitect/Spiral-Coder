@@ -148,6 +148,14 @@ The evaluator retains a separate baseline outside the model's writable fixture. 
 
 The Rust server exposes `POST /api/observer_action` and `features.observer_action=true`. It shares the TUI packet projection, JSON validator, confidence/no-tool forwarding behavior, single repair prompt, native exchange repair, and final-report checks. The endpoint never executes advice.
 
+Before forwarding a confident `done` suggestion, both surfaces validate its
+acceptance rows against the current native plan and current recorded commands,
+using Coder's acceptance validator. Missing, invented, shortened or stale
+citations request the same single action-contract repair. Display packet fields
+cannot supply receipts. Low-confidence and no-tool advice remain advisory.
+If Coder has not yet established a native plan, citations are still checked;
+the actual Coder completion must establish and satisfy its plan before finishing.
+
 `web/core/work-loop.js` owns browser-native task state under `spiral-coder.work.v1.<thread>`. Request metadata selects the server ledger `.spiral-coder/web-budgets/<task-id>.json`; changing the limit/root or reloading cannot refund wire attempts. Native history and assist IDs survive reload. A stale revision or previously consumed suggestion cannot be executed again.
 
 Ordinary Coder chat, streaming chat and its HTTP fallback retain the completed

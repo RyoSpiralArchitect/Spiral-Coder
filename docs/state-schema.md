@@ -465,6 +465,13 @@ diagnostics only; check success and expected values remain unchanged.
 This layer should stay transient. If a field must survive restart/resume, it
 likely belongs in prefs or session persistence instead.
 
+An existing-file `write_file` can reuse a full native `read_file` retained in the
+current task after continuation. `src/tui/agent/read_context.rs` compares that
+exact snapshot with a fresh filesystem read before restoring the in-memory
+cache entry. Changed, truncated, pruned, uncorrelated or previous-task contents
+do not qualify; the Coder must read again. No new tool receipt, persistent state,
+diagnosis credit or verification credit is created by this comparison.
+
 ### 5a. Observer/Coder diagnostic contract
 
 Code:
