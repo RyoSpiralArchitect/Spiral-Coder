@@ -67,7 +67,9 @@ outcome; it does not discharge pending requirements or become a successful task.
 Explicit English before/after test-outcome clauses, including "Finish with an
 authored report naming ...", expose canonical native receipt rows to both roles:
 `Before: FAILED — \`exact command\`` and `After: PASSED — \`exact command\``.
-The authored `done.summary` must include those rows on separate lines. Actual
+The authored `done.summary` must include those fields, either on separate lines
+or as sentences in a paragraph. Punctuation and line breaks do not change the
+receipt; the label, recorded status and exact command still must match. Actual
 missing/unknown checks are reported as NOT RECORDED / NOT VERIFIED, and a later
 edit invalidates the after result. A truthful partial report may include those
 unverified rows. The gate recognizes these bounded report forms; it does not

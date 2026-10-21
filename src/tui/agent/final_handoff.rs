@@ -319,10 +319,7 @@ pub(super) fn validate_authored_done_summary(
         missing.push("nonempty authored summary".to_string());
     }
     for row in super::report_outcomes::required_rows(root, messages, test_cmd) {
-        if !summary
-            .lines()
-            .any(|line| line.trim().trim_start_matches("- ") == row)
-        {
+        if !super::report_outcomes::states_row(summary, &row) {
             missing.push(format!("recorded outcome row in done.summary: {row}"));
         }
     }
