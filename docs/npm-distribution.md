@@ -86,6 +86,20 @@ launcher checks the selected executable against the manifest packaged alongside
 it. This detects missing/corrupted files; it is not an independent publisher
 signature. npm's package integrity remains the distribution trust boundary.
 
+## Published 0.2.0 verification
+
+[`spiral-coder@0.2.0`](https://www.npmjs.com/package/spiral-coder/v/0.2.0)
+was published on 2026-10-21. The [release receipt](releases/npm-0.2.0.json)
+records the tested and merged source revisions, five-target CI, archive hashes,
+registry integrity and a fresh unauthenticated installation on macOS arm64.
+That installation rendered the TUI with bare `spiral` and exited cleanly with
+Ctrl+C. No model requests were made during this distribution check.
+
+The staged archive was downloaded and compared byte-for-byte before its browser
+2FA approval. This first release used manual staged publication and has no OIDC
+provenance. It contains the merged PR #32 runtime; the separate PR #31 quality
+changes are not included in 0.2.0.
+
 ## Build and verify a release
 
 `npm native package` builds each target on its native GitHub runner, installs a
