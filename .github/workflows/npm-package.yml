@@ -160,5 +160,5 @@ jobs:
           mkdir -p .tmp/npm-unpacked
           tar -xzf .tmp/tarballs/*.tgz -C .tmp/npm-unpacked
           node scripts/verify-npm.mjs --package .tmp/npm-unpacked/package
-          npm publish .tmp/tarballs/*.tgz --ignore-scripts --access public --provenance
+          npm publish .tmp/tarballs/*.tgz --ignore-scripts --access public --provenance --fetch-retries=0 --fetch-timeout=1200000
           node scripts/verify-npm.mjs --package .tmp/npm-unpacked/package --registry --tarball .tmp/tarballs/*.tgz

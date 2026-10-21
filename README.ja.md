@@ -19,18 +19,15 @@ Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README
 macOS（Apple Silicon / Intel）、Linux glibc 2.35以上（arm64 / x64）、
 Windows（x64）に対応しています。
 
-**npmレジストリへの初回公開は準備中です。** 現在は
-[npm native packageの成功した実行](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml)
-から `spiral-coder-npm` artifactをダウンロード・展開し、中の `.tgz` をインストールします。
-
 ```sh
-npm install -g ./spiral-coder-0.2.0.tgz
+npm install -g spiral-coder@latest
 cd your-project
 spiral
 ```
 
-初回公開後は `npm install -g spiral-coder@latest` でインストール・更新できます。
-どちらの方法も `--ignore-scripts` に対応しており、実行ファイルの追加ダウンロードはありません。
+[npmパッケージ](https://www.npmjs.com/package/spiral-coder)に実行ファイルを同梱しています。
+`--ignore-scripts` にも対応しており、インストール後の追加ダウンロードはありません。
+更新も同じインストールコマンドで行えます。
 
 | コマンド | 動作 |
 | --- | --- |
@@ -46,8 +43,7 @@ TUIの `/keys` でも設定方法を確認できます。CoderとObserverは、�
 同じ選択モデルを使います。終了はCtrl+Cです。従来のCLI互換コマンド
 `spiral-coder` も入り、引数なしではWeb UIが起動します。
 
-プレビュー版の更新は新しい `.tgz` のインストール、削除は
-`npm uninstall -g spiral-coder` で行えます。プロジェクトのファイルは残ります。
+削除は `npm uninstall -g spiral-coder` で行えます。プロジェクトのファイルは残ります。
 PATH・権限・対応環境・公開手順は[配布ガイド](docs/npm-distribution.md)を参照してください。
 
 ### ソースからビルドする場合

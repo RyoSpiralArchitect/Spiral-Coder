@@ -18,19 +18,15 @@ The npm package provides `spiral`. It opens the TUI in your current project;
 no Rust compiler is needed. Requires **Node.js 20+**. Packages support macOS
 Apple Silicon/Intel, Linux glibc 2.35+ arm64/x64, and Windows x64.
 
-**First npm registry publication is pending.** For now, download and unzip the
-`spiral-coder-npm` artifact from a successful [npm native package run](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml),
-then install the enclosed tarball:
-
 ```sh
-npm install -g ./spiral-coder-0.2.0.tgz
+npm install -g spiral-coder@latest
 cd your-project
 spiral
 ```
 
-After the first registry release, the install/update command is
-`npm install -g spiral-coder@latest`. Both installation methods support
-`--ignore-scripts`; binaries are bundled, with no postinstall downloads.
+The [npm package](https://www.npmjs.com/package/spiral-coder) bundles its native
+binaries. Installation also supports `--ignore-scripts`, with no postinstall
+downloads. Rerun the install command to update.
 
 | Command | What it does |
 | --- | --- |
@@ -46,7 +42,7 @@ Set your provider's API key as described in [Quickstart](#quickstart), or use
 unless explicitly overridden. Ctrl+C exits. `spiral-coder` is also installed and
 preserves the original CLI behavior, including its no-argument Web UI.
 
-Update a preview by installing its newer `.tgz`. Remove the npm commands with
+Remove the npm commands with
 `npm uninstall -g spiral-coder`; project files remain in place.
 See [installation troubleshooting and release instructions](docs/npm-distribution.md)
 for PATH, permissions, platform details and publication.

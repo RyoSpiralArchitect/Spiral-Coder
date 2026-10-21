@@ -18,19 +18,15 @@ La commande `spiral` ouvre la TUI dans le projet courant. **Node.js 20+** est
 nécessaire ; aucun compilateur Rust n'est requis. Les plateformes prises en charge
 sont macOS Apple Silicon/Intel, Linux glibc 2.35+ arm64/x64 et Windows x64.
 
-**La première publication sur le registre npm est en préparation.** Téléchargez
-et décompressez l'artifact `spiral-coder-npm` d'une [exécution npm native package réussie](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml),
-puis installez le fichier `.tgz` :
-
 ```sh
-npm install -g ./spiral-coder-0.2.0.tgz
+npm install -g spiral-coder@latest
 cd your-project
 spiral
 ```
 
-Après la première publication, utilisez `npm install -g spiral-coder@latest`
-pour installer ou mettre à jour. Les deux méthodes acceptent `--ignore-scripts` ;
-les exécutables sont inclus et aucun téléchargement postinstall n'est nécessaire.
+Le [paquet npm](https://www.npmjs.com/package/spiral-coder) inclut les exécutables.
+L'installation accepte aussi `--ignore-scripts`, sans téléchargement postinstall.
+Relancez la même commande pour mettre à jour.
 
 | Commande | Fonction |
 | --- | --- |
@@ -46,7 +42,6 @@ Configurez la clé API selon le [démarrage rapide](#demarrage-rapide), ou consu
 configuration explicite. Ctrl+C quitte l'application. `spiral-coder` conserve
 le comportement CLI d'origine, notamment l'interface Web sans arguments.
 
-Pour mettre à jour une version de prévisualisation, installez son nouveau `.tgz`.
 `npm uninstall -g spiral-coder` supprime les commandes sans supprimer vos projets.
 Consultez le [guide de distribution](docs/npm-distribution.md) pour le PATH, les
 permissions, les plateformes et la publication.
