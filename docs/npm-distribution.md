@@ -204,6 +204,11 @@ and require an identical downloaded archive before approving. Approval prompts
 for 2FA without reuploading the archive. If a challenge expires, reconcile the
 stage and registry state before requesting approval again.
 
+You can also open **Staged Packages** from the npm website's account menu,
+select the matching name/version, and click **Approve** when ready to complete
+2FA. This lets you start the authentication step from the uploaded version's
+page instead of returning to an expired CLI authentication link.
+
 For a new package, npm creates a public `0.0.0-stage` placeholder; the actual
 staged release becomes public only after approval. If staging returns an
 uncertain result, inspect the stage list before another upload: staged and
