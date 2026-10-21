@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "name": "spiral-coder",
+  "version": "0.2.0",
+  "registry": "https://registry.npmjs.org",
+  "published_at": "2026-10-21T06:15:29.367Z",
+  "verified_at": "2026-10-21T06:16:04.902Z",
+  "latest_at_verification": "0.2.0",
+  "publisher": "ryospiralarchitect323",
+  "source": {
+    "pull_request": "https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/32",
+    "tested_commit": "75dc8d3f96ec0912a3fcd33fd446049e49dd0cbf",
+    "merge_commit": "e4b6ec8d5f3a01b24d733af83ff815157720f796",
+    "identical_git_tree": "729426c60932402d7f32690a23a81b08c36c2248"
+  },
+  "ci": {
+    "native_package": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/39536066365",
+    "model_free_checks": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/39536066358",
+    "native_build_and_local_install_targets": [
+      "aarch64-apple-darwin",
+      "x86_64-apple-darwin",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "archive": {
+    "bytes": 25692774,
+    "sha256": "d985ceb3f7337c98e4027abe768c69b1f73500b6be2929744c2af1a25a606218",
+    "registry_integrity": "sha512-LcHP+bvWXaet4BNW7PYK8/UnUp3BsXylOrEkC1d6/FhjzmScisC8Aw4wjWNb/kxzZPipZ2yHascA1xmOa796Pw==",
+    "registry_shasum": "c78631823a93e51950954201a83d21d5ca539a44",
+    "registry_tarball": "https://registry.npmjs.org/spiral-coder/-/spiral-coder-0.2.0.tgz"
+  },
+  "publication": {
+    "method": "npm staged publishing with account-holder browser 2FA approval",
+    "upload_client": "npm 11.21.0 libnpmpublish with npm-registry-fetch gzip option",
+    "stage_id": "9ea1d8cc-3601-4480-afc5-2f997a484b52",
+    "staged_download_byte_identical": true,
+    "oidc_provenance": false
+  },
+  "clean_install": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "fresh_prefix": true,
+    "credentials": false,
+    "cache_reused": false,
+    "install_scripts": false,
+    "native_manifest_verified": true,
+    "commands": {
+      "spiral": "spiral-coder 0.2.0",
+      "spiral-coder": "spiral-coder 0.2.0"
+    },
+    "tui_help_passed": true,
+    "bare_spiral_tui": {
+      "rendered": true,
+      "ctrl_c_exit_code": 0,
+      "model_requests": 0
+    }
+  },
+  "scope": "Distribution and launch verification. This release does not include PR #31 quality changes or claim new live-model qualification."
+}

@@ -6,22 +6,21 @@ private root `package.json` remains the browser-development project.
 
 ## Install and use
 
-Requires **Node.js 20+**, with npm available in your terminal. The first registry
-publication is pending. Until then, download and unzip the `spiral-coder-npm`
-artifact from a successful [npm native package workflow run](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml).
-In the extracted directory:
+Requires **Node.js 20+**, with npm available in your terminal.
 
 ```sh
-npm install -g ./spiral-coder-0.2.0.tgz
+npm install -g spiral-coder@latest
 cd your-project
 spiral
 ```
 
-Once the registry release exists, install or update with:
+The [npm package](https://www.npmjs.com/package/spiral-coder) bundles the native
+executables. Rerun the install command to update. To pin this release, use
+`npm install -g spiral-coder@0.2.0`.
 
-```sh
-npm install -g spiral-coder@latest
-```
+For a preview, download and unzip the `spiral-coder-npm` artifact from a successful
+[npm native package workflow run](https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/workflows/npm-package.yml)
+and install the enclosed archive with `npm install -g ./spiral-coder-0.2.0.tgz`.
 
 No Rust compiler, install hook, or additional executable download is required.
 Both methods support `--ignore-scripts`. Preview updates use the newer `.tgz`.
@@ -61,7 +60,7 @@ for provider configuration. Never put credentials in a package.
   `command -v spiral` on macOS/Linux or `Get-Command spiral` in PowerShell.
 - **Global install permission error:** use a Node version manager or a
   user-owned npm prefix, following [npm's permissions guide](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally/).
-  A one-off Unix install can use `npm install -g --prefix "$HOME/.local" ./spiral-coder-0.2.0.tgz`,
+  A one-off Unix install can use `npm install -g --prefix "$HOME/.local" spiral-coder@latest`,
   with `$HOME/.local/bin` on PATH. Use that same prefix for updates/removal.
 - **PowerShell blocks script execution:** run `spiral.cmd` (the npm-generated
   command wrapper). There is no need to change the machine's execution policy.
@@ -86,6 +85,20 @@ avoids postinstall downloads and a family of platform packages to publish. The
 launcher checks the selected executable against the manifest packaged alongside
 it. This detects missing/corrupted files; it is not an independent publisher
 signature. npm's package integrity remains the distribution trust boundary.
+
+## Published 0.2.0 verification
+
+[`spiral-coder@0.2.0`](https://www.npmjs.com/package/spiral-coder/v/0.2.0)
+was published on 2026-10-21. The [release receipt](releases/npm-0.2.0.json)
+records the tested and merged source revisions, five-target CI, archive hashes,
+registry integrity and a fresh unauthenticated installation on macOS arm64.
+That installation rendered the TUI with bare `spiral` and exited cleanly with
+Ctrl+C. No model requests were made during this distribution check.
+
+The staged archive was downloaded and compared byte-for-byte before its browser
+2FA approval. This first release used manual staged publication and has no OIDC
+provenance. It contains the merged PR #32 runtime; the separate PR #31 quality
+changes are not included in 0.2.0.
 
 ## Build and verify a release
 
@@ -142,29 +155,78 @@ Use your host's target and executable name in that example. A local-target
 package stays private and fails release verification. Run `npm run test:npm` for
 launcher, packaging and integrity tests without provider requests.
 
-## First registry publication
+## Manual publication
 
-The first publication establishes the npm package and its maintainer access.
-An authorized maintainer must authenticate with npm and publish the verified
-artifact from a green, merged revision. The repository does not contain npm
-credentials, and this implementation does not claim the package is published.
+An authorized maintainer can authenticate with npm and publish a verified
+artifact from a green, merged revision. The first publication establishes the
+package and its maintainer access. The repository contains no npm credentials.
+
+Before uploading, create and verify an npm account and
+[enable two-factor authentication](https://docs.npmjs.com/configuring-two-factor-authentication/)
+for direct publication. Completing the email login challenge alone does not
+enable account 2FA. Register a passkey or security key in npm's account settings
+and keep the recovery codes in your own secure storage.
 
 After the verification steps above, from that same checkout:
 
 ```sh
 npm login --registry=https://registry.npmjs.org
 npm whoami --registry=https://registry.npmjs.org
-npm publish .tmp/release-download/spiral-coder-0.2.0.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org
+npm profile get "two-factor auth" --registry=https://registry.npmjs.org
+npm publish .tmp/release-download/spiral-coder-0.2.0.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --fetch-retries=0 --fetch-timeout=1200000
 node scripts/verify-npm.mjs --package .tmp/release-unpacked/package --registry --tarball .tmp/release-download/spiral-coder-0.2.0.tgz
 ```
+
+Complete account setup if the 2FA check prints `disabled`. Complete any browser
+authentication requested by the publish command using that account.
+
+The upload allows up to 20 minutes for the bundled native archive and disables
+automatic HTTP retries. A transport error does not establish whether npm accepted
+the version: reconcile registry integrity before deciding whether to try again.
+If a local upload needs more time, a subsequent manual attempt can increase
+`--fetch-timeout` (for example, `3600000` for one hour) after checking registry
+state. Keep automatic retries disabled.
 
 The last command compares the published version's SHA-512 integrity with the
 exact uploaded `.tgz`, with bounded retries for registry propagation. If publish
 returns an uncertain result, inspect the registry before taking any further
 publication action; npm versions cannot be overwritten. Confirm a clean
-`npm install -g spiral-coder@0.2.0 --ignore-scripts` and `spiral --version`, then
-replace the pending-publication notes in all three root READMEs and the package
-README with the registry install command.
+`npm install -g spiral-coder@0.2.0 --ignore-scripts` and `spiral --version` with a
+fresh prefix/cache and no npm authentication. Record the published source,
+archive hash, registry integrity and clean-install result before announcing it.
+
+### Upload first, then authenticate publication
+
+For a slow connection, [npm staged publishing](https://docs.npmjs.com/staged-publishing/)
+separates the upload from the final 2FA challenge. It requires Node.js 22.14+ and
+npm 11.15+ for publication; consumer installation still requires only Node.js 20+.
+Use the same verified archive and keep the returned stage ID:
+
+```sh
+npm stage publish .tmp/release-download/spiral-coder-0.2.0.tgz --ignore-scripts --access public --tag latest --fetch-retries=0 --fetch-timeout=3600000
+npm stage list spiral-coder --json
+npm stage view STAGE_ID --json
+mkdir -p .tmp/staged-download
+(cd .tmp/staged-download && npm stage download STAGE_ID)
+cmp .tmp/release-download/spiral-coder-0.2.0.tgz .tmp/staged-download/spiral-coder-0.2.0-STAGE_ID.tgz
+npm stage approve STAGE_ID --fetch-retries=0
+node scripts/verify-npm.mjs --package .tmp/release-unpacked/package --registry --tarball .tmp/release-download/spiral-coder-0.2.0.tgz
+```
+
+Replace `STAGE_ID` with the returned ID. Check the name, version and `latest` tag,
+and require an identical downloaded archive before approving. Approval prompts
+for 2FA without reuploading the archive. If a challenge expires, reconcile the
+stage and registry state before requesting approval again.
+
+You can also open **Staged Packages** from the npm website's account menu,
+select the matching name/version, and click **Approve** when ready to complete
+2FA. This lets you start the authentication step from the uploaded version's
+page instead of returning to an expired CLI authentication link.
+
+For a new package, npm creates a public `0.0.0-stage` placeholder; the actual
+staged release becomes public only after approval. If staging returns an
+uncertain result, inspect the stage list before another upload: staged and
+published versions share the same version uniqueness constraint.
 
 ## Subsequent releases with a trusted publisher
 
