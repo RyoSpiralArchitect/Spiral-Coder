@@ -46,7 +46,8 @@ signature. npm's package integrity remains the distribution trust boundary.
 local tarball with scripts disabled, checks both commands, then assembles the
 complete package. A PR produces downloadable artifacts; it never publishes.
 For a release, run the workflow on the intended merged revision and obtain the
-`spiral-coder-npm` artifact. Review its workflow revision and SHA256SUMS, then an
+`spiral-coder-npm` artifact. Review its workflow revision and verify the extracted
+files with `sha256sum -c SHA256SUMS` (macOS: `shasum -a 256 -c SHA256SUMS`), then an
 authorized maintainer can run `npm publish ./spiral-coder-0.2.0.tgz --access public`.
 Registry ownership/authentication and public publication are not automated here.
 

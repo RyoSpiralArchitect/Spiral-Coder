@@ -100,7 +100,7 @@ jobs:
           npm install --global --prefix "$PWD/.tmp/npm-prefix" --ignore-scripts --no-audit --no-fund .tmp/tarballs/*.tgz
           .tmp/npm-prefix/bin/spiral --version
           .tmp/npm-prefix/bin/spiral tui --help
-          sha256sum .tmp/tarballs/*.tgz > .tmp/tarballs/SHA256SUMS
+          (cd .tmp/tarballs && sha256sum *.tgz > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         with:
           name: spiral-coder-npm
