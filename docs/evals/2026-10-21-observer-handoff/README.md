@@ -42,3 +42,34 @@ literal all-files scope also includes runtime-written `.spiral-coder/tui-work.js
 and Python bytecode in this fixture without ignore rules. Receipts retain those
 paths rather than silently filtering them. Source repair, frozen-test integrity,
 runtime completion and authored reporting are reported separately above.
+
+## Round r3: accept the same receipts in a paragraph
+
+Source: `45aec130dadd6bd99b10c9931b796d833716842f`. See
+[predeclaration](r3/predeclared.json), [receipts](r3/receipts.json) and
+[raw manifest](r3/raw-manifest.json). No input or cap changed and no run was retried
+in place. The two new rounds consumed 92 requests in total (47 + 45).
+
+| Same model for Coder and Observer | Requests | Assists | Runtime completed | Original tests pass independently | Remaining failure |
+| --- | ---: | ---: | --- | --- | --- |
+| mistral-small-2603 | 18 | 1 | no | yes | missing acceptance-evidence row |
+| gpt-4.1-mini | 9 | 0 | yes | yes | none in the recorded task/report checks |
+| gemini-3.5-flash-lite | 18 | 1 | no | no | existing-file write refused after continuation |
+
+The retained OpenAI paragraph now passes, with the changed filename and actual
+before/after statuses in the authored report. No report-format retry was needed.
+Mistral repaired and verified the source but repeatedly omitted a citation for
+its third acceptance criterion. Its Observer supplied that row with an unexecuted
+`git diff --name-only` command; the run did not reach a valid completed handoff.
+This remains a distinct acceptance-mapping problem, not a reason to fabricate
+citations or weaken the evidence gate.
+
+Gemini's Observer proposed the required diagnostic read of `test_greet.py` and
+the continuation executed it. The next `write_file(greet.py)` was refused because
+the current source contents needed to be read again; the shared budget then ran
+out. That is a remaining continuation/read-freshness problem. Original tests and
+configuration remained unchanged in all three runs.
+
+Strict all-file qualification stays false, including incidental runtime/cache
+files for the two repaired candidates as described above. One r3 completion and
+two passing independent oracles are not evidence of stable three-provider success.
