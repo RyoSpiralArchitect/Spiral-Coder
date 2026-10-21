@@ -1,0 +1,164 @@
+name: npm native package
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to npm using the configured trusted publisher (main only)'
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'npm/**'
+      - 'tests/npm/**'
+      - 'scripts/prepare-npm.mjs'
+      - 'scripts/verify-npm.mjs'
+      - '.github/workflows/npm-package.yml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'src/**'
+      - 'web/**'
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-22.04
+    outputs:
+      publish: ${{ steps.intent.outputs.publish }}
+    steps:
+      - name: Select build-only or an explicit main-branch release
+        id: intent
+        env:
+          PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        run: |
+          if [ "$PUBLISH" = true ] && { [ "$GITHUB_REF" != refs/heads/main ] || [ "$GITHUB_REPOSITORY" != RyoSpiralArchitect/Spiral-Coder ]; }; then
+            echo 'npm publication must be dispatched from main in RyoSpiralArchitect/Spiral-Coder.' >&2
+            exit 1
+          fi
+          echo "publish=$PUBLISH" >> "$GITHUB_OUTPUT"
+  native:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            executable: spiral-coder
+          - os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            executable: spiral-coder
+          - os: macos-15
+            target: aarch64-apple-darwin
+            executable: spiral-coder
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            executable: spiral-coder
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            executable: spiral-coder.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build native runtime and exercise a local npm install
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          cargo build --locked --release --target ${{ matrix.target }}
+          node --test tests/npm/*.test.mjs
+          mkdir -p .tmp/native/${{ matrix.target }} .tmp/tarballs
+          cp target/${{ matrix.target }}/release/${{ matrix.executable }} .tmp/native/${{ matrix.target }}/
+          node scripts/prepare-npm.mjs --input .tmp/native --out .tmp/npm-local --local-target ${{ matrix.target }}
+          npm pack ./.tmp/npm-local --pack-destination .tmp/tarballs
+          npm install --global --prefix "$PWD/.tmp/npm-prefix" --ignore-scripts --no-audit --no-fund .tmp/tarballs/*.tgz
+      - name: Verify installed commands on Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          .tmp/npm-prefix/bin/spiral --version
+          .tmp/npm-prefix/bin/spiral tui --help
+          .tmp/npm-prefix/bin/spiral-coder --version
+      - name: Verify installed commands on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & .\.tmp\npm-prefix\spiral.cmd --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\.tmp\npm-prefix\spiral.cmd tui --help
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\.tmp\npm-prefix\spiral-coder.cmd --version
+          exit $LASTEXITCODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.target }}
+          path: .tmp/native/
+          if-no-files-found: error
+          retention-days: 7
+  package:
+    needs: native
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: .tmp/native
+          merge-multiple: true
+      - name: Assemble and smoke-test the complete publishable tarball
+        run: |
+          mkdir -p .tmp/tarballs
+          node scripts/prepare-npm.mjs --input .tmp/native --out .tmp/npm-release
+          node scripts/verify-npm.mjs --package .tmp/npm-release
+          npm pack ./.tmp/npm-release --pack-destination .tmp/tarballs
+          npm install --global --prefix "$PWD/.tmp/npm-prefix" --ignore-scripts --no-audit --no-fund .tmp/tarballs/*.tgz
+          .tmp/npm-prefix/bin/spiral --version
+          .tmp/npm-prefix/bin/spiral tui --help
+          mkdir -p .tmp/npm-unpacked
+          tar -xzf .tmp/tarballs/*.tgz -C .tmp/npm-unpacked
+          node scripts/verify-npm.mjs --package .tmp/npm-unpacked/package
+          npm publish .tmp/tarballs/*.tgz --dry-run --ignore-scripts --access public
+          (cd .tmp/tarballs && sha256sum *.tgz > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spiral-coder-npm
+          path: .tmp/tarballs/
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    needs: [plan, package]
+    if: needs.plan.outputs.publish == 'true'
+    runs-on: ubuntu-22.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - name: Use the tested npm CLI with trusted publishing support
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@v4
+        with:
+          name: spiral-coder-npm
+          path: .tmp/tarballs
+      - name: Verify the exact artifact, publish once, and reconcile registry integrity
+        run: |
+          (cd .tmp/tarballs && sha256sum -c SHA256SUMS)
+          mkdir -p .tmp/npm-unpacked
+          tar -xzf .tmp/tarballs/*.tgz -C .tmp/npm-unpacked
+          node scripts/verify-npm.mjs --package .tmp/npm-unpacked/package
+          npm publish .tmp/tarballs/*.tgz --ignore-scripts --access public --provenance
+          node scripts/verify-npm.mjs --package .tmp/npm-unpacked/package --registry --tarball .tmp/tarballs/*.tgz

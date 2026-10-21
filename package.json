@@ -7,7 +7,10 @@
     "ui:smoke:baseline": "node scripts/ui-smoke.mjs --scenario baseline",
     "ui:smoke:review-flow": "node scripts/ui-smoke.mjs --scenario harness-review-flow",
     "ui:smoke:runtime-flow": "node scripts/ui-smoke.mjs --scenario runtime-approval-flow",
-    "test": "node --test tests/web/*.test.mjs"
+    "test": "node --test tests/web/*.test.mjs tests/npm/*.test.mjs",
+    "test:npm": "node --test tests/npm/*.test.mjs",
+    "package:npm": "node scripts/prepare-npm.mjs",
+    "verify:npm": "node scripts/verify-npm.mjs"
   },
   "devDependencies": {
     "playwright": "^1.55.0"
