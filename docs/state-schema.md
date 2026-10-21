@@ -12,6 +12,16 @@ Web completion uses the same native projection. See [task requirements](task-req
 correlated runtime result before the advisory packet truncates its display text.
 An unrecognized result has `succeeded: null`; it may have executed but cannot
 prove a required failing baseline. No new persisted status field is introduced.
+The same projection exposes `required_diagnostic_read` from `RecoveryFocus` while
+its correlated failure still awaits inspection. Its path is the failure location,
+not authority to edit that file. Both Observer consumers validate a confident
+tool suggestion against this pending read before forwarding or using their one
+repair attempt; no-tool and uncertain advice is not retried for confidence.
+`report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
+explicit before/after test-result report clauses. Before is the last confirmed
+check before the first mutation; after is the latest check after the last
+mutation. Missing/unknown proof stays NOT RECORDED or NOT VERIFIED. These rows
+must appear in the authored summary and never create execution proof.
 
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.

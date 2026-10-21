@@ -64,6 +64,16 @@ completion endpoint uses the same gate.
 An authored `done` with remaining acceptance criteria can stop with an incomplete
 outcome; it does not discharge pending requirements or become a successful task.
 
+Explicit English before/after test-outcome clauses, including "Finish with an
+authored report naming ...", expose canonical native receipt rows to both roles:
+`Before: FAILED — \`exact command\`` and `After: PASSED — \`exact command\``.
+The authored `done.summary` must include those rows on separate lines. Actual
+missing/unknown checks are reported as NOT RECORDED / NOT VERIFIED, and a later
+edit invalidates the after result. A truthful partial report may include those
+unverified rows. The gate recognizes these bounded report forms; it does not
+claim to interpret every natural-language reporting requirement or to establish
+that a failed check failed for the intended reason.
+
 This is an explicit contract, not automatic semantic understanding of arbitrary
 prose. Editing a test file does not prove its quality; a green command does not
 prove it covers the request. Retain an independent oracle, review generated tests

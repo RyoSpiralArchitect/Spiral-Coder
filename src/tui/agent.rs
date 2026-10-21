@@ -94,6 +94,7 @@ mod repair_feedback_tests;
 #[cfg(test)]
 mod replay_input_tests;
 mod repo_scaffold;
+mod report_outcomes;
 mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;

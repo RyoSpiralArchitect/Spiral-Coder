@@ -12,6 +12,7 @@ pub(crate) struct TaskObligations {
     pub final_answer: Value,
     pub latest_action_feedback: Option<evidence_packet::ActionEvidence>,
     pub pending_recovery: Vec<String>,
+    pub required_diagnostic_read: Option<super::recovery_focus::DiagnosticRead>,
     pub acceptance_criteria: Vec<Value>,
     pub current_commands: Vec<String>,
     pub task_requirements: super::requirement_proof::Status,
@@ -30,12 +31,19 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
-        final_answer: final_handoff::report_requirements(root),
+        final_answer: {
+            let mut report = final_handoff::report_requirements(root);
+            report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
+                root, messages, test_cmd
+            ));
+            report
+        },
         latest_action_feedback: evidence.actions.into_iter().last().filter(|action| {
             action.result.as_deref().is_some_and(|result| {
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("ERROR:")
             })
         }),
+        required_diagnostic_read: focus.required_read(),
         pending_recovery: focus
             .hint()
             .into_iter()
@@ -59,7 +67,7 @@ pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<Strin
         return None;
     }
     Some(format!(
-        "[Shared task obligations]\ntask_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow pending_recovery before starting more checks. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly, one evidence row per completed criterion; do not invent a shortened command or let proof for one criterion stand in for another. Put required_literals exactly in done.summary, with their original case.\n{}",
+        "[Shared task obligations]\ntask_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow required_diagnostic_read first: read_file its exact path, even when the likely source to fix is different. This diagnoses the failure and does not authorize changing the supplied test. Follow pending_recovery before starting more checks. Include every final_answer.outcome_rows entry verbatim on its own line in done.summary; these report the recorded before/after checks, including unverified states. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly, one evidence row per completed criterion; do not invent a shortened command or let proof for one criterion stand in for another. Put required_literals exactly in done.summary, with their original case.\n{}",
         serde_json::to_string(&obligations).expect("task projection serializes")
     ))
 }

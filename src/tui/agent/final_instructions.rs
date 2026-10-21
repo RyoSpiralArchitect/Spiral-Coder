@@ -25,6 +25,8 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
             "final report must ",
             "final response must ",
             "final summary must ",
+            "finish with an authored report ",
+            "finish with a report ",
         ] {
             for (start, _) in lower.match_indices(marker) {
                 if prose_context::is_inside_inline_quote(line, start)
@@ -45,6 +47,9 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
                     "disclose",
                     "mention",
                     "identify",
+                    "naming",
+                    "stating",
+                    "including",
                 ]
                 .contains(&verb)
                 {
@@ -144,5 +149,13 @@ mod tests {
             [" real.rs."]
         );
         assert!(instructions("```rust\n// final report must state PASS.\n```").is_empty());
+        assert!(instructions(
+            "For example, finish with an authored report naming before/after test outcomes."
+        )
+        .is_empty());
+        assert!(instructions(
+            "`Finish with an authored report naming before/after test outcomes.`"
+        )
+        .is_empty());
     }
 }

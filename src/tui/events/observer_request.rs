@@ -130,7 +130,14 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
     };
     let raw = app.observer.messages[idx].content.clone();
     let parsed = suggestion::parse_observer_suggestion_envelope(&raw);
-    let issue = suggestion::validation_issue_for_raw(&raw);
+    let issue = crate::observer_action::validation_issue(
+        &raw,
+        app.coder_session
+            .as_ref()
+            .map(|s| s.messages.as_slice())
+            .unwrap_or(&[]),
+        app.project_test_cmd.as_deref(),
+    );
     app.pending_observer_hint = None;
     app.pending_observer_contract = None;
     if let Some(issue) = issue {
