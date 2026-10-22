@@ -1,0 +1,1374 @@
+[
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 45.717,
+    "completed": true,
+    "requests": 16,
+    "assists": [
+      {
+        "assist_id": 1,
+        "call_ids": [
+          "8ti8DPUuv"
+        ],
+        "completed": true,
+        "continuation_id": 2,
+        "decision": "accept",
+        "executed": true,
+        "pending_exact_checks": [],
+        "succeeded": null
+      }
+    ],
+    "runtime_completed": true,
+    "independent_original_tests_passed": true,
+    "supplied_tests_and_config_unchanged": true,
+    "changed_files": [
+      ".spiral-coder/policy_patch_queue.json",
+      ".spiral-coder/progress.json",
+      ".spiral-coder/reflection_ledger.json",
+      ".spiral-coder/tui-session.json",
+      ".spiral-coder/tui-work.json",
+      "__pycache__/greet.cpython-312.pyc",
+      "greet.py"
+    ],
+    "baseline_failed_before_edit": true,
+    "diagnostic_prefixed_baseline_recognized": true,
+    "native_edit_after_baseline": true,
+    "fresh_exact_check_after_edit": true,
+    "authored_report": {
+      "done_present": true,
+      "changed_file_named": true,
+      "after_outcome_stated": true,
+      "before_outcome_stated": true,
+      "last_attempted_summary": "Only greet.py was changed. greet(name) now returns the correct punctuation for all names, including empty string. test_greet.py and .spiral-coder.md remain unchanged.\nBefore: FAILED \u2014 `python3 -S -m unittest -v test_greet.py`\nAfter: PASSED \u2014 `python3 -S -m unittest -v test_greet.py`",
+      "assessment": "Canonical before/after fields and changed-file name checked in authored summary; status independently reconciled with native calls. This is a bounded fixture audit, not a semantic judge."
+    },
+    "fully_qualified": false,
+    "source_matches_minimal_reference": false,
+    "range_reads": [
+      {
+        "arguments": {
+          "end_line": 200,
+          "path": "greet.py",
+          "start_line": 1
+        },
+        "call_id": "C0VtOWoOQ",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 1-200; partial file] [pruned 129L]",
+        "result_step": 4,
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      {
+        "arguments": {
+          "end_line": 610,
+          "path": "greet.py",
+          "start_line": 590
+        },
+        "call_id": "ZxReYTdgc",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 590-602; partial file] [pruned 14L]",
+        "result_step": 6,
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    ],
+    "wire_requests": [
+      {
+        "duration_ms": 3738,
+        "estimated_input_tokens": 6196,
+        "id": 0,
+        "provider_usage": {
+          "completion_tokens": 280,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 5784,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6064
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1934,
+        "estimated_input_tokens": 8543,
+        "id": 1,
+        "provider_usage": {
+          "completion_tokens": 272,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8131,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8403
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2303,
+        "estimated_input_tokens": 8757,
+        "id": 2,
+        "provider_usage": {
+          "completion_tokens": 285,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8375,
+          "prompt_tokens_details": {
+            "cached_tokens": 4224
+          },
+          "service_tier": "standard",
+          "total_tokens": 8660
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1382,
+        "estimated_input_tokens": 10180,
+        "id": 3,
+        "provider_usage": {
+          "completion_tokens": 96,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9790,
+          "prompt_tokens_details": {
+            "cached_tokens": 6992
+          },
+          "service_tier": "standard",
+          "total_tokens": 9886
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 3414,
+        "estimated_input_tokens": 12658,
+        "id": 4,
+        "provider_usage": {
+          "completion_tokens": 287,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12154,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 12441
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 3430,
+        "estimated_input_tokens": 10610,
+        "id": 5,
+        "provider_usage": {
+          "completion_tokens": 311,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10148,
+          "prompt_tokens_details": {
+            "cached_tokens": 4528
+          },
+          "service_tier": "standard",
+          "total_tokens": 10459
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2541,
+        "estimated_input_tokens": 11592,
+        "id": 6,
+        "provider_usage": {
+          "completion_tokens": 127,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11121,
+          "prompt_tokens_details": {
+            "cached_tokens": 4528
+          },
+          "service_tier": "standard",
+          "total_tokens": 11248
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1863,
+        "estimated_input_tokens": 11649,
+        "id": 7,
+        "provider_usage": {
+          "completion_tokens": 125,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11199,
+          "prompt_tokens_details": {
+            "cached_tokens": 9760
+          },
+          "service_tier": "standard",
+          "total_tokens": 11324
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1836,
+        "estimated_input_tokens": 12268,
+        "id": 8,
+        "provider_usage": {
+          "completion_tokens": 89,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11806,
+          "prompt_tokens_details": {
+            "cached_tokens": 4224
+          },
+          "service_tier": "standard",
+          "total_tokens": 11895
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1380,
+        "estimated_input_tokens": 10317,
+        "id": 9,
+        "provider_usage": {
+          "completion_tokens": 45,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9780,
+          "prompt_tokens_details": {
+            "cached_tokens": 4240
+          },
+          "service_tier": "standard",
+          "total_tokens": 9825
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1372,
+        "estimated_input_tokens": 9689,
+        "id": 10,
+        "provider_usage": {
+          "completion_tokens": 79,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9207,
+          "prompt_tokens_details": {
+            "cached_tokens": 4288
+          },
+          "service_tier": "standard",
+          "total_tokens": 9286
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2420,
+        "estimated_input_tokens": 8928,
+        "id": 11,
+        "provider_usage": {
+          "completion_tokens": 169,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8486,
+          "prompt_tokens_details": {
+            "cached_tokens": 4352
+          },
+          "service_tier": "standard",
+          "total_tokens": 8655
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1970,
+        "estimated_input_tokens": 11033,
+        "id": 12,
+        "provider_usage": {
+          "completion_tokens": 186,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10338,
+          "prompt_tokens_details": {
+            "cached_tokens": 4224
+          },
+          "service_tier": "standard",
+          "total_tokens": 10524
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1641,
+        "estimated_input_tokens": 11929,
+        "id": 13,
+        "provider_usage": {
+          "completion_tokens": 186,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11222,
+          "prompt_tokens_details": {
+            "cached_tokens": 4864
+          },
+          "service_tier": "standard",
+          "total_tokens": 11408
+        },
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 5694,
+        "estimated_input_tokens": 6777,
+        "id": 14,
+        "provider_usage": {
+          "completion_tokens": 640,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6167,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 6807
+        },
+        "role": "observer",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 4707,
+        "estimated_input_tokens": 13840,
+        "id": 15,
+        "provider_usage": {
+          "completion_tokens": 303,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12830,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13133
+        },
+        "role": "coder",
+        "status": "completed"
+      }
+    ],
+    "accepted_done_arguments": [
+      {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v test_greet.py",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "python3 -S -m unittest -v test_greet.py",
+            "criterion": "acceptance 2"
+          },
+          {
+            "command": "patch_file(path=greet.py, replace=return f\"Hello, {name}!\", search=return f\"Hello, {name}?\")",
+            "criterion": "acceptance 3"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3"
+        ],
+        "remaining_acceptance": [],
+        "summary": "Only greet.py was changed. greet(name) now returns the correct punctuation for all names, including empty string. test_greet.py and .spiral-coder.md remain unchanged.\nBefore: FAILED \u2014 `python3 -S -m unittest -v test_greet.py`\nAfter: PASSED \u2014 `python3 -S -m unittest -v test_greet.py`"
+      }
+    ],
+    "actions": [
+      {
+        "call_id": "OFH7M43QK",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 1,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [pruned 129L]"
+        ]
+      },
+      {
+        "call_id": "x21wWd1sl",
+        "tool": "read_file",
+        "command": null,
+        "path": "test_greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 2,
+        "result_header": [
+          "[test_greet.py] (14 lines, 310 bytes) [pruned 15L]"
+        ]
+      },
+      {
+        "call_id": "xaB4jfAyv",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": false,
+        "result_step": 3,
+        "result_header": [
+          "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+        ]
+      },
+      {
+        "call_id": "C0VtOWoOQ",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 4,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 1-200; partial file] [pruned 129L]"
+        ]
+      },
+      {
+        "call_id": "APr1JdG8q",
+        "tool": "search_files",
+        "command": null,
+        "path": null,
+        "executed": true,
+        "succeeded": null,
+        "result_step": 5,
+        "result_header": [
+          "[search_files: 'def greet' \u2014 1 match(es)]"
+        ]
+      },
+      {
+        "call_id": "ZxReYTdgc",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 6,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 590-602; partial file] [pruned 14L]"
+        ]
+      },
+      {
+        "call_id": "qDwEOaDAD",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": false,
+        "succeeded": false,
+        "result_step": 7,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "SJcOhbfN2",
+        "tool": "read_file",
+        "command": null,
+        "path": "test_greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 8,
+        "result_header": [
+          "[test_greet.py] (14 lines, 310 bytes) [pruned 15L]"
+        ]
+      },
+      {
+        "call_id": "9IynNHKIA",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": true,
+        "result_step": 9,
+        "result_header": [
+          "OK: patched 'greet.py' (+0 lines, 602 total) [pruned 11L]"
+        ]
+      },
+      {
+        "call_id": "L6HFYISTi",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": true,
+        "result_step": 10,
+        "result_header": [
+          "OK (exit_code: 0)"
+        ]
+      },
+      {
+        "call_id": "pK8tSv5c5",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 11,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "n38fKAaCP",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 12,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "yX49pw8ZV",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 13,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "8ti8DPUuv",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": true,
+        "succeeded": null,
+        "result_step": 14,
+        "result_header": [
+          "OK: done"
+        ]
+      }
+    ],
+    "requirement_blocks_after_baseline": 0,
+    "final_handoff_rejections": 0,
+    "last_recovery_gate": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261023-read-ranges/r2/mistral/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261023-read-ranges/r2/mistral/workspace/test_greet.py\\\", line 10, in test_empty_greeting | \u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running. | Traceback (most recent call last): | AssertionError: 'Hello, ?' != 'Hello, !'\",\"failed_check\":\"python3 -S -m unittest -v test_greet.py\",\"path\":\"test_greet.py\"}\nRead this exact path with read_file to diagnose the failure before editing. It locates the failure, not necessarily the file to change. Preserve the original task's edit restrictions. Unrelated reads, directory listings, searches, or pwd do not inspect this failure. Run the failed check from tool_root (the workspace root), not a subdirectory.\n\ntool:\npatch_file\narguments:\n{\"path\": \"greet.py\", \"search\": \"    return f\\\"Hello, {name}?\\\"\", \"replace\": \"    return f\\\"Hello, {name}!\\\" \"}"
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 26.525,
+    "completed": true,
+    "requests": 14,
+    "assists": [],
+    "runtime_completed": true,
+    "independent_original_tests_passed": true,
+    "supplied_tests_and_config_unchanged": true,
+    "changed_files": [
+      ".spiral-coder/policy_patch_queue.json",
+      ".spiral-coder/progress.json",
+      ".spiral-coder/reflection_ledger.json",
+      ".spiral-coder/tui-session.json",
+      ".spiral-coder/tui-work.json",
+      "__pycache__/greet.cpython-312.pyc",
+      "greet.py"
+    ],
+    "baseline_failed_before_edit": true,
+    "diagnostic_prefixed_baseline_recognized": true,
+    "native_edit_after_baseline": true,
+    "fresh_exact_check_after_edit": true,
+    "authored_report": {
+      "done_present": true,
+      "changed_file_named": true,
+      "after_outcome_stated": true,
+      "before_outcome_stated": true,
+      "last_attempted_summary": "Changed greet.py to fix greet(name) to always return 'Hello, <name>!' with an exclamation mark instead of a question mark. Before: FAILED \u2014 `python3 -S -m unittest -v test_greet.py`. After: PASSED \u2014 `python3 -S -m unittest -v test_greet.py`. No remaining work.",
+      "assessment": "Canonical before/after fields and changed-file name checked in authored summary; status independently reconciled with native calls. This is a bounded fixture audit, not a semantic judge."
+    },
+    "fully_qualified": false,
+    "source_matches_minimal_reference": true,
+    "range_reads": [
+      {
+        "arguments": {
+          "end_line": 20,
+          "path": "greet.py",
+          "start_line": 1
+        },
+        "call_id": "call_6CXSwJ04l45iuIVXWmgAeEef",
+        "executed": false,
+        "freshness": "unexecuted",
+        "result": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\":\"greet.py\",\"start_line\":1,\"end_line\":20}",
+        "result_step": 2,
+        "succeeded": false,
+        "tool": "read_file"
+      },
+      {
+        "arguments": {
+          "end_line": 20,
+          "path": "greet.py",
+          "start_line": 1
+        },
+        "call_id": "call_PESEgVYiiFEpfNw9X0YpCKWX",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 1-20; partial file] [pruned 21L]",
+        "result_step": 4,
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      {
+        "arguments": {
+          "end_line": 40,
+          "path": "greet.py",
+          "start_line": 1
+        },
+        "call_id": "call_ndbsAUskQpEdwSkJtDLjZA3B",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 1-40; partial file] [pruned 41L]",
+        "result_step": 5,
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      {
+        "arguments": {
+          "end_line": 20,
+          "path": "test_greet.py",
+          "start_line": 1
+        },
+        "call_id": "call_0d1Hj4NI8wgA6pUIfsP7GRvM",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[test_greet.py] (14 lines, 310 bytes) [range: lines 1-14; partial file] [pruned 15L]",
+        "result_step": 8,
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      {
+        "arguments": {
+          "end_line": 602,
+          "path": "greet.py",
+          "start_line": 600
+        },
+        "call_id": "call_KlZQaifEX54APaKDMpoeypen",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 600-602; partial file]\n# Retained source context 0600; preserve this comment exactly.\ndef greet(name):\n    return f\"Hello, {name}?\"\n",
+        "result_step": 10,
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    ],
+    "wire_requests": [
+      {
+        "duration_ms": 2541,
+        "estimated_input_tokens": 6203,
+        "id": 0,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1788,
+        "estimated_input_tokens": 6115,
+        "id": 1,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1175,
+        "estimated_input_tokens": 6278,
+        "id": 2,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1328,
+        "estimated_input_tokens": 6594,
+        "id": 3,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1260,
+        "estimated_input_tokens": 6869,
+        "id": 4,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1833,
+        "estimated_input_tokens": 8536,
+        "id": 5,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1269,
+        "estimated_input_tokens": 8696,
+        "id": 6,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1265,
+        "estimated_input_tokens": 8945,
+        "id": 7,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1434,
+        "estimated_input_tokens": 9625,
+        "id": 8,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1241,
+        "estimated_input_tokens": 8720,
+        "id": 9,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1321,
+        "estimated_input_tokens": 9358,
+        "id": 10,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1263,
+        "estimated_input_tokens": 8786,
+        "id": 11,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1760,
+        "estimated_input_tokens": 8390,
+        "id": 12,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 3033,
+        "estimated_input_tokens": 9383,
+        "id": 13,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      }
+    ],
+    "accepted_done_arguments": [
+      {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v test_greet.py",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "python3 -S -m unittest -v test_greet.py",
+            "criterion": "acceptance 2"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2"
+        ],
+        "remaining_acceptance": [],
+        "summary": "Changed greet.py to fix greet(name) to always return 'Hello, <name>!' with an exclamation mark instead of a question mark. Before: FAILED \u2014 `python3 -S -m unittest -v test_greet.py`. After: PASSED \u2014 `python3 -S -m unittest -v test_greet.py`. No remaining work."
+      }
+    ],
+    "actions": [
+      {
+        "call_id": "call_rY4NZkVO6m28WJAvSd6EJH1d",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 1,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_6CXSwJ04l45iuIVXWmgAeEef",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": false,
+        "succeeded": false,
+        "result_step": 2,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_ylhdKPuHhOEBSAzkZ36DE7jm",
+        "tool": "list_dir",
+        "command": null,
+        "path": null,
+        "executed": true,
+        "succeeded": null,
+        "result_step": 3,
+        "result_header": [
+          "[list_dir: '.' \u30fb 4 item(s)] [pruned 5L]"
+        ]
+      },
+      {
+        "call_id": "call_PESEgVYiiFEpfNw9X0YpCKWX",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 4,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 1-20; partial file] [pruned 21L]"
+        ]
+      },
+      {
+        "call_id": "call_ndbsAUskQpEdwSkJtDLjZA3B",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 5,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 1-40; partial file] [pruned 41L]"
+        ]
+      },
+      {
+        "call_id": "call_2YSsF5bJXb775rfWDsaMWG05",
+        "tool": "apply_diff",
+        "command": null,
+        "path": "greet.py",
+        "executed": false,
+        "succeeded": false,
+        "result_step": 6,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_dqTG83OZ2UtRhAVZYb3w15u8",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": false,
+        "result_step": 7,
+        "result_header": [
+          "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+        ]
+      },
+      {
+        "call_id": "call_0d1Hj4NI8wgA6pUIfsP7GRvM",
+        "tool": "read_file",
+        "command": null,
+        "path": "test_greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 8,
+        "result_header": [
+          "[test_greet.py] (14 lines, 310 bytes) [range: lines 1-14; partial file] [pruned 15L]"
+        ]
+      },
+      {
+        "call_id": "call_NLPwcOgshkrk3UhEGSxnguW4",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": false,
+        "result_step": 9,
+        "result_header": [
+          "ERROR: search string not found in 'greet.py'."
+        ]
+      },
+      {
+        "call_id": "call_KlZQaifEX54APaKDMpoeypen",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 10,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 600-602; partial file]"
+        ]
+      },
+      {
+        "call_id": "call_oz1y0QDS0vmG3NSR7LJpdqUV",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": true,
+        "result_step": 11,
+        "result_header": [
+          "OK: patched 'greet.py' (+0 lines, 602 total)"
+        ]
+      },
+      {
+        "call_id": "call_t3pSvA5lZc0P5Ra2yfPGr1U0",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": true,
+        "result_step": 12,
+        "result_header": [
+          "OK (exit_code: 0)"
+        ]
+      },
+      {
+        "call_id": "call_6b0OBabsBnXRvd5l6irUgGlm",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 13,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_7fJ6SyAXHrxwSPe6yg3dXlQs",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": true,
+        "succeeded": null,
+        "result_step": 14,
+        "result_header": [
+          "OK: done"
+        ]
+      }
+    ],
+    "requirement_blocks_after_baseline": 0,
+    "final_handoff_rejections": 1,
+    "last_recovery_gate": null
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 39.426,
+    "completed": false,
+    "requests": 18,
+    "assists": [
+      {
+        "assist_id": 2,
+        "call_ids": [
+          "call_249959",
+          "call_79257"
+        ],
+        "completed": false,
+        "continuation_id": 2,
+        "decision": "defer",
+        "executed": false,
+        "pending_exact_checks": [],
+        "succeeded": false
+      }
+    ],
+    "runtime_completed": false,
+    "independent_original_tests_passed": true,
+    "supplied_tests_and_config_unchanged": true,
+    "changed_files": [
+      ".spiral-coder/policy_patch_queue.json",
+      ".spiral-coder/progress.json",
+      ".spiral-coder/reflection_ledger.json",
+      ".spiral-coder/tui-session.json",
+      ".spiral-coder/tui-work.json",
+      "__pycache__/greet.cpython-312.pyc",
+      "greet.py"
+    ],
+    "baseline_failed_before_edit": true,
+    "diagnostic_prefixed_baseline_recognized": true,
+    "native_edit_after_baseline": true,
+    "fresh_exact_check_after_edit": true,
+    "authored_report": {
+      "done_present": false,
+      "changed_file_named": true,
+      "after_outcome_stated": false,
+      "before_outcome_stated": false,
+      "last_attempted_summary": "Fixed greet.py to correctly return \"Hello, <name>!\" for all inputs including empty strings, verified by unittest passing successfully.",
+      "assessment": "Canonical before/after fields and changed-file name checked in authored summary; status independently reconciled with native calls. This is a bounded fixture audit, not a semantic judge."
+    },
+    "fully_qualified": false,
+    "source_matches_minimal_reference": true,
+    "range_reads": [
+      {
+        "arguments": {
+          "end_line": 602,
+          "path": "greet.py",
+          "start_line": 500
+        },
+        "call_id": "call_242940",
+        "executed": true,
+        "freshness": "before_mutation",
+        "result": "[greet.py] (602 lines, 37846 bytes) [range: lines 500-602; partial file] [pruned 104L]",
+        "result_step": 4,
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    ],
+    "wire_requests": [
+      {
+        "duration_ms": 2608,
+        "estimated_input_tokens": 6168,
+        "id": 0,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2305,
+        "estimated_input_tokens": 6059,
+        "id": 1,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1193,
+        "estimated_input_tokens": 6976,
+        "id": 2,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1128,
+        "estimated_input_tokens": 8890,
+        "id": 3,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1285,
+        "estimated_input_tokens": 10850,
+        "id": 4,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1343,
+        "estimated_input_tokens": 11639,
+        "id": 5,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2293,
+        "estimated_input_tokens": 11767,
+        "id": 6,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1576,
+        "estimated_input_tokens": 10152,
+        "id": 7,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1825,
+        "estimated_input_tokens": 10335,
+        "id": 8,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1632,
+        "estimated_input_tokens": 10335,
+        "id": 9,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1878,
+        "estimated_input_tokens": 10450,
+        "id": 10,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1380,
+        "estimated_input_tokens": 9796,
+        "id": 11,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2118,
+        "estimated_input_tokens": 10082,
+        "id": 12,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1255,
+        "estimated_input_tokens": 9902,
+        "id": 13,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 3023,
+        "estimated_input_tokens": 5772,
+        "id": 14,
+        "provider_usage": null,
+        "role": "observer",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 4462,
+        "estimated_input_tokens": 6521,
+        "id": 15,
+        "provider_usage": null,
+        "role": "observer",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 2569,
+        "estimated_input_tokens": 10816,
+        "id": 16,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      },
+      {
+        "duration_ms": 1490,
+        "estimated_input_tokens": 12207,
+        "id": 17,
+        "provider_usage": null,
+        "role": "coder",
+        "status": "completed"
+      }
+    ],
+    "accepted_done_arguments": [],
+    "actions": [
+      {
+        "call_id": "call_293449",
+        "tool": "list_dir",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 1,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_293359",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 2,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_131677",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 3,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [pruned 129L]"
+        ]
+      },
+      {
+        "call_id": "call_242940",
+        "tool": "read_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 4,
+        "result_header": [
+          "[greet.py] (602 lines, 37846 bytes) [range: lines 500-602; partial file] [pruned 104L]"
+        ]
+      },
+      {
+        "call_id": "call_362936",
+        "tool": "read_file",
+        "command": null,
+        "path": "test_greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 5,
+        "result_header": [
+          "[test_greet.py] (14 lines, 310 bytes) [pruned 15L]"
+        ]
+      },
+      {
+        "call_id": "call_256962",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": false,
+        "succeeded": false,
+        "result_step": 6,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_124340",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": false,
+        "result_step": 7,
+        "result_header": [
+          "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+        ]
+      },
+      {
+        "call_id": "call_198355",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": false,
+        "succeeded": false,
+        "result_step": 8,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_93039",
+        "tool": "read_file",
+        "command": null,
+        "path": "test_greet.py",
+        "executed": true,
+        "succeeded": null,
+        "result_step": 9,
+        "result_header": [
+          "[test_greet.py] (14 lines, 310 bytes)"
+        ]
+      },
+      {
+        "call_id": "call_159039",
+        "tool": "patch_file",
+        "command": null,
+        "path": "greet.py",
+        "executed": true,
+        "succeeded": true,
+        "result_step": 10,
+        "result_header": [
+          "OK: patched 'greet.py' (+0 lines, 602 total)"
+        ]
+      },
+      {
+        "call_id": "call_239795",
+        "tool": "exec",
+        "command": "python3 -S -m unittest -v test_greet.py",
+        "path": null,
+        "executed": true,
+        "succeeded": true,
+        "result_step": 11,
+        "result_header": [
+          "OK (exit_code: 0)"
+        ]
+      },
+      {
+        "call_id": "call_249959",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 12,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      },
+      {
+        "call_id": "call_79257",
+        "tool": "done",
+        "command": null,
+        "path": null,
+        "executed": false,
+        "succeeded": false,
+        "result_step": 13,
+        "result_header": [
+          "GOVERNOR BLOCKED"
+        ]
+      }
+    ],
+    "requirement_blocks_after_baseline": 0,
+    "final_handoff_rejections": 1,
+    "last_recovery_gate": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261023-read-ranges/r2/gemini/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261023-read-ranges/r2/gemini/workspace/test_greet.py\\\", line 10, in test_empty_greeting | \u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running. | Traceback (most recent call last): | AssertionError: 'Hello, ?' != 'Hello, !'\",\"failed_check\":\"python3 -S -m unittest -v test_greet.py\",\"path\":\"test_greet.py\"}\nRead this exact path with read_file to diagnose the failure before editing. It locates the failure, not necessarily the file to change. Preserve the original task's edit restrictions. Unrelated reads, directory listings, searches, or pwd do not inspect this failure. Run the failed check from tool_root (the workspace root), not a subdirectory.\n\ntool:\npatch_file\narguments:\n{\"path\":\"greet.py\",\"search\":\"def greet(name):\\n    return f\\\"Hello, {name}?\\\"\",\"replace\":\"def greet(name):\\n    return f\\\"Hello, {name}!\\\"\"}"
+  }
+]

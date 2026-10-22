@@ -1,0 +1,27 @@
+Fix greet.py: greet(name) must return "Hello, <name>!" for every name, including an empty name. The existing test_greet.py asserts the intended behavior. Change only greet.py. Keep test_greet.py and .spiral-coder.md unchanged; do not weaken assertions or change the verification command. Do not install dependencies, call another provider, commit or push.
+
+Read the source and test, run the exact check below BEFORE editing to record its failing baseline, then use a native file edit to fix the source. The initial AssertionError is expected. Diagnose it from the source; do not repeat an unchanged failing check. After the edit, run the exact check again. Both Coder and Observer share these obligations. Finish with an authored report naming the changed file and the actual before/after test outcomes; disclose any remaining work.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "greeting",
+      "description": "Correct punctuation for all names while preserving the supplied tests",
+      "artifacts": [
+        {
+          "path": "greet.py",
+          "kind": "source"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest -v test_greet.py",
+          "baseline_failure": true
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

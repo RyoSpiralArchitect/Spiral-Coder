@@ -42,3 +42,54 @@ the correlated native call, including the existing pruning suffix. It advances
 the existing path-level diagnosis obligation without creating verification or
 whole-file overwrite authority. Deterministic coverage includes mismatched
 headers, continuation, Web forwarding, and rejection of whole-file overwrite.
+
+## Round r2 after the correlated-header fix
+
+Source `a0488fe55c3ce875788d51274a66a8dd6e946447` (runtime change in `a1e1be1`).
+See the [predeclaration](r2/predeclared.json), [receipts](r2/receipts.json) and
+[raw hashes](r2/raw-manifest.json). The task, fixture bytes, selected models,
+temperature, output limit, request timeout, shared request cap and wall cap match
+r1 exactly. Each provider starts in a fresh workspace with the frozen candidate
+binary. This is one adaptive follow-up per provider, not an estimate of success
+probability or an isolated causal effect of the fix.
+
+| Same model for both roles | Requests | Range read executed | Independent tests | Completed | Exact reference source |
+| --- | ---: | --- | --- | --- | --- |
+| mistral-small-2603 | 16 | yes | pass | yes | no: one extra trailing space |
+| gpt-4.1-mini | 14 | yes | pass | yes | yes |
+| gemini-3.5-flash-lite | 18 | yes | pass | no | yes |
+
+All three recorded the failing native baseline before editing, preserved all 600
+prefix comments and supplied tests/configuration, and ran the exact native check
+successfully after editing. Independent checks against frozen original tests pass
+3/3; runtime completion is 2/3. Mistral adds a trailing space on the repaired
+return line, so its source is not byte-identical to the minimal reference.
+Requests total 48 in r2 and 102 across both rounds. No episode was retried in place.
+
+Gemini first cites a task-requirement ID as if it were the accepted plan's
+criterion. Its next completion attempt corrects that evidence mapping but omits
+the required authored before/after outcomes. The final-report gate rejects the
+attempt at the shared 18-request cap. Its repaired source and passing native
+check do not substitute for the missing requested report. Mistral uses one
+Observer assist; GPT repairs its report within the remaining Coder budget.
+
+Strict all-file qualification remains **0/3**. Each workspace changes `greet.py`,
+five `.spiral-coder/` runtime files and the existing `__pycache__/greet...pyc`.
+These paths remain in the receipts; they are not excluded after observing the
+result. Both accepted runtime completions pass the original tests, but that does
+not certify the task's strict changed-file scope. Mistral's authored "Only
+greet.py was changed" claim is not accurate under that full-filesystem measure.
+
+The remaining failure modes are closeout evidence/report generation under a
+shared budget, discovering relevant lines beyond a truncated prefix, and runtime
+artifacts inside a restricted workspace. None is resolved by increasing the
+model size, relaxing completion requirements or dropping changed paths here.
+
+## Deterministic validation
+
+At the final runtime source: **805 Rust tests passed, 1 ignored; 1 integration
+test passed; 80 Web tests passed; TUI replay 4/4**. Formatting and diff checks
+passed. The evidence audit verifies all 62 r2 raw-file hashes, identical declared
+inputs across rounds and the exact candidate source differences. These checks
+establish the bounded contracts and retained observations, not general coding
+reliability.
