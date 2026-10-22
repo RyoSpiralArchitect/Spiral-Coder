@@ -108,7 +108,13 @@ pub(super) fn validation_issue(suggestion: &ObserverSuggestion) -> Option<String
                 && args.get("replace").is_some_and(Value::is_string)
         }
     };
-    let valid = patch_shape
+    let read_shape = tool != "read_file"
+        || serde_json::from_value::<crate::file_tools::read_range::ReadRequest>(
+            suggestion.suggested_args.clone(),
+        )
+        .is_ok_and(|request| !request.is_range() || request.bounds().is_ok());
+    let valid = read_shape
+        && patch_shape
         && matches_schema(&normalized, &schema["parameters"])
         && ["path", "command", "pattern", "search", "diff"]
             .iter()

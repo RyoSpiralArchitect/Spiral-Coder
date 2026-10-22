@@ -250,6 +250,7 @@ impl RecoveryFocus {
                     suffix.is_empty()
                         || suffix == " [⚡ cached — unchanged since last read]"
                         || suffix.starts_with(" [pruned ")
+                        || crate::file_tools::read_range::matches_range_header(&tc.arguments, line)
                 })
         }) {
             if focus.observation != Observation::RepairAttempted {

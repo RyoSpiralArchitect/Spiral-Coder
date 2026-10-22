@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "created_at": "2026-10-22T22:04:57.760593+00:00",
+  "panel": "bounded-read-large-source-regression",
+  "repository_commit": "e125bac0a813ed27ef55c21d9bea8c810d07ed08",
+  "binary_sha256": "1a174697d2be2d2af34c51121514e87e495cde7890947cfdc1d7df0540d5483a",
+  "prompt_sha256": "632bb9d26475ea9bc186ce822b9f00a9ca1e2e5196801a53dab1ba42f829b911",
+  "fixture_sha256": {
+    "greet.py": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+    "test_greet.py": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+    ".spiral-coder.md": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34"
+  },
+  "models": {
+    "mistral": "mistral-small-2603",
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "request_limit": 18,
+  "wall_seconds": 600,
+  "temperature": 0,
+  "max_tokens": 2048,
+  "request_timeout_seconds": 90,
+  "same_model_both_roles": true,
+  "checks": {
+    "baseline": "Exact check fails with AssertionError before native edit",
+    "repair": "Only greet.py changes; independent original tests pass",
+    "completion": "Runtime complete, baseline and current exact proof present, authored report"
+  },
+  "claim_boundary": "New 600-line padding fixture with unchanged task, tests, model selections and caps; not a matched performance comparison with earlier rounds. Record actual range calls and all changed paths, including runtime/cache files.",
+  "launcher_sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c",
+  "workspace_before": {
+    "mistral": {
+      "test_greet.py": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "greet.py": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+      ".spiral-coder.md": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "__pycache__/greet.cpython-312.pyc": "39c9f9be3cb8b8f8163fa8f9f65129a268b0ca0d8bdec7ba55aa69b812286be4",
+      "__pycache__/test_greet.cpython-312.pyc": "8d1d3f4206ff3bf9af8ed9d87c680906b1a49585df6191bee2c8ecacc53911fa"
+    },
+    "openai": {
+      "test_greet.py": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "greet.py": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+      ".spiral-coder.md": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "__pycache__/greet.cpython-312.pyc": "4e15f87574e0f6ed26377163eea7ebf3eafb9b097c9996a78ad1a9bbb38915dd",
+      "__pycache__/test_greet.cpython-312.pyc": "6e0ef25dafd29b5feaf73ac7fddce55e8a67be17f8023b7ae2cde647b0163023"
+    },
+    "gemini": {
+      "test_greet.py": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "greet.py": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+      ".spiral-coder.md": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "__pycache__/greet.cpython-312.pyc": "175d48ef64b2b81f97be3439ca9559b8f43dcae09767368d0538a101008427e6",
+      "__pycache__/test_greet.cpython-312.pyc": "48fb87f4263ee65e2eda340ba93b7d50426399c29677323bdce839942ee0b689"
+    }
+  },
+  "collector_sha256": "64a1557abe515d299ccbf7a3f15b76d774f98beae33c72fec28478d1c4d3b7c7",
+  "expected_fix": "Replace only {name}? with {name}! in greet.py; all 600 prefix comments and supplied tests stay byte-identical",
+  "range_observation": "Record actual ranged read_file calls independently of completion and all-file qualification"
+}

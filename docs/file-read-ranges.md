@@ -20,6 +20,10 @@ limit. Their truncation hint now directs both roles to ranges. Range headers
 identify the actual bounds and mark the result as a partial file. Native evidence
 retains both bounds, so distinct reads have distinct action signatures.
 
+A correlated range header can satisfy the existing path-level diagnostic read
+obligation, including after pruning/resume. Its bounds must match the original
+call; it supplies observation, not verification or whole-file read authority.
+
 Ranges bypass the whole-file cache and read current disk contents. A partial
 range or truncated prefix cannot create whole-file overwrite authority, including
 after Observer continuation. Use exact `patch_file`/`apply_diff` edits instead.

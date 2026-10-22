@@ -24,7 +24,7 @@ impl ReadRequest {
         }
     }
 
-    fn read_range(&self, base: Option<&str>) -> anyhow::Result<String> {
+    pub(crate) fn bounds(&self) -> anyhow::Result<(usize, usize)> {
         let start = self.start_line.unwrap_or(1);
         let end = self.end_line.unwrap_or_else(|| start.saturating_add(199));
         anyhow::ensure!(
@@ -35,6 +35,11 @@ impl ReadRequest {
             end - start < 200,
             "read at most 200 lines per call; narrow start_line/end_line"
         );
+        Ok((start, end))
+    }
+
+    fn read_range(&self, base: Option<&str>) -> anyhow::Result<String> {
+        let (start, end) = self.bounds()?;
         let path = super::resolve_safe_path(&self.path, base)?;
         let content = std::fs::read_to_string(path)?;
         let lines: Vec<&str> = content.split_inclusive('\n').collect();
@@ -59,6 +64,39 @@ impl ReadRequest {
             content.len()
         ))
     }
+}
+
+/// Recognize only a native range header that agrees with the correlated call.
+/// Pruning may append its normal marker but cannot change the requested bounds.
+pub(crate) fn matches_range_header(arguments: &str, header: &str) -> bool {
+    let Ok(request) = serde_json::from_str::<ReadRequest>(arguments) else {
+        return false;
+    };
+    if !request.is_range() {
+        return false;
+    }
+    let Ok((start, end)) = request.bounds() else {
+        return false;
+    };
+    let Some(rest) = header.strip_prefix(&format!("[{}] (", request.path)) else {
+        return false;
+    };
+    let Some((total, rest)) = rest.split_once(" lines, ") else {
+        return false;
+    };
+    let Ok(total) = total.parse::<usize>() else {
+        return false;
+    };
+    let Some((bytes, suffix)) = rest.split_once(" bytes)") else {
+        return false;
+    };
+    if bytes.parse::<usize>().is_err() || start > total {
+        return false;
+    }
+    let expected = format!(" [range: lines {start}-{}; partial file]", end.min(total));
+    suffix
+        .strip_prefix(&expected)
+        .is_some_and(|rest| rest.is_empty() || rest.starts_with(" [pruned "))
 }
 
 pub(crate) fn execute_args(args: &Value, base: Option<&str>) -> (String, bool) {
