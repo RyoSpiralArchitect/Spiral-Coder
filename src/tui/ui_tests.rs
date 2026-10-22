@@ -94,3 +94,26 @@ fn render_handles_small_terminal_and_resize() {
         }
     }
 }
+
+#[test]
+fn current_model_catalog_scrolls_every_selected_item_into_view() {
+    use crate::config::ProviderPreset;
+    for preset in [
+        ProviderPreset::OpenAi,
+        ProviderPreset::Gemini,
+        ProviderPreset::AnthropicCompat,
+        ProviderPreset::Mistral,
+    ] {
+        let mut app = app();
+        app.coder_cfg.provider = preset.provider_kind();
+        app.coder_cfg.base_url = preset.default_base_url().unwrap().into();
+        app.coder.textarea.insert_str("/model");
+        for (index, model) in preset.representative_models().iter().enumerate() {
+            app.coder.picker_index = index;
+            for height in [12, 24] {
+                let rendered = screen(&app, 100, height);
+                assert!(rendered.contains(&format!("› {model}")), "{rendered}");
+            }
+        }
+    }
+}
