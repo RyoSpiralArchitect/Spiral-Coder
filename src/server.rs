@@ -30,6 +30,8 @@ const REACT_JS: &str = include_str!("../web/vendor/react.production.min.js");
 const REACT_DOM_JS: &str = include_str!("../web/vendor/react-dom.production.min.js");
 
 #[cfg(test)]
+mod read_range_tests;
+#[cfg(test)]
 mod tool_stream_tests;
 
 fn dev_assets_root() -> Option<PathBuf> {
@@ -2934,16 +2936,14 @@ async fn api_write_file(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
 }
 
 async fn api_read_file(stream: &mut TcpStream, state: AppState, body: &[u8]) -> Result<()> {
-    #[derive(Deserialize)]
-    struct Req {
-        path: String,
-    }
+    type Req = crate::file_tools::read_range::ReadRequest;
     #[derive(Serialize)]
     struct Res {
         ok: bool,
         content: String,
         lines: usize,
         bytes: usize,
+        complete_read: bool,
     }
 
     let req: Req = match serde_json::from_slice(body) {
@@ -2961,7 +2961,7 @@ async fn api_read_file(stream: &mut TcpStream, state: AppState, body: &[u8]) -> 
         }
     };
     let base = state.workspace_root.to_string_lossy().into_owned();
-    let (text, is_err) = crate::file_tools::tool_read_file(&req.path, Some(&base));
+    let (text, is_err) = req.execute(Some(&base));
     if is_err {
         return write_json(stream, 400, "Bad Request", &ApiError { error: text }).await;
     }
@@ -2973,6 +2973,7 @@ async fn api_read_file(stream: &mut TcpStream, state: AppState, body: &[u8]) -> 
         "OK",
         &Res {
             ok: true,
+            complete_read: crate::file_tools::read_range::full_snapshot(&text),
             content: text,
             lines,
             bytes,

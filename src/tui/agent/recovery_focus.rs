@@ -101,7 +101,7 @@ impl RecoveryFocus {
             cache.remove(key);
         }
         let result = crate::file_tools::tool_read_file(&path, root);
-        if !result.1 {
+        if !result.1 && crate::file_tools::read_range::full_snapshot(&result.0) {
             if let Some(key) = key {
                 cache.insert(key, result.0.clone());
             }

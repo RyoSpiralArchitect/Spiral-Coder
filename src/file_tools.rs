@@ -15,6 +15,7 @@ mod diagnostics_tests;
 pub(crate) mod edit_preview;
 pub(crate) mod json_patch;
 mod json_repair;
+pub(crate) mod read_range;
 
 // ── Path safety ───────────────────────────────────────────────────────────────
 
@@ -134,7 +135,7 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
             let header = format!("[{path}] ({line_count} lines, {byte_count} bytes)\n");
             let trunc_note = if truncated {
                 let hidden = line_count.saturating_sub(shown.lines().count());
-                format!("\n[…truncated — {hidden} more lines not shown; use exec to view specific ranges]")
+                format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
             } else {
                 String::new()
             };

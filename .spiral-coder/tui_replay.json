@@ -173,6 +173,70 @@
         { "kind": "coder_system_contains", "value": "Focus axes: security" },
         { "kind": "coder_system_contains", "value": "read_file(path=src/tui/prefs.rs)" }
       ]
+    },
+    {
+      "id": "observer-bounded-file-range",
+      "prompt": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "repo-map",
+        "fallback"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file."
+        },
+        {
+          "role": "tool",
+          "content": "[src/repo_map.rs] (212 lines)\\npub(crate) fn lazy_read_file_fallback(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search. Current evidence points to a helper, not the TUI wiring point."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the known handler range directly.",
+        "primary_blocker": "truncated_prefix",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The target is beyond the truncated prefix.",
+            "confidence": 0.9,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent.rs",
+              "start_line": 890,
+              "end_line": 930
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/agent.rs, start_line=890, end_line=930)",
+        "why_this_first": "Inspect the relevant lines without repeating the prefix.",
+        "fallback": "Narrow the line range if the character cap is reached."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=890"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=930"
+        }
+      ]
     }
   ]
 }

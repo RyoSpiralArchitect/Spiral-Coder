@@ -1391,14 +1391,16 @@ pub fn read_file_tool_def() -> serde_json::Value {
             "name": "read_file",
             "description": "Read the full content of a file. Use before editing to see the exact current text. \
                             Path is relative to tool_root (or absolute within tool_root). \
-                            Large files are truncated automatically.",
+                            Large files are truncated. Set start_line/end_line (one-based inclusive, at most 200 lines) to read later sections. A partial read does not authorize write_file; use patch_file for targeted edits.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "path": {
                         "type": "string",
                         "description": "File path relative to tool_root."
-                    }
+                    },
+                    "start_line": {"type":"integer", "minimum":1, "description":"First line, one-based. Defaults to 1."},
+                    "end_line": {"type":"integer", "minimum":1, "description":"Last line, inclusive. Defaults to start_line + 199; at most 200 lines."}
                 },
                 "required": ["path"]
             }
@@ -13518,11 +13520,14 @@ Required now: run `{command}`.\n{verification_status}"
 
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
+                    let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
                     if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
-                    if let Some(result) =
+                    if ranged {
+                        crate::file_tools::read_range::execute_args(&args, base)
+                    } else if let Some(result) =
                         recovery
                             .focus
                             .read_for_diagnosis(&tc, base, &mut file_cache)
@@ -13573,7 +13578,7 @@ Required now: run `{command}`.\n{verification_status}"
                                 }
                             }
                         }
-                        if !err {
+                        if !err && crate::file_tools::read_range::full_snapshot(&content) {
                             file_cache.insert(cache_key.clone(), content.clone());
                         }
                         (content, err)
@@ -13600,7 +13605,7 @@ Required now: run `{command}`.\n{verification_status}"
                         (
                             format!(
                                 "GOVERNOR BLOCKED: write_file refused because '{path}' already exists.\n\
-Action required: call read_file(path) first to confirm current contents, then retry with patch_file/apply_diff (preferred) or write_file."
+Action required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
                             ),
                             true,
                         )

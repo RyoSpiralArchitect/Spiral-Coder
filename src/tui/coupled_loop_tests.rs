@@ -105,20 +105,25 @@ fn stale_observer_events_cannot_modify_a_new_request_or_its_repair_budget() {
 
 #[tokio::test]
 async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
-    assert_diagnosed_edit_handoff("patch_file", None).await;
+    assert_diagnosed_edit_handoff("patch_file", None, false).await;
 }
 
 #[tokio::test]
 async fn observer_handoff_reuses_an_unchanged_full_read_before_overwrite() {
-    assert_diagnosed_edit_handoff("write_file", None).await;
+    assert_diagnosed_edit_handoff("write_file", None, false).await;
 }
 
 #[tokio::test]
 async fn observer_handoff_refuses_overwrite_when_the_retained_read_changed() {
-    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}")).await;
+    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}"), false).await;
 }
 
-async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&str>) {
+#[tokio::test]
+async fn observer_handoff_refuses_whole_file_overwrite_from_a_range_read() {
+    assert_diagnosed_edit_handoff("write_file", None, true).await;
+}
+
+async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&str>, range_read: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -129,12 +134,13 @@ async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&s
     app.coder.push_user(goal.into());
     app.coder.messages.push(msg(Role::Assistant, "[agent] iteration cap (4) reached."));
     app.coder_completed = Some(false);
+    let read_args = if range_read { json!({"path":"config.json","start_line":1,"end_line":1}) } else { json!({"path":"config.json"}) };
     let messages = vec![
         crate::task_origin::user_message(goal, crate::task_origin::MessageOrigin::User),
         json!({"role":"assistant","tool_calls":[{"id":"failed-edit","type":"function","function":{"name":"patch_file","arguments":json!({"path":"config.json","search":"absent","replace":"after"}).to_string()}}]}),
         json!({"role":"tool","tool_call_id":"failed-edit","content":"ERROR: search string not found"}),
-        json!({"role":"assistant","tool_calls":[{"id":"diagnosed-read","type":"function","function":{"name":"read_file","arguments":"{\"path\":\"config.json\"}"}}]}),
-        json!({"role":"tool","tool_call_id":"diagnosed-read","content":crate::file_tools::tool_read_file("config.json", app.tool_root.as_deref()).0}),
+        json!({"role":"assistant","tool_calls":[{"id":"diagnosed-read","type":"function","function":{"name":"read_file","arguments":read_args.to_string()}}]}),
+        json!({"role":"tool","tool_call_id":"diagnosed-read","content":crate::file_tools::read_range::execute_args(&read_args, app.tool_root.as_deref()).0}),
     ];
     if let Some(changed) = changed_after_read {
         std::fs::write(root.path().join("config.json"), changed).unwrap();
@@ -177,9 +183,9 @@ async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&s
     send_coder_input(&mut app,&tx,"Continue.".into(),CoderInput::RuntimeContinuation).await;
     drain(&mut app,&mut rx,PaneId::Coder).await;
     observer.assert_hits(1); coder.assert_hits(1);
-    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),changed_after_read.unwrap_or("{\"status\":\"after\"}"),"{:?}",app.coder.messages);
+    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),changed_after_read.unwrap_or(if range_read {"{\"status\":\"before\"}"} else {"{\"status\":\"after\"}"}),"{:?}",app.coder.messages);
     let session=app.coder_session.as_ref().unwrap();
-    let expected = if changed_after_read.is_some() { "GOVERNOR BLOCKED: write_file refused" }
+    let expected = if changed_after_read.is_some() || range_read { "GOVERNOR BLOCKED: write_file refused" }
         else if tool == "write_file" { "OK: wrote" } else { "OK: patched" };
     assert!(session.messages.iter().any(|m| m["tool_call_id"]=="repair-edit" && m["content"].as_str().is_some_and(|s| s.starts_with(expected))), "{:?}", session.messages);
     assert_ne!(app.coder_completed,Some(true),"editing alone cannot complete verification");

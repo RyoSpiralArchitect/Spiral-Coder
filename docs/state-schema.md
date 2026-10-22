@@ -849,3 +849,11 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 Protocol list fields preserve line boundaries. Bulleted acceptance items and
 their continuation lines remain separate criteria, avoiding implicit merging
 and truncation before criterion references are assigned.
+
+### Bounded file-read observations
+
+`src/file_tools/read_range.rs` owns optional one-based `start_line`/`end_line`
+validation and bounded rendering. Range reads remain correlated native tool
+observations; they cannot populate the full-file overwrite cache. Web exposes
+`complete_read` on `/api/read_file` responses for its matching guard. No new
+persistent state is added. See [file-read ranges](file-read-ranges.md).

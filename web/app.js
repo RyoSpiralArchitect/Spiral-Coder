@@ -7300,11 +7300,13 @@
         type: "function",
         function: {
           name: "read_file",
-          description: "Read the content of a file under tool_root. Use before editing to see the exact current text. Large files are truncated automatically.",
+          description: "Read file content under tool_root. For large files use one-based inclusive start_line/end_line (at most 200 lines). Partial reads do not authorize whole-file overwrite; use patch_file for edits.",
           parameters: {
             type: "object",
             properties: {
               path: { type: "string", description: "Relative file path under tool_root" },
+              start_line: { type: "integer", minimum: 1, description: "First line, one-based; defaults to 1" },
+              end_line: { type: "integer", minimum: 1, description: "Last line, inclusive; defaults to start_line + 199" },
             },
             required: ["path"],
           },
@@ -8470,8 +8472,8 @@ state: ${agentState}`);
                   if (exists && !fileReadSet.has(fullPath)) {
                     toolResult = [
                       "GOVERNOR BLOCKED",
-                      "Refusing to overwrite an existing file that was not read in this session.",
-                      "Required: call read_file on the target path first, then re-issue write_file.",
+                      "Refusing to overwrite an existing file without a complete read in this session.",
+                      "Required: read the complete target first, or use patch_file/apply_diff after a range read.",
                       "path: " + String(path0 || fullPath),
                     ].join("\n");
                     pushRecentRun({ kind: "write_file", status: "FAIL", ok: false, path: path0 || fullPath, note: "blocked: not read before overwrite" });
@@ -8543,11 +8545,11 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
-                const res = await taskPost("/api/read_file", { path: fullPath }, ac.signal);
+                const res = await taskPost("/api/read_file", { path: fullPath, start_line: args.start_line, end_line: args.end_line }, ac.signal);
                 const raw = res && res.content ? res.content : `ERROR: empty response`;
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 if (res && res.content) {
-                  fileReadSet.add(fullPath);
+                  if (res.complete_read === true) fileReadSet.add(fullPath);
                   rememberObservationRead(`read_file(path=${path0})`, path0 || parseReadFileResultPath(toolResult));
                 }
               } catch (e2) {
