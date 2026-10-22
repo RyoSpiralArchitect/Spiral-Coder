@@ -1,0 +1,20 @@
+{
+  "note": "Original first-attempt scripts retained before preparing the next round; the original raw manifest remains unchanged.",
+  "files": [
+    {
+      "original_path": "prepare.py",
+      "retained_snapshot": "r1/prepare.py",
+      "sha256": "1931ca9d916230fcf1de446eeab63d6ca1b3dcdcc3143f5c616a1478e14af50c"
+    },
+    {
+      "original_path": "launch.py",
+      "retained_snapshot": "r1/launch.py",
+      "sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c"
+    },
+    {
+      "original_path": "collect-followup.py",
+      "retained_snapshot": "r1/collect-followup.py",
+      "sha256": "64a1557abe515d299ccbf7a3f15b76d774f98beae33c72fec28478d1c4d3b7c7"
+    }
+  ]
+}
