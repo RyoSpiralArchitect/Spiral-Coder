@@ -19,6 +19,14 @@ MATRIX = common.read_json(SUITE_ROOT / "matrix.json")
 
 
 class IndependentOracles(unittest.TestCase):
+    def test_cli_documentation_accepts_wrapped_example_but_requires_unknown_id_behavior(self):
+        doc = "All cases run by default in suite order; duplicate selections are ignored. "
+        doc += "A value that does not match a known case fails before output.\n"
+        doc += "--case alpha \\\n  --case gamma"
+        self.assertTrue(oracles.pilot_documentation(doc))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("does not match a known", "mentions a")))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("--case gamma", "--case beta")))
+
     def setUp(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
@@ -125,6 +133,21 @@ class NativeEvidence(unittest.TestCase):
 
 
 class FrozenRunner(unittest.TestCase):
+    def test_missing_report_retains_spent_requests_without_inventing_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            report, source = runner.retained_report(folder)
+            self.assertEqual(source, "missing")
+            self.assertIsNone(report["work"])
+            ledger = folder / "workspace/.spiral-coder/tui-work.json"
+            ledger.parent.mkdir(parents=True)
+            common.write_json(ledger, {"requests": [{"role": "coder", "status": "http_200", "provider_usage": None}]})
+            report, source = runner.retained_report(folder)
+            self.assertEqual(source, "durable_request_ledger_only")
+            self.assertEqual(len(report["work"]["requests"]), 1)
+            self.assertFalse(report["completed"])
+            self.assertIsNone(report["execution"])
+
     def test_selection_and_invalid_input_fail_before_provider_work(self):
         common.validate(SUITE, MATRIX)
         self.assertEqual([r["id"] for r in common.select(SUITE["cases"], ["replay-json", "large-file", "large-file"])],

@@ -9,6 +9,14 @@ import tempfile
 from .common import clean_env, inventory, run_process
 
 
+def pilot_documentation(doc):
+    """Bounded lexical proxy, accepting shell line continuations and a known-ID paraphrase."""
+    normalized = " ".join(re.sub(r"\\\s*\n", " ", doc.lower()).split())
+    return ("--case alpha --case gamma" in normalized
+            and "duplicat" in normalized and "order" in normalized and "all" in normalized
+            and any(text in normalized for text in ["unknown", "invalid", "does not match a known"]))
+
+
 def preserved_json(before, after):
     if not isinstance(after, dict) or set(after) != set(before):
         return False
@@ -61,7 +69,7 @@ def score(case, suite_root, workspace, binary):
                 exact_reference = actual == expected
             elif case["oracle"] == "pilot_cli":
                 doc = (isolated / "docs/pilot.md").read_text().lower()
-                checks["requested_documentation"] = all(x in doc for x in ["--case alpha --case gamma", "duplicate", "order", "unknown", "all"])
+                checks["requested_documentation"] = pilot_documentation(doc)
                 exact_reference = (isolated / "scripts/run_coupled_pilot.py").read_bytes() == (Path(suite_root) / case["reference"] / "scripts/run_coupled_pilot.py").read_bytes()
             else:
                 before = json.loads((original / ".spiral-coder/tui_replay.json").read_text())
@@ -74,4 +82,5 @@ def score(case, suite_root, workspace, binary):
             checks["artifact_structure"] = False
             exact_reference = False
     return {"passed": all(checks.values()), "checks": checks, "logs": logs,
+            "documentation_proxy_revision": "shell-whitespace-v2",
             "source_matches_reference": exact_reference}

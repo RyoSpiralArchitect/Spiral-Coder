@@ -40,7 +40,8 @@ def assess(case, before, workspace, report, process, oracle):
     changed = sorted(p for p in set(before) | set(after) if before.get(p) != after.get(p))
     allowed = set(case["editable"])
     other = [p for p in changed if p not in allowed]
-    requests = (report.get("work") or {}).get("requests", [])
+    recorded_requests = (report.get("work") or {}).get("requests")
+    requests = recorded_requests if isinstance(recorded_requests, list) else []
     native = {"native_edit": bool(edits), "baseline_before_edit": all(baselines.values()),
               "fresh_exact_checks": all(verified.values()),
               "no_pending_checks": execution.get("pending_exact_checks") == [],
@@ -63,6 +64,7 @@ def assess(case, before, workspace, report, process, oracle):
             "native": native, "baseline_commands": baselines, "verified_commands": verified,
             "report_fields": report_fields, "authored_summary": summary,
             "changed_files": changed, "out_of_scope_files": other,
-            "requests": len(requests), "request_roles": dict(Counter(r.get("role") for r in requests)),
+            "requests": len(requests) if isinstance(recorded_requests, list) else None,
+            "request_roles": dict(Counter(r.get("role") for r in requests)),
             "wire_requests": requests, "assists": (report.get("work") or {}).get("assists", []),
             "blocks": dict(blocks), "actions": sequence, "oracle": oracle}

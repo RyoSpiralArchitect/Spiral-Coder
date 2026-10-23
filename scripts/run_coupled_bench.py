@@ -28,6 +28,8 @@ def main(argv=None):
         command.add_argument("--profile", action="append", default=[])
     summarize = commands.add_parser("summarize", help="Score with original tests outside each candidate workspace")
     summarize.add_argument("--out", type=Path, required=True)
+    summarize.add_argument("--reassess", action="store_true",
+                           help="Explicitly use and snapshot a newer offline assessor; keep original inputs and assessments")
     args = parser.parse_args(argv)
     try:
         result = getattr(runner, args.command)(args)

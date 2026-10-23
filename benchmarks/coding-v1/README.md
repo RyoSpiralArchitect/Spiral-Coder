@@ -101,6 +101,15 @@ remain under the output directory. They are local evidence; review them for
 credentials and private data before publishing. A hash is not a substitute for
 reading the retained result.
 
+If an older runtime exits before writing `report.json`, the assessor recovers
+spent requests from its durable work ledger. It never reconstructs execution
+proof or a successful completion from that ledger; unavailable counts remain
+unknown. An explicit `summarize --reassess` can use a newer offline assessor while
+retaining original inputs and prior assessments. Each assessment records and
+snapshots its exact assessor code. Running with changed driver code remains
+forbidden. The documentation proxy accepts shell line continuations and an
+equivalent known-ID phrase; it still does not certify arbitrary prose quality.
+
 ## Interactive dogfooding
 
 Use a separate prepared directory for a manual session. Enter an episode's

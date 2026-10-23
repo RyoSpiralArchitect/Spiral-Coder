@@ -1,6 +1,7 @@
 """Freeze inputs before spending requests; retain every selected episode."""
 from datetime import datetime, timezone
 import json
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -90,7 +91,7 @@ def prepare(args):
             "frozen_driver": str(out / "driver/run_coupled_bench.py")}
 
 
-def load_frozen(out):
+def load_frozen(out, *, require_driver=True):
     declaration = read_json(out / "predeclared.json")
     if sha(out / declaration["binary_path"]) != declaration["binary_sha256"]:
         raise ValueError("Frozen runtime binary changed")
@@ -100,11 +101,11 @@ def load_frozen(out):
     if inventory(out / "inputs") != declaration["input_inventory"]:
         raise ValueError("Frozen fixture/oracle inputs changed")
     current_driver = Path(__file__).resolve().parent.parent
-    if driver_inventory(current_driver / "coupled_bench") != {
+    if require_driver and driver_inventory(current_driver / "coupled_bench") != {
             k.removeprefix("coupled_bench/"): v for k, v in declaration["driver_sha256"].items()
             if k.startswith("coupled_bench/")}:
         raise ValueError("Driver changed; use the frozen driver recorded by prepare")
-    if sha(current_driver / "run_coupled_bench.py") != declaration["driver_sha256"]["run_coupled_bench.py"]:
+    if require_driver and sha(current_driver / "run_coupled_bench.py") != declaration["driver_sha256"]["run_coupled_bench.py"]:
         raise ValueError("CLI changed; use the frozen driver")
     return declaration
 
@@ -157,28 +158,63 @@ def run(args):
         print(json.dumps(result), flush=True)
 
 
+def retained_report(folder):
+    report_path = folder / "run/report.json"
+    if report_path.exists():
+        return read_json(report_path), "native_report"
+    ledger = folder / "workspace/.spiral-coder/tui-work.json"
+    # A failed first stream can exit older runtimes before their report writer.
+    # Recover request accounting only, never synthesize native completion/proof.
+    report = {"completed": False, "execution": None,
+              "work": read_json(ledger) if ledger.exists() else None}
+    return report, "durable_request_ledger_only" if ledger.exists() else "missing"
+
+
 def summarize(args):
     out = args.out.resolve()
-    declaration = load_frozen(out)
+    declaration = load_frozen(out, require_driver=not args.reassess)
+    current_driver = Path(__file__).resolve().parent.parent
+    assessor = {f"coupled_bench/{k}": v for k, v in driver_inventory(current_driver / "coupled_bench").items()}
+    assessor["run_coupled_bench.py"] = sha(current_driver / "run_coupled_bench.py")
+    assessor_id = hashlib.sha256(json.dumps(assessor, sort_keys=True).encode()).hexdigest()
+    snapshot = out / "assessors" / assessor_id
+    if not snapshot.exists():
+        snapshot.mkdir(parents=True)
+        shutil.copytree(current_driver / "coupled_bench", snapshot / "coupled_bench", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copy2(current_driver / "run_coupled_bench.py", snapshot / "run_coupled_bench.py")
     rows = []
     for episode in declaration["episodes"]:
         folder = out / episode["path"]
         profile = next(p for p in declaration["profiles"] if p["id"] == episode["profile"])
         case = next(c for c in declaration["cases"] if c["id"] == episode["case"])
-        process_file, report_file = folder / "process.json", folder / "run/report.json"
+        process_file = folder / "process.json"
         process = read_json(process_file) if process_file.exists() else {}
-        report = read_json(report_file) if report_file.exists() else {}
+        report, receipt_source = retained_report(folder)
+        errors = []
+        trace = folder / "run/trace.jsonl"
+        if trace.exists():
+            for line in trace.read_text().splitlines():
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                if event.get("event") == "error":
+                    errors.append(event.get("data"))
         state = "finished" if process else ("started_without_receipt" if (folder / "started.json").exists() else "not_run")
         oracle = score(case, out / "inputs", folder / "workspace", out / declaration["binary_path"])
         rows.append({"profile": profile, "case": case["id"], "state": state, "process": process,
+                     "receipt_source": receipt_source, "trace_errors": errors,
                      **assess(case, episode["workspace_before"], folder / "workspace", report, process, oracle)})
     result = {"version": 1, "evaluated_at": now(), "predeclaration_sha256": sha(out / "predeclared.json"),
+              "assessor_driver_sha256": assessor, "assessor_snapshot": snapshot.relative_to(out).as_posix(),
+              "matches_declared_driver": assessor == declaration["driver_sha256"],
               "rows": rows, "counts": {"declared": len(rows), "finished": sum(r["state"] == "finished" for r in rows),
               "runtime_completed": sum(r["runtime_completed"] for r in rows),
               "independent_artifacts_passed": sum(r["independent_artifacts_passed"] for r in rows),
               "behavior_and_handoff_qualified": sum(r["behavior_and_handoff_qualified"] for r in rows),
               "strict_all_files_qualified": sum(r["strict_all_files_qualified"] for r in rows),
-              "wire_requests": sum(r["requests"] for r in rows)}}
+              "wire_requests": sum(r["requests"] or 0 for r in rows),
+              "episodes_with_unknown_request_count": sum(r["requests"] is None for r in rows)}}
     number = 1
     while (out / f"assessment-{number:03d}.json").exists():
         number += 1
