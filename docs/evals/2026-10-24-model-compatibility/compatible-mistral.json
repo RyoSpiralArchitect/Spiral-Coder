@@ -1,0 +1,72 @@
+{
+  "trial": "compatible",
+  "request": {
+    "model": "mistral-large-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Call read_file once for sample.txt using the native function tool. Do not answer in text."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read a fixture file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        }
+      }
+    ],
+    "stream": true,
+    "max_tokens": 32768,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "result": {
+    "provider": "mistral",
+    "requested_model": "mistral-large-4",
+    "response_models": [
+      "mistral-large-4"
+    ],
+    "http_status": 200,
+    "wire_requests": 1,
+    "elapsed_seconds": 2.135,
+    "tool_deltas": [
+      {
+        "index": 0,
+        "id": "qV4rNJmnG",
+        "function": {
+          "name": "read_file",
+          "arguments": "{\"path\": \"sample.txt\"}"
+        }
+      }
+    ],
+    "usage": [
+      {
+        "prompt_tokens": 80,
+        "total_tokens": 147,
+        "completion_tokens": 67,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 53
+        },
+        "service_tier": "standard"
+      }
+    ],
+    "raw_sha256": "532a5c61c64c85611f91d9963d1c380a18167a6939c875d010a5e89e2be6cd23"
+  },
+  "raw_local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-probes-20261024-r2/mistral/response.sse"
+}
