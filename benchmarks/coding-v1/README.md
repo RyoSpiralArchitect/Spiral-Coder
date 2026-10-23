@@ -87,7 +87,9 @@ Each immutable `assessment-NNN.json` records:
 - Runtime completion, independent artifact behavior, native pre-edit failure and
   fresh exact checks after the latest mutation.
 - Authored report fields and acceptance, request roles/usage, Observer assists,
-  gate blocks and the ordered tool actions that locate the divergence.
+  pre-tool rejections, execution gate blocks and ordered tool actions that locate
+  the divergence. A pre-tool rejection can consume a request without creating a
+  native action; an empty action list does not imply no attempts were made.
 - All changed paths, including ignored/untracked runtime and bytecode files.
   `behavior_and_handoff_qualified` covers behavior/proof/reporting;
   `strict_all_files_qualified` also requires no changes outside requested paths.
@@ -125,3 +127,7 @@ Compare the first divergence on the same task before changing a harness. Record
 an intervention hypothesis and a new frozen pair, keep gates/oracles unchanged,
 and retain failed rounds. A one-run model difference motivates an experiment;
 it does not establish that a harness intervention caused an improvement.
+
+The [initial 20-episode readout](../../docs/evals/2026-10-23-capacity/README.md)
+retains three adaptive rounds, the transport failure and the remaining closeout
+and tool-format failures. Its results are not a model leaderboard.

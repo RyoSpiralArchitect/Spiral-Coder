@@ -1,0 +1,765 @@
+{
+  "version": 1,
+  "rounds": [
+    {
+      "round": "r1",
+      "runtime_commit": "a0488fe55c3ce875788d51274a66a8dd6e946447",
+      "binary_sha256": "b16d3a0e6d07af39fb53225d6fa2b7b6cdee1ce5c47006f60866a8e44b9185cb",
+      "assessment": "r1/assessment-003.json",
+      "assessment_sha256": "a67e0e52be22ccc389371d7c4dded5ab5369c7ea55f66a8338e4bc466c4018ed",
+      "maximum_wire_requests": 264,
+      "declared": 12,
+      "finished": 12,
+      "runtime_completed": 4,
+      "independent_artifacts_passed": 7,
+      "behavior_and_handoff_qualified": 4,
+      "strict_all_files_qualified": 0,
+      "wire_requests": 170,
+      "episodes_with_unknown_request_count": 0
+    },
+    {
+      "round": "r2",
+      "runtime_commit": "4a139ec",
+      "binary_sha256": "792b8a82718d3a57f7c38a41f9f2d1a66f7406cd5f377d680b9775cb5a461383",
+      "assessment": "r2/assessment-001.json",
+      "assessment_sha256": "a90b1aa29b4fa2d3b4932bccb63247c2a6fe271fc0cee48959357b5dfbc74a76",
+      "maximum_wire_requests": 132,
+      "declared": 6,
+      "finished": 6,
+      "runtime_completed": 0,
+      "independent_artifacts_passed": 1,
+      "behavior_and_handoff_qualified": 0,
+      "strict_all_files_qualified": 0,
+      "wire_requests": 117,
+      "episodes_with_unknown_request_count": 0
+    },
+    {
+      "round": "r3",
+      "runtime_commit": "625e4bc",
+      "binary_sha256": "12339680c0502061e01bd23f68a0a4f72c663615691677784f98c7c75d14bd85",
+      "assessment": "r3/assessment-002.json",
+      "assessment_sha256": "502cc460cf5c47abb7d10b47e32289e26e0cbf6274cf8bf9a2f96bdf74c8b87e",
+      "maximum_wire_requests": 48,
+      "declared": 2,
+      "finished": 2,
+      "runtime_completed": 0,
+      "independent_artifacts_passed": 1,
+      "behavior_and_handoff_qualified": 0,
+      "strict_all_files_qualified": 0,
+      "wire_requests": 48,
+      "episodes_with_unknown_request_count": 0
+    }
+  ],
+  "rows": [
+    {
+      "round": "r1",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "large-file",
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 18,
+      "request_roles": {
+        "coder": 17,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "reflection": 1
+      },
+      "native_action_count": 16,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 35.891
+    },
+    {
+      "round": "r1",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 20,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 42.427
+    },
+    {
+      "round": "r1",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "reflection": 1
+      },
+      "native_action_count": 22,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 49.087
+    },
+    {
+      "round": "r1",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "large-file",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 1,
+      "request_roles": {
+        "coder": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "durable_request_ledger_only",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 4.8
+    },
+    {
+      "round": "r1",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 1,
+      "request_roles": {
+        "coder": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "durable_request_ledger_only",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 6.961
+    },
+    {
+      "round": "r1",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 1,
+      "request_roles": {
+        "coder": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "durable_request_ledger_only",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 13.337
+    },
+    {
+      "round": "r1",
+      "profile": "openai-full",
+      "model": "gpt-4.1",
+      "case": "large-file",
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "requests": 16,
+      "request_roles": {
+        "coder": 15,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 15,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 33.393
+    },
+    {
+      "round": "r1",
+      "profile": "openai-full",
+      "model": "gpt-4.1",
+      "case": "pilot-cli",
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "requests": 17,
+      "request_roles": {
+        "coder": 17
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 17,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 34.507
+    },
+    {
+      "round": "r1",
+      "profile": "openai-full",
+      "model": "gpt-4.1",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 23,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 55.939
+    },
+    {
+      "round": "r1",
+      "profile": "mistral-medium",
+      "model": "mistral-medium-3-5",
+      "case": "large-file",
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "requests": 10,
+      "request_roles": {
+        "coder": 10
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "reflection": 1
+      },
+      "native_action_count": 9,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 10,
+      "wall_seconds": 31.478
+    },
+    {
+      "round": "r1",
+      "profile": "mistral-medium",
+      "model": "mistral-medium-3-5",
+      "case": "pilot-cli",
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "requests": 10,
+      "request_roles": {
+        "coder": 10
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 10,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 10,
+      "wall_seconds": 41.797
+    },
+    {
+      "round": "r1",
+      "profile": "mistral-medium",
+      "model": "mistral-medium-3-5",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "reflection": 10
+      },
+      "native_action_count": 13,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 24,
+      "wall_seconds": 91.55
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "large-file",
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 16,
+      "request_roles": {
+        "coder": 14,
+        "observer": 2
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": true
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 14,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 38.863
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 22,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 59.221
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 23,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 79.571
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "large-file",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 14,
+      "request_roles": {
+        "coder": 14
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "single_tool": 14
+      },
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 130.902
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 20,
+      "request_roles": {
+        "coder": 20
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "single_tool": 20
+      },
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 186.429
+    },
+    {
+      "round": "r2",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "replay-json",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 19,
+      "request_roles": {
+        "coder": 19
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "single_tool": 19
+      },
+      "native_action_count": 0,
+      "observer_assist_count": 0,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 253.77
+    },
+    {
+      "round": "r3",
+      "profile": "gemini-lite",
+      "model": "gemini-3.5-flash-lite",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {},
+      "native_action_count": 22,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 54.353
+    },
+    {
+      "round": "r3",
+      "profile": "gemini-argon",
+      "model": "gemini-4-argon",
+      "case": "pilot-cli",
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "receipt_source": "native_report",
+      "pre_tool_rejection_counts": {
+        "single_tool": 23
+      },
+      "native_action_count": 0,
+      "observer_assist_count": 1,
+      "requests_with_returned_usage": 0,
+      "wall_seconds": 213.972
+    }
+  ],
+  "task_wire_requests": 335,
+  "separate_protocol_probe_requests": 2,
+  "claim_boundary": "Adaptive development rounds; do not combine unequal panels into model capability rankings. Missing usage remains unknown."
+}

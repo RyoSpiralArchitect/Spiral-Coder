@@ -1,0 +1,30 @@
+{
+  "probe_requests": 1,
+  "purpose": "protocol only; separate from benchmark episodes",
+  "elapsed_seconds": 4.751,
+  "raw_sha256": "f1844ea7493ab6b368c4939a47077ae1fbf7bba8f308b64ea93c8b7c1528b839",
+  "tool_chunks": [
+    {
+      "finish_reason": null,
+      "tools": [
+        {
+          "index": null,
+          "id": "call_299363",
+          "name": "read_file",
+          "arguments": "{\"path\":\"greet.py\"}"
+        }
+      ]
+    },
+    {
+      "finish_reason": null,
+      "tools": [
+        {
+          "index": null,
+          "id": "call_299369",
+          "name": "read_file",
+          "arguments": "{\"path\":\"test_greet.py\"}"
+        }
+      ]
+    }
+  ]
+}

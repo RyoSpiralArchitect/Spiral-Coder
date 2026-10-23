@@ -619,6 +619,21 @@ Current v1 guidance:
 - scoring is artifact-based today: completion, errors, tool usage, assistant output, graph size
 - the report also surfaces light telemetry from traces: iterations, repo-map fallback hits, governor/recovery pressure, and realize summary counters
 
+### Coupled model comparison and dogfooding
+
+The [coding development suite](benchmarks/coding-v1/README.md) runs Coder and
+Observer together with the same model, frozen tasks and a shared request cap.
+It covers a large-file repair, a repository CLI regression with documentation,
+and a JSON replay extension that must preserve existing cases. Compare Gemini
+Flash-Lite / Argon or select other providers through the model matrix.
+
+`scripts/run_coupled_bench.py prepare` creates disposable workspaces and checks
+broken/reference fixtures without calling a provider. Use the frozen driver for
+bounded live runs, or enter a separate copied workspace with `spiral` for manual
+TUI dogfooding. Independent artifact checks, native verification, final reporting
+and full file scope are scored separately. See the
+[initial capacity experiments and remaining failures](docs/evals/2026-10-23-capacity/README.md).
+
 ### Inventory / Parity CLI
 
 `spiral-coder inventory` prints lightweight repo/runtime inventory views for ops and parity work.
