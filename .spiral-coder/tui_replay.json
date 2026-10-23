@@ -300,6 +300,69 @@
           "value": "read_file(path=src/tui/prefs.rs)"
         }
       ]
+    },
+    {
+      "id": "closeout-action-rejection-observer",
+      "prompt": "Inspect src/tui/prefs.rs and then report what it stores.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect src/tui/prefs.rs and then report what it stores."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] [Closeout action] Only done is available for this request. No proposed tool executed. Report verified items and remaining work truthfully; the existing proof and acceptance gates still apply."
+        }
+      ],
+      "observer_response": {
+        "summary": "An incomplete report-only handoff does not prove that prefs.rs was inspected. Resume with the smallest missing read when a new task budget is available.",
+        "primary_blocker": "missing_evidence",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
     }
   ]
 }
