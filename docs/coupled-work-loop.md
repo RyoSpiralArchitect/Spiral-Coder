@@ -1,5 +1,14 @@
 # One task through Coder and Observer
 
+The compatible streaming decoder correlates indexed fragments by their index.
+Providers that omit indices can supply explicit call IDs instead: distinct IDs
+remain distinct calls in first-seen order, including separate one-call deltas.
+Anonymous fragments after multiple calls, mixed encodings, conflicting indexed
+IDs and reused IDs across indices fail closed. Provider thought signatures stay
+with their original call and do not become execution proof. A failed coupled
+driver loop retains its incomplete report, session and spent request ledger before
+returning the error; transport failure must not disappear from an evaluation.
+
 Coder and Observer are roles in one task. An accepted suggestion is not a completed task. The unit of qualification is the original request, its preserved artifacts, current verification, authored final report, and the total request cap.
 
 For new maintenance behavior, [explicit task requirements](task-requirements.md)
