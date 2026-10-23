@@ -1,13 +1,13 @@
 # TUI model catalog
 
-Checked against official provider documentation on **2026-10-23**. Type `/provider`
+Checked against official provider documentation on **2026-10-24**. Type `/provider`
 to choose an endpoint preset, then `/model`, Up/Down and Enter to select a model.
 The catalog is curated for text and tool use. It is not an account entitlement
 check; `other` or `/model <exact-id>` still accepts a custom deployment or snapshot.
 
 | Preset | Added models | Reference |
 | --- | --- | --- |
-| OpenAI | `gpt-6-luna`, `gpt-6-sol`, `gpt-5.4-mini`, `gpt-5.4` | [GPT-6 API migration](https://developers.openai.com/api/docs/guides/latest-model#update-api-and-model-parameters), [GPT-5.4 mini](https://developers.openai.com/api/docs/models/gpt-5.4-mini), [GPT-5.4](https://developers.openai.com/api/docs/models/gpt-5.4) |
+| OpenAI | `gpt-6-luna`, `gpt-6-sol`, `gpt-5.6-luna`, `gpt-5.4-mini`, `gpt-5.4` | [GPT-6 API migration](https://developers.openai.com/api/docs/guides/latest-model#update-api-and-model-parameters), [GPT-5.6 Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [GPT-5.4 mini](https://developers.openai.com/api/docs/models/gpt-5.4-mini), [GPT-5.4](https://developers.openai.com/api/docs/models/gpt-5.4) |
 | Gemini | `gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-4-argon` | [Models](https://ai.google.dev/gemini-api/docs/models), [OpenAI compatibility](https://ai.google.dev/gemini-api/docs/openai) |
 | Anthropic / Anthropic-compatible | `claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`, `claude-fable-5-1` | [Model IDs](https://platform.claude.com/docs/en/models/overview), [compatibility](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk) |
 | Mistral | `mistral-small-2603`, `mistral-medium-3-5`, `mistral-large-4` | [Small 4](https://docs.mistral.ai/models/mistral-small-4-0-26-03), [Medium 3.5](https://docs.mistral.ai/models/mistral-medium-3-5-26-04), [Large 4](https://docs.mistral.ai/models/mistral-large-4-0) |
@@ -18,13 +18,21 @@ names need not match upstream IDs. HF local retains `local` and `other`.
 
 ## Transport constraints
 
-The current Coder transport uses Chat Completions with function calls. GPT-6 Luna
-and Sol require `reasoning_effort: "none"` on this route. Coder, Observer and Chat
+The current Coder transport uses Chat Completions with function calls. GPT-5.6 Luna
+and GPT-6 Luna/Sol require `reasoning_effort: "none"` on this route. Coder, Observer and Chat
 all use that setting with `max_completion_tokens` and omit explicit temperature.
 GPT-5 candidates also use `max_completion_tokens` on the first request.
 This does not test their reasoning-enabled behavior. GPT-6 Astra and GPT-6.1 Sol
 need a Responses API tool transport; they are deliberately absent from this
 catalog until that transport is implemented and tested.
+
+A single-request GPT-5.6 Luna probe on 2026-10-24 rejected function tools with
+default reasoning and explicitly required Responses or `reasoning_effort: "none"`.
+The selected ID is preserved; the compatible mode is not a measurement of its
+reasoning-enabled capacity. A separate Large 4 probe rejected temperature zero
+without `top_p: 1`; that value is now sent on its first greedy request. Other
+Mistral models and nonzero temperatures retain their parameters. Failed probes
+are retained separately from coding episodes and are not task failures.
 
 Claude 5 sampling parameters are omitted on both native Messages and compatible
 Chat Completions paths, including the non-streaming Observer. See the

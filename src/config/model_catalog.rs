@@ -1,4 +1,4 @@
-//! Curated tool-capable models, checked against provider docs on 2026-10-23.
+//! Curated tool-capable models, checked against provider docs on 2026-10-24.
 //! This is a picker, not an allowlist: custom IDs and saved choices still work.
 //! Sources and transport limits live in docs/model-catalog.md.
 use super::{detect_provider_preset, ProviderKind, ProviderPreset};
@@ -9,6 +9,7 @@ pub(super) fn models(preset: ProviderPreset) -> &'static [&'static str] {
         ProviderPreset::OpenAi => &[
             "gpt-6-luna",
             "gpt-6-sol",
+            "gpt-5.6-luna",
             "gpt-5.4-mini",
             "gpt-5.4",
             "gpt-5-mini",
@@ -70,7 +71,7 @@ pub(super) fn supports_temperature(provider: &ProviderKind, base_url: &str, mode
     }
 }
 
-/// GPT-6 Luna and Sol permit Chat Completions function calls only with reasoning off.
+/// GPT-5.6 Luna and GPT-6 Luna/Sol permit Chat Completions tools with reasoning off.
 /// Use the same setting for Coder, Observer and Chat; do not spend a request on
 /// a known-invalid max_tokens/temperature payload before retrying.
 pub(crate) fn prepare_chat_payload(
@@ -103,11 +104,19 @@ pub(crate) fn prepare_chat_payload(
     if matches!(
         detect_provider_preset(provider, base_url),
         ProviderPreset::OpenAi | ProviderPreset::OpenAiCompatibleCustom
-    ) && ["gpt-6-luna", "gpt-6-sol"]
+    ) && ["gpt-5.6-luna", "gpt-6-luna", "gpt-6-sol"]
         .iter()
         .any(|id| model == *id || model.starts_with(&format!("{id}-")))
     {
         payload["reasoning_effort"] = json!("none");
+    }
+    // Large 4 rejects its default nucleus setting when temperature is zero.
+    // Keep other models and non-greedy requests unchanged.
+    if detect_provider_preset(provider, base_url) == ProviderPreset::Mistral
+        && (model == "mistral-large-4" || model.starts_with("mistral-large-4-"))
+        && payload.get("temperature").and_then(Value::as_f64) == Some(0.0)
+    {
+        payload["top_p"] = json!(1.0);
     }
 }
 
@@ -184,6 +193,26 @@ mod tests {
             let mut actual = expected.clone();
             prepare_chat_payload(&mut actual, &provider, base, model);
             assert_eq!(actual, expected);
+        }
+    }
+
+    #[test]
+    fn large_four_greedy_sampling_sets_top_p_without_changing_other_temperatures() {
+        for temperature in [0.0, 0.2] {
+            let mut payload =
+                json!({"model":"mistral-large-4", "temperature":temperature, "max_tokens":64});
+            prepare_chat_payload(
+                &mut payload,
+                &ProviderKind::Mistral,
+                "https://api.mistral.ai/v1",
+                "mistral-large-4",
+            );
+            let mut expected =
+                json!({"model":"mistral-large-4", "temperature":temperature, "max_tokens":64});
+            if temperature == 0.0 {
+                expected["top_p"] = json!(1.0);
+            }
+            assert_eq!(payload, expected);
         }
     }
 }
