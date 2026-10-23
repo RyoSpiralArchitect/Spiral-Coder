@@ -1,0 +1,1165 @@
+{
+  "version": 1,
+  "defaults": {
+    "tool_root": ".",
+    "lang": "en"
+  },
+  "cases": [
+    {
+      "id": "pane-prefs-observer-suggestion",
+      "prompt": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\nMissing <think>\nNeed one concrete next step before broadening search."
+        }
+      ],
+      "observer_response": {
+        "summary": "Coder already has enough evidence to stop searching broadly and read the prefs implementation directly.",
+        "primary_blocker": "missing_concrete_next_step",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          },
+          {
+            "kind": "search",
+            "reason": "If that read does not answer the question, search for save_tui_prefs within src/tui next.",
+            "confidence": 0.64,
+            "suggested_tool": "search_files",
+            "suggested_args": {
+              "pattern": "save_tui_prefs",
+              "dir": "src/tui"
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ],
+      "plugin_data": {
+        "keep": [
+          "first",
+          {
+            "untouched": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "repo-map-fallback-observer-suggestion",
+      "prompt": "Find where the coder-side repo-map fallback for read_file misses is wired into the TUI agent flow. Do not edit anything. Final answer must include the file path.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "repo-map",
+        "fallback"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Find where the coder-side repo-map fallback for read_file misses is wired into the TUI agent flow. Do not edit anything. Final answer must include the file path."
+        },
+        {
+          "role": "tool",
+          "content": "[src/repo_map.rs] (212 lines)\\npub(crate) fn lazy_read_file_fallback(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search. Current evidence points to a helper, not the TUI wiring point."
+        }
+      ],
+      "observer_response": {
+        "summary": "The helper file is already visible, so the next step should inspect the TUI agent wiring instead of staying in repo_map.rs.",
+        "primary_blocker": "helper_not_integration_point",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The prompt asks where the fallback is wired into the TUI agent flow, so read the TUI agent file where the fallback is invoked.",
+            "confidence": 0.9,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          },
+          {
+            "kind": "search",
+            "reason": "If the exact hook is still unclear, search for lazy_read_file_fallback inside src/tui next.",
+            "confidence": 0.67,
+            "suggested_tool": "search_files",
+            "suggested_args": {
+              "pattern": "lazy_read_file_fallback",
+              "dir": "src/tui"
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/agent.rs)",
+        "why_this_first": "That is the smallest step that can confirm the integration point without widening scope.",
+        "fallback": "If agent.rs does not show the hook clearly, search lazy_read_file_fallback within src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/agent.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/agent.rs)"
+        }
+      ]
+    },
+    {
+      "id": "pane-prefs-observer-contract",
+      "prompt": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "contract",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\nMissing <think>\nNeed one concrete next step before broadening search."
+        }
+      ],
+      "observer_response": {
+        "summary": "Coder already has enough evidence to stop broad searching, but the next move has a security-sensitive angle because prefs writes are easy to mis-scope.",
+        "primary_blocker": "missing_concrete_next_step",
+        "scores": {
+          "correctness": 0.87,
+          "security": 0.58,
+          "efficiency": 0.77,
+          "readability": 0.82
+        },
+        "response_contract": {
+          "required": true,
+          "focus_axes": [
+            "security"
+          ],
+          "note": "If you do not take the focused read step now, explicitly override or defer with a narrow reason."
+        },
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "Read the prefs implementation file directly before making any broader claim about serialized pane settings.",
+            "confidence": 0.93,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms the serialization path without widening scope or guessing from a slash-handler file.",
+        "fallback": "If prefs.rs is not the main storage point, override explicitly and narrow the next search to save_tui_prefs in src/tui."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "\"required\":true"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "[Observer response contract]"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "accept | override | defer"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "Focus axes: security"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
+    },
+    {
+      "id": "observer-bounded-file-range",
+      "prompt": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "repo-map",
+        "fallback"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file."
+        },
+        {
+          "role": "tool",
+          "content": "[src/repo_map.rs] (212 lines)\\npub(crate) fn lazy_read_file_fallback(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search. Current evidence points to a helper, not the TUI wiring point."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the known handler range directly.",
+        "primary_blocker": "truncated_prefix",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The target is beyond the truncated prefix.",
+            "confidence": 0.9,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent.rs",
+              "start_line": 890,
+              "end_line": 930
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/agent.rs, start_line=890, end_line=930)",
+        "why_this_first": "Inspect the relevant lines without repeating the prefix.",
+        "fallback": "Narrow the line range if the character cap is reached."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=890"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=930"
+        }
+      ]
+    },
+    {
+      "id": "observer-range-tail",
+      "prompt": "Inspect src/tui/agent.rs lines 1200 through 1240 without rewriting the file.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "repo-map",
+        "fallback"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect src/tui/agent.rs lines 1200 through 1240 without rewriting the file."
+        },
+        {
+          "role": "tool",
+          "content": "[src/repo_map.rs] (212 lines)\\npub(crate) fn lazy_read_file_fallback(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search. Current evidence points to a helper, not the TUI wiring point."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the known handler range directly.",
+        "primary_blocker": "truncated_prefix",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The target is beyond the truncated prefix.",
+            "confidence": 0.9,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent.rs",
+              "start_line": 1200,
+              "end_line": 1240
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/agent.rs, start_line=1200, end_line=1240)",
+        "why_this_first": "Inspect the relevant lines without repeating the prefix.",
+        "fallback": "Narrow the line range if the character cap is reached."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=1200"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=1240"
+        }
+      ]
+    }
+  ],
+  "extension": {
+    "schema_owner": "external-plugin",
+    "notes": [
+      {
+        "id": 0,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 1,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 2,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 3,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 4,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 5,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 6,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 7,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 8,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 9,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 10,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 11,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 12,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 13,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 14,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 15,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 16,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 17,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 18,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 19,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 20,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 21,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 22,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 23,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 24,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 25,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 26,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 27,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 28,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 29,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 30,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 31,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 32,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 33,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 34,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 35,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 36,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 37,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 38,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 39,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 40,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 41,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 42,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 43,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 44,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 45,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 46,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 47,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 48,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 49,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 50,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 51,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 52,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 53,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 54,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 55,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 56,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 57,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 58,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 59,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 60,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 61,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 62,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 63,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 64,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 65,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 66,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 67,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 68,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 69,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 70,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 71,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 72,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 73,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 74,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 75,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 76,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 77,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 78,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 79,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 80,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 81,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 82,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 83,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 84,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 85,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 86,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 87,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 88,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 89,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 90,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 91,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 92,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 93,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 94,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 95,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 96,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 97,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 98,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 99,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 100,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 101,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 102,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 103,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 104,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 105,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 106,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 107,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 108,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      },
+      {
+        "id": 109,
+        "value": "Preserve unknown nested data, order, Unicode 猫, false, null and zero.",
+        "enabled": false,
+        "optional": null,
+        "counter": 0
+      }
+    ]
+  }
+}

@@ -1,5 +1,12 @@
 # Runtime evaluation evidence
 
+The [coding capacity development matrix](../benchmarks/coding-v1/README.md) adds
+three frozen same-model Coder + Observer tasks, Gemini weak/larger comparisons,
+cross-provider profiles and copied interactive dogfood workspaces. Its offline
+preflight, native proof, independent original tests, authored report and complete
+changed-file inventory remain separate outcomes. It does not replace this
+historical runtime evaluation or retroactively relabel prior failures.
+
 ## Copied-workspace build isolation
 
 Each copied fixture must use its own Cargo build output. Sharing an absolute

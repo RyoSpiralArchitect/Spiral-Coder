@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "temperature": 0,
+  "max_tokens": 32768,
+  "timeout_seconds": 90,
+  "wall_seconds": 600,
+  "same_model_both_roles": true,
+  "reasoning": "Provider default; actual thinking/usage is recorded when returned. Identical output ceilings do not mean equal compute or cost.",
+  "profiles": [
+    {
+      "id": "gemini-lite",
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "comparison_role": "weak baseline"
+    },
+    {
+      "id": "gemini-argon",
+      "provider": "gemini",
+      "model": "gemini-4-argon",
+      "comparison_role": "same-provider larger model"
+    },
+    {
+      "id": "openai-full",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "comparison_role": "larger than existing gpt-4.1-mini baseline, not latest flagship"
+    },
+    {
+      "id": "mistral-medium",
+      "provider": "mistral",
+      "model": "mistral-medium-3-5",
+      "comparison_role": "larger coding model"
+    }
+  ]
+}
