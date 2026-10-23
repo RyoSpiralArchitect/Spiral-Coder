@@ -5,7 +5,7 @@
   "timeout_seconds": 90,
   "wall_seconds": 600,
   "same_model_both_roles": true,
-  "reasoning": "Provider default; actual thinking/usage is recorded when returned. Identical output ceilings do not mean equal compute or cost.",
+  "reasoning": "Provider default except GPT-5.6 Luna: reasoning_effort none, max_completion_tokens, temperature omitted for Chat Completions tool compatibility. This is not a reasoning-enabled Luna capacity comparison. Mistral Large 4 uses temperature 0 and top_p 1. Other profiles retain temperature 0 and max_tokens. Missing usage remains unknown; equal ceilings are not equal compute or cost.",
   "profiles": [
     {
       "id": "gemini-lite",
@@ -20,16 +20,28 @@
       "comparison_role": "same-provider larger model"
     },
     {
-      "id": "openai-full",
+      "id": "openai-mini",
       "provider": "openai",
-      "model": "gpt-4.1",
-      "comparison_role": "larger than existing gpt-4.1-mini baseline, not latest flagship"
+      "model": "gpt-4.1-mini",
+      "comparison_role": "retained weak baseline"
     },
     {
-      "id": "mistral-medium",
+      "id": "openai-luna",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "comparison_role": "user-selected stronger counterpart; relative to gpt-4.1-mini, not a flagship claim"
+    },
+    {
+      "id": "mistral-small",
       "provider": "mistral",
-      "model": "mistral-medium-3-5",
-      "comparison_role": "larger coding model"
+      "model": "mistral-small-2603",
+      "comparison_role": "retained weak baseline"
+    },
+    {
+      "id": "mistral-large",
+      "provider": "mistral",
+      "model": "mistral-large-4",
+      "comparison_role": "user-selected larger model; public preview"
     }
   ]
 }

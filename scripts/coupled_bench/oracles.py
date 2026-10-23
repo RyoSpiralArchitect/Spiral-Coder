@@ -10,10 +10,14 @@ from .common import clean_env, inventory, run_process
 
 
 def pilot_documentation(doc):
-    """Bounded lexical proxy, accepting shell line continuations and a known-ID paraphrase."""
+    """Bounded lexical proxy; accept common paraphrases, not arbitrary prose."""
     normalized = " ".join(re.sub(r"\\\s*\n", " ", doc.lower()).split())
+    deduplicated = "duplicat" in normalized or (
+        "at most once" in normalized
+        and re.search(r"\brepeat(?:ed|ing)?\b", normalized) is not None)
     return ("--case alpha --case gamma" in normalized
-            and "duplicat" in normalized and "order" in normalized and "all" in normalized
+            and deduplicated and "order" in normalized
+            and re.search(r"\b(?:all|every)\s+cases?\b", normalized) is not None
             and any(text in normalized for text in ["unknown", "invalid", "does not match a known"]))
 
 
@@ -82,5 +86,5 @@ def score(case, suite_root, workspace, binary):
             checks["artifact_structure"] = False
             exact_reference = False
     return {"passed": all(checks.values()), "checks": checks, "logs": logs,
-            "documentation_proxy_revision": "shell-whitespace-v2",
+            "documentation_proxy_revision": "selection-paraphrases-v4",
             "source_matches_reference": exact_reference}

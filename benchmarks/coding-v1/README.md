@@ -26,7 +26,7 @@ cover explicitly requested tokens, not general prose correctness.
 Build a runtime containing PR #31's bounded reads and task proof first. The
 runtime commit is supplied explicitly and its executable hash is retained.
 The example uses the working tree's build; do not label an unrelated binary with
-the current commit. Model catalog changes are not required for explicit IDs.
+the current commit. Explicit model IDs bypass the picker, but still need matching request compatibility.
 
 ```sh
 cargo build --locked
@@ -58,27 +58,37 @@ python3 -S /tmp/spiral-capacity-r1/driver/run_coupled_bench.py summarize \
   --out /tmp/spiral-capacity-r1
 ```
 
-The provided matrix includes Gemini 3.5 Flash-Lite / Gemini 4 Argon,
-GPT-4.1 and Mistral Medium 3.5. GPT-4.1 is the larger counterpart of the established
-GPT-4.1 mini baseline, not OpenAI's latest flagship. Copy `matrix.json` to select
-other supported model IDs, including Anthropic, before preparing a new output.
-Use a runtime with compatible provider parameters for newer GPT/Claude models
-(the separate PR #34 supplies current Chat Completions compatibility). Responses
-API-only models require a different transport and are not validated by this suite.
+The provided matrix retains weak baselines for all three providers and the
+selected counterparts:
 
-Every profile uses temperature 0, 32,768 output tokens per request, a 90-second
-request timeout and 600-second episode wall cap. The entire four-profile matrix
-has at most **264 wire requests**. Coder, Observer, repairs and native transport
+| Provider | Weak baseline | Selected counterpart |
+| --- | --- | --- |
+| Gemini | `gemini-3.5-flash-lite` | `gemini-4-argon` |
+| OpenAI | `gpt-4.1-mini` | `gpt-5.6-luna` |
+| Mistral | `mistral-small-2603` | `mistral-large-4` (public preview) |
+
+Use a runtime containing PR #34's request compatibility as well as PR #31's
+harness. Luna uses **reasoning none**, `max_completion_tokens` and no explicit
+temperature on the current Chat Completions tool route. This is a compatible-mode
+comparison, not a test of Luna's reasoning-enabled capacity; that needs Responses
+transport. Large 4 uses `top_p: 1` with temperature zero. Both roles use the same
+settings. Copy `matrix.json` before preparing a fresh output to change the panel.
+The earlier four-profile results retain their original frozen matrix.
+
+Every profile uses a 32,768-token output ceiling, a 90-second request timeout
+and a 600-second episode wall cap, with the sampling exceptions above. The entire
+six-profile matrix has at most **396 wire requests**; selecting only `pilot-cli`
+uses at most **144**. Coder, Observer, repairs and native transport
 attempts share each case's cap. The driver does not retry an episode or substitute
 a different model. A new trial needs a fresh directory and predeclaration.
 
 The output limit is higher than the earlier 2,048-token pilot because Argon uses
 one limit for thinking plus output; Google recommends at least 32,768 for existing
-apps with a smaller limit. Thinking remains at each provider's default. Equal
+apps with a smaller limit. Thinking remains at each provider's default except Luna's explicit none mode. Equal
 request/output ceilings are **not equal compute, latency or price**; compare
 returned usage as well, and keep missing usage unknown. See the
 [Argon output-limit guide](https://ai.google.dev/gemini-api/docs/latest-model#setting-output-token-limits)
-and [Mistral Medium 3.5 tool support](https://docs.mistral.ai/models/mistral-medium-3-5-26-04).
+and [GPT-5.6 Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
 
 ## Read the separate outcomes
 
@@ -145,3 +155,8 @@ it does not establish that a harness intervention caused an improvement.
 The [initial 20-episode readout](../../docs/evals/2026-10-23-capacity/README.md)
 retains three adaptive rounds, the transport failure and the remaining closeout
 and tool-format failures. Its results are not a model leaderboard.
+
+The [six-model matched follow-up](../../docs/evals/2026-10-24-action-closeout/README.md)
+retains weak profiles from all three providers, adds the selected Luna/Large 4
+counterparts, and reports action/closeout successes alongside weak-model failures.
+Offline assessment corrections are versioned separately from runtime effects.

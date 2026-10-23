@@ -1,0 +1,752 @@
+{
+  "version": 1,
+  "task": "pilot-cli",
+  "same_model_both_roles": true,
+  "matched_inputs": true,
+  "joint_adaptive_intervention": true,
+  "task_episodes": 12,
+  "task_requests": 247,
+  "separate_protocol_requests": 4,
+  "rounds": {
+    "r1": {
+      "counts": {
+        "declared": 6,
+        "finished": 6,
+        "runtime_completed": 3,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 3,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 133,
+        "episodes_with_unknown_request_count": 0
+      },
+      "assessment_sha256": "70dcbb47eb278b84e777636df98a6d5b0d7b62602f95495227f940c7f9b5548b",
+      "original_assessment_counts": {
+        "declared": 6,
+        "finished": 6,
+        "runtime_completed": 3,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 133,
+        "episodes_with_unknown_request_count": 0
+      }
+    },
+    "r2": {
+      "counts": {
+        "declared": 6,
+        "finished": 6,
+        "runtime_completed": 3,
+        "independent_artifacts_passed": 4,
+        "behavior_and_handoff_qualified": 3,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 114,
+        "episodes_with_unknown_request_count": 0
+      },
+      "assessment_sha256": "4bc3a94ee7b118da675d66d985c42bf4729286030c78f5ed22a4a4b88d00ae9f",
+      "original_assessment_counts": {
+        "declared": 6,
+        "finished": 6,
+        "runtime_completed": 3,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 114,
+        "episodes_with_unknown_request_count": 0
+      }
+    }
+  },
+  "rows": [
+    {
+      "profile": {
+        "id": "gemini-lite",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "comparison_role": "weak baseline"
+      },
+      "before": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 23,
+          "observer": 1
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": false,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": false,
+          "no_remaining_acceptance": false
+        },
+        "report_fields": {
+          "all_artifacts_named": false,
+          "before_failed": false,
+          "after_passed": false,
+          "baseline_commands_named": false
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Think Gate": 2,
+          "Recovery Gate": 1
+        },
+        "oracle": {
+          "passed": false,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": false
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.333s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {},
+        "executed_native_actions": 18,
+        "returned_usage_requests": 0
+      },
+      "after": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 22,
+          "observer": 2
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": false,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Think Gate": 2,
+          "Recovery Gate": 1,
+          "unspecified governor": 1,
+          "Done Gate": 1
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.331s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "closeout_action": 1
+        },
+        "executed_native_actions": 13,
+        "returned_usage_requests": 0
+      }
+    },
+    {
+      "profile": {
+        "id": "gemini-argon",
+        "provider": "gemini",
+        "model": "gemini-4-argon",
+        "comparison_role": "same-provider larger model"
+      },
+      "before": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 23,
+          "observer": 1
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": false,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": false,
+          "baseline_before_edit": false,
+          "fresh_exact_checks": false,
+          "no_pending_checks": false,
+          "accepted_done": false,
+          "no_remaining_acceptance": false
+        },
+        "report_fields": {
+          "all_artifacts_named": false,
+          "before_failed": false,
+          "after_passed": false,
+          "baseline_commands_named": false
+        },
+        "blocks": {},
+        "oracle": {
+          "passed": false,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": false,
+            "original_test_count": true,
+            "requested_documentation": false
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 1,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-0x9xeyqg/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-0x9xeyqg/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.335s\n\nFAILED (failures=1)\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "single_tool": 23
+        },
+        "executed_native_actions": 0,
+        "returned_usage_requests": 0
+      },
+      "after": {
+        "requests": 18,
+        "request_roles": {
+          "coder": 18
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Recovery Gate": 1,
+          "Final handoff": 3
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.335s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {},
+        "executed_native_actions": 12,
+        "returned_usage_requests": 0
+      }
+    },
+    {
+      "profile": {
+        "id": "openai-mini",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "comparison_role": "retained weak baseline"
+      },
+      "before": {
+        "requests": 19,
+        "request_roles": {
+          "coder": 19
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Requirement Gate": 1,
+          "unspecified governor": 1,
+          "Final handoff": 1,
+          "Done Gate": 1
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.332s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {},
+        "executed_native_actions": 13,
+        "returned_usage_requests": 0
+      },
+      "after": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 23,
+          "observer": 1
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": false,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": false,
+          "no_pending_checks": false,
+          "accepted_done": false,
+          "no_remaining_acceptance": false
+        },
+        "report_fields": {
+          "all_artifacts_named": false,
+          "before_failed": false,
+          "after_passed": false,
+          "baseline_commands_named": false
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Requirement Gate": 1,
+          "Done Gate": 1
+        },
+        "oracle": {
+          "passed": false,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": false,
+            "original_test_count": true,
+            "requested_documentation": false
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 1,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ERROR\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ERROR\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ERROR\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ERROR\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nERROR: test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 87, in test_default_runs_every_case_and_records_selection\n    self.invoke()\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 73, in invoke\n    pilot.main()\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/scripts/run_coupled_pilot.py\", line 71, in main\n    from coupled_pilot import create_observer\nModuleNotFoundError: No module named 'coupled_pilot'\n\n======================================================================\nERROR: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 91, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.invoke([\"--case\", \"gamma\", \"--case\", \"alpha\", \"--case\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 73, in invoke\n    pilot.main()\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/scripts/run_coupled_pilot.py\", line 71, in main\n    from coupled_pilot import create_observer\nModuleNotFoundError: No module named 'coupled_pilot'\n\n======================================================================\nERROR: test_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 110, in test_selection_cannot_overwrite_existing_receipts\n    self.invoke([\"--case\", \"alpha\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 73, in invoke\n    pilot.main()\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/scripts/run_coupled_pilot.py\", line 71, in main\n    from coupled_pilot import create_observer\nModuleNotFoundError: No module named 'coupled_pilot'\n\n======================================================================\nERROR: test_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 98, in test_unknown_case_fails_before_output_or_execution_without_a_key\n    self.invoke([\"--case\", \"alpha\", \"--case\", \"missing-case\"], credential=False)\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/tests/test_coupled_pilot.py\", line 73, in invoke\n    pilot.main()\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-kas6qtp0/workspace/scripts/run_coupled_pilot.py\", line 71, in main\n    from coupled_pilot import create_observer\nModuleNotFoundError: No module named 'coupled_pilot'\n\n----------------------------------------------------------------------\nRan 7 tests in 0.327s\n\nFAILED (errors=4)\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {},
+        "executed_native_actions": 19,
+        "returned_usage_requests": 0
+      }
+    },
+    {
+      "profile": {
+        "id": "openai-luna",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "comparison_role": "user-selected stronger counterpart; relative to gpt-4.1-mini, not a flagship claim"
+      },
+      "before": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 23,
+          "observer": 1
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": false,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": false,
+          "baseline_before_edit": false,
+          "fresh_exact_checks": false,
+          "no_pending_checks": false,
+          "accepted_done": false,
+          "no_remaining_acceptance": false
+        },
+        "report_fields": {
+          "all_artifacts_named": false,
+          "before_failed": false,
+          "after_passed": false,
+          "baseline_commands_named": false
+        },
+        "blocks": {},
+        "oracle": {
+          "passed": false,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": false,
+            "original_test_count": true,
+            "requested_documentation": false
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 1,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-n47p6973/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-n47p6973/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.334s\n\nFAILED (failures=1)\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "single_tool": 10,
+          "reflection": 8
+        },
+        "executed_native_actions": 5,
+        "returned_usage_requests": 0
+      },
+      "after": {
+        "requests": 12,
+        "request_roles": {
+          "coder": 12
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "unspecified governor": 3,
+          "Plan Gate": 1,
+          "Requirement Gate": 1
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.332s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "single_tool": 1
+        },
+        "executed_native_actions": 9,
+        "returned_usage_requests": 0
+      }
+    },
+    {
+      "profile": {
+        "id": "mistral-small",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "comparison_role": "retained weak baseline"
+      },
+      "before": {
+        "requests": 23,
+        "request_roles": {
+          "coder": 22,
+          "observer": 1
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "Plan Gate": 1,
+          "Requirement Gate": 1,
+          "Recovery Gate": 1,
+          "Final handoff": 1
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.331s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "reflection": 3
+        },
+        "executed_native_actions": 15,
+        "returned_usage_requests": 23
+      },
+      "after": {
+        "requests": 24,
+        "request_roles": {
+          "coder": 23,
+          "observer": 1
+        },
+        "runtime_completed": false,
+        "independent_artifacts_passed": false,
+        "behavior_and_handoff_qualified": false,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": false,
+          "no_pending_checks": false,
+          "accepted_done": false,
+          "no_remaining_acceptance": false
+        },
+        "report_fields": {
+          "all_artifacts_named": false,
+          "before_failed": false,
+          "after_passed": false,
+          "baseline_commands_named": false
+        },
+        "blocks": {
+          "Plan Gate": 1,
+          "Recovery Gate": 5,
+          "unspecified governor": 1
+        },
+        "oracle": {
+          "passed": false,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": false,
+            "original_test_count": true,
+            "requested_documentation": false
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 1,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... FAIL\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-j3bb52cp/workspace/tests/test_coupled_pilot.py\", line 88, in test_default_runs_every_case_and_records_selection\n    self.assert_selection([\"alpha\", \"beta\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-j3bb52cp/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: [] != ['alpha', 'beta', 'gamma']\n\nSecond list contains 3 additional elements.\nFirst extra element 0:\n'alpha'\n\n- []\n+ ['alpha', 'beta', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.329s\n\nFAILED (failures=1)\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "closeout_action": 1
+        },
+        "executed_native_actions": 16,
+        "returned_usage_requests": 24
+      }
+    },
+    {
+      "profile": {
+        "id": "mistral-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "comparison_role": "user-selected larger model; public preview"
+      },
+      "before": {
+        "requests": 19,
+        "request_roles": {
+          "coder": 19
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "Plan Gate": 2,
+          "Progress Gate": 1,
+          "Recovery Gate": 2
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.333s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": true
+        },
+        "pre_tool_gate_counts": {
+          "single_tool": 4
+        },
+        "executed_native_actions": 10,
+        "returned_usage_requests": 19
+      },
+      "after": {
+        "requests": 12,
+        "request_roles": {
+          "coder": 12
+        },
+        "runtime_completed": true,
+        "independent_artifacts_passed": true,
+        "behavior_and_handoff_qualified": true,
+        "strict_all_files_qualified": false,
+        "native": {
+          "native_edit": true,
+          "baseline_before_edit": true,
+          "fresh_exact_checks": true,
+          "no_pending_checks": true,
+          "accepted_done": true,
+          "no_remaining_acceptance": true
+        },
+        "report_fields": {
+          "all_artifacts_named": true,
+          "before_failed": true,
+          "after_passed": true,
+          "baseline_commands_named": true
+        },
+        "blocks": {
+          "unspecified governor": 4,
+          "Plan Gate": 3
+        },
+        "oracle": {
+          "passed": true,
+          "checks": {
+            "supplied_files_preserved": true,
+            "candidate_artifacts_present": true,
+            "independent_check_0": true,
+            "original_test_count": true,
+            "requested_documentation": true
+          },
+          "logs": [
+            {
+              "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+              "exit_code": 0,
+              "timed_out": false,
+              "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.331s\n\nOK\n"
+            }
+          ],
+          "documentation_proxy_revision": "selection-paraphrases-v4",
+          "source_matches_reference": false
+        },
+        "pre_tool_gate_counts": {
+          "single_tool": 1
+        },
+        "executed_native_actions": 8,
+        "returned_usage_requests": 12
+      }
+    }
+  ]
+}

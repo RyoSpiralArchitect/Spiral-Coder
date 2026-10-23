@@ -27,6 +27,23 @@ class IndependentOracles(unittest.TestCase):
         self.assertFalse(oracles.pilot_documentation(doc.replace("does not match a known", "mentions a")))
         self.assertFalse(oracles.pilot_documentation(doc.replace("--case gamma", "--case beta")))
 
+    def test_cli_documentation_accepts_every_case_but_not_incidental_all_substrings(self):
+        doc = ("Without --case, every case in the suite runs in suite order. "
+               "Duplicates run once; unknown IDs fail before output. "
+               "Example: --case alpha --case gamma")
+        self.assertTrue(oracles.pilot_documentation(doc))
+        self.assertTrue(oracles.pilot_documentation(doc.replace("every case", "all cases")))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("every case", "a called case")))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("every case", "some cases")))
+
+    def test_cli_documentation_accepts_at_most_once_for_repeated_ids(self):
+        doc = ("Each named case runs at most once, even if an ID is repeated. "
+               "Original suite order is retained; unknown IDs fail before output. "
+               "No filter runs every case. Example: --case alpha --case gamma")
+        self.assertTrue(oracles.pilot_documentation(doc))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("at most once", "twice")))
+        self.assertFalse(oracles.pilot_documentation(doc.replace("repeated", "mentioned")))
+
     def setUp(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)

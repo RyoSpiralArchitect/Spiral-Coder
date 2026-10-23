@@ -1,0 +1,8 @@
+{
+  "created_at": "2026-10-23T19:05:25.191697+00:00",
+  "prior_plan": "capacity-plan-20261024.json",
+  "before_intervention_live_calls": true,
+  "clarification": "Hard report-only reservation applies only to an explicit task_requirements contract. Undeclared interactive tasks keep all tools even with one request left.",
+  "reason": "Eight existing mocked recovery tests intentionally use 1-2 requests for repair/resume. Forcing done there prevented authorized repair steps. Preserve those behaviors; the coding-v1 fixtures already declare task_requirements.",
+  "baseline_and_followup_tasks_unchanged": true
+}

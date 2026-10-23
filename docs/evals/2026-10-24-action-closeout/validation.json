@@ -1,0 +1,25 @@
+{
+  "runtime_quality_commit": "fd3400f",
+  "runtime_quality_tests": {
+    "passed": 816,
+    "ignored": 1,
+    "integration": 1,
+    "tui_replay_passed": 6
+  },
+  "integrated_runtime_commit": "c1f3add6f6849f21b661a1a6c8c69919ffd53512",
+  "integrated_tests": {
+    "passed": 825,
+    "ignored": 1,
+    "integration": 1
+  },
+  "python_tests_passed": 37,
+  "raw_files_verified": {
+    "r1": 169,
+    "r2": 171
+  },
+  "published_files_scanned": 20,
+  "credential_scan": "no matches for the three authorized provider credentials",
+  "opaque_provider_signature_fields_published": false,
+  "matched_suite_matrix_driver_prompts_initial_workspaces": true,
+  "live_completion_claim": "3/6 qualified in both rounds with final shared assessor; no aggregate reliability gain claimed"
+}
