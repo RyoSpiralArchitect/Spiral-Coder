@@ -114,10 +114,24 @@ equivalent known-ID phrase; it still does not certify arbitrary prose quality.
 
 ## Interactive dogfooding
 
-Use a separate prepared directory for a manual session. Enter an episode's
-`workspace`, start `spiral --provider gemini --model gemini-3.5-flash-lite`, select
-the same model for Coder and Observer, and paste the neighboring `task.txt`.
-All edits stay in the copied exercise. Run `summarize` afterward for independent
+Use a separate prepared directory for a manual session and its frozen runtime,
+so the interactive exercise uses the same build as the headless suite:
+
+```sh
+python3 -S scripts/run_coupled_bench.py prepare \
+  --binary target/debug/spiral-coder --runtime-commit "$(git rev-parse HEAD)" \
+  --out /tmp/spiral-dogfood-r1 --profile gemini-lite --case pilot-cli
+cd /tmp/spiral-dogfood-r1/episodes/gemini-lite/pilot-cli/workspace
+/tmp/spiral-dogfood-r1/runtime/spiral-coder tui \
+  --provider gemini --model gemini-3.5-flash-lite \
+  --observer-model gemini-3.5-flash-lite \
+  --temperature 0 --max-tokens 32768 --timeout-seconds 90 --max-iters 24
+```
+
+Paste the neighboring `../task.txt` in the Coder pane. The installed `spiral`
+launcher can be used when it points to this same build; an older npm release
+does not contain the runtime under test. All edits stay in the copied exercise.
+Run `summarize` afterward for independent
 artifact checks. A manual session without the headless native report is labeled
 `not_run` for that driver and cannot qualify native evidence or completion;
 passing artifact tests alone does not create those receipts. Do not mix manual

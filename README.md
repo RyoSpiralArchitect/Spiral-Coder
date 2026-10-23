@@ -629,8 +629,8 @@ Flash-Lite / Argon or select other providers through the model matrix.
 
 `scripts/run_coupled_bench.py prepare` creates disposable workspaces and checks
 broken/reference fixtures without calling a provider. Use the frozen driver for
-bounded live runs, or enter a separate copied workspace with `spiral` for manual
-TUI dogfooding. Independent artifact checks, native verification, final reporting
+bounded live runs, or use the frozen runtime's `tui` command in a separate copied
+workspace for manual dogfooding. Independent artifact checks, native verification, final reporting
 and full file scope are scored separately. See the
 [initial capacity experiments and remaining failures](docs/evals/2026-10-23-capacity/README.md).
 
