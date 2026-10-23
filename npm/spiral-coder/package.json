@@ -1,0 +1,12 @@
+{
+  "name": "spiral-coder",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Spiral-Coder terminal agent with coupled Coder and Observer",
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "git+https://github.com/RyoSpiralArchitect/Spiral-Coder.git", "directory": "npm/spiral-coder" },
+  "engines": { "node": ">=20" },
+  "bin": { "spiral": "bin/spiral.cjs", "spiral-coder": "bin/spiral-coder.cjs" },
+  "files": ["bin/", "lib/", "vendor/", "native-manifest.json", "README.md", "LICENSE"],
+  "publishConfig": { "access": "public" }
+}

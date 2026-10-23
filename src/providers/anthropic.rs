@@ -101,6 +101,13 @@ impl ChatProvider for AnthropicProvider {
             }
         }
 
+        crate::config::model_catalog::prepare_chat_payload(
+            &mut payload,
+            &crate::config::ProviderKind::Anthropic,
+            &self.base_url,
+            &self.model,
+        );
+
         let meter = crate::work_budget::begin(&payload)?;
         let resp = self
             .client

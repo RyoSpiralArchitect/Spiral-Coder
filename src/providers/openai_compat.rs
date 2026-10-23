@@ -216,6 +216,13 @@ impl ChatProvider for OpenAICompatibleProvider {
             }
         }
 
+        crate::config::model_catalog::prepare_chat_payload(
+            &mut payload,
+            &crate::config::ProviderKind::OpenAiCompatible,
+            &self.base_url,
+            &self.model,
+        );
+
         let mut last_err: Option<anyhow::Error> = None;
         let mut want_completions = false;
 

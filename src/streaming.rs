@@ -209,12 +209,13 @@ fn swap_max_tokens_to_max_completion_tokens(payload: &mut serde_json::Value) {
     }
 }
 
-fn apply_temperature_compat(payload: &mut serde_json::Value, cfg: &RunConfig) {
-    if !crate::config::should_send_temperature_for_run(cfg) {
-        if let Some(obj) = payload.as_object_mut() {
-            obj.remove("temperature");
-        }
-    }
+fn apply_model_compat(payload: &mut serde_json::Value, cfg: &RunConfig) {
+    crate::config::model_catalog::prepare_chat_payload(
+        payload,
+        &cfg.provider,
+        &cfg.base_url,
+        &cfg.model,
+    );
 }
 
 fn prompt_from_json_messages(messages: &[serde_json::Value]) -> String {
@@ -356,7 +357,7 @@ pub async fn stream_openai_compat_json(
         "max_tokens": cfg.max_tokens,
         "stream": true,
     });
-    apply_temperature_compat(&mut payload, cfg);
+    apply_model_compat(&mut payload, cfg);
 
     if let Some(t) = tools {
         payload["tools"] = t.clone();
@@ -500,7 +501,7 @@ pub async fn stream_openai_compat_json(
             "max_tokens": cfg.max_tokens,
             "stream": true,
         });
-        apply_temperature_compat(&mut comp_payload, cfg);
+        apply_model_compat(&mut comp_payload, cfg);
 
         // No tools on completions endpoint.
         let mut attempt: usize = 0;
@@ -714,7 +715,7 @@ pub async fn stream_anthropic(
         .map(|m| json!({"role": m.role, "content": m.content}))
         .collect();
 
-    let payload = json!({
+    let mut payload = json!({
         "model": cfg.model,
         "messages": chat_msgs,
         "system": system_msg,
@@ -722,6 +723,8 @@ pub async fn stream_anthropic(
         "max_tokens": cfg.max_tokens,
         "stream": true,
     });
+
+    apply_model_compat(&mut payload, cfg);
 
     let max_connect_retries = max_connect_retries(&cfg.provider);
     let mut attempt: usize = 0;
@@ -1075,3 +1078,6 @@ mod tests {
         assert!(msg.contains("empty response body"));
     }
 }
+
+#[cfg(test)]
+mod model_catalog_tests;
