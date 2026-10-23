@@ -3,6 +3,30 @@ use crate::streaming::provider_metadata::is_google_endpoint;
 use crate::task_origin::{user_message, MessageOrigin};
 use serde_json::Value;
 
+/// Preserve the provider turn byte-for-byte at the call boundary, including
+/// opaque signatures, and correlate a refusal with every unexecuted call.
+pub(super) fn retain_rejected_calls(
+    messages: &mut Vec<Value>,
+    text: &str,
+    calls: &[crate::streaming::ToolCallData],
+    reason: &str,
+) {
+    let mut response = serde_json::json!({"role":"assistant", "content":text});
+    if !calls.is_empty() {
+        response["tool_calls"] = serde_json::json!(calls
+            .iter()
+            .map(crate::streaming::ToolCallData::to_json)
+            .collect::<Vec<_>>());
+    }
+    messages.push(response);
+    for call in calls {
+        messages.push(serde_json::json!({
+            "role":"tool", "tool_call_id":call.id,
+            "content":format!("GOVERNOR BLOCKED\n\n{reason}\nNo tool in this response was executed. Submit exactly one native function call next.")
+        }));
+    }
+}
+
 const NATIVE_TOOL_REQUIRED: &str = "No native tool call was received; no tool was executed for this response. Use the provided function/tool interface for the next action (or done when verified), alongside the required plan/think/evidence blocks. XML such as <default_api:exec> or a textual command is not a function call. Keep the current task and verification obligations.";
 
 /// Early reflection/impact rejections happen before the ordinary unfinished

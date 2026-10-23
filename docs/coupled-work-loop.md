@@ -67,6 +67,27 @@ as a shell command. The browser uses the same boundary in `core/work-loop.js`
 and persists the refusal before retrying. Valid JSON still passes the existing
 tool, plan, approval, evidence and verification gates.
 
+`agent/provider_turn.rs` also retains rejected multi-call batches before other
+protocol gates. Every original call gets a correlated `GOVERNOR BLOCKED` result;
+none executes. IDs, argument strings and opaque provider signatures survive
+autosave and resume. Rejections cannot become successful proof. This makes the
+rejected proposal visible on the next request instead of repeating a bare hint
+against a history that never contained the proposal.
+
+`agent/next_action.rs` derives a wire-level next-action contract from the shared
+request budget and native requirement status. Each response allows one native
+function call. For tasks with an explicit `task_requirements` contract, the final
+shared request offers only `done` for an authored report
+or truthful incomplete handoff. In the last three requests, report-only mode also
+applies when explicitly declared requirements, baselines and exact checks have
+current proof. An undeclared or still-pending requirement cannot select this early
+path. Undeclared interactive tasks retain their action tools, including deliberate
+one-request repair/resume steps. A shorter Coder chunk alone does not exhaust the
+shared task budget. Calls
+outside the offered report-only tool set are retained and refused without
+execution. No additional requests, automatic report text, acceptance repair or
+completion authority are introduced; all existing done gates still apply.
+
 `agent/final_instructions.rs` owns bounded explicit English report clauses:
 “final answer/report/response/summary must” followed by a supported positive verb
 such as include, name, state or disclose. It preserves literal case and sentence

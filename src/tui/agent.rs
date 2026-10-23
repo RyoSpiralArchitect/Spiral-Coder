@@ -70,6 +70,9 @@ mod memory;
 mod message_window;
 mod meta_harness;
 mod native_arguments;
+mod next_action;
+#[cfg(test)]
+mod next_action_tests;
 mod outcome;
 mod plan_resume;
 mod progress_bridge;
@@ -7794,8 +7797,8 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             ));
         }
 
-        let remaining_calls = crate::work_budget::current()
-            .map(|c| c.budget.remaining())
+        let shared_remaining = crate::work_budget::current().map(|c| c.budget.remaining());
+        let remaining_calls = shared_remaining
             .unwrap_or(max_iters - iter)
             .min(max_iters - iter);
         let pending_checks = task_harness::benchmark_proof::pending_commands(
@@ -7804,6 +7807,11 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             test_cmd.as_deref(),
         );
         let closing = remaining_calls <= pending_checks.len().saturating_add(3);
+        let next_action = next_action::Contract::project(
+            shared_remaining,
+            &pending_checks,
+            &requirement_proof::project(&messages, test_cmd.as_deref()),
+        );
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
@@ -8344,7 +8352,8 @@ This is the LAST model call for this run.\n\
 
         let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
         let cfg_clone = cfg.clone();
-        let tools_clone = tools.clone();
+        let tools_clone = next_action.tools(&tools);
+        msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
 
@@ -8448,6 +8457,43 @@ This is the LAST model call for this run.\n\
             pending_system_hint = Some(hint);
             // Transport rejection is not an executed edit/command failure. Keep
             // any real recovery focus and current proof, and spend only this request.
+            continue;
+        }
+
+        // Reject the whole batch before reflection/impact gates can discard its
+        // native transcript. A rejection is feedback, never execution evidence.
+        let turn_rejection = if tool_calls.len() > 1 {
+            Some((
+                "single_tool",
+                governor_contract::multiple_tool_calls_message(tool_calls.len()),
+            ))
+        } else {
+            next_action
+                .rejection(&tool_calls)
+                .map(|hint| ("closeout_action", hint))
+        };
+        if let Some((gate, hint)) = turn_rejection {
+            provider_turn::retain_rejected_calls(
+                &mut messages,
+                &assistant_text,
+                &tool_calls,
+                &hint,
+            );
+            let _ = tx
+                .send(StreamToken::Delta(format!("\n[GOVERNOR BLOCK] {hint}\n")))
+                .await;
+            impact_recovery::emit_rejection(&tx, gate, &hint, &tool_calls, &assistant_text).await;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            pending_system_hint = Some(hint);
+            state = AgentState::Recovery;
             continue;
         }
 
@@ -8967,20 +9013,6 @@ Execute only the new minimal action: {}",
         };
         let mut validated_plan_for_turn: Option<PlanBlock> = None;
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
-
-        // Guardrail: the runtime supports only one tool call per assistant turn.
-        // (We stream tool_calls, but the executor is single-tool.)
-        if tool_calls.len() > 1 {
-            let msg = governor_contract::multiple_tool_calls_message(tool_calls.len());
-            let _ = tx
-                .send(StreamToken::Delta(format!("\n[GOVERNOR BLOCK] {msg}\n")))
-                .await;
-            impact_recovery::emit_rejection(&tx, "single_tool", &msg, &tool_calls, &assistant_text)
-                .await;
-            pending_system_hint = Some(msg);
-            state = AgentState::Recovery;
-            continue;
-        }
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
 
