@@ -218,7 +218,11 @@ impl ChatProvider for OpenAICompatibleProvider {
 
         crate::config::model_catalog::prepare_chat_payload(
             &mut payload,
-            &crate::config::ProviderKind::OpenAiCompatible,
+            &if self.kind_label.eq_ignore_ascii_case("mistral") {
+                crate::config::ProviderKind::Mistral
+            } else {
+                crate::config::ProviderKind::OpenAiCompatible
+            },
             &self.base_url,
             &self.model,
         );
