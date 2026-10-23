@@ -3,6 +3,14 @@ async fn observer_continuation_keeps_native_evidence_and_finishes_the_original_r
     assert_native_continuation("[GOVERNOR BLOCK] Missing final report.", 0, false).await;
 }
 
+#[test]
+fn single_tool_rejection_is_failure_like_for_observer_rescue() {
+    let text = format!("[GOVERNOR BLOCK] {}", crate::governor_contract::multiple_tool_calls_message(2));
+    assert!(meta_failure_like(&text));
+    assert_eq!(meta_failure_kind(&text), "tool_error");
+    assert!(!meta_failure_like("The two source files have been inspected successfully."));
+}
+
 #[tokio::test]
 async fn a_successful_tool_at_the_chunk_cap_still_reaches_observer_and_final_report() {
     assert_native_continuation("[RESULT][Verifying] exit=0\n[agent] iteration cap (4) reached.", 2, false).await;

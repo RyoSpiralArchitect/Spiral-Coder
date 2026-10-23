@@ -9,6 +9,11 @@ with their original call and do not become execution proof. A failed coupled
 driver loop retains its incomplete report, session and spent request ledger before
 returning the error; transport failure must not disappear from an evaluation.
 
+The executor still accepts one tool per turn. Its multiple-tool rejection uses
+the normal `GOVERNOR BLOCK` display marker, so Observer rescue recognizes this
+incomplete Coder output. Recognizing the blocker does not execute a rejected call
+or relax plan, action, proof or report requirements.
+
 Coder and Observer are roles in one task. An accepted suggestion is not a completed task. The unit of qualification is the original request, its preserved artifacts, current verification, authored final report, and the total request cap.
 
 For new maintenance behavior, [explicit task requirements](task-requirements.md)

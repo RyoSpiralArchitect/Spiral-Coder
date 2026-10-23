@@ -109,6 +109,64 @@ fn reflection_identity_ignores_wire_format_and_unused_fields() {
     );
 }
 
+#[test]
+fn reflection_identity_tracks_read_bounds_and_normalizes_implicit_defaults() {
+    let identity = |args| tool_call_action_sig(&call("read_file", args));
+    for (before, after) in [
+        (
+            json!({"path":"a","start_line":1,"end_line":300}),
+            json!({"path":"a","start_line":1,"end_line":200}),
+        ),
+        (
+            json!({"path":"a","start_line":1,"end_line":100}),
+            json!({"path":"a","start_line":101,"end_line":166}),
+        ),
+        (json!({"path":"a"}), json!({"path":"a","start_line":1})),
+    ] {
+        assert_ne!(identity(before), identity(after));
+    }
+    assert_eq!(
+        identity(json!({"path":"a","start_line":5})),
+        identity(json!({"path":"a","start_line":5,"end_line":204,"unused":true}))
+    );
+    assert_eq!(
+        identity(json!({"path":"a","end_line":100})),
+        identity(json!({"path":"a","start_line":1,"end_line":100}))
+    );
+    assert_eq!(
+        identity(json!({"path":"a"})),
+        identity(json!({"path":"a","start_line":null,"end_line":null}))
+    );
+    assert!(
+        identity(json!({"path":"a","start_line":101,"end_line":166}))
+            .unwrap()
+            .to_string()
+            .contains("[lines 101-166]")
+    );
+}
+
+#[test]
+fn correcting_an_invalid_range_changes_both_execution_and_reflection_identity() {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("a"), "line\n".repeat(400)).unwrap();
+    let oversized = json!({"path":"a","start_line":1,"end_line":300});
+    let corrected = json!({"path":"a","start_line":101,"end_line":166});
+    let before = crate::file_tools::read_range::execute_args(&oversized, root.path().to_str());
+    let after = crate::file_tools::read_range::execute_args(&corrected, root.path().to_str());
+    assert!(before.1);
+    assert!(!after.1);
+    assert!(after.0.contains("[range: lines 101-166; partial file]"));
+    assert_ne!(
+        tool_call_action_sig(&call("read_file", oversized)),
+        tool_call_action_sig(&call("read_file", corrected.clone()))
+    );
+    assert_eq!(
+        tool_call_action_sig(&call("read_file", corrected.clone())),
+        tool_call_action_sig(&call("read_file", corrected))
+    );
+    assert!(!crate::file_tools::read_range::full_snapshot(&after.0));
+}
+
 #[tokio::test]
 async fn reflection_gate_allows_a_revised_patch_but_blocks_an_identical_retry() {
     use httpmock::prelude::*;

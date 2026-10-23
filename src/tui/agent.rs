@@ -8973,7 +8973,7 @@ Execute only the new minimal action: {}",
         if tool_calls.len() > 1 {
             let msg = governor_contract::multiple_tool_calls_message(tool_calls.len());
             let _ = tx
-                .send(StreamToken::Delta(format!("\n[governor] {msg}\n")))
+                .send(StreamToken::Delta(format!("\n[GOVERNOR BLOCK] {msg}\n")))
                 .await;
             impact_recovery::emit_rejection(&tx, "single_tool", &msg, &tool_calls, &assistant_text)
                 .await;

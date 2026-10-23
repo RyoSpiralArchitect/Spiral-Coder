@@ -1,5 +1,11 @@
 # Bounded file reads
 
+Reflection compares the requested path and effective line bounds. A corrected
+range (including narrowing an oversized request) is a different action. Omitted
+defaults normalize to the same bounds, and call IDs or ignored fields cannot
+make an identical range look new. This affects retry identity only; it does not
+grant whole-file overwrite permission or verification credit.
+
 Coder and Observer share `read_file` arguments in the native tool catalog. Web
 forwards the same arguments to `/api/read_file`:
 
