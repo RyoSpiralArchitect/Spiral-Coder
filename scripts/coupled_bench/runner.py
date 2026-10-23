@@ -190,7 +190,7 @@ def summarize(args):
         process_file = folder / "process.json"
         process = read_json(process_file) if process_file.exists() else {}
         report, receipt_source = retained_report(folder)
-        errors = []
+        errors, pre_tool_rejections = [], []
         trace = folder / "run/trace.jsonl"
         if trace.exists():
             for line in trace.read_text().splitlines():
@@ -200,10 +200,13 @@ def summarize(args):
                     continue
                 if event.get("event") == "error":
                     errors.append(event.get("data"))
+                elif event.get("event") == "pre_tool_gate_rejected":
+                    pre_tool_rejections.append(event.get("data"))
         state = "finished" if process else ("started_without_receipt" if (folder / "started.json").exists() else "not_run")
         oracle = score(case, out / "inputs", folder / "workspace", out / declaration["binary_path"])
         rows.append({"profile": profile, "case": case["id"], "state": state, "process": process,
                      "receipt_source": receipt_source, "trace_errors": errors,
+                     "pre_tool_rejections": pre_tool_rejections,
                      **assess(case, episode["workspace_before"], folder / "workspace", report, process, oracle)})
     result = {"version": 1, "evaluated_at": now(), "predeclaration_sha256": sha(out / "predeclared.json"),
               "assessor_driver_sha256": assessor, "assessor_snapshot": snapshot.relative_to(out).as_posix(),
