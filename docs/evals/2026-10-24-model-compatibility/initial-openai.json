@@ -1,0 +1,47 @@
+{
+  "trial": "initial",
+  "request": {
+    "model": "gpt-5.6-luna",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Call read_file once for sample.txt using the native function tool. Do not answer in text."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read a fixture file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        }
+      }
+    ],
+    "stream": true,
+    "max_completion_tokens": 32768
+  },
+  "result": {
+    "provider": "openai",
+    "requested_model": "gpt-5.6-luna",
+    "response_models": [],
+    "http_status": 400,
+    "wire_requests": 1,
+    "elapsed_seconds": 3.215,
+    "tool_deltas": [],
+    "usage": [],
+    "raw_sha256": "09ad9eeae92ab30493ae351c7616edb7532cc30ead72da1f070685234643156b",
+    "error": "{\n  \"error\": {\n    \"message\": \"Function tools with reasoning_effort are not supported for gpt-5.6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"reasoning_effort\",\n    \"code\": null\n  }\n}"
+  },
+  "raw_local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-probes-20261024/openai/response.sse"
+}

@@ -1,0 +1,48 @@
+{
+  "trial": "initial",
+  "request": {
+    "model": "mistral-large-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Call read_file once for sample.txt using the native function tool. Do not answer in text."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read a fixture file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        }
+      }
+    ],
+    "stream": true,
+    "max_tokens": 32768,
+    "temperature": 0
+  },
+  "result": {
+    "provider": "mistral",
+    "requested_model": "mistral-large-4",
+    "response_models": [],
+    "http_status": 400,
+    "wire_requests": 1,
+    "elapsed_seconds": 1.767,
+    "tool_deltas": [],
+    "usage": [],
+    "raw_sha256": "f2a47b0390f2e2ec825a4e63b80f0f5238d01226418381cf755608f8b11725c3",
+    "error": "{\"object\":\"error\",\"message\":\"top_p must be 1 when using greedy sampling.\",\"type\":\"invalid_request_greedy_sampling\",\"param\":null,\"code\":\"3054\",\"raw_status_code\":400}"
+  },
+  "raw_local_path": "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-probes-20261024/mistral/response.sse"
+}

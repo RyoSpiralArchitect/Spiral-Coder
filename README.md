@@ -519,6 +519,7 @@ TUI defaults:
 - Run `/keys` to see which API key env var or CLI flag each pane expects.
 - Typing `/` in the composer shows a lightweight slash-command picker.
 - Typing exact `/provider` or `/model` opens an arrow-key picker (`Up/Down`, `Enter` to apply). `/provider` now exposes vendor presets such as `openai`, `gemini`, `anthropic-compat`, `mistral`, `anthropic`, and `hf`; `/model` follows the selected preset and still offers `other` for manual entry.
+  Current candidates and API constraints are listed in the [model catalog](docs/model-catalog.md).
 - If a pane is missing a required API key or model, send is blocked and the TUI shows a warning instead of running.
 
 **Headless Coder (CLI)**

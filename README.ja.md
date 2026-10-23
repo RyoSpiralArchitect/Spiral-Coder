@@ -457,6 +457,7 @@ TUI のデフォルト:
 - `/keys` で、各ペインが必要とする API キーの env var / CLI flag を確認できる。
 - composer で `/` を打つと、軽い slash command picker が出る。
 - exact `/provider` と `/model` では、`↑/↓` と `Enter` で選ぶ picker が開く。`/provider` は `openai` / `gemini` / `anthropic-compat` / `mistral` / `anthropic` / `hf` の vendor preset を出し、`/model` は選択中 preset に応じた代表モデルと `other` を出す。
+  最新候補とAPI上の制約は [モデル一覧](docs/model-catalog.md) を参照。
 - 必須の API キーや model が欠けているペインでは、送信は走らず警告だけ出る。
 
 **Headless Coder（CLI）**

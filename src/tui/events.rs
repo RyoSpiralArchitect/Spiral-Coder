@@ -666,7 +666,7 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                 };
                 let mut msg = format!("temperature: {:.2}", cfg.temperature);
                 if !crate::config::should_send_temperature_for_run(cfg) {
-                    msg.push_str("  (ignored by this GPT-5 OpenAI-compatible endpoint)");
+                    msg.push_str("  (omitted for the selected model)");
                 }
                 push!(msg);
             } else if let Ok(t0) = arg.parse::<f64>() {
@@ -682,7 +682,7 @@ fn handle_slash_command(text: &str, app: &mut App, pane: PaneId) -> bool {
                     PaneId::Chat => &app.chat_cfg,
                 };
                 let suffix = if !crate::config::should_send_temperature_for_run(cfg) {
-                    "  [note: ignored by this GPT-5 OpenAI-compatible endpoint]"
+                    "  [note: omitted for the selected model]"
                 } else {
                     ""
                 };
@@ -2867,6 +2867,7 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     include!("interaction_tests.rs");
+    include!("model_picker_tests.rs");
     include!("observer_assist_tests.rs");
     include!("observer_repair_tests.rs");
     include!("coupled_loop_tests.rs");
