@@ -71,11 +71,9 @@ pub(super) fn bind_summary(tools: &mut Value, report: &Value) {
     else {
         return;
     };
-    let serialized = report.to_string();
-    if serialized.len() <= MAX_ENUM_BYTES {
-        done["function"]["parameters"]["properties"]["summary"]["description"] = json!(format!(
-            "Write your own nonempty final report: changes, full artifact paths, and remaining work. In THIS summary string include each outcome_rows entry verbatim on its own line, including its exact command. Commands in acceptance_evidence do not substitute for the requested report text. These are recorded outcomes, not a claim of task completion; keep NOT RECORDED / NOT VERIFIED when shown. Required report data: {serialized}"
-        ));
+    let guidance = super::report_surface::guidance(report);
+    if guidance.len() <= MAX_ENUM_BYTES {
+        done["function"]["parameters"]["properties"]["summary"]["description"] = json!(guidance);
     }
 }
 

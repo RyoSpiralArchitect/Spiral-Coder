@@ -29,7 +29,7 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
     let plan =
         super::plan_resume::latest_valid(messages, |plan| super::validate_plan(plan).is_ok());
     TaskObligations {
-        repair_brief: super::repair_brief::project(root, &evidence),
+        repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
