@@ -20,9 +20,28 @@ pub(super) fn requested(root: &str) -> bool {
 /// Formatting does not change the evidence requirement; labels, status and
 /// command must still match, with boundaries excluding qualified/negated fields.
 pub(super) fn states_row(summary: &str, row: &str) -> bool {
-    summary.match_indices(row).any(|(start, _)| {
+    let Some((field, command)) = row.split_once(" — ") else {
+        return false;
+    };
+    let Some((label, status)) = field.split_once(": ") else {
+        return false;
+    };
+    let marker = format!("{label}:");
+    summary.match_indices(&marker).any(|(start, _)| {
         let before = &summary[..start];
-        let after = summary[start + row.len()..].trim_start_matches([' ', '\t']);
+        let tail = summary[start + marker.len()..].trim_start_matches([' ', '\t']);
+        let Some(tail) = tail.strip_prefix(status) else {
+            return false;
+        };
+        let Some(tail) = tail.trim_start_matches([' ', '\t']).strip_prefix('—') else {
+            return false;
+        };
+        // Normalize only presentation whitespace around label/status/separator.
+        // The complete quoted command, including internal spaces, stays exact.
+        let Some(tail) = tail.trim_start_matches([' ', '\t']).strip_prefix(command) else {
+            return false;
+        };
+        let after = tail.trim_start_matches([' ', '\t']);
         let line_prefix = before.rsplit('\n').next().unwrap_or("").trim();
         let starts_field = ["", "-", "*"].contains(&line_prefix)
             || (before.ends_with(char::is_whitespace)
@@ -154,6 +173,28 @@ mod tests {
         let id = format!("call-{}", m.len());
         m.extend([json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}), json!({"role":"tool","tool_call_id":id,"content":result})]);
     }
+    #[test]
+    fn report_spacing_is_flexible_only_outside_the_exact_command() {
+        let row = "After: PASSED — `check 'two  spaces'`";
+        for text in [
+            "- After:  PASSED — `check 'two  spaces'`",
+            "After:\tPASSED\t—\t`check 'two  spaces'`",
+            "Verification results: After:  PASSED — `check 'two  spaces'`.",
+        ] {
+            assert!(states_row(text, row), "{text}");
+        }
+        for text in [
+            "After:  PASSED — `check 'two spaces'`",
+            "After:\nPASSED — `check 'two  spaces'`",
+            "After:  NOT PASSED — `check 'two  spaces'`",
+            "Not After:  PASSED — `check 'two  spaces'`",
+            "After:  PASSED — `check 'two  spaces'` was not recorded",
+            "Example: After:  PASSED — `check 'two  spaces'`",
+        ] {
+            assert!(!states_row(text, row), "{text}");
+        }
+    }
+
     #[test]
     fn accepted_live_handoff_must_report_both_recorded_outcomes() {
         let mut messages = vec![json!({"role":"user","content":ROOT})];
