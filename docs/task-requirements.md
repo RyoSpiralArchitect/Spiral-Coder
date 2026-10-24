@@ -74,6 +74,10 @@ The positive report label `Verified with existing tests before and after:` is
 also recognized when followed by the complete exact rows. Negated, example and
 arbitrary labels remain invalid. Refusals request each exact row on its own line
 so formatting correction has a stable target.
+Horizontal spaces/tabs around the outcome label, status and em dash are
+presentation only. The complete quoted command (including its internal spaces),
+label and status remain exact; newlines, negation and example prefixes cannot
+turn an unasserted row into a recorded outcome.
 Actual missing/unknown checks are reported as NOT RECORDED / NOT VERIFIED, and a later
 edit invalidates the after result. A truthful partial report may include those
 unverified rows. The gate recognizes these bounded report forms; it does not
