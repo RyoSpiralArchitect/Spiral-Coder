@@ -294,6 +294,11 @@ leading echo of the current report-context object (optionally fenced) is removed
 before validation and display. Only the remaining authored prose can satisfy the
 report gate. Other JSON, stale context, ambiguous objects and surrounding authored
 text are preserved. Original native arguments remain unchanged in history.
+Exact outcome rows can also follow the bounded labels `Recorded outcomes:` or
+`Verification results:`, or `Verified with <exact command> before and after edits:`
+at a sentence/line boundary. This accepts authored fields in a paragraph without
+rewriting native calls or creating report rows. Arbitrary colon prefixes, negative
+qualifiers, stale commands, missing outcomes and unrendered fields still fail.
 
 Protocol blocks (`plan`, `think`, `reflect`, `impact`, `evidence`) may also contain
 one authored JSON object, optionally surrounded by prose or Markdown fences.
