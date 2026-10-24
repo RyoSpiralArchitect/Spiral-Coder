@@ -278,6 +278,23 @@ requires a new read when retained observations suffice. This is advisory context
 not a semantic correctness gate or permission to edit tests. Native proof and an
 independent artifact check remain necessary to assess an attempted repair.
 
+The `done.summary` field description includes the same current report clauses
+and before/after rows as the shared task projection. A command cited in an
+evidence row does not replace the requested report text. Unknown or invalidated
+outcomes remain `NOT RECORDED` / `NOT VERIFIED`; no summary is generated.
+
+Plans may also contain an authored JSON object inside `<plan>`. Fields and list
+items retain their contents; string arrays are accepted for risks/assumptions.
+Duplicate fields, wrong types and unknown fields are rejected. The existing
+step/criterion counts, task alignment and all action/proof gates still apply;
+excess criteria are not silently dropped. Native tool calls remain separate.
+
+After a protocol refusal, the first exact human-declared baseline check may run
+without an unrelated diagnostic detour. This narrow recovery exception requires
+no prior mutation, no previous native attempt of that check, and no pending
+localized failure. It cannot unlock a retry of a failed check or manufacture a
+baseline receipt; normal command approval and execution still apply.
+
 Observer prompts prioritize current correlated native results and omit old tool
 outputs and duplicate display digests. The selected failure is explicitly
 historical context. Raw audit packets retain the full history for diagnosis.

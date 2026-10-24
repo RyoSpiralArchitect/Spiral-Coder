@@ -4,6 +4,27 @@ use serde_json::json;
 
 const CHECK: &str = "python3 -S acceptance.py";
 
+#[test]
+fn initial_baseline_exception_excludes_attempted_checks_mutations_and_other_commands() {
+    let call = crate::streaming::ToolCallData {
+        id: "next".into(),
+        name: "exec".into(),
+        arguments: json!({"command":CHECK}).to_string(),
+        thought_signature: None,
+    };
+    let blocked = history("GOVERNOR BLOCKED: missing plan");
+    assert!(is_unattempted_baseline(&call, &blocked, None));
+    for output in ["FAILED (exit_code: 1)", "OK (exit_code: 0)"] {
+        assert!(!is_unattempted_baseline(&call, &history(output), None));
+    }
+    let mut edited = blocked.clone();
+    edited.extend([json!({"role":"assistant","tool_calls":[{"id":"edit","function":{"name":"patch_file","arguments":"{\"path\":\"src/runner.py\"}"}}]}),json!({"role":"tool","tool_call_id":"edit","content":"OK: patched 'src/runner.py'"})]);
+    assert!(!is_unattempted_baseline(&call, &edited, None));
+    let mut other = call.clone();
+    other.arguments = json!({"command":"python3 other.py"}).to_string();
+    assert!(!is_unattempted_baseline(&other, &blocked, None));
+}
+
 fn history(output: &str) -> Vec<Value> {
     let root = format!(
         "Fix the failing check.\n<task_requirements>\n{}\n</task_requirements>",

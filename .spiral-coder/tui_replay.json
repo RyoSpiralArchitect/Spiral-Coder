@@ -365,7 +365,7 @@
       ]
     },
     {
-      "id": "declared-source-repair-brief-observer",
+      "id": "declared-source-repair-handoff-observer",
       "prompt": "Repair src/tui/prefs.rs while preserving the supplied tests.\n<task_requirements>\n{\"version\": 1, \"requirements\": [{\"id\": \"repair\", \"description\": \"Repair current behavior\", \"artifacts\": [{\"path\": \"src/tui/prefs.rs\", \"kind\": \"source\"}], \"checks\": [{\"command\": \"cargo test prefs\"}]}]}\n</task_requirements>",
       "tags": [
         "observer",
