@@ -143,6 +143,7 @@ async fn check_final_report_rejection(text_only: bool) {
         when.method(POST).path("/chat/completions").matches(|r| {
             let b:serde_json::Value=serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
             b["tools"].as_array().unwrap().len()==1 && b["tools"][0]["function"]["name"]=="done"
+                && b["tools"][0]["function"]["parameters"]["properties"]["completed_acceptance"]["items"]["enum"] == json!(["acceptance 1"])
         });
         then.status(200).header("content-type","text/event-stream").body(if text_only { sse("File: sentinel.txt\n```text\nmust not run\n```", json!([])) } else { sse("",json!([{"index":0,"id":"unoffered","function":{"name":"write_file","arguments":"{\"path\":\"sentinel.txt\",\"content\":\"must not run\"}"}}])) });
     });
@@ -150,6 +151,8 @@ async fn check_final_report_rejection(text_only: bool) {
     let (tx, _rx) = mpsc::channel(512);
     let goal = "Complete the declared repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"repair\",\"description\":\"Repair sentinel.txt\",\"artifacts\":[{\"path\":\"sentinel.txt\",\"kind\":\"source\"}],\"checks\":[{\"command\":\"test -f sentinel.txt\"}]}]}\n</task_requirements>";
     let budget = crate::work_budget::WorkBudget::new(goal, 1, None);
+    let mut seeded = start(goal);
+    seeded.messages.push(json!({"role":"assistant","content":"<plan>\ngoal: Repair sentinel.txt\nsteps:\n1. Inspect sentinel.txt\n2. Repair and verify sentinel.txt\nacceptance: sentinel.txt is repaired and verified\nrisks: incorrect contents\nassumptions: workspace is available\n</plan>"}));
     let context = crate::work_budget::Context {
         budget: budget.clone(),
         role: "coder",
@@ -157,7 +160,7 @@ async fn check_final_report_rejection(text_only: bool) {
     let result = crate::work_budget::scope(
         Some(context),
         run_agentic_json(
-            start(goal),
+            seeded,
             &config(&server),
             root.path().to_str(),
             1,

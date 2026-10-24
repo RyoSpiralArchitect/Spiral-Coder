@@ -363,6 +363,64 @@
           "value": "read_file(path=src/tui/prefs.rs)"
         }
       ]
+    },
+    {
+      "id": "declared-source-repair-brief-observer",
+      "prompt": "Repair src/tui/prefs.rs while preserving the supplied tests.\n<task_requirements>\n{\"version\": 1, \"requirements\": [{\"id\": \"repair\", \"description\": \"Repair current behavior\", \"artifacts\": [{\"path\": \"src/tui/prefs.rs\", \"kind\": \"source\"}], \"checks\": [{\"command\": \"cargo test prefs\"}]}]}\n</task_requirements>",
+      "tags": [
+        "observer",
+        "repair",
+        "task-requirements"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair src/tui/prefs.rs while preserving the supplied tests.\n<task_requirements>\n{\"version\": 1, \"requirements\": [{\"id\": \"repair\", \"description\": \"Repair current behavior\", \"artifacts\": [{\"path\": \"src/tui/prefs.rs\", \"kind\": \"source\"}], \"checks\": [{\"command\": \"cargo test prefs\"}]}]}\n</task_requirements>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] The failing test has been diagnosed; inspect the existing source branch before a minimal repair."
+        }
+      ],
+      "observer_response": {
+        "summary": "Inspect the human-declared source branch in src/tui/prefs.rs. Preserve working defaults and avoid copying test-local bookkeeping into production.",
+        "primary_blocker": "missing_concrete_next_step",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
     }
   ]
 }

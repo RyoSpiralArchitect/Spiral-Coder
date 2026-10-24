@@ -43,6 +43,7 @@ use crate::types::ChatMessage;
 use std::path::Path;
 
 mod acceptance_report;
+mod acceptance_schema;
 mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
@@ -93,6 +94,7 @@ mod recovery_policy_tests;
 mod reflection_action;
 #[cfg(test)]
 mod reflection_action_tests;
+mod repair_brief;
 #[cfg(test)]
 mod repair_feedback_tests;
 #[cfg(test)]
@@ -8352,7 +8354,12 @@ This is the LAST model call for this run.\n\
 
         let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
         let cfg_clone = cfg.clone();
-        let tools_clone = next_action.tools(&tools);
+        let mut tools_clone = next_action.tools(&tools);
+        acceptance_schema::bind(
+            &mut tools_clone,
+            active_plan.as_ref(),
+            &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
+        );
         msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
