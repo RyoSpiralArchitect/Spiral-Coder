@@ -113,36 +113,46 @@ fn stale_observer_events_cannot_modify_a_new_request_or_its_repair_budget() {
 
 #[tokio::test]
 async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
-    assert_diagnosed_edit_handoff("patch_file", None, false).await;
+    assert_diagnosed_edit_handoff("patch_file", None, HandoffRead::Full).await;
 }
 
 #[tokio::test]
 async fn observer_handoff_reuses_an_unchanged_full_read_before_overwrite() {
-    assert_diagnosed_edit_handoff("write_file", None, false).await;
+    assert_diagnosed_edit_handoff("write_file", None, HandoffRead::Full).await;
 }
 
 #[tokio::test]
 async fn observer_handoff_refuses_overwrite_when_the_retained_read_changed() {
-    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}"), false).await;
+    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}"), HandoffRead::Full).await;
 }
 
 #[tokio::test]
 async fn observer_handoff_refuses_whole_file_overwrite_from_a_range_read() {
-    assert_diagnosed_edit_handoff("write_file", None, true).await;
+    assert_diagnosed_edit_handoff("write_file", None, HandoffRead::PartialRange).await;
 }
 
-async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&str>, range_read: bool) {
+#[tokio::test]
+async fn observer_handoff_accepts_complete_range_but_rejects_changed_contents() {
+    assert_diagnosed_edit_handoff("write_file", None, HandoffRead::CompleteRange).await;
+    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}"), HandoffRead::CompleteRange).await;
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum HandoffRead { Full, CompleteRange, PartialRange }
+
+async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&str>, read_shape: HandoffRead) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
     let goal = "Repair config.json so its status changes from before to after. Verify the changed file.";
     app.tool_root = Some(root.path().display().to_string());
-    std::fs::write(root.path().join("config.json"), "{\"status\":\"before\"}").unwrap();
+    let original = if read_shape == HandoffRead::PartialRange { "{\n\"status\":\"before\"\n}" } else { "{\"status\":\"before\"}" };
+    std::fs::write(root.path().join("config.json"), original).unwrap();
     app.coder_intent_anchor = Some(intent::apply_intent_update(None, intent::normalize_intent_update(goal, None), goal));
     app.coder.push_user(goal.into());
     app.coder.messages.push(msg(Role::Assistant, "[agent] iteration cap (4) reached."));
     app.coder_completed = Some(false);
-    let read_args = if range_read { json!({"path":"config.json","start_line":1,"end_line":1}) } else { json!({"path":"config.json"}) };
+    let read_args = if read_shape != HandoffRead::Full { json!({"path":"config.json","start_line":1,"end_line":1}) } else { json!({"path":"config.json"}) };
     let messages = vec![
         crate::task_origin::user_message(goal, crate::task_origin::MessageOrigin::User),
         json!({"role":"assistant","tool_calls":[{"id":"failed-edit","type":"function","function":{"name":"patch_file","arguments":json!({"path":"config.json","search":"absent","replace":"after"}).to_string()}}]}),
@@ -191,9 +201,9 @@ async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&s
     send_coder_input(&mut app,&tx,"Continue.".into(),CoderInput::RuntimeContinuation).await;
     drain(&mut app,&mut rx,PaneId::Coder).await;
     observer.assert_hits(1); coder.assert_hits(1);
-    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),changed_after_read.unwrap_or(if range_read {"{\"status\":\"before\"}"} else {"{\"status\":\"after\"}"}),"{:?}",app.coder.messages);
+    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),changed_after_read.unwrap_or(if read_shape == HandoffRead::PartialRange {original} else {"{\"status\":\"after\"}"}),"{:?}",app.coder.messages);
     let session=app.coder_session.as_ref().unwrap();
-    let expected = if changed_after_read.is_some() || range_read { "GOVERNOR BLOCKED: write_file refused" }
+    let expected = if changed_after_read.is_some() || read_shape == HandoffRead::PartialRange { "GOVERNOR BLOCKED: write_file refused" }
         else if tool == "write_file" { "OK: wrote" } else { "OK: patched" };
     assert!(session.messages.iter().any(|m| m["tool_call_id"]=="repair-edit" && m["content"].as_str().is_some_and(|s| s.starts_with(expected))), "{:?}", session.messages);
     assert_ne!(app.coder_completed,Some(true),"editing alone cannot complete verification");
