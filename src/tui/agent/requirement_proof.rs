@@ -155,6 +155,20 @@ pub(super) fn required_commands(root: &str) -> Vec<String> {
         .collect()
 }
 
+pub(super) fn source_paths(root: &str) -> Vec<String> {
+    parse(root)
+        .ok()
+        .flatten()
+        .into_iter()
+        .flat_map(|c| c.requirements)
+        .flat_map(|r| r.artifacts)
+        .filter(|artifact| matches!(artifact.kind, ArtifactKind::Source))
+        .map(|artifact| artifact.path)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
 pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
     let messages = crate::task_origin::current_task_messages(messages);
     let root = crate::task_origin::root_user_text(messages);
