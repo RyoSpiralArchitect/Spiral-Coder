@@ -15,6 +15,7 @@ mod diagnostics_tests;
 pub(crate) mod edit_preview;
 pub(crate) mod json_patch;
 mod json_repair;
+mod overwrite_guard;
 pub(crate) mod read_range;
 
 // ── Path safety ───────────────────────────────────────────────────────────────
@@ -156,7 +157,9 @@ pub fn tool_write_file(path: &str, content: &str, base: Option<&str>) -> (String
         Err(e) => return (format!("ERROR: {e}"), true),
     };
 
-    if let Err(error) = check_preserved_write(&abs_path, content) {
+    if let Err(error) = overwrite_guard::check(&abs_path, content)
+        .and_then(|()| check_preserved_write(&abs_path, content))
+    {
         return (
             format!("ERROR: preservation check blocked write: {error}"),
             true,

@@ -10,15 +10,29 @@ pub(super) fn parse(body: &str, tag: &str) -> Option<BTreeMap<String, ParsedBloc
     // A JSON fixture inside a legacy field is part of that field, not a second
     // protocol block. Once JSON is selected, errors cannot fall back to mining
     // nested strings for a different set of fields.
-    if prefix.trim_start().starts_with('<')
-        || prefix
-            .split_once('[')
-            .is_some_and(|(key, _)| governor_contract::block_field(tag, key.trim()).is_some())
+    if legacy_field_started(prefix, tag)
         || !protocol_fields::parse_tag_fields(prefix, tag).is_empty()
     {
         return None;
     }
     Some(fields(body, tag).unwrap_or_default())
+}
+
+fn legacy_field_started(prefix: &str, tag: &str) -> bool {
+    // A prose preamble does not turn an unfinished legacy field into a JSON
+    // wrapper. Inspect only text before the first object, never its values.
+    prefix.match_indices('<').any(|(start, _)| {
+        prefix[start + 1..]
+            .split_once('>')
+            .is_some_and(|(key, _)| governor_contract::block_field(tag, key.trim()).is_some())
+    }) || prefix.match_indices('[').any(|(start, _)| {
+        let before = prefix[..start].trim_end();
+        let key = before
+            .rsplit(|ch: char| !ch.is_ascii_alphanumeric() && ch != '_')
+            .next()
+            .unwrap_or("");
+        governor_contract::block_field(tag, key).is_some()
+    })
 }
 
 fn fields(body: &str, tag: &str) -> Option<BTreeMap<String, ParsedBlockValue>> {
@@ -153,5 +167,25 @@ mod tests {
             let parsed = super::super::parse_plan_block(&format!("<plan>{body}</plan>")).unwrap();
             assert!(parsed.goal.contains("Read {key}"), "{}", parsed.goal);
         }
+    }
+
+    #[test]
+    fn legacy_field_json_is_data_even_after_a_prose_preamble() {
+        let nested = plan().to_string();
+        let body = format!(
+            "Here is my plan.\n<goal>Inspect {nested}</goal><steps>Read then verify</steps>"
+        );
+        assert!(parse(&body, "plan").is_none());
+        let parsed = super::super::parse_plan_block(&format!("<plan>{body}</plan>")).unwrap();
+        assert_eq!(parsed.goal, format!("Inspect {nested}"));
+        assert!(
+            parsed.acceptance_criteria.is_empty(),
+            "nested example cannot supply acceptance"
+        );
+        assert!(parse("Here is my plan. goal[\"Inspect {key}\"]", "plan").is_none());
+        // A genuine wrapped JSON object still uses only its own authored fields.
+        assert!(parse(&format!("Here is my plan.\n{nested}"), "plan")
+            .unwrap()
+            .contains_key("goal"));
     }
 }
