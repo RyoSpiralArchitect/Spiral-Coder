@@ -58,12 +58,45 @@ fn python_exception(line: &str) -> bool {
             .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | '.'))
 }
 
+fn unittest_case(line: &str) -> Option<&str> {
+    let case = line
+        .strip_prefix("FAIL: ")
+        .or_else(|| line.strip_prefix("ERROR: "))?;
+    (case.contains(" (") && case.ends_with(')')).then_some(line)
+}
+
+/// Display identities only. Even a native failing command can print arbitrary
+/// test-owned text; these names never establish that a case passed or was fixed.
+pub(super) fn unittest_cases(body: &str) -> Vec<String> {
+    let mut cases = Vec::new();
+    for case in bounded_source(body)
+        .lines()
+        .filter_map(|line| unittest_case(line.trim()))
+    {
+        let case = bounded_line(case, AUTO_TEST_DIAGNOSTIC_CHARS);
+        if !cases.contains(&case) {
+            cases.push(case);
+        }
+        if cases.len() == 4 {
+            break;
+        }
+    }
+    cases
+}
+
 pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
     let mut lines = Vec::new();
     for source in [stderr, stdout] {
         let source = bounded_source(source);
         let mut last_python_frame = None;
+        let mut named_test = false;
         for line in source.lines().map(str::trim) {
+            if unittest_case(line).is_some() {
+                push_line(&mut lines, line);
+                last_python_frame = None;
+                named_test = true;
+                continue;
+            }
             if python_frame(line) {
                 // The last traceback frame is the immediate failure location;
                 // keeping every caller can push the exception out of history.
@@ -72,10 +105,17 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
             }
             let low = line.to_ascii_lowercase();
             let exception = python_exception(line);
+            // The named failing case is more useful than a generic Traceback
+            // header in the four-line compact diagnostic. Keep its innermost
+            // frame and exception together when callers share one assertion.
+            if named_test && low.starts_with("traceback (most recent call last)") {
+                continue;
+            }
             if exception {
                 if let Some(frame) = last_python_frame.take() {
                     push_line(&mut lines, frame);
                 }
+                named_test = false;
             }
             if exception
                 || line.starts_with("--> ")
@@ -212,6 +252,41 @@ pub(super) fn automatic_test_output(stdout: &str, stderr: &str, exit: i32, cwd: 
 mod tests {
     use super::*;
     use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
+
+    #[cfg(not(target_os = "windows"))]
+    #[tokio::test]
+    async fn real_unittest_identity_survives_shared_helper_tail_pruning_and_resume() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(
+            root.path().join("test_case.py"),
+            concat!(
+            "import unittest\nclass Selection(unittest.TestCase):\n",
+            "    def assert_selection(self):\n        self.assertEqual([], ['alpha', 'beta'])\n",
+            "    def test_default_selection(self):\n        self.assert_selection()\n"
+        ),
+        )
+        .unwrap();
+        let output = super::super::run_test_cmd(
+            "python3 -S -m unittest discover -s . -p test_case.py -v",
+            root.path().to_str().unwrap(),
+        )
+        .await;
+        let pruned = compact_and_prune(&output);
+        let resumed: String =
+            serde_json::from_str(&serde_json::to_string(&pruned).unwrap()).unwrap();
+        let summary = recovery_summary(&resumed, Some("automatic check failed"));
+        for text in [&pruned, &summary] {
+            assert!(text.contains("FAIL: test_default_selection"), "{text}");
+            assert!(text.contains("in assert_selection"), "{text}");
+            assert!(text.contains("AssertionError: Lists differ"), "{text}");
+        }
+        assert_eq!(
+            unittest_cases(&resumed),
+            ["FAIL: test_default_selection (test_case.Selection.test_default_selection)"]
+        );
+        assert!(!summary.contains("Traceback"));
+        assert!(summary.chars().count() <= 512);
+    }
 
     #[test]
     fn pending_recovery_keeps_failed_assertion_evidence_after_output_pruning() {

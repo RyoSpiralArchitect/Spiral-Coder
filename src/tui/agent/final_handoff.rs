@@ -313,6 +313,9 @@ pub(super) fn validate_authored_done_summary(
     messages: &[Value],
     test_cmd: Option<&str>,
 ) -> Result<(), String> {
+    let report = report_context(root, messages, test_cmd);
+    let summary = super::report_surface::authored(summary, &report);
+    let rendered = super::report_surface::authored(rendered, &report);
     if let Some(issue) = crate::work_budget::current().and_then(|c| c.budget.preservation_issue()) {
         return Err(format!("Artifact preservation failed: {issue}"));
     }

@@ -67,7 +67,7 @@ mod final_instructions;
 mod followup_requirements;
 mod harness_evolution;
 mod impact_recovery;
-mod json_plan;
+mod json_fields;
 mod memory;
 mod message_window;
 mod meta_harness;
@@ -102,6 +102,7 @@ mod repair_feedback_tests;
 mod replay_input_tests;
 mod repo_scaffold;
 mod report_outcomes;
+mod report_surface;
 mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;
@@ -5241,6 +5242,9 @@ fn parse_assumption_items(s: &str) -> Vec<String> {
 
 fn parse_block_fields(text: &str, tag: &str) -> Option<BTreeMap<String, ParsedBlockValue>> {
     let body = extract_tag_block(text, tag)?;
+    if let Some(fields) = json_fields::parse(body, tag) {
+        return Some(fields);
+    }
     let mut out = BTreeMap::new();
 
     for (raw_key, raw_value) in parse_tag_fields(body, tag) {
@@ -5300,9 +5304,6 @@ fn plan_field_max_items(key: &str) -> Option<usize> {
 }
 
 fn parse_plan_block(text: &str) -> Option<PlanBlock> {
-    if let Some(plan) = json_plan::parse(extract_tag_block(text, "plan")?) {
-        return Some(plan);
-    }
     let fields = parse_block_fields(text, "plan")?;
 
     Some(PlanBlock {
@@ -12435,7 +12436,9 @@ Required now: run `{command}`.\n{verification_status}"
             }
 
             let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
-            let summary = args["summary"].as_str().unwrap_or("").trim();
+            let report =
+                final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref());
+            let summary = report_surface::authored(args["summary"].as_str().unwrap_or(""), &report);
             let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
             let acceptance_evidence =

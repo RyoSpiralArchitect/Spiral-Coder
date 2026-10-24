@@ -22,6 +22,12 @@ explicit before/after test-result report clauses. Before is the last confirmed
 check before the first mutation; after is the latest check after the last
 mutation. Missing/unknown proof stays NOT RECORDED or NOT VERIFIED. These rows
 must appear in the authored summary and never create execution proof.
+`structured_output.rs` and the protocol/Observer adapters derive normalized
+fields from retained authored text; they do not mutate native call arguments or
+create durable state. `repair_brief.rs` derives recent failing check/case identities
+from correlated native results. `report_surface.rs` removes only an exact current
+report-context echo for validation/display. The original transcript remains owned
+by `AgentSession`; these projections grant no execution or completion authority.
 
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.

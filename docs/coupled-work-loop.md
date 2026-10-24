@@ -263,7 +263,7 @@ Each Coder request also binds the `done` schema to the current plan's stable
 criterion references and currently citable commands. Object-shaped evidence uses
 separate reference/command choices; Google's flattened schema offers complete
 `acceptance N | exact command` rows. The model still chooses which criteria are
-complete and which receipt supports each one. No report is filled in or rewritten,
+complete and which receipt supports each one. No missing report claim is filled in,
 and existing baseline, freshness, completeness and authored-summary gates remain
 authoritative. Empty or oversized choice sets retain the generic schema rather
 than truncating commands or emitting an invalid empty enum. Choices are rebuilt
@@ -277,17 +277,42 @@ test-local bookkeeping or inventing dependencies. It neither guesses a repair no
 requires a new read when retained observations suffice. This is advisory context,
 not a semantic correctness gate or permission to edit tests. Native proof and an
 independent artifact check remain necessary to assess an attempted repair.
+`recent_check_failures` retains up to two consecutive failures of the latest
+pending exact check, in native result order, with call IDs and observed unittest
+case names. Automatic checks require the configured check identity; rejected,
+unmatched and prose-only results cannot enter this projection. A successful check
+separates failure sequences. Changed failure names do not prove an earlier case
+was fixed. Compact Python diagnostics retain the failing case, innermost frame
+and exception through history pruning and resume.
 
 The `done.summary` field description includes the same current report clauses
-and before/after rows as the shared task projection. A command cited in an
+and before/after rows as the shared task projection, formatted as plain text
+instructions. A command cited in an
 evidence row does not replace the requested report text. Unknown or invalidated
-outcomes remain `NOT RECORDED` / `NOT VERIFIED`; no summary is generated.
+outcomes remain `NOT RECORDED` / `NOT VERIFIED`; no summary is generated. An exact
+leading echo of the current report-context object (optionally fenced) is removed
+before validation and display. Only the remaining authored prose can satisfy the
+report gate. Other JSON, stale context, ambiguous objects and surrounding authored
+text are preserved. Original native arguments remain unchanged in history.
 
-Plans may also contain an authored JSON object inside `<plan>`. Fields and list
-items retain their contents; string arrays are accepted for risks/assumptions.
-Duplicate fields, wrong types and unknown fields are rejected. The existing
-step/criterion counts, task alignment and all action/proof gates still apply;
-excess criteria are not silently dropped. Native tool calls remain separate.
+Protocol blocks (`plan`, `think`, `reflect`, `impact`, `evidence`) may also contain
+one authored JSON object, optionally surrounded by prose or Markdown fences.
+The existing field catalog defines aliases and types. String arrays preserve
+their items; text fields can join authored string arrays; a positive integer field
+can parse an exact decimal string. Unknown metadata is discarded. Missing fields,
+wrong types, duplicate keys or aliases, competing objects, truncated JSON and
+excess criteria are not repaired. A JSON fixture inside an existing text/XML
+field stays field content. Existing count, enum, task alignment, tool matching and
+proof validation remain authoritative. Native tool arguments are never rewritten
+by this protocol adapter.
+
+Observer uses the same bounded (64 KiB), duplicate-rejecting object extractor.
+An explicitly authored `suggested_args` JSON string can be decoded once into an
+object; its tool name, argument schema and current evidence still must validate.
+Missing actions, tool names, confidence or proof are not invented. Neither format
+normalization nor an Observer suggestion executes a native call. Raw responses
+remain in the existing transcript; there is no additional persistent state or
+model call for deterministic recovery.
 
 After a protocol refusal, the first exact human-declared baseline check may run
 without an unrelated diagnostic detour. This narrow recovery exception requires
