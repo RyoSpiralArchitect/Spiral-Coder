@@ -112,6 +112,28 @@ mod tests {
     }
 
     #[test]
+    fn complete_ranged_read_survives_handoff_but_changed_bytes_do_not() {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dir.path().to_str().unwrap();
+        let path = dir.path().join("guide.md");
+        std::fs::write(&path, "# Guide\n\nOld usage.\n").unwrap();
+        let mut messages = history(base, "guide.md");
+        let args = json!({"path":"guide.md","start_line":1,"end_line":3});
+        messages[1]["tool_calls"][0]["function"]["arguments"] = json!(args.to_string());
+        let (output, error) = crate::file_tools::read_range::execute_args(&args, Some(base));
+        assert!(!error);
+        messages[2]["content"] = json!(output);
+        assert!(matching_snapshot(&messages, "guide.md", Some(base)).is_some());
+        std::fs::write(&path, "# Guide\n\nNew usage.\n").unwrap();
+        assert!(matching_snapshot(&messages, "guide.md", Some(base)).is_none());
+        let partial = json!({"path":"guide.md","start_line":2,"end_line":3});
+        messages[1]["tool_calls"][0]["function"]["arguments"] = json!(partial.to_string());
+        messages[2]["content"] =
+            json!(crate::file_tools::read_range::execute_args(&partial, Some(base)).0);
+        assert!(matching_snapshot(&messages, "guide.md", Some(base)).is_none());
+    }
+
+    #[test]
     fn missing_pruned_truncated_or_previous_task_reads_do_not_authorize_overwrite() {
         let dir = tempfile::tempdir().unwrap();
         let base = dir.path().to_str().unwrap();

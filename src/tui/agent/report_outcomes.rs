@@ -44,6 +44,7 @@ fn follows_report_label(before: &str, row: &str) -> bool {
     let mut labels = vec![
         "Recorded outcomes:".to_string(),
         "Verification results:".to_string(),
+        "Verified with existing tests before and after:".to_string(),
     ];
     if let Some(command) = row
         .split_once(" — `")
@@ -236,12 +237,23 @@ mod tests {
             &format!("Recorded outcomes: {}", rows[0]),
             &rows[0]
         ));
+        let retained = format!("Fixed greet.py. Verified with existing tests before and after: {}, {}. No remaining work.", rows[0], rows[1]);
+        assert!(super::super::final_handoff::validate_authored_done_summary(
+            ROOT,
+            &retained,
+            &retained,
+            &messages,
+            Some(CHECK)
+        )
+        .is_ok());
         for prefix in [
             "Not:",
             "Do not claim:",
             "Example:",
             "Not Recorded outcomes:",
             "Example: Recorded outcomes:",
+            "Not Verified with existing tests before and after:",
+            "Example: Verified with existing tests before and after:",
         ] {
             assert!(!states_row(&format!("{prefix} {}", rows[0]), &rows[0]));
         }

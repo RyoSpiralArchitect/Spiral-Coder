@@ -13587,7 +13587,12 @@ Required now: run `{command}`.\n{verification_status}"
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
                     if ranged {
-                        crate::file_tools::read_range::execute_args(&args, base)
+                        let (content, err) =
+                            crate::file_tools::read_range::execute_args(&args, base);
+                        if !err && crate::file_tools::read_range::full_snapshot(&content) {
+                            file_cache.insert(cache_key.clone(), content.clone());
+                        }
+                        (content, err)
                     } else if let Some(result) =
                         recovery
                             .focus

@@ -2,10 +2,15 @@ use super::*;
 use serde_json::json;
 
 #[tokio::test]
-async fn http_read_ranges_preserve_bounds_and_never_authorize_full_overwrites() {
+async fn http_read_ranges_grant_complete_read_only_when_every_byte_is_rendered() {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(root.path().join("source.txt"), "one\ntwo\nthree\n").unwrap();
     for (args, status, expected) in [
+        (
+            json!({"path":"source.txt","start_line":1,"end_line":3}),
+            "200",
+            Some((true, "one\ntwo\nthree\n")),
+        ),
         (
             json!({"path":"source.txt"}),
             "200",

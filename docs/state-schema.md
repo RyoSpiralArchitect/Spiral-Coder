@@ -873,6 +873,7 @@ and truncation before criterion references are assigned.
 
 `src/file_tools/read_range.rs` owns optional one-based `start_line`/`end_line`
 validation and bounded rendering. Range reads remain correlated native tool
-observations; they cannot populate the full-file overwrite cache. Web exposes
+observations; only an untruncated line-1-through-EOF rendering can populate the
+full-file overwrite cache, using the canonical full-read response. Web exposes
 `complete_read` on `/api/read_file` responses for its matching guard. No new
 persistent state is added. See [file-read ranges](file-read-ranges.md).
