@@ -128,7 +128,7 @@ fn real_baseline_failure_survives_pruning_and_handoff_until_the_original_check_p
         &read,
         messages.last().unwrap().clone(),
     );
-    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff);
+    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff, None);
     assert!(mem.consecutive_failures > 0);
     let mut direct = RecoveryGovernor::restore_from_session(
         &mem,
@@ -158,7 +158,7 @@ fn real_baseline_failure_survives_pruning_and_handoff_until_the_original_check_p
         &read,
         messages.last().unwrap().clone(),
     );
-    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff);
+    let mem = agent::FailureMemory::from_recent_messages(&immediate_handoff, None);
     let mut new_failure = RecoveryGovernor::restore_from_session(
         &mem,
         &immediate_handoff,

@@ -28,6 +28,13 @@ create durable state. `repair_brief.rs` derives recent failing check/case identi
 from correlated native results. `report_surface.rs` removes only an exact current
 report-context echo for validation/display. The original transcript remains owned
 by `AgentSession`; these projections grant no execution or completion authority.
+JSON protocol selection recognizes an already-open legacy field even after a
+prose preamble. A JSON example inside that field remains field data and cannot
+silently replace the enclosing plan or supply its missing acceptance criteria.
+`FailureMemory` is reconstructed from the current human task's correlated native
+history. A matching successful automatic check clears the failed command's
+in-memory repetition counters in live execution and resume. This creates no
+explicit `exec` receipt and does not discharge exact task requirements.
 TUI `Message.raw_content` is owned by the in-memory pane message and stores the
 original successful Observer response before formatting. The coupled-run report
 exports it alongside `observer_display`; it is not a second session store and

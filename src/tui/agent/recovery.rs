@@ -247,6 +247,7 @@ Required now: {}",
 }
 
 fn last_tool_looks_failed(messages: &[serde_json::Value]) -> bool {
+    let messages = crate::task_origin::current_task_messages(messages);
     let Some(last_tool) = messages.iter().rev().find(|m| {
         m["role"].as_str() == Some("tool")
             && crate::execution_evidence::exec_may_have_run(m["content"].as_str().unwrap_or(""))
@@ -300,7 +301,7 @@ mod refusal_tests {
                 let mut messages = Vec::new();
                 exchange(&mut messages, tool, result);
                 exchange(&mut messages, "exec", refusal);
-                let mem = FailureMemory::from_recent_messages(&messages);
+                let mem = FailureMemory::from_recent_messages(&messages, None);
                 assert_eq!(mem.consecutive_failures, usize::from(tool == "exec" && failed));
                 let governor = RecoveryGovernor::restore_from_session(&mem, &messages, VerificationLevel::Behavioral);
                 assert_eq!(governor.stage, failed.then_some(RecoveryStage::Diagnose), "{result} followed by {refusal}");
