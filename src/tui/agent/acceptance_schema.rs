@@ -61,6 +61,24 @@ fn set_enum(schema: &mut Value, choices: &[String]) {
     }
 }
 
+pub(super) fn bind_summary(tools: &mut Value, report: &Value) {
+    if report["clauses"].as_array().is_none_or(Vec::is_empty) {
+        return;
+    }
+    let Some(done) = tools
+        .as_array_mut()
+        .and_then(|tools| tools.iter_mut().find(|t| t["function"]["name"] == "done"))
+    else {
+        return;
+    };
+    let serialized = report.to_string();
+    if serialized.len() <= MAX_ENUM_BYTES {
+        done["function"]["parameters"]["properties"]["summary"]["description"] = json!(format!(
+            "Write your own nonempty final report: changes, full artifact paths, and remaining work. In THIS summary string include each outcome_rows entry verbatim on its own line, including its exact command. Commands in acceptance_evidence do not substitute for the requested report text. These are recorded outcomes, not a claim of task completion; keep NOT RECORDED / NOT VERIFIED when shown. Required report data: {serialized}"
+        ));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,6 +148,68 @@ mod tests {
                     .get("enum")
                     .is_none()
             );
+        }
+    }
+
+    #[test]
+    fn summary_guidance_tracks_native_outcomes_without_filling_a_report() {
+        let root = "Repair a.py. Final answer must include the actual before/after check outcomes.";
+        let check = "python3 acceptance.py";
+        let mut messages = vec![json!({"role":"user","content":root})];
+        let add = |m: &mut Vec<Value>, id: &str, tool: &str, args: Value, result: &str| {
+            m.extend([json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}),json!({"role":"tool","tool_call_id":id,"content":result})]);
+        };
+        for state in 0..3 {
+            if state == 1 {
+                add(
+                    &mut messages,
+                    "before",
+                    "exec",
+                    json!({"command":check}),
+                    "FAILED (exit_code: 1)",
+                );
+                add(
+                    &mut messages,
+                    "edit",
+                    "patch_file",
+                    json!({"path":"a.py"}),
+                    "OK: patched 'a.py'",
+                );
+                add(
+                    &mut messages,
+                    "after",
+                    "exec",
+                    json!({"command":check}),
+                    "OK (exit_code: 0)",
+                );
+            } else if state == 2 {
+                add(
+                    &mut messages,
+                    "edit2",
+                    "patch_file",
+                    json!({"path":"a.py"}),
+                    "OK: patched 'a.py'",
+                );
+            }
+            let report = super::super::final_handoff::report_context(root, &messages, Some(check));
+            let mut tools = json!([super::super::done_tool_def("https://api.example")]);
+            bind_summary(&mut tools, &report);
+            let schema = &tools[0]["function"]["parameters"]["properties"]["summary"];
+            let guidance = schema["description"].as_str().unwrap();
+            assert!(guidance.contains(check));
+            assert_eq!(guidance.contains("After: PASSED"), state == 1);
+            assert_eq!(guidance.contains("Before: NOT RECORDED"), state == 0);
+            assert!(schema.get("default").is_none() && schema.get("const").is_none());
+            if state == 1 {
+                assert!(super::super::validate_authored_done_summary(
+                    root,
+                    "Fixed a.py",
+                    "Fixed a.py",
+                    &messages,
+                    Some(check)
+                )
+                .is_err());
+            }
         }
     }
 }

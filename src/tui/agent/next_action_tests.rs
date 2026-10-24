@@ -137,6 +137,69 @@ async fn final_shared_request_cannot_turn_text_into_a_synthetic_edit() {
     check_final_report_rejection(true).await;
 }
 
+#[tokio::test]
+async fn repaired_json_plan_can_run_first_declared_baseline_after_protocol_refusal() {
+    let server = MockServer::start();
+    let call = json!([{"index":0,"id":"baseline","function":{"name":"exec","arguments":"{\"command\":\"python3 -S acceptance.py\"}"}}]);
+    let first = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let b: serde_json::Value = serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+            !b["messages"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|m| m["role"] == "tool")
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("", call.clone()));
+    });
+    let second=server.mock(|when,then| {
+        when.method(POST).path("/chat/completions").body_contains("GOVERNOR BLOCKED");
+        let content=format!("<plan>\n{}\n</plan>\n<think>\ngoal: Repair source.txt\nstep: 1\ntool: exec\nrisk: expected baseline failure\ndoubt: none\nnext: python3 -S acceptance.py\nverify: python3 -S acceptance.py\n</think>",json!({"goal":"Repair source.txt and verify behavior", "steps":["Record the baseline check", "Repair source.txt and verify behavior"],"acceptance":["Source behavior passes the exact check"],"risks":["regression"],"assumptions":["the check exposes missing behavior"]}));
+        let mut call=call.clone();call[0]["id"]=json!("actual-baseline");
+        then.status(200).header("content-type","text/event-stream").body(sse(&content,call));
+    });
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("acceptance.py"), "raise SystemExit(1)\n").unwrap();
+    std::fs::write(root.path().join("source.txt"), "old\n").unwrap();
+    let goal="Repair source.txt.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"repair\",\"description\":\"Repair behavior\",\"artifacts\":[{\"path\":\"source.txt\",\"kind\":\"source\"}],\"checks\":[{\"command\":\"python3 -S acceptance.py\",\"baseline_failure\":true}]}]}\n</task_requirements>";
+    let (tx, _rx) = mpsc::channel(512);
+    let result = run_agentic_json(
+        start(goal),
+        &config(&server),
+        root.path().to_str(),
+        2,
+        tx,
+        None,
+        None,
+        None,
+        true,
+        Some(RealizePreset::Off),
+        None,
+        &crate::approvals::AutoApprover,
+    )
+    .await
+    .unwrap();
+    first.assert_hits(1);
+    second.assert_hits(1);
+    let evidence = evidence_packet::project(&result.messages, None);
+    assert!(
+        evidence
+            .actions
+            .iter()
+            .any(|a| a.call_id == "actual-baseline"
+                && a.executed == Some(true)
+                && a.succeeded == Some(false)),
+        "{:?}",
+        evidence.actions
+    );
+    assert!(requirement_proof::project(&result.messages, None)
+        .pending_baselines
+        .is_empty());
+    assert!(requirement_proof::issue(&result.messages, None).is_some());
+}
+
 async fn check_final_report_rejection(text_only: bool) {
     let server = MockServer::start();
     let wire=server.mock(|when,then| {

@@ -272,6 +272,27 @@ pub(super) fn is_pending_baseline(
         })
 }
 
+/// A protocol refusal has not observed a workspace failure. Permit the first
+/// human-declared baseline check after that refusal, before any mutation. A
+/// real attempt (success or failure) or any edit closes this exception.
+pub(super) fn is_unattempted_baseline(
+    tc: &crate::streaming::ToolCallData,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> bool {
+    if !is_pending_baseline(tc, messages, test_cmd) {
+        return false;
+    }
+    let evidence = super::evidence_packet::project(messages, test_cmd);
+    let command = super::parse_exec_command_from_args(&tc.arguments);
+    evidence.mutation_step.is_none()
+        && !evidence.actions.iter().any(|action| {
+            action.tool == "exec"
+                && action.executed == Some(true)
+                && action.arguments["command"].as_str() == command.as_deref()
+        })
+}
+
 pub(super) fn mutation_issue(
     tc: &crate::streaming::ToolCallData,
     messages: &[Value],

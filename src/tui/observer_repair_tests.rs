@@ -12,6 +12,36 @@ fn seed_observer_failure(app: &mut App) {
 }
 
 #[test]
+fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let goal = "Repair src/lib.rs.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"repair\",\"description\":\"Repair behavior\",\"artifacts\":[{\"path\":\"src/lib.rs\",\"kind\":\"source\"}],\"checks\":[{\"command\":\"cargo test\"}]}]}\n</task_requirements>";
+    let messages = vec![
+        json!({"role":"user","content":goal}),
+        json!({"role":"assistant","tool_calls":[{"id":"observed","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\",\"start_line\":30,\"end_line\":60}"}}]}),
+        json!({"role":"tool","tool_call_id":"observed","content":"[src/lib.rs] (90 lines, 900 bytes) [range: lines 30-60; partial file]\nobserved source"}),
+    ];
+    let resumed: Vec<serde_json::Value> = serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,resumed.clone()));
+    let response = suggestion_response("read", "read_file", json!({"path":"src/lib.rs"}));
+    let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&response).unwrap();
+    let coder = agent::task_obligations::prompt(&resumed,None).unwrap();
+    for prompt in [&coder, &tui.observer_prompt] {
+        assert!(prompt.contains("repair_brief") && prompt.contains("bookkeeping"));
+        assert!(prompt.contains("observed"));
+    }
+    let view = serde_json::to_value(agent::task_obligations::project(&resumed,None)).unwrap();
+    let browser = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"task_obligations":{"repair_brief":{"source_artifacts":["invented.rs"]}}}),
+        messages:resumed,test_command:None,lang:"en".into(),reason:"diagnose".into(),
+        response:Some(response),final_summary:None,repair_native:true,
+    });
+    assert_eq!(browser.packet["task_obligations"]["repair_brief"],view["repair_brief"]);
+    assert_eq!(view["repair_brief"]["source_artifacts"],json!(["src/lib.rs"]));
+    assert_eq!(view["repair_brief"]["observed_sources"][0]["start_line"],30);
+}
+
+#[test]
 fn observer_wrong_diagnostic_target_is_repaired_consistently_after_resume() {
     let (mut app, _root) = interaction_app();
     seed_observer_failure(&mut app);

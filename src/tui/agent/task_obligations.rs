@@ -33,13 +33,7 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
-        final_answer: {
-            let mut report = final_handoff::report_requirements(root);
-            report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
-                root, messages, test_cmd
-            ));
-            report
-        },
+        final_answer: final_handoff::report_context(root, messages, test_cmd),
         latest_action_feedback: evidence.actions.into_iter().last().filter(|action| {
             action.result.as_deref().is_some_and(|result| {
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("ERROR:")
