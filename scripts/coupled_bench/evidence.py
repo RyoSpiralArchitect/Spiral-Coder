@@ -45,7 +45,11 @@ def assess(case, before, workspace, report, process, oracle):
     native = {"native_edit": bool(edits), "baseline_before_edit": all(baselines.values()),
               "fresh_exact_checks": all(verified.values()),
               "no_pending_checks": execution.get("pending_exact_checks") == [],
-              "accepted_done": bool(done), "no_remaining_acceptance": args.get("remaining_acceptance") == []}
+              # The runtime's accepted done gate already validates exhaustive
+              # completed/remaining coverage. Omission means an empty list there;
+              # this default cannot rescue a rejected or absent native done.
+              "accepted_done": bool(done),
+              "no_remaining_acceptance": bool(done) and args.get("remaining_acceptance", []) == []}
     accepted = report.get("completed") is True
     core = (accepted and oracle["passed"] and all(native.values()) and all(report_fields.values())
             and process.get("exit_code") == 0 and not process.get("timed_out")
@@ -61,7 +65,9 @@ def assess(case, before, workspace, report, process, oracle):
                         | {"result_excerpt": result[:800]})
     return {"runtime_completed": accepted, "independent_artifacts_passed": oracle["passed"],
             "behavior_and_handoff_qualified": core, "strict_all_files_qualified": core and not other,
-            "native": native, "baseline_commands": baselines, "verified_commands": verified,
+            "native": native, "native_contract_revision": "accepted-omitted-remaining-v1",
+            "completion_field_presence": {"remaining_acceptance": "remaining_acceptance" in args},
+            "baseline_commands": baselines, "verified_commands": verified,
             "report_fields": report_fields, "authored_summary": summary,
             "changed_files": changed, "out_of_scope_files": other,
             "requests": len(requests) if isinstance(recorded_requests, list) else None,

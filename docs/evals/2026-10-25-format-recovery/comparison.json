@@ -1,0 +1,420 @@
+{
+  "assessor": "selection-paraphrases-v4 + accepted-omitted-remaining-v1",
+  "model_gain_from_assessor_correction": false,
+  "rounds": {
+    "retained": {
+      "runtime_commit": "1995cdd22978c4f4e516965590e8ee0a729fe142",
+      "binary_sha256": "b905ed1efb18326147f1cc23ac4120a84fb9fe4d10b164b462f2b089734455dd",
+      "assessment_sha256": "b1bd7e7fcc805744e57bc475648642fe3c8ee1585489242f25a9e1b3ec40ac17",
+      "original_v4_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 61,
+        "episodes_with_unknown_request_count": 0
+      },
+      "corrected_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 61,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "1": 103,
+        "2": 111,
+        "3": 119
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 19,
+          "request_roles": {
+            "coder": 19
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 2
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": true
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 18,
+          "request_roles": {
+            "coder": 18
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Think Gate": 1,
+            "Requirement Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": true
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 3,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": false
+          },
+          "original_v4_qualified": false
+        }
+      ]
+    },
+    "r1": {
+      "runtime_commit": "5af1cb3e65deb72d128265a3fcc4f9f594aea390",
+      "binary_sha256": "c2fbad253ae5383d9b3c0332b2cb8254fb766eaee627793a269562b1f926bfa3",
+      "assessment_sha256": "bf22f890faf49eaf59e6d5bda4e6717b8187418fb23e325e5450f4061e08db05",
+      "original_v4_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 61,
+        "episodes_with_unknown_request_count": 0
+      },
+      "corrected_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 61,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "1": 104,
+        "2": 112,
+        "3": 120
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 15,
+          "request_roles": {
+            "coder": 15
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "unspecified governor": 2
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": true
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Think Gate": 1,
+            "Requirement Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 7
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": false
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 22,
+          "request_roles": {
+            "coder": 21,
+            "observer": 1
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Requirement Gate": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": true
+        }
+      ]
+    },
+    "r2": {
+      "runtime_commit": "4918b4a529f0fdf798dccae2d6eef2c9686031a1",
+      "binary_sha256": "791df2545d65030dd372f8943dec303b3b0b57652a9636f10bc1d5420bba2c38",
+      "assessment_sha256": "7af2dc5eebfeb34d47fccb94f3ad4cada7c076a3a34134feff6917f614fb8797",
+      "original_v4_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 1,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 0,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 71,
+        "episodes_with_unknown_request_count": 0
+      },
+      "corrected_counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 1,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 1,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 71,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "1": 105,
+        "2": 113,
+        "3": 121
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 3,
+            "Think Gate": 1,
+            "unspecified governor": 2,
+            "Recovery Gate": 2,
+            "Requirement Gate": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": false
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 23,
+          "request_roles": {
+            "coder": 21,
+            "observer": 2
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "Requirement Gate": 1,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": false
+          },
+          "original_v4_qualified": false
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Progress Gate": 1,
+            "Recovery Gate": 3,
+            "Done Gate": 1
+          },
+          "trace_errors": [],
+          "completion_field_presence": {
+            "remaining_acceptance": true
+          },
+          "original_v4_qualified": false
+        }
+      ]
+    }
+  },
+  "new_task_requests": 132,
+  "same_input_matrix_driver_inventory_prompts_caps": true
+}

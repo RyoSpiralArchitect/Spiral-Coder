@@ -1,0 +1,58 @@
+{
+  "quality_commit": "1081160c5f800afb0b23748f03dbb4e57329eebf",
+  "live_runtimes": [
+    "5af1cb3e65deb72d128265a3fcc4f9f594aea390",
+    "4918b4a529f0fdf798dccae2d6eef2c9686031a1"
+  ],
+  "audit_integrated_commit": "fd94f657f0cda64169694fb690cf803bfe46528a",
+  "audit_only_change_live_qualified": false,
+  "checks": {
+    "quality_rust": {
+      "local_log": "/tmp/spiral-format-20261025-final-tests.log",
+      "sha256": "d9e9ce478f064638758b353529ab54a918c6f118bb019df0321aac914f9a99c2",
+      "summary": [
+        "test result: ok. 834 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.64s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s"
+      ]
+    },
+    "frozen_integrated_rust": {
+      "local_log": "/tmp/spiral-format-20261025-integrated-tests2.log",
+      "sha256": "fa237182a59333a6cea4c04f5a99583d05b89a348e3d26b0fc17e61428023e5b",
+      "summary": [
+        "test result: ok. 842 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.85s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.22s"
+      ]
+    },
+    "final_audit_integrated_rust": {
+      "local_log": "/tmp/spiral-format-20261025-final-integrated.log",
+      "sha256": "8adce813eef89744e4cca2f623fd779c4f6c2017ccc3c1b2d78eb170f6e6523a",
+      "summary": [
+        "test result: ok. 843 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.60s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.24s"
+      ]
+    },
+    "tui_replay": {
+      "local_log": "/tmp/spiral-format-20261025-final-replay.log",
+      "sha256": "31642e56112cf4bc717f8872f17dc85b29b9e37b54aa90dc11bfebf96778ef10",
+      "summary": [
+        "[tui-replay] summary: 7/7 passed, report=/Users/ryospiralarchitect/.cache/spiral-coder/harness-20261008/.tmp/tui_replay_1792855219/report.json"
+      ]
+    },
+    "python": {
+      "local_log": "/tmp/spiral-format-20261025-python2.log",
+      "sha256": "a31a5e435755d41c8142c2bc1087dd8a90283e9ddef221317d3ad48031e20286",
+      "summary": [
+        "Ran 38 tests in 0.740s",
+        "OK"
+      ]
+    }
+  },
+  "new_live_requests": 132,
+  "extra_reassessment_requests": 0,
+  "public_scan": {
+    "files": 31,
+    "provider_credentials_checked": 3,
+    "credential_value_matches": 0,
+    "opaque_field_matches": 0
+  }
+}

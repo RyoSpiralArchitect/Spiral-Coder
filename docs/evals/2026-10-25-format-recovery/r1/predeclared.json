@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T15:04:07.199815+00:00",
+  "runtime_commit": "5af1cb3e65deb72d128265a3fcc4f9f594aea390",
+  "binary_sha256": "c2fbad253ae5383d9b3c0332b2cb8254fb766eaee627793a269562b1f926bfa3",
+  "binary_path": "runtime/spiral-coder",
+  "suite_sha256": "323f1d5937416f9c57491f88037c3b83b74205b91861240de03c9b7ff7f21776",
+  "matrix_sha256": "88af6bc24fbcc2984fa1ab9b76027f1caabf25518a3ced7aed1d10092566934c",
+  "input_inventory": {
+    "README.md": {
+      "sha256": "1b2433b5f4424eb85ff3a26beee50204f1fccdd631cc257cee1f87959cd88b35",
+      "bytes": 8510,
+      "mode": 420
+    },
+    "cases/large-file/reference/greet.py": {
+      "sha256": "b9e09cbec38d3cc26e996383d28db6e539a9bb4734b10e2d153fc16c430873d1",
+      "bytes": 37846,
+      "mode": 420
+    },
+    "cases/large-file/task.txt": {
+      "sha256": "632bb9d26475ea9bc186ce822b9f00a9ca1e2e5196801a53dab1ba42f829b911",
+      "bytes": 1301,
+      "mode": 420
+    },
+    "cases/large-file/workspace/.spiral-coder.md": {
+      "sha256": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "bytes": 158,
+      "mode": 420
+    },
+    "cases/large-file/workspace/greet.py": {
+      "sha256": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+      "bytes": 37846,
+      "mode": 420
+    },
+    "cases/large-file/workspace/test_greet.py": {
+      "sha256": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "bytes": 310,
+      "mode": 420
+    },
+    "cases/pilot-cli/reference/docs/pilot.md": {
+      "sha256": "17b66fd624f27fbdd523a3278b0fbd7c37ab462bb8e07fa0a62f41f57e9d02ff",
+      "bytes": 190,
+      "mode": 420
+    },
+    "cases/pilot-cli/reference/scripts/run_coupled_pilot.py": {
+      "sha256": "21ac09017a360ea098c11bb5df4e89c58ed0c926ca117a97ef556b7355027d27",
+      "bytes": 9219,
+      "mode": 420
+    },
+    "cases/pilot-cli/task.txt": {
+      "sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+      "bytes": 1640,
+      "mode": 420
+    },
+    "cases/pilot-cli/workspace/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "cases/pilot-cli/workspace/docs/pilot.md": {
+      "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+      "bytes": 101,
+      "mode": 420
+    },
+    "cases/pilot-cli/workspace/scripts/run_coupled_pilot.py": {
+      "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+      "bytes": 9156,
+      "mode": 420
+    },
+    "cases/pilot-cli/workspace/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "cases/replay-json/reference/.spiral-coder/tui_replay.json": {
+      "sha256": "dbad3a67fd3bb8ffa0ebc9d904d07fba30826f794fab8258556fcb1f91424bcc",
+      "bytes": 35012,
+      "mode": 420
+    },
+    "cases/replay-json/reference/docs/replay.md": {
+      "sha256": "62c6d3b050fb4881e9fd50e246aa79de2d8dcbb5303b33d48bd657845cdbe764",
+      "bytes": 133,
+      "mode": 420
+    },
+    "cases/replay-json/task.txt": {
+      "sha256": "47207496497598fcb62b35e9fca1850ca3315cd8e1648d134010054228da964f",
+      "bytes": 2044,
+      "mode": 420
+    },
+    "cases/replay-json/workspace/.spiral-coder/tui_replay.json": {
+      "sha256": "06bd2b195f40c4e8d968a6b7f18da0b182ebd4644db0f0a64c0a6e165106bc75",
+      "bytes": 33010,
+      "mode": 420
+    },
+    "cases/replay-json/workspace/.spiral-coder.md": {
+      "sha256": "16f16b26fdd0f802b2da0c5a7a431920cf7743de848bf945e18a7f2651f88808",
+      "bytes": 132,
+      "mode": 420
+    },
+    "cases/replay-json/workspace/docs/replay.md": {
+      "sha256": "73b287181fef2ded219d90187b7b6428cf89b8444b55e3e722e1ccf236dbd454",
+      "bytes": 83,
+      "mode": 420
+    },
+    "cases/replay-json/workspace/tests/test_replay_contract.py": {
+      "sha256": "44f17db3ae0337a2261200ea7e3ad9cdbb3420fe866959157f5b9b8bc355a82f",
+      "bytes": 1067,
+      "mode": 420
+    },
+    "matrix.json": {
+      "sha256": "88af6bc24fbcc2984fa1ab9b76027f1caabf25518a3ced7aed1d10092566934c",
+      "bytes": 1557,
+      "mode": 420
+    },
+    "suite.json": {
+      "sha256": "323f1d5937416f9c57491f88037c3b83b74205b91861240de03c9b7ff7f21776",
+      "bytes": 2074,
+      "mode": 420
+    }
+  },
+  "driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+    "coupled_bench/evidence.py": "0521892b6c4b0f2c74fda7a4a2dadb0a668b0e5885d707b14c78a048dcd1ee82",
+    "coupled_bench/oracles.py": "932525d0530373a965db137df29c3293545620900016e2288df34c3e0d6d967f",
+    "coupled_bench/runner.py": "4f9a2b18de1cfc754299075fa97f7c7e6d2a114664e52032a20ea63fd4d3450e",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "profiles": [
+    {
+      "id": "gemini-lite",
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "comparison_role": "weak baseline"
+    },
+    {
+      "id": "openai-mini",
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "comparison_role": "retained weak baseline"
+    },
+    {
+      "id": "mistral-small",
+      "provider": "mistral",
+      "model": "mistral-small-2603",
+      "comparison_role": "retained weak baseline"
+    }
+  ],
+  "cases": [
+    {
+      "id": "pilot-cli",
+      "workspace": "cases/pilot-cli/workspace",
+      "prompt": "cases/pilot-cli/task.txt",
+      "reference": "cases/pilot-cli/reference",
+      "oracle": "pilot_cli",
+      "editable": [
+        "scripts/run_coupled_pilot.py",
+        "docs/pilot.md"
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "baseline_failure": true
+        }
+      ],
+      "max_requests": 24,
+      "minimum_tests": 7
+    }
+  ],
+  "episodes": [
+    {
+      "profile": "gemini-lite",
+      "case": "pilot-cli",
+      "path": "episodes/gemini-lite/pilot-cli",
+      "workspace_before": {
+        ".spiral-coder.md": {
+          "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+          "bytes": 157,
+          "mode": 420
+        },
+        "docs/pilot.md": {
+          "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+          "bytes": 101,
+          "mode": 420
+        },
+        "scripts/run_coupled_pilot.py": {
+          "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+          "bytes": 9156,
+          "mode": 420
+        },
+        "tests/test_coupled_pilot.py": {
+          "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+          "bytes": 5794,
+          "mode": 420
+        }
+      },
+      "prompt_sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc"
+    },
+    {
+      "profile": "openai-mini",
+      "case": "pilot-cli",
+      "path": "episodes/openai-mini/pilot-cli",
+      "workspace_before": {
+        ".spiral-coder.md": {
+          "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+          "bytes": 157,
+          "mode": 420
+        },
+        "docs/pilot.md": {
+          "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+          "bytes": 101,
+          "mode": 420
+        },
+        "scripts/run_coupled_pilot.py": {
+          "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+          "bytes": 9156,
+          "mode": 420
+        },
+        "tests/test_coupled_pilot.py": {
+          "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+          "bytes": 5794,
+          "mode": 420
+        }
+      },
+      "prompt_sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc"
+    },
+    {
+      "profile": "mistral-small",
+      "case": "pilot-cli",
+      "path": "episodes/mistral-small/pilot-cli",
+      "workspace_before": {
+        ".spiral-coder.md": {
+          "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+          "bytes": 157,
+          "mode": 420
+        },
+        "docs/pilot.md": {
+          "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+          "bytes": 101,
+          "mode": 420
+        },
+        "scripts/run_coupled_pilot.py": {
+          "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+          "bytes": 9156,
+          "mode": 420
+        },
+        "tests/test_coupled_pilot.py": {
+          "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+          "bytes": 5794,
+          "mode": 420
+        }
+      },
+      "prompt_sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc"
+    }
+  ],
+  "maximum_wire_requests": 72,
+  "same_model_both_roles": true,
+  "scope_policy": "Retain every changed path except Git internals. Report behavior/handoff and strict all-file qualification separately; runtime/cache changes are not removed.",
+  "retry_policy": "One process per episode; no driver retries or fallback model. Native transport attempts consume the shared cap. A new trial requires a new output directory."
+}

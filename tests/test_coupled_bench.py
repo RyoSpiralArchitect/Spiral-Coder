@@ -136,6 +136,21 @@ class NativeEvidence(unittest.TestCase):
         self.assertFalse(result["native"]["fresh_exact_checks"])
         self.assertFalse(result["behavior_and_handoff_qualified"])
 
+    def test_omitted_empty_remaining_matches_only_accepted_native_completion(self):
+        done = self.report["execution"]["actions"][-1]
+        del done["arguments"]["remaining_acceptance"]
+        result = self.assess()
+        self.assertTrue(result["behavior_and_handoff_qualified"])
+        self.assertFalse(result["completion_field_presence"]["remaining_acceptance"])
+        self.assertNotIn("remaining_acceptance", done["arguments"])
+        done["result"] = "GOVERNOR BLOCKED"
+        self.assertFalse(self.assess()["native"]["no_remaining_acceptance"])
+        self.assertFalse(self.assess()["behavior_and_handoff_qualified"])
+        done["result"] = "OK: done"
+        for remaining in [["acceptance 2"], None, ""]:
+            done["arguments"]["remaining_acceptance"] = remaining
+            self.assertFalse(self.assess()["behavior_and_handoff_qualified"])
+
     def test_later_shell_mutation_invalidates_prior_file_check(self):
         self.report["execution"]["mutation_step"] = 5
         self.assertFalse(self.assess()["native"]["fresh_exact_checks"])
