@@ -315,9 +315,12 @@ Observer uses the same bounded (64 KiB), duplicate-rejecting object extractor.
 An explicitly authored `suggested_args` JSON string can be decoded once into an
 object; its tool name, argument schema and current evidence still must validate.
 Missing actions, tool names, confidence or proof are not invented. Neither format
-normalization nor an Observer suggestion executes a native call. Raw responses
-remain in the existing transcript; there is no additional persistent state or
-model call for deterministic recovery.
+normalization nor an Observer suggestion executes a native call. Original Coder
+text and native arguments remain in its transcript. Successful TUI Observer
+answers retain `Message.raw_content` before display formatting; coupled-run reports
+include it beside formatted `observer_display` content. Rejected answers retain
+their original display text. Raw text is not added to provider history or used as
+proof. There is no additional model call for deterministic recovery.
 
 After a protocol refusal, the first exact human-declared baseline check may run
 without an unrelated diagnostic detour. This narrow recovery exception requires

@@ -192,7 +192,7 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
         "work":app.work_budget.snapshot(),
         "execution":app.coder_session.as_ref().map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref())),
         "coder_display":app.coder.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content})).collect::<Vec<_>>(),
-        "observer_display":app.observer.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content})).collect::<Vec<_>>(),
+        "observer_display":app.observer.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content,"raw_content":m.raw_content})).collect::<Vec<_>>(),
     });
     std::fs::write(
         args.out_dir.join("report.json"),

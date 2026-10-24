@@ -92,6 +92,37 @@ mod tests {
     }
 
     #[test]
+    fn omitted_remaining_only_works_with_exhaustive_authored_completion_and_receipts() {
+        let command = "python3 -S tests.py".to_string();
+        let args = json!({"completed_acceptance":["acceptance 1","acceptance 2"],
+            "acceptance_evidence":[{"criterion":"acceptance 1","command":command}, {"criterion":"acceptance 2","command":command}]});
+        let completed = super::super::parse_string_list_arg(&args["completed_acceptance"]);
+        let remaining = super::super::parse_string_list_arg(&args["remaining_acceptance"]);
+        let evidence =
+            acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
+        let observations = super::super::ObservationEvidence::default();
+        assert!(super::super::validate_done_acceptance(
+            Some(&plan()),
+            &completed,
+            &remaining,
+            &evidence,
+            &[command.clone()],
+            &observations
+        )
+        .is_ok());
+        assert!(super::super::validate_done_acceptance(
+            Some(&plan()),
+            &completed[..1],
+            &remaining,
+            &evidence[..1],
+            &[command],
+            &observations
+        )
+        .is_err());
+        assert!(args.get("remaining_acceptance").is_none());
+    }
+
+    #[test]
     fn both_wire_shapes_keep_authored_decisions_and_exact_commands() {
         let command = "check --case 'A' | tee receipt.txt".to_string();
         for base in [
