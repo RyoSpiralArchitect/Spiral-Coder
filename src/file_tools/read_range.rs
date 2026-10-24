@@ -1,4 +1,4 @@
-//! Bounded, one-based inclusive line reads. A range is never a full-file snapshot.
+//! Bounded, one-based inclusive line reads. Only a complete rendering is a snapshot.
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -51,6 +51,21 @@ impl ReadRequest {
         let end = end.min(lines.len());
         let selected: String = lines[start - 1..end].concat();
         let truncated = selected.chars().count() > super::MAX_READ_CHARS;
+        if start == 1 && end == lines.len() && !truncated {
+            // Canonical full-read output from these exact bytes, without a
+            // second disk read. Bounds remain in the unchanged native call.
+            let guidance = if self.path.ends_with(".json") {
+                super::json_repair::guidance(&content)
+            } else {
+                String::new()
+            };
+            return Ok(format!(
+                "[{}] ({} lines, {} bytes)\n{content}{guidance}",
+                self.path,
+                lines.len(),
+                content.len()
+            ));
+        }
         let shown: String = selected.chars().take(super::MAX_READ_CHARS).collect();
         let note = if truncated {
             "\n[…truncated — requested range exceeds 8000 characters; narrow the range. For a single long line use exec or an exact JSON patch.]"
@@ -168,5 +183,33 @@ mod tests {
         assert!(execute_args(&json!({"path":"a","start_line":3}), base)
             .0
             .ends_with("last"));
+    }
+
+    #[test]
+    fn only_an_untruncated_range_covering_every_byte_is_a_full_snapshot() {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dir.path().to_str();
+        for (name, body) in [
+            ("a", "one\r\n日本語\r\nlast"),
+            ("a.json", "{\"cases\": []}\n"),
+        ] {
+            std::fs::write(dir.path().join(name), body).unwrap();
+            let (full, failed) =
+                execute_args(&json!({"path":name,"start_line":1,"end_line":200}), base);
+            assert!(!failed);
+            assert!(full_snapshot(&full));
+            assert_eq!(full, super::super::tool_read_file(name, base).0);
+        }
+        for (body, start, end) in [
+            ("one\ntwo\n".into(), 2, 2),
+            ("x".repeat(8001), 1, 1),
+            ("a\n".repeat(201), 1, 200),
+        ] {
+            std::fs::write(dir.path().join("a"), body).unwrap();
+            let (partial, failed) =
+                execute_args(&json!({"path":"a","start_line":start,"end_line":end}), base);
+            assert!(!failed);
+            assert!(!full_snapshot(&partial));
+        }
     }
 }

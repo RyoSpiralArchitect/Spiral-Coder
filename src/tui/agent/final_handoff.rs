@@ -331,7 +331,7 @@ pub(super) fn validate_authored_done_summary(
     }
     for row in super::report_outcomes::required_rows(root, messages, test_cmd) {
         if !super::report_outcomes::states_row(summary, &row) {
-            missing.push(format!("recorded outcome row in done.summary: {row}"));
+            missing.push(format!("recorded outcome row in done.summary (put this exact row on its own line, without an introductory sentence): {row}"));
         }
     }
     let mut required_literals = quoted_literals(&clauses);

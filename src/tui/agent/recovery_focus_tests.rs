@@ -895,13 +895,16 @@ fn legacy_stale_snapshot_refreshes_only_with_matching_check_and_correlated_failu
 fn correlated_range_read_advances_diagnosis_and_survives_resume() {
     let root = tempfile::tempdir().unwrap();
     let (mut governor, mut messages) = focused(root.path());
+    let target = root.path().join(TARGET);
+    let content = std::fs::read_to_string(&target).unwrap();
+    std::fs::write(target, format!("{content}{}", "\n".repeat(21))).unwrap();
     let args = json!({"path":TARGET,"start_line":1,"end_line":20});
     let read = call("ranged-diagnosis", "read_file", args.clone());
     let (output, failed) = crate::file_tools::read_range::execute_args(&args, root.path().to_str());
     assert!(!failed);
     assert!(!crate::file_tools::read_range::full_snapshot(&output));
     for invalid in [
-        output.replacen("lines 1-1", "lines 2-2", 1),
+        output.replacen("lines 1-20", "lines 2-20", 1),
         output.replacen("partial file]", "partial file] arbitrary", 1),
     ] {
         let mut focus = governor.focus.clone();

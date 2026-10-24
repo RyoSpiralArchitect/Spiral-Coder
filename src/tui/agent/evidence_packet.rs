@@ -128,7 +128,6 @@ pub(crate) fn completion_issue(
     summary: &str,
     test_cmd: Option<&str>,
 ) -> Option<String> {
-    let root = crate::task_origin::root_user_text(messages);
     let evidence = project(messages, test_cmd);
     if !evidence.pending_exact_checks.is_empty() {
         return Some(format!(
@@ -139,7 +138,21 @@ pub(crate) fn completion_issue(
     if let Some(issue) = super::requirement_proof::issue(messages, test_cmd) {
         return Some(issue);
     }
-    validate_authored_done_summary(root, summary, summary, messages, test_cmd)
+    report_issue(messages, summary, test_cmd)
+}
+
+/// Shared authored-report check for completion and high-confidence done advice.
+/// An incomplete but truthful report remains subject to the same row checks;
+/// this does not promote advice into completed work or invent missing proof.
+pub(crate) fn report_issue(
+    messages: &[serde_json::Value],
+    summary: &str,
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    let root = crate::task_origin::root_user_text(messages);
+    let report = super::final_handoff::report_context(root, messages, test_cmd);
+    let authored = super::report_surface::authored(summary, &report);
+    validate_authored_done_summary(root, authored, authored, messages, test_cmd)
         .err()
         .map(|e| e.to_string())
 }

@@ -22,15 +22,20 @@ lines can still exceed the character cap; use an exact JSON patch or a focused
 shell inspection in that case.
 
 Calls without either field retain the original full-read format and truncation
-limit. Their truncation hint now directs both roles to ranges. Range headers
-identify the actual bounds and mark the result as a partial file. Native evidence
-retains both bounds, so distinct reads have distinct action signatures.
+limit. Their truncation hint directs both roles to ranges. Partial range headers
+identify the actual bounds. When a range starts at line 1, reaches EOF and fits
+the character cap, it renders the canonical full-read response from those exact
+bytes. It can supply complete-read authority, including for short documents.
+Native calls retain both bounds, so distinct reads have distinct action signatures.
 
 A correlated range header can satisfy the existing path-level diagnostic read
 obligation, including after pruning/resume. Its bounds must match the original
-call; it supplies observation, not verification or whole-file read authority.
+call; a partial range supplies observation, not whole-file read authority. No
+read supplies verification evidence.
 
-Ranges bypass the whole-file cache and read current disk contents. A partial
+Ranges read current disk contents; a complete rendering may populate the ordinary
+full-read cache. Retained complete responses survive continuation only when the
+existing fresh byte comparison succeeds. A partial
 range or truncated prefix cannot create whole-file overwrite authority, including
 after Observer continuation. Use exact `patch_file`/`apply_diff` edits instead.
 The Web response's `complete_read` flag controls the corresponding local guard.

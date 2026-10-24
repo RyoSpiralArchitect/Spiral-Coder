@@ -35,6 +35,13 @@ silently replace the enclosing plan or supply its missing acceptance criteria.
 history. A matching successful automatic check clears the failed command's
 in-memory repetition counters in live execution and resume. This creates no
 explicit `exec` receipt and does not discharge exact task requirements.
+Confident Observer `done` advice uses the same authored-summary normalization and
+report validator as Coder, after checking its native acceptance citations. A
+missing report field withholds forwarding and can use the existing one repair
+attempt. The advice remains advisory; it creates no completion receipt. Uncertain
+or no-tool advice is not retried to increase confidence.
+Repair feedback retains up to 640 characters, prioritizing the actual missing
+report fields over the report validator's generic instruction preamble.
 TUI `Message.raw_content` is owned by the in-memory pane message and stores the
 original successful Observer response before formatting. The coupled-run report
 exports it alongside `observer_display`; it is not a second session store and
@@ -873,6 +880,7 @@ and truncation before criterion references are assigned.
 
 `src/file_tools/read_range.rs` owns optional one-based `start_line`/`end_line`
 validation and bounded rendering. Range reads remain correlated native tool
-observations; they cannot populate the full-file overwrite cache. Web exposes
+observations; only an untruncated line-1-through-EOF rendering can populate the
+full-file overwrite cache, using the canonical full-read response. Web exposes
 `complete_read` on `/api/read_file` responses for its matching guard. No new
 persistent state is added. See [file-read ranges](file-read-ranges.md).
