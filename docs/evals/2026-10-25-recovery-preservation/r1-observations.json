@@ -1,0 +1,83 @@
+{
+  "counts": {
+    "declared": 3,
+    "finished": 3,
+    "runtime_completed": 2,
+    "independent_artifacts_passed": 3,
+    "behavior_and_handoff_qualified": 2,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 62,
+    "episodes_with_unknown_request_count": 0
+  },
+  "rows": [
+    {
+      "profile": {
+        "id": "gemini-lite",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "comparison_role": "weak baseline"
+      },
+      "requests": 23,
+      "request_roles": {
+        "coder": 22,
+        "observer": 1
+      },
+      "behavior_and_handoff_qualified": true,
+      "independent_artifacts_passed": true,
+      "blocks": {
+        "Plan Gate": 4,
+        "Think Gate": 1,
+        "Requirement Gate": 1,
+        "Recovery Gate": 1
+      },
+      "observer_raw_responses": 1,
+      "observer_raw_standalone_json": 1,
+      "source_overwrite_guard_refusals": 0
+    },
+    {
+      "profile": {
+        "id": "openai-mini",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "comparison_role": "retained weak baseline"
+      },
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "behavior_and_handoff_qualified": false,
+      "independent_artifacts_passed": true,
+      "blocks": {
+        "Plan Gate": 1,
+        "unspecified governor": 1,
+        "Final handoff": 12
+      },
+      "observer_raw_responses": 1,
+      "observer_raw_standalone_json": 1,
+      "source_overwrite_guard_refusals": 0
+    },
+    {
+      "profile": {
+        "id": "mistral-small",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "comparison_role": "retained weak baseline"
+      },
+      "requests": 15,
+      "request_roles": {
+        "coder": 15
+      },
+      "behavior_and_handoff_qualified": true,
+      "independent_artifacts_passed": true,
+      "blocks": {
+        "Plan Gate": 1,
+        "Recovery Gate": 1
+      },
+      "observer_raw_responses": 0,
+      "observer_raw_standalone_json": 0,
+      "source_overwrite_guard_refusals": 0
+    }
+  ],
+  "observed_advice_gap": "Mini Observer suggested a done report with an unsupported introduction. Citation validation passed, but the pre-round-2 action validator did not check the suggested authored report; no assist receipt is present for mini."
+}

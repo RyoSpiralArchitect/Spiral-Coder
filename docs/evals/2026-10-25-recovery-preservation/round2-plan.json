@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T17:01:36.556282+00:00",
+  "preceding_round": "capacity-20261025-preservation-r1/assessment-002.json",
+  "new_round": "capacity-20261025-preservation-r2",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "case": "pilot-cli",
+  "maximum_requests": 72,
+  "same_inputs_matrix_driver_caps": true,
+  "changes": [
+    "Recognize exact authored outcome rows following the positive report label Verified with existing tests before and after:, with sentence/line boundaries and existing negation/example guards. Refusal requests independent exact lines. No missing command or result is supplied.",
+    "A requested range that renders every file byte within the existing limit returns a canonical full-read response. Partial/truncated ranges remain incomplete; retained complete reads require a fresh byte match across resume.",
+    "High-confidence Observer done advice now checks its authored summary with the same normalization and report validator as Coder, in addition to native acceptance citations; retain the existing single repair bound.",
+    "Bounded Observer repair feedback prioritizes the missing report fields over generic error preamble (maximum 640 characters)."
+  ],
+  "observations": [
+    "All three independent artifact checks pass; Lite qualifies in 23 shared requests and Small in 15 Coder requests.",
+    "Mini reaches fresh verification but 12 report refusals consume its 24 requests; 11 already contain complete exact rows after a positive phrase excluded by the bounded label grammar.",
+    "Mini completely reads a three-line guide via a range, but write_file refuses it as partial; it later uses a patch.",
+    "No large source overwrite was attempted in round 1, so no live effect of the new loss safeguard is established.",
+    "Two original successful Observer responses are now retained; both are standalone JSON.",
+    "Retained mini Observer raw advice proposes done with an unsupported report introduction. The shared action validator checks acceptance citations but previously did not validate that suggested report."
+  ],
+  "interpretation": "Final adaptive round in this 144-request pass. Same offline assessor; no baseline reassessment or causal attribution."
+}

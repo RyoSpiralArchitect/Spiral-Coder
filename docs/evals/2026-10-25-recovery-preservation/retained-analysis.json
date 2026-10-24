@@ -1,0 +1,14 @@
+{
+  "retained_root": "capacity-20261025-format-r2",
+  "source_before_sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+  "small_final_sha256": "c3859a7e8c1d4e694c9b2a8dfc18bafa0d74c3b5fc45b9403fd2e78bf90efc91",
+  "source_distinct_nonblank_lines": 149,
+  "removed_or_changed_lines": 124,
+  "lost_functions": [
+    "preserved",
+    "run_bounded"
+  ],
+  "loss_comparison": "Original frozen source versus final rewrite; an offline counterexample, not a new native execution.",
+  "lite_failure": "A correlated failing baseline was followed by successful source/docs edits with passed automatic tests; resume rebuilt FailureMemory from exec only and blocked the final exact check in Diagnose.",
+  "format_counterexample": "A prose preamble before an open legacy field containing a complete plan-shaped JSON example could select the inner object as the protocol. New regression preserves that value as data."
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T16:48:24.239121+00:00",
+  "retained_baseline": "capacity-20261025-format-r2/assessment-003.json",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "same_model_both_roles": true,
+  "case": "pilot-cli",
+  "maximum_new_rounds": 2,
+  "maximum_requests_per_episode": 24,
+  "maximum_new_task_requests": 144,
+  "wall_seconds_per_episode": 600,
+  "inputs": "Identical frozen suite, matrix, prompt and driver from capacity-20261024-r2. Same corrected accepted-omitted-remaining-v1 assessor, no new oracle or scope exception.",
+  "retry_policy": "No in-place retry, no model fallback. Retain every started episode including transport failures. An adaptive second round, if needed, is separately declared before calls.",
+  "changes": [
+    "Clear stale matching exec failure memory after native automatic-test success, identically live and on role handoff; retain explicit final exec requirements.",
+    "Reject high-churn whole-file source overwrites before mutation; guide intentional deletions to explicit patches. Mechanical safeguard only, no semantic preservation claim.",
+    "Keep JSON examples inside legacy protocol fields as data even with a prose preamble."
+  ],
+  "primary_outcome": "Independent artifacts plus native baseline/fresh verification plus accepted authored report; strict all-file scope separate.",
+  "secondary_outcomes": [
+    "Recovery refusals after passing automatic tests",
+    "Whole-file overwrite refusals and subsequent actions; existing helper and original-test preservation",
+    "Original Observer response format, invalid advice and repair requests",
+    "Protocol refusals, repeated failures, shared requests by role"
+  ],
+  "limitations": [
+    "Adaptive development fixture, not held out",
+    "Joint intervention, no causal ablation",
+    "One episode per model per round, no model ranking or reliability estimate",
+    "Format acceptance and native proof do not establish semantic success"
+  ]
+}

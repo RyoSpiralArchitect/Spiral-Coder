@@ -1,0 +1,436 @@
+{
+  "assessor": "selection-paraphrases-v4 + accepted-omitted-remaining-v1",
+  "score_definition_changed": false,
+  "rounds": {
+    "retained": {
+      "runtime_commit": "4918b4a529f0fdf798dccae2d6eef2c9686031a1",
+      "binary_sha256": "791df2545d65030dd372f8943dec303b3b0b57652a9636f10bc1d5420bba2c38",
+      "assessment_sha256": "7af2dc5eebfeb34d47fccb94f3ad4cada7c076a3a34134feff6917f614fb8797",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 1,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 1,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 71,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "3": 121
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 3,
+            "Think Gate": 1,
+            "unspecified governor": 2,
+            "Recovery Gate": 2,
+            "Requirement Gate": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 23,
+          "request_roles": {
+            "coder": 21,
+            "observer": 2
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "Requirement Gate": 1,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Progress Gate": 1,
+            "Recovery Gate": 3,
+            "Done Gate": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [
+            "preserved",
+            "run_bounded"
+          ],
+          "source_overwrite_attempts": 2,
+          "source_overwrite_guard_refusals": 0
+        }
+      ]
+    },
+    "r1": {
+      "runtime_commit": "b877a3e5060e4ad721122f47202882ee8eaf4da6",
+      "binary_sha256": "4f8a9c13b294a83cfc59f4c8418e777d506b59707f336c476775f0e5680d5294",
+      "assessment_sha256": "926a37662236a581b3b4c207e91db1dd44c79e402f0afbb939a9052eb722ecdb",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 62,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "1": 103,
+        "2": 111
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 23,
+          "request_roles": {
+            "coder": 22,
+            "observer": 1
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 4,
+            "Think Gate": 1,
+            "Requirement Gate": 1,
+            "Recovery Gate": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 1,
+          "observer_standalone_json_responses": 1,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": [
+            {
+              "assist_id": 1,
+              "call_ids": [
+                "call_706621",
+                "call_964998"
+              ],
+              "completed": true,
+              "continuation_id": 2,
+              "decision": "accept",
+              "executed": true,
+              "pending_exact_checks": [],
+              "succeeded": null
+            }
+          ]
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 12
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 1,
+          "observer_standalone_json_responses": 1,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 15,
+          "request_roles": {
+            "coder": 15
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 0,
+          "observer_standalone_json_responses": 0,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": []
+        }
+      ]
+    },
+    "r2": {
+      "runtime_commit": "a3574fabf82607bac7543990f9ff8afadb851262",
+      "binary_sha256": "8ee44a940c38a284faef3987cce6171fac6900bca659124cd3e5a0c631494a1a",
+      "assessment_sha256": "d329353e0a8f6168488bfeb3804cda4dca8967aa8962f17b1adcba407448228f",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 56,
+        "episodes_with_unknown_request_count": 0
+      },
+      "verified_raw_manifest_entries": {
+        "1": 103,
+        "2": 111
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 16,
+          "request_roles": {
+            "coder": 16
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "Recovery Gate": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 0,
+          "observer_standalone_json_responses": 0,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 16,
+          "request_roles": {
+            "coder": 16
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Think Gate": 1,
+            "Final handoff": 1
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 0,
+          "observer_standalone_json_responses": 0,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Final handoff": 3
+          },
+          "trace_errors": [],
+          "lost_functions": [],
+          "source_overwrite_attempts": 0,
+          "source_overwrite_guard_refusals": 0,
+          "observer_original_success_responses": 1,
+          "observer_standalone_json_responses": 1,
+          "observer_string_encoded_args": 0,
+          "observer_invalid_responses": 0,
+          "assists": [
+            {
+              "assist_id": 1,
+              "call_ids": [
+                "YMRoQwQ13",
+                "3UWO10V0Z",
+                "dJaK9FIOB"
+              ],
+              "completed": false,
+              "continuation_id": 2,
+              "decision": "accept",
+              "executed": false,
+              "pending_exact_checks": [],
+              "succeeded": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "new_task_requests": 118,
+  "same_input_matrix_driver_inventory_prompts_caps": true
+}
