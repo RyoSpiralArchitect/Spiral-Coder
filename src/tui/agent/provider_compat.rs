@@ -737,6 +737,12 @@ pub(super) fn repair_truncated_patch_tool_call_from_recent_mismatch(
     }
 
     let parsed = serde_json::from_str::<serde_json::Value>(&tc.arguments).ok();
+    if parsed
+        .as_ref()
+        .is_some_and(|value| value.get("json_pointer").is_some())
+    {
+        return None;
+    }
     let parsed_path = parsed
         .as_ref()
         .and_then(|value| value.get("path").and_then(|v| v.as_str()))

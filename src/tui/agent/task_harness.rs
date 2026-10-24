@@ -66,6 +66,12 @@ impl TaskHarness {
                 artifact_mode: ArtifactMode::ExistingFiles,
             };
         }
+        if super::requirement_proof::declared(root_user_text) {
+            return Self {
+                lane: TaskLane::FixExisting,
+                artifact_mode: ArtifactMode::ExistingFiles,
+            };
+        }
 
         let mentions_repo = text_contains_any(
             low.as_str(),
@@ -294,7 +300,7 @@ Move to `patch_file`/`apply_diff`, or run verification if you believe the fix is
 If lane is `runtime_eval`, update `.spiral-coder/runtime_eval.json` and any smallest required fixture.\n\
 If lane is `tui_replay`, update `.spiral-coder/tui_replay.json`.\n\
 If lane is `observer_unit` or `unit`, add the smallest targeted regression test instead.\n\
-For JSON spec files such as `.spiral-coder/tui_replay.json` or `.spiral-coder/runtime_eval.json`, read the file, then rewrite the complete valid JSON with `write_file` rather than using `patch_file` on nested arrays; this preserves structure and avoids subtle syntax errors.\n\
+For JSON spec files use `patch_file(path, json_pointer=\"/cases/-\", json_value=<JSON-encoded new case>)` to append only the new case. Omit search/replace. The runtime preserves the full document, even beyond read_file truncation. For replacing a member supply its pointer and json_expected. Never rewrite a large document from a truncated read.\n\
 Prefer the `required_checks` listed in the approved plan.\n\
 Do not only explain the benchmark plan; create or edit the regression artifact.\n",
                     );
@@ -344,7 +350,9 @@ fn is_approved_observer_benchmark_plan(low: &str) -> bool {
 }
 
 pub(super) fn approved_benchmark_required_commands(root_user_text: &str) -> Vec<String> {
-    if is_approved_observer_benchmark_plan(&root_user_text.to_ascii_lowercase()) {
+    if is_approved_observer_benchmark_plan(&root_user_text.to_ascii_lowercase())
+        || super::requirement_proof::declared(root_user_text)
+    {
         benchmark_proof::required_commands(root_user_text)
     } else {
         Vec::new()
@@ -833,6 +841,14 @@ fn benchmark_plan_tool_call_is_complete_target_mutation(tc: &ToolCallData, targe
     }
     match tc.name.as_str() {
         "patch_file" => {
+            if parsed.get("json_pointer").and_then(Value::as_str).is_some()
+                && parsed
+                    .get("json_value")
+                    .and_then(Value::as_str)
+                    .is_some_and(|s| serde_json::from_str::<Value>(s).is_ok())
+            {
+                return true;
+            }
             parsed
                 .get("search")
                 .and_then(|v| v.as_str())
@@ -1027,7 +1043,7 @@ steps:\n\
 acceptance:\n\
 1) `.spiral-coder/tui_replay.json` contains `{}`.\n\
 2) The required replay check passes.\n\
-risks: corrupting existing cases or using patch_file on nested JSON arrays.\n\
+risks: corrupting existing cases; use the structured JSON append mode.\n\
 assumptions: the existing spec version and defaults remain valid.\n\
 </plan>\n\
 \t\n\

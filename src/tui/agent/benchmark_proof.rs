@@ -63,6 +63,11 @@ pub(in crate::tui::agent) fn required_commands(root_user_text: &str) -> Vec<Stri
             commands.push(command);
         }
     }
+    for command in super::super::requirement_proof::required_commands(root_user_text) {
+        if !commands.contains(&command) {
+            commands.push(command);
+        }
+    }
     commands
 }
 

@@ -7,6 +7,18 @@ use std::collections::BTreeMap;
 #[derive(Default)]
 pub(crate) struct ToolCallAccumulator {
     calls: BTreeMap<u64, ToolCallData>,
+    encoding: CallEncoding,
+    id_slots: BTreeMap<String, u64>,
+}
+
+#[derive(Default, PartialEq)]
+enum CallEncoding {
+    #[default]
+    Unknown,
+    Indexed,
+    // Gemini can send multiple complete calls in separate unindexed deltas.
+    // Their explicit IDs, not the one-element array position, identify them.
+    ById,
 }
 
 impl ToolCallAccumulator {
@@ -15,28 +27,27 @@ impl ToolCallAccumulator {
             return Ok(());
         };
         for call in calls {
-            let index = match call.get("index") {
-                Some(value) => value
-                    .as_u64()
-                    .ok_or_else(|| anyhow::anyhow!("invalid streamed tool-call index"))?,
-                // Some compatible providers omit index for a single call. Once
-                // multiple calls exist, an unindexed fragment is ambiguous.
-                None if calls.len() == 1 && self.calls.len() <= 1 => {
-                    self.calls.keys().next().copied().unwrap_or(0)
+            let id = call
+                .get("id")
+                .and_then(Value::as_str)
+                .filter(|id| !id.is_empty());
+            let index = self.slot(call, id, calls.len())?;
+            if let Some(id) = id {
+                if self
+                    .calls
+                    .iter()
+                    .any(|(slot, prior)| *slot != index && prior.id == id)
+                {
+                    bail!("streamed tool-call id reused across indices");
                 }
-                None => bail!("ambiguous streamed tool-call fragment without index"),
-            };
+            }
             let pending = self.calls.entry(index).or_insert_with(|| ToolCallData {
                 id: String::new(),
                 name: String::new(),
                 arguments: String::new(),
                 thought_signature: None,
             });
-            if let Some(id) = call
-                .get("id")
-                .and_then(Value::as_str)
-                .filter(|id| !id.is_empty())
-            {
+            if let Some(id) = id {
                 if !pending.id.is_empty() && pending.id != id {
                     bail!("streamed tool-call id changed at index {index}");
                 }
@@ -66,7 +77,39 @@ impl ToolCallAccumulator {
         Ok(())
     }
 
+    fn slot(&mut self, call: &Value, id: Option<&str>, count: usize) -> Result<u64> {
+        if let Some(value) = call.get("index") {
+            if self.encoding == CallEncoding::ById {
+                bail!("mixed indexed and ID-only streamed tool calls");
+            }
+            self.encoding = CallEncoding::Indexed;
+            return value
+                .as_u64()
+                .ok_or_else(|| anyhow::anyhow!("invalid streamed tool-call index"));
+        }
+        if self.encoding == CallEncoding::Unknown && id.is_some() {
+            self.encoding = CallEncoding::ById;
+        }
+        if self.encoding == CallEncoding::ById {
+            if let Some(id) = id {
+                let next = self.id_slots.len() as u64;
+                return Ok(*self.id_slots.entry(id.to_owned()).or_insert(next));
+            }
+        }
+        // An anonymous continuation is safe only while exactly one call can
+        // own it. Explicit indexed conflicts remain errors, never new calls.
+        if count == 1 && self.calls.len() <= 1 {
+            if self.encoding == CallEncoding::Unknown {
+                self.encoding = CallEncoding::Indexed;
+            }
+            return Ok(self.calls.keys().next().copied().unwrap_or(0));
+        }
+        bail!("ambiguous streamed tool-call fragment without index or ID")
+    }
+
     pub(crate) fn drain(&mut self) -> Vec<ToolCallData> {
+        self.encoding = CallEncoding::Unknown;
+        self.id_slots.clear();
         std::mem::take(&mut self.calls)
             .into_values()
             .filter(|call| !call.id.is_empty() && !call.name.is_empty())
@@ -143,6 +186,55 @@ mod tests {
             .push(&json!([{"function":{"arguments":"unattributed"}}]))
             .is_err());
         assert!(calls.push(&json!([{"index":0,"id":"other"}])).is_err());
+    }
+
+    #[test]
+    fn unindexed_parallel_calls_use_explicit_ids_and_keep_arrival_order() {
+        let mut calls = ToolCallAccumulator::default();
+        calls.push(&json!([{"id":"z-first","function":{"name":"read_file","arguments":"{\"path\":\"a\"}"}}])).unwrap();
+        calls.push(&json!([{"id":"a-second","function":{"name":"read_file","arguments":"{\"path\":\"b\"}"},"extra_content":{"google":{"thought_signature":"opaque-second"}}}])).unwrap();
+        let ready = calls.drain();
+        assert_eq!(ready.len(), 2);
+        assert_eq!(ready[0].id, "z-first");
+        assert_eq!(ready[0].arguments, r#"{"path":"a"}"#);
+        assert_eq!(ready[1].id, "a-second");
+        assert_eq!(ready[1].arguments, r#"{"path":"b"}"#);
+        assert!(ready[0].can_rewrite());
+        assert!(!ready[1].can_rewrite());
+        assert!(calls.drain().is_empty());
+        calls
+            .push(&json!([{"index":0,"id":"next","function":{"name":"done","arguments":"{}"}}]))
+            .unwrap();
+        assert_eq!(calls.drain()[0].id, "next");
+    }
+
+    #[test]
+    fn unindexed_fragments_require_an_id_after_parallel_calls_begin() {
+        let mut calls = ToolCallAccumulator::default();
+        calls
+            .push(&json!([
+                {"id":"a","function":{"name":"read_file","arguments":"{\"path\":\""}},
+                {"id":"b","function":{"name":"exec","arguments":"{\"command\":\"pwd\"}"}}
+            ]))
+            .unwrap();
+        calls
+            .push(&json!([{"id":"a","function":{"arguments":"a.rs\"}"}}]))
+            .unwrap();
+        assert!(calls
+            .push(&json!([{"function":{"arguments":"unattributed"}}]))
+            .is_err());
+        assert!(calls.push(&json!([{"index":0,"id":"a"}])).is_err());
+        let ready = calls.drain();
+        assert_eq!(ready[0].arguments, r#"{"path":"a.rs"}"#);
+        assert_eq!(ready[1].arguments, r#"{"command":"pwd"}"#);
+    }
+
+    #[test]
+    fn duplicate_ids_cannot_name_two_indexed_calls() {
+        let mut calls = ToolCallAccumulator::default();
+        assert!(calls
+            .push(&json!([{"index":0,"id":"same"},{"index":1,"id":"same"}]))
+            .is_err());
     }
 
     #[test]

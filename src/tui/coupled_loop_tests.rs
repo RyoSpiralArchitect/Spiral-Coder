@@ -3,6 +3,14 @@ async fn observer_continuation_keeps_native_evidence_and_finishes_the_original_r
     assert_native_continuation("[GOVERNOR BLOCK] Missing final report.", 0, false).await;
 }
 
+#[test]
+fn single_tool_rejection_is_failure_like_for_observer_rescue() {
+    let text = format!("[GOVERNOR BLOCK] {}", crate::governor_contract::multiple_tool_calls_message(2));
+    assert!(meta_failure_like(&text));
+    assert_eq!(meta_failure_kind(&text), "tool_error");
+    assert!(!meta_failure_like("The two source files have been inspected successfully."));
+}
+
 #[tokio::test]
 async fn a_successful_tool_at_the_chunk_cap_still_reaches_observer_and_final_report() {
     assert_native_continuation("[RESULT][Verifying] exit=0\n[agent] iteration cap (4) reached.", 2, false).await;
@@ -105,6 +113,25 @@ fn stale_observer_events_cannot_modify_a_new_request_or_its_repair_budget() {
 
 #[tokio::test]
 async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
+    assert_diagnosed_edit_handoff("patch_file", None, false).await;
+}
+
+#[tokio::test]
+async fn observer_handoff_reuses_an_unchanged_full_read_before_overwrite() {
+    assert_diagnosed_edit_handoff("write_file", None, false).await;
+}
+
+#[tokio::test]
+async fn observer_handoff_refuses_overwrite_when_the_retained_read_changed() {
+    assert_diagnosed_edit_handoff("write_file", Some("{\"status\":\"external\"}"), false).await;
+}
+
+#[tokio::test]
+async fn observer_handoff_refuses_whole_file_overwrite_from_a_range_read() {
+    assert_diagnosed_edit_handoff("write_file", None, true).await;
+}
+
+async fn assert_diagnosed_edit_handoff(tool: &str, changed_after_read: Option<&str>, range_read: bool) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -115,28 +142,37 @@ async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
     app.coder.push_user(goal.into());
     app.coder.messages.push(msg(Role::Assistant, "[agent] iteration cap (4) reached."));
     app.coder_completed = Some(false);
+    let read_args = if range_read { json!({"path":"config.json","start_line":1,"end_line":1}) } else { json!({"path":"config.json"}) };
     let messages = vec![
         crate::task_origin::user_message(goal, crate::task_origin::MessageOrigin::User),
         json!({"role":"assistant","tool_calls":[{"id":"failed-edit","type":"function","function":{"name":"patch_file","arguments":json!({"path":"config.json","search":"absent","replace":"after"}).to_string()}}]}),
         json!({"role":"tool","tool_call_id":"failed-edit","content":"ERROR: search string not found"}),
-        json!({"role":"assistant","tool_calls":[{"id":"diagnosed-read","type":"function","function":{"name":"read_file","arguments":"{\"path\":\"config.json\"}"}}]}),
-        json!({"role":"tool","tool_call_id":"diagnosed-read","content":"[config.json] (1 lines, 19 bytes)\n{\"status\":\"before\"}"}),
+        json!({"role":"assistant","tool_calls":[{"id":"diagnosed-read","type":"function","function":{"name":"read_file","arguments":read_args.to_string()}}]}),
+        json!({"role":"tool","tool_call_id":"diagnosed-read","content":crate::file_tools::read_range::execute_args(&read_args, app.tool_root.as_deref()).0}),
     ];
+    if let Some(changed) = changed_after_read {
+        std::fs::write(root.path().join("config.json"), changed).unwrap();
+    }
     app.coder_session = Some(crate::agent_session::AgentSession::new(app.tool_root.clone(), None, app.tool_root.clone(), None, messages));
     app.work_budget = crate::work_budget::WorkBudget::new(goal, 2, None);
     for cfg in [&mut app.observer_cfg, &mut app.coder_cfg] {
         cfg.base_url = server.base_url(); cfg.api_key = Some("local-test-key".into()); cfg.timeout_seconds = 5;
     }
-    let args = json!({"path":"config.json","search":"before","replace":"after"});
+    let args = if tool == "write_file" {
+        json!({"path":"config.json","content":"{\"status\":\"after\"}"})
+    } else {
+        json!({"path":"config.json","search":"before","replace":"after"})
+    };
     let sse = |v: serde_json::Value| format!("data: {v}\n\ndata: [DONE]\n\n");
     let observer = server.mock(|when, then| {
         when.method(POST).path("/chat/completions").body_contains("intervention mode").body_contains("has been read since the failed edit");
-        then.status(200).header("content-type","text/event-stream").body(sse(json!({"choices":[{"delta":{"content":suggestion_response("edit","patch_file",args.clone())},"finish_reason":"stop"}]})));
+        then.status(200).header("content-type","text/event-stream").body(sse(json!({"choices":[{"delta":{"content":suggestion_response("edit",tool,args.clone())},"finish_reason":"stop"}]})));
     });
     let coder = server.mock(|when, then| {
         when.method(POST).path("/chat/completions").body_contains("tool_call_id").body_contains("diagnosed-read").body_contains("has been read since the failed edit");
         let content = "<plan>\ngoal: repair config.json status\nsteps:\n1. Patch the observed status from before to after\n2. Verify the changed file\nacceptance: config.json status is after and verification passes\nrisks: preserve other fields\nassumptions: config.json was read\n</plan>\n<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: old search matched\nstrategy_change: adjust\nnext_minimal_action: patch the exact observed status\n</reflect>\n<think>\ngoal: repair config.json status\nstep: 1\ntool: patch_file\nrisk: preserve other fields\ndoubt: none\nnext: verify the changed file\nverify: inspect status after patch\n</think>\n[Observer response]\ndecision: accept\nreason: target diagnosis is complete; use its exact content";
-        then.status(200).header("content-type","text/event-stream").body(sse(json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"repair-edit","type":"function","function":{"name":"patch_file","arguments":args.to_string()}}]},"finish_reason":"stop"}]})));
+        let content = content.replace("tool: patch_file", &format!("tool: {tool}"));
+        then.status(200).header("content-type","text/event-stream").body(sse(json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"repair-edit","type":"function","function":{"name":tool,"arguments":args.to_string()}}]},"finish_reason":"stop"}]})));
     });
     async fn drain(app: &mut App, rx: &mut mpsc::Receiver<RequestEvent>, pane: PaneId) {
         tokio::time::timeout(std::time::Duration::from_secs(10), async {
@@ -155,9 +191,11 @@ async fn observer_handoff_preserves_a_completed_edit_diagnosis() {
     send_coder_input(&mut app,&tx,"Continue.".into(),CoderInput::RuntimeContinuation).await;
     drain(&mut app,&mut rx,PaneId::Coder).await;
     observer.assert_hits(1); coder.assert_hits(1);
-    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),"{\"status\":\"after\"}","{:?}",app.coder.messages);
+    assert_eq!(std::fs::read_to_string(root.path().join("config.json")).unwrap(),changed_after_read.unwrap_or(if range_read {"{\"status\":\"before\"}"} else {"{\"status\":\"after\"}"}),"{:?}",app.coder.messages);
     let session=app.coder_session.as_ref().unwrap();
-    assert!(session.messages.iter().any(|m| m["tool_call_id"]=="repair-edit" && m["content"].as_str().is_some_and(|s| s.starts_with("OK: patched"))));
+    let expected = if changed_after_read.is_some() || range_read { "GOVERNOR BLOCKED: write_file refused" }
+        else if tool == "write_file" { "OK: wrote" } else { "OK: patched" };
+    assert!(session.messages.iter().any(|m| m["tool_call_id"]=="repair-edit" && m["content"].as_str().is_some_and(|s| s.starts_with(expected))), "{:?}", session.messages);
     assert_ne!(app.coder_completed,Some(true),"editing alone cannot complete verification");
     assert_eq!(app.work_budget.snapshot().requests.len(),2);
 }

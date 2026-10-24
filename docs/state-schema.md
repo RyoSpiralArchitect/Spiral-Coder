@@ -3,6 +3,38 @@
 This document defines the main state surfaces in `spiral-coder` and which layer
 owns each kind of data.
 
+Explicit task requirements are owned by `src/tui/agent/requirement_proof.rs`.
+The contract lives in the original human message; pending artifact/check/baseline
+obligations are derived from paired native exchanges. There is no additional
+persistent store. Both Coder and Observer use `TaskObligations.task_requirements`;
+Web completion uses the same native projection. See [task requirements](task-requirements.md).
+`execution_evidence.rs` parses confirmed exec success/failure from the complete
+correlated runtime result before the advisory packet truncates its display text.
+An unrecognized result has `succeeded: null`; it may have executed but cannot
+prove a required failing baseline. No new persisted status field is introduced.
+The same projection exposes `required_diagnostic_read` from `RecoveryFocus` while
+its correlated failure still awaits inspection. Its path is the failure location,
+not authority to edit that file. Both Observer consumers validate a confident
+tool suggestion against this pending read before forwarding or using their one
+repair attempt; no-tool and uncertain advice is not retried for confidence.
+`report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
+explicit before/after test-result report clauses. Before is the last confirmed
+check before the first mutation; after is the latest check after the last
+mutation. Missing/unknown proof stays NOT RECORDED or NOT VERIFIED. These rows
+must appear in the authored summary and never create execution proof.
+`structured_output.rs` and the protocol/Observer adapters derive normalized
+fields from retained authored text; they do not mutate native call arguments or
+create durable state. `repair_brief.rs` derives recent failing check/case identities
+from correlated native results. `report_surface.rs` removes only an exact current
+report-context echo for validation/display. The original transcript remains owned
+by `AgentSession`; these projections grant no execution or completion authority.
+TUI `Message.raw_content` is owned by the in-memory pane message and stores the
+original successful Observer response before formatting. The coupled-run report
+exports it alongside `observer_display`; it is not a second session store and
+does not enter provider requests, task proof, or suggestion execution. Earlier
+coupled reports without this optional field retain only formatted successful
+Observer answers, so they cannot establish which format fallback was used.
+
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.
 
@@ -445,6 +477,13 @@ diagnostics only; check success and expected values remain unchanged.
 This layer should stay transient. If a field must survive restart/resume, it
 likely belongs in prefs or session persistence instead.
 
+An existing-file `write_file` can reuse a full native `read_file` retained in the
+current task after continuation. `src/tui/agent/read_context.rs` compares that
+exact snapshot with a fresh filesystem read before restoring the in-memory
+cache entry. Changed, truncated, pruned, uncorrelated or previous-task contents
+do not qualify; the Coder must read again. No new tool receipt, persistent state,
+diagnosis credit or verification credit is created by this comparison.
+
 ### 5a. Observer/Coder diagnostic contract
 
 Code:
@@ -822,3 +861,11 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 Protocol list fields preserve line boundaries. Bulleted acceptance items and
 their continuation lines remain separate criteria, avoiding implicit merging
 and truncation before criterion references are assigned.
+
+### Bounded file-read observations
+
+`src/file_tools/read_range.rs` owns optional one-based `start_line`/`end_line`
+validation and bounded rendering. Range reads remain correlated native tool
+observations; they cannot populate the full-file overwrite cache. Web exposes
+`complete_read` on `/api/read_file` responses for its matching guard. No new
+persistent state is added. See [file-read ranges](file-read-ranges.md).

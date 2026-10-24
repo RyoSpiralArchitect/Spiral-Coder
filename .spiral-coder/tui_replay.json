@@ -173,6 +173,254 @@
         { "kind": "coder_system_contains", "value": "Focus axes: security" },
         { "kind": "coder_system_contains", "value": "read_file(path=src/tui/prefs.rs)" }
       ]
+    },
+    {
+      "id": "observer-bounded-file-range",
+      "prompt": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "repo-map",
+        "fallback"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect the handler around line 900 of src/tui/agent.rs without rewriting the file."
+        },
+        {
+          "role": "tool",
+          "content": "[src/repo_map.rs] (212 lines)\\npub(crate) fn lazy_read_file_fallback(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search. Current evidence points to a helper, not the TUI wiring point."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the known handler range directly.",
+        "primary_blocker": "truncated_prefix",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The target is beyond the truncated prefix.",
+            "confidence": 0.9,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent.rs",
+              "start_line": 890,
+              "end_line": 930
+            },
+            "based_on": [
+              "recent_tool_results"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/agent.rs, start_line=890, end_line=930)",
+        "why_this_first": "Inspect the relevant lines without repeating the prefix.",
+        "fallback": "Narrow the line range if the character cap is reached."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=890"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=930"
+        }
+      ]
+    },
+    {
+      "id": "single-tool-rejection-observer",
+      "prompt": "Inspect src/tui/prefs.rs and then report what it stores.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect src/tui/prefs.rs and then report what it stores."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Multiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message."
+        }
+      ],
+      "observer_response": {
+        "summary": "The multi-call rejection needs one scoped read before continuing.",
+        "primary_blocker": "single_tool",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
+    },
+    {
+      "id": "closeout-action-rejection-observer",
+      "prompt": "Inspect src/tui/prefs.rs and then report what it stores.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "prefs"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect src/tui/prefs.rs and then report what it stores."
+        },
+        {
+          "role": "tool",
+          "content": "[src/tui/events.rs] (123 lines)\nfn handle_slash_command(...)"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] [Closeout action] Only done is available for this request. No proposed tool executed. Report verified items and remaining work truthfully; the existing proof and acceptance gates still apply."
+        }
+      ],
+      "observer_response": {
+        "summary": "An incomplete report-only handoff does not prove that prefs.rs was inspected. Resume with the smallest missing read when a new task budget is available.",
+        "primary_blocker": "missing_evidence",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
+    },
+    {
+      "id": "declared-source-repair-handoff-observer",
+      "prompt": "Repair src/tui/prefs.rs while preserving the supplied tests.\n<task_requirements>\n{\"version\": 1, \"requirements\": [{\"id\": \"repair\", \"description\": \"Repair current behavior\", \"artifacts\": [{\"path\": \"src/tui/prefs.rs\", \"kind\": \"source\"}], \"checks\": [{\"command\": \"cargo test prefs\"}]}]}\n</task_requirements>",
+      "tags": [
+        "observer",
+        "repair",
+        "task-requirements"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair src/tui/prefs.rs while preserving the supplied tests.\n<task_requirements>\n{\"version\": 1, \"requirements\": [{\"id\": \"repair\", \"description\": \"Repair current behavior\", \"artifacts\": [{\"path\": \"src/tui/prefs.rs\", \"kind\": \"source\"}], \"checks\": [{\"command\": \"cargo test prefs\"}]}]}\n</task_requirements>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] The failing test has been diagnosed; inspect the existing source branch before a minimal repair."
+        }
+      ],
+      "observer_response": {
+        "summary": "Inspect the human-declared source branch in src/tui/prefs.rs. Preserve working defaults and avoid copying test-local bookkeeping into production.",
+        "primary_blocker": "missing_concrete_next_step",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "The current task is about pane-scoped TUI preferences, so the smallest next step is to read the prefs implementation file directly.",
+            "confidence": 0.91,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/prefs.rs"
+            },
+            "based_on": [
+              "intent_anchor",
+              "recent_tool_results",
+              "failure_kind"
+            ]
+          }
+        ],
+        "quickest_check": "read_file(path=src/tui/prefs.rs)",
+        "why_this_first": "It confirms storage and restore behavior without widening scope.",
+        "fallback": "If prefs.rs is not the main storage point, search save_tui_prefs inside src/tui next."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "src/tui/prefs.rs"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "read_file(path=src/tui/prefs.rs)"
+        }
+      ]
     }
   ]
 }

@@ -10,6 +10,8 @@ pub(crate) struct ActionEvidence {
     pub arguments: serde_json::Value,
     pub result: Option<String>,
     pub executed: Option<bool>,
+    /// None when execution returned no recognized runtime status. Parsed from
+    /// the full correlated result, independently of the bounded display text.
     pub succeeded: Option<bool>,
     /// Tool-result order, not assistant prose or call scheduling order.
     pub result_step: Option<usize>,
@@ -93,7 +95,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 Some(false)
             } else {
                 match action.tool.as_str() {
-                    "exec" => Some(crate::execution_evidence::exec_succeeded(result)),
+                    "exec" => crate::execution_evidence::exec_outcome(result),
                     "write_file" | "patch_file" | "apply_diff" => Some(
                         crate::execution_evidence::file_edit_succeeded(&action.tool, result),
                     ),
@@ -134,6 +136,9 @@ pub(crate) fn completion_issue(
             evidence.pending_exact_checks.join("; ")
         ));
     }
+    if let Some(issue) = super::requirement_proof::issue(messages, test_cmd) {
+        return Some(issue);
+    }
     validate_authored_done_summary(root, summary, summary, messages, test_cmd)
         .err()
         .map(|e| e.to_string())
@@ -141,4 +146,49 @@ pub(crate) fn completion_issue(
 
 pub(crate) fn artifact_guidance(messages: &[serde_json::Value]) -> Option<String> {
     task_harness::benchmark_replay::guidance(crate::task_origin::root_user_text(messages))
+}
+
+/// Check an advisory completion against the same acceptance contract as Coder.
+/// Display packets and Observer prose cannot add a plan or a native receipt.
+pub(crate) fn acceptance_issue(
+    messages: &[serde_json::Value],
+    args: &serde_json::Value,
+    test_cmd: Option<&str>,
+) -> Option<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
+    let plan = super::plan_resume::latest_valid(messages, |plan| validate_plan(plan).is_ok());
+    let rows =
+        super::acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
+    let commands = super::acceptance_report::current_commands(messages, test_cmd);
+    let observations = collect_observation_evidence(messages);
+    // Advice may precede Coder's first valid plan. Check its citations now, but
+    // leave plan admission to the real done gate on the ensuing Coder turn.
+    if plan.is_none() {
+        return rows
+            .iter()
+            .any(|row| {
+                super::done_gate::preferred_known_command_for_evidence(
+                    &row.command,
+                    &commands,
+                    &observations,
+                )
+                .is_none()
+            })
+            .then(|| {
+                format!(
+                    "Suggested done has invalid acceptance evidence: {}",
+                    governor_contract::done_evidence_unknown_command_message()
+                )
+            });
+    }
+    validate_done_acceptance(
+        plan.as_ref(),
+        &parse_string_list_arg(&args["completed_acceptance"]),
+        &parse_string_list_arg(&args["remaining_acceptance"]),
+        &rows,
+        &commands,
+        &observations,
+    )
+    .err()
+    .map(|error| format!("Suggested done has invalid acceptance evidence: {error}"))
 }

@@ -1911,16 +1911,7 @@
   }
 
   function parseDoneAcceptanceEvidence(value, contract) {
-    if (!Array.isArray(value)) return [];
-    const [criterionKey, commandKey] = doneEvidenceFields(contract);
-    return value
-      .map((item) => {
-        const obj = item && typeof item === "object" ? item : null;
-        const criterion = obj ? String(obj[criterionKey] || "").trim().replace(/\s+/g, " ") : "";
-        const command = obj ? String(obj[commandKey] || "").trim().replace(/\s+/g, " ") : "";
-        return criterion && command ? { criterion, command } : null;
-      })
-      .filter(Boolean);
+    return window.SpiralCoderWork.parseDoneEvidence(value, doneEvidenceFields(contract));
   }
 
   function resolveAcceptanceReference(reference, plan) {
@@ -5555,6 +5546,8 @@
         failure_kind: detectMetaFailureKind(target.content),
         coder_mode: String(config.mode || "").trim(),
         coder_provider: String(config.codeProvider || config.provider || "").trim(),
+        coder_base_url: String(config.codeBaseUrl || config.baseUrl || "").trim()
+          || ((config.codeProvider || config.provider) === "gemini" ? "https://generativelanguage.googleapis.com/v1beta/openai" : ""),
         coder_model: String(coderActiveModel() || "").trim(),
         observer_model: String(observerActiveModel() || "").trim(),
         tool_root: resolvedThreadRoot(config.toolRoot, activeThread.id) || null,
@@ -6277,7 +6270,7 @@
         && window.SpiralCoderWork.isActive(localStorage, threadId, work);
       const budgetMeta = () => ({ task_id: work.taskId, root: work.root, limit: work.limit, role: "coder", tool_root: resolvedThreadRoot(reqCfg.toolRoot, threadId) });
       const taskPost = (url, body, signal) => window.SpiralCoderWork.runCurrent(localStorage, threadId, work,
-        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, work_budget: budgetMeta() }, signal); });
+        () => { if (!current()) throw new Error("This task is no longer active."); return postJson(url, { ...body, ...(url === "/api/observer_action" ? { packet: { ...(body.packet || {}), coder_base_url: reqCfg.baseUrl || (reqCfg.provider === "gemini" ? "https://generativelanguage.googleapis.com/v1beta/openai" : "") } } : {}), work_budget: budgetMeta() }, signal); });
       const autonomy = String((reqCfg && reqCfg.autonomy) || "longrun").trim().toLowerCase();
       const longrun = autonomy !== "off";
       const configuredIterations = (() => {
@@ -7307,11 +7300,13 @@
         type: "function",
         function: {
           name: "read_file",
-          description: "Read the content of a file under tool_root. Use before editing to see the exact current text. Large files are truncated automatically.",
+          description: "Read file content under tool_root. For large files use one-based inclusive start_line/end_line (at most 200 lines). Partial reads do not authorize whole-file overwrite; use patch_file for edits.",
           parameters: {
             type: "object",
             properties: {
               path: { type: "string", description: "Relative file path under tool_root" },
+              start_line: { type: "integer", minimum: 1, description: "First line, one-based; defaults to 1" },
+              end_line: { type: "integer", minimum: 1, description: "Last line, inclusive; defaults to start_line + 199" },
             },
             required: ["path"],
           },
@@ -7322,15 +7317,18 @@
         type: "function",
         function: {
           name: "patch_file",
-          description: "Edit a file by replacing an exact text snippet. The search string must appear exactly once. Call read_file first to see the exact current text. For whole-file rewrites use write_file.",
+          description: "Edit a file by replacing an exact text snippet. The search string must appear exactly once. Call read_file first to see the exact current text. For JSON, supply json_pointer and json_value instead of search/replace; do not rewrite a truncated document.",
           parameters: {
             type: "object",
             properties: {
               path: { type: "string", description: "Relative file path under tool_root" },
               search: { type: "string", description: "Exact text to find (must be unique in the file)" },
               replace: { type: "string", description: "Text to replace it with" },
+              json_pointer: { type: "string", description: "JSON pointer: append at /cases/- or replace an existing member. Omit search/replace." },
+              json_value: { type: "string", description: "Only the new JSON value, encoded as a string. The runtime preserves the document." },
+              json_expected: { type: "string", description: "Current JSON value encoded as a string, required for replacement. Omit for append." },
             },
-            required: ["path", "search", "replace"],
+            required: ["path"],
           },
         },
       };
@@ -7423,14 +7421,7 @@
               },
               acceptance_evidence: {
                 type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    [criterionField]: { type: "string" },
-                    [commandField]: { type: "string" },
-                  },
-                  required: doneEvidenceFields(governorContract),
-                },
+                items: window.SpiralCoderWork.doneEvidenceItems(reqCfg.baseUrl, reqCfg.provider, doneEvidenceFields(governorContract)),
                 description: "For each completed criterion, the verification command that already succeeded."
               },
               next_steps: { type: "string", description: "Exact follow-up commands or remaining work." },
@@ -7871,8 +7862,17 @@ state: ${agentState}`);
         if (work.limit - work.requests.length <= 4) sysExtras.push("[Closeout budget] Reserve remaining requests for exact verification and an authored final report. Do not rerun current passed checks; report incomplete work truthfully.");
         messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
         let streamResult;
+        let sharedObligations;
         let requestReceipt;
         try {
+          const shared = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang }, ac.signal);
+          if (!current()) break;
+          const obligations = shared.packet?.task_obligations;
+          sharedObligations = obligations;
+          if (obligations) {
+            sysExtras.push("[Shared task obligations] Requirements are fixed by the original human request. Run baseline_failure checks before editing. Use native file tools for declared artifacts, then run each pending exact check separately. Your plan cannot waive these obligations.\n" + JSON.stringify(obligations));
+            messages[0] = { role: "system", content: SYSTEM_BASE_TEXT + "\n\n" + sysExtras.join("\n\n") };
+          }
           requestReceipt = window.SpiralCoderWork.reserve(localStorage, threadId, work, "coder", messages);
           // Separate text tokens from previous turn with a blank line.
           if (display) display += "\n\n";
@@ -8109,6 +8109,13 @@ state: ${agentState}`);
             continue;
           }
 
+          const nativeArgs = JSON.parse(actualToolArgs);
+          const baselineIssue = window.SpiralCoderWork.baselineMutationIssue(sharedObligations, actualToolName, nativeArgs, classifyExecKind(nativeArgs.command || "", governorContract));
+          if (baselineIssue) {
+            blockCurrentToolCalls(baselineIssue);
+            continue;
+          }
+
           if (mutationToolRequiresEvidence(actualToolName)) {
             const observations = observationEvidence;
             const evidenceBlock = parseEvidenceBlock(asstText, governorContract);
@@ -8171,16 +8178,20 @@ state: ${agentState}`);
                 break;
               }
 
+              const finalContract = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang, final_summary: summary }, ac.signal);
+              if (!current()) break;
+              const nativeCommands = finalContract.packet?.task_obligations?.current_commands;
+              const completionCommands = Array.isArray(nativeCommands) ? nativeCommands : knownGoodVerificationCommands;
               const validation = validateDoneAcceptance(
                 governorContract,
                 activePlan,
                 completedAcceptance,
                 remainingAcceptance,
                 acceptanceEvidence,
-                knownGoodVerificationCommands,
+                completionCommands,
               );
               if (validation && validation.error) {
-                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error);
+                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands);
                 messages.push({ role: "tool", tool_call_id: tc.id, content: "GOVERNOR BLOCKED\n\n" + toolResult });
                 display += (display ? "\n\n" : "") + "[GOVERNOR BLOCK]\n" + toolResult;
                 flush();
@@ -8189,8 +8200,6 @@ state: ${agentState}`);
                 break;
               }
 
-              const finalContract = await taskPost("/api/observer_action", { packet: {}, messages: messages.map((m, i) => m.role === "user" && i >= authoredLength ? { ...m, origin: "runtime" } : m), lang, final_summary: summary }, ac.signal);
-              if (ac.signal.aborted || abortCoderRef.current !== ac) break;
               if (finalContract.completion_issue && !remainingAcceptance.length) {
                 blockCurrentToolCalls(finalContract.completion_issue);
                 break;
@@ -8385,7 +8394,7 @@ state: ${agentState}`);
 
 	                toolResult = failed
 	                  ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
-	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}`;
+	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	                if (stdout) display += "\n" + stdout;
 	                if (stderr) display += "\nstderr: " + stderr;
@@ -8463,8 +8472,8 @@ state: ${agentState}`);
                   if (exists && !fileReadSet.has(fullPath)) {
                     toolResult = [
                       "GOVERNOR BLOCKED",
-                      "Refusing to overwrite an existing file that was not read in this session.",
-                      "Required: call read_file on the target path first, then re-issue write_file.",
+                      "Refusing to overwrite an existing file without a complete read in this session.",
+                      "Required: read the complete target first, or use patch_file/apply_diff after a range read.",
                       "path: " + String(path0 || fullPath),
                     ].join("\n");
                     pushRecentRun({ kind: "write_file", status: "FAIL", ok: false, path: path0 || fullPath, note: "blocked: not read before overwrite" });
@@ -8536,11 +8545,11 @@ state: ${agentState}`);
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
-                const res = await taskPost("/api/read_file", { path: fullPath }, ac.signal);
+                const res = await taskPost("/api/read_file", { path: fullPath, start_line: args.start_line, end_line: args.end_line }, ac.signal);
                 const raw = res && res.content ? res.content : `ERROR: empty response`;
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 if (res && res.content) {
-                  fileReadSet.add(fullPath);
+                  if (res.complete_read === true) fileReadSet.add(fullPath);
                   rememberObservationRead(`read_file(path=${path0})`, path0 || parseReadFileResultPath(toolResult));
                 }
               } catch (e2) {
@@ -8594,22 +8603,21 @@ state: ${agentState}`);
               let args;
               try { args = JSON.parse(tc.function.arguments || "{}"); } catch (_) { args = {}; }
               const path0 = String(args.path || "").trim();
-              const search = String(args.search || "");
-              const replace = String(args.replace || "");
+              const patchArgs = Object.fromEntries(["search", "replace", "json_pointer", "json_value", "json_expected"].filter(key => Object.hasOwn(args, key)).map(key => [key, args[key]]));
               display += (display ? "\n\n" : "") + `✎ patch_file: ${path0}`;
               flush();
               let toolResult;
               try {
                 const fullPath = joinUnderCwd(path0);
                 if (config.requireEditApproval) {
-                  const q = await taskPost("/api/queue_edit", {action: "patch_file", path: fullPath, search, replace}, ac.signal);
+                  const q = await taskPost("/api/queue_edit", {action: "patch_file", ...patchArgs, path: fullPath}, ac.signal);
                   refreshPendingEdits();
                   toolResult = `Awaiting approval via /api/approve_edit\napproval_id: ${q.approval_id}\napproval_path: ${q.path || fullPath}`;
                   messages.push({role: "tool", tool_call_id: tc.id, content: toolResult});
                   awaitingApproval = true;
                   break;
                 }
-                const res = await taskPost("/api/patch_file", { path: fullPath, search, replace }, ac.signal);
+                const res = await taskPost("/api/patch_file", { ...patchArgs, path: fullPath }, ac.signal);
                 const raw = res && res.message ? res.message : "OK: patched";
                 toolResult = rewriteToolPath(raw, fullPath, path0);
                 fileToolConsecutiveFailures = 0;
@@ -8939,7 +8947,7 @@ state: ${agentState}`);
 
 	              resultText = failed
 	                ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}`
-	                : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}`;
+	                : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	              if (stdout) display += "\n" + stdout;
 	              if (stderr) display += "\nstderr: " + stderr;

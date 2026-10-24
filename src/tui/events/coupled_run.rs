@@ -3,6 +3,9 @@
 use super::*;
 use anyhow::{Context, Result};
 
+#[cfg(test)]
+mod tests;
+
 #[derive(clap::Args, Debug)]
 pub(crate) struct Args {
     #[arg(long)]
@@ -132,46 +135,51 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
         "verification_config",
         json!({"test_command":app.project_test_cmd}),
     )?;
-    while app.coder.streaming {
-        drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
-        if app.coder_completed == Some(true)
-            || args.without_observer
-            || app.work_budget.remaining() < 2
-        {
-            break;
+    // Provider/consumer failures still need the budget, session and failure receipt.
+    let outcome: Result<()> = async {
+        while app.coder.streaming {
+            drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
+            if app.coder_completed == Some(true)
+                || args.without_observer
+                || app.work_budget.remaining() < 2
+            {
+                break;
+            }
+            let idx = app
+                .coder
+                .messages
+                .iter()
+                .rposition(|m| m.role == Role::Assistant && m.complete)
+                .context("no completed Coder response")?;
+            send_next_action_assist(
+                &mut app,
+                &observer_tx,
+                &format!("msg:coder-{idx}"),
+                "incomplete_task",
+            )
+            .await;
+            if app.observer.streaming {
+                drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
+            }
+            maybe_observer_action_repair(&mut app, &observer_tx).await;
+            if app.observer.streaming {
+                drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
+            }
+            if app.pending_observer_hint.is_none() || app.work_budget.remaining() == 0 {
+                break;
+            }
+            send_coder_input(
+                &mut app,
+                &coder_tx,
+                "Continue.".into(),
+                CoderInput::RuntimeContinuation,
+            )
+            .await;
         }
-        let idx = app
-            .coder
-            .messages
-            .iter()
-            .rposition(|m| m.role == Role::Assistant && m.complete)
-            .context("no completed Coder response")?;
-        send_next_action_assist(
-            &mut app,
-            &observer_tx,
-            &format!("msg:coder-{idx}"),
-            "incomplete_task",
-        )
-        .await;
-        if app.observer.streaming {
-            drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
-        }
-        maybe_observer_action_repair(&mut app, &observer_tx).await;
-        if app.observer.streaming {
-            drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
-        }
-        if app.pending_observer_hint.is_none() || app.work_budget.remaining() == 0 {
-            break;
-        }
-        send_coder_input(
-            &mut app,
-            &coder_tx,
-            "Continue.".into(),
-            CoderInput::RuntimeContinuation,
-        )
-        .await;
+        Ok(())
     }
-    trace.event("agent_end", json!({"ok":true}))?;
+    .await;
+    trace.event("agent_end", json!({"ok":outcome.is_ok()}))?;
     if let Some(session) = &app.coder_session {
         crate::agent_session::AgentSession::save_atomic(
             &args.out_dir.join("session.json"),
@@ -179,11 +187,12 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
         )?;
     }
     let report = json!({
-        "version":1,"completed":app.coder_completed == Some(true), "wall_elapsed_ms":started.elapsed().as_millis(),
+        "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
+        "error":outcome.as_ref().err().map(ToString::to_string), "wall_elapsed_ms":started.elapsed().as_millis(),
         "work":app.work_budget.snapshot(),
         "execution":app.coder_session.as_ref().map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref())),
         "coder_display":app.coder.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content})).collect::<Vec<_>>(),
-        "observer_display":app.observer.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content})).collect::<Vec<_>>(),
+        "observer_display":app.observer.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content,"raw_content":m.raw_content})).collect::<Vec<_>>(),
     });
     std::fs::write(
         args.out_dir.join("report.json"),
@@ -200,7 +209,7 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
         "{}",
         json!({"completed":report["completed"],"requests":app.work_budget.snapshot().requests.len(),"wall_elapsed_ms":report["wall_elapsed_ms"],"report":args.out_dir.join("report.json")})
     );
-    Ok(())
+    outcome
 }
 
 fn evaluate_receipts(

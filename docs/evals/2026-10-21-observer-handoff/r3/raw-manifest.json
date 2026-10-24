@@ -1,0 +1,275 @@
+{
+  "local_root": "/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021-review-baseline",
+  "files": [
+    {
+      "path": "r3/gemini/baseline.log",
+      "sha256": "79a1264a692d846143c2acf0ca3e09039661751097a34d42d81c3b5cccd81865",
+      "bytes": 1386
+    },
+    {
+      "path": "r3/gemini/candidate.patch",
+      "sha256": "83de5feb328748505e217fba7863d04d79fdd242dc7d8aafb36dd021e49ef1db",
+      "bytes": 5643
+    },
+    {
+      "path": "r3/gemini/console.log",
+      "sha256": "56ea5bb16f3289786b8c383d71f6e42a9ec644c349fa60b2f310b36fd3cf63fa",
+      "bytes": 174
+    },
+    {
+      "path": "r3/gemini/independent-oracle.log",
+      "sha256": "787192be8ae2080c584cb09984181e6b9c2de98e6526e23fb608bdafd4ccc850",
+      "bytes": 1326
+    },
+    {
+      "path": "r3/gemini/process.json",
+      "sha256": "6c84ac32528202d4cec42c761365a314dd16583186b1f6b84584e4af45988d7e",
+      "bytes": 185
+    },
+    {
+      "path": "r3/gemini/run/report.json",
+      "sha256": "a6b0f5eca4e68a9cff98fad13f2aa0796be7438fb25b60132de9fffe4ec58bec",
+      "bytes": 37293
+    },
+    {
+      "path": "r3/gemini/run/session.json",
+      "sha256": "253d134ba1f64909c6f3c13a5c4759e2aeffb09ca00fc692fa5a5cca35cbd42e",
+      "bytes": 35560
+    },
+    {
+      "path": "r3/gemini/run/trace.jsonl",
+      "sha256": "072a9ad41f4bda106173b32c851775859d241aecc4c18ea71da914e71a16547a",
+      "bytes": 18911
+    },
+    {
+      "path": "r3/gemini/workspace/.spiral-coder/policy_patch_queue.json",
+      "sha256": "9562ec165cbe39aa9f9b2317d192084ebd0b3dff21dc297e8c75c94159ccaea2",
+      "bytes": 1296
+    },
+    {
+      "path": "r3/gemini/workspace/.spiral-coder/progress.json",
+      "sha256": "88e42a7c2a2a5740e91f5035fe79832b8412b368b2b4401c0d4cd633a82317ec",
+      "bytes": 833
+    },
+    {
+      "path": "r3/gemini/workspace/.spiral-coder/tui-session.json",
+      "sha256": "8da5099ce825f07fe838758a96b858155dab50ab6cdf850379c44a385e2ece03",
+      "bytes": 35560
+    },
+    {
+      "path": "r3/gemini/workspace/.spiral-coder/tui-work.json",
+      "sha256": "7bd4a1fa0fc6e79fc74bbc39e12abb810d2a9a40191ad5b5cf2ca71f6dbecfce",
+      "bytes": 5186
+    },
+    {
+      "path": "r3/gemini/workspace/.spiral-coder.md",
+      "sha256": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "bytes": 158
+    },
+    {
+      "path": "r3/gemini/workspace/greet.py",
+      "sha256": "57c34475552953e3a5dd10b979af2ddd050b7ead7f9feec07beeefd014869028",
+      "bytes": 46
+    },
+    {
+      "path": "r3/gemini/workspace/test_greet.py",
+      "sha256": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "bytes": 310
+    },
+    {
+      "path": "r3/mistral/baseline.log",
+      "sha256": "b8783d1b5874532a62e714e2a1a81b06e194e0d77f8f3a5ec9419d307a37b08b",
+      "bytes": 1388
+    },
+    {
+      "path": "r3/mistral/candidate.patch",
+      "sha256": "1b7db4786ba2f1ab9870af1faf928ab18f863f308ad876625b0fdfdae3d8c558",
+      "bytes": 11591
+    },
+    {
+      "path": "r3/mistral/console.log",
+      "sha256": "345d87ca04c890038fb838f085ec8adc4fd2c9a49aeaf3522601ccd12ad1fe01",
+      "bytes": 175
+    },
+    {
+      "path": "r3/mistral/independent-oracle.log",
+      "sha256": "144c30d0dee58b82da9b4cbfba002e6be40d0283df9cf2ca4d238a1cf47a0692",
+      "bytes": 246
+    },
+    {
+      "path": "r3/mistral/process.json",
+      "sha256": "c3f331a0fb83e3c772e7939cf5844b3439c815fb88c68a9a6c466e6df78fa490",
+      "bytes": 183
+    },
+    {
+      "path": "r3/mistral/run/report.json",
+      "sha256": "4ac415aa04368eae260418b57cb0fa1feaed45f9e17ac7e4511b08dff66ec421",
+      "bytes": 122179
+    },
+    {
+      "path": "r3/mistral/run/session.json",
+      "sha256": "b5595598024abbe5f821457d0b97c579c96177d688798181e65817fe86f37d21",
+      "bytes": 92028
+    },
+    {
+      "path": "r3/mistral/run/trace.jsonl",
+      "sha256": "713b759fb7bcc0cbf28c27ea5c01423fdab9cf9fd374e29a7ae2c7938905c52f",
+      "bytes": 27287
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder/policy_patch_queue.json",
+      "sha256": "4b2f5dad941b7310eb9a0649d75379efc7622bcd98aaa57c32efbaed6380e6b2",
+      "bytes": 1296
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder/progress.json",
+      "sha256": "6b8378dafa0c67e8e78360952be4e128ce934f68e359bf9cdffa9e6e711d6b7e",
+      "bytes": 1003
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder/reflection_ledger.json",
+      "sha256": "fbbcd2bc39361edc7a2dd11ebeaff8ec210967e094aaf48cd2892fa4dc979fc9",
+      "bytes": 960
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder/tui-session.json",
+      "sha256": "8cc55b186e2d782c98ab51874d0b9b2d50359c292526371c63ec1cffa9919c10",
+      "bytes": 92028
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder/tui-work.json",
+      "sha256": "e57050dc4c83ca85155924075d685f5233f29bb50ceee3f12cf1f23ea24c8e02",
+      "bytes": 10440
+    },
+    {
+      "path": "r3/mistral/workspace/.spiral-coder.md",
+      "sha256": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "bytes": 158
+    },
+    {
+      "path": "r3/mistral/workspace/greet.py",
+      "sha256": "f6a7e16b222a9c8f5d6838c5f9d4becb7680f9eb8bfdddc7bc50ad4537bc1ff4",
+      "bytes": 47
+    },
+    {
+      "path": "r3/mistral/workspace/test_greet.py",
+      "sha256": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "bytes": 310
+    },
+    {
+      "path": "r3/openai/baseline.log",
+      "sha256": "05cbaaded28eb3bf8e89a7c1d8366deae6a2184844aeb59a7332b6620bbc6dfc",
+      "bytes": 1386
+    },
+    {
+      "path": "r3/openai/candidate.patch",
+      "sha256": "1a3c03f5cd2a2c01aaee4b7a180ff48d08d48dfa4a7adf2d49a10f3e77f5e67e",
+      "bytes": 4089
+    },
+    {
+      "path": "r3/openai/console.log",
+      "sha256": "c0e656dfcb4d25a05ff1704c527e929e70ed10103f859c3177b053997b9a779e",
+      "bytes": 172
+    },
+    {
+      "path": "r3/openai/independent-oracle.log",
+      "sha256": "144c30d0dee58b82da9b4cbfba002e6be40d0283df9cf2ca4d238a1cf47a0692",
+      "bytes": 246
+    },
+    {
+      "path": "r3/openai/process.json",
+      "sha256": "aa5605d3c68e3122bc47499e7ccb4a38472255610b21f0b17dfe5ec0d3b8cdea",
+      "bytes": 174
+    },
+    {
+      "path": "r3/openai/run/report.json",
+      "sha256": "0ed0a0980b3a013830bd5334a3be5336e518f96604548f9232316717006a5574",
+      "bytes": 18012
+    },
+    {
+      "path": "r3/openai/run/session.json",
+      "sha256": "8b67e33cab1a65b3d54e546554c83f4865f44daaf2db156c3f2064e10898b2c5",
+      "bytes": 29906
+    },
+    {
+      "path": "r3/openai/run/trace.jsonl",
+      "sha256": "7c8d9def8b7d671e8ca4bee832129be46ddc05adee050f7913bbdc273a598ac0",
+      "bytes": 9664
+    },
+    {
+      "path": "r3/openai/workspace/.spiral-coder/progress.json",
+      "sha256": "3e9033a4723dcf85a98d2ab83d67b281551fd1b27cc97ef261e7c1715f0bd0ac",
+      "bytes": 855
+    },
+    {
+      "path": "r3/openai/workspace/.spiral-coder/reflection_ledger.json",
+      "sha256": "5c444faf18df85fb39b5eeb80308772fdda50a439247825caf2291b541ae2134",
+      "bytes": 551
+    },
+    {
+      "path": "r3/openai/workspace/.spiral-coder/tui-session.json",
+      "sha256": "0ab94e12d9be3bd6bdec5bfceb51b31a807fe60658e8e99c8c000cd492a96e2e",
+      "bytes": 29906
+    },
+    {
+      "path": "r3/openai/workspace/.spiral-coder/tui-work.json",
+      "sha256": "8d6cd539d4b9728019d14f4dc457b979e73be8397cc26e8e764b9b57446b66a2",
+      "bytes": 3253
+    },
+    {
+      "path": "r3/openai/workspace/.spiral-coder.md",
+      "sha256": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "bytes": 158
+    },
+    {
+      "path": "r3/openai/workspace/greet.py",
+      "sha256": "a55c14346b5c0e11da873793db175efd28d4840a330a5edba18d03d7d7310626",
+      "bytes": 46
+    },
+    {
+      "path": "r3/openai/workspace/test_greet.py",
+      "sha256": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "bytes": 310
+    },
+    {
+      "path": "r3/predeclared.json",
+      "sha256": "98f1c50d1c492f22362eb6801dd24fcfb55347c57fd90d930a405f9602938d60",
+      "bytes": 1402
+    },
+    {
+      "path": "r3/reference.log",
+      "sha256": "144c30d0dee58b82da9b4cbfba002e6be40d0283df9cf2ca4d238a1cf47a0692",
+      "bytes": 246
+    },
+    {
+      "path": "r3/spiral-coder",
+      "sha256": "c10863d7ef23034eb3fe604af4d24ae50f976acd70bd7d9c3d12889b265f0487",
+      "bytes": 43392944
+    },
+    {
+      "path": "r3/summary.json",
+      "sha256": "aa16f1b8128e229904216f7cd2b60a79156f1ce56daf03c1f148c7b2ec81f241",
+      "bytes": 31979
+    },
+    {
+      "path": "r3/task.txt",
+      "sha256": "632bb9d26475ea9bc186ce822b9f00a9ca1e2e5196801a53dab1ba42f829b911",
+      "bytes": 1301
+    },
+    {
+      "path": "prepare.py",
+      "sha256": "6d9e3c3836280a3001398a4560fea32061b7961796b346d3caf2972f505ce60e",
+      "bytes": 3045
+    },
+    {
+      "path": "launch.py",
+      "sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c",
+      "bytes": 3940
+    },
+    {
+      "path": "collect-followup.py",
+      "sha256": "cb26757b6adb69e9b8ed9774ede22051033b527e4f10151a44b9d3aafaf9dcc8",
+      "bytes": 6264
+    }
+  ]
+}

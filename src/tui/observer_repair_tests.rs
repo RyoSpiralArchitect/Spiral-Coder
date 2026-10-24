@@ -12,6 +12,90 @@ fn seed_observer_failure(app: &mut App) {
 }
 
 #[test]
+fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let goal = "Repair src/lib.rs.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"repair\",\"description\":\"Repair behavior\",\"artifacts\":[{\"path\":\"src/lib.rs\",\"kind\":\"source\"}],\"checks\":[{\"command\":\"cargo test\"}]}]}\n</task_requirements>";
+    let messages = vec![
+        json!({"role":"user","content":goal}),
+        json!({"role":"assistant","tool_calls":[{"id":"observed","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\",\"start_line\":30,\"end_line\":60}"}}]}),
+        json!({"role":"tool","tool_call_id":"observed","content":"[src/lib.rs] (90 lines, 900 bytes) [range: lines 30-60; partial file]\nobserved source"}),
+        json!({"role":"assistant","tool_calls":[{"id":"before","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"before","content":"FAILED (exit_code: 1)\nFAIL: test_reverse (selection.Tests.test_reverse)"}),
+        json!({"role":"assistant","tool_calls":[{"id":"after","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"after","content":"FAILED (exit_code: 1)\nFAIL: test_default (selection.Tests.test_default)"}),
+    ];
+    let resumed: Vec<serde_json::Value> = serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,resumed.clone()));
+    let mut encoded: serde_json::Value = serde_json::from_str(&suggestion_response("read", "read_file", json!({"path":"src/lib.rs"}))).unwrap();
+    encoded["suggestions"][0]["suggested_args"] = json!(encoded["suggestions"][0]["suggested_args"].to_string());
+    let response = format!("Next action.\n```json\n{encoded}\n```\nEnd.");
+    let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&response).unwrap();
+    assert!(tui.pending_observer_hint.is_some() && tui.observer_repair_prompt.is_none());
+    let displayed = app.observer.messages.iter().rev().find(|m| m.role == Role::Assistant).unwrap();
+    assert_eq!(displayed.raw_content.as_deref(), Some(response.as_str()));
+    assert!(displayed.content.starts_with("--- blocker ---"));
+    assert_eq!(tui.observer_raw_response, response);
+    let coder = agent::task_obligations::prompt(&resumed,None).unwrap();
+    for prompt in [&coder, &tui.observer_prompt] {
+        assert!(prompt.contains("repair_brief") && prompt.contains("bookkeeping"));
+        assert!(prompt.contains("observed"));
+        assert!(prompt.contains("recent_check_failures") && prompt.contains("test_default") && prompt.contains("test_reverse"));
+    }
+    let view = serde_json::to_value(agent::task_obligations::project(&resumed,None)).unwrap();
+    let browser = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"task_obligations":{"repair_brief":{"source_artifacts":["invented.rs"]}}}),
+        messages:resumed,test_command:None,lang:"en".into(),reason:"diagnose".into(),
+        response:Some(response),final_summary:None,repair_native:true,
+    });
+    assert_eq!(browser.packet["task_obligations"]["repair_brief"],view["repair_brief"]);
+    assert_eq!(view["repair_brief"]["source_artifacts"],json!(["src/lib.rs"]));
+    assert_eq!(view["repair_brief"]["observed_sources"][0]["start_line"],30);
+    assert_eq!(view["repair_brief"]["recent_check_failures"][1]["call_id"],"after");
+}
+
+#[test]
+fn observer_wrong_diagnostic_target_is_repaired_consistently_after_resume() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let mut messages = vec![
+        json!({"role":"user","content":"Fix greet.py without changing the supplied tests"}),
+        json!({"role":"assistant","tool_calls":[{"id":"red","function":{"name":"exec","arguments":"{\"command\":\"python3 test_greet.py\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"red","content":"⚠ LOGIC ERROR: assertion failed\nFAILED (exit_code: 1)","recovery_focus":{"version":1,"state":{"pending":{"path":"test_greet.py","diagnostic":"AssertionError: wrong punctuation","check":"python3 test_greet.py","observation":"awaiting_read","location":"current"}}}}),
+    ];
+    messages = serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,messages.clone()));
+    let wrong = suggestion_response("read", "read_file", json!({"path":"greet.py"}));
+    let tui = replay_observer_next_action_case(&mut app, "last-fail", "diagnose", &wrong).unwrap();
+    assert!(tui.observer_prompt.contains("required_diagnostic_read"));
+    assert!(tui.pending_observer_hint.is_none());
+    assert!(tui.observer_repair_prompt.unwrap().contains("read_file(path=test_greet.py)"));
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"task_obligations":{"required_diagnostic_read":null}}),messages:messages.clone(),
+        test_command:None,lang:"en".into(),reason:"diagnose".into(),response:Some(wrong.clone()),final_summary:None,repair_native:true,
+    });
+    assert!(web.issue.unwrap().contains("read_file(path=test_greet.py)"));
+    assert!(web.hint.is_none());
+    assert_eq!(web.packet["task_obligations"]["required_diagnostic_read"]["path"],"test_greet.py");
+    let right = suggestion_response("read", "read_file", json!({"path":"./test_greet.py"}));
+    let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&right).unwrap();
+    assert!(tui.pending_observer_hint.is_some()); assert!(tui.observer_repair_prompt.is_none());
+    let mut uncertain: serde_json::Value = serde_json::from_str(&wrong).unwrap();
+    uncertain["suggestions"][0]["confidence"] = json!(0.2);
+    assert!(crate::observer_action::validation_issue(&uncertain.to_string(), &messages, None).is_none());
+    // A real read discharges only the diagnosis route, not the failed check.
+    messages.extend([
+        json!({"role":"assistant","tool_calls":[{"id":"read","function":{"name":"read_file","arguments":"{\"path\":\"test_greet.py\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"read","content":"[test_greet.py] (2 lines, 30 bytes)\nassert greet('') == 'Hello, !'"}),
+    ]);
+    assert!(crate::observer_action::validation_issue(&wrong, &messages, None).is_none());
+    let view=agent::task_obligations::project(&messages,None);
+    assert!(view.required_diagnostic_read.is_none()); assert!(!view.pending_recovery.is_empty());
+    messages.push(json!({"role":"user","content":"Explain another task"}));
+    assert!(agent::task_obligations::project(&messages,None).required_diagnostic_read.is_none());
+}
+
+#[test]
 fn observer_repair_keeps_invalid_source_and_never_infers_a_tool() {
     let (mut app, _root) = interaction_app();
     seed_observer_failure(&mut app);

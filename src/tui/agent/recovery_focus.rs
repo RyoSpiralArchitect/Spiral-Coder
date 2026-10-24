@@ -54,7 +54,21 @@ pub(super) struct RecoveryFocus {
     pending: Option<FailureFocus>,
 }
 
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct DiagnosticRead {
+    pub path: String,
+    pub failed_check: String,
+}
+
 impl RecoveryFocus {
+    pub(super) fn required_read(&self) -> Option<DiagnosticRead> {
+        let focus = self.pending.as_ref().filter(|_| self.requires_read())?;
+        Some(DiagnosticRead {
+            path: focus.path.clone(),
+            failed_check: focus.check.clone(),
+        })
+    }
+
     pub(super) fn progress_survives(
         &self,
         messages: &[Value],
@@ -87,7 +101,7 @@ impl RecoveryFocus {
             cache.remove(key);
         }
         let result = crate::file_tools::tool_read_file(&path, root);
-        if !result.1 {
+        if !result.1 && crate::file_tools::read_range::full_snapshot(&result.0) {
             if let Some(key) = key {
                 cache.insert(key, result.0.clone());
             }
@@ -126,8 +140,8 @@ impl RecoveryFocus {
     pub(super) fn hint(&self) -> Option<String> {
         let focus = self.pending.as_ref()?;
         let next = match focus.observation {
-            Observation::AwaitingRead => "Read this exact path with read_file before repairing it. Unrelated directory listings, searches, or pwd do not inspect this failure.",
-            Observation::Observed => "The failing file has been read. Apply a minimal repair, preserving unrelated content, then rerun the same failed check.",
+            Observation::AwaitingRead => "Read this exact path with read_file to diagnose the failure before editing. It locates the failure, not necessarily the file to change. Preserve the original task's edit restrictions. Unrelated reads, directory listings, searches, or pwd do not inspect this failure.",
+            Observation::Observed => "The failure location has been read. Repair the cause within the original task's edit scope, preserving supplied tests and unrelated content, then rerun the same failed check.",
             Observation::RepairAttempted => "A repair was attempted. Run the same failed check; unrelated successful checks do not resolve this failure.",
             Observation::Unavailable => "The target read failed. Diagnose access/path or another relevant cause using available tools. The original verification failure remains unresolved; rerun the same failed check after repair.",
             Observation::Unlocalized => "The same check failed again with a new diagnostic but no confirmed current location. Diagnose the latest failure; the previous path is only a last confirmed location and does not require another exact-path read.",
@@ -236,6 +250,7 @@ impl RecoveryFocus {
                     suffix.is_empty()
                         || suffix == " [⚡ cached — unchanged since last read]"
                         || suffix.starts_with(" [pruned ")
+                        || crate::file_tools::read_range::matches_range_header(&tc.arguments, line)
                 })
         }) {
             if focus.observation != Observation::RepairAttempted {

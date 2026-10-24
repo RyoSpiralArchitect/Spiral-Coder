@@ -3,6 +3,50 @@
   const caches = new WeakMap();
   const clone = value => JSON.parse(JSON.stringify(value));
   const key = id => "spiral-coder.work.v1." + id;
+  function baselineMutationIssue(obligations, tool, args, execKind) {
+    const checks = obligations?.task_requirements?.pending_baselines || [];
+    const mutates = ["write_file", "patch_file", "apply_diff"].includes(tool)
+      || (tool === "exec" && execKind === "action" && !(obligations?.required_exact_checks || []).includes(String(args.command || "").trim()));
+    return checks.length && mutates
+      ? "[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\n" + checks.join("\n") + "\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed."
+      : null;
+  }
+
+  function flatDoneEvidence(baseUrl, provider = "") {
+    return String(baseUrl || "").includes("generativelanguage.googleapis.com") ||
+      (!String(baseUrl || "").trim() && provider === "gemini");
+  }
+  function doneEvidenceItems(baseUrl, provider, fields = ["criterion", "command"]) {
+    if (flatDoneEvidence(baseUrl, provider)) return {
+      type: "string", description: "One row per completed criterion: '<criterion reference> | <verification command>'.",
+    };
+    return { type: "object", properties: Object.fromEntries(fields.map(key => [key, { type: "string" }])), required: fields };
+  }
+  function parseDoneEvidence(value, fields = ["criterion", "command"]) {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap(row => {
+      let criterion, command;
+      if (typeof row === "string") {
+        const split = row.indexOf("|");
+        if (split < 0) return [];
+        criterion = row.slice(0, split); command = row.slice(split + 1);
+      } else if (row && typeof row === "object" && !Array.isArray(row)) {
+        criterion = row[fields[0]]; command = row[fields[1]];
+      }
+      if (typeof criterion !== "string" || typeof command !== "string" ||
+          !criterion.trim() || !command.trim()) return [];
+      // Shell quoting, case and internal whitespace are executable data.
+      return [{ criterion: criterion.trim(), command: command.trim() }];
+    });
+  }
+  function doneEvidenceHint(baseUrl, provider, plan, commands) {
+    const row = flatDoneEvidence(baseUrl, provider)
+      ? "<criterion reference> | <exact recorded command>"
+      : { criterion: "<criterion reference>", command: "<exact recorded command>" };
+    return "\n[Authored acceptance mapping]\nUse exactly one evidence row per completed criterion. Keep unproven criteria in remaining_acceptance. Do not rerun checks only to repair report formatting.\n" +
+      JSON.stringify({ criteria: (plan?.acceptanceCriteria || []).map((criterion, i) => ({ reference: `acceptance ${i + 1}`, criterion })),
+        current_commands: commands, evidence_row_shape: row });
+  }
   function cacheFor(storage) {
     if (!caches.has(storage)) caches.set(storage, new Map());
     return caches.get(storage);
@@ -187,5 +231,5 @@
         return { text: fullText, finishReason, toolCalls, usage };
       };
 
-  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools };
+  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools, baselineMutationIssue, flatDoneEvidence, doneEvidenceItems, parseDoneEvidence, doneEvidenceHint };
 })();

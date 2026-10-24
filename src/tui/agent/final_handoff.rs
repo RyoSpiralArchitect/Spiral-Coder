@@ -40,7 +40,7 @@ mod clause_tests {
 }
 
 pub(super) fn requires_authored_final_answer(root: &str) -> bool {
-    !instructions(root).is_empty()
+    !instructions(root).is_empty() || super::requirement_proof::declared(root)
 }
 
 /// The same bounded clauses/literals used by the done gate, available to both roles.
@@ -55,6 +55,14 @@ pub(super) fn report_requirements(root: &str) -> serde_json::Value {
         "path_categories": path_kinds(&clauses).iter().map(|kind| kind.label()).collect::<Vec<_>>(),
         "cite_current_verification_command": clauses.iter().any(|clause| clause.to_ascii_lowercase().contains("verification command")),
     })
+}
+
+pub(super) fn report_context(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Value {
+    let mut report = report_requirements(root);
+    report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
+        root, messages, test_cmd
+    ));
+    report
 }
 
 pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
@@ -106,7 +114,7 @@ fn path_kinds(clauses: &[&str]) -> Vec<PathKind> {
         // natural-language interpretation or a requirement to list every edit.
         let lower = clause.to_ascii_lowercase();
         for item in lower.split(',').flat_map(|item| item.split(" and ")) {
-            if !item.contains("path") {
+            if !item.contains("path") && !(item.contains("changed") && item.contains("file")) {
                 continue;
             }
             let kind = if item.contains("rust") {
@@ -156,7 +164,9 @@ fn explicit_paths(clauses: &[&str]) -> BTreeSet<String> {
                     && ext.chars().all(|c| c.is_ascii_alphabetic())
                     && (ext.len() >= 2 || matches!(ext, "c" | "h" | "r" | "R"))
             });
-            (!path.is_empty() && (path.contains('/') || path.contains('\\') || filename))
+            (!path.is_empty()
+                && !path.eq_ignore_ascii_case("before/after")
+                && (path.contains('/') || path.contains('\\') || filename))
                 .then(|| path.to_string())
         })
         .collect()
@@ -303,6 +313,9 @@ pub(super) fn validate_authored_done_summary(
     messages: &[Value],
     test_cmd: Option<&str>,
 ) -> Result<(), String> {
+    let report = report_context(root, messages, test_cmd);
+    let summary = super::report_surface::authored(summary, &report);
+    let rendered = super::report_surface::authored(rendered, &report);
     if let Some(issue) = crate::work_budget::current().and_then(|c| c.budget.preservation_issue()) {
         return Err(format!("Artifact preservation failed: {issue}"));
     }
@@ -315,6 +328,11 @@ pub(super) fn validate_authored_done_summary(
     let mut missing = Vec::new();
     if summary.trim().is_empty() {
         missing.push("nonempty authored summary".to_string());
+    }
+    for row in super::report_outcomes::required_rows(root, messages, test_cmd) {
+        if !super::report_outcomes::states_row(summary, &row) {
+            missing.push(format!("recorded outcome row in done.summary: {row}"));
+        }
     }
     let mut required_literals = quoted_literals(&clauses);
     required_literals.extend(explicit_paths(&clauses));

@@ -28,6 +28,7 @@ mod repo_map;
 mod runtime_eval;
 mod server;
 mod streaming;
+mod structured_output;
 mod task_graph;
 mod task_origin;
 mod task_scope;

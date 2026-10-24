@@ -11,6 +11,7 @@ pub(super) enum ActionIdentity {
     },
     Read {
         path: String,
+        range: Option<(usize, usize)>,
     },
     Write {
         path: String,
@@ -57,15 +58,40 @@ pub(super) fn tool_call_action_sig(call: &ToolCallData) -> Option<ActionIdentity
         return None;
     }
     Some(match call.name.as_str() {
-        "read_file" => ActionIdentity::Read { path },
+        "read_file" => {
+            let request: crate::file_tools::read_range::ReadRequest =
+                serde_json::from_value(args).ok()?;
+            let range = request.is_range().then(|| {
+                let start = request.start_line.unwrap_or(1);
+                (
+                    start,
+                    request
+                        .end_line
+                        .unwrap_or_else(|| start.saturating_add(199)),
+                )
+            });
+            ActionIdentity::Read { path, range }
+        }
         "write_file" => ActionIdentity::Write {
             path,
             content: text("content"),
         },
         "patch_file" => ActionIdentity::Patch {
             path,
-            search: text("search"),
-            replace: text("replace"),
+            search: if args.get("json_pointer").is_some() {
+                format!(
+                    "{} expected={}",
+                    text("json_pointer"),
+                    text("json_expected")
+                )
+            } else {
+                text("search")
+            },
+            replace: if args.get("json_pointer").is_some() {
+                text("json_value")
+            } else {
+                text("replace")
+            },
         },
         "apply_diff" => ActionIdentity::Diff {
             path,
@@ -80,15 +106,19 @@ impl fmt::Display for ActionIdentity {
         // Feedback may abbreviate labels; equality above always uses full data.
         let (name, target) = match self {
             Self::Exec { command, .. } => ("exec", command),
-            Self::Read { path } => ("read_file", path),
+            Self::Read { path, .. } => ("read_file", path),
             Self::Write { path, .. } => ("write_file", path),
             Self::Patch { path, .. } => ("patch_file", path),
             Self::Diff { path, .. } => ("apply_diff", path),
         };
-        write!(
-            f,
-            "{name}:{} (unchanged execution arguments)",
-            compact_one_line(target, 160)
-        )
+        write!(f, "{name}:{}", compact_one_line(target, 160))?;
+        if let Self::Read {
+            range: Some((start, end)),
+            ..
+        } = self
+        {
+            write!(f, " [lines {start}-{end}]")?;
+        }
+        write!(f, " (unchanged execution arguments)")
     }
 }

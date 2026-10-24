@@ -61,6 +61,9 @@ pub enum Role {
 pub struct Message {
     pub role: Role,
     pub content: String,
+    /// Original Observer text before display formatting. Audit-only, never
+    /// included in provider history or treated as execution evidence.
+    pub raw_content: Option<String>,
     /// False while streaming, true once the full message is received.
     pub complete: bool,
 }
@@ -70,6 +73,7 @@ impl Message {
         Self {
             role,
             content: String::new(),
+            raw_content: None,
             complete: false,
         }
     }
@@ -77,6 +81,7 @@ impl Message {
         Self {
             role,
             content,
+            raw_content: None,
             complete: true,
         }
     }

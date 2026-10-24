@@ -43,6 +43,7 @@ use crate::types::ChatMessage;
 use std::path::Path;
 
 mod acceptance_report;
+mod acceptance_schema;
 mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
@@ -66,10 +67,14 @@ mod final_instructions;
 mod followup_requirements;
 mod harness_evolution;
 mod impact_recovery;
+mod json_fields;
 mod memory;
 mod message_window;
 mod meta_harness;
 mod native_arguments;
+mod next_action;
+#[cfg(test)]
+mod next_action_tests;
 mod outcome;
 mod plan_resume;
 mod progress_bridge;
@@ -81,6 +86,7 @@ mod provider_compat;
 #[cfg(test)]
 mod provider_signature_tests;
 mod provider_turn;
+mod read_context;
 mod read_only;
 mod recovery;
 mod recovery_focus;
@@ -89,11 +95,15 @@ mod recovery_policy_tests;
 mod reflection_action;
 #[cfg(test)]
 mod reflection_action_tests;
+mod repair_brief;
 #[cfg(test)]
 mod repair_feedback_tests;
 #[cfg(test)]
 mod replay_input_tests;
 mod repo_scaffold;
+mod report_outcomes;
+mod report_surface;
+mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;
 mod session_bridge;
@@ -1388,14 +1398,16 @@ pub fn read_file_tool_def() -> serde_json::Value {
             "name": "read_file",
             "description": "Read the full content of a file. Use before editing to see the exact current text. \
                             Path is relative to tool_root (or absolute within tool_root). \
-                            Large files are truncated automatically.",
+                            Large files are truncated. Set start_line/end_line (one-based inclusive, at most 200 lines) to read later sections. A partial read does not authorize write_file; use patch_file for targeted edits.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "path": {
                         "type": "string",
                         "description": "File path relative to tool_root."
-                    }
+                    },
+                    "start_line": {"type":"integer", "minimum":1, "description":"First line, one-based. Defaults to 1."},
+                    "end_line": {"type":"integer", "minimum":1, "description":"Last line, inclusive. Defaults to start_line + 199; at most 200 lines."}
                 },
                 "required": ["path"]
             }
@@ -1438,8 +1450,9 @@ pub fn patch_file_tool_def() -> serde_json::Value {
             "description": "Edit a file by replacing an exact text snippet. \
                             The search string MUST appear exactly once in the file. \
                             Call read_file first to see the exact current text if unsure. \
-                            For whole-file rewrites use write_file instead. \
-                            Path is relative to tool_root.",
+                            For JSON use json_pointer and JSON-encoded json_value instead of search/replace: \
+                            append at /cases/- or replace an existing member with json_expected. \
+                            Never reprint a large JSON document. Path is relative to tool_root.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1454,9 +1467,12 @@ pub fn patch_file_tool_def() -> serde_json::Value {
                     "replace": {
                         "type": "string",
                         "description": "Text to substitute in place of the search string."
-                    }
+                    },
+                    "json_pointer": {"type":"string", "description":"JSON pointer. Append at an existing array followed by /-, e.g. /cases/-. Omit search/replace."},
+                    "json_value": {"type":"string", "description":"Only the new JSON value, encoded as a string. Existing document is preserved by the runtime."},
+                    "json_expected": {"type":"string", "description":"Required for member replacement: the current JSON value encoded as a string. Omit for append."}
                 },
-                "required": ["path", "search", "replace"]
+                "required": ["path"]
             }
         }
     })
@@ -2491,7 +2507,7 @@ fn build_failed_tool_output(stdout: &str, stderr: &str, exit_code: i32) -> Strin
          ⚠ STOP — diagnosis required before your next action:\n\
          1. Quote the exact line causing the error.\n\
          2. Identify the root cause in one sentence.\n\
-         3. Fix it with a single corrected command.\n\
+         3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\n\
          Do NOT continue the original plan until the fix succeeds.\n"
     );
 
@@ -5226,6 +5242,9 @@ fn parse_assumption_items(s: &str) -> Vec<String> {
 
 fn parse_block_fields(text: &str, tag: &str) -> Option<BTreeMap<String, ParsedBlockValue>> {
     let body = extract_tag_block(text, tag)?;
+    if let Some(fields) = json_fields::parse(body, tag) {
+        return Some(fields);
+    }
     let mut out = BTreeMap::new();
 
     for (raw_key, raw_value) in parse_tag_fields(body, tag) {
@@ -7785,8 +7804,8 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             ));
         }
 
-        let remaining_calls = crate::work_budget::current()
-            .map(|c| c.budget.remaining())
+        let shared_remaining = crate::work_budget::current().map(|c| c.budget.remaining());
+        let remaining_calls = shared_remaining
             .unwrap_or(max_iters - iter)
             .min(max_iters - iter);
         let pending_checks = task_harness::benchmark_proof::pending_commands(
@@ -7795,6 +7814,11 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             test_cmd.as_deref(),
         );
         let closing = remaining_calls <= pending_checks.len().saturating_add(3);
+        let next_action = next_action::Contract::project(
+            shared_remaining,
+            &pending_checks,
+            &requirement_proof::project(&messages, test_cmd.as_deref()),
+        );
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
@@ -8335,7 +8359,17 @@ This is the LAST model call for this run.\n\
 
         let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
         let cfg_clone = cfg.clone();
-        let tools_clone = tools.clone();
+        let mut tools_clone = next_action.tools(&tools);
+        acceptance_schema::bind(
+            &mut tools_clone,
+            active_plan.as_ref(),
+            &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
+        );
+        acceptance_schema::bind_summary(
+            &mut tools_clone,
+            &final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref()),
+        );
+        msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
 
@@ -8439,6 +8473,43 @@ This is the LAST model call for this run.\n\
             pending_system_hint = Some(hint);
             // Transport rejection is not an executed edit/command failure. Keep
             // any real recovery focus and current proof, and spend only this request.
+            continue;
+        }
+
+        // Reject the whole batch before reflection/impact gates can discard its
+        // native transcript. A rejection is feedback, never execution evidence.
+        let turn_rejection = if tool_calls.len() > 1 {
+            Some((
+                "single_tool",
+                governor_contract::multiple_tool_calls_message(tool_calls.len()),
+            ))
+        } else {
+            next_action
+                .rejection(&tool_calls)
+                .map(|hint| ("closeout_action", hint))
+        };
+        if let Some((gate, hint)) = turn_rejection {
+            provider_turn::retain_rejected_calls(
+                &mut messages,
+                &assistant_text,
+                &tool_calls,
+                &hint,
+            );
+            let _ = tx
+                .send(StreamToken::Delta(format!("\n[GOVERNOR BLOCK] {hint}\n")))
+                .await;
+            impact_recovery::emit_rejection(&tx, gate, &hint, &tool_calls, &assistant_text).await;
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            pending_system_hint = Some(hint);
+            state = AgentState::Recovery;
             continue;
         }
 
@@ -8958,20 +9029,6 @@ Execute only the new minimal action: {}",
         };
         let mut validated_plan_for_turn: Option<PlanBlock> = None;
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
-
-        // Guardrail: the runtime supports only one tool call per assistant turn.
-        // (We stream tool_calls, but the executor is single-tool.)
-        if tool_calls.len() > 1 {
-            let msg = governor_contract::multiple_tool_calls_message(tool_calls.len());
-            let _ = tx
-                .send(StreamToken::Delta(format!("\n[governor] {msg}\n")))
-                .await;
-            impact_recovery::emit_rejection(&tx, "single_tool", &msg, &tool_calls, &assistant_text)
-                .await;
-            pending_system_hint = Some(msg);
-            state = AgentState::Recovery;
-            continue;
-        }
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
 
@@ -10282,7 +10339,9 @@ Execute only the new minimal action: {}",
                 continue;
             }
 
-            if let Some(block) = evaluator_loop.build_violation_block(tc) {
+            if let Some(block) = evaluator_loop.build_violation_block(tc).filter(|_| {
+                !requirement_proof::is_pending_baseline(tc, &messages, test_cmd.as_deref())
+            }) {
                 state = AgentState::Recovery;
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -12377,7 +12436,9 @@ Required now: run `{command}`.\n{verification_status}"
             }
 
             let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
-            let summary = args["summary"].as_str().unwrap_or("").trim();
+            let report =
+                final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref());
+            let summary = report_surface::authored(args["summary"].as_str().unwrap_or(""), &report);
             let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
             let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
             let acceptance_evidence =
@@ -12515,7 +12576,11 @@ Required now: run `{command}`.\n{verification_status}"
             )
             .err();
             let needs_artifact_repair = exact_content_error.is_some();
-            let handoff_error = exact_content_error.or_else(|| {
+            let requirement_error = remaining_acceptance
+                .is_empty()
+                .then(|| requirement_proof::issue(&messages, test_cmd.as_deref()))
+                .flatten();
+            let handoff_error = exact_content_error.or(requirement_error).or_else(|| {
                 if root_read_only {
                     None
                 } else {
@@ -12600,12 +12665,22 @@ Required now: run `{command}`.\n{verification_status}"
             tool_root_abs.as_deref(),
             test_cmd.as_deref(),
         );
-        if let Some(block) = recovery.maybe_block_tool(
-            &tc,
-            test_cmd.as_deref(),
-            task_harness,
-            allow_existing_followup_verify || allow_benchmark_plan_followup_verify,
-        ) {
+        if let Some(block) = recovery
+            .maybe_block_tool(
+                &tc,
+                test_cmd.as_deref(),
+                task_harness,
+                allow_existing_followup_verify || allow_benchmark_plan_followup_verify,
+            )
+            .filter(|_| {
+                recovery.focus.is_pending()
+                    || !requirement_proof::is_unattempted_baseline(
+                        &tc,
+                        &messages,
+                        test_cmd.as_deref(),
+                    )
+            })
+        {
             state = AgentState::Recovery;
             let _ = tx
                 .send(StreamToken::Delta(format!(
@@ -13505,11 +13580,14 @@ Required now: run `{command}`.\n{verification_status}"
 
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
+                    let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
                     if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
-                    if let Some(result) =
+                    if ranged {
+                        crate::file_tools::read_range::execute_args(&args, base)
+                    } else if let Some(result) =
                         recovery
                             .focus
                             .read_for_diagnosis(&tc, base, &mut file_cache)
@@ -13560,7 +13638,7 @@ Required now: run `{command}`.\n{verification_status}"
                                 }
                             }
                         }
-                        if !err {
+                        if !err && crate::file_tools::read_range::full_snapshot(&content) {
                             file_cache.insert(cache_key.clone(), content.clone());
                         }
                         (content, err)
@@ -13577,10 +13655,17 @@ Required now: run `{command}`.\n{verification_status}"
                         .map(|m| m.is_file())
                         .unwrap_or(false);
                     if file_exists && !file_cache.contains_key(&cache_key) {
+                        if let Some(snapshot) =
+                            read_context::matching_snapshot(&messages, &path, base)
+                        {
+                            file_cache.insert(cache_key.clone(), snapshot);
+                        }
+                    }
+                    if file_exists && !file_cache.contains_key(&cache_key) {
                         (
                             format!(
                                 "GOVERNOR BLOCKED: write_file refused because '{path}' already exists.\n\
-Action required: call read_file(path) first to confirm current contents, then retry with patch_file/apply_diff (preferred) or write_file."
+Action required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
                             ),
                             true,
                         )
@@ -13636,93 +13721,108 @@ Action required: call read_file(path) first to confirm current contents, then re
                 }
                 _ => {
                     // ── patch_file ─────────────────────────────────────────
-                    let search = args["search"].as_str().unwrap_or("").to_string();
-                    let replace = args["replace"].as_str().unwrap_or("").to_string();
+                    match crate::file_tools::json_patch::text_edit(&path, &args, base) {
+                        Err(error) => (format!("ERROR: {error}"), true),
+                        Ok((search, replace)) => {
+                            if args.get("json_pointer").is_some() {
+                                file_cache.remove(&cache_key);
+                            }
+                            // B — capture old content for diff preview before patching.
+                            let old_content_for_diff =
+                                file_cache.get(&cache_key).cloned().or_else(|| {
+                                    crate::file_tools::resolve_safe_path(&path, base)
+                                        .ok()
+                                        .and_then(|abs| std::fs::read_to_string(&abs).ok())
+                                });
+                            let before_hash = old_content_for_diff
+                                .as_deref()
+                                .map(hash_text)
+                                .unwrap_or_else(|| hash_text(""));
 
-                    // B — capture old content for diff preview before patching.
-                    let old_content_for_diff = file_cache.get(&cache_key).cloned().or_else(|| {
-                        crate::file_tools::resolve_safe_path(&path, base)
-                            .ok()
-                            .and_then(|abs| std::fs::read_to_string(&abs).ok())
-                    });
-                    let before_hash = old_content_for_diff
-                        .as_deref()
-                        .map(hash_text)
-                        .unwrap_or_else(|| hash_text(""));
-
-                    // Approval: show the computed patch diff (or search/replace when diff can't be made).
-                    let mut preview = old_content_for_diff
-                        .as_deref()
-                        .map(|old| crate::file_tools::make_patch_diff(old, &search, &replace))
-                        .unwrap_or_default();
-                    if preview.trim().is_empty() {
-                        let s = truncate_preview(&search, 700, 28);
-                        let r = truncate_preview(&replace, 700, 28);
-                        preview = format!(
+                            // Approval: show the computed patch diff (or search/replace when diff can't be made).
+                            let mut preview = old_content_for_diff
+                                .as_deref()
+                                .map(|old| {
+                                    crate::file_tools::make_patch_diff(old, &search, &replace)
+                                })
+                                .unwrap_or_default();
+                            if preview.trim().is_empty() {
+                                let s = truncate_preview(&search, 700, 28);
+                                let r = truncate_preview(&replace, 700, 28);
+                                preview = format!(
                             "(no context diff available)\n--- search ---\n{s}\n\n--- replace ---\n{r}\n"
                         );
-                    }
-                    let approval = approver
-                        .approve(ApprovalRequest::Edit {
-                            action: "patch_file".to_string(),
-                            path: path.clone(),
-                            preview,
-                        })
-                        .await?;
-                    if approval == ApprovalOutcome::Rejected {
-                        rejected_by_user = true;
-                        (
+                            }
+                            let approval = approver
+                                .approve(ApprovalRequest::Edit {
+                                    action: "patch_file".to_string(),
+                                    path: path.clone(),
+                                    preview,
+                                })
+                                .await?;
+                            if approval == ApprovalOutcome::Rejected {
+                                rejected_by_user = true;
+                                (
                             format!(
                                 "REJECTED BY USER\naction: patch_file\npath: {path}\n(no changes applied)"
                             ),
                             true,
                         )
-                    } else {
-                        let (mut patch_result, patch_err) =
-                            crate::file_tools::tool_patch_file(&path, &search, &replace, base);
+                            } else {
+                                let (mut patch_result, patch_err) =
+                                    crate::file_tools::tool_patch_file(
+                                        &path, &search, &replace, base,
+                                    );
 
-                        if !patch_err {
-                            file_cache.remove(&cache_key); // invalidate stale cache
+                                if !patch_err {
+                                    file_cache.remove(&cache_key); // invalidate stale cache
 
-                            // B — append diff preview (shows exactly what changed).
-                            if let Some(ref old) = old_content_for_diff {
-                                let diff =
-                                    crate::file_tools::make_patch_diff(old, &search, &replace);
-                                if !diff.is_empty() {
-                                    patch_result.push_str(&format!("\n{diff}"));
-                                }
-                            }
+                                    // B — append diff preview (shows exactly what changed).
+                                    if let Some(ref old) = old_content_for_diff {
+                                        let diff = crate::file_tools::make_patch_diff(
+                                            old, &search, &replace,
+                                        );
+                                        if !diff.is_empty() {
+                                            patch_result.push_str(&format!("\n{diff}"));
+                                        }
+                                    }
 
-                            // Gap 7: auto-verify patch was applied correctly.
-                            if let Ok(abs) = crate::file_tools::resolve_safe_path(&path, base) {
-                                if let Ok(new_content) = std::fs::read_to_string(&abs) {
-                                    let after_hash = hash_text(&new_content);
-                                    patch_result.push_str(&format!(
-                                        "\n[hash] before={} after={}",
-                                        fmt_hash(before_hash),
-                                        fmt_hash(after_hash)
-                                    ));
-                                    if replace.is_empty() || new_content.contains(&replace) {
-                                        patch_result
-                                            .push_str("\n✓ auto-verify: patch confirmed in file");
-                                    } else {
-                                        patch_result.push_str(
+                                    // Gap 7: auto-verify patch was applied correctly.
+                                    if let Ok(abs) =
+                                        crate::file_tools::resolve_safe_path(&path, base)
+                                    {
+                                        if let Ok(new_content) = std::fs::read_to_string(&abs) {
+                                            let after_hash = hash_text(&new_content);
+                                            patch_result.push_str(&format!(
+                                                "\n[hash] before={} after={}",
+                                                fmt_hash(before_hash),
+                                                fmt_hash(after_hash)
+                                            ));
+                                            if replace.is_empty() || new_content.contains(&replace)
+                                            {
+                                                patch_result.push_str(
+                                                    "\n✓ auto-verify: patch confirmed in file",
+                                                );
+                                            } else {
+                                                patch_result.push_str(
                                             "\n✗ auto-verify FAILED: replacement text not found — \
                                              file may be in unexpected state; call read_file to inspect",
                                         );
+                                            }
+                                            // Seed cache with the freshly written content.
+                                            file_cache.insert(cache_key.clone(), new_content);
+                                        }
                                     }
-                                    // Seed cache with the freshly written content.
-                                    file_cache.insert(cache_key.clone(), new_content);
+                                    // A — auto-test after successful patch
+                                    if let Some(ref cmd) = test_cmd {
+                                        if let Some(ref root) = tool_root_abs {
+                                            patch_result.push_str(&run_test_cmd(cmd, root).await);
+                                        }
+                                    }
                                 }
-                            }
-                            // A — auto-test after successful patch
-                            if let Some(ref cmd) = test_cmd {
-                                if let Some(ref root) = tool_root_abs {
-                                    patch_result.push_str(&run_test_cmd(cmd, root).await);
-                                }
+                                (patch_result, patch_err)
                             }
                         }
-                        (patch_result, patch_err)
                     }
                 }
             };
