@@ -7440,7 +7440,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         .and_then(absolutize_path);
     // Rebuild loop governor memory from the existing session so resuming runs doesn't
     // repeat the same failures from scratch.
-    let mut mem = FailureMemory::from_recent_messages(&messages);
+    let mut mem = FailureMemory::from_recent_messages(&messages, test_cmd.as_deref());
     let mut recovery =
         RecoveryGovernor::restore_from_session(&mem, &messages, required_verification);
     recovery.restore_pending_edits(&edit_failures);
@@ -12841,6 +12841,7 @@ Required now: run `{command}`.\n{verification_status}"
                     last_build_verify_ok_step,
                     last_behavioral_verify_ok_step,
                 );
+                mem.on_file_result(&tc.name, &result, test_cmd.as_deref());
                 recovery.on_successful_edit(automatic_test, verified_level);
             }
 
@@ -13873,6 +13874,7 @@ Action required: obtain a complete read of current contents before write_file. F
                             last_build_verify_ok_step,
                             last_behavioral_verify_ok_step,
                         );
+                        mem.on_file_result(&tc.name, &result, test_cmd.as_deref());
                         recovery.on_successful_edit(automatic_test, verified_level);
                     }
                 }
@@ -17796,7 +17798,7 @@ verify: exit code is zero\n\
             json!({"role":"tool","tool_call_id":"call_2","content":"FAILED (exit_code: 1)\nstderr:\nfatal: nope"}),
         ];
 
-        let mem = FailureMemory::from_recent_messages(&messages);
+        let mem = FailureMemory::from_recent_messages(&messages, None);
         assert_eq!(mem.consecutive_failures, 2);
         assert_eq!(mem.same_command_repeats, 2);
         assert_eq!(mem.same_error_repeats, 2);
