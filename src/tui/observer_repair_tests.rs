@@ -20,15 +20,23 @@ fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
         json!({"role":"user","content":goal}),
         json!({"role":"assistant","tool_calls":[{"id":"observed","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\",\"start_line\":30,\"end_line\":60}"}}]}),
         json!({"role":"tool","tool_call_id":"observed","content":"[src/lib.rs] (90 lines, 900 bytes) [range: lines 30-60; partial file]\nobserved source"}),
+        json!({"role":"assistant","tool_calls":[{"id":"before","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"before","content":"FAILED (exit_code: 1)\nFAIL: test_reverse (selection.Tests.test_reverse)"}),
+        json!({"role":"assistant","tool_calls":[{"id":"after","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"after","content":"FAILED (exit_code: 1)\nFAIL: test_default (selection.Tests.test_default)"}),
     ];
     let resumed: Vec<serde_json::Value> = serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
     app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,resumed.clone()));
-    let response = suggestion_response("read", "read_file", json!({"path":"src/lib.rs"}));
+    let mut encoded: serde_json::Value = serde_json::from_str(&suggestion_response("read", "read_file", json!({"path":"src/lib.rs"}))).unwrap();
+    encoded["suggestions"][0]["suggested_args"] = json!(encoded["suggestions"][0]["suggested_args"].to_string());
+    let response = format!("Next action.\n```json\n{encoded}\n```\nEnd.");
     let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&response).unwrap();
+    assert!(tui.pending_observer_hint.is_some() && tui.observer_repair_prompt.is_none());
     let coder = agent::task_obligations::prompt(&resumed,None).unwrap();
     for prompt in [&coder, &tui.observer_prompt] {
         assert!(prompt.contains("repair_brief") && prompt.contains("bookkeeping"));
         assert!(prompt.contains("observed"));
+        assert!(prompt.contains("recent_check_failures") && prompt.contains("test_default") && prompt.contains("test_reverse"));
     }
     let view = serde_json::to_value(agent::task_obligations::project(&resumed,None)).unwrap();
     let browser = crate::observer_action::evaluate(crate::observer_action::Request {
@@ -39,6 +47,7 @@ fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
     assert_eq!(browser.packet["task_obligations"]["repair_brief"],view["repair_brief"]);
     assert_eq!(view["repair_brief"]["source_artifacts"],json!(["src/lib.rs"]));
     assert_eq!(view["repair_brief"]["observed_sources"][0]["start_line"],30);
+    assert_eq!(view["repair_brief"]["recent_check_failures"][1]["call_id"],"after");
 }
 
 #[test]
