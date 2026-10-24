@@ -1,0 +1,31 @@
+Repair the case-selection regression in scripts/run_coupled_pilot.py. Repeated --case flags must select each named case once in original suite order; without --case all cases run. Unknown IDs must still fail before creating output or executing a case. Preserve the existing no-overwrite guard and independent oracles. Update docs/pilot.md with an example using --case alpha --case gamma and explain duplicates, original suite order, unknown IDs and the no-filter default.
+
+Change only scripts/run_coupled_pilot.py and docs/pilot.md. Keep supplied tests and .spiral-coder.md unchanged. Do not install dependencies, call providers, commit or push. Read the source and tests, run the exact check BEFORE editing to record its expected failing baseline, repair using native file tools, then run the same check after all edits. Both Coder and Observer share these obligations. Finish with an authored report naming both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "case-selection",
+      "description": "Restore selection without changing tests or default behavior",
+      "artifacts": [
+        {
+          "path": "scripts/run_coupled_pilot.py",
+          "kind": "source"
+        },
+        {
+          "path": "docs/pilot.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "baseline_failure": true
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

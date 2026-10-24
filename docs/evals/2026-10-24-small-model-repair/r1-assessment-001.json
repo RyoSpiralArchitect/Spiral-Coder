@@ -1,0 +1,2153 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-24T00:11:12.609780+00:00",
+  "predeclaration_sha256": "3dff633bb6fee6d14e8767ce54532e92a4df18d2bcce8d3cfe16d220dc943a49",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+    "coupled_bench/evidence.py": "0521892b6c4b0f2c74fda7a4a2dadb0a668b0e5885d707b14c78a048dcd1ee82",
+    "coupled_bench/oracles.py": "932525d0530373a965db137df29c3293545620900016e2288df34c3e0d6d967f",
+    "coupled_bench/runner.py": "4f9a2b18de1cfc754299075fa97f7c7e6d2a114664e52032a20ea63fd4d3450e",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "gemini-lite",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "comparison_role": "weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "gemini-lite",
+        "model": "gemini-3.5-flash-lite",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 51.037,
+        "finished_at": "2026-10-24T00:08:59.104701+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [
+        {
+          "assistant_chars": 363,
+          "gate": "closeout_action",
+          "has_impact": false,
+          "has_plan": true,
+          "has_reflection": false,
+          "reason": "[Closeout action] Only a native done call is available for this request. No proposed tool executed. Report verified items and remaining work truthfully; the existing proof and acceptance gates still apply.",
+          "tool_count": 1,
+          "tool_names": [
+            "exec"
+          ]
+        }
+      ],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json"
+      ],
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 2830,
+          "estimated_input_tokens": 6875,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1170,
+          "estimated_input_tokens": 6848,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2189,
+          "estimated_input_tokens": 7019,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1621,
+          "estimated_input_tokens": 8121,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1493,
+          "estimated_input_tokens": 8662,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1228,
+          "estimated_input_tokens": 10294,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1262,
+          "estimated_input_tokens": 12731,
+          "id": 6,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1365,
+          "estimated_input_tokens": 13176,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1439,
+          "estimated_input_tokens": 13214,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1296,
+          "estimated_input_tokens": 12836,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1517,
+          "estimated_input_tokens": 12727,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2637,
+          "estimated_input_tokens": 12456,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2357,
+          "estimated_input_tokens": 15473,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3551,
+          "estimated_input_tokens": 16575,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3190,
+          "estimated_input_tokens": 15492,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2458,
+          "estimated_input_tokens": 16803,
+          "id": 15,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2471,
+          "estimated_input_tokens": 14501,
+          "id": 16,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1742,
+          "estimated_input_tokens": 13710,
+          "id": 17,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1504,
+          "estimated_input_tokens": 14348,
+          "id": 18,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1462,
+          "estimated_input_tokens": 16796,
+          "id": 19,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3374,
+          "estimated_input_tokens": 7607,
+          "id": 20,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3618,
+          "estimated_input_tokens": 17820,
+          "id": 21,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2241,
+          "estimated_input_tokens": 18588,
+          "id": 22,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1703,
+          "estimated_input_tokens": 18102,
+          "id": 23,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_121671",
+            "call_339769",
+            "call_306824"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": null
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 9,
+        "Recovery Gate": 2,
+        "Progress Gate": 1,
+        "Requirement Gate": 2,
+        "unspecified governor": 1
+      },
+      "actions": [
+        {
+          "call_id": "call_245282",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_292281",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\"}"
+        },
+        {
+          "call_id": "call_227582",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 3,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan missing goal; plan missing steps; plan must include acceptance criteria; plan missing risks; plan missing assumptions\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_cou"
+        },
+        {
+          "call_id": "call_316220",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 4,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/gemini-lite/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_404228",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [pruned 117L]"
+        },
+        {
+          "call_id": "call_121455",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 6,
+          "freshness": "superseded",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-166; partial file] [pruned 150L]"
+        },
+        {
+          "call_id": "call_245381",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 7,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan must include at least 2 numbered steps in `steps:`\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"path\":\"docs/pilot.md\"}"
+        },
+        {
+          "call_id": "call_254175",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 8,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"path\":\"docs/pilot.md\"}"
+        },
+        {
+          "call_id": "call_293741",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/pilot.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 9,
+          "freshness": "current",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [pruned 4L]"
+        },
+        {
+          "call_id": "call_96112",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 1-116; partial file] [pruned 117L]"
+        },
+        {
+          "call_id": "call_184919",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 11,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan must include at least 2 numbered steps in `steps:`\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"start_line\":1,\"end_line\":200,\"path\":\"scripts/run_coupled_pilot.py\"}"
+        },
+        {
+          "call_id": "call_258911",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-166; partial file] [pruned 150L]"
+        },
+        {
+          "call_id": "call_137103",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 166,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 120
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 13,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 120-166; partial file] [pruned 48L]"
+        },
+        {
+          "call_id": "call_379284",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 14,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Progress Gate]\nTask lane: fix_existing_files\nRecovery stage is already `fix`.\nAttempted next action: read_file(path=docs/pilot.md)\nSuccessful observation commands so far: 6\nThis is stalled progress, not forward motion.\nRequired now: apply the smallest edit now with `patch_file` or `apply_diff`.\nIf the artifact is already present, run the configured verification command now: `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`.\nDo NOT call the same observation tool on the same target again until the target changes or a mutation lands.\n\ntool:\nread_file\narguments:\n{\"path\":\"docs/pilot.md\"}"
+        },
+        {
+          "call_id": "call_339747",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -72,9 +72,13 @@\n     spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n     cases = json.loads(spec_bytes)[\"cases\"]\n-    requested = set(args.case)\n-    unknown = requested - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    cases_by_id = {c[\"id\"]: c for c in cases}\n+    if args.case:\n+        unknown = set(args.case) - set(cases_by_id.keys())\n+        if unknown:\n+            parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+        selected = [cases_by_id[cid] for cid in dict.fromkeys(args.case)]\n+    else:\n+        selected = cases\n     out.mkdir(parents=True)",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 15,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\npython3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.\n\ntool:\napply_diff\narguments:\n{\"diff\":\"@@ -72,9 +72,13 @@\\n     spec_bytes = (repo / \\\"tests/fixtures/coupled-loop-v1.json\\\").read_bytes()\\n     cases = json.loads(spec_bytes)[\\\"cases\\\"]\\n-    requested = set(args.case)\\n-    unknown = requested - {case[\\\"id\\\"] for case in cases}\\n-    if unknown:\\n-        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unknown)))\\n-    selected = cases\\n+    cases_by_id = {c[\\\"id\\\"]: c for c in cases}\\n+    if args.case:\\n+        unknown = set(a"
+        },
+        {
+          "call_id": "call_289351",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 16,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan must include at least 2 numbered steps in `steps:`\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_369658",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 17,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_205898",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 18,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/gemini-lite/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_210468",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 19,
+          "freshness": "current",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [⚡ cached — unchanged since last read]\n[tests/test_coupled_pilot.py] (116 lines, 5794 bytes)\nimport importlib.util\nimport contextlib\nimport io\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport tempfile\nimport unittest\nfrom unittest import mock\n\nspec = importlib.util.spec_from_file_location(\"pilot\", Path(__file__).parents[1] / \"scripts/run_coupled_pilot.py\")\npilot = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(pilot)\n\n\nclass PilotOracles(unittest.TestCase):\n    def run_command(self, code, timeout=2):\n        with tempfile.TemporaryDirectory() as root:\n            return pilot.run_bounded([sys.executable, \"-S\", \"-u\", \"-c\", code], cwd=root, env=os.environ.copy(), timeout=timeout)\n\n    def test_timeout_retain"
+        },
+        {
+          "call_id": "call_213305",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 110,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 40
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 20,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"end_line\":110,\"start_line\":40,\"path\":\"scripts/run_coupled_pilot.py\"}"
+        },
+        {
+          "call_id": "call_121671",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 110,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 21,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 50-110; partial file]\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--binary\", required=True, type=Path)\n    parser.add_argument(\"--repo\", required=True, type=Path)\n    parser.add_argument(\"--out\", required=True, type=Path)\n    parser.add_argument(\"--provider\", required=True, choices=[\"openai\", \"mistral\", \"gemini\", \"anthropic\"])\n    parser.add_argument(\"--model\", required=True)\n    parser.add_argument(\"--wall-seconds\", type=int, default=600)\n    parser.add_argument(\"--without-observer\", action=\"store_true\")\n    parser.add_argument(\"--case\", action=\"append\", default=[], metavar=\"CASE_ID\",\n                        help=\"Run only these cases, in suite order; repeat to select "
+        },
+        {
+          "call_id": "call_339769",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -67,9 +67,14 @@\n     spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n     cases = json.loads(spec_bytes)[\"cases\"]\n-    requested = set(args.case)\n-    unknown = requested - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    cases_by_id = {c[\"id\"]: c for c in cases}\n+    if args.case:\n+        requested = args.case\n+        unknown = set(requested) - set(cases_by_id.keys())\n+        if unknown:\n+            parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+        selected = [cases_by_id[cid] for cid in dict.fromkeys(requested)]\n+    else:\n+        selected = cases\n     out.mkdir(parents=True)",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 22,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\npython3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.\n\ntool:\napply_diff\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"diff\":\"@@ -67,9 +67,14 @@\\n     spec_bytes = (repo / \\\"tests/fixtures/coupled-loop-v1.json\\\").read_bytes()\\n     cases = json.loads(spec_bytes)[\\\"cases\\\"]\\n-    requested = set(args.case)\\n-    unknown = requested - {case[\\\"id\\\"] for case in cases}\\n-    if unknown:\\n-        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unknown)))\\n-    selected = cases\\n+    cases_by_id = {c[\\\"id\\\"]: c for c in cases}\\n+    i"
+        },
+        {
+          "call_id": "call_306824",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 23,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Closeout action] Only a native done call is available for this request. No proposed tool executed. Report verified items and remaining work truthfully; the existing proof and acceptance gates still apply.\nNo tool in this response was executed. Submit exactly one native function call next."
+        }
+      ],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true,
+          "requested_documentation": false
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uqb04lal/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uqb04lal/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.348s\n\nFAILED (failures=1)\n"
+          }
+        ],
+        "documentation_proxy_revision": "shell-whitespace-v2",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "openai-mini",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "comparison_role": "retained weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "openai-mini",
+        "model": "gpt-4.1-mini",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 63.59,
+        "finished_at": "2026-10-24T00:09:11.657931+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`.\n\nChanged files:\n- scripts/run_coupled_pilot.py\n- docs/pilot.md\n\nVerification commands:\n- python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\n\nNo remaining work.",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "docs/pilot.md",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "scripts/run_coupled_pilot.py",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 3699,
+          "estimated_input_tokens": 6910,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1446,
+          "estimated_input_tokens": 6848,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1506,
+          "estimated_input_tokens": 8007,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2888,
+          "estimated_input_tokens": 9092,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1497,
+          "estimated_input_tokens": 10039,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1684,
+          "estimated_input_tokens": 10435,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2646,
+          "estimated_input_tokens": 11387,
+          "id": 6,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1603,
+          "estimated_input_tokens": 10738,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3913,
+          "estimated_input_tokens": 11429,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1988,
+          "estimated_input_tokens": 11399,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1228,
+          "estimated_input_tokens": 10318,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2489,
+          "estimated_input_tokens": 9999,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1306,
+          "estimated_input_tokens": 10527,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2387,
+          "estimated_input_tokens": 11339,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2148,
+          "estimated_input_tokens": 11429,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1305,
+          "estimated_input_tokens": 10560,
+          "id": 15,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2451,
+          "estimated_input_tokens": 11406,
+          "id": 16,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2282,
+          "estimated_input_tokens": 12213,
+          "id": 17,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2175,
+          "estimated_input_tokens": 12521,
+          "id": 18,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2084,
+          "estimated_input_tokens": 13157,
+          "id": 19,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4848,
+          "estimated_input_tokens": 7437,
+          "id": 20,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7125,
+          "estimated_input_tokens": 13386,
+          "id": 21,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2646,
+          "estimated_input_tokens": 12431,
+          "id": 22,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2599,
+          "estimated_input_tokens": 13164,
+          "id": 23,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        }
+      ],
+      "assists": [],
+      "blocks": {
+        "Plan Gate": 1,
+        "Requirement Gate": 1,
+        "unspecified governor": 1,
+        "Final handoff": 7
+      },
+      "actions": [
+        {
+          "call_id": "call_nfVVFi2fxOFSJvsZ0yMV4DJX",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 60,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"start_line\":1,\"end_line\":60}"
+        },
+        {
+          "call_id": "call_IULCpCXSoO8RCmYVEUEL1y7H",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 60,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-60; partial file] [pruned 61L]"
+        },
+        {
+          "call_id": "call_lUnba9R119G1PgJrXkKXdbHk",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 120,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 61
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 61-120; partial file] [pruned 61L]"
+        },
+        {
+          "call_id": "call_bRQOgnoPde7x0FvC9TIbeSgO",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -58,11 +58,19 @@\n-    requested = set(args.case)\n-    unknown = requested - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    requested = args.case\n+    unknown = set(requested) - {case[\"id\"] for case in cases}\n+    if unknown:\n+        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+    if requested:\n+        # Preserve original suite order, include each requested case once\n+        seen = set()\n+        selected = [case for case in cases if case[\"id\"] in requested and not (case[\"id\"] in seen or seen.add(case[\"id\"]))]\n+    else:\n+        selected = cases\n",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 4,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\npython3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.\n\ntool:\napply_diff\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"diff\":\"@@ -58,11 +58,19 @@\\n-    requested = set(args.case)\\n-    unknown = requested - {case[\\\"id\\\"] for case in cases}\\n-    if unknown:\\n-        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unknown)))\\n-    selected = cases\\n+    requested = args.case\\n+    unknown = set(requested) - {case[\\\"id\\\"] for case in cases}\\n+    if unknown:\\n+        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unkn"
+        },
+        {
+          "call_id": "call_i26gVqkXSssGm3w48K9ZL2oY",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/openai-mini/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nTraceback (most recent call last):\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/openai-mini/pilot-cli/workspace/tests/test_coupled_pilot.py\", line 76, in assert_select"
+        },
+        {
+          "call_id": "call_K7TiwFQyMzUJlWPx1tPszvZu",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 90,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 60-90; partial file] [pruned 32L]"
+        },
+        {
+          "call_id": "call_EmRaqZTh6d4Rclr6hYv1P2eP",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -58,19 +58,23 @@\n-    if requested:\n-        # Preserve original suite order, include each requested case once\n-        seen = set()\n-        selected = [case for case in cases if case[\"id\"] in requested and not (case[\"id\"] in seen or seen.add(case[\"id\"]))]\n-    else:\n-        selected = cases\n+    if requested:\n+        # Preserve original suite order, include each requested case once\n+        seen = set()\n+        selected = []\n+        for case in cases:\n+            if case[\"id\"] in requested and case[\"id\"] not in seen:\n+                selected.append(case)\n+                seen.add(case[\"id\"])\n+    else:\n+        selected = cases\n",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    if requested:\\\\n        # Preserve original suite order, include each requested case once\\\\n        seen = set()\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 71-76):\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     selected = cases\n74 |     out.mkdir(parents=True)\n75 |     (out / \"spec.json\").write_bytes(spec_bytes)\n76 |     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\nCurrent file tail (lines 161-166):\n161 |         (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n162 |         print(json.dumps(result, ensure_ascii=False), flush=True)\n16"
+        },
+        {
+          "call_id": "call_4oY0HuIW8JGabgUJW7f9BlbQ",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 80,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 8,
+          "freshness": "superseded",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 50-80; partial file] [pruned 32L]"
+        },
+        {
+          "call_id": "call_IfDaCtUyA977t52ZJ8dFTDmM",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    requested = args.case\n    unknown = set(requested) - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    if requested:\n        # Preserve original suite order, include each requested case once\n        seen = set()\n        selected = []\n        for case in cases:\n            if case[\"id\"] in requested and case[\"id\"] not in seen:\n                selected.append(case)\n                seen.add(case[\"id\"])\n    else:\n        selected = cases\n",
+            "search": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'scripts/run_coupled_pilot.py' (+10 lines, 176 total) [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_PldOwq3fJo0bbJ22ztOKxrKa",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 10,
+          "freshness": "superseded",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/openai-mini/pilot-cli/workspace"
+        },
+        {
+          "call_id": "call_VFzTNrc3iSKzF9FLnxx2ekQR",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 11,
+          "freshness": "superseded",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file] [pruned 4L]"
+        },
+        {
+          "call_id": "call_8EFRk07JFUFo1ai9kgaAw6WA",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Coupled pilot\n\nRun the pilot using `scripts/run_coupled_pilot.py`.\n\n## Case Selection\n\nYou can select specific cases to run using the `--case` flag multiple times.\n\nExample:\n```\npython3 scripts/run_coupled_pilot.py --binary ./bin --repo ./repo --out ./out --provider openai --model gpt-4 --case alpha --case gamma\n```\n\nThis will run only the cases with IDs `alpha` and `gamma` in the original suite order.\n\n- Repeated `--case` flags selecting the same case ID will only run that case once.\n- If no `--case` flags are provided, all cases in the suite will run.\n- If any unknown case IDs are provided, the program will fail immediately with an error before running any cases.\n\nThis behavior preserves the original suite order and prevents duplicate execution of the same case.\n\nThe output directory must not already exist to avoid overwriting previous results.\n",
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 12,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED: write_file refused because 'docs/pilot.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        },
+        {
+          "call_id": "call_KuQ97adVsQNhilyo69dYzZkx",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 13,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file] [pruned 4L]"
+        },
+        {
+          "call_id": "call_9bDGojVaA3FN8TlVfwnStMd1",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/pilot.md",
+            "replace": "Run the pilot using `scripts/run_coupled_pilot.py`.\n\n## Case Selection\n\nYou can select specific cases to run using the `--case` flag multiple times.\n\nExample:\n```\npython3 scripts/run_coupled_pilot.py --binary ./bin --repo ./repo --out ./out --provider openai --model gpt-4 --case alpha --case gamma\n```\n\nThis will run only the cases with IDs `alpha` and `gamma` in the original suite order.\n\n- Repeated `--case` flags selecting the same case ID will only run that case once.\n- If no `--case` flags are provided, all cases in the suite will run.\n- If any unknown case IDs are provided, the program will fail immediately with an error before running any cases.\n\nThis behavior preserves the original suite order and prevents duplicate execution of the same case.\n\nThe output directory must not already exist to avoid overwriting previous results.\n",
+            "search": "Run the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting."
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 14,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/pilot.md' (+20 lines, 23 total) [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_4lt2eXqvLxkvaQteTTgMlu0H",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 15,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/openai-mini/pilot-cli/workspace"
+        },
+        {
+          "call_id": "call_NXAdkq17VcpkLW0D5DNXGisb",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 80,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 16,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (176 lines, 9475 bytes) [range: lines 50-80; partial file] [pruned 32L]"
+        },
+        {
+          "call_id": "call_PcWywtuCPNifI9MUCTUe05ok",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED, After: PASSED."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 17,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_zHbze533aZjsDxXBmh4D9gML",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 18,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_4oy0629QudDhYUXjvZSUDIGT",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 19,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_XYOtZBqJ8aLuIohZ5xoabyys",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 20,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_yPH2UqSyKJQ1D1JXMpuT0ge8",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 21,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_avsvg9WQSsF90HMk6QV9tFc6",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No remaining work.\n\nChanged files:\n- scripts/run_coupled_pilot.py\n- docs/pilot.md\n\nVerification commands:\n- python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\n\nNo remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 22,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_BkKEWw3HD00ZneKvZjQDqkOk",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with detailed case selection usage and behavior. Verified with baseline test command before and after: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`; After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`.\n\nChanged files:\n- scripts/run_coupled_pilot.py\n- docs/pilot.md\n\nVerification commands:\n- python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\n\nNo remaining work."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 23,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true,
+          "requested_documentation": true
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.337s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "shell-whitespace-v2",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "mistral-small",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "comparison_role": "retained weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "mistral-small",
+        "model": "mistral-small-2603",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 180.205,
+        "finished_at": "2026-10-24T00:11:08.270977+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [
+        {
+          "message": "error decoding response body: request or response body error: operation timed out",
+          "pane": "Coder"
+        }
+      ],
+      "pre_tool_rejections": [
+        {
+          "assistant_chars": 280,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection missing last_outcome\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a strategy_change value. Repeated failure or a n",
+          "tool_count": 1,
+          "tool_names": [
+            "read_file"
+          ]
+        },
+        {
+          "assistant_chars": 284,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection missing last_outcome\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a strategy_change value. Repeated failure or a n",
+          "tool_count": 1,
+          "tool_names": [
+            "read_file"
+          ]
+        },
+        {
+          "assistant_chars": 285,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection missing last_outcome\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a strategy_change value. Repeated failure or a n",
+          "tool_count": 1,
+          "tool_names": [
+            "read_file"
+          ]
+        }
+      ],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "scripts/run_coupled_pilot.py",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "requests": 23,
+      "request_roles": {
+        "coder": 22,
+        "observer": 1
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 5079,
+          "estimated_input_tokens": 6907,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 490,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 6400,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 6890
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2907,
+          "estimated_input_tokens": 7321,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 487,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 6884,
+            "prompt_tokens_details": {
+              "cached_tokens": 4416
+            },
+            "service_tier": "standard",
+            "total_tokens": 7371
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3087,
+          "estimated_input_tokens": 10545,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 478,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 9756,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10234
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1891,
+          "estimated_input_tokens": 11813,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 85,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 11093,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11178
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4913,
+          "estimated_input_tokens": 13842,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 729,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12851,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 13580
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2151,
+          "estimated_input_tokens": 15175,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 97,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 14175,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 14272
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3768,
+          "estimated_input_tokens": 13270,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 537,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12546,
+            "prompt_tokens_details": {
+              "cached_tokens": 5664
+            },
+            "service_tier": "standard",
+            "total_tokens": 13083
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6068,
+          "estimated_input_tokens": 13428,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 775,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12620,
+            "prompt_tokens_details": {
+              "cached_tokens": 3904
+            },
+            "service_tier": "standard",
+            "total_tokens": 13395
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2099,
+          "estimated_input_tokens": 13353,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 100,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12855,
+            "prompt_tokens_details": {
+              "cached_tokens": 4608
+            },
+            "service_tier": "standard",
+            "total_tokens": 12955
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4935,
+          "estimated_input_tokens": 12972,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 691,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12255,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 12946
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2384,
+          "estimated_input_tokens": 14540,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 84,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13877,
+            "prompt_tokens_details": {
+              "cached_tokens": 4816
+            },
+            "service_tier": "standard",
+            "total_tokens": 13961
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1584,
+          "estimated_input_tokens": 14476,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 100,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13830,
+            "prompt_tokens_details": {
+              "cached_tokens": 5280
+            },
+            "service_tier": "standard",
+            "total_tokens": 13930
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1381,
+          "estimated_input_tokens": 14476,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 100,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13830,
+            "prompt_tokens_details": {
+              "cached_tokens": 13712
+            },
+            "service_tier": "standard",
+            "total_tokens": 13930
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1714,
+          "estimated_input_tokens": 14476,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 100,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13830,
+            "prompt_tokens_details": {
+              "cached_tokens": 13712
+            },
+            "service_tier": "standard",
+            "total_tokens": 13930
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1739,
+          "estimated_input_tokens": 14888,
+          "id": 14,
+          "provider_usage": {
+            "completion_tokens": 86,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 14181,
+            "prompt_tokens_details": {
+              "cached_tokens": 3936
+            },
+            "service_tier": "standard",
+            "total_tokens": 14267
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3356,
+          "estimated_input_tokens": 17136,
+          "id": 15,
+          "provider_usage": {
+            "completion_tokens": 248,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 16250,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 16498
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 12873,
+          "estimated_input_tokens": 16991,
+          "id": 16,
+          "provider_usage": {
+            "completion_tokens": 2791,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 16204,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 18995
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2232,
+          "estimated_input_tokens": 24735,
+          "id": 17,
+          "provider_usage": {
+            "completion_tokens": 44,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 23870,
+            "prompt_tokens_details": {
+              "cached_tokens": 6080
+            },
+            "service_tier": "standard",
+            "total_tokens": 23914
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1524,
+          "estimated_input_tokens": 20875,
+          "id": 18,
+          "provider_usage": {
+            "completion_tokens": 48,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 20107,
+            "prompt_tokens_details": {
+              "cached_tokens": 5760
+            },
+            "service_tier": "standard",
+            "total_tokens": 20155
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 11875,
+          "estimated_input_tokens": 22077,
+          "id": 19,
+          "provider_usage": {
+            "completion_tokens": 2791,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 21285,
+            "prompt_tokens_details": {
+              "cached_tokens": 4000
+            },
+            "service_tier": "standard",
+            "total_tokens": 24076
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5757,
+          "estimated_input_tokens": 9385,
+          "id": 20,
+          "provider_usage": {
+            "completion_tokens": 341,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 8685,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 9026
+          },
+          "role": "observer",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4148,
+          "estimated_input_tokens": 25303,
+          "id": 21,
+          "provider_usage": {
+            "completion_tokens": 95,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 24075,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 24170
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 90005,
+          "estimated_input_tokens": 24238,
+          "id": 22,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_200"
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "im2szoWOH"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "defer",
+          "executed": false,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": false
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1,
+        "Recovery Gate": 4
+      },
+      "actions": [
+        {
+          "call_id": "9l7StkH4x",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\": \"scripts/run_coupled_pilot.py\"}"
+        },
+        {
+          "call_id": "UZ9d68Rdw",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 2,
+          "freshness": "superseded",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [pruned 150L]"
+        },
+        {
+          "call_id": "2Z4rHkIym",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nTraceback (most recent call last):\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace/tests/test_coupled_pilot.py\", line 76, in assert_se"
+        },
+        {
+          "call_id": "pSQE96Rsw",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 4,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [pruned 117L]"
+        },
+        {
+          "call_id": "Xi3xov8Kr",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -80,11 +80,12 @@\n     cases = json.loads(spec_bytes)[\"cases\"]\n     requested = set(args.case)\n     unknown = requested - {case[\"id\"] for case in cases}\n     if unknown:\n         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    # Deduplicate while preserving original suite order\n+    seen = set()\n+    selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]\n     out.mkdir(parents=True)\n     (out / \"spec.json\").write_bytes(spec_bytes)\n     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n                 \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: applied 1/1 hunk(s) to 'scripts/run_coupled_pilot.py' [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nTraceback (most recent call last):\nFile \"tests/test_coupled_pilot.py\", line 76, in assert_selection\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']"
+        },
+        {
+          "call_id": "nr5AWHxWt",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 6,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"tests/test_coupled_pilot.py\\\", line 76, in assert_selection | Traceback (most recent call last): | AssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\",\"failed_check\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\",\"path\":\"tests/test_coupled_pilot.py\"}\nRead this exact path with read_file to diagnose the failure before editing. It locates the failure, not necessarily the file to change. Preserve the original task's edit restrictions. Unrelated reads, directory listin"
+        },
+        {
+          "call_id": "Ooy0leTvh",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 82,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 70
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 70-82; partial file] [pruned 14L]"
+        },
+        {
+          "call_id": "3PyWlEMiW",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -78,15 +78,20 @@ def main():\n     spec_bytes = (Path(args.repo) / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n     cases = json.loads(spec_bytes)[\"cases\"]\n     requested = set(args.case)\n     unknown = requested - {case[\"id\"] for case in cases}\n     if unknown:\n         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    # Deduplicate while preserving original suite order\n+    seen = set()\n+    selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]\n     out.mkdir(parents=True)\n     (out / \"spec.json\").write_bytes(spec_bytes)\n     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n                 \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    spec_bytes = (Path(args.repo) / \\\"tests/fixtures/coupled-loop-v1.json\\\").read_bytes()\\\\n    cases = json.loads(spec_bytes)[\\\"cases\\\"]\\\\n    requested = set(args.case)\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 77-82):\n77 |     (out / \"spec.json\").write_bytes(spec_bytes)\n78 |     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n79 |                 \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,\n80 |                 \"model\": args.model, \"without_observer\": args.without_observer,\n81 |                 \"selected_case_ids\": [case[\"id\"] for case in selected]}\n82 |     (out / \"metadata.json\").write_text(json.du"
+        },
+        {
+          "call_id": "JzhmDIl2N",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 90,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 70
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (168 lines, 9288 bytes) [range: lines 70-90; partial file] [pruned 22L]"
+        },
+        {
+          "call_id": "T2rbthgG2",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Deduplicate while preserving original suite order\n    seen = set()\n    selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]",
+            "search": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 10,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: search string not found in 'scripts/run_coupled_pilot.py'.\nClosest anchor context (diagnostic only) (lines 70-75):\n70 |     unknown = requested - {case[\"id\"] for case in cases}\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     # Deduplicate while preserving original suite order\n74 |     seen = set()\n75 |     selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]\nCurrent file tail (lines 163-168):\n163 |         (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n164 |         print(json.dumps(result, ensure_ascii=False), flush=True)\n165 | \n166 | \n167 | if __name__ == \"__main__\":\n168 |     main()\nLine numbers and truncation markers are display-only; do not copy them into"
+        },
+        {
+          "call_id": "kMQIA7uYV",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 85,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 65
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 11,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (168 lines, 9288 bytes) [range: lines 65-85; partial file] [pruned 22L]"
+        },
+        {
+          "call_id": "TfY5lRV7N",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 12,
+          "freshness": "before_mutation",
+          "result_excerpt": "\"\"\"Bounded integrated pilot. Supply a key through the environment, never argv. [⚡ cached — unchanged since last read]\n\"\"\"Bounded integrated pilot. Supply a key through the environment, never argv.\n\nFixtures and baseline assertions are copied before execution; the independent\noracle runs outside the model's workspace. Previous output is never overwritten.\n\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport shutil\nimport signal\nimport subprocess\nimport time\n\n\ndef preserved(baseline, candidate):\n    old = {c[\"id\"]: c for c in baseline[\"cases\"]}\n    new = {c[\"id\"]: c for c in candidate[\"cases\"]}\n    return (len(old) == len(baseline[\"cases\"]) and len(new) == len(candidate[\"cases\"])\n            and all(new.get(k) == v for k, v in old.items())\n            and "
+        },
+        {
+          "call_id": "vAb1LIrJb",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -75,7 +75,11 @@ def main():\n     requested = set(args.case)\n     unknown = requested - {case[\"id\"] for case in cases}\n     if unknown:\n         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    # Deduplicate while preserving original suite order\n+    seen = set()\n+    selected = []\n+    for c in cases:\n+        if c[\"id\"] not in seen:\n+            selected.append(c)\n+            seen.add(c[\"id\"])\n     out.mkdir(parents=True)",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 13,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    requested = set(args.case)\\\\n    unknown = requested - {case[\\\"id\\\"] for case in cases}\\\\n    if unknown:\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 70-75):\n70 |     unknown = requested - {case[\"id\"] for case in cases}\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     # Deduplicate while preserving original suite order\n74 |     seen = set()\n75 |     selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]\nCurrent file tail (lines 163-168):\n163 |         (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n164 |         print(json.dumps(result, ensure_asci"
+        },
+        {
+          "call_id": "kKE0T5h85",
+          "tool": "write_file",
+          "arguments": {
+            "content": "\"\"\"Bounded integrated pilot. Supply a key through the environment, never argv.\n\nFixtures and baseline assertions are copied before execution; the independent\noracle runs outside the model's workspace. Previous output is never overwritten.\n\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport shutil\nimport signal\nimport subprocess\nimport time\n\n\ndef preserved(baseline, candidate):\n    old = {c[\"id\"]: c for c in baseline[\"cases\"]}\n    new = {c[\"id\"]: c for c in candidate[\"cases\"]}\n    return (len(old) == len(baseline[\"cases\"]) and len(new) == len(candidate[\"cases\"])\n            and all(new.get(k) == v for k, v in old.items())\n            and all(candidate.get(k) == v for k, v in baseline.items() if k != \"cases\"))\n\n\ndef run_bounded(command, *, cwd, env, timeout):\n    \"\"\"Keep failed/timeout oracle receipts and stop the whole process group.\"\"\"\n    try:\n        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,\n                                   stderr=subprocess.STDOUT, text=True, start_new_session=True)\n    except OSError as error:\n        return -1, str(error), False\n    timed_out = False\n    try:\n        log, _ = process.communicate(timeout=timeout)\n    except subprocess.TimeoutExpired:\n        timed_out = True\n        try:\n            os.killpg(process.pid, signal.SIGTERM)\n        except ProcessLookupError:\n            pass\n        try:\n            log, _ = process.communicate(timeout=15)\n        except subprocess.TimeoutExpired:\n            try:\n                os.killpg(process.pid, signal.SIGKILL)\n            except ProcessLookupError:\n                pass\n            log, _ = process.communicate()\n    return process.returncode, log, timed_out\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--binary\", required=True, type=Path)\n    parser.add_argument(\"--repo\", required=True, type=Path)\n    parser.add_argument(\"--out\", required=True, type=Path)\n    parser.add_argument(\"--provider\", required=True, choices=[\"openai\", \"mistral\", \"gemini\", \"anthropic\"])\n    parser.add_argument(\"--model\", required=True)\n    parser.add_argument(\"--wall-seconds\", type=int, default=600)\n    parser.add_argument(\"--without-observer\", action=\"store_true\")\n    parser.add_argument(\"--case\", action=\"append\", default=[], metavar=\"CASE_ID\",\n                        help=\"Run only these cases, in suite order; repeat to select more (duplicates ignored)\")\n    args = parser.parse_args()\n    binary, repo, out = [p.resolve() for p in (args.binary, args.repo, args.out)]\n    if out.exists():\n        raise SystemExit(\"Output exists; preserve receipts and choose a new directory\")\n    spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n    cases = json.loads(spec_bytes)[\"cases\"]\n    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Deduplicate while preserving original suite order\n    seen = set()\n    selected = []\n    for c in cases:\n        if c[\"id\"] not in seen:\n            selected.append(c)\n            seen.add(c[\"id\"])\n    out.mkdir(parents=True)\n    (out / \"spec.json\").write_bytes(spec_bytes)\n    metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n                \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,\n                \"model\": args.model, \"without_observer\": args.without_observer,\n                \"selected_case_ids\": [case[\"id\"] for case in selected]}\n    (out / \"metadata.json\").write_text(json.dumps(metadata, indent=2))\n    env = dict(os.environ)\n    env.pop(\"CARGO_TARGET_DIR\", None)\n    env.update(PATH=str(binary.parent) + os.pathsep + env.get(\"PATH\", \"\"), CARGO_INCREMENTAL=\"0\",\n               CARGO_PROFILE_DEV_DEBUG=\"0\", CARGO_PROFILE_TEST_DEBUG=\"0\", PYTHONNOUSERSITE=\"1\")\n    base = {\"openai\": \"https://api.openai.com/v1\", \"mistral\": \"https://api.mistral.ai/v1\",\n            \"gemini\": \"https://generativelanguage.googleapis.com/v1beta/openai\",\n            \"anthropic\": \"https://api.anthropic.com/v1\"}[args.provider]\n    key_name = {\"openai\": \"OPENAI_API_KEY\", \"mistral\": \"MISTRAL_API_KEY\", \"gemini\": \"GEMINI_API_KEY\",\n                \"anthropic\": \"ANTHROPIC_API_KEY\"}[args.provider]\n    secret = env.get(key_name)\n    if not secret:\n        raise SystemExit(\"Selected provider credential is unavailable\")\n    results = []\n    for case in selected:\n        case_out = out / case[\"id\"]\n        case_out.mkdir()\n        root = case_out / \"workspace\"\n        shutil.copytree(repo / case[\"tool_root\"], root, ignore=shutil.ignore_patterns(\"target\", \".git\"))\n        prompt = case_out / \"prompt.txt\"\n        prompt.write_text(case[\"prompt\"])\n        baseline = None\n        replay_path = root / \".spiral-coder/tui_replay.json\"\n        if replay_path.exists():\n            baseline = json.loads(replay_path.read_text())\n            # Include nonempty secondary evidence and an extension in the new\n            # v1 fixture so a lossy typed round trip is observable independently.\n            baseline[\"cases\"][0][\"preservation_probe\"] = {\"retain\": True}\n            baseline[\"cases\"][0][\"observer_response\"][\"suggestions\"].append({\n                \"kind\": \"clarify\", \"reason\": \"Keep uncertainty explicit\", \"confidence\": 0.2,\n                \"suggested_args\": {}, \"based_on\": [\"failure_kind\"]})\n            replay_path.write_text(json.dumps(baseline, indent=2))\n            (case_out / \"baseline.json\").write_text(json.dumps(baseline, indent=2))\n        case_spec = case_out / \"case.json\"\n        case_spec.write_text(json.dumps(case, indent=2))\n        command = [str(binary), \"--provider\", args.provider, \"--base-url\", base, \"--model\", args.model,\n                   \"--temperature\", \"0\", \"--max-tokens\", \"2048\", \"--timeout-seconds\", \"90\",\n                   \"coupled-run\", \"--tool-root\", str(root), \"--prompt-file\", str(prompt),\n                   \"--out-dir\", str(case_out / \"run\"), \"--max-requests\", str(case[\"max_requests\"]), \"--case-spec\", str(case_spec)]\n        if args.without_observer:\n            command.append(\"--without-observer\")\n        if case.get(\"session_seed\"):\n            seed = json.loads((root / case[\"session_seed\"]).read_text())\n            for message in seed[\"messages\"]:\n                if message.get(\"role\") == \"user\" and message.get(\"origin\") != \"runtime\":\n                    message[\"content\"] = case[\"prompt\"]\n                    break\n            seed_path = case_out / \"seed.json\"\n            seed_path.write_text(json.dumps(seed))\n            command.extend([\"--seed-session\", str(seed_path)])\n        started = time.monotonic()\n        returncode, log, timed_out = run_bounded(command, cwd=repo, env=env, timeout=args.wall_seconds)\n        (case_out / \"console.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n        report_path = case_out / \"run/report.json\"\n        report = json.loads(report_path.read_text()) if report_path.exists() else {}\n        execution = report.get(\"execution\") or {}\n        check_path = case_out / \"run/checks.json\"\n        strict = json.loads(check_path.read_text()) if check_path.exists() else {}\n        checks = {\"all_fixed_case_checks\": strict.get(\"ok\") is True, \"runtime_completed\": report.get(\"completed\") is True,\n                  \"within_shared_cap\": len(report.get(\"work\", {}).get(\"requests\", [])) <= case[\"max_requests\"],\n                  \"exact_checks_current\": execution.get(\"pending_exact_checks\") == [],\n                  \"process_ok\": returncode == 0 and not timed_out}\n        if baseline is not None:\n            try:\n                candidate = json.loads(replay_path.read_text())\n                checks[\"preserved_existing_cases\"] = preserved(baseline, candidate)\n                checks[\"requested_new_case_exists\"] = any(c.get(\"id\") == \"review-panel-replay-sensitive\" for c in candidate[\"cases\"])\n                code, log, expired = run_bounded([str(binary), \"tui-replay\", \"--spec\", str(replay_path), \"--out-dir\", str(case_out / \"oracle-replay\")], cwd=root, env=env, timeout=90)\n                (case_out / \"oracle-replay.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n                checks[\"all_old_and_new_replay_cases_pass\"] = code == 0 and not expired and checks[\"requested_new_case_exists\"]\n            except (OSError, ValueError, KeyError):\n                checks[\"preserved_existing_cases\"] = False\n        if \"resume-damaged\" in case[\"id\"]:\n            code, log, expired = run_bounded([\"cargo\", \"test\", \"--locked\"], cwd=root, env=env, timeout=90)\n            (case_out / \"oracle-tests.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n            checks[\"independent_tests_pass\"] = code == 0 and not expired\n        result = {\"id\": case[\"id\"], \"ok\": all(checks.values()), \"checks\": checks,\n                  \"requests\": len(report.get(\"work\", {}).get(\"requests\", [])),\n                  \"assists\": report.get(\"work\", {}).get(\"assists\", []),\n                  \"wall_seconds\": round(time.monotonic() - started, 3), \"timed_out\": timed_out}\n        results.append(result)\n        (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n        print(json.dumps(result, ensure_ascii=False), flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 14,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nwrite_file\narguments:\n{\"path\": \"scripts/run_coupled_pilot.py\", \"content\": \"\\\"\\\"\\\"Bounded integrated pilot. Supply a key through the environment, never argv.\\n\\nFixtures and baseline assertions are copied before execution; the independent\\noracle runs outside the model's workspace. Previous output is never o"
+        },
+        {
+          "call_id": "b7r6DcK2h",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 15,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nexec\narguments:\n{\"command\": \"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "BB08tCoRS",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 85,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 70
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 16,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (168 lines, 9288 bytes) [range: lines 70-85; partial file]\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Deduplicate while preserving original suite order\n    seen = set()\n    selected = [c for c in cases if not (c[\"id\"] in seen or seen.add(c[\"id\"]))]\n    out.mkdir(parents=True)\n    (out / \"spec.json\").write_bytes(spec_bytes)\n    metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n                \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,\n                \"model\": args.model, \"without_observer\": args.without_observer,\n                \"selected_case_ids\": [case[\"id\"] for case in selected]}\n  "
+        },
+        {
+          "call_id": "fGFm1zuxq",
+          "tool": "write_file",
+          "arguments": {
+            "content": "\"\"\"Bounded integrated pilot. Supply a key through the environment, never argv.\n\nFixtures and baseline assertions are copied before execution; the independent\noracle runs outside the model's workspace. Previous output is never overwritten.\n\"\"\"\nimport argparse\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport shutil\nimport signal\nimport subprocess\nimport time\n\n\ndef preserved(baseline, candidate):\n    old = {c[\"id\"]: c for c in baseline[\"cases\"]}\n    new = {c[\"id\"]: c for c in candidate[\"cases\"]}\n    return (len(old) == len(baseline[\"cases\"]) and len(new) == len(candidate[\"cases\"])\n            and all(new.get(k) == v for k, v in old.items())\n            and all(candidate.get(k) == v for k, v in baseline.items() if k != \"cases\"))\n\n\ndef run_bounded(command, *, cwd, env, timeout):\n    \"\"\"Keep failed/timeout oracle receipts and stop the whole process group.\"\"\"\n    try:\n        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,\n                                   stderr=subprocess.STDOUT, text=True, start_new_session=True)\n    except OSError as error:\n        return -1, str(error), False\n    timed_out = False\n    try:\n        log, _ = process.communicate(timeout=timeout)\n    except subprocess.TimeoutExpired:\n        timed_out = True\n        try:\n            os.killpg(process.pid, signal.SIGTERM)\n        except ProcessLookupError:\n            pass\n        try:\n            log, _ = process.communicate(timeout=15)\n        except subprocess.TimeoutExpired:\n            try:\n                os.killpg(process.pid, signal.SIGKILL)\n            except ProcessLookupError:\n                pass\n            log, _ = process.communicate()\n    return process.returncode, log, timed_out\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--binary\", required=True, type=Path)\n    parser.add_argument(\"--repo\", required=True, type=Path)\n    parser.add_argument(\"--out\", required=True, type=Path)\n    parser.add_argument(\"--provider\", required=True, choices=[\"openai\", \"mistral\", \"gemini\", \"anthropic\"])\n    parser.add_argument(\"--model\", required=True)\n    parser.add_argument(\"--wall-seconds\", type=int, default=600)\n    parser.add_argument(\"--without-observer\", action=\"store_true\")\n    parser.add_argument(\"--case\", action=\"append\", default=[], metavar=\"CASE_ID\",\n                        help=\"Run only these cases, in suite order; repeat to select more (duplicates ignored)\")\n    args = parser.parse_args()\n    binary, repo, out = [p.resolve() for p in (args.binary, args.repo, args.out)]\n    if out.exists():\n        raise SystemExit(\"Output exists; preserve receipts and choose a new directory\")\n    spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n    cases = json.loads(spec_bytes)[\"cases\"]\n    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Deduplicate while preserving original suite order\n    seen = set()\n    selected = []\n    for c in cases:\n        if c[\"id\"] not in seen:\n            selected.append(c)\n            seen.add(c[\"id\"])\n    out.mkdir(parents=True)\n    (out / \"spec.json\").write_bytes(spec_bytes)\n    metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\n                \"spec_sha256\": hashlib.sha256(spec_bytes).hexdigest(), \"provider\": args.provider,\n                \"model\": args.model, \"without_observer\": args.without_observer,\n                \"selected_case_ids\": [case[\"id\"] for case in selected]}\n    (out / \"metadata.json\").write_text(json.dumps(metadata, indent=2))\n    env = dict(os.environ)\n    env.pop(\"CARGO_TARGET_DIR\", None)\n    env.update(PATH=str(binary.parent) + os.pathsep + env.get(\"PATH\", \"\"), CARGO_INCREMENTAL=\"0\",\n               CARGO_PROFILE_DEV_DEBUG=\"0\", CARGO_PROFILE_TEST_DEBUG=\"0\", PYTHONNOUSERSITE=\"1\")\n    base = {\"openai\": \"https://api.openai.com/v1\", \"mistral\": \"https://api.mistral.ai/v1\",\n            \"gemini\": \"https://generativelanguage.googleapis.com/v1beta/openai\",\n            \"anthropic\": \"https://api.anthropic.com/v1\"}[args.provider]\n    key_name = {\"openai\": \"OPENAI_API_KEY\", \"mistral\": \"MISTRAL_API_KEY\", \"gemini\": \"GEMINI_API_KEY\",\n                \"anthropic\": \"ANTHROPIC_API_KEY\"}[args.provider]\n    secret = env.get(key_name)\n    if not secret:\n        raise SystemExit(\"Selected provider credential is unavailable\")\n    results = []\n    for case in selected:\n        case_out = out / case[\"id\"]\n        case_out.mkdir()\n        root = case_out / \"workspace\"\n        shutil.copytree(repo / case[\"tool_root\"], root, ignore=shutil.ignore_patterns(\"target\", \".git\"))\n        prompt = case_out / \"prompt.txt\"\n        prompt.write_text(case[\"prompt\"])\n        baseline = None\n        replay_path = root / \".spiral-coder/tui_replay.json\"\n        if replay_path.exists():\n            baseline = json.loads(replay_path.read_text())\n            # Include nonempty secondary evidence and an extension in the new\n            # v1 fixture so a lossy typed round trip is observable independently.\n            baseline[\"cases\"][0][\"preservation_probe\"] = {\"retain\": True}\n            baseline[\"cases\"][0][\"observer_response\"][\"suggestions\"].append({\n                \"kind\": \"clarify\", \"reason\": \"Keep uncertainty explicit\", \"confidence\": 0.2,\n                \"suggested_args\": {}, \"based_on\": [\"failure_kind\"]})\n            replay_path.write_text(json.dumps(baseline, indent=2))\n            (case_out / \"baseline.json\").write_text(json.dumps(baseline, indent=2))\n        case_spec = case_out / \"case.json\"\n        case_spec.write_text(json.dumps(case, indent=2))\n        command = [str(binary), \"--provider\", args.provider, \"--base-url\", base, \"--model\", args.model,\n                   \"--temperature\", \"0\", \"--max-tokens\", \"2048\", \"--timeout-seconds\", \"90\",\n                   \"coupled-run\", \"--tool-root\", str(root), \"--prompt-file\", str(prompt),\n                   \"--out-dir\", str(case_out / \"run\"), \"--max-requests\", str(case[\"max_requests\"]), \"--case-spec\", str(case_spec)]\n        if args.without_observer:\n            command.append(\"--without-observer\")\n        if case.get(\"session_seed\"):\n            seed = json.loads((root / case[\"session_seed\"]).read_text())\n            for message in seed[\"messages\"]:\n                if message.get(\"role\") == \"user\" and message.get(\"origin\") != \"runtime\":\n                    message[\"content\"] = case[\"prompt\"]\n                    break\n            seed_path = case_out / \"seed.json\"\n            seed_path.write_text(json.dumps(seed))\n            command.extend([\"--seed-session\", str(seed_path)])\n        started = time.monotonic()\n        returncode, log, timed_out = run_bounded(command, cwd=repo, env=env, timeout=args.wall_seconds)\n        (case_out / \"console.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n        report_path = case_out / \"run/report.json\"\n        report = json.loads(report_path.read_text()) if report_path.exists() else {}\n        execution = report.get(\"execution\") or {}\n        check_path = case_out / \"run/checks.json\"\n        strict = json.loads(check_path.read_text()) if check_path.exists() else {}\n        checks = {\"all_fixed_case_checks\": strict.get(\"ok\") is True, \"runtime_completed\": report.get(\"completed\") is True,\n                  \"within_shared_cap\": len(report.get(\"work\", {}).get(\"requests\", [])) <= case[\"max_requests\"],\n                  \"exact_checks_current\": execution.get(\"pending_exact_checks\") == [],\n                  \"process_ok\": returncode == 0 and not timed_out}\n        if baseline is not None:\n            try:\n                candidate = json.loads(replay_path.read_text())\n                checks[\"preserved_existing_cases\"] = preserved(baseline, candidate)\n                checks[\"requested_new_case_exists\"] = any(c.get(\"id\") == \"review-panel-replay-sensitive\" for c in candidate[\"cases\"])\n                code, log, expired = run_bounded([str(binary), \"tui-replay\", \"--spec\", str(replay_path), \"--out-dir\", str(case_out / \"oracle-replay\")], cwd=root, env=env, timeout=90)\n                (case_out / \"oracle-replay.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n                checks[\"all_old_and_new_replay_cases_pass\"] = code == 0 and not expired and checks[\"requested_new_case_exists\"]\n            except (OSError, ValueError, KeyError):\n                checks[\"preserved_existing_cases\"] = False\n        if \"resume-damaged\" in case[\"id\"]:\n            code, log, expired = run_bounded([\"cargo\", \"test\", \"--locked\"], cwd=root, env=env, timeout=90)\n            (case_out / \"oracle-tests.log\").write_text(log.replace(secret, \"[REDACTED]\"))\n            checks[\"independent_tests_pass\"] = code == 0 and not expired\n        result = {\"id\": case[\"id\"], \"ok\": all(checks.values()), \"checks\": checks,\n                  \"requests\": len(report.get(\"work\", {}).get(\"requests\", [])),\n                  \"assists\": report.get(\"work\", {}).get(\"assists\", []),\n                  \"wall_seconds\": round(time.monotonic() - started, 3), \"timed_out\": timed_out}\n        results.append(result)\n        (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n        print(json.dumps(result, ensure_ascii=False), flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 17,
+          "freshness": "current",
+          "result_excerpt": "OK: wrote 'scripts/run_coupled_pilot.py' (172 lines, 9339 bytes)\n[history digest — kept 10/40 lines, 1657 chars]\n[auto-test] ✗ FAILED (exit 1)\nTraceback (most recent call last):\nFile \"tests/test_coupled_pilot.py\", line 76, in assert_selection\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n[hash] before=fb8e9000dddcba3b after=c46594da0b21090e\n[ERROR DIGEST — 3 line(s)]\n[…6 earlier lines omitted — showing last 1200 chars]\nervation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok"
+        },
+        {
+          "call_id": "im2szoWOH",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 18,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261024-small-r1/episodes/mistral-small/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"tests/test_coupled_pilot.py\\\", line 76, in assert_selection | Traceback (most recent call last): | AssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\",\"failed_check\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\",\"path\":\"tests/test_coupled_pilot.py\"}\nRead this exact path with read_file to diagnose the failure before editing. It locates the failure, not necessarily the file to change. Preserve the original task's edit restrictions. Unrelated reads, directory listin"
+        }
+      ],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true,
+          "requested_documentation": false
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-yssgg9r1/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-yssgg9r1/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.342s\n\nFAILED (failures=1)\n"
+          }
+        ],
+        "documentation_proxy_revision": "shell-whitespace-v2",
+        "source_matches_reference": false
+      }
+    }
+  ],
+  "counts": {
+    "declared": 3,
+    "finished": 3,
+    "runtime_completed": 0,
+    "independent_artifacts_passed": 1,
+    "behavior_and_handoff_qualified": 0,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 71,
+    "episodes_with_unknown_request_count": 0
+  }
+}

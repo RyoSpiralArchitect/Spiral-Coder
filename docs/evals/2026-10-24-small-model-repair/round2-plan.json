@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T00:14:35.040206+00:00",
+  "preceding_round": "capacity-20261024-small-r1/assessment-002.json",
+  "new_round": "capacity-20261024-small-r2",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "case": "pilot-cli",
+  "maximum_requests": 72,
+  "same_inputs_matrix_driver_caps": true,
+  "changes": [
+    "Bind done.summary description to current native before/after rows and required report clauses; no automatic summary or weakened final gate.",
+    "Parse an authored JSON plan without changing its contents; keep existing count and alignment validation, reject duplicates and invalid types.",
+    "Allow the first declared unattempted baseline through protocol-only recovery when no mutation or pending localized failure exists."
+  ],
+  "observations": [
+    "Mini repaired code and docs, passed the exact native check, and mapped criteria correctly, but repeated seven final-summary refusals.",
+    "Lite supplied a JSON plan that the text parser treated as missing fields, then drifted into local one-step plans; no baseline or edit ran.",
+    "Small still failed to locate correct edit anchors and timed out while streaming after an Observer suggestion; keep the timeout as an observed outcome."
+  ],
+  "interpretation": "A second adaptive joint intervention on the same development fixture. No causal attribution to individual changes, no in-place retries, no additional third round in this bounded pass."
+}

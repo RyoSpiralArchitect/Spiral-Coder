@@ -1,0 +1,21 @@
+{
+  "probe_requests": 1,
+  "purpose": "parallel_tool_calls=false protocol probe; separate from benchmark episodes",
+  "http_status": 200,
+  "elapsed_seconds": 8.06,
+  "raw_sha256": "984ffd37990174528f211694bbd5ccc10c2c265df71396b414983f68dc3a5ea0",
+  "tool_chunks": [
+    {
+      "index": null,
+      "id": "call_392778",
+      "name": "read_file",
+      "arguments": "{\"path\":\"greet.py\"}"
+    },
+    {
+      "index": null,
+      "id": "call_392781",
+      "name": "read_file",
+      "arguments": "{\"path\":\"test_greet.py\"}"
+    }
+  ]
+}

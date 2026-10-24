@@ -1,0 +1,149 @@
+{
+  "round": "r1",
+  "runtime_commit": "5af1cb3e65deb72d128265a3fcc4f9f594aea390",
+  "profiles": {
+    "gemini-lite": {
+      "session_sha256": "cef15569dfd4a2a3d86d2ea08edb65d881c506aed64e9b33f8f78152a46b8d8b",
+      "json_protocol_blocks": [
+        {
+          "message_index": 8,
+          "tag": "plan",
+          "fields": [
+            "goal",
+            "steps",
+            "acceptance",
+            "risks",
+            "assumptions"
+          ],
+          "acceptance_items": 7
+        }
+      ],
+      "failing_check_cases": [
+        {
+          "call_id": "call_13093",
+          "tool": "exec",
+          "cases": [
+            "FAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+          ]
+        }
+      ],
+      "done_reports": [
+        {
+          "call_id": "call_784691",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": false
+        }
+      ],
+      "new_coder_wrapper_recovery_observed": false,
+      "observer_format_recovery": "not measurable: this frozen runtime only retained formatted successful Observer responses"
+    },
+    "openai-mini": {
+      "session_sha256": "d9ddfb43f7df0ee03cffaafacf43b8a70daba2debafaf3a80b01bfc82592d077",
+      "json_protocol_blocks": [],
+      "failing_check_cases": [
+        {
+          "call_id": "call_GG4ZIAuPCyTKu5MNtSJUgYyo",
+          "tool": "exec",
+          "cases": [
+            "FAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+          ]
+        }
+      ],
+      "done_reports": [
+        {
+          "call_id": "call_eb3A0oZvQ3uRgetVVVGFngHx",
+          "contains_context_json": false,
+          "contains_exact_before": false,
+          "contains_exact_after": false,
+          "first_row_after_verified_colon": false
+        },
+        {
+          "call_id": "call_SZKdRSB7R2VoMjqppPUZswvV",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": true
+        },
+        {
+          "call_id": "call_x9e4jHBybuJ35UMchGOrtV8T",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": true
+        },
+        {
+          "call_id": "call_LcU4CzWkecNfxruJBPdI0Ydp",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": true
+        },
+        {
+          "call_id": "call_qUSYxH0G71yTE1BTRjloGvc0",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": true
+        },
+        {
+          "call_id": "call_g2EUaphrMGWJG6nQo9SIxwyw",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": true
+        },
+        {
+          "call_id": "call_W2QcHiIiCTq2Su2cl8n4pmKg",
+          "contains_context_json": false,
+          "contains_exact_before": false,
+          "contains_exact_after": false,
+          "first_row_after_verified_colon": false
+        }
+      ],
+      "new_coder_wrapper_recovery_observed": false,
+      "observer_format_recovery": "not measurable: this frozen runtime only retained formatted successful Observer responses"
+    },
+    "mistral-small": {
+      "session_sha256": "8098166a101f667f7e563ce4a5923c9d978ac49ba8a08571edf5ff4719495900",
+      "json_protocol_blocks": [],
+      "failing_check_cases": [
+        {
+          "call_id": "vgF04Hzje",
+          "tool": "exec",
+          "cases": [
+            "FAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+          ]
+        },
+        {
+          "call_id": "nrP5CRgxz",
+          "tool": "patch_file",
+          "cases": [
+            "FAIL: test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection)",
+            "FAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+          ]
+        },
+        {
+          "call_id": "zo7FrvNxx",
+          "tool": "patch_file",
+          "cases": [
+            "FAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+          ]
+        }
+      ],
+      "done_reports": [
+        {
+          "call_id": "5h6HkgOzJ",
+          "contains_context_json": false,
+          "contains_exact_before": true,
+          "contains_exact_after": true,
+          "first_row_after_verified_colon": false
+        }
+      ],
+      "new_coder_wrapper_recovery_observed": false,
+      "observer_format_recovery": "not measurable: this frozen runtime only retained formatted successful Observer responses"
+    }
+  },
+  "observer_note": "Mistral Small advised reading source after passing native proof; Coder deferred that stale semantic advice and completed. This is distinct from structured format validity."
+}

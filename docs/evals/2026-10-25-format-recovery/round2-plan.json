@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T15:09:49.845483+00:00",
+  "preceding_round": "capacity-20261025-format-r1/assessment-002.json",
+  "new_round": "capacity-20261025-format-r2",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "case": "pilot-cli",
+  "maximum_requests": 72,
+  "same_inputs_matrix_driver_caps": true,
+  "changes": [
+    "Recognize exact authored before/after rows following bounded report labels or the exact Verified with COMMAND before and after edits: sentence at a sentence/line boundary. Arbitrary colon prefixes, negation, missing rows, stale commands and unrendered fields remain invalid. Native calls and proof unchanged."
+  ],
+  "observations": [
+    "First round independently passes all three artifact checks; Lite and Small qualify.",
+    "Small repairs default-all regression then input-order regression, with both failing unittest names retained through pruning.",
+    "Mini passes original code/docs checks but repeated final summaries are refused; five include both exact outcome rows, with the first after a verification sentence ending in a colon.",
+    "Lite authors a seven-criterion JSON plan; the existing four-criterion maximum correctly rejects it without dropping criteria. No new wrapper/encoded-args fallback was observed in this round."
+  ],
+  "interpretation": "Second adaptive round, no causal attribution and no in-place retry. Final round in this 144-request bounded pass."
+}

@@ -1,0 +1,331 @@
+{
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "assessor": "selection-paraphrases-v4",
+  "rounds": {
+    "retained": {
+      "runtime_commit": "c1f3add6f6849f21b661a1a6c8c69919ffd53512",
+      "binary_sha256": "a75c5dac4215df3b4cbd61f35a0a9d66790af299ea1e47fd06c085c97b12a275",
+      "assessment_sha256": "4bc3a94ee7b118da675d66d985c42bf4729286030c78f5ed22a4a4b88d00ae9f",
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 22,
+            "observer": 2
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "Think Gate": 2,
+            "Recovery Gate": 1,
+            "unspecified governor": 1,
+            "Done Gate": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 2,
+            "Requirement Gate": 1,
+            "Done Gate": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 5,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        }
+      ],
+      "verified_raw_manifest_entries": 171
+    },
+    "r1": {
+      "runtime_commit": "deb4e5b93275d3a95bdfc70a81c2dcfb99a1dcc4",
+      "binary_sha256": "77766a76124eb12cde5e61505dfbd774a3a2b2173db4f16ff07667f4729a9abd",
+      "assessment_sha256": "e94a6d19e527f6e7aebd58f5e066dc60f12326423cc2f6b17daa52842055b10e",
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": false,
+            "baseline_before_edit": false,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 9,
+            "Recovery Gate": 2,
+            "Progress Gate": 1,
+            "Requirement Gate": 2,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 1
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Requirement Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 7
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 23,
+          "request_roles": {
+            "coder": 22,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 4
+          },
+          "trace_errors": [
+            {
+              "message": "error decoding response body: request or response body error: operation timed out",
+              "pane": "Coder"
+            }
+          ],
+          "retained_json_plan_blocks": 0
+        }
+      ],
+      "verified_raw_manifest_entries": 108
+    },
+    "r2": {
+      "runtime_commit": "1995cdd22978c4f4e516965590e8ee0a729fe142",
+      "binary_sha256": "b905ed1efb18326147f1cc23ac4120a84fb9fe4d10b164b462f2b089734455dd",
+      "assessment_sha256": "782603b803e9b16bec149c72f1313336608439273c55dd34ab5cfab405896da8",
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 19,
+          "request_roles": {
+            "coder": 19
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 2
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 1
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 18,
+          "request_roles": {
+            "coder": 18
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Think Gate": 1,
+            "Requirement Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "blocks": {
+            "Plan Gate": 1,
+            "Recovery Gate": 3,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "retained_json_plan_blocks": 0
+        }
+      ],
+      "verified_raw_manifest_entries": 111
+    }
+  },
+  "new_task_requests": 132
+}
