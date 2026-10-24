@@ -43,6 +43,7 @@ use crate::types::ChatMessage;
 use std::path::Path;
 
 mod acceptance_report;
+mod acceptance_schema;
 mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
@@ -66,6 +67,7 @@ mod final_instructions;
 mod followup_requirements;
 mod harness_evolution;
 mod impact_recovery;
+mod json_plan;
 mod memory;
 mod message_window;
 mod meta_harness;
@@ -93,6 +95,7 @@ mod recovery_policy_tests;
 mod reflection_action;
 #[cfg(test)]
 mod reflection_action_tests;
+mod repair_brief;
 #[cfg(test)]
 mod repair_feedback_tests;
 #[cfg(test)]
@@ -5297,6 +5300,9 @@ fn plan_field_max_items(key: &str) -> Option<usize> {
 }
 
 fn parse_plan_block(text: &str) -> Option<PlanBlock> {
+    if let Some(plan) = json_plan::parse(extract_tag_block(text, "plan")?) {
+        return Some(plan);
+    }
     let fields = parse_block_fields(text, "plan")?;
 
     Some(PlanBlock {
@@ -8352,7 +8358,16 @@ This is the LAST model call for this run.\n\
 
         let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
         let cfg_clone = cfg.clone();
-        let tools_clone = next_action.tools(&tools);
+        let mut tools_clone = next_action.tools(&tools);
+        acceptance_schema::bind(
+            &mut tools_clone,
+            active_plan.as_ref(),
+            &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
+        );
+        acceptance_schema::bind_summary(
+            &mut tools_clone,
+            &final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref()),
+        );
         msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
         let client_clone = client.clone();
         let msgs_clone = msgs_for_call;
@@ -12647,12 +12662,22 @@ Required now: run `{command}`.\n{verification_status}"
             tool_root_abs.as_deref(),
             test_cmd.as_deref(),
         );
-        if let Some(block) = recovery.maybe_block_tool(
-            &tc,
-            test_cmd.as_deref(),
-            task_harness,
-            allow_existing_followup_verify || allow_benchmark_plan_followup_verify,
-        ) {
+        if let Some(block) = recovery
+            .maybe_block_tool(
+                &tc,
+                test_cmd.as_deref(),
+                task_harness,
+                allow_existing_followup_verify || allow_benchmark_plan_followup_verify,
+            )
+            .filter(|_| {
+                recovery.focus.is_pending()
+                    || !requirement_proof::is_unattempted_baseline(
+                        &tc,
+                        &messages,
+                        test_cmd.as_deref(),
+                    )
+            })
+        {
             state = AgentState::Recovery;
             let _ = tx
                 .send(StreamToken::Delta(format!(

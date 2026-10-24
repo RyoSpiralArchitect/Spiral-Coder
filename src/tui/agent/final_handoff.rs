@@ -57,6 +57,14 @@ pub(super) fn report_requirements(root: &str) -> serde_json::Value {
     })
 }
 
+pub(super) fn report_context(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Value {
+    let mut report = report_requirements(root);
+    report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
+        root, messages, test_cmd
+    ));
+    report
+}
+
 pub(super) fn authored_final_answer_hint(root: &str) -> Option<String> {
     let clauses = instructions(root);
     (!clauses.is_empty()).then(|| format!(

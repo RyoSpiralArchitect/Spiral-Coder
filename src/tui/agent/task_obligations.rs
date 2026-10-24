@@ -16,6 +16,7 @@ pub(crate) struct TaskObligations {
     pub acceptance_criteria: Vec<Value>,
     pub current_commands: Vec<String>,
     pub task_requirements: super::requirement_proof::Status,
+    pub repair_brief: Option<super::repair_brief::RepairBrief>,
 }
 
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
@@ -28,16 +29,11 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
     let plan =
         super::plan_resume::latest_valid(messages, |plan| super::validate_plan(plan).is_ok());
     TaskObligations {
+        repair_brief: super::repair_brief::project(root, &evidence),
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
-        final_answer: {
-            let mut report = final_handoff::report_requirements(root);
-            report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
-                root, messages, test_cmd
-            ));
-            report
-        },
+        final_answer: final_handoff::report_context(root, messages, test_cmd),
         latest_action_feedback: evidence.actions.into_iter().last().filter(|action| {
             action.result.as_deref().is_some_and(|result| {
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("ERROR:")

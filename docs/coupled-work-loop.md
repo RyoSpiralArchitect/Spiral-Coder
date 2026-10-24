@@ -259,6 +259,42 @@ criterion. Full shell commands must match recorded evidence, including case and
 redirects. These identities establish provenance; they do not judge the semantic
 sufficiency of every human-language claim.
 
+Each Coder request also binds the `done` schema to the current plan's stable
+criterion references and currently citable commands. Object-shaped evidence uses
+separate reference/command choices; Google's flattened schema offers complete
+`acceptance N | exact command` rows. The model still chooses which criteria are
+complete and which receipt supports each one. No report is filled in or rewritten,
+and existing baseline, freshness, completeness and authored-summary gates remain
+authoritative. Empty or oversized choice sets retain the generic schema rather
+than truncating commands or emitting an invalid empty enum. Choices are rebuilt
+on every request and are not persistent state.
+
+While declared checks remain pending, both roles receive a compact `repair_brief`
+with human-declared source paths, correlated read bounds/freshness, and the latest
+successful native edit identity. It reminds the model to trace failing assertions
+to existing source branches, preserve working defaults/guards, and avoid copying
+test-local bookkeeping or inventing dependencies. It neither guesses a repair nor
+requires a new read when retained observations suffice. This is advisory context,
+not a semantic correctness gate or permission to edit tests. Native proof and an
+independent artifact check remain necessary to assess an attempted repair.
+
+The `done.summary` field description includes the same current report clauses
+and before/after rows as the shared task projection. A command cited in an
+evidence row does not replace the requested report text. Unknown or invalidated
+outcomes remain `NOT RECORDED` / `NOT VERIFIED`; no summary is generated.
+
+Plans may also contain an authored JSON object inside `<plan>`. Fields and list
+items retain their contents; string arrays are accepted for risks/assumptions.
+Duplicate fields, wrong types and unknown fields are rejected. The existing
+step/criterion counts, task alignment and all action/proof gates still apply;
+excess criteria are not silently dropped. Native tool calls remain separate.
+
+After a protocol refusal, the first exact human-declared baseline check may run
+without an unrelated diagnostic detour. This narrow recovery exception requires
+no prior mutation, no previous native attempt of that check, and no pending
+localized failure. It cannot unlock a retry of a failed check or manufacture a
+baseline receipt; normal command approval and execution still apply.
+
 Observer prompts prioritize current correlated native results and omit old tool
 outputs and duplicate display digests. The selected failure is explicitly
 historical context. Raw audit packets retain the full history for diagnosis.

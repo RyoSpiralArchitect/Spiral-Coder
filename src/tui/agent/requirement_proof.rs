@@ -155,6 +155,20 @@ pub(super) fn required_commands(root: &str) -> Vec<String> {
         .collect()
 }
 
+pub(super) fn source_paths(root: &str) -> Vec<String> {
+    parse(root)
+        .ok()
+        .flatten()
+        .into_iter()
+        .flat_map(|c| c.requirements)
+        .flat_map(|r| r.artifacts)
+        .filter(|artifact| matches!(artifact.kind, ArtifactKind::Source))
+        .map(|artifact| artifact.path)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
 pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
     let messages = crate::task_origin::current_task_messages(messages);
     let root = crate::task_origin::root_user_text(messages);
@@ -255,6 +269,27 @@ pub(super) fn is_pending_baseline(
             project(messages, test_cmd)
                 .pending_baselines
                 .contains(&command)
+        })
+}
+
+/// A protocol refusal has not observed a workspace failure. Permit the first
+/// human-declared baseline check after that refusal, before any mutation. A
+/// real attempt (success or failure) or any edit closes this exception.
+pub(super) fn is_unattempted_baseline(
+    tc: &crate::streaming::ToolCallData,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> bool {
+    if !is_pending_baseline(tc, messages, test_cmd) {
+        return false;
+    }
+    let evidence = super::evidence_packet::project(messages, test_cmd);
+    let command = super::parse_exec_command_from_args(&tc.arguments);
+    evidence.mutation_step.is_none()
+        && !evidence.actions.iter().any(|action| {
+            action.tool == "exec"
+                && action.executed == Some(true)
+                && action.arguments["command"].as_str() == command.as_deref()
         })
 }
 
