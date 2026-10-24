@@ -32,6 +32,10 @@ fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
     let response = format!("Next action.\n```json\n{encoded}\n```\nEnd.");
     let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&response).unwrap();
     assert!(tui.pending_observer_hint.is_some() && tui.observer_repair_prompt.is_none());
+    let displayed = app.observer.messages.iter().rev().find(|m| m.role == Role::Assistant).unwrap();
+    assert_eq!(displayed.raw_content.as_deref(), Some(response.as_str()));
+    assert!(displayed.content.starts_with("--- blocker ---"));
+    assert_eq!(tui.observer_raw_response, response);
     let coder = agent::task_obligations::prompt(&resumed,None).unwrap();
     for prompt in [&coder, &tui.observer_prompt] {
         assert!(prompt.contains("repair_brief") && prompt.contains("bookkeeping"));

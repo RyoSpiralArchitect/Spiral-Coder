@@ -157,6 +157,7 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             .to_string(),
         );
     } else if let Some(parsed) = parsed.as_ref() {
+        app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);
         if let Some(hint) = build_observer_suggestion_soft_hint(parsed) {

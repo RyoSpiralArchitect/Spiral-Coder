@@ -28,6 +28,12 @@ create durable state. `repair_brief.rs` derives recent failing check/case identi
 from correlated native results. `report_surface.rs` removes only an exact current
 report-context echo for validation/display. The original transcript remains owned
 by `AgentSession`; these projections grant no execution or completion authority.
+TUI `Message.raw_content` is owned by the in-memory pane message and stores the
+original successful Observer response before formatting. The coupled-run report
+exports it alongside `observer_display`; it is not a second session store and
+does not enter provider requests, task proof, or suggestion execution. Earlier
+coupled reports without this optional field retain only formatted successful
+Observer answers, so they cannot establish which format fallback was used.
 
 The goal is simple: new features should not invent "just one more place" to
 store state without first choosing the correct owner.
