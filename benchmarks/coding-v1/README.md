@@ -160,3 +160,8 @@ The [six-model matched follow-up](../../docs/evals/2026-10-24-action-closeout/RE
 retains weak profiles from all three providers, adds the selected Luna/Large 4
 counterparts, and reports action/closeout successes alongside weak-model failures.
 Offline assessment corrections are versioned separately from runtime effects.
+
+The [small-model repair follow-up](../../docs/evals/2026-10-24-small-model-repair/README.md)
+retains two more rounds / 132 requests with unchanged tasks and assessors.
+Flash-Lite and mini reach qualified completion in the second round; Mistral
+Small's default-selection regression and first-round timeout remain recorded.

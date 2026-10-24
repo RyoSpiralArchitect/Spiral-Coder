@@ -7,6 +7,10 @@ preflight, native proof, independent original tests, authored report and complet
 changed-file inventory remain separate outcomes. It does not replace this
 historical runtime evaluation or retroactively relabel prior failures.
 
+The [small-model repair follow-up](evals/2026-10-24-small-model-repair/README.md)
+records 132 additional requests, authored-report and plan-format support, two
+qualified weak-model episodes, and the remaining Mistral Small failure.
+
 ## Copied-workspace build isolation
 
 Each copied fixture must use its own Cargo build output. Sharing an absolute
