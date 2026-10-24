@@ -26,12 +26,38 @@ pub(super) fn states_row(summary: &str, row: &str) -> bool {
         let line_prefix = before.rsplit('\n').next().unwrap_or("").trim();
         let starts_field = ["", "-", "*"].contains(&line_prefix)
             || (before.ends_with(char::is_whitespace)
-                && before.trim_end().ends_with(['.', '!', '?', ';', ',']));
+                && (before.trim_end().ends_with(['.', '!', '?', ';', ','])
+                    || follows_report_label(before, row)));
         let ends_field = after.is_empty()
             || after.starts_with(['\n', '\r'])
             || (after.starts_with(['.', '!', '?', ';', ','])
                 && (after.len() == 1 || after[1..].starts_with(char::is_whitespace)));
         starts_field && ends_field
+    })
+}
+
+/// A colon can introduce an explicit report field, but an arbitrary prefix
+/// such as "Do not claim:" or "Example:" cannot assert it. Recognize bounded
+/// report labels and the retained live verification sentence, keeping exact
+/// authored outcomes/commands; never populate missing rows from native proof.
+fn follows_report_label(before: &str, row: &str) -> bool {
+    let mut labels = vec![
+        "Recorded outcomes:".to_string(),
+        "Verification results:".to_string(),
+    ];
+    if let Some(command) = row
+        .split_once(" — `")
+        .and_then(|(_, rest)| rest.strip_suffix('`'))
+    {
+        labels.push(format!("Verified with {command} before and after edits:"));
+    }
+    labels.iter().any(|label| {
+        before.trim_end().strip_suffix(label).is_some_and(|prefix| {
+            prefix.trim().is_empty()
+                || prefix.ends_with('\n')
+                || (prefix.ends_with(char::is_whitespace)
+                    && prefix.trim_end().ends_with(['.', '!', '?', ';']))
+        })
     })
 }
 
@@ -195,6 +221,45 @@ mod tests {
         .is_ok());
         assert!(states_row(&format!("- {}", rows[0]), &rows[0]));
         assert!(states_row(&format!("{}, {}.", rows[0], rows[1]), &rows[1]));
+        // Retained format-r1 mini wrote complete exact fields after a colon,
+        // then spent five further requests on an unchanged report refusal.
+        let inline = format!("Fixed greet.py. Verified with {CHECK} before and after edits: {}, {}. No further work.", rows[0], rows[1]);
+        assert!(super::super::final_handoff::validate_authored_done_summary(
+            ROOT,
+            &inline,
+            &inline,
+            &messages,
+            Some(CHECK)
+        )
+        .is_ok());
+        assert!(states_row(
+            &format!("Recorded outcomes: {}", rows[0]),
+            &rows[0]
+        ));
+        for prefix in [
+            "Not:",
+            "Do not claim:",
+            "Example:",
+            "Not Recorded outcomes:",
+            "Example: Recorded outcomes:",
+        ] {
+            assert!(!states_row(&format!("{prefix} {}", rows[0]), &rows[0]));
+        }
+        assert!(!states_row(
+            &format!(
+                "Not Verified with {CHECK} before and after edits: {}",
+                rows[0]
+            ),
+            &rows[0]
+        ));
+        assert!(!states_row(
+            &inline.replace(CHECK, "different check"),
+            &rows[0]
+        ));
+        assert!(!states_row(
+            &format!("Recorded outcomes: {} was not recorded", rows[0]),
+            &rows[0]
+        ));
         assert!(!states_row(&format!("Not {}", rows[0]), &rows[0]));
         assert!(!states_row(
             &format!("{} was not recorded", rows[0]),
