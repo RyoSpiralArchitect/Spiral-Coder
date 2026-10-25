@@ -98,7 +98,7 @@ fresh attempts in new directories, not retries that overwrite initial evidence.
 | Luna → Argon | 25 / 1 | 225.624 | Yes | 5 pass / 1 fail | No |
 | Argon → Large 4 | 28 / 4 | 645.398 | No | 5 pass / 1 fail | No |
 
-Across all four live episodes, 100 provider requests were reserved. No candidate
+Across the four episodes above, 100 provider requests were reserved. No candidate
 qualified. Build, existing Rust tests and candidate TUI replay passed in both
 final episodes. Raw manifests were verified locally: 934 files for Luna → Argon
 and 876 for Argon → Large 4. [Final result receipts](final-results.json) retain
@@ -189,6 +189,14 @@ handling. All four findings were fixed; focused re-review found no remaining
 actionable finding. Raw receipts stay local; published results contain selected
 accounting/configuration/gate facts and immutable hashes, not provider opaque
 continuation fields or credentials.
+
+## Follow-up runtime iteration
+
+A [fresh two-episode runtime follow-up](followup-r5.md) adds grounded work progress,
+precise suggestion-execution receipts, output classification and duplicate-read
+control. It used 31 more requests with the same frozen task and independent
+oracle. Luna completed natively; neither candidate passed the repair oracle.
+The follow-up records which fixes were exercised and which were not.
 
 ## Boundaries
 

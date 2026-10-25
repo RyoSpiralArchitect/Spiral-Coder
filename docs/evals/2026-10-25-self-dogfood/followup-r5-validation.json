@@ -1,0 +1,92 @@
+{
+  "source_commit": "5b9315dbfb4fbfc134b5a98ae59e658837f94d6d",
+  "rust_unit": {
+    "passed": 918,
+    "failed": 0,
+    "ignored": 1
+  },
+  "rust_integration": {
+    "passed": 1,
+    "failed": 0
+  },
+  "python": {
+    "passed": 61,
+    "failed": 0
+  },
+  "web_npm": {
+    "passed": 85,
+    "failed": 0
+  },
+  "tui_replay": {
+    "passed": 7,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "name": "publish",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121125509369"
+    },
+    {
+      "name": "package",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121125405056"
+    },
+    {
+      "name": "native (macos-15, aarch64-apple-darwin, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123602701"
+    },
+    {
+      "name": "native (ubuntu-22.04-arm, aarch64-unknown-linux-gnu, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123602682"
+    },
+    {
+      "name": "native (macos-15-intel, x86_64-apple-darwin, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123602663"
+    },
+    {
+      "name": "native (ubuntu-22.04, x86_64-unknown-linux-gnu, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123602652"
+    },
+    {
+      "name": "native (windows-2022, x86_64-pc-windows-msvc, spiral-coder.exe)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123602642"
+    },
+    {
+      "name": "checks (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269492/job/121123581780"
+    },
+    {
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269501/job/121123581718"
+    },
+    {
+      "name": "checks (macos-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40178269492/job/121123581627"
+    }
+  ],
+  "local_log_sha256": {
+    "rust": "e9ca98e4430dd37c1b7d40338b344612697782a08fcfcc7f45e4f3b2a045a2ab",
+    "python": "3237211c28cc00a5f59c55b8313cc4377e46e199588036fabdf4cb5a633c2a20",
+    "web_npm": "c77ec7094fba6b888e1c02a1f7086107992760c90899c9efce2f13ffe02b6b11",
+    "tui_replay": "52970f364391bc257df7617e4ccd1824a60163c4034a39b6a3689d7c36068153"
+  }
+}
