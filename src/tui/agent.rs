@@ -13565,18 +13565,14 @@ Required now: run `{command}`.\n{verification_status}"
                             .read_for_diagnosis(&tc, base, &mut file_cache)
                     {
                         result
-                    } else if let Some(cached) = file_cache.get(&cache_key) {
+                    } else if let Some(cached) = file_cache.get(&cache_key).and_then(|cached| {
+                        crate::file_tools::read_cache::for_request(cached, &path, base)
+                    }) {
                         let header = cached.lines().next().unwrap_or(&path).to_string();
                         let _ = tx
                             .send(StreamToken::Delta(format!("[CACHE_HIT] {header}\n")))
                             .await;
-                        (
-                            format!(
-                                "{} [⚡ cached — unchanged since last read]\n{cached}",
-                                header
-                            ),
-                            false,
-                        )
+                        (cached, false)
                     } else {
                         let (mut content, err) = crate::file_tools::tool_read_file(&path, base);
                         if err {

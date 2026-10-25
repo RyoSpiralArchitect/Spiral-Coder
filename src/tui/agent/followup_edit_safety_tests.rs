@@ -273,3 +273,37 @@ fn native_json_guidance_is_not_part_of_a_synthetic_search() {
     let reads = successful_read_contents(&messages);
     assert_eq!(reads[path].snapshot.as_deref(), Some(body));
 }
+
+#[test]
+fn absolute_read_then_relative_cache_preserves_followup_provenance() {
+    let body = "# Follow-up\n\nCurrent documentation.\n";
+    let (root, mut messages) = setup(body);
+    let absolute = root.path().join(DOCS);
+    let native = read(
+        root.path(),
+        &mut messages,
+        json!({"path":absolute.to_str().unwrap()}),
+    );
+    let cached =
+        crate::file_tools::read_cache::for_request(&native, DOCS, root.path().to_str()).unwrap();
+    append(
+        &mut messages,
+        &call("read_file", json!({"path":DOCS})),
+        cached,
+    );
+    let reads = successful_read_contents(&messages);
+    assert_eq!(reads[DOCS].snapshot.as_deref(), Some(body));
+    let verify = call("exec", json!({"command":CHECK}));
+    let (patch, _, _) = coerce_existing_followup_tool_call(&messages, &verify, ROOT, None).unwrap();
+    let args: Value = serde_json::from_str(&patch.arguments).unwrap();
+    assert_eq!(patch.name, "patch_file");
+    assert_eq!(args["path"], DOCS);
+    assert_eq!(args["search"], body);
+    let (result, failed) = crate::file_tools::tool_patch_file(
+        DOCS,
+        body,
+        args["replace"].as_str().unwrap(),
+        root.path().to_str(),
+    );
+    assert!(!failed, "{result}");
+}

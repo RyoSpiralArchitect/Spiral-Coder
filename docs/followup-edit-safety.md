@@ -16,6 +16,11 @@ empty bodies from whole-file anchors. These observations can still guide a
 model-authored localized patch. Literal marker-like text inside an otherwise
 complete file is ordinary file content.
 
+Cache hits render the path used by the current read call. An absolute/relative
+alias is rebound only after both paths resolve to the same safe file identity;
+metadata and body bytes stay unchanged. Malformed or mismatched cached headers
+fall back to a fresh read instead of manufacturing matching evidence.
+
 A `done` call with nonempty `remaining_acceptance` reaches the existing
 completion/report checks instead of becoming a mutation. This does not accept
 incomplete work or manufacture verification. Follow-up hints, exact checks and
