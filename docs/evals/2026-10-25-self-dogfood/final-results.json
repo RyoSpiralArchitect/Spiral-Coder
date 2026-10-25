@@ -1,0 +1,261 @@
+[
+  {
+    "qualified_candidate": false,
+    "gates": {
+      "native_receipts_valid": true,
+      "required_paths_changed": true,
+      "pinned_run_receipt": true,
+      "native_ledger_binding": true,
+      "native_completed": true,
+      "accepted_done": true,
+      "no_remaining_acceptance": true,
+      "native_edit": true,
+      "actual_edit": true,
+      "fresh_native_checks": true,
+      "no_pending_checks": true,
+      "strict_scope": true,
+      "original_protected_files_preserved": true,
+      "both_roles_called": true,
+      "exact_role_configuration": true,
+      "role_accounting_consistent": true,
+      "bounded_requests": true,
+      "process_ok": true,
+      "independent_checks_passed": false,
+      "candidate_unchanged_by_assessor": true,
+      "no_secret_redactions": true,
+      "patch_retained": true
+    },
+    "changed_files": [
+      "docs/coupled-work-loop.md",
+      "src/tui/agent/recovery.rs"
+    ],
+    "out_of_scope_files": [],
+    "requests": 26,
+    "request_roles": {
+      "coder": 25,
+      "observer": 1
+    },
+    "native_checks": {
+      "cargo test --locked --bin spiral-coder -q": true
+    },
+    "roles": {
+      "coder": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      },
+      "observer": {
+        "provider": "gemini",
+        "model": "gemini-4-argon"
+      }
+    },
+    "native_roles": {
+      "coder": {
+        "endpoint_origin": "https://api.openai.com",
+        "max_tokens": 32768,
+        "model": "gpt-5.6-luna",
+        "provider": "openai",
+        "temperature": 0.0,
+        "timeout_seconds": 90,
+        "transport": "openai-compatible"
+      },
+      "observer": {
+        "endpoint_origin": "https://generativelanguage.googleapis.com",
+        "max_tokens": 8192,
+        "model": "gemini-4-argon",
+        "provider": "gemini",
+        "temperature": 0.2,
+        "timeout_seconds": 90,
+        "transport": "openai-compatible"
+      }
+    },
+    "native_evidence_source": "report",
+    "receipt_errors": [],
+    "pair": "luna-argon",
+    "round": "final",
+    "baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+    "runtime_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+    "driver_source_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+    "declaration_sha256": "21899d6605023db3cfcb88eac11e0aa4d629786601b8c97c3837ece4b63e2630",
+    "run_receipt_sha256": "d753c7f50e8e2ae9fe9fe4a532e03387f90bfcb3fd125465e50aeace8c867d98",
+    "binary_sha256": "bca06da9e088ea9c09c6fb5f3af92de4082d87d0402f50f2a854407ba2009935",
+    "assessment_sha256": "2e58baa50bfbd2c20e14861f04bb695458d4c2231a2d8fe1df8a012c6b19124e",
+    "raw_manifest_sha256": "2b57bd1d2a52dc74e7136fbd2ddaadbf4314206c1253fa6a6262dd7bcf79d149",
+    "verified_raw_files": 934,
+    "limits": {
+      "max_requests": 32,
+      "coder_chunk_requests": 8,
+      "wall_seconds": 1200,
+      "max_tokens": 32768,
+      "timeout_seconds": 90
+    },
+    "observer_max_tokens": 8192,
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 225.624,
+      "redacted_files": [],
+      "patch_exit_code": 0
+    },
+    "independent_checks": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "72ffe2722358866779ef2f353011607c28918bc6b64a1b8f55a1d027374554ee"
+      },
+      {
+        "id": "existing-rust-tests",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "72ffe2722358866779ef2f353011607c28918bc6b64a1b8f55a1d027374554ee"
+      },
+      {
+        "id": "recovery-handoff-oracle",
+        "passed": false,
+        "exit_code": 101,
+        "expected_test_count_matches": false,
+        "candidate_binary_sha256": "72ffe2722358866779ef2f353011607c28918bc6b64a1b8f55a1d027374554ee"
+      },
+      {
+        "id": "candidate-tui-replay",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "72ffe2722358866779ef2f353011607c28918bc6b64a1b8f55a1d027374554ee"
+      }
+    ],
+    "promotion_authorized": false
+  },
+  {
+    "qualified_candidate": false,
+    "gates": {
+      "native_receipts_valid": true,
+      "required_paths_changed": false,
+      "pinned_run_receipt": true,
+      "native_ledger_binding": true,
+      "native_completed": false,
+      "accepted_done": true,
+      "no_remaining_acceptance": false,
+      "native_edit": false,
+      "actual_edit": false,
+      "fresh_native_checks": false,
+      "no_pending_checks": false,
+      "strict_scope": true,
+      "original_protected_files_preserved": true,
+      "both_roles_called": true,
+      "exact_role_configuration": true,
+      "role_accounting_consistent": true,
+      "bounded_requests": true,
+      "process_ok": true,
+      "independent_checks_passed": false,
+      "candidate_unchanged_by_assessor": true,
+      "no_secret_redactions": true,
+      "patch_retained": true
+    },
+    "changed_files": [],
+    "out_of_scope_files": [],
+    "requests": 32,
+    "request_roles": {
+      "coder": 28,
+      "observer": 4
+    },
+    "native_checks": {
+      "cargo test --locked --bin spiral-coder -q": false
+    },
+    "roles": {
+      "coder": {
+        "provider": "gemini",
+        "model": "gemini-4-argon"
+      },
+      "observer": {
+        "provider": "mistral",
+        "model": "mistral-large-4"
+      }
+    },
+    "native_roles": {
+      "coder": {
+        "endpoint_origin": "https://generativelanguage.googleapis.com",
+        "max_tokens": 32768,
+        "model": "gemini-4-argon",
+        "provider": "gemini",
+        "temperature": 0.0,
+        "timeout_seconds": 90,
+        "transport": "openai-compatible"
+      },
+      "observer": {
+        "endpoint_origin": "https://api.mistral.ai",
+        "max_tokens": 8192,
+        "model": "mistral-large-4",
+        "provider": "mistral",
+        "temperature": 0.2,
+        "timeout_seconds": 90,
+        "transport": "mistral"
+      }
+    },
+    "native_evidence_source": "report",
+    "receipt_errors": [],
+    "pair": "argon-large",
+    "round": "final",
+    "baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+    "runtime_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+    "driver_source_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+    "declaration_sha256": "81db0493d3316a9ff232f2cf2e7850daca33b7c391355a46e447a9513cc20f82",
+    "run_receipt_sha256": "a6c1975162e7bf7498297792bf9e3865666505470cc41a99fc28fa9210eddfc8",
+    "binary_sha256": "bca06da9e088ea9c09c6fb5f3af92de4082d87d0402f50f2a854407ba2009935",
+    "assessment_sha256": "1bc316235e803f6c5915b3fa495a076ed2e06077eedf05a3a0feadb6df46d00c",
+    "raw_manifest_sha256": "46e23e6e9392291ca7ac44a21e3a0e590e91b9168dec4f4c849fbb79acf4dc46",
+    "verified_raw_files": 876,
+    "limits": {
+      "max_requests": 32,
+      "coder_chunk_requests": 8,
+      "wall_seconds": 1200,
+      "max_tokens": 32768,
+      "timeout_seconds": 90
+    },
+    "observer_max_tokens": 8192,
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 645.398,
+      "redacted_files": [],
+      "patch_exit_code": 0
+    },
+    "independent_checks": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "0490ee70af4e09a1d8f79f21a19eff1c9905a53f114e70e6f7965877316ba56e"
+      },
+      {
+        "id": "existing-rust-tests",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "0490ee70af4e09a1d8f79f21a19eff1c9905a53f114e70e6f7965877316ba56e"
+      },
+      {
+        "id": "recovery-handoff-oracle",
+        "passed": false,
+        "exit_code": 101,
+        "expected_test_count_matches": false,
+        "candidate_binary_sha256": "0490ee70af4e09a1d8f79f21a19eff1c9905a53f114e70e6f7965877316ba56e"
+      },
+      {
+        "id": "candidate-tui-replay",
+        "passed": true,
+        "exit_code": 0,
+        "expected_test_count_matches": true,
+        "candidate_binary_sha256": "0490ee70af4e09a1d8f79f21a19eff1c9905a53f114e70e6f7965877316ba56e"
+      }
+    ],
+    "promotion_authorized": false
+  }
+]

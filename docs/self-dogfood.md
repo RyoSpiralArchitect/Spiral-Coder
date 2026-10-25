@@ -6,7 +6,7 @@ Coder-only success cannot qualify this lane. The existing same-model
 `run_coupled_bench.py` lane and its fixtures remain separate.
 
 The first task catalog is [self-dogfood-v1](../benchmarks/self-dogfood-v1/README.md).
-It fixes a real recovery-handoff defect from a pinned baseline. New task contracts
+It targets a real recovery-handoff defect from a pinned baseline. New task contracts
 must be authored and reviewed before spending requests. Model-generated checks,
 acceptance changes, automatic retries and automatic promotion are not supported.
 The first live runs also exposed a runtime coercion conflict; the

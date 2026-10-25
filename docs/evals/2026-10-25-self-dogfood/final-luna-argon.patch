@@ -1,0 +1,42 @@
+diff --git a/docs/coupled-work-loop.md b/docs/coupled-work-loop.md
+index 702fb63..028f2f6 100644
+--- a/docs/coupled-work-loop.md
++++ b/docs/coupled-work-loop.md
+@@ -56,6 +56,14 @@ execution. A progress-policy refusal must not invent a new workspace diagnosis
+ after an Observer handoff. Earlier actual command or automatic-test failures
+ remain visible through those refusals; separate plan, approval, evidence and
+ verification gates still apply. Refusal text never supplies successful proof.
++A completed diagnosis survives native session roundtrip and the Coder/Observer
++handoff only while it remains correlated with the current failure. A newer
++failed check (including a different command), failed edit to another target, or
++failed read retains its own diagnosis obligation; absent, stale, unrelated, or
++uncorrelated reads and assistant assertions are not evidence. Reading is
++ డiagnosis only: it neither repairs the target nor verifies the original check,
++so failed-edit counts and the pending exact check remain until an actual repair
++and fresh successful verification satisfy the existing gates.
+ 
+ `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+ arguments before any tool dispatch or workspace-recovery transition. The whole
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..45d1967 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -89,6 +89,18 @@ impl RecoveryGovernor {
+         if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
+             g.stage = Some(RecoveryStage::Diagnose);
+         }
++        // Restore completed diagnosis only when the current failure still owns it.
++        // Keep this restoration scoped to the still-correlated failure; newer failures reset it.
++        g.restore_focus(messages, None, None);
++        if g.focus.is_pending() && g.focus.progress_survives(messages, None, None) {
++            g.stage = Some(if g.focus.repaired() {
++                RecoveryStage::Verify
++            } else if g.focus.observed() {
++                RecoveryStage::Fix
++            } else {
++                RecoveryStage::Diagnose
++            });
++        }
+         g
+     }
+ 

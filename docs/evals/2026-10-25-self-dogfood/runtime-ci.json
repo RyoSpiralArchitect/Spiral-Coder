@@ -1,0 +1,65 @@
+{
+  "source_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+  "checks": [
+    {
+      "name": "publish",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121110370667"
+    },
+    {
+      "name": "package",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121110293047"
+    },
+    {
+      "name": "native (macos-15-intel, x86_64-apple-darwin, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108917160"
+    },
+    {
+      "name": "native (macos-15, aarch64-apple-darwin, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108917148"
+    },
+    {
+      "name": "native (ubuntu-22.04, x86_64-unknown-linux-gnu, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108917113"
+    },
+    {
+      "name": "native (windows-2022, x86_64-pc-windows-msvc, spiral-coder.exe)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108917107"
+    },
+    {
+      "name": "native (ubuntu-22.04-arm, aarch64-unknown-linux-gnu, spiral-coder)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108917105"
+    },
+    {
+      "name": "checks (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412498/job/121108898804"
+    },
+    {
+      "name": "checks (macos-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412498/job/121108898717"
+    },
+    {
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40173412502/job/121108898637"
+    }
+  ]
+}

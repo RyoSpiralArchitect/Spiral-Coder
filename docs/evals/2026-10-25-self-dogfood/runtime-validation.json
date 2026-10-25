@@ -1,0 +1,40 @@
+{
+  "source_commit": "f4f9d812bd63418316ad82f07b03c56ed822c864",
+  "rust_unit": {
+    "passed": 889,
+    "failed": 0,
+    "ignored": 1,
+    "log_sha256": "fc8f97cdf5042f6c4c85c462b9cf8c9224a7a52a4842e53879c860821d7cda2c"
+  },
+  "rust_integration": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "log_sha256": "fc8f97cdf5042f6c4c85c462b9cf8c9224a7a52a4842e53879c860821d7cda2c"
+  },
+  "self_dogfood_python": {
+    "passed": 22,
+    "failed": 0,
+    "log_sha256": "7ee09556a8907d7c7e4fbf6fb1aa3f368621bb8de15a11d41d2c9bf01583fe12"
+  },
+  "tui_replay": {
+    "summary": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "passed_ids": [
+        "pane-prefs-observer-suggestion",
+        "repo-map-fallback-observer-suggestion",
+        "pane-prefs-observer-contract",
+        "observer-bounded-file-range",
+        "single-tool-rejection-observer",
+        "closeout-action-rejection-observer",
+        "declared-source-repair-handoff-observer"
+      ],
+      "failed_ids": []
+    },
+    "report_sha256": "4c7b5d87740952b7c35aec4461d98d2fc170e298aac8207c27b90f8a1706100d"
+  },
+  "ci": "runtime-ci.json",
+  "note": "Checks validate the runtime/driver implementation, not candidate repair quality."
+}
