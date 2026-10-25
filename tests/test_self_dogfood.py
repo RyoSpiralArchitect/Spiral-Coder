@@ -105,6 +105,10 @@ class LaneTests(unittest.TestCase):
         self.assertEqual([env["OPENAI_API_KEY"], env["GEMINI_API_KEY"]], secrets)
         self.assertNotIn("fixture-openai-key", argv)
         self.assertIn("--observer-provider", argv)
+        if "observer_max_tokens" in self.spec:
+            self.assertEqual(argv[argv.index("--observer-max-tokens") + 1], str(self.spec["observer_max_tokens"]))
+        else:
+            self.assertNotIn("--observer-max-tokens", argv)
         (workspace / "src/recovery.rs").write_text("fixed by candidate\n")
         if commit_candidate:
             subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@localhost", "commit", "-qam", "candidate commit"], cwd=workspace, check=True, stdout=subprocess.PIPE)
@@ -116,7 +120,7 @@ class LaneTests(unittest.TestCase):
         roles = {}
         for name, provider, model, origin in [("coder", "openai", "fixture-coder", "https://api.openai.com"), ("observer", "gemini", "fixture-observer", "https://generativelanguage.googleapis.com")]:
             roles[name] = {"provider": provider, "transport": "openai-compatible", "model": model, "endpoint_origin": origin,
-                           "temperature": 0.1 if name == "coder" else 0.2, "max_tokens": 4096 if name == "coder" else 1200, "timeout_seconds": 10}
+                           "temperature": 0.1 if name == "coder" else 0.2, "max_tokens": self.spec["max_tokens"] if name == "coder" else self.spec.get("observer_max_tokens", min(self.spec["max_tokens"], 1200)), "timeout_seconds": 10}
         actions = [{"tool": "patch_file", "executed": True, "succeeded": True, "result_step": 1},
                    {"tool": "exec", "executed": True, "succeeded": True, "arguments": {"command": self.spec["native_checks"][0]}, "result_step": 2},
                    {"tool": "done", "executed": True, "result": "OK: done", "arguments": {"remaining_acceptance": []}, "result_step": 3}]
@@ -161,6 +165,25 @@ class LaneTests(unittest.TestCase):
         self.assertEqual(result["request_roles"], {"coder": 1, "observer": 1})
         with self.assertRaisesRegex(ValueError, "Assessment already"):
             self.assess(ran["run_receipt_sha256"])
+
+    def test_explicit_observer_token_budget_is_independent_of_coder_budget(self):
+        self.spec.update(observer_max_tokens=8192, max_tokens=1024)
+        write_json(self.inputs / "task.json", self.spec)
+        self.prepare()
+        ran = self.execute()
+        result = self.assess(ran["run_receipt_sha256"])
+        self.assertTrue(result["qualified_candidate"], result["gates"])
+        receipt = read_json(self.out / "assessment-001.json")
+        self.assertEqual(receipt["native_roles"]["observer"]["max_tokens"], 8192)
+        self.assertEqual(receipt["native_roles"]["coder"]["max_tokens"], 1024)
+
+    def test_explicit_observer_token_budget_rejects_blank_noninteger_and_out_of_range(self):
+        for value in ("", " ", "8192", None, True, 0, -1, 65537):
+            with self.subTest(value=value):
+                task = copy.deepcopy(self.spec)
+                task["observer_max_tokens"] = value
+                with self.assertRaisesRegex(ValueError, "observer_max_tokens must be 1..65536"):
+                    contracts.validate(task)
 
     def test_coder_only_completion_is_not_heterogeneous_qualification(self):
         self.prepare()

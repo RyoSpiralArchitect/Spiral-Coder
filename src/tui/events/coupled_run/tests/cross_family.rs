@@ -6,6 +6,15 @@ fn sse(content: serde_json::Value) -> String {
 
 #[tokio::test]
 async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
+    assert_cross_family_run(None, false).await;
+}
+
+#[tokio::test]
+async fn explicit_observer_output_cap_reaches_initial_repair_and_receipts() {
+    assert_cross_family_run(Some(8192), true).await;
+}
+
+async fn assert_cross_family_run(observer_max_tokens: Option<u32>, repair: bool) {
     let coder_server = MockServer::start();
     let observer_server = MockServer::start();
     let initial = coder_server.mock(|when, then| {
@@ -17,11 +26,33 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
             .body(sse(json!({"choices":[{"delta":{"content":"The inspection remains unfinished."},"finish_reason":"stop"}]})));
     });
     let done_args = json!({"summary":"inspection complete: note.txt contains retained evidence", "completed_acceptance":["inspection complete"], "remaining_acceptance":[], "acceptance_evidence":[{"criterion":"inspection complete","command":"read_file note.txt","evidence":"retained evidence"}]});
+    let effective_observer_max = observer_max_tokens.unwrap_or(1024);
+    let initial_observer = repair.then(|| {
+        observer_server.mock(|when, then| {
+            when.method(POST)
+                .path("/chat/completions")
+                .header("authorization", "Bearer observer-secret")
+                .json_body_partial(
+                    json!({"max_tokens":effective_observer_max,"temperature":0.2}).to_string(),
+                )
+                .matches(|req| {
+                    !String::from_utf8_lossy(req.body.as_deref().unwrap_or_default())
+                        .contains("[Observer action repair:")
+                });
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(sse(
+                    json!({"choices":[{"delta":{"content":""},"finish_reason":"length"}]}),
+                ));
+        })
+    });
     let observer = observer_server.mock(|when, then| {
-        when.method(POST).path("/chat/completions")
+        let when = when.method(POST).path("/chat/completions")
             .header("authorization", "Bearer observer-secret")
             .body_contains("mistral-large-4")
-            .body_contains("intervention mode");
+            .body_contains("intervention mode")
+            .json_body_partial(json!({"max_tokens":effective_observer_max,"temperature":0.2}).to_string());
+        if repair { when.body_contains("[Observer action repair:"); }
         let advice = json!({"summary":"Finish from retained native proof now.",
             "primary_blocker":"missing_verification", "response_contract":{"required":true,"focus_axes":["correctness"]},
             "suggestions":[{"kind":"done","reason":"Finish from retained native proof now.","confidence":0.95,"suggested_tool":"done","suggested_args":done_args,"based_on":["execution_evidence"]}]});
@@ -70,6 +101,8 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
         "coder-secret",
         "--timeout-seconds",
         "3",
+        "--max-tokens",
+        "1024",
     ])
     .unwrap();
     let coder = cli.common.to_partial_config().resolve().unwrap();
@@ -85,7 +118,7 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
         tool_root: root.clone(),
         prompt_file: prompt,
         out_dir: output.clone(),
-        max_requests: 6,
+        max_requests: 6 + usize::from(repair),
         seed_session: Some(seed),
         without_observer: false,
         observer: roles::ObserverArgs::default(),
@@ -102,6 +135,7 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
                 roles::ResolvedRoles {
                     coder,
                     observer: Some(obs),
+                    observer_max_tokens,
                 },
             ),
         ),
@@ -110,6 +144,9 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
     .unwrap()
     .unwrap();
     initial.assert_hits(4);
+    if let Some(first) = initial_observer {
+        first.assert_hits(1);
+    }
     observer.assert_hits(1);
     continuation.assert_hits(1);
     let report: serde_json::Value =
@@ -117,12 +154,30 @@ async fn distinct_role_transports_share_one_cap_and_keep_native_proof() {
     assert_eq!(report["completed"], true, "{report:#}");
     assert_eq!(report["same_model_both_roles"], false);
     assert_eq!(report["coder_chunk_requests"], 4);
-    assert_eq!(report["role_requests"], json!({"coder":5,"observer":1}));
+    assert_eq!(
+        report["role_requests"],
+        json!({"coder":5,"observer":1 + usize::from(repair)})
+    );
     assert_eq!(report["roles"]["coder"]["model"], "gpt-5.6-luna");
     assert_eq!(report["roles"]["observer"]["model"], "mistral-large-4");
     assert_eq!(report["roles"]["observer"]["transport"], "mistral");
-    assert_eq!(report["work"]["request_limit"], 6);
-    assert_eq!(report["work"]["requests"].as_array().unwrap().len(), 6);
+    assert_eq!(report["roles"]["coder"]["max_tokens"], 1024);
+    assert_eq!(
+        report["roles"]["observer"]["max_tokens"],
+        effective_observer_max
+    );
+    assert_eq!(report["work"]["request_limit"], 6 + usize::from(repair));
+    assert_eq!(
+        report["work"]["requests"].as_array().unwrap().len(),
+        6 + usize::from(repair)
+    );
+    let trace = std::fs::read_to_string(output.join("trace.jsonl")).unwrap();
+    let config: serde_json::Value = trace
+        .lines()
+        .map(|line| serde_json::from_str::<serde_json::Value>(line).unwrap())
+        .find(|event| event["event"] == "agent_config")
+        .unwrap();
+    assert_eq!(config["data"]["roles"], report["roles"]);
     assert!(!report.to_string().contains("coder-secret"));
     assert!(!report.to_string().contains("observer-secret"));
     assert!(!root.join(".spiral-coder").exists());

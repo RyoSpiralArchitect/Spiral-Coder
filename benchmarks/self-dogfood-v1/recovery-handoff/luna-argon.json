@@ -128,5 +128,6 @@
   },
   "required_changed_paths": [
     "docs/coupled-work-loop.md"
-  ]
+  ],
+  "observer_max_tokens": 8192
 }

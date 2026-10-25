@@ -125,6 +125,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     );
     app.coder_realize_preset = agent::RealizePreset::Off;
     app.coder_chunk_requests = args.coder_chunk_requests;
+    app.observer_assist_max_tokens = roles.observer_max_tokens;
     if args.without_observer {
         app.coder_chunk_reserve = 0;
     }

@@ -27,11 +27,15 @@ pub(crate) struct ObserverArgs {
     /// Name of the Observer credential variable, never the secret itself.
     #[arg(long = "observer-api-key-env", id = "observer_api_key_env", requires_all = ["observer_provider", "observer_model"])]
     pub api_key_env: Option<String>,
+    /// Explicit Observer output cap (1..65536), independent of the Coder cap.
+    #[arg(long = "observer-max-tokens", id = "observer_max_tokens", value_parser = clap::value_parser!(u32).range(1..=65536), requires_all = ["observer_provider", "observer_model"])]
+    pub max_tokens: Option<u32>,
 }
 
 pub(crate) struct ResolvedRoles {
     pub coder: RunConfig,
     pub observer: Option<RunConfig>,
+    pub observer_max_tokens: Option<u32>,
 }
 
 #[derive(Debug, Serialize)]
@@ -55,10 +59,12 @@ impl ResolvedRoles {
     pub(crate) fn receipts(&self) -> RoleReceipts {
         RoleReceipts {
             coder: receipt(&self.coder),
-            observer: self
-                .observer
-                .as_ref()
-                .map(|cfg| receipt(&super::super::observer_request::next_action_config(cfg))),
+            observer: self.observer.as_ref().map(|cfg| {
+                receipt(&super::super::observer_request::next_action_config(
+                    cfg,
+                    self.observer_max_tokens,
+                ))
+            }),
         }
     }
 
@@ -105,7 +111,8 @@ fn resolve_with_env(
     let explicit = args.provider.is_some()
         || args.model.is_some()
         || args.base_url.is_some()
-        || args.api_key_env.is_some();
+        || args.api_key_env.is_some()
+        || args.max_tokens.is_some();
     ensure!(
         !without_observer || !explicit,
         "Observer configuration conflicts with --without-observer"
@@ -114,6 +121,7 @@ fn resolve_with_env(
         return Ok(ResolvedRoles {
             coder,
             observer: None,
+            observer_max_tokens: None,
         });
     }
     if !explicit {
@@ -122,6 +130,7 @@ fn resolve_with_env(
         return Ok(ResolvedRoles {
             coder,
             observer: Some(observer),
+            observer_max_tokens: None,
         });
     }
     let preset: ProviderPreset = args
@@ -135,6 +144,11 @@ fn resolve_with_env(
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .context("explicit Observer configuration requires a nonempty --observer-model")?;
+    ensure!(
+        args.max_tokens
+            .is_none_or(|limit| (1..=65536).contains(&limit)),
+        "observer-max-tokens must be 1..65536"
+    );
     let base_url = match args.base_url.as_deref() {
         Some(value) => {
             ensure!(
@@ -222,6 +236,7 @@ fn resolve_with_env(
     Ok(ResolvedRoles {
         coder,
         observer: Some(observer),
+        observer_max_tokens: args.max_tokens,
     })
 }
 

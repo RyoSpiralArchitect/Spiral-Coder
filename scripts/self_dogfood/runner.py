@@ -128,6 +128,8 @@ def command_and_env(out, spec):
                "--observer-provider", observer["provider"], "--observer-model", observer["model"],
                "--observer-base-url", PROVIDERS[observer["provider"]][1],
                "--observer-api-key-env", PROVIDERS[observer["provider"]][0]]
+    if "observer_max_tokens" in spec:
+        command.extend(["--observer-max-tokens", str(spec["observer_max_tokens"])])
     return command, env, secrets
 
 

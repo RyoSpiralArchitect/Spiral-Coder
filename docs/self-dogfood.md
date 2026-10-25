@@ -9,6 +9,9 @@ The first task catalog is [self-dogfood-v1](../benchmarks/self-dogfood-v1/README
 It fixes a real recovery-handoff defect from a pinned baseline. New task contracts
 must be authored and reviewed before spending requests. Model-generated checks,
 acceptance changes, automatic retries and automatic promotion are not supported.
+The first live runs also exposed a runtime coercion conflict; the
+[follow-up edit safety contract](followup-edit-safety.md) preserves diagnostic
+reads and authored local edits while retaining completion and verification gates.
 
 ## Prepare, run, assess
 
@@ -93,7 +96,8 @@ Version 1 JSON contains these fields:
 | `coder_chunk_requests` | Initial Coder wire slice, including compatibility retries; 4 through `max_requests - 2`. It reserves capacity but does not guarantee Observer participation. |
 | `wall_seconds` | Live process-tree wall cap, at most 3,600 seconds. |
 | `evaluation_wall_seconds` | Combined check cap for each baseline, reference or candidate assessment, at most 3,600 seconds. |
-| `timeout_seconds`, `max_tokens`, `temperature` | Coder request configuration. Observer next-action configuration uses temperature 0.2 and at most 1,200 tokens, retaining the timeout. |
+| `timeout_seconds`, `max_tokens`, `temperature` | Coder request configuration. Observer next-action configuration retains the timeout and uses temperature 0.2. |
+| `observer_max_tokens` | Optional independent Observer output-token budget, integer 1–65,536. If omitted, the default remains `min(max_tokens, 1200)`. |
 | `checks` | Ordered independent argv checks; build, regression and baseline-failing improvement checks are required, at most eight. |
 | `probes`, `reference` | Operator-owned `{source, target, mode}` overlays; `mode` is `append` or `replace`. Reference targets must be editable paths. |
 
@@ -143,7 +147,12 @@ in the durable ledger. The report must match the declared provider/model,
 endpoint origin, transport and effective role configuration, and agree with the
 ledger's task, workspace, limit and request counts. Role configuration receipts
 are not captures of every transformed HTTP field: provider adapters can further
-normalize or omit sampling parameters.
+normalize or omit sampling parameters. An explicit `observer_max_tokens` is
+passed as `coupled-run --observer-max-tokens` for both the initial assist and
+repair; it may exceed the Coder token budget. The exact-role gate checks the
+explicit limit, or the original default when absent. These are configured output
+limits, not measured token use or a guarantee that a provider supplies that many
+tokens; provider-specific transformations and reported usage remain separate.
 
 The raw manifest hashes frozen authority, native receipts, candidate artifacts,
 check outputs and the assessment. All candidate files, including ignored and

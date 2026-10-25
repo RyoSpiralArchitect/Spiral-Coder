@@ -18,7 +18,7 @@ def bounded_int(value, low, high, label):
 
 
 def validate(spec):
-    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "temperature"}
+    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature"}
     if set(spec) - allowed:
         raise ValueError("Unknown task contract fields")
     if spec.get("version") != 1:
@@ -47,6 +47,8 @@ def validate(spec):
     bounded_int(spec["evaluation_wall_seconds"], 1, 3600, "evaluation_wall_seconds")
     bounded_int(spec["timeout_seconds"], 1, 600, "timeout_seconds")
     bounded_int(spec["max_tokens"], 1, 65536, "max_tokens")
+    if "observer_max_tokens" in spec:
+        bounded_int(spec["observer_max_tokens"], 1, 65536, "observer_max_tokens")
     if type(spec.get("temperature")) not in (int, float) or not 0 <= spec["temperature"] <= 2:
         raise ValueError("temperature must be 0..2")
     if set(spec.get("roles", {})) != {"coder", "observer"}:

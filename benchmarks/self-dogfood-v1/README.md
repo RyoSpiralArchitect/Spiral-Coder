@@ -33,8 +33,8 @@ The two fixed configurations are:
 | `argon-large.json` | Gemini `gemini-4-argon` | Mistral `mistral-large-4` | 32 | 8 |
 
 Each episode has a 1,200-second wall limit, 90-second provider timeout, and
-32,768-token Coder response ceiling. The native Observer helper retains its
-1,200-token ceiling and temperature 0.2. Luna retains the existing provider adapter's
+32,768-token Coder response ceiling. These specs explicitly allocate 8,192 tokens to the Observer at temperature
+0.2; the runtime default remains at most 1,200 tokens when no override is set. Luna retains the existing provider adapter's
 `reasoning_effort=none` behavior; this is not a reasoning-enabled comparison.
 Both roles must actually make a native provider request. Declaring two models
 alone cannot qualify a result. These are two feasibility episodes, not a model

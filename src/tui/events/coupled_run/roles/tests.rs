@@ -77,6 +77,52 @@ fn cross_family_resolution_uses_only_the_observers_credential_source() {
 }
 
 #[test]
+fn explicit_observer_output_limit_is_independent_and_validated_before_credentials() {
+    for limit in [1, 8192, 65536] {
+        let args = ObserverArgs {
+            max_tokens: Some(limit),
+            ..mistral()
+        };
+        let roles =
+            resolve_with_env(coder(), &args, false, |_| Some("observer-secret".into())).unwrap();
+        assert_eq!(roles.observer_max_tokens, Some(limit));
+        let receipt = serde_json::to_value(roles.receipts()).unwrap();
+        assert_eq!(receipt["coder"]["max_tokens"], 2048);
+        assert_eq!(receipt["observer"]["max_tokens"], limit);
+        assert_eq!(receipt["observer"]["temperature"], 0.2);
+    }
+    for args in [
+        ObserverArgs {
+            max_tokens: Some(0),
+            ..mistral()
+        },
+        ObserverArgs {
+            max_tokens: Some(65537),
+            ..mistral()
+        },
+        ObserverArgs {
+            max_tokens: Some(8192),
+            ..Default::default()
+        },
+    ] {
+        assert!(resolve_with_env(coder(), &args, false, |_| panic!(
+            "invalid configuration looked up credentials"
+        ))
+        .is_err());
+    }
+    assert!(resolve_with_env(
+        coder(),
+        &ObserverArgs {
+            max_tokens: Some(8192),
+            ..mistral()
+        },
+        true,
+        |_| unreachable!()
+    )
+    .is_err());
+}
+
+#[test]
 fn explicit_key_name_and_gemini_aliases_do_not_fall_back_to_other_providers() {
     let mut args = ObserverArgs {
         provider: Some(CliProviderPreset::Gemini),
@@ -215,6 +261,8 @@ fn cli_observer_flags_do_not_collide_with_global_coder_flags() {
         "mistral-large-4",
         "--coder-chunk-requests",
         "4",
+        "--observer-max-tokens",
+        "8192",
     ]);
     let cli = crate::Cli::try_parse_from(argv).unwrap();
     assert!(matches!(
@@ -222,7 +270,25 @@ fn cli_observer_flags_do_not_collide_with_global_coder_flags() {
         Some(CliProviderPreset::OpenAi)
     ));
     assert_eq!(cli.common.model.as_deref(), Some("gpt-5.6-luna"));
+    assert!(
+        matches!(cli.command, Some(crate::Command::CoupledRun(args)) if args.observer.max_tokens == Some(8192))
+    );
     let mut incomplete = base.to_vec();
     incomplete.extend(["--observer-provider", "mistral"]);
     assert!(crate::Cli::try_parse_from(incomplete).is_err());
+    let mut missing_roles = base.to_vec();
+    missing_roles.extend(["--observer-max-tokens", "8192"]);
+    assert!(crate::Cli::try_parse_from(missing_roles).is_err());
+    for invalid in ["0", "65537", "-1"] {
+        let mut args = base.to_vec();
+        args.extend([
+            "--observer-provider",
+            "mistral",
+            "--observer-model",
+            "mistral-large-4",
+            "--observer-max-tokens",
+            invalid,
+        ]);
+        assert!(crate::Cli::try_parse_from(args).is_err());
+    }
 }

@@ -819,7 +819,12 @@ with `coder` and nullable `observer` objects: `provider`, `transport`, `model`,
 origin excludes user information, path, query and fragment. Credential values
 and credential variable names are not part of those role receipts.
 Observer sampling uses the shared next-action configuration helper: temperature
-0.2 and `min(configured max_tokens, 1200)` for initial assistance and repair.
+0.2 and `min(configured max_tokens, 1200)` by default. Optional
+`--observer-max-tokens` (1..65536, with explicit Observer provider/model) replaces
+that default independently of the Coder's cap, for initial assistance and repair.
+`ResolvedRoles.observer_max_tokens` and `App.observer_assist_max_tokens` carry this
+ephemeral override; the actual effective value is retained in role receipts.
+It does not add persisted TUI preferences or change the shared request cap.
 `same_model_both_roles` compares actual transport, model and full endpoint;
 disabled Observer is false. Report `role_requests` separately counts actual
 Coder and Observer wire attempts; configuration alone is not participation.

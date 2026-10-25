@@ -234,7 +234,7 @@ async fn start_request(
         .messages
         .push(Message::new_streaming(Role::Assistant));
 
-    let cfg = next_action_config(&app.observer_cfg);
+    let cfg = next_action_config(&app.observer_cfg, app.observer_assist_max_tokens);
     let lang = app.lang.clone();
     let handle = request_stream::spawn(
         tx,
@@ -301,9 +301,12 @@ Focus only on the next concrete step.\n\n\
 }
 
 /// The effective next-action settings are also used by coupled run receipts.
-pub(super) fn next_action_config(cfg: &crate::config::RunConfig) -> crate::config::RunConfig {
+pub(super) fn next_action_config(
+    cfg: &crate::config::RunConfig,
+    max_tokens: Option<u32>,
+) -> crate::config::RunConfig {
     let mut cfg = cfg.clone();
     cfg.temperature = 0.2;
-    cfg.max_tokens = cfg.max_tokens.min(1200);
+    cfg.max_tokens = max_tokens.unwrap_or_else(|| cfg.max_tokens.min(1200));
     cfg
 }

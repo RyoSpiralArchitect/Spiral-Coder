@@ -3,6 +3,14 @@ use crate::streaming::ToolCallData;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
+#[path = "followup_edit_safety.rs"]
+mod edit_safety;
+use edit_safety::{successful_read_contents, ReadObservation};
+
+#[cfg(test)]
+#[path = "followup_edit_safety_tests.rs"]
+mod edit_safety_tests;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum FollowupKind {
     Docs,
@@ -21,16 +29,24 @@ pub(super) fn coerce_existing_followup_tool_call(
     messages: &[Value],
     tc: &ToolCallData,
     root_user_text: &str,
+    recovery_stage: Option<super::RecoveryStage>,
 ) -> Option<(ToolCallData, String, String)> {
-    if !is_followup_candidate_tool(tc) {
+    if !is_followup_candidate_tool(tc)
+        || edit_safety::preserve_diagnosis_or_closeout(tc, recovery_stage)
+    {
         return None;
     }
 
     let reads = successful_read_contents(messages);
     let mutations = successful_literal_mutations(messages);
     let requirement = next_followup_requirement(messages, root_user_text, &reads, &mutations)?;
-    let rewritten = if let Some(body) = reads.get(requirement.file_path.as_str()) {
-        synthesize_followup_patch(&requirement, body)?
+    if edit_safety::is_authored_followup_edit(tc, &requirement.file_path) {
+        return None;
+    }
+    let rewritten = if let Some(read) = reads.get(requirement.file_path.as_str()) {
+        // Partial observations can guide an authored localized edit, but cannot
+        // become a whole-file SEARCH anchor or force another truncated read.
+        synthesize_followup_patch(&requirement, read.snapshot.as_deref()?)?
     } else {
         ToolCallData {
             thought_signature: None,
@@ -81,7 +97,7 @@ pub(super) fn matches_required_existing_followup(
         return false;
     }
     match tc.name.as_str() {
-        "read_file" => !reads.contains_key(path.as_str()),
+        "read_file" => true,
         "patch_file" | "apply_diff" | "write_file" => reads.contains_key(path.as_str()),
         _ => false,
     }
@@ -110,7 +126,7 @@ Do not run goal checks or finish until this follow-up path contains `{}`.",
 fn next_followup_requirement(
     messages: &[Value],
     root_user_text: &str,
-    reads: &BTreeMap<String, String>,
+    reads: &BTreeMap<String, ReadObservation>,
     mutations: &BTreeMap<String, String>,
 ) -> Option<FollowupRequirement> {
     let docs_path = docs_followup_path(root_user_text);
@@ -357,12 +373,12 @@ fn missing_followup_requirements(
 
 fn followup_requirement_is_satisfied(
     requirement: &FollowupRequirement,
-    reads: &BTreeMap<String, String>,
+    reads: &BTreeMap<String, ReadObservation>,
     mutations: &BTreeMap<String, String>,
 ) -> bool {
     reads
         .get(requirement.file_path.as_str())
-        .is_some_and(|body| body.contains(requirement.missing_literal.as_str()))
+        .is_some_and(|read| read.body.contains(requirement.missing_literal.as_str()))
         || mutations
             .get(requirement.file_path.as_str())
             .is_some_and(|body| body.contains(requirement.missing_literal.as_str()))
@@ -372,70 +388,6 @@ fn has_successful_primary_source_mutation(mutations: &BTreeMap<String, String>) 
     mutations
         .keys()
         .any(|path| path.starts_with("src/") && path.ends_with(".rs"))
-}
-
-fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, String> {
-    let mut pending: BTreeMap<String, String> = BTreeMap::new();
-    let mut out = BTreeMap::new();
-
-    for msg in messages {
-        match msg.get("role").and_then(|v| v.as_str()).unwrap_or("") {
-            "assistant" => {
-                let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
-                    continue;
-                };
-                for tc in tool_calls {
-                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-                    let name = tc
-                        .get("function")
-                        .and_then(|v| v.get("name"))
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .trim();
-                    if id.is_empty() || name != "read_file" {
-                        continue;
-                    }
-                    let path = tc
-                        .get("function")
-                        .and_then(|v| v.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                        .and_then(|value| {
-                            value
-                                .get("path")
-                                .and_then(|v| v.as_str())
-                                .map(str::to_string)
-                        })
-                        .unwrap_or_default();
-                    if !path.trim().is_empty() {
-                        pending.insert(id.to_string(), path);
-                    }
-                }
-            }
-            "tool" => {
-                let tool_call_id = msg
-                    .get("tool_call_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .trim();
-                let Some(path) = pending.remove(tool_call_id) else {
-                    continue;
-                };
-                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if content.starts_with("ERROR ") || content.starts_with("GOVERNOR BLOCKED") {
-                    continue;
-                }
-                let body = content
-                    .split_once('\n')
-                    .map(|(_, rest)| rest.to_string())
-                    .unwrap_or_default();
-                out.insert(path, body);
-            }
-            _ => {}
-        }
-    }
-
-    out
 }
 
 fn successful_literal_mutations(messages: &[Value]) -> BTreeMap<String, String> {
@@ -572,6 +524,14 @@ mod tests {
     use crate::streaming::ToolCallData;
     use serde_json::json;
 
+    fn native_read(path: &str, body: &str) -> String {
+        format!(
+            "[{path}] ({} lines, {} bytes)\n{body}",
+            body.lines().count(),
+            body.len()
+        )
+    }
+
     #[test]
     fn coerces_missing_docs_followup_to_read_docs_first() {
         let messages = vec![json!({
@@ -589,6 +549,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json too.",
+            None,
         )
         .expect("docs followup coercion");
 
@@ -611,7 +572,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.spiral-coder/tui_replay.json] (10 lines, 120 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":native_read(".spiral-coder/tui_replay.json", "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n")
             }),
             json!({
                 "role":"tool",
@@ -629,6 +590,7 @@ mod tests {
             &messages,
             &tc,
             "Update .spiral-coder/tui_replay.json too.",
+            None,
         )
         .expect("replay followup coercion");
 
@@ -657,6 +619,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/state-schema.md and .spiral-coder/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
+            None,
         )
         .expect("runtime eval followup coercion");
 
@@ -678,7 +641,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_eval",
-                "content":"[.spiral-coder/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
+                "content":native_read(".spiral-coder/runtime_eval.json", "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n")
             }),
             json!({
                 "role":"tool",
@@ -696,6 +659,7 @@ mod tests {
             &messages,
             &tc,
             "Update .spiral-coder/runtime_eval.json to include `src/tui/agent/session_bridge.rs`.",
+            None,
         )
         .expect("runtime eval patch followup");
 
@@ -736,7 +700,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_eval",
-                "content":"[.spiral-coder/runtime_eval.json] (6 lines, 80 bytes)\n{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n"
+                "content":native_read(".spiral-coder/runtime_eval.json", "{\n  \"version\": 1,\n  \"paths\": [\n    \"src/tui/agent/task_harness.rs\"\n  ]\n}\n")
             }),
         ];
 
@@ -777,7 +741,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_docs",
-                "content":"[docs/runtime-architecture.md] (8 lines, 120 bytes)\n# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n"
+                "content":native_read("docs/runtime-architecture.md", "# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n")
             }),
         ];
         let tc = ToolCallData {
@@ -791,6 +755,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
+            None,
         )
         .expect("prompt-driven docs followup");
 
@@ -835,6 +800,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
+            None,
         )
         .expect("docs followup from repeated patch");
 
@@ -872,7 +838,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_docs",
-                "content":"[docs/runtime-architecture.md] (8 lines, 120 bytes)\n# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n"
+                "content":native_read("docs/runtime-architecture.md", "# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n")
             }),
             json!({
                 "role":"assistant",
@@ -898,7 +864,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.spiral-coder/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":native_read(".spiral-coder/tui_replay.json", "{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n")
             }),
         ];
         let tc = ToolCallData {
@@ -912,6 +878,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
+            None,
         )
         .expect("replay followup after docs patch");
 
@@ -950,7 +917,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_docs",
-                "content":"[docs/runtime-architecture.md] (8 lines, 120 bytes)\n# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n"
+                "content":native_read("docs/runtime-architecture.md", "# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n")
             }),
             json!({
                 "role":"assistant",
@@ -977,6 +944,7 @@ mod tests {
             &messages,
             &tc,
             "Update docs/runtime-architecture.md and .spiral-coder/tui_replay.json to include `src/tui/review_panel.rs`.",
+            None,
         )
         .expect("replay read followup after docs patch");
 
@@ -1011,7 +979,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_docs",
-                "content":"[docs/runtime-architecture.md] (8 lines, 120 bytes)\n# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n"
+                "content":native_read("docs/runtime-architecture.md", "# Runtime architecture\n\n- `src/tui/events.rs`\n- `src/tui/app.rs`\n")
             }),
             json!({
                 "role":"assistant",
@@ -1037,7 +1005,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_replay",
-                "content":"[.spiral-coder/tui_replay.json] (6 lines, 80 bytes)\n{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n"
+                "content":native_read(".spiral-coder/tui_replay.json", "{\n  \"paths\": [\n    \"src/tui/events.rs\"\n  ]\n}\n")
             }),
         ];
         let tc = ToolCallData {
@@ -1121,6 +1089,7 @@ mod tests {
             &messages,
             &tc,
             "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
+            None,
         )
         .expect("done should be redirected to pending followup");
 
@@ -1156,7 +1125,7 @@ mod tests {
             json!({
                 "role":"tool",
                 "tool_call_id":"call_read_docs",
-                "content":"[docs/state-schema.md] (4 lines, 80 bytes)\n# State schema\n\n- `src/tui/agent/session_bridge.rs`\n"
+                "content":native_read("docs/state-schema.md", "# State schema\n\n- `src/tui/agent/session_bridge.rs`\n")
             }),
             json!({
                 "role":"assistant",
@@ -1183,6 +1152,7 @@ mod tests {
             &messages,
             &tc,
             "Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Final answer must include `src/tui/agent/merge_approval.rs`.",
+            None,
         )
         .expect("runtime eval followup should be next");
 

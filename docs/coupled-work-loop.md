@@ -168,7 +168,8 @@ spiral --provider openai --model gpt-5.6-luna coupled-run \
   --tool-root /path/to/isolated-checkout --prompt-file /path/to/task.txt \
   --out-dir /path/to/fresh-external-run --max-requests 24 \
   --observer-provider mistral --observer-model mistral-large-4 \
-  --observer-api-key-env MISTRAL_API_KEY --coder-chunk-requests 10
+  --observer-api-key-env MISTRAL_API_KEY --observer-max-tokens 8192 \
+  --coder-chunk-requests 10
 ```
 
 Explicit Observer configuration resolves only its own vendor credential variable
@@ -181,12 +182,19 @@ settings, missing Observer credentials and conflicts with `--without-observer`
 fail before network I/O or creating run output. Credential values are not CLI
 Observer arguments or role receipts.
 
+`--observer-max-tokens` optionally sets an explicit output cap from 1 through
+65536, requiring the explicit Observer provider/model pair. The value is
+independent of the Coder's `--max-tokens`; it applies to both initial assistance
+and the single permitted repair. Without this option, the existing default is
+`min(Coder max_tokens, 1200)`. A larger cap can accommodate provider reasoning
+before visible JSON, but cannot guarantee valid advice or add wire requests.
+
 `report.json` and the trace's `agent_config` record `roles.coder` and
 `roles.observer` (null when disabled), each with resolved `provider`, `transport`,
 `model`, `endpoint_origin`, `temperature`, `max_tokens` and `timeout_seconds`.
 Only the URL origin is retained, excluding custom paths and secrets.
-Sampling fields include the actual next-action Observer override (temperature
-0.2 and at most 1200 output tokens, also for repair); provider compatibility can
+Sampling fields include the actual next-action Observer settings (temperature
+0.2 and the explicit output cap or existing default, also for repair); provider compatibility can
 transform or omit those options on the wire. `same_model_both_roles` is true only
 when both roles have identical transport, model and complete endpoint identity;
 it is false for disabled Observer. `role_requests` counts actual wire receipts

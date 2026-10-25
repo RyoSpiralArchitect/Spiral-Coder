@@ -115,7 +115,7 @@ def assess(args):
             "transport": role["provider"] if role["provider"] in ("mistral", "anthropic") else "openai-compatible",
             "endpoint_origin": f"{url.scheme}://{url.netloc}",
             **{k: spec[k] for k in ("temperature", "max_tokens", "timeout_seconds")}}
-    expected_roles["observer"].update(temperature=0.2, max_tokens=min(spec["max_tokens"], 1200))
+    expected_roles["observer"].update(temperature=0.2, max_tokens=spec.get("observer_max_tokens", min(spec["max_tokens"], 1200)))
     role_match = report.get("roles") == expected_roles
     actions = (report.get("execution") or {}).get("actions", [])
     edits = [a for a in actions if a.get("tool") in ("write_file", "patch_file", "apply_diff") and a.get("executed") is True and a.get("succeeded") is True]

@@ -9169,7 +9169,7 @@ Execute only the new minimal action: {}",
 
         if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
-                coerce_existing_followup_tool_call(&messages, tc, &root_user_text)
+                coerce_existing_followup_tool_call(&messages, tc, &root_user_text, recovery.stage)
             {
                 let _ = tx
                     .send(StreamToken::Delta(format!(

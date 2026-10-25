@@ -1,0 +1,12 @@
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..cf0292b 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -89,6 +89,7 @@ impl RecoveryGovernor {
+         if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
+             g.stage = Some(RecoveryStage::Diagnose);
+         }
++        g.restore_focus(messages, None, None);
+         g
+     }
+ 
