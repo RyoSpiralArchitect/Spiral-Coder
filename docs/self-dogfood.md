@@ -108,8 +108,11 @@ are applied only to the reference verifier, never to the live candidate.
 
 A check has `id`, `kind` (`build`, `regression`, `improvement`), `baseline`
 (`pass`, `fail`), `argv`, and `timeout_seconds`. A failing baseline also requires
-`baseline_failure_contains`, a list of exact diagnostic markers. Optional
-`expected_test_count` requires a completed Rust test summary with exactly that
+`baseline_failure_contains`, a nonempty list of nonblank diagnostic strings.
+Each whole string must occur verbatim in the failing log; a bare string is
+rejected rather than interpreted as individual characters. The same type
+validation applies when this optional field is supplied on a passing check.
+Optional `expected_test_count` requires a completed Rust test summary with exactly that
 many passed tests and zero failed/ignored tests for a pass. The baseline failure
 must have exactly one failed test and the remaining tests passed, with none
 ignored; `expected_baseline_failures` can explicitly freeze a different count.

@@ -88,8 +88,10 @@ def validate(spec):
             bounded_int(check["expected_baseline_failures"], 1, check.get("expected_test_count", 0), "expected_baseline_failures")
         if "expected_test_count" in check:
             bounded_int(check["expected_test_count"], 1, 100000, "expected_test_count")
-        if check["baseline"] == "fail" and (not check.get("baseline_failure_contains") or not all(isinstance(x, str) and x for x in check["baseline_failure_contains"])):
-            raise ValueError("Failing baselines need explicit failure identity strings")
+        if check["baseline"] == "fail" or "baseline_failure_contains" in check:
+            markers = check.get("baseline_failure_contains")
+            if not isinstance(markers, list) or not markers or any(not isinstance(x, str) or not x.strip() for x in markers):
+                raise ValueError("baseline_failure_contains must be a nonempty list of nonblank diagnostic strings")
         bounded_int(check["timeout_seconds"], 1, spec["evaluation_wall_seconds"], "check timeout")
     if len(ids) > 8 or not {"build", "regression", "improvement"}.issubset(c["kind"] for c in spec["checks"]):
         raise ValueError("Declare build, regression and improvement checks (up to 8)")

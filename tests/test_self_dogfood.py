@@ -341,6 +341,39 @@ class LaneTests(unittest.TestCase):
         self.assertFalse(read_json(self.out / "preflight.json")["baseline_expected"])
         self.assertFalse((self.out / "episode/started.json").exists())
 
+    def test_failure_identity_requires_a_nonempty_list_of_nonblank_strings(self):
+        for check_index in (0, 2):
+            for value in ("restores_fix", "", None, True, 1, {}, [], [""], [" "], [1], ["restore_after_read", None]):
+                with self.subTest(check_index=check_index, value=value):
+                    task = copy.deepcopy(self.spec)
+                    task["checks"][check_index]["baseline_failure_contains"] = value
+                    with self.assertRaisesRegex(ValueError, "baseline_failure_contains"):
+                        contracts.validate(task)
+
+    def test_failing_baseline_requires_failure_identity(self):
+        task = copy.deepcopy(self.spec)
+        del task["checks"][2]["baseline_failure_contains"]
+        with self.assertRaisesRegex(ValueError, "baseline_failure_contains"):
+            contracts.validate(task)
+
+    def test_unrelated_failure_with_expected_count_rejects_preflight(self):
+        self.spec["checks"][2]["baseline_failure_contains"] = ["restores_fix"]
+        write_json(self.inputs / "task.json", self.spec)
+        original = self.fake_check
+
+        def wrong(*args):
+            result = original(*args)
+            if result["exit_code"] == 101:
+                log = args[4]
+                log.write_text(log.read_text().replace("restore_after_read", "existing_proof_rejects_stale_read"))
+            return result
+
+        self.fake_check = wrong
+        with self.assertRaisesRegex(ValueError, "Baseline/reference qualification failed"):
+            self.prepare()
+        self.assertFalse(read_json(self.out / "preflight.json")["baseline_expected"])
+        self.assertFalse((self.out / "episode/started.json").exists())
+
     def test_paths_same_family_and_unknown_contracts_rejected(self):
         for mutate in [lambda s: s["editable"].append("../outside"),
                        lambda s: s["roles"]["observer"].update(provider="openai"),
