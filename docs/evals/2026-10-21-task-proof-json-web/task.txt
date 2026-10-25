@@ -1,0 +1,52 @@
+Implement repeatable --case CASE_ID selection in scripts/run_coupled_pilot.py so maintainers can rerun a failed pilot case without paying for the entire suite.
+
+Keep the change limited to scripts/run_coupled_pilot.py, tests/test_coupled_pilot.py, and the Qualification section of docs/coupled-work-loop.md.
+
+Requirements:
+1. Without --case, run all declared cases exactly as before. With one or more --case flags, run only the selected case IDs in their original suite order; repeated IDs must not run twice.
+2. Reject an unknown case ID with a clear nonzero CLI error before creating the output directory or starting any model subprocess. Preserve existing receipts and frozen fixtures/assertions/caps.
+3. Record the exact ordered selected IDs as selected_case_ids in metadata.json and summary.json for both filtered and unfiltered runs. Add offline tests for default selection, multiple/repeated selection, and unknown IDs. Document the new flag with an example.
+
+The workspace's configured Python test command is appropriate for this Python-only change. Run exactly: python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'
+Also run exactly: git diff --check
+Do not call a real provider from your own tests. Do not change the test command, fixtures, dependencies, or unrelated source. Do not commit or push.
+Before finishing, review your diff. Your final report must name the changed files, state the actual test outcomes, and disclose anything incomplete.
+
+The fixed offline acceptance oracle below checks the requested CLI behavior without network access. Run it before any edits to record the failing baseline, then after the implementation. Use native file tools for the three required artifacts. Do not modify the oracle.
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "case-selection",
+      "description": "Default and repeatable selection, early unknown-ID rejection, ordered receipt IDs, regression tests and usage documentation.",
+      "artifacts": [
+        {
+          "path": "scripts/run_coupled_pilot.py",
+          "kind": "source"
+        },
+        {
+          "path": "tests/test_coupled_pilot.py",
+          "kind": "test"
+        },
+        {
+          "path": "docs/coupled-work-loop.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py .",
+          "baseline_failure": true
+        },
+        {
+          "command": "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'"
+        },
+        {
+          "command": "git diff --check"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

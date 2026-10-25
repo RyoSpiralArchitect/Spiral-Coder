@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "created_at": "2026-10-21T01:34:49.454367+00:00",
+  "panel": "diagnostic-prefixed-baseline-regression",
+  "repository_commit": "45aec130dadd6bd99b10c9931b796d833716842f",
+  "binary_sha256": "c10863d7ef23034eb3fe604af4d24ae50f976acd70bd7d9c3d12889b265f0487",
+  "prompt_sha256": "632bb9d26475ea9bc186ce822b9f00a9ca1e2e5196801a53dab1ba42f829b911",
+  "fixture_sha256": {
+    "greet.py": "57c34475552953e3a5dd10b979af2ddd050b7ead7f9feec07beeefd014869028",
+    "test_greet.py": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+    ".spiral-coder.md": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34"
+  },
+  "models": {
+    "mistral": "mistral-small-2603",
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "request_limit": 18,
+  "wall_seconds": 600,
+  "temperature": 0,
+  "max_tokens": 2048,
+  "request_timeout_seconds": 90,
+  "same_model_both_roles": true,
+  "checks": {
+    "baseline": "Exact check fails with AssertionError before native edit",
+    "repair": "Only greet.py changes; independent original tests pass",
+    "completion": "Runtime complete, baseline and current exact proof present, authored report"
+  },
+  "claim_boundary": "New small diagnostic regression, not a matched rerun of the prior repository or JSON panels",
+  "launcher_sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c"
+}

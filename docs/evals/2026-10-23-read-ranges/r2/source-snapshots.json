@@ -1,0 +1,21 @@
+{
+  "local_root": "/Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261023-read-ranges",
+  "note": "Byte-identical copies of the scripts hashed in raw-manifest.json. The original manifest is unchanged.",
+  "files": [
+    {
+      "manifest_path": "prepare.py",
+      "retained_path": "r2/prepare.py",
+      "sha256": "9e75aec5c2a7656f0427cd888b7ccf8d1ff310051c4956893cc62a80e13968f3"
+    },
+    {
+      "manifest_path": "launch.py",
+      "retained_path": "r2/launch.py",
+      "sha256": "0868c5ff81f904c848102cf0fa39a40370ab57437d7adc4a9e053a3f5ec8318c"
+    },
+    {
+      "manifest_path": "collect-followup.py",
+      "retained_path": "r2/collect-followup.py",
+      "sha256": "64a1557abe515d299ccbf7a3f15b76d774f98beae33c72fec28478d1c4d3b7c7"
+    }
+  ]
+}

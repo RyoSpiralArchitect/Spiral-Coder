@@ -13,7 +13,10 @@ mod diagnostics;
 #[cfg(test)]
 mod diagnostics_tests;
 pub(crate) mod edit_preview;
+pub(crate) mod json_patch;
 mod json_repair;
+mod overwrite_guard;
+pub(crate) mod read_range;
 
 // ── Path safety ───────────────────────────────────────────────────────────────
 
@@ -133,7 +136,7 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
             let header = format!("[{path}] ({line_count} lines, {byte_count} bytes)\n");
             let trunc_note = if truncated {
                 let hidden = line_count.saturating_sub(shown.lines().count());
-                format!("\n[…truncated — {hidden} more lines not shown; use exec to view specific ranges]")
+                format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
             } else {
                 String::new()
             };
@@ -154,7 +157,9 @@ pub fn tool_write_file(path: &str, content: &str, base: Option<&str>) -> (String
         Err(e) => return (format!("ERROR: {e}"), true),
     };
 
-    if let Err(error) = check_preserved_write(&abs_path, content) {
+    if let Err(error) = overwrite_guard::check(&abs_path, content)
+        .and_then(|()| check_preserved_write(&abs_path, content))
+    {
         return (
             format!("ERROR: preservation check blocked write: {error}"),
             true,
@@ -223,9 +228,26 @@ pub fn tool_patch_file(
 
 fn json_spec_rewrite_hint(path: &str) -> &'static str {
     if path.ends_with(".json") {
-        "\nHint: for JSON spec edits, do not retry patch_file/apply_diff — read the file, then call write_file with the complete corrected JSON document."
+        "\nHint: use patch_file(path, json_pointer, json_value) to append one item at an array pointer such as /cases/-. For a member replacement also supply json_expected. JSON values are encoded strings; omit search/replace. Preserve existing cases. Do not rewrite a document from a truncated read."
     } else {
         ""
+    }
+}
+
+pub fn tool_patch_file_args(
+    path: &str,
+    args: &serde_json::Value,
+    base: Option<&str>,
+) -> (String, bool) {
+    let prepared = (|| -> Result<_> {
+        let abs = resolve_safe_path(path, base)?;
+        let original = std::fs::read_to_string(&abs)?;
+        let candidate = json_patch::prepare(path, &original, args)?;
+        Ok((abs, original, candidate))
+    })();
+    match prepared {
+        Ok((abs, original, candidate)) => write_patch_result(path, &abs, &original, &candidate),
+        Err(error) => (format!("ERROR: {error}"), true),
     }
 }
 
@@ -1206,7 +1228,7 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
 
     #[test]
     fn json_spec_rewrite_hint_targets_json_only() {
-        assert!(json_spec_rewrite_hint(".spiral-coder/tui_replay.json").contains("write_file"));
+        assert!(json_spec_rewrite_hint(".spiral-coder/tui_replay.json").contains("json_pointer"));
         assert!(json_spec_rewrite_hint("src/lib.rs").is_empty());
     }
 

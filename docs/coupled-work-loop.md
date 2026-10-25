@@ -1,6 +1,26 @@
 # One task through Coder and Observer
 
+The compatible streaming decoder correlates indexed fragments by their index.
+Providers that omit indices can supply explicit call IDs instead: distinct IDs
+remain distinct calls in first-seen order, including separate one-call deltas.
+Anonymous fragments after multiple calls, mixed encodings, conflicting indexed
+IDs and reused IDs across indices fail closed. Provider thought signatures stay
+with their original call and do not become execution proof. A failed coupled
+driver loop retains its incomplete report, session and spent request ledger before
+returning the error; transport failure must not disappear from an evaluation.
+
+The executor still accepts one tool per turn. Its multiple-tool rejection uses
+the normal `GOVERNOR BLOCK` display marker, so Observer rescue recognizes this
+incomplete Coder output. Recognizing the blocker does not execute a rejected call
+or relax plan, action, proof or report requirements.
+
 Coder and Observer are roles in one task. An accepted suggestion is not a completed task. The unit of qualification is the original request, its preserved artifacts, current verification, authored final report, and the total request cap.
+
+For new maintenance behavior, [explicit task requirements](task-requirements.md)
+bind source/test/doc artifacts to caller-chosen checks and optional failing
+baselines. Both roles see the pending obligations; editing the model's plan
+cannot waive them. This contract also documents small JSON edits that preserve
+the complete file without asking the model to reprint it.
 
 When the original task explicitly requires a final report, an empty or text-only
 provider turn cannot complete it through automatic stop checks. The runtime
@@ -46,6 +66,27 @@ The runtime never substitutes an empty object or treats unparsed exec arguments
 as a shell command. The browser uses the same boundary in `core/work-loop.js`
 and persists the refusal before retrying. Valid JSON still passes the existing
 tool, plan, approval, evidence and verification gates.
+
+`agent/provider_turn.rs` also retains rejected multi-call batches before other
+protocol gates. Every original call gets a correlated `GOVERNOR BLOCKED` result;
+none executes. IDs, argument strings and opaque provider signatures survive
+autosave and resume. Rejections cannot become successful proof. This makes the
+rejected proposal visible on the next request instead of repeating a bare hint
+against a history that never contained the proposal.
+
+`agent/next_action.rs` derives a wire-level next-action contract from the shared
+request budget and native requirement status. Each response allows one native
+function call. For tasks with an explicit `task_requirements` contract, the final
+shared request offers only `done` for an authored report
+or truthful incomplete handoff. In the last three requests, report-only mode also
+applies when explicitly declared requirements, baselines and exact checks have
+current proof. An undeclared or still-pending requirement cannot select this early
+path. Undeclared interactive tasks retain their action tools, including deliberate
+one-request repair/resume steps. A shorter Coder chunk alone does not exhaust the
+shared task budget. Calls
+outside the offered report-only tool set are retained and refused without
+execution. No additional requests, automatic report text, acceptance repair or
+completion authority are introduced; all existing done gates still apply.
 
 `agent/final_instructions.rs` owns bounded explicit English report clauses:
 “final answer/report/response/summary must” followed by a supported positive verb
@@ -142,6 +183,14 @@ The evaluator retains a separate baseline outside the model's writable fixture. 
 
 The Rust server exposes `POST /api/observer_action` and `features.observer_action=true`. It shares the TUI packet projection, JSON validator, confidence/no-tool forwarding behavior, single repair prompt, native exchange repair, and final-report checks. The endpoint never executes advice.
 
+Before forwarding a confident `done` suggestion, both surfaces validate its
+acceptance rows against the current native plan and current recorded commands,
+using Coder's acceptance validator. Missing, invented, shortened or stale
+citations request the same single action-contract repair. Display packet fields
+cannot supply receipts. Low-confidence and no-tool advice remain advisory.
+If Coder has not yet established a native plan, citations are still checked;
+the actual Coder completion must establish and satisfy its plan before finishing.
+
 `web/core/work-loop.js` owns browser-native task state under `spiral-coder.work.v1.<thread>`. Request metadata selects the server ledger `.spiral-coder/web-budgets/<task-id>.json`; changing the limit/root or reloading cannot refund wire attempts. Native history and assist IDs survive reload. A stale revision or previously consumed suggestion cannot be executed again.
 
 Ordinary Coder chat, streaming chat and its HTTP fallback retain the completed
@@ -209,6 +258,75 @@ longer reconstructs an authored payload by guessing which check proves each
 criterion. Full shell commands must match recorded evidence, including case and
 redirects. These identities establish provenance; they do not judge the semantic
 sufficiency of every human-language claim.
+
+Each Coder request also binds the `done` schema to the current plan's stable
+criterion references and currently citable commands. Object-shaped evidence uses
+separate reference/command choices; Google's flattened schema offers complete
+`acceptance N | exact command` rows. The model still chooses which criteria are
+complete and which receipt supports each one. No missing report claim is filled in,
+and existing baseline, freshness, completeness and authored-summary gates remain
+authoritative. Empty or oversized choice sets retain the generic schema rather
+than truncating commands or emitting an invalid empty enum. Choices are rebuilt
+on every request and are not persistent state.
+
+While declared checks remain pending, both roles receive a compact `repair_brief`
+with human-declared source paths, correlated read bounds/freshness, and the latest
+successful native edit identity. It reminds the model to trace failing assertions
+to existing source branches, preserve working defaults/guards, and avoid copying
+test-local bookkeeping or inventing dependencies. It neither guesses a repair nor
+requires a new read when retained observations suffice. This is advisory context,
+not a semantic correctness gate or permission to edit tests. Native proof and an
+independent artifact check remain necessary to assess an attempted repair.
+`recent_check_failures` retains up to two consecutive failures of the latest
+pending exact check, in native result order, with call IDs and observed unittest
+case names. Automatic checks require the configured check identity; rejected,
+unmatched and prose-only results cannot enter this projection. A successful check
+separates failure sequences. Changed failure names do not prove an earlier case
+was fixed. Compact Python diagnostics retain the failing case, innermost frame
+and exception through history pruning and resume.
+
+The `done.summary` field description includes the same current report clauses
+and before/after rows as the shared task projection, formatted as plain text
+instructions. A command cited in an
+evidence row does not replace the requested report text. Unknown or invalidated
+outcomes remain `NOT RECORDED` / `NOT VERIFIED`; no summary is generated. An exact
+leading echo of the current report-context object (optionally fenced) is removed
+before validation and display. Only the remaining authored prose can satisfy the
+report gate. Other JSON, stale context, ambiguous objects and surrounding authored
+text are preserved. Original native arguments remain unchanged in history.
+Exact outcome rows can also follow the bounded labels `Recorded outcomes:` or
+`Verification results:`, or `Verified with <exact command> before and after edits:`
+at a sentence/line boundary. This accepts authored fields in a paragraph without
+rewriting native calls or creating report rows. Arbitrary colon prefixes, negative
+qualifiers, stale commands, missing outcomes and unrendered fields still fail.
+
+Protocol blocks (`plan`, `think`, `reflect`, `impact`, `evidence`) may also contain
+one authored JSON object, optionally surrounded by prose or Markdown fences.
+The existing field catalog defines aliases and types. String arrays preserve
+their items; text fields can join authored string arrays; a positive integer field
+can parse an exact decimal string. Unknown metadata is discarded. Missing fields,
+wrong types, duplicate keys or aliases, competing objects, truncated JSON and
+excess criteria are not repaired. A JSON fixture inside an existing text/XML
+field stays field content. Existing count, enum, task alignment, tool matching and
+proof validation remain authoritative. Native tool arguments are never rewritten
+by this protocol adapter.
+
+Observer uses the same bounded (64 KiB), duplicate-rejecting object extractor.
+An explicitly authored `suggested_args` JSON string can be decoded once into an
+object; its tool name, argument schema and current evidence still must validate.
+Missing actions, tool names, confidence or proof are not invented. Neither format
+normalization nor an Observer suggestion executes a native call. Original Coder
+text and native arguments remain in its transcript. Successful TUI Observer
+answers retain `Message.raw_content` before display formatting; coupled-run reports
+include it beside formatted `observer_display` content. Rejected answers retain
+their original display text. Raw text is not added to provider history or used as
+proof. There is no additional model call for deterministic recovery.
+
+After a protocol refusal, the first exact human-declared baseline check may run
+without an unrelated diagnostic detour. This narrow recovery exception requires
+no prior mutation, no previous native attempt of that check, and no pending
+localized failure. It cannot unlock a retry of a failed check or manufacture a
+baseline receipt; normal command approval and execution still apply.
 
 Observer prompts prioritize current correlated native results and omit old tool
 outputs and duplicate display digests. The selected failure is explicitly

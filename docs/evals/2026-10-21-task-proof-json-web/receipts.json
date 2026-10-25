@@ -1,0 +1,4208 @@
+[
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 122.114,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py",
+      "tests/test_coupled_pilot.py"
+    ],
+    "panel": "real-repository",
+    "round": "r1",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 6980,
+        "duration_ms": 7858,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 589,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6636,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 7225
+        }
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7821,
+        "duration_ms": 4579,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 461,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7558,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8019
+        }
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8535,
+        "duration_ms": 6085,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 439,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8188,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8627
+        }
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 11527,
+        "duration_ms": 9271,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1185,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10824,
+          "prompt_tokens_details": {
+            "cached_tokens": 6208
+          },
+          "service_tier": "standard",
+          "total_tokens": 12009
+        }
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 13240,
+        "duration_ms": 3308,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 102,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12665,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 12767
+        }
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 13171,
+        "duration_ms": 14662,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12647,
+          "prompt_tokens_details": {
+            "cached_tokens": 10176
+          },
+          "service_tier": "standard",
+          "total_tokens": 14695
+        }
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 15904,
+        "duration_ms": 6372,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 169,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15358,
+          "prompt_tokens_details": {
+            "cached_tokens": 5568
+          },
+          "service_tier": "standard",
+          "total_tokens": 15527
+        }
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 14109,
+        "duration_ms": 3639,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 97,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13802,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13899
+        }
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 15644,
+        "duration_ms": 6006,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 451,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15045,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 15496
+        }
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 15615,
+        "duration_ms": 6240,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 102,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15110,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 15212
+        }
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 15620,
+        "duration_ms": 11784,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1525,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15170,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 16695
+        }
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 18377,
+        "duration_ms": 5142,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 79,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 17823,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 17902
+        }
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 8580,
+        "duration_ms": 4764,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 396,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7921,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8317
+        }
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 21030,
+        "duration_ms": 6186,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 255,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 19787,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 20042
+        }
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 20701,
+        "duration_ms": 5772,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 254,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 19629,
+          "prompt_tokens_details": {
+            "cached_tokens": 4576
+          },
+          "service_tier": "standard",
+          "total_tokens": 19883
+        }
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 22092,
+        "duration_ms": 6416,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 263,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 20612,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 20875
+        }
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 22496,
+        "duration_ms": 5800,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 265,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 20984,
+          "prompt_tokens_details": {
+            "cached_tokens": 6928
+          },
+          "service_tier": "standard",
+          "total_tokens": 21249
+        }
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 20934,
+        "duration_ms": 5221,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 265,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 19859,
+          "prompt_tokens_details": {
+            "cached_tokens": 9632
+          },
+          "service_tier": "standard",
+          "total_tokens": 20124
+        }
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'",
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "9x4bFEfqv",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "DG8dCuFpX",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "Wz8RHXIVC",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "8HplFdZDc",
+        "tool": "apply_diff",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "aCfaT9YtW",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "6eqam9bq7",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "0mfTGvlVC",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "fqbEfC0qA",
+        "tool": "read_file",
+        "result_kind": "other",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "IShPARnhq",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "5uraavwpO",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "gvmKtPElG",
+        "tool": "write_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "6tln7J623",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "rX2S2pOod",
+        "tool": "search_files",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "R5SFvG7qy",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "0ZA9pyvqo",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "jPzjtR8N6",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "IHgnf5znr",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "no_output_directory": false,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Unknown case ID(s): missing-case\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 142.008,
+    "changed_files": [
+      "tests/test_coupled_pilot.py"
+    ],
+    "panel": "real-repository",
+    "round": "r1",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 6986,
+        "duration_ms": 4235,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6889,
+        "duration_ms": 2306,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 7268,
+        "duration_ms": 2520,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9350,
+        "duration_ms": 15310,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 11875,
+        "duration_ms": 3662,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12970,
+        "duration_ms": 16975,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 15311,
+        "duration_ms": 16755,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 15478,
+        "duration_ms": 8001,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 17041,
+        "duration_ms": 4294,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 17882,
+        "duration_ms": 5653,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 18344,
+        "duration_ms": 7307,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 20481,
+        "duration_ms": 4367,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 8879,
+        "duration_ms": 10457,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 21790,
+        "duration_ms": 6849,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 19718,
+        "duration_ms": 10755,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 22048,
+        "duration_ms": 9345,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 22145,
+        "duration_ms": 4487,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 23401,
+        "duration_ms": 6632,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'",
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "call_Ojsig2VEoTaR0gbvm3vkdK20",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_5M0GfryK0my8Xg23AxACqPls",
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_CIHzYsFbKoTVAOAgkwUd8XYB",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_0OJGh5BVu0GBiXocKUk3XrbX",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_rgMK8avB8ZRWDvtw9uloOxDA",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_8MIdzd4uu6OK0kJKHO552FL3",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_Qf8qO9SE6fBsneZIUzY7YStY",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_R6FdLsNGU7Ro2XsC0aqGfgfR",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_fvtyHR1mTYjHHUU3mmwaObRp",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_asUbVLihdnA0KD6pWtoRsTfu",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_pVAmbuJj8qZC6tn7MVyPxtG6",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_0yTklTr0PGmedpVJwbHUficQ",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_UJR52qKPkYgzcVAv5EpWXkDP",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_at5201mYXw19b6SVmun3aZwv",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_dVqXBEUfDnMNQrkk9O5qfGfQ",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_ZbKsTTdM9f5lAKZpGCBPrbwK",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_3EBMxmhzBSjOlVuW9QhkWAte",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 87.817,
+    "changed_files": [],
+    "panel": "real-repository",
+    "round": "r1",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 6951,
+        "duration_ms": 4610,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6842,
+        "duration_ms": 3646,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 7831,
+        "duration_ms": 2929,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 7797,
+        "duration_ms": 4889,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10493,
+        "duration_ms": 4940,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 10879,
+        "duration_ms": 3023,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 13959,
+        "duration_ms": 5061,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 14136,
+        "duration_ms": 4908,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 12826,
+        "duration_ms": 5019,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 12699,
+        "duration_ms": 5244,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 13139,
+        "duration_ms": 4130,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 14163,
+        "duration_ms": 3775,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 7532,
+        "duration_ms": 4796,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 14837,
+        "duration_ms": 4565,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 16352,
+        "duration_ms": 4084,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 15753,
+        "duration_ms": 6387,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 13564,
+        "duration_ms": 8443,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 14147,
+        "duration_ms": 4517,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "call_648144",
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_648229",
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "gate": "Think Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_383692",
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_369366",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_553005",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_559306",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_588999",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_623306",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_458087",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_593391",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_447513",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Progress Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_359367",
+        "tool": "done",
+        "result_kind": "blocked",
+        "gate": "Done Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_552435",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_546141",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Evaluator Loop",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_510033",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_586376",
+        "tool": "done",
+        "result_kind": "blocked",
+        "gate": "Done Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case beta\n"
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": false,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case gamma --case alpha --case gamma\n"
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 2,
+          "stderr": "usage: run_coupled_pilot.py [-h] --binary BINARY --repo REPO --out OUT\n                            --provider {openai,mistral,gemini} --model MODEL\n                            [--wall-seconds WALL_SECONDS] [--without-observer]\nrun_coupled_pilot.py: error: unrecognized arguments: --case missing-case\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 144.874,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py",
+      "tests/test_coupled_pilot.py"
+    ],
+    "panel": "real-repository",
+    "round": "r2",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7051,
+        "duration_ms": 6789,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 545,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6706,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 7251
+        }
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7847,
+        "duration_ms": 5011,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 439,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7583,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8022
+        }
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8580,
+        "duration_ms": 6556,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 406,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8225,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8631
+        }
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 11551,
+        "duration_ms": 5133,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 534,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 10810,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 11344
+        }
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 12680,
+        "duration_ms": 4937,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 406,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11963,
+          "prompt_tokens_details": {
+            "cached_tokens": 8592
+          },
+          "service_tier": "standard",
+          "total_tokens": 12369
+        }
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 15786,
+        "duration_ms": 13955,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1135,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14787,
+          "prompt_tokens_details": {
+            "cached_tokens": 9424
+          },
+          "service_tier": "standard",
+          "total_tokens": 15922
+        }
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 18823,
+        "duration_ms": 8241,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 76,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 18055,
+          "prompt_tokens_details": {
+            "cached_tokens": 11904
+          },
+          "service_tier": "standard",
+          "total_tokens": 18131
+        }
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 15270,
+        "duration_ms": 7272,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 190,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14573,
+          "prompt_tokens_details": {
+            "cached_tokens": 1456
+          },
+          "service_tier": "standard",
+          "total_tokens": 14763
+        }
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 15825,
+        "duration_ms": 6852,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 56,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14981,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 15037
+        }
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 15879,
+        "duration_ms": 8990,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 813,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15101,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 15914
+        }
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 16317,
+        "duration_ms": 10229,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 105,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15708,
+          "prompt_tokens_details": {
+            "cached_tokens": 4768
+          },
+          "service_tier": "standard",
+          "total_tokens": 15813
+        }
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 15423,
+        "duration_ms": 7269,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 40,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14906,
+          "prompt_tokens_details": {
+            "cached_tokens": 5312
+          },
+          "service_tier": "standard",
+          "total_tokens": 14946
+        }
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 7045,
+        "duration_ms": 7833,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 332,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6594,
+          "prompt_tokens_details": {
+            "cached_tokens": 1376
+          },
+          "service_tier": "standard",
+          "total_tokens": 6926
+        }
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 16369,
+        "duration_ms": 7056,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 57,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15564,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 15621
+        }
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 14028,
+        "duration_ms": 3772,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 80,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13548,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13628
+        }
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 14656,
+        "duration_ms": 17315,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 2048,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14056,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 16104
+        }
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 16349,
+        "duration_ms": 2982,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 46,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 16003,
+          "prompt_tokens_details": {
+            "cached_tokens": 6480
+          },
+          "service_tier": "standard",
+          "total_tokens": 16049
+        }
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 16762,
+        "duration_ms": 9622,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1349,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 16394,
+          "prompt_tokens_details": {
+            "cached_tokens": 3952
+          },
+          "service_tier": "standard",
+          "total_tokens": 17743
+        }
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'",
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "poRr1ww1H",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "JD60T1jai",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "etOYwsPkG",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "eW631LseP",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "x4dViMoIA",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "pTNn5bkia",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Requirement Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "f06FFGwRB",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "GZyA7IWsm",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "g5ONbW1BF",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "VQIxvbO7W",
+        "tool": "apply_diff",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "Yfkufkor0",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "Iqh3T6HYx",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "7pzfIsGLp",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "R8FfwjO3R",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "kL4OMSudp",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "zImZWVuxA",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Progress Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "5wsUc4ZOX",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Unknown case ID(s): missing-case\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 133.587,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py",
+      "tests/test_coupled_pilot.py"
+    ],
+    "panel": "real-repository",
+    "round": "r2",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7058,
+        "duration_ms": 6039,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6961,
+        "duration_ms": 3931,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 7340,
+        "duration_ms": 3856,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9422,
+        "duration_ms": 16568,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 11896,
+        "duration_ms": 5449,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12600,
+        "duration_ms": 3569,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 12708,
+        "duration_ms": 5991,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 13105,
+        "duration_ms": 4818,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 14269,
+        "duration_ms": 17379,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 16275,
+        "duration_ms": 3294,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 16047,
+        "duration_ms": 6111,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 15882,
+        "duration_ms": 4113,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 6039,
+        "duration_ms": 6876,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 15170,
+        "duration_ms": 9736,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 14673,
+        "duration_ms": 6628,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 17135,
+        "duration_ms": 9134,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 17395,
+        "duration_ms": 8878,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 18926,
+        "duration_ms": 5031,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'",
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "call_DDWoA34K0E2PQkEtRBNCybG6",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_HUY93zFp0DuCZa6DQiI6nhZT",
+        "tool": "list_dir",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_BZSLn1RQ1aRt3wW7VyZvD8mH",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_dUxDoM4otCPJ1Z9aqPidOJh6",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Tool arguments",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_QuC9SFSPWI92hUovo4IZ63h6",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Requirement Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_FVErfBslMKa2saxuMpjUkBQp",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_erfl1x039YNaHXDNqTvjGHP7",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_UvteB2VstwkleUknPl5GxHNI",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_TgHajeU7ELHepnPlGARW3GPX",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_f3sqTTGGf92Uc5m2zMC7yv8h",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_9iLLwmsgjWxb3ha3DA4LHqyr",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_l69xxmhg3sN3osqqmJEzjXs7",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_EFeGi8BDLRjqdgIce1swZ0cp",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_mnLrhG6ASSpLvxynPi9iUHHR",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_f0g7XGMMUIzvamBF4ESZzK1F",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_5d6yxt4PhAlP5ezjUepo1MBw",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "beta"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Unknown case ID(s): missing-case\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 85.452,
+    "changed_files": [
+      "scripts/run_coupled_pilot.py"
+    ],
+    "panel": "real-repository",
+    "round": "r2",
+    "completed": false,
+    "requests": 18,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7023,
+        "duration_ms": 4502,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 6914,
+        "duration_ms": 4189,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8134,
+        "duration_ms": 3342,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 10055,
+        "duration_ms": 3005,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10378,
+        "duration_ms": 3126,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 10869,
+        "duration_ms": 2770,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 11333,
+        "duration_ms": 6018,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "coder",
+        "estimated_input_tokens": 14180,
+        "duration_ms": 4696,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 13636,
+        "duration_ms": 4632,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 12443,
+        "duration_ms": 3803,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 12352,
+        "duration_ms": 4878,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 10758,
+        "duration_ms": 3270,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 12,
+        "role": "observer",
+        "estimated_input_tokens": 6720,
+        "duration_ms": 3984,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 13,
+        "role": "coder",
+        "estimated_input_tokens": 12054,
+        "duration_ms": 7031,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 14,
+        "role": "coder",
+        "estimated_input_tokens": 14270,
+        "duration_ms": 3658,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 15,
+        "role": "coder",
+        "estimated_input_tokens": 13237,
+        "duration_ms": 4843,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 16,
+        "role": "coder",
+        "estimated_input_tokens": 16819,
+        "duration_ms": 5081,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 17,
+        "role": "coder",
+        "estimated_input_tokens": 16776,
+        "duration_ms": 9621,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "python3 -S -m unittest discover -s tests -p 'test_coupled_pilot.py'",
+      "git diff --check",
+      "python3 -S /Users/ryospiralarchitect/.cache/spiral-coder/dogfood-20261021/oracle.py ."
+    ],
+    "actions": [
+      {
+        "call_id": "call_511559",
+        "tool": "list_dir",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_518979",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_580402",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_687329",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_539061",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_481040",
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "gate": "Think Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_355277",
+        "tool": "search_files",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_537361",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Progress Gate",
+        "structured_json_edit": false,
+        "path": "docs/coupled-work-loop.md",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_355426",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Evaluator Loop",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_783615",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Progress Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_518888",
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "gate": "Requirement Gate",
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_157238",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": true
+      },
+      {
+        "call_id": "call_506550",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_2518",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Progress Gate",
+        "structured_json_edit": false,
+        "path": "tests/test_coupled_pilot.py",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_420227",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "scripts/run_coupled_pilot.py",
+        "baseline_oracle": false
+      }
+    ],
+    "cli_oracle": {
+      "ok": false,
+      "cases": {
+        "default": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "exact_execution_order": true,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": true
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "single": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": true,
+            "summary.json_selection": true,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "ordered_unique": {
+          "ok": false,
+          "checks": {
+            "status": true,
+            "exact_execution_order": false,
+            "metadata.json_selection": false,
+            "summary.json_selection": false,
+            "summary_cases": false
+          },
+          "invoked": [
+            "alpha",
+            "beta",
+            "gamma"
+          ],
+          "returncode": 0,
+          "stderr": ""
+        },
+        "unknown": {
+          "ok": true,
+          "checks": {
+            "status": true,
+            "no_output_directory": true,
+            "no_subprocess": true,
+            "error_identifies_case": true
+          },
+          "invoked": [],
+          "returncode": 1,
+          "stderr": "Error: Unknown case ID 'missing-case'. Valid IDs: ['alpha', 'beta', 'gamma']\n"
+        }
+      }
+    },
+    "independent_oracle_ok": false,
+    "task_qualified": false
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r1",
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": true,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": true,
+      "all_old_and_new_replay_cases_pass": true
+    },
+    "task_qualified": false,
+    "wall_seconds": 69.14,
+    "timed_out": false,
+    "completed": false,
+    "requests": 12,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7375,
+        "duration_ms": 3820,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 286,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6926,
+          "prompt_tokens_details": {
+            "cached_tokens": 1456
+          },
+          "service_tier": "standard",
+          "total_tokens": 7212
+        }
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 8371,
+        "duration_ms": 4874,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 514,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7872,
+          "prompt_tokens_details": {
+            "cached_tokens": 4640
+          },
+          "service_tier": "standard",
+          "total_tokens": 8386
+        }
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 10551,
+        "duration_ms": 2866,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 80,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9956,
+          "prompt_tokens_details": {
+            "cached_tokens": 1456
+          },
+          "service_tier": "standard",
+          "total_tokens": 10036
+        }
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 11903,
+        "duration_ms": 4090,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 200,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11133,
+          "prompt_tokens_details": {
+            "cached_tokens": 1456
+          },
+          "service_tier": "standard",
+          "total_tokens": 11333
+        }
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 12498,
+        "duration_ms": 7033,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 187,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11645,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 11832
+        }
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12121,
+        "duration_ms": 4458,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 184,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11380,
+          "prompt_tokens_details": {
+            "cached_tokens": 4944
+          },
+          "service_tier": "standard",
+          "total_tokens": 11564
+        }
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 14534,
+        "duration_ms": 6570,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 322,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13524,
+          "prompt_tokens_details": {
+            "cached_tokens": 4944
+          },
+          "service_tier": "standard",
+          "total_tokens": 13846
+        }
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 8757,
+        "duration_ms": 7329,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 375,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 8121,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 8496
+        }
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 14778,
+        "duration_ms": 7362,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 90,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13650,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 13740
+        }
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 16188,
+        "duration_ms": 10200,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1506,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14895,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 16401
+        }
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 16431,
+        "duration_ms": 5696,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 130,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 15177,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 15307
+        }
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 13913,
+        "duration_ms": 4451,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 169,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13031,
+          "prompt_tokens_details": {
+            "cached_tokens": 2512
+          },
+          "service_tier": "standard",
+          "total_tokens": 13200
+        }
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [],
+    "actions": [
+      {
+        "call_id": "woqGcwM6r",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "GgIkZf6pj",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "DPBtgC3iV",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "mVhhW6s5a",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "altT4Tddr",
+        "tool": "apply_diff",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "2XKcQZizX",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "xq4AcqZmv",
+        "tool": "apply_diff",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "0F8KifEMd",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "3TO5DqSHM",
+        "tool": "write_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "5KQbVe8JO",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "UcLsrCEmt",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      }
+    ]
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r1",
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": false,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": true,
+      "all_old_and_new_replay_cases_pass": false
+    },
+    "task_qualified": false,
+    "wall_seconds": 48.965,
+    "timed_out": false,
+    "completed": false,
+    "requests": 9,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7380,
+        "duration_ms": 5942,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7030,
+        "duration_ms": 4052,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8661,
+        "duration_ms": 6274,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 10457,
+        "duration_ms": 2910,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10193,
+        "duration_ms": 3278,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12011,
+        "duration_ms": 4173,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 11301,
+        "duration_ms": 4788,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 8288,
+        "duration_ms": 8278,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "observer",
+        "estimated_input_tokens": 8917,
+        "duration_ms": 9054,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 0,
+    "pending_exact_checks": [
+      "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+      "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+    ],
+    "actions": [
+      {
+        "call_id": "call_NBdIMRkpmGtTIl6sTwpHZvll",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_7PSxgDsyhjh4TRmReCR8ccRM",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_hCh6tO3v3mcVEXrmDyGesaNe",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_I0Irvz7l5V5Buqk0JDbGtdjM",
+        "tool": "read_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "src/tui/review_panel.rs",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_TGgXlKj1QO43vpHjgpdwDeAG",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_82su0dxVDOxrlJPRUlsrvQcJ",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_ERniQ8ftVmCjPvp680qXrQge",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      }
+    ]
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r1",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": false,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": false,
+      "all_old_and_new_replay_cases_pass": false
+    },
+    "task_qualified": false,
+    "wall_seconds": 69.904,
+    "timed_out": false,
+    "completed": false,
+    "requests": 12,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7345,
+        "duration_ms": 3016,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7028,
+        "duration_ms": 2831,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8700,
+        "duration_ms": 2794,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9004,
+        "duration_ms": 7060,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 9123,
+        "duration_ms": 7084,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 9118,
+        "duration_ms": 4904,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 12397,
+        "duration_ms": 4172,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 6829,
+        "duration_ms": 6451,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 13386,
+        "duration_ms": 6266,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 17104,
+        "duration_ms": 9049,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 17019,
+        "duration_ms": 9128,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 19506,
+        "duration_ms": 6807,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+      "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+    ],
+    "actions": [
+      {
+        "call_id": "call_567689",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_350065",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_389452",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_259852",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_392850",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_451465",
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_442520",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_415842",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_502346",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      }
+    ]
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r2",
+    "provider": "mistral",
+    "model": "mistral-small-2603",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": false,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": true,
+      "all_old_and_new_replay_cases_pass": false
+    },
+    "task_qualified": false,
+    "wall_seconds": 82.206,
+    "timed_out": false,
+    "completed": false,
+    "requests": 12,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7425,
+        "duration_ms": 7873,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 285,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 6961,
+          "prompt_tokens_details": {
+            "cached_tokens": 1456
+          },
+          "service_tier": "standard",
+          "total_tokens": 7246
+        }
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 8420,
+        "duration_ms": 3658,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 429,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7906,
+          "prompt_tokens_details": {
+            "cached_tokens": 4640
+          },
+          "service_tier": "standard",
+          "total_tokens": 8335
+        }
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 10540,
+        "duration_ms": 3928,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 77,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 9913,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 9990
+        }
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 11918,
+        "duration_ms": 4936,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 176,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11120,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 11296
+        }
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 12701,
+        "duration_ms": 5899,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 204,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11922,
+          "prompt_tokens_details": {
+            "cached_tokens": 8032
+          },
+          "service_tier": "standard",
+          "total_tokens": 12126
+        }
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 11855,
+        "duration_ms": 5590,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 225,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 11136,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 11361
+        }
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 14758,
+        "duration_ms": 6385,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 245,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13677,
+          "prompt_tokens_details": {
+            "cached_tokens": 5408
+          },
+          "service_tier": "standard",
+          "total_tokens": 13922
+        }
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 7907,
+        "duration_ms": 8612,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 424,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 7178,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 7602
+        }
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 13425,
+        "duration_ms": 6728,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 300,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12304,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 12604
+        }
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 13325,
+        "duration_ms": 5525,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 228,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 12401,
+          "prompt_tokens_details": {
+            "cached_tokens": 2512
+          },
+          "service_tier": "standard",
+          "total_tokens": 12629
+        }
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 15712,
+        "duration_ms": 8879,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 314,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 14522,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 14836
+        }
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 14495,
+        "duration_ms": 13880,
+        "status": "completed",
+        "provider_usage": {
+          "completion_tokens": 1569,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 13598,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "service_tier": "standard",
+          "total_tokens": 15167
+        }
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+      "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+    ],
+    "actions": [
+      {
+        "call_id": "CmTEd4RBZ",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "PP2E0AdOf",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "ugWv7VqNH",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "WWyQg0cbj",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "RkBHOCVo7",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "8WgUxqrCB",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "G1W0NWfrW",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "3gBNmrrPU",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "p9yeaWq7N",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "xecwB6VZT",
+        "tool": "apply_diff",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "B2h1OElB8",
+        "tool": "write_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      }
+    ]
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r2",
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": false,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": true,
+      "all_old_and_new_replay_cases_pass": false
+    },
+    "task_qualified": false,
+    "wall_seconds": 58.036,
+    "timed_out": false,
+    "completed": false,
+    "requests": 12,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7430,
+        "duration_ms": 3886,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7080,
+        "duration_ms": 3486,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8711,
+        "duration_ms": 4649,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 10506,
+        "duration_ms": 4447,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 10243,
+        "duration_ms": 3612,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 10921,
+        "duration_ms": 4383,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 11425,
+        "duration_ms": 3746,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 8125,
+        "duration_ms": 7534,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 12955,
+        "duration_ms": 8947,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 13487,
+        "duration_ms": 4118,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 12582,
+        "duration_ms": 4689,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 11247,
+        "duration_ms": 4160,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json",
+      "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json --filter review-panel-replay-sensitive"
+    ],
+    "actions": [
+      {
+        "call_id": "call_yIGA8WaCKxqpfMVIQUpvGXF5",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_iMzixImtDobrVg5Fyi4XiBlt",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_wd4fzKUVFlfAeC3W14h6Kkrg",
+        "tool": "patch_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_n21dIwhHuq0o3lwOAUYFoyzW",
+        "tool": "read_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "src/tui/review_panel.rs",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_ilLhr7giWQIJunQfyTwE3mNF",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": "src/tui/review_panel.rs",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_rl5Gr2kNYC6lBFv992TfjnPI",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_k59ChvLeWnARJhBntfWNm04k",
+        "tool": "patch_file",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_0cGFfokQZrxOz36v0O9ZoJb9",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_VG1sOWPJyMu7P0XArpIuZn73",
+        "tool": "search_files",
+        "result_kind": "blocked",
+        "gate": "Think Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_ZJ3ZgJzUiTlXyyZ74Mhck967",
+        "tool": "search_files",
+        "result_kind": "error",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_nWsDkpGPktlv1lyj3xb8mzjW",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      }
+    ]
+  },
+  {
+    "panel": "frozen-json-replay",
+    "round": "json-r2",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "checks": {
+      "all_fixed_case_checks": false,
+      "runtime_completed": false,
+      "within_shared_cap": true,
+      "exact_checks_current": false,
+      "process_ok": true,
+      "preserved_existing_cases": true,
+      "requested_new_case_exists": true,
+      "all_old_and_new_replay_cases_pass": true
+    },
+    "task_qualified": false,
+    "wall_seconds": 56.385,
+    "timed_out": false,
+    "completed": false,
+    "requests": 12,
+    "request_telemetry": [
+      {
+        "id": 0,
+        "role": "coder",
+        "estimated_input_tokens": 7394,
+        "duration_ms": 5819,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 1,
+        "role": "coder",
+        "estimated_input_tokens": 7077,
+        "duration_ms": 2539,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 2,
+        "role": "coder",
+        "estimated_input_tokens": 8750,
+        "duration_ms": 2864,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 3,
+        "role": "coder",
+        "estimated_input_tokens": 9072,
+        "duration_ms": 4132,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 4,
+        "role": "coder",
+        "estimated_input_tokens": 9191,
+        "duration_ms": 4930,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 5,
+        "role": "coder",
+        "estimated_input_tokens": 12203,
+        "duration_ms": 4694,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 6,
+        "role": "coder",
+        "estimated_input_tokens": 13017,
+        "duration_ms": 7193,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 7,
+        "role": "observer",
+        "estimated_input_tokens": 7511,
+        "duration_ms": 4834,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 8,
+        "role": "coder",
+        "estimated_input_tokens": 15038,
+        "duration_ms": 5470,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 9,
+        "role": "coder",
+        "estimated_input_tokens": 14185,
+        "duration_ms": 3951,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 10,
+        "role": "coder",
+        "estimated_input_tokens": 14602,
+        "duration_ms": 3821,
+        "status": "completed",
+        "provider_usage": null
+      },
+      {
+        "id": 11,
+        "role": "coder",
+        "estimated_input_tokens": 13565,
+        "duration_ms": 5659,
+        "status": "completed",
+        "provider_usage": null
+      }
+    ],
+    "assists": 1,
+    "pending_exact_checks": [
+      "grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json"
+    ],
+    "actions": [
+      {
+        "call_id": "call_562743",
+        "tool": "read_file",
+        "result_kind": "blocked",
+        "gate": "Plan Gate",
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_584301",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_420792",
+        "tool": "exec",
+        "result_kind": "failed",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_546049",
+        "tool": "patch_file",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": true,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_521027",
+        "tool": "read_file",
+        "result_kind": "observation",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_556642",
+        "tool": "write_file",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": ".spiral-coder/tui_replay.json",
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_517611",
+        "tool": "exec",
+        "result_kind": "blocked",
+        "gate": "Recovery Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_690400",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_357074",
+        "tool": "exec",
+        "result_kind": "reported_ok",
+        "gate": null,
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      },
+      {
+        "call_id": "call_549260",
+        "tool": "done",
+        "result_kind": "blocked",
+        "gate": "Done Gate",
+        "structured_json_edit": false,
+        "path": null,
+        "baseline_oracle": false
+      }
+    ]
+  }
+]

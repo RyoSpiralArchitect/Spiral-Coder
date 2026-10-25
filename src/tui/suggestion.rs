@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod action;
-pub(crate) use action::tool_schemas;
+pub(crate) use action::tool_schemas_for;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -145,9 +145,18 @@ pub fn parse_observer_suggestion_envelope(raw: &str) -> Option<ObserverSuggestio
 }
 
 fn parse_envelope_checked(raw: &str) -> Result<ObserverSuggestionEnvelope, String> {
-    let json_str = extract_first_json_object(raw).unwrap_or_else(|| raw.trim().to_string());
-    let mut env = serde_json::from_str::<ObserverSuggestionEnvelope>(&json_str)
+    let object = crate::structured_output::object(raw)?;
+    let mut env = serde_json::from_value::<ObserverSuggestionEnvelope>(object.value)
         .map_err(|error| error.to_string())?;
+    for suggestion in &mut env.suggestions {
+        // Some models double-encode this object. Decode authored JSON once;
+        // action validation still requires a real tool and its required fields.
+        if let Some(encoded) = suggestion.suggested_args.as_str() {
+            if let Ok(object) = crate::structured_output::object(encoded) {
+                suggestion.suggested_args = object.value;
+            }
+        }
+    }
     normalize_envelope(&mut env);
     if env.summary.is_empty() && env.primary_blocker.is_empty() && env.suggestions.is_empty() {
         return Err("empty envelope: supply summary, primary_blocker, or suggestions".into());
@@ -358,18 +367,39 @@ fn render_tool_arg_value(value: &Value) -> String {
     }
 }
 
-fn extract_first_json_object(s: &str) -> Option<String> {
-    let start = s.find('{')?;
-    let end = s.rfind('}')?;
-    if end <= start {
-        return None;
-    }
-    Some(s[start..=end].to_string())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn format_recovery_keeps_authored_actions_and_rejects_ambiguous_or_missing_fields() {
+        let mut value = serde_json::json!({"summary":"Read the failing source", "extra":"discard metadata",
+            "suggestions":[{"kind":"read", "reason":"inspect", "confidence":0.9,
+                "suggested_tool":"read_file", "suggested_args":"{\"path\":\"src/lib.rs\",\"start_line\":30}"}]});
+        let raw = format!("Here is the next action.\n```json\n{value}\n```\nEnd.");
+        let parsed = parse_observer_suggestion_envelope(&raw).unwrap();
+        assert_eq!(
+            parsed.suggestions[0].suggested_args,
+            serde_json::json!({"path":"src/lib.rs","start_line":30})
+        );
+        assert!(action_validation_issue(Some(&parsed)).is_none());
+        assert!(parse_observer_suggestion_envelope(&format!("{value} {value}")).is_none());
+        value["suggestions"][0]["suggested_args"] =
+            Value::String(r#"{"path":"one","path":"two"}"#.into());
+        assert!(validation_issue_for_raw(&value.to_string()).is_some());
+        value["suggestions"][0]["suggested_args"] = Value::String("{}".into());
+        assert!(validation_issue_for_raw(&value.to_string()).is_some());
+        value["suggestions"][0]["suggested_args"] =
+            Value::String(r#"{"path":"src/lib.rs"}"#.into());
+        value["suggestions"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("suggested_tool");
+        assert!(validation_issue_for_raw(&value.to_string()).is_some());
+        assert!(
+            parse_observer_suggestion_envelope(r#"{"summary":"one","summary":"two"}"#).is_none()
+        );
+    }
 
     #[test]
     fn parse_observer_suggestion_envelope_extracts_embedded_json() {

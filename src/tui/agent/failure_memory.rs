@@ -4,6 +4,10 @@ use super::{
     ErrorClass,
 };
 
+#[cfg(test)]
+#[path = "auto_test_memory_tests.rs"]
+mod auto_test_memory_tests;
+
 #[derive(Debug, Default)]
 pub(super) struct FailureMemory {
     pub(super) consecutive_failures: usize,
@@ -27,14 +31,18 @@ impl FailureMemory {
             || self.same_output_repeats >= 2
     }
 
-    pub(super) fn from_recent_messages(messages: &[serde_json::Value]) -> Self {
+    pub(super) fn from_recent_messages(
+        messages: &[serde_json::Value],
+        test_cmd: Option<&str>,
+    ) -> Self {
         let mut mem = FailureMemory::default();
 
         // Map tool_call_id -> command for exec calls.
         let mut exec_by_id: std::collections::HashMap<String, String> =
             std::collections::HashMap::new();
+        let mut edits_by_id = std::collections::HashMap::new();
 
-        for msg in messages {
+        for msg in crate::task_origin::current_task_messages(messages) {
             let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
 
             if role == "assistant" {
@@ -53,6 +61,9 @@ impl FailureMemory {
                         .unwrap_or("")
                         .trim();
                     if name != "exec" {
+                        if matches!(name, "write_file" | "patch_file" | "apply_diff") {
+                            edits_by_id.insert(id.to_string(), name.to_string());
+                        }
                         continue;
                     }
                     let args = tc
@@ -75,6 +86,10 @@ impl FailureMemory {
                     .unwrap_or("")
                     .trim();
                 if tcid.is_empty() {
+                    continue;
+                }
+                if let Some(name) = edits_by_id.remove(tcid) {
+                    mem.on_file_result(&name, msg["content"].as_str().unwrap_or(""), test_cmd);
                     continue;
                 }
                 let Some(command) = exec_by_id.remove(tcid) else {
@@ -107,6 +122,19 @@ impl FailureMemory {
         }
 
         mem
+    }
+
+    /// Automatic verification can resolve this same command's failure without
+    /// becoming an explicit exec receipt. Unrelated checks and unknown outcomes
+    /// cannot erase failure memory. Use identically in live and resumed loops.
+    pub(super) fn on_file_result(&mut self, name: &str, result: &str, test_cmd: Option<&str>) {
+        if self.consecutive_failures > 0
+            && test_cmd.map(str::trim).filter(|cmd| !cmd.is_empty())
+                == self.last_command_sig.as_deref()
+            && crate::execution_evidence::auto_test_succeeded(name, result)
+        {
+            *self = Self::default();
+        }
     }
 
     pub(super) fn on_tool_result(
@@ -244,7 +272,7 @@ mod tests {
             exec(&mut messages, command, "", 0);
             live.on_tool_result(command, "", "", 0);
         }
-        let mut resumed = FailureMemory::from_recent_messages(&messages);
+        let mut resumed = FailureMemory::from_recent_messages(&messages, None);
         for memory in [&mut live, &mut resumed] {
             memory.on_tool_result("test -f receipt.txt", "", "", 0);
             assert_eq!(memory.same_command_repeats, 1);
@@ -263,7 +291,7 @@ mod tests {
                 exec(&mut messages, "test -f receipt.txt", "", exit);
                 live.on_tool_result("test -f receipt.txt", "", "", exit);
             }
-            let resumed = FailureMemory::from_recent_messages(&messages);
+            let resumed = FailureMemory::from_recent_messages(&messages, None);
             for memory in [live, resumed] {
                 assert_eq!(memory.same_output_repeats, 2);
                 assert!(validate_reflection(&continuing_reflection(), &memory, 0).is_err());

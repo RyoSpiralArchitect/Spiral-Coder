@@ -591,7 +591,7 @@ fn preferred_done_command_for_score(
     })
 }
 
-fn preferred_known_command_for_evidence<'a>(
+pub(super) fn preferred_known_command_for_evidence<'a>(
     command: &str,
     known_commands: &'a [String],
     evidence: &ObservationEvidence,

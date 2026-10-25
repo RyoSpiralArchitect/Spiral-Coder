@@ -1,0 +1,215 @@
+//! Bounded, one-based inclusive line reads. Only a complete rendering is a snapshot.
+use serde::Deserialize;
+use serde_json::Value;
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct ReadRequest {
+    pub path: String,
+    pub start_line: Option<usize>,
+    pub end_line: Option<usize>,
+}
+
+impl ReadRequest {
+    pub(crate) fn is_range(&self) -> bool {
+        self.start_line.is_some() || self.end_line.is_some()
+    }
+
+    pub(crate) fn execute(&self, base: Option<&str>) -> (String, bool) {
+        if !self.is_range() {
+            return super::tool_read_file(&self.path, base);
+        }
+        match self.read_range(base) {
+            Ok(text) => (text, false),
+            Err(error) => (format!("ERROR reading '{}': {error}", self.path), true),
+        }
+    }
+
+    pub(crate) fn bounds(&self) -> anyhow::Result<(usize, usize)> {
+        let start = self.start_line.unwrap_or(1);
+        let end = self.end_line.unwrap_or_else(|| start.saturating_add(199));
+        anyhow::ensure!(
+            start > 0 && end >= start,
+            "use one-based lines with end_line >= start_line"
+        );
+        anyhow::ensure!(
+            end - start < 200,
+            "read at most 200 lines per call; narrow start_line/end_line"
+        );
+        Ok((start, end))
+    }
+
+    fn read_range(&self, base: Option<&str>) -> anyhow::Result<String> {
+        let (start, end) = self.bounds()?;
+        let path = super::resolve_safe_path(&self.path, base)?;
+        let content = std::fs::read_to_string(path)?;
+        let lines: Vec<&str> = content.split_inclusive('\n').collect();
+        anyhow::ensure!(
+            start <= lines.len(),
+            "start_line {start} is beyond EOF ({} lines)",
+            lines.len()
+        );
+        let end = end.min(lines.len());
+        let selected: String = lines[start - 1..end].concat();
+        let truncated = selected.chars().count() > super::MAX_READ_CHARS;
+        if start == 1 && end == lines.len() && !truncated {
+            // Canonical full-read output from these exact bytes, without a
+            // second disk read. Bounds remain in the unchanged native call.
+            let guidance = if self.path.ends_with(".json") {
+                super::json_repair::guidance(&content)
+            } else {
+                String::new()
+            };
+            return Ok(format!(
+                "[{}] ({} lines, {} bytes)\n{content}{guidance}",
+                self.path,
+                lines.len(),
+                content.len()
+            ));
+        }
+        let shown: String = selected.chars().take(super::MAX_READ_CHARS).collect();
+        let note = if truncated {
+            "\n[…truncated — requested range exceeds 8000 characters; narrow the range. For a single long line use exec or an exact JSON patch.]"
+        } else {
+            ""
+        };
+        Ok(format!(
+            "[{}] ({} lines, {} bytes) [range: lines {start}-{end}; partial file]\n{shown}{note}",
+            self.path,
+            lines.len(),
+            content.len()
+        ))
+    }
+}
+
+/// Recognize only a native range header that agrees with the correlated call.
+/// Pruning may append its normal marker but cannot change the requested bounds.
+pub(crate) fn matches_range_header(arguments: &str, header: &str) -> bool {
+    let Ok(request) = serde_json::from_str::<ReadRequest>(arguments) else {
+        return false;
+    };
+    if !request.is_range() {
+        return false;
+    }
+    let Ok((start, end)) = request.bounds() else {
+        return false;
+    };
+    let Some(rest) = header.strip_prefix(&format!("[{}] (", request.path)) else {
+        return false;
+    };
+    let Some((total, rest)) = rest.split_once(" lines, ") else {
+        return false;
+    };
+    let Ok(total) = total.parse::<usize>() else {
+        return false;
+    };
+    let Some((bytes, suffix)) = rest.split_once(" bytes)") else {
+        return false;
+    };
+    if bytes.parse::<usize>().is_err() || start > total {
+        return false;
+    }
+    let expected = format!(" [range: lines {start}-{}; partial file]", end.min(total));
+    suffix
+        .strip_prefix(&expected)
+        .is_some_and(|rest| rest.is_empty() || rest.starts_with(" [pruned "))
+}
+
+pub(crate) fn execute_args(args: &Value, base: Option<&str>) -> (String, bool) {
+    match serde_json::from_value::<ReadRequest>(args.clone()) {
+        Ok(request) => request.execute(base),
+        Err(error) => (format!("ERROR: invalid read_file arguments: {error}"), true),
+    }
+}
+
+/// Both successful partial reads and truncated prefixes are useful observations,
+/// but neither permits replacement of the whole existing file.
+pub(crate) fn full_snapshot(text: &str) -> bool {
+    text.starts_with('[')
+        && !text.lines().next().unwrap_or("").contains("[range:")
+        && !text.contains("\n[…truncated — ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn reads_late_lines_without_repeating_the_truncated_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        let text = (1..=1000)
+            .map(|n| format!("line {n}: 日本語\r\n"))
+            .collect::<String>();
+        std::fs::write(dir.path().join("large.txt"), &text).unwrap();
+        let base = dir.path().to_str();
+        let (prefix, failed) = super::super::tool_read_file("large.txt", base);
+        assert!(!failed);
+        assert!(!full_snapshot(&prefix));
+        let args = json!({"path":"large.txt","start_line":997,"end_line":1005});
+        let (range, failed) = execute_args(&args, base);
+        assert!(!failed, "{range}");
+        assert!(range.contains("[range: lines 997-1000; partial file]"));
+        assert_eq!(
+            range.split_once('\n').unwrap().1,
+            text.split_inclusive('\n').skip(996).collect::<String>()
+        );
+        assert!(!full_snapshot(&range));
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("large.txt")).unwrap(),
+            text
+        );
+    }
+
+    #[test]
+    fn validates_ranges_and_preserves_the_original_full_read_contract() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a"), "one\ntwo\nlast").unwrap();
+        let base = dir.path().to_str();
+        for args in [
+            json!({"path":"a","start_line":0}),
+            json!({"path":"a","start_line":2,"end_line":1}),
+            json!({"path":"a","start_line":4}),
+            json!({"path":"a","start_line":1,"end_line":201}),
+            json!({"path":"a","start_line":"2"}),
+            json!({"path":"a","start_line":-1}),
+            json!({"path":"../a","start_line":1}),
+        ] {
+            assert!(execute_args(&args, base).1, "{args}");
+        }
+        let (full, failed) = execute_args(&json!({"path":"a"}), base);
+        assert!(!failed);
+        assert!(full_snapshot(&full));
+        assert_eq!(full, super::super::tool_read_file("a", base).0);
+        assert!(execute_args(&json!({"path":"a","start_line":3}), base)
+            .0
+            .ends_with("last"));
+    }
+
+    #[test]
+    fn only_an_untruncated_range_covering_every_byte_is_a_full_snapshot() {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dir.path().to_str();
+        for (name, body) in [
+            ("a", "one\r\n日本語\r\nlast"),
+            ("a.json", "{\"cases\": []}\n"),
+        ] {
+            std::fs::write(dir.path().join(name), body).unwrap();
+            let (full, failed) =
+                execute_args(&json!({"path":name,"start_line":1,"end_line":200}), base);
+            assert!(!failed);
+            assert!(full_snapshot(&full));
+            assert_eq!(full, super::super::tool_read_file(name, base).0);
+        }
+        for (body, start, end) in [
+            ("one\ntwo\n".into(), 2, 2),
+            ("x".repeat(8001), 1, 1),
+            ("a\n".repeat(201), 1, 200),
+        ] {
+            std::fs::write(dir.path().join("a"), body).unwrap();
+            let (partial, failed) =
+                execute_args(&json!({"path":"a","start_line":start,"end_line":end}), base);
+            assert!(!failed);
+            assert!(!full_snapshot(&partial));
+        }
+    }
+}

@@ -471,7 +471,10 @@ fn successful_literal_mutations(messages: &[Value]) -> BTreeMap<String, String> 
                         continue;
                     };
                     let payload = match name {
-                        "patch_file" => args.get("replace").and_then(|v| v.as_str()),
+                        "patch_file" => args
+                            .get("replace")
+                            .or_else(|| args.get("json_value"))
+                            .and_then(|v| v.as_str()),
                         "write_file" => args.get("content").and_then(|v| v.as_str()),
                         _ => None,
                     };
