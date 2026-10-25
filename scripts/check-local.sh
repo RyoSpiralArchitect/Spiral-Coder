@@ -10,6 +10,7 @@ cargo test --locked --all-targets
 cargo run --locked -- tui-replay --spec .spiral-coder/tui_replay.json
 python3 -S -m unittest discover -s tests -p 'test_*.py'
 node --test tests/web/*.test.mjs
+node --test tests/npm/*.test.mjs
 for file in web/*.js web/core/*.js web/observer/*.js scripts/*.mjs; do
   node --check "$file"
 done

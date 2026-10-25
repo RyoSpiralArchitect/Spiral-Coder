@@ -4,13 +4,50 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-Spiral-Coder is a coding runtime with separate **Coder**, **Observer**, and **Chat** contexts. The Coder works on a repository, the Observer critiques recorded outputs and verification evidence, and Chat supports design discussion. CLI, terminal UI, and local Web UI are included.
+Spiral-Coder pairs **Coder + Observer** in one coding loop with separate contexts: Coder works on a repository and Observer critiques recorded outputs and verification evidence. **Chat** supports design discussion. CLI, terminal UI, and local Web UI are included.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
 The project began as a two-day Mistral hackathon experiment. It is now being rebuilt as Spiral-Coder, with provider choice, durable sessions, and reproducible verification as explicit foundations. Separate contexts support review; they do not guarantee independent or correct judgments.
 
 **Renaming an existing installation?** See [migration](docs/migration-spiral-coder.md) for the new command, configuration names, and non-destructive data migration.
+
+## Install and start from your terminal
+
+The npm package provides `spiral`. It opens the TUI in your current project;
+no Rust compiler is needed. Requires **Node.js 20+**. Packages support macOS
+Apple Silicon/Intel, Linux glibc 2.35+ arm64/x64, and Windows x64.
+
+```sh
+npm install -g spiral-coder@latest
+cd your-project
+spiral
+```
+
+The [npm package](https://www.npmjs.com/package/spiral-coder) bundles its native
+binaries. Installation also supports `--ignore-scripts`, with no postinstall
+downloads. Rerun the install command to update.
+
+| Command | What it does |
+| --- | --- |
+| `spiral` | Start the TUI in the current directory |
+| `spiral -C /path/to/project` | Start in a different project |
+| `spiral --provider gemini` | Select a provider; use `/model` to choose the model |
+| `spiral --lang ja` | Start with a Japanese UI |
+| `spiral serve` | Start the local Web UI |
+| `spiral tui --help` | Show all TUI options |
+
+Set your provider's API key as described in [Quickstart](#quickstart), or use
+`/keys` in the TUI for setup help. Coder and Observer use the same selected model
+unless explicitly overridden. Ctrl+C exits. `spiral-coder` is also installed and
+preserves the original CLI behavior, including its no-argument Web UI.
+
+Remove the npm commands with
+`npm uninstall -g spiral-coder`; project files remain in place.
+See [installation troubleshooting and release instructions](docs/npm-distribution.md)
+for PATH, permissions, platform details and publication.
+
+### Build from a source checkout
 
 ```sh
 cargo install --locked --path .
@@ -430,6 +467,7 @@ Benchmark-plan proof gates now require successful explicit verification commands
 
 - OpenAI-compatible: `OPENAI_API_KEY` or `SPIRAL_CODER_API_KEY`
 - Mistral: `MISTRAL_API_KEY` (or `SPIRAL_CODER_API_KEY`)
+- Gemini: `GEMINI_API_KEY` or `GOOGLE_API_KEY`
 - Anthropic (Chat/Observer only): `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -443,6 +481,10 @@ export OPENAI_API_KEY="..."
 ```
 
 Web UI: paste keys in Settings (stored in your browser and sent only to your local server).
+
+With the npm package installed, run `spiral` for the TUI or `spiral serve` for the
+Web UI from your project directory. The scripts below are alternatives for a
+source checkout.
 
 **Web UI (recommended)**
 ```powershell
@@ -477,6 +519,7 @@ TUI defaults:
 - Run `/keys` to see which API key env var or CLI flag each pane expects.
 - Typing `/` in the composer shows a lightweight slash-command picker.
 - Typing exact `/provider` or `/model` opens an arrow-key picker (`Up/Down`, `Enter` to apply). `/provider` now exposes vendor presets such as `openai`, `gemini`, `anthropic-compat`, `mistral`, `anthropic`, and `hf`; `/model` follows the selected preset and still offers `other` for manual entry.
+  Current candidates and API constraints are listed in the [model catalog](docs/model-catalog.md).
 - If a pane is missing a required API key or model, send is blocked and the TUI shows a warning instead of running.
 
 **Headless Coder (CLI)**

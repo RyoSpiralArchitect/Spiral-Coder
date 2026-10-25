@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use crate::modes::Mode;
 use crate::personas;
 
+pub(crate) mod model_catalog;
+
 #[derive(Clone, Debug, PartialEq, ValueEnum, Serialize, Deserialize)]
 pub enum ProviderKind {
     #[serde(rename = "openai-compatible")]
@@ -141,51 +143,13 @@ impl ProviderPreset {
     }
 
     pub fn representative_models(self) -> &'static [&'static str] {
-        match self {
-            ProviderPreset::OpenAi => &[
-                "gpt-5-mini",
-                "gpt-5",
-                "gpt-4.1-mini",
-                "gpt-4.1",
-                "gpt-4o-mini",
-                "other",
-            ],
-            ProviderPreset::Gemini => &[
-                "gemini-2.5-flash",
-                "gemini-2.5-pro",
-                "gemini-2.5-flash-lite",
-                "gemini-2.0-flash",
-                "other",
-            ],
-            ProviderPreset::AnthropicCompat | ProviderPreset::Anthropic => &[
-                "claude-sonnet-4-6",
-                "claude-haiku-4-5",
-                "claude-opus-4-6",
-                "claude-sonnet-4-5",
-                "other",
-            ],
-            ProviderPreset::OpenAiCompatibleCustom => &[
-                "gpt-5-mini",
-                "gemini-2.5-flash",
-                "claude-sonnet-4-6",
-                "other",
-            ],
-            ProviderPreset::Mistral => &[
-                "devstral-small-latest",
-                "codestral-latest",
-                "devstral-medium-latest",
-                "mistral-small-latest",
-                "mistral-large-latest",
-                "other",
-            ],
-            ProviderPreset::HfLocal => &["local", "other"],
-        }
+        model_catalog::models(self)
     }
 
     pub fn default_model(self, vibe: bool) -> &'static str {
         match self {
             ProviderPreset::OpenAi => "gpt-5-mini",
-            ProviderPreset::Gemini => "gemini-2.5-flash",
+            ProviderPreset::Gemini => "gemini-3.5-flash-lite",
             ProviderPreset::AnthropicCompat | ProviderPreset::Anthropic => "claude-sonnet-4-6",
             ProviderPreset::OpenAiCompatibleCustom => "gpt-5-mini",
             ProviderPreset::Mistral => {
@@ -259,15 +223,7 @@ pub fn representative_models_for_run(cfg: &RunConfig) -> &'static [&'static str]
 }
 
 pub fn should_send_temperature(provider: &ProviderKind, base_url: &str, model: &str) -> bool {
-    let model = model.trim().to_ascii_lowercase();
-    match detect_provider_preset(provider, base_url) {
-        // GPT-5 family commonly rejects explicit temperature on OpenAI-compatible APIs,
-        // including first-party OpenAI and custom/proxied OpenAI-compatible gateways.
-        ProviderPreset::OpenAi | ProviderPreset::OpenAiCompatibleCustom => {
-            !model.starts_with("gpt-5")
-        }
-        _ => true,
-    }
+    model_catalog::supports_temperature(provider, base_url, model)
 }
 
 pub fn should_send_temperature_for_run(cfg: &RunConfig) -> bool {
@@ -651,7 +607,7 @@ mod tests {
             hf_local_only: false,
         };
         assert_eq!(provider_preset_for_run(&cfg), ProviderPreset::Gemini);
-        assert_eq!(representative_models_for_run(&cfg)[0], "gemini-2.5-flash");
+        assert_eq!(representative_models_for_run(&cfg)[0], "gemini-3.8-flash");
     }
 
     #[test]
@@ -662,7 +618,7 @@ mod tests {
                 "https://generativelanguage.googleapis.com/v1beta/openai",
                 false,
             ),
-            "gemini-2.5-flash"
+            "gemini-3.5-flash-lite"
         );
         assert_eq!(
             default_model(
@@ -713,9 +669,9 @@ mod tests {
                         cfg.base_url,
                         "https://generativelanguage.googleapis.com/v1beta/openai"
                     );
-                    assert_eq!(cfg.model, "gemini-2.5-flash");
-                    assert_eq!(cfg.chat_model, "gemini-2.5-flash");
-                    assert_eq!(cfg.code_model, "gemini-2.5-flash");
+                    assert_eq!(cfg.model, "gemini-3.5-flash-lite");
+                    assert_eq!(cfg.chat_model, "gemini-3.5-flash-lite");
+                    assert_eq!(cfg.code_model, "gemini-3.5-flash-lite");
                 })
             })
         });

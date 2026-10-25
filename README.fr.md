@@ -4,13 +4,49 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![UI](https://img.shields.io/badge/UI-web%20%2B%20TUI-2dd4bf)
 
-Spiral-Coder est un moteur de développement avec des contextes séparés pour **Coder**, **Observer** et **Chat**. Coder agit dans le dépôt, Observer examine les sorties et les preuves de vérification, et Chat accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
+Spiral-Coder associe **Coder + Observer** dans une même boucle de développement, avec des contextes séparés : Coder agit dans le dépôt et Observer examine les sorties et les preuves de vérification. **Chat** accompagne la conception. Le projet propose une CLI, une TUI et une interface Web locale.
 
 Languages: [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md)
 
 Né d’un prototype réalisé en environ deux jours pour un hackathon Mistral, le projet devient Spiral-Coder. Les priorités sont le choix du fournisseur, la sauvegarde et la reprise des sessions, et des vérifications reproductibles. Des contextes séparés ne garantissent pas à eux seuls une critique indépendante ou correcte.
 
 Pour une installation existante, voir le [guide de migration](docs/migration-spiral-coder.md). Les anciennes données sont conservées.
+
+## Installer avec npm et démarrer
+
+La commande `spiral` ouvre la TUI dans le projet courant. **Node.js 20+** est
+nécessaire ; aucun compilateur Rust n'est requis. Les plateformes prises en charge
+sont macOS Apple Silicon/Intel, Linux glibc 2.35+ arm64/x64 et Windows x64.
+
+```sh
+npm install -g spiral-coder@latest
+cd your-project
+spiral
+```
+
+Le [paquet npm](https://www.npmjs.com/package/spiral-coder) inclut les exécutables.
+L'installation accepte aussi `--ignore-scripts`, sans téléchargement postinstall.
+Relancez la même commande pour mettre à jour.
+
+| Commande | Fonction |
+| --- | --- |
+| `spiral` | Ouvrir la TUI dans le dossier courant |
+| `spiral -C /path/to/project` | Choisir un autre projet |
+| `spiral --provider gemini` | Choisir le fournisseur, puis `/model` pour le modèle |
+| `spiral --lang fr` | Démarrer avec l'interface française |
+| `spiral serve` | Démarrer l'interface Web locale |
+| `spiral tui --help` | Afficher toutes les options TUI |
+
+Configurez la clé API selon le [démarrage rapide](#demarrage-rapide), ou consultez
+`/keys` dans la TUI. Coder et Observer utilisent le même modèle sélectionné sauf
+configuration explicite. Ctrl+C quitte l'application. `spiral-coder` conserve
+le comportement CLI d'origine, notamment l'interface Web sans arguments.
+
+`npm uninstall -g spiral-coder` supprime les commandes sans supprimer vos projets.
+Consultez le [guide de distribution](docs/npm-distribution.md) pour le PATH, les
+permissions, les plateformes et la publication.
+
+### Compiler depuis un checkout du dépôt
 
 ```sh
 cargo install --locked --path .
@@ -368,6 +404,7 @@ Chaque champ est intentionnel. `quote` epingle la ligne exacte incriminee sur la
 
 - OpenAI-compatible : `OPENAI_API_KEY` ou `SPIRAL_CODER_API_KEY`
 - Mistral : `MISTRAL_API_KEY` (ou `SPIRAL_CODER_API_KEY`)
+- Gemini : `GEMINI_API_KEY` ou `GOOGLE_API_KEY`
 - Anthropic (Chat/Observer uniquement) : `ANTHROPIC_API_KEY`
 
 ```powershell
@@ -381,6 +418,9 @@ export OPENAI_API_KEY="..."
 ```
 
 UI Web : collez les cles dans Settings (stocke dans le navigateur et envoye uniquement a votre serveur local).
+
+Après installation avec npm, lancez `spiral` (TUI) ou `spiral serve` (Web) depuis
+votre projet. Les scripts ci-dessous sont des alternatives pour un checkout source.
 
 **UI Web (recommande)**
 ```powershell
@@ -415,6 +455,7 @@ Comportement par defaut du TUI :
 - Lancez `/keys` pour voir quelle variable d'environnement ou option CLI chaque panneau attend pour la cle API.
 - Taper `/` dans le composeur affiche un petit picker de commandes slash.
 - Taper exactement `/provider` ou `/model` ouvre un picker au clavier (`↑/↓`, `Enter`). `/provider` propose des presets fournisseur (`openai`, `gemini`, `anthropic-compat`, `mistral`, `anthropic`, `hf`) et `/model` suit le preset courant, avec `other` pour une saisie manuelle.
+  Voir le [catalogue de modèles](docs/model-catalog.md) pour les candidats actuels et leurs contraintes API.
 - Si un panneau n'a pas la cle API requise ou n'a pas de modele, l'envoi est bloque et le TUI affiche un avertissement.
 
 **Coder headless (CLI)**

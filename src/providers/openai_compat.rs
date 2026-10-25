@@ -216,6 +216,17 @@ impl ChatProvider for OpenAICompatibleProvider {
             }
         }
 
+        crate::config::model_catalog::prepare_chat_payload(
+            &mut payload,
+            &if self.kind_label.eq_ignore_ascii_case("mistral") {
+                crate::config::ProviderKind::Mistral
+            } else {
+                crate::config::ProviderKind::OpenAiCompatible
+            },
+            &self.base_url,
+            &self.model,
+        );
+
         let mut last_err: Option<anyhow::Error> = None;
         let mut want_completions = false;
 
