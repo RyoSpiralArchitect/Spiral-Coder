@@ -158,8 +158,8 @@ success-output heuristic in `src/tui/agent.rs` scans broad substrings such as
 `exception`, also present in passing test names. A separately selected displayed
 diagnostic named a passing `failed_assertion ... ok` case. The full stdout was
 not retained, so the exact first triggering substring cannot be established.
-The false failure caused recovery and unnecessary comment edits; the required
-quiet command later passed.
+The false failure was followed by recovery and one comment-only edit; the
+required quiet command later passed.
 
 The next bounded task should fix success-output classification with both real
 error controls and passing test-name controls. A separate next repair task
