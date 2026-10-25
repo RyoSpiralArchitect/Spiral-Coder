@@ -16,6 +16,10 @@ item in the visible window. Compact tab labels keep all five destinations visibl
 at normal 80-column sizes. Very small terminals remain renderable, but do not
 provide the same amount of readable content as an 80×24 terminal.
 
+The dated [model catalog](model-catalog.md) records current choices, provider
+transport constraints, and the Gemini preset default. Saved model IDs remain
+valid preferences even when they leave the curated list.
+
 ## Input and provider readiness
 
 - `Ctrl+O` asks Observer to review the latest completed Coder response. It opens
