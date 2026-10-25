@@ -1,0 +1,45 @@
+[
+  {
+    "id": "pilot-cli",
+    "baseline": {
+      "passed": false,
+      "checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": false,
+        "original_test_count": true,
+        "requested_documentation": false
+      },
+      "logs": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "exit_code": 1,
+          "timed_out": false,
+          "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-t3igawyc/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-t3igawyc/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.337s\n\nFAILED (failures=1)\n"
+        }
+      ],
+      "documentation_proxy_revision": "shell-whitespace-v2",
+      "source_matches_reference": false
+    },
+    "reference": {
+      "passed": true,
+      "checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": true,
+        "original_test_count": true,
+        "requested_documentation": true
+      },
+      "logs": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "exit_code": 0,
+          "timed_out": false,
+          "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.333s\n\nOK\n"
+        }
+      ],
+      "documentation_proxy_revision": "shell-whitespace-v2",
+      "source_matches_reference": true
+    }
+  }
+]

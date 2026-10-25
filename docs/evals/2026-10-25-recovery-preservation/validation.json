@@ -1,0 +1,67 @@
+{
+  "quality_commit": "506bfef4d56b31cbd3d6e7025aa98b83b6641efb",
+  "live_runtimes": [
+    "b877a3e5060e4ad721122f47202882ee8eaf4da6",
+    "a3574fabf82607bac7543990f9ff8afadb851262"
+  ],
+  "audit_integrated_commit": "2d933dc211085e2c68309db26098f27a19595beb",
+  "audit_only_change_live_qualified": false,
+  "checks": {
+    "quality_rust": {
+      "local_log": "/tmp/spiral-preserve-20261025-audit-tests.log",
+      "sha256": "79f0f957be86b2453c25c7cbc2c8745867f12c8180b1813a985dbfa9746ff6fe",
+      "summary": [
+        "test result: ok. 845 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.65s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s"
+      ]
+    },
+    "frozen_integrated_rust": {
+      "local_log": "/tmp/spiral-preserve-20261025-integrated-final.log",
+      "sha256": "0b1698073a072044b03cd9f5554acb17f489e1db286042d827ee79c18339f689",
+      "summary": [
+        "test result: ok. 853 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.76s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s"
+      ]
+    },
+    "final_integrated_rust": {
+      "local_log": "/tmp/spiral-preserve-20261025-integrated-audit.log",
+      "sha256": "cd0b1d7f5c7827814eb5429aebbc53db22e4df147c0320e54527e6a524d02551",
+      "summary": [
+        "test result: ok. 854 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.07s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s"
+      ]
+    },
+    "frozen_tui_replay": {
+      "local_log": "/tmp/spiral-preserve-20261025-replay-final.log",
+      "sha256": "819db3d97b5fb27f080e832ffcd4a2599933e4a1896ac165cb34b9b84c929dab",
+      "summary": [
+        "[tui-replay] summary: 7/7 passed, report=/Users/ryospiralarchitect/.cache/spiral-coder/capacity-runtime-20261024/.tmp/tui_replay_1792861415/report.json"
+      ]
+    },
+    "final_tui_replay": {
+      "local_log": "/tmp/spiral-preserve-20261025-replay-audit.log",
+      "sha256": "923abb359c17a7c034d3508974dc3ed3fe254a9ec902537c20285ec40cd469fb",
+      "summary": [
+        "[tui-replay] summary: 7/7 passed, report=/Users/ryospiralarchitect/.cache/spiral-coder/capacity-runtime-20261024/.tmp/tui_replay_1792861731/report.json"
+      ]
+    },
+    "python": {
+      "local_log": "/tmp/spiral-preserve-20261025-python-final.log",
+      "sha256": "8c45b18c58876218904e655f7ab23debd91f83cbc7fca4eb04733a258880f883",
+      "summary": [
+        "Ran 38 tests in 0.737s",
+        "OK"
+      ]
+    }
+  },
+  "new_live_requests": 118,
+  "extra_reassessment_requests": 0,
+  "public_scan": {
+    "files": 20,
+    "provider_credentials_checked": 3,
+    "credential_value_matches": 0,
+    "opaque_field_matches": 0
+  },
+  "verified_raw_manifest_entries": 549,
+  "verified_latest_inventory_entries": 343
+}

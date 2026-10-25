@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-23T18:59:03.956759+00:00",
+  "scope": "Six profiles, pilot-cli only, same model for Coder and Observer. One compatibility baseline and one runtime intervention round, no retries in place. No causal or general capacity claim.",
+  "max_task_requests": 288,
+  "request_cap_per_episode": 24,
+  "same_task_oracles_and_matrix": true,
+  "protocol_requests_separate": 4,
+  "compatibility": "GPT-5.6 Luna reasoning none, max_completion_tokens, temperature omitted. Mistral Large 4 temperature 0 plus top_p 1.",
+  "planned_joint_intervention": [
+    "Retain provider-authored rejected batches and correlated refusal results without executing or rewriting signed calls.",
+    "Expose a structured next-action contract and reserve the final shared request for authored done/handoff. Prefer report-only near the cap when declared native proof is complete. Keep all acceptance/proof gates authoritative."
+  ],
+  "limitations": [
+    "A joint, adaptive development probe, not an isolated ablation.",
+    "Luna reasoning-enabled capacity is not measured by Chat Completions none mode.",
+    "One episode per profile per round cannot establish stable rates."
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "created_at": "2026-10-24T15:00:50.671970+00:00",
+  "retained_baseline": "capacity-20261024-small-r2/assessment-002.json",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "same_model_both_roles": true,
+  "case": "pilot-cli",
+  "maximum_new_rounds": 2,
+  "maximum_requests_per_episode": 24,
+  "maximum_new_task_requests": 144,
+  "wall_seconds_per_episode": 600,
+  "inputs": "Exact retained R2 suite, prompts, original workspace inventories, matrix, run driver and selection-paraphrases-v4 assessor. No oracle change.",
+  "retry_policy": "No retry in place and no model fallback. Retain all started episodes including transport failures. Declare an adaptive second round separately before calls if needed.",
+  "changes": [
+    "Deterministic format-only protocol/Observer parsing: single complete JSON object, known field aliases/types, unknown metadata discarded, no missing decisions inferred; duplicate or ambiguous JSON rejected.",
+    "Retain unittest case identity in compact diagnostics and recent correlated failures in shared repair brief.",
+    "Use plain report instructions and remove only an exact leading current report-context echo before validation/display; original native calls unchanged."
+  ],
+  "primary_outcome": "Independent artifacts plus native baseline/fresh verification plus accepted authored report. Strict all-file scope reported separately.",
+  "secondary_outcomes": [
+    "Actual format normalization observed in raw protocol and Observer text",
+    "Protocol refusals, repeated check failures and changed case identities",
+    "Report-context echo in final rendered answer",
+    "Shared requests by role"
+  ],
+  "limitations": [
+    "Adaptive development fixture, not held out",
+    "Joint intervention, not causal ablation",
+    "One episode per model per round with retained earlier baseline, not randomized controls",
+    "Format recovery and valid proof do not imply semantic success"
+  ]
+}

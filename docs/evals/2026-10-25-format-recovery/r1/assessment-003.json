@@ -1,0 +1,1992 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-24T15:20:17.909881+00:00",
+  "predeclaration_sha256": "0c439faf6614abd46fbc8e91d9da1254a63d169e66c89c533126377eb455dbb4",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+    "coupled_bench/evidence.py": "619fee11ee9438278bcc71e8d513c3160f298e85ea8f1d518b0fcbd7d6aca6c0",
+    "coupled_bench/oracles.py": "57e93e9869ff39766719f2412e740e8f69ce2378e71c3264fcee6d2b7376c649",
+    "coupled_bench/runner.py": "4f9a2b18de1cfc754299075fa97f7c7e6d2a114664e52032a20ea63fd4d3450e",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/aee98049ba6c9de64e72396b092ceabfa07d5f618078ae997fd5f80cf2f0a9b8",
+  "matches_declared_driver": false,
+  "rows": [
+    {
+      "profile": {
+        "id": "gemini-lite",
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "comparison_role": "weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "gemini-lite",
+        "model": "gemini-3.5-flash-lite",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 123.465,
+        "finished_at": "2026-10-24T15:06:35.032647+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "accepted-omitted-remaining-v1",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Summary of changes:\n- Repaired case-selection regression in `scripts/run_coupled_pilot.py` by filtering `cases` when `args.case` is specified, preserving original suite order and deduplicating selected cases while ensuring unknown IDs fail before output creation or execution.\n- Updated `docs/pilot.md` with an example using `--case alpha --case gamma` and explained duplicate handling, original suite order, unknown ID failures, and the no-filter default behavior.\n\nChanged files:\n- artifact path: scripts/run_coupled_pilot.py\n- artifact path: docs/pilot.md\n\nRecorded outcomes:\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\n\nRemaining work: None.",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "docs/pilot.md",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "scripts/run_coupled_pilot.py",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "requests": 15,
+      "request_roles": {
+        "coder": 15
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 22730,
+          "estimated_input_tokens": 7079,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3475,
+          "estimated_input_tokens": 7052,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2496,
+          "estimated_input_tokens": 8011,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7234,
+          "estimated_input_tokens": 9401,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7940,
+          "estimated_input_tokens": 11769,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5259,
+          "estimated_input_tokens": 13057,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3562,
+          "estimated_input_tokens": 15308,
+          "id": 6,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4495,
+          "estimated_input_tokens": 16490,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6365,
+          "estimated_input_tokens": 14552,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5473,
+          "estimated_input_tokens": 13780,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 17791,
+          "estimated_input_tokens": 14250,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 14817,
+          "estimated_input_tokens": 13937,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 12846,
+          "estimated_input_tokens": 14698,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1989,
+          "estimated_input_tokens": 14578,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2708,
+          "estimated_input_tokens": 14179,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        }
+      ],
+      "assists": [],
+      "blocks": {
+        "Plan Gate": 2,
+        "unspecified governor": 2
+      },
+      "actions": [
+        {
+          "call_id": "call_814333",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_872736",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan has too many acceptance criteria (max 4)\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nexec\narguments:\n{\"command\":\"python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\"}"
+        },
+        {
+          "call_id": "call_13093",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 3,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/gemini-lite/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\nFile \"/Users/ryospiralarchitect/.cache/spiral-cod"
+        },
+        {
+          "call_id": "call_875969",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 4,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-166; partial file] [pruned 150L]"
+        },
+        {
+          "call_id": "call_855922",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 120,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 50-116; partial file] [pruned 68L]"
+        },
+        {
+          "call_id": "call_754042",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file] [pruned 4L]"
+        },
+        {
+          "call_id": "call_833659",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 95,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 75
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 75-95; partial file] [pruned 22L]"
+        },
+        {
+          "call_id": "call_631540",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 85,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 8,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evaluator Loop]\npolicy_id: force_mutation_after_observation_loop\npattern: repeated_observation_loop\nBlocked tool call: read_file(end_line=85, path=scripts/run_coupled_pilot.py, start_line=60)\nBlocked repeat: read_file(end_line=95, path=scripts/run_coupled_pilot.py, start_line=75)\nRequired now: use one of patch_file, apply_diff.\nExit hint: Apply the minimal change, then verify with `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v` before `done`.\nThis rejection was generated by a trace-derived runtime policy patch.\n\ntool:\nread_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"start_line\":60,\"end_line\":85}"
+        },
+        {
+          "call_id": "call_785284",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -77,5 +77,10 @@\n     cases = json.loads(spec_bytes)[\"cases\"]\n-    requested = set(args.case)\n-    unknown = requested - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    if args.case:\n+        requested = set(args.case)\n+        unknown = requested - {case[\"id\"] for case in cases}\n+        if unknown:\n+            parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+        selected = [case for case in cases if case[\"id\"] in requested]\n+    else:\n+        selected = cases\n     out.mkdir(parents=True)",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: applied 1/1 hunk(s) to 'scripts/run_coupled_pilot.py' [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_886865",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Coupled pilot\n\nRun the pilot using `scripts/run_coupled_pilot.py`.\n\n## Case Selection\n\nYou can run specific test cases using one or more `--case` flags.\n\n### Example\n\n```bash\npython3 scripts/run_coupled_pilot.py --binary ./target/release/pilot --repo . --out receipts --provider openai --model gpt-4o --case alpha --case gamma\n```\n\n### Selection Rules\n\n- **Original Suite Order**: Selected cases are always executed in their original suite order, regardless of the order in which `--case` flags are provided.\n- **Duplicates**: Duplicate `--case` flags (e.g. `--case gamma --case alpha --case gamma`) are ignored; each named case runs at most once.\n- **Unknown IDs**: Unknown case IDs fail immediately before creating output directories or executing any cases.\n- **No-Filter Default**: Without any `--case` flags, all cases in the suite are run.\n",
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 10,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED: write_file refused because 'docs/pilot.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        },
+        {
+          "call_id": "call_845173",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 10,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 11,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file]\n# Coupled pilot\n\nRun the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.\n"
+        },
+        {
+          "call_id": "call_845388",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -1,3 +1,19 @@\n # Coupled pilot\n \n-Run the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.\n+Run the pilot using `scripts/run_coupled_pilot.py`.\n+\n+## Case Selection\n+\n+You can run specific test cases using one or more `--case` flags.\n+\n+### Example\n+\n+```bash\n+python3 scripts/run_coupled_pilot.py --binary ./target/release/pilot --repo . --out receipts --provider openai --model gpt-4o --case alpha --case gamma\n+```\n+\n+### Selection Rules\n+\n+- **Original Suite Order**: Selected cases are always executed in their original suite order, regardless of the order in which `--case` flags are provided.\n+- **Duplicates**: Duplicate `--case` flags (e.g. `--case gamma --case alpha --case gamma`) are ignored; each named case runs at most once.\n+- **Unknown IDs**: Unknown case IDs fail immediately before creating output directories or executing any cases.\n+- **No-Filter Default**: Without any `--case` flags, all cases in the suite are run.",
+            "path": "docs/pilot.md"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "OK: applied 1/1 hunk(s) to 'docs/pilot.md'\n[history digest — kept 10/17 lines, 1269 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=6e894a97986eedc4 after=f6a4ec17103cde4c\ntest_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key"
+        },
+        {
+          "call_id": "call_905191",
+          "tool": "exec",
+          "arguments": {
+            "command": "git status"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 13,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\n[history digest — kept 10/21 lines, 764 chars]\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/gemini-lite/pilot-cli/workspace\nstdout:\nOn branch main\nChanges not staged for commit:\n(use \"git add <file>...\" to update what will be committed)\n(use \"git restore <file>...\" to discard changes in working directory)\nmodified: .spiral-coder/tui-work.json\nmodified: docs/pilot.md\nmodified: scripts/run_coupled_pilot.py"
+        },
+        {
+          "call_id": "call_978337",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 14,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/gemini-lite/pilot-cli/workspace"
+        },
+        {
+          "call_id": "call_784691",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              "acceptance 1 | python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+            ],
+            "completed_acceptance": [
+              "acceptance 1"
+            ],
+            "next_steps": "None",
+            "remaining_acceptance": [],
+            "summary": "Summary of changes:\n- Repaired case-selection regression in `scripts/run_coupled_pilot.py` by filtering `cases` when `args.case` is specified, preserving original suite order and deduplicating selected cases while ensuring unknown IDs fail before output creation or execution.\n- Updated `docs/pilot.md` with an example using `--case alpha --case gamma` and explained duplicate handling, original suite order, unknown ID failures, and the no-filter default behavior.\n\nChanged files:\n- artifact path: scripts/run_coupled_pilot.py\n- artifact path: docs/pilot.md\n\nRecorded outcomes:\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\n\nRemaining work: None."
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 15,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true,
+          "requested_documentation": true
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.352s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "openai-mini",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "comparison_role": "retained weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "openai-mini",
+        "model": "gpt-4.1-mini",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 159.054,
+        "finished_at": "2026-10-24T15:07:10.635987+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "accepted-omitted-remaining-v1",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "The case-selection regression in scripts/run_coupled_pilot.py was repaired to ensure repeated --case flags select each named case once in the original suite order, unknown IDs cause immediate failure, and without --case all cases run. The documentation in docs/pilot.md was updated with an example using --case alpha --case gamma and explanations about duplicates, original suite order, unknown IDs, and the default behavior of running all cases when no --case flags are given. Verification was done using the exact command python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v, which showed Before: FAILED and After: PASSED. No further work remains.",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "docs/pilot.md",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "scripts/run_coupled_pilot.py",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "requests": 24,
+      "request_roles": {
+        "coder": 23,
+        "observer": 1
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 23433,
+          "estimated_input_tokens": 7114,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2149,
+          "estimated_input_tokens": 7052,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3110,
+          "estimated_input_tokens": 7982,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4954,
+          "estimated_input_tokens": 7892,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4082,
+          "estimated_input_tokens": 8098,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 8200,
+          "estimated_input_tokens": 9973,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4014,
+          "estimated_input_tokens": 10299,
+          "id": 6,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2185,
+          "estimated_input_tokens": 10342,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 9660,
+          "estimated_input_tokens": 11527,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3618,
+          "estimated_input_tokens": 11574,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7225,
+          "estimated_input_tokens": 11961,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7014,
+          "estimated_input_tokens": 11597,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3063,
+          "estimated_input_tokens": 11075,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2817,
+          "estimated_input_tokens": 12119,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6207,
+          "estimated_input_tokens": 12400,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 17288,
+          "estimated_input_tokens": 12341,
+          "id": 15,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5260,
+          "estimated_input_tokens": 11597,
+          "id": 16,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3591,
+          "estimated_input_tokens": 12443,
+          "id": 17,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2858,
+          "estimated_input_tokens": 12847,
+          "id": 18,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4039,
+          "estimated_input_tokens": 13221,
+          "id": 19,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 13901,
+          "estimated_input_tokens": 6841,
+          "id": 20,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 9701,
+          "estimated_input_tokens": 13913,
+          "id": 21,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3466,
+          "estimated_input_tokens": 12957,
+          "id": 22,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 2614,
+          "estimated_input_tokens": 13728,
+          "id": 23,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed"
+        }
+      ],
+      "assists": [],
+      "blocks": {
+        "Plan Gate": 1,
+        "Think Gate": 1,
+        "Requirement Gate": 1,
+        "unspecified governor": 1,
+        "Final handoff": 7
+      },
+      "actions": [
+        {
+          "call_id": "call_CxVj6imAgzY0NYJDioRC3Diu",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"start_line\":1,\"end_line\":40}"
+        },
+        {
+          "call_id": "call_5lNQc9N244ig3NeLb68L8KDa",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-40; partial file] [pruned 41L]"
+        },
+        {
+          "call_id": "call_quwC9oC55Y1CbmAzUjkVMcvh",
+          "tool": "search_files",
+          "arguments": {
+            "pattern": "--case"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 3,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Think Gate] Missing <think>.\nRequired now: emit a valid <think> with goal/step/tool/risk/doubt/next/verify immediately before your tool call.\n\ntool:\nsearch_files\narguments:\n{\"pattern\":\"--case\"}"
+        },
+        {
+          "call_id": "call_rMGDGOj3qZvaGqLEvikKL9SP",
+          "tool": "search_files",
+          "arguments": {
+            "dir": "scripts",
+            "pattern": "case"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 4,
+          "freshness": "before_mutation",
+          "result_excerpt": "[search_files: 'case' — 44 match(es)] [pruned 11L]"
+        },
+        {
+          "call_id": "call_cCApe06ERHX8WLLWgLvA9B52",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 90,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 50-90; partial file] [pruned 42L]"
+        },
+        {
+          "call_id": "call_G65xEs8DKxGv5eaP1nO68Jx7",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -62,11 +62,22 @@\n-    requested = set(args.case)\n-    unknown = requested - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    selected = cases\n+    requested = args.case\n+    unknown = set(requested) - {case[\"id\"] for case in cases}\n+    if unknown:\n+        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+    if requested:\n+        # Preserve original suite order, include each requested case once\n+        seen = set()\n+        selected = []\n+        for case in cases:\n+            if case[\"id\"] in requested and case[\"id\"] not in seen:\n+                selected.append(case)\n+                seen.add(case[\"id\"])\n+    else:\n+        selected = cases\n ",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 6,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\npython3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.\n\ntool:\napply_diff\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"diff\":\"@@ -62,11 +62,22 @@\\n-    requested = set(args.case)\\n-    unknown = requested - {case[\\\"id\\\"] for case in cases}\\n-    if unknown:\\n-        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unknown)))\\n-    selected = cases\\n+    requested = args.case\\n+    unknown = set(requested) - {case[\\\"id\\\"] for case in cases}\\n+    if unknown:\\n+        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unkn"
+        },
+        {
+          "call_id": "call_GG4ZIAuPCyTKu5MNtSJUgYyo",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 7,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/openai-mini/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\nFile \"/Users/ryospiralarchitect/.cache/spiral-cod"
+        },
+        {
+          "call_id": "call_FEp7o26eFgthUAG18JEa0o7M",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 80,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 60-80; partial file] [pruned 22L]"
+        },
+        {
+          "call_id": "call_9i4DN0ZwpSZvlREivBbN6e6t",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -61,14 +61,26 @@\n-    requested = args.case\n-    unknown = set(requested) - {case[\"id\"] for case in cases}\n-    if unknown:\n-        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n-    if requested:\n-        # Preserve original suite order, include each requested case once\n-        seen = set()\n-        selected = []\n-        for case in cases:\n-            if case[\"id\"] in requested and case[\"id\"] not in seen:\n-                selected.append(case)\n-                seen.add(case[\"id\"])\n-    else:\n-        selected = cases\n+    requested = args.case\n+    unknown = set(requested) - {case[\"id\"] for case in cases}\n+    if unknown:\n+        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n+    if requested:\n+        # Preserve original suite order, include each requested case once\n+        seen = set()\n+        selected = []\n+        for case in cases:\n+            if case[\"id\"] in requested and case[\"id\"] not in seen:\n+                selected.append(case)\n+                seen.add(case[\"id\"])\n+        # Add any requested cases not in original order (should not happen but for safety)\n+        for case_id in requested:\n+            if case_id not in seen:\n+                parser.error(\"Unknown case ID(s): \" + case_id)\n+    else:\n+        selected = cases\n",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    requested = args.case\\\\n    unknown = set(requested) - {case[\\\"id\\\"] for case in cases}\\\\n    if unknown:\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 70-75):\n70 |     unknown = requested - {case[\"id\"] for case in cases}\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     selected = cases\n74 |     out.mkdir(parents=True)\n75 |     (out / \"spec.json\").write_bytes(spec_bytes)\nCurrent file tail (lines 161-166):\n161 |         (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n162 |         print(json.dumps(result, ensure_ascii=False), flush=True)\n163 | \n164 | \n165 | if __name__ =="
+        },
+        {
+          "call_id": "call_z09BQAnR4tKJKVosoECGyO8z",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 80,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 10,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 60-80; partial file] [pruned 22L]"
+        },
+        {
+          "call_id": "call_vjtMFedM3BMxTb5prZNaz4Kb",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    requested = args.case\n    unknown = set(requested) - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    if requested:\n        # Preserve original suite order, include each requested case once\n        seen = set()\n        selected = []\n        for case in cases:\n            if case[\"id\"] in requested and case[\"id\"] not in seen:\n                selected.append(case)\n                seen.add(case[\"id\"])\n        # Add any requested cases not in original order (should not happen but for safety)\n        for case_id in requested:\n            if case_id not in seen:\n                parser.error(\"Unknown case ID(s): \" + case_id)\n    else:\n        selected = cases",
+            "search": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 11,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'scripts/run_coupled_pilot.py' (+13 lines, 179 total) [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_cA2WqBB4xgS9lCXyGpO39K11",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 12,
+          "freshness": "superseded",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file] [pruned 4L]"
+        },
+        {
+          "call_id": "call_mit1dRLcTL2F2GymalA7Io2k",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Coupled pilot\n\nRun the pilot using scripts/run_coupled_pilot.py.\n\n## Case selection\n\nYou can select specific cases to run using the `--case` flag multiple times.\n\nExample:\n```\npython3 scripts/run_coupled_pilot.py --case alpha --case gamma\n```\n\nThis will run only the cases with IDs `alpha` and `gamma` in the original suite order.\n\n- Repeated `--case` flags selecting the same case ID are treated as one selection; duplicates are ignored.\n- The cases are always run in the original suite order, regardless of the order of `--case` flags.\n- If you do not specify any `--case` flags, all cases run by default.\n- If you specify any unknown case IDs, the program will fail immediately with an error before running any cases.\n\nThis behavior preserves the original suite order and ensures no duplicate runs of the same case.\n",
+            "path": "docs/pilot.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 13,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED: write_file refused because 'docs/pilot.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        },
+        {
+          "call_id": "call_brAqrUpqqUmv2FUZIyJ9EeQi",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 40,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 14,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes) [range: lines 1-3; partial file] [pruned 4L]"
+        },
+        {
+          "call_id": "call_wISsb8ePZkHcltLiCbMJCfzE",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -1,3 +1,26 @@\n # Coupled pilot\n \n-Run the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.\n+Run the pilot using scripts/run_coupled_pilot.py.\n+\n+## Case selection\n+\n+You can select specific cases to run using the `--case` flag multiple times.\n+\n+Example:\n+```\n+python3 scripts/run_coupled_pilot.py --case alpha --case gamma\n+```\n+\n+This will run only the cases with IDs `alpha` and `gamma` in the original suite order.\n+\n+- Repeated `--case` flags selecting the same case ID are treated as one selection; duplicates are ignored.\n+- The cases are always run in the original suite order, regardless of the order of `--case` flags.\n+- If you do not specify any `--case` flags, all cases run by default.\n+- If you specify any unknown case IDs, the program will fail immediately with an error before running any cases.\n+\n+This behavior preserves the original suite order and ensures no duplicate runs of the same case.\n",
+            "path": "docs/pilot.md"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 15,
+          "freshness": "current",
+          "result_excerpt": "OK: applied 1/1 hunk(s) to 'docs/pilot.md' [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_TTU407bK6VNOBcoRKQlgdsUR",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 16,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/openai-mini/pilot-cli/workspace"
+        },
+        {
+          "call_id": "call_eb3A0oZvQ3uRgetVVVGFngHx",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "next_steps": "No further steps required; task complete.",
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with usage example and explanation of case selection behavior. Verified with python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED, After: PASSED."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 17,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_SZKdRSB7R2VoMjqppPUZswvV",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with usage example and explanation of case selection behavior. Verified with python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`, After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No further steps required; task complete."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 18,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_x9e4jHBybuJ35UMchGOrtV8T",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with usage example and explanation of case selection behavior. Verified with python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`, After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No further steps required; task complete."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 19,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_LcU4CzWkecNfxruJBPdI0Ydp",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with usage example and explanation of case selection behavior. Verified with python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`, After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No further steps required; task complete."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 20,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_qUSYxH0G71yTE1BTRjloGvc0",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "remaining_acceptance": [],
+            "summary": "Repaired case-selection regression in scripts/run_coupled_pilot.py to preserve original suite order and ignore duplicates. Updated docs/pilot.md with usage example and explanation of case selection behavior. Verified with python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`, After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No further steps required; task complete."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 21,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_g2EUaphrMGWJG6nQo9SIxwyw",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "next_steps": "No further steps required.",
+            "remaining_acceptance": [],
+            "summary": "Repaired the case-selection regression in scripts/run_coupled_pilot.py to ensure repeated --case flags select each named case once in the original suite order, unknown IDs cause immediate failure, and without --case all cases run. Updated docs/pilot.md with an example using --case alpha --case gamma, explaining duplicates, original suite order, unknown IDs, and the no-filter default. Verified with the exact command python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v before and after edits: Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`, After: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. No further work remains."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 22,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        },
+        {
+          "call_id": "call_W2QcHiIiCTq2Su2cl8n4pmKg",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2"
+            ],
+            "next_steps": "No further steps required.",
+            "remaining_acceptance": [],
+            "summary": "The case-selection regression in scripts/run_coupled_pilot.py was repaired to ensure repeated --case flags select each named case once in the original suite order, unknown IDs cause immediate failure, and without --case all cases run. The documentation in docs/pilot.md was updated with an example using --case alpha --case gamma and explanations about duplicates, original suite order, unknown IDs, and the default behavior of running all cases when no --case flags are given. Verification was done using the exact command python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v, which showed Before: FAILED and After: PASSED. No further work remains."
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 23,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include both changed files, the actual Before: FAILED and After: PASSED outcomes with the exact check command, and any remaining work.\nMissing from the final answer:\n- recorded outcome row in do"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true,
+          "requested_documentation": true
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.356s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "mistral-small",
+        "provider": "mistral",
+        "model": "mistral-small-2603",
+        "comparison_role": "retained weak baseline"
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "mistral-small",
+        "model": "mistral-small-2603",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 156.391,
+        "finished_at": "2026-10-24T15:07:07.971844+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [
+        {
+          "assistant_chars": 158,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection says keep, but repeated failure/stall requires strategy change\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a stra",
+          "tool_count": 1,
+          "tool_names": [
+            "done"
+          ]
+        },
+        {
+          "assistant_chars": 158,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection says keep, but repeated failure/stall requires strategy change\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a stra",
+          "tool_count": 1,
+          "tool_names": [
+            "done"
+          ]
+        },
+        {
+          "assistant_chars": 158,
+          "gate": "reflection",
+          "has_impact": false,
+          "has_plan": false,
+          "has_reflection": true,
+          "reason": "Invalid self-reflection: reflection says keep, but repeated failure/stall requires strategy change\nRepair the listed fields together, one per line inside <reflect>. Choose exactly one enum value, without explanation on that field:\nlast_outcome: success|failure|partial\ngoal_delta: closer|same|farther\nwrong_assumption: the assumption corrected by evidence (or none)\nstrategy_change: keep|adjust|abandon\nnext_minimal_action: the next action toward the task\n`continue` is not a stra",
+          "tool_count": 1,
+          "tool_names": [
+            "done"
+          ]
+        }
+      ],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "accepted-omitted-remaining-v1",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "artifact path: scripts/run_coupled_pilot.py\nartifact path: docs/pilot.md\n\nRecorded outcomes:\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`",
+      "changed_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "docs/pilot.md",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "scripts/run_coupled_pilot.py",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "out_of_scope_files": [
+        ".spiral-coder/policy_patch_queue.json",
+        ".spiral-coder/progress.json",
+        ".spiral-coder/reflection_ledger.json",
+        ".spiral-coder/tui-session.json",
+        ".spiral-coder/tui-work.json",
+        "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+        "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+      ],
+      "requests": 22,
+      "request_roles": {
+        "coder": 21,
+        "observer": 1
+      },
+      "wire_requests": [
+        {
+          "duration_ms": 23545,
+          "estimated_input_tokens": 7111,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 442,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 6600,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 7042
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4932,
+          "estimated_input_tokens": 7484,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 442,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 7035,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 7477
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7924,
+          "estimated_input_tokens": 10669,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 460,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 9861,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10321
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5151,
+          "estimated_input_tokens": 12572,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 693,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 11710,
+            "prompt_tokens_details": {
+              "cached_tokens": 3760
+            },
+            "service_tier": "standard",
+            "total_tokens": 12403
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6267,
+          "estimated_input_tokens": 14257,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 362,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13337,
+            "prompt_tokens_details": {
+              "cached_tokens": 9680
+            },
+            "service_tier": "standard",
+            "total_tokens": 13699
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4863,
+          "estimated_input_tokens": 15293,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 99,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 14309,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14408
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7633,
+          "estimated_input_tokens": 14693,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 571,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13660,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14231
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4673,
+          "estimated_input_tokens": 13371,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 87,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12456,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 12543
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 1774,
+          "estimated_input_tokens": 12987,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 48,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12233,
+            "prompt_tokens_details": {
+              "cached_tokens": 3936
+            },
+            "service_tier": "standard",
+            "total_tokens": 12281
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7523,
+          "estimated_input_tokens": 14524,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 450,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13709,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 14159
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4926,
+          "estimated_input_tokens": 14183,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 84,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13418,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13502
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3399,
+          "estimated_input_tokens": 14149,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 330,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13406,
+            "prompt_tokens_details": {
+              "cached_tokens": 3936
+            },
+            "service_tier": "standard",
+            "total_tokens": 13736
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5844,
+          "estimated_input_tokens": 16170,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 247,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 15162,
+            "prompt_tokens_details": {
+              "cached_tokens": 3856
+            },
+            "service_tier": "standard",
+            "total_tokens": 15409
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5522,
+          "estimated_input_tokens": 13779,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 86,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 13054,
+            "prompt_tokens_details": {
+              "cached_tokens": 3856
+            },
+            "service_tier": "standard",
+            "total_tokens": 13140
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 17446,
+          "estimated_input_tokens": 13169,
+          "id": 14,
+          "provider_usage": {
+            "completion_tokens": 50,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12472,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 12522
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 3973,
+          "estimated_input_tokens": 12845,
+          "id": 15,
+          "provider_usage": {
+            "completion_tokens": 411,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12190,
+            "prompt_tokens_details": {
+              "cached_tokens": 3968
+            },
+            "service_tier": "standard",
+            "total_tokens": 12601
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6117,
+          "estimated_input_tokens": 13131,
+          "id": 16,
+          "provider_usage": {
+            "completion_tokens": 73,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 12350,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 12423
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 6874,
+          "estimated_input_tokens": 12186,
+          "id": 17,
+          "provider_usage": {
+            "completion_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 11512,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 11939
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4536,
+          "estimated_input_tokens": 12267,
+          "id": 18,
+          "provider_usage": {
+            "completion_tokens": 423,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 11583,
+            "prompt_tokens_details": {
+              "cached_tokens": 3840
+            },
+            "service_tier": "standard",
+            "total_tokens": 12006
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 4625,
+          "estimated_input_tokens": 12396,
+          "id": 19,
+          "provider_usage": {
+            "completion_tokens": 356,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 11705,
+            "prompt_tokens_details": {
+              "cached_tokens": 10336
+            },
+            "service_tier": "standard",
+            "total_tokens": 12061
+          },
+          "role": "coder",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 5199,
+          "estimated_input_tokens": 6676,
+          "id": 20,
+          "provider_usage": {
+            "completion_tokens": 325,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 6064,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 6389
+          },
+          "role": "observer",
+          "status": "completed"
+        },
+        {
+          "duration_ms": 7842,
+          "estimated_input_tokens": 11926,
+          "id": 21,
+          "provider_usage": {
+            "completion_tokens": 304,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens": 10889,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11193
+          },
+          "role": "coder",
+          "status": "completed"
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "5h6HkgOzJ"
+          ],
+          "completed": true,
+          "continuation_id": 2,
+          "decision": "defer",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1,
+        "Requirement Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "6MAgLVQc9",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\": \"scripts/run_coupled_pilot.py\"}"
+        },
+        {
+          "call_id": "JVSuIBYOm",
+          "tool": "read_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [pruned 150L]"
+        },
+        {
+          "call_id": "i5Xa7VUkO",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 3,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [pruned 117L]"
+        },
+        {
+          "call_id": "mn73ZeATg",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    # Deduplicate while preserving original suite order\n    seen = set()\n    selected_ids = []\n    for cid in args.case:\n        if cid not in seen:\n            seen.add(cid)\n            selected_ids.append(cid)\n    requested = set(selected_ids)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Map requested IDs to full case objects in original order\n    id_to_case = {case[\"id\"]: case for case in cases}\n    selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]",
+            "search": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 4,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Requirement Gate] Before editing, run these exact baseline checks on the unchanged workspace:\npython3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v\nA failing baseline is expected. Keep the check unchanged and then implement the declared artifacts. No edit was executed.\n\ntool:\npatch_file\narguments:\n{\"path\": \"scripts/run_coupled_pilot.py\", \"search\": \"    requested = set(args.case)\\n    unknown = requested - {case[\\\"id\\\"] for case in cases}\\n    if unknown:\\n        parser.error(\\\"Unknown case ID(s): \\\" + \\\", \\\".join(sorted(unknown)))\\n    selected = cases\", \"replace\": \"    # Deduplicate while preserving original suite order\\n    seen = set()\\n    selected_ids = []\\n    for cid in args.case:\\n        if cid not in seen:\\n            seen.add(cid)\\n           "
+        },
+        {
+          "call_id": "vgF04Hzje",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/mistral-small/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\nFile \"/Users/ryospiralarchitect/.cache/spiral-c"
+        },
+        {
+          "call_id": "bF6uCYWJ9",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 85,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 70
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 70-85; partial file] [pruned 17L]"
+        },
+        {
+          "call_id": "nrP5CRgxz",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    # Deduplicate while preserving original suite order\n    seen = set()\n    selected_ids = []\n    for cid in args.case:\n        if cid not in seen:\n            seen.add(cid)\n            selected_ids.append(cid)\n    requested = set(selected_ids)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Map requested IDs to full case objects in original order\n    id_to_case = {case[\"id\"]: case for case in cases}\n    selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]",
+            "search": "    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'scripts/run_coupled_pilot.py' (+9 lines, 175 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection)\nFile \"tests/test_coupled_pilot.py\", line 76, in assert_selection\nAssertionError: Lists differ: [] != ['alpha', 'beta', 'gamma']\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)"
+        },
+        {
+          "call_id": "AKodNxB4X",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 90,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (175 lines, 9545 bytes) [range: lines 60-90; partial file] [pruned 32L]"
+        },
+        {
+          "call_id": "dlykCdi0O",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 9,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [pruned 117L]"
+        },
+        {
+          "call_id": "zo7FrvNxx",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    # If no --case provided, run all cases in original suite order\n    if not args.case:\n        selected = cases\n    else:\n        # Deduplicate while preserving original suite order\n        seen = set()\n        selected_ids = []\n        for cid in args.case:\n            if cid not in seen:\n                seen.add(cid)\n                selected_ids.append(cid)\n        requested = set(selected_ids)\n        unknown = requested - {case[\"id\"] for case in cases}\n        if unknown:\n            parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n        # Map requested IDs to full case objects in original order\n        id_to_case = {case[\"id\"]: case for case in cases}\n        selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]",
+            "search": "    # Deduplicate while preserving original suite order\n    seen = set()\n    selected_ids = []\n    for cid in args.case:\n        if cid not in seen:\n            seen.add(cid)\n            selected_ids.append(cid)\n    requested = set(selected_ids)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    # Map requested IDs to full case objects in original order\n    id_to_case = {case[\"id\"]: case for case in cases}\n    selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 10,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'scripts/run_coupled_pilot.py' (+4 lines, 179 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\nFile \"tests/test_coupled_pilot.py\", line 76, in assert_selection\nAssertionError: Lists differ: ['gamma', 'alpha'] != ['alpha', 'gamma']"
+        },
+        {
+          "call_id": "ShUtijYyt",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 95,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 60
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 11,
+          "freshness": "before_mutation",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (179 lines, 9725 bytes) [range: lines 60-95; partial file] [pruned 37L]"
+        },
+        {
+          "call_id": "6ZorW7hbM",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 12,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [pruned 117L]"
+        },
+        {
+          "call_id": "RbIz0mG79",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "        # Map requested IDs to full case objects and sort by original suite order\n        id_to_case = {case[\"id\"]: case for case in cases}\n        selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]\n        # Sort selected by original suite order\n        selected.sort(key=lambda c: [i for i, case in enumerate(cases) if case[\"id\"] == c[\"id\"]][0])",
+            "search": "        # Map requested IDs to full case objects in original order\n        id_to_case = {case[\"id\"]: case for case in cases}\n        selected = [id_to_case[cid] for cid in selected_ids if cid in id_to_case]"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 13,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'scripts/run_coupled_pilot.py' (+2 lines, 181 total) [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "RuQAFxm2m",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 14,
+          "freshness": "superseded",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/mistral-small/pilot-cli/workspace"
+        },
+        {
+          "call_id": "oyWEVFxKE",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/pilot.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 15,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/pilot.md] (3 lines, 101 bytes)\n# Coupled pilot\n\nRun the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.\n"
+        },
+        {
+          "call_id": "7k0khOOSQ",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Coupled pilot\n\nRun the pilot using `scripts/run_coupled_pilot.py`.\n\n## Case selection\n\nBy default, all cases in the suite run in their original order.\n\nTo select specific cases, use one or more `--case` flags. Repeated flags are deduplicated and the selected cases are executed in the original suite order. Unknown case IDs cause an immediate error and no output or execution occurs.\n\n### Examples\n\nRun all cases (default):\n```bash\npython3 scripts/run_coupled_pilot.py --repo /path/to/repo --out /path/to/out\n```\n\nRun only alpha and gamma in original suite order:\n```bash\npython3 scripts/run_coupled_pilot.py --repo /path/to/repo --out /path/to/out --case alpha --case gamma\n```\n\nRun with duplicates (only alpha and gamma will run, in original order):\n```bash\npython3 scripts/run_coupled_pilot.py --repo /path/to/repo --out /path/to/out --case alpha --case gamma --case alpha\n```\n\nUnknown ID fails before output or execution:\n```bash\npython3 scripts/run_coupled_pilot.py --repo /path/to/repo --out /path/to/out --case alpha --case missing\n# Error: Unknown case ID(s): missing\n```\n\n## Receipts and preservation\n\nThe tool writes receipts to `--out` and refuses to overwrite existing receipts, preserving independent oracles and preventing accidental overwrites.",
+            "path": "docs/pilot.md"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 16,
+          "freshness": "current",
+          "result_excerpt": "OK: wrote 'docs/pilot.md' (36 lines, 1261 bytes)\n[history digest — kept 10/17 lines, 1275 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=e7d91668338640c3 after=7ea0632d946074e3\ntest_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without"
+        },
+        {
+          "call_id": "JrnNdwedF",
+          "tool": "exec",
+          "arguments": {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          },
+          "executed": true,
+          "succeeded": true,
+          "result_step": 17,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-format-r1/episodes/mistral-small/pilot-cli/workspace"
+        },
+        {
+          "call_id": "5h6HkgOzJ",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "No further changes required.",
+            "remaining_acceptance": [],
+            "summary": "artifact path: scripts/run_coupled_pilot.py\nartifact path: docs/pilot.md\n\nRecorded outcomes:\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result_step": 18,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true,
+          "requested_documentation": true
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... ok\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.357s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    }
+  ],
+  "counts": {
+    "declared": 3,
+    "finished": 3,
+    "runtime_completed": 2,
+    "independent_artifacts_passed": 3,
+    "behavior_and_handoff_qualified": 2,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 61,
+    "episodes_with_unknown_request_count": 0
+  }
+}

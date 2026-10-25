@@ -1,0 +1,38 @@
+{
+  "runtime_first_round": "deb4e5b93275d3a95bdfc70a81c2dcfb99a1dcc4",
+  "runtime_second_round": "1995cdd22978c4f4e516965590e8ee0a729fe142",
+  "quality_commit": "bde36ce",
+  "checks": {
+    "quality_rust": {
+      "local_log": "/tmp/spiral-small-20261024-tests4.log",
+      "sha256": "6226fe0c50cc99783baa847997580d3d482765f312a6c334bdc8f4421e78f2ca",
+      "summary": [
+        "test result: ok. 825 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.36s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s"
+      ]
+    },
+    "integrated_rust": {
+      "local_log": "/tmp/spiral-small-20261024-integrated-tests2.log",
+      "sha256": "5c8adf3fc53fabae022104026853917ad83331380c82db43c633e0f6441d1a5c",
+      "summary": [
+        "test result: ok. 834 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.41s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.13s"
+      ]
+    },
+    "tui_replay": {
+      "local_log": "/tmp/spiral-small-20261024-replay2.log",
+      "sha256": "c6536132e9606fd04e7858561e1fe8b3dcd12afbe78e016b59ac4a16ab41c57a",
+      "summary": [
+        "[tui-replay] summary: 7/7 passed, report=/Users/ryospiralarchitect/.cache/spiral-coder/harness-20261008/.tmp/tui_replay_1792800970/report.json"
+      ]
+    },
+    "python": {
+      "local_log": "/tmp/spiral-small-20261024-python-all.log",
+      "sha256": "9f76885429d1e5c7e1b01718f5557c81346ebe00716b35cd267e7ab4525bf198",
+      "summary": [
+        "Ran 37 tests in 0.719s",
+        "OK"
+      ]
+    }
+  }
+}

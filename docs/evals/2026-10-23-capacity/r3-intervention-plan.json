@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "declared_before_provider_calls": true,
+  "comparison": "Fresh pilot-cli episodes for gemini-lite and gemini-argon, compared with the same R2 task and initial workspace.",
+  "interventions": [
+    "Include effective read_file line bounds in reflection action identity; corrected ranges must not be blocked as unchanged requests.",
+    "Use the recognized GOVERNOR BLOCK marker for multiple-tool rejection so the existing Observer rescue path can see the failure. Rejected calls remain unexecuted."
+  ],
+  "targets": [
+    "A changed read range can execute after an invalid range.",
+    "A repeated single-tool gate failure can reach Observer rescue within the original shared budget."
+  ],
+  "unchanged": ["Task text", "Initial candidate files", "Independent artifact oracles", "Same model for Coder and Observer", "Temperature and provider parameters", "24 wire requests per episode", "Plan/action/proof/report requirements"],
+  "maximum_wire_requests": 48,
+  "analysis": "Report native actions, pre-tool rejection counts, Observer attempts, independent artifacts, fresh proof and authored completion separately. This joint intervention and one fresh trial per model cannot identify an isolated causal effect or a general capability difference. Retain both failures and successes; no in-place retries."
+}

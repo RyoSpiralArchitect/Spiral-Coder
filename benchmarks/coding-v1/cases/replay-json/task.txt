@@ -1,0 +1,34 @@
+Add a TUI replay case named observer-range-tail to .spiral-coder/tui_replay.json. It must exercise Observer read_file advice for src/tui/agent.rs lines 1200 through 1240: kind read, suggested_tool read_file, exact start_line/end_line arguments, with suggestion_parsed, hint_queued and coder_system_contains assertions for start_line=1200 and end_line=1240. Use existing cases to learn the schema. Update docs/replay.md to name the new case, path and bounds, and explain that the replay tests advice rather than executing a filesystem read.
+
+Preserve every existing case and assertion, defaults, root fields, unknown nested extensions and array order. Add exactly one new case. Change only .spiral-coder/tui_replay.json and docs/replay.md. Keep tests and .spiral-coder.md unchanged. Do not install dependencies, call another provider, commit or push. Read the relevant files, run the configured Python check BEFORE editing to record its expected failure, then edit with native file tools. After all edits, run the exact Python check and the exact TUI replay command below. Both Coder and Observer share the same obligations. Finish with an authored report naming both changed files, the actual Before: FAILED and After: PASSED Python outcomes with the exact command, the TUI replay result and any remaining work.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "range-replay",
+      "description": "Add the requested replay and document it while retaining old JSON",
+      "artifacts": [
+        {
+          "path": ".spiral-coder/tui_replay.json",
+          "kind": "test"
+        },
+        {
+          "path": "docs/replay.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+          "baseline_failure": true
+        },
+        {
+          "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

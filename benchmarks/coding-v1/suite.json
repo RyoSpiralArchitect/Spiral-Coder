@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "id": "coding-v1",
+  "origin_commit": "8533870ce583ea95c302be6541178cb88a80e442",
+  "claim_boundary": "Three bounded development cases. Two repository-derived fixtures are snapshots, not full repository dogfood or a held-out benchmark. Historical panels remain unchanged.",
+  "runtime_artifact_prefixes": [
+    ".spiral-coder/",
+    "__pycache__/"
+  ],
+  "cases": [
+    {
+      "id": "large-file",
+      "workspace": "cases/large-file/workspace",
+      "prompt": "cases/large-file/task.txt",
+      "reference": "cases/large-file/reference",
+      "oracle": "large_file",
+      "editable": [
+        "greet.py"
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest -v test_greet.py",
+          "baseline_failure": true
+        }
+      ],
+      "max_requests": 18,
+      "minimum_tests": 2
+    },
+    {
+      "id": "pilot-cli",
+      "workspace": "cases/pilot-cli/workspace",
+      "prompt": "cases/pilot-cli/task.txt",
+      "reference": "cases/pilot-cli/reference",
+      "oracle": "pilot_cli",
+      "editable": [
+        "scripts/run_coupled_pilot.py",
+        "docs/pilot.md"
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "baseline_failure": true
+        }
+      ],
+      "max_requests": 24,
+      "minimum_tests": 7
+    },
+    {
+      "id": "replay-json",
+      "workspace": "cases/replay-json/workspace",
+      "prompt": "cases/replay-json/task.txt",
+      "reference": "cases/replay-json/reference",
+      "oracle": "replay_json",
+      "editable": [
+        ".spiral-coder/tui_replay.json",
+        "docs/replay.md"
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+          "baseline_failure": true
+        },
+        {
+          "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json",
+          "baseline_failure": false
+        }
+      ],
+      "max_requests": 24,
+      "minimum_tests": 1
+    }
+  ]
+}
