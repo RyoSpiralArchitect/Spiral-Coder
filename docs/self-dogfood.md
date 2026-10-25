@@ -70,7 +70,11 @@ Each output directory permits one run and one assessment attempt. A timeout or
 interruption is retained, never retried in place. For an interrupted episode
 without a finished run receipt, omit `--run-sha256` to inspect the durable request
 ledger; this can report spent and in-flight requests but **cannot qualify** the
-candidate. Missing ledger counts remain unknown rather than becoming zero.
+candidate. A malformed or truncated native report falls back to a valid durable ledger for
+request accounting. Parse/type errors are retained in the assessment and prevent
+qualification; missing or unusable ledger counts remain unknown rather than
+becoming zero. A partial report does not consume the assessment attempt without
+producing an error receipt.
 Start any later attempt in a fresh output directory with a new preparation.
 
 ## Frozen task contract
@@ -81,6 +85,7 @@ Version 1 JSON contains these fields:
 | --- | --- |
 | `id`, `prompt` | Stable task ID and relative prompt file beside the spec. |
 | `editable` | Exact production/document paths the candidate may change; up to 16. |
+| `required_changed_paths` | Optional unique subset of `editable` whose files must actually differ from baseline, such as required behavior documentation. |
 | `protected` | Additional original paths that must exist and remain unchanged. Standalone test paths are also protected automatically. |
 | `native_checks` | Exact shell command strings that must succeed in native execution after the last mutation. |
 | `roles` | `coder` and `observer`, each with exact `provider`, `model`, optional standard `key_env`. Providers must differ. |
@@ -126,7 +131,8 @@ Assessment assembles a fresh verifier from the frozen baseline plus **only**
 allowed candidate artifacts, then overlays the frozen probes. Candidate edits to
 an evaluator, manifest, original standalone test or other forbidden path cannot
 change what the independent checks execute. Such edits also fail strict scope,
-even when the independent checks pass.
+even when the independent checks pass. Every `required_changed_paths` entry must
+actually change; native completion cannot waive a required documentation update.
 
 The assessment preserves separate gates for native completion and accepted
 `done`, no remaining acceptance or pending checks, actual edits and successful
@@ -164,7 +170,9 @@ info. Separate episodes can reuse one validation cache sequentially.
 Execution receives a small environment allowlist and only the two declared
 provider credential variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`,
 `MISTRAL_API_KEY` or `ANTHROPIC_API_KEY` as applicable. No key value enters CLI
-arguments or the frozen contract. Console secrets are redacted and any detected
+arguments or the frozen contract. Leading/trailing whitespace is stripped once;
+blank keys are rejected before execution, and identical normalized bytes are used
+for provider environment values and redaction. Console secrets are redacted and any detected
 credential output prevents qualification. Checks receive no provider keys. The
 runtime also removes provider credentials from tool subprocess environments.
 

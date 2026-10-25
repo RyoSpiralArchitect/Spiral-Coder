@@ -48,7 +48,7 @@ impl RecoveryGovernor {
         if self.stage.is_none()
             || (self.stage == Some(RecoveryStage::Diagnose) && edits.diagnosis_survives())
         {
-            self.stage = Some(if edits.diagnosis_survives() {
+            self.stage = Some(if edits.target_was_read() {
                 RecoveryStage::Fix
             } else {
                 RecoveryStage::Diagnose

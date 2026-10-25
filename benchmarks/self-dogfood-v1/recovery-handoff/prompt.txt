@@ -16,3 +16,26 @@ Required exact verification command after the final source/doc edit:
 cargo test --locked --bin spiral-coder -q
 
 The final report must name the modified files, explain why completed diagnosis survives and why a newer failure still blocks, give the exact verification command and observed result, and state any remaining limitation. Do not claim external held-out checks ran. Complete through the native done tool only after all requested work and proof are present.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "recovery-handoff",
+      "description": "Preserve completed current diagnosis across handoff, retain newer failure obligations, and document the behavior",
+      "artifacts": [
+        {
+          "path": "docs/coupled-work-loop.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

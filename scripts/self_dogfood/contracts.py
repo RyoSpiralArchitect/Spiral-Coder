@@ -18,7 +18,7 @@ def bounded_int(value, low, high, label):
 
 
 def validate(spec):
-    allowed = {"version", "id", "prompt", "editable", "protected", "native_checks", "checks", "probes", "reference", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "temperature"}
+    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "temperature"}
     if set(spec) - allowed:
         raise ValueError("Unknown task contract fields")
     if spec.get("version") != 1:
@@ -32,6 +32,11 @@ def validate(spec):
         raise ValueError("Use up to 16 unique editable paths")
     for name in [spec["prompt"], *spec["editable"], *spec.get("protected", [])]:
         relative_path(name)
+    required = spec.get("required_changed_paths", [])
+    if not isinstance(required, list) or any(not isinstance(name, str) for name in required):
+        raise ValueError("required_changed_paths must be a list of exact editable paths")
+    if len(required) != len(set(required)) or not set(required).issubset(spec["editable"]):
+        raise ValueError("required_changed_paths must be a unique subset of editable")
     if set(spec["editable"]) & set(spec.get("protected", [])):
         raise ValueError("Editable and protected paths overlap")
     if any(not isinstance(c, str) or not c.strip() for c in spec["native_checks"]):

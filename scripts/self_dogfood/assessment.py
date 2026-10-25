@@ -10,7 +10,7 @@ import time
 from coupled_bench.common import PROVIDERS, inventory, read_json, sha, write_json
 from .contracts import apply_overlays, execution_env, load_frozen, now
 from .process import run_process
-from .evidence import bound_run
+from .evidence import bound_run, native_evidence
 
 
 def checks(out, spec, label, overlays=(), candidate=None):
@@ -102,15 +102,10 @@ def assess(args):
     before, after = declaration["baseline_inventory"], inventory(candidate)
     changed = sorted(p for p in set(before) | set(after) if before.get(p) != after.get(p))
     forbidden = [p for p in changed if p not in spec["editable"]]
-    native = out / "episode/run/report.json"
-    ledger = out / "episode/run/state/tui-work.json"
-    report = read_json(native) if native.exists() else {"completed": False, "work": read_json(ledger) if ledger.exists() else None}
+    report, durable, process, receipt_evidence = native_evidence(out)
     work = report.get("work") or {}
-    durable = read_json(ledger) if ledger.exists() else None
     ledger_match = durable is not None and all(work.get(k) == durable.get(k) for k in ("task_id", "root", "tool_root", "request_limit", "requests"))
     work_match = work.get("root") == (out / "episode/task.txt").read_text().strip() and work.get("tool_root") == str(candidate) and bool(work.get("task_id"))
-    process_path = out / "episode/process.json"
-    process = read_json(process_path) if process_path.exists() else {}
     requests = (report.get("work") or {}).get("requests")
     roles = {r: sum(x.get("role") == r for x in requests) for r in ("coder", "observer")} if isinstance(requests, list) else {}
     expected_roles = {}
@@ -135,7 +130,7 @@ def assess(args):
     load_frozen(out, args.declaration_sha256)
     bound_run(out, args.declaration_sha256, args.run_sha256)
     candidate_unchanged = inventory(candidate) == after
-    gates = {"pinned_run_receipt": bound, "native_ledger_binding": ledger_match and work_match, "native_completed": report.get("completed") is True, "accepted_done": bool(done),
+    gates = {"native_receipts_valid": not receipt_evidence["errors"], "required_paths_changed": set(spec.get("required_changed_paths", [])).issubset(changed), "pinned_run_receipt": bound, "native_ledger_binding": ledger_match and work_match, "native_completed": report.get("completed") is True, "accepted_done": bool(done),
              "no_remaining_acceptance": acceptance, "native_edit": bool(edits), "actual_edit": bool(changed),
              "fresh_native_checks": all(fresh.values()), "no_pending_checks": (report.get("execution") or {}).get("pending_exact_checks") == [],
              "strict_scope": not forbidden, "original_protected_files_preserved": all(before.get(p) == after.get(p) for p in declaration["protected_paths"]),
@@ -152,7 +147,7 @@ def assess(args):
               "qualified_candidate": all(gates.values()), "promotion_authorized": False, "gates": gates,
               "changed_files": changed, "out_of_scope_files": forbidden, "native_checks": fresh,
               "requests": len(requests) if isinstance(requests, list) else None, "request_roles": roles,
-              "process": process, "independent_checks": independent,
+              "process": process, "native_evidence_source": receipt_evidence["source"], "receipt_errors": receipt_evidence["errors"], "independent_checks": independent,
               "candidate_inventory": after, "roles": spec["roles"], "native_roles": report.get("roles")}
     write_json(target, result)
     write_json(out / "raw-manifest-001.json", manifest(out, target))

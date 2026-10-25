@@ -102,6 +102,11 @@
       "source": "reference/src/tui/agent/edit_failure.rs",
       "target": "src/tui/agent/edit_failure.rs",
       "mode": "replace"
+    },
+    {
+      "source": "reference/handoff-note.md",
+      "target": "docs/coupled-work-loop.md",
+      "mode": "append"
     }
   ],
   "max_requests": 32,
@@ -120,5 +125,8 @@
       "provider": "mistral",
       "model": "mistral-large-4"
     }
-  }
+  },
+  "required_changed_paths": [
+    "docs/coupled-work-loop.md"
+  ]
 }

@@ -115,9 +115,10 @@ def command_and_env(out, spec):
     secrets = []
     for role in (coder, observer):
         key = PROVIDERS[role["provider"]][0]
-        if not os.environ.get(key):
-            raise ValueError(f"Missing {key}; provide credentials via environment")
-        env[key] = os.environ[key]; secrets.append(os.environ[key])
+        value = os.environ.get(key, "").strip()
+        if not value:
+            raise ValueError(f"Missing or blank {key}; provide credentials via environment")
+        env[key] = value; secrets.append(value)
     command = [str(out / "runtime/spiral-coder"), "--provider", coder["provider"], "--model", coder["model"],
                "--base-url", PROVIDERS[coder["provider"]][1], "--temperature", str(spec["temperature"]),
                "--max-tokens", str(spec["max_tokens"]), "--timeout-seconds", str(spec["timeout_seconds"]),

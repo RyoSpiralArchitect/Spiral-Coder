@@ -12,7 +12,8 @@ The task requires repairing that transition without promoting stale diagnosis
 past a newer failed check, failed edit, or failed read.
 
 `prompt.txt` is the complete candidate assignment. Only its four listed files may
-change. `probe.rs` is appended to a separate verifier copy, and has six tests:
+change; the documentation file must actually change, and the native task
+contract also requires it. `probe.rs` is appended to a separate verifier copy, and has six tests:
 one intended baseline failure and five negative-control passes. The successful
 case covers native session JSON roundtrip and runtime Continue. It does not
 contain an explicit new-human-task-boundary test. Existing Rust tests are also

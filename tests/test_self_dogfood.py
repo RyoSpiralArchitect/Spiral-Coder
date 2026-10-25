@@ -102,6 +102,7 @@ class LaneTests(unittest.TestCase):
     def fake_runtime(self, argv, workspace, env, timeout, log, secrets=(), observer=True, commit_candidate=False):
         self.assertEqual(set(env) & {"OPENAI_API_KEY", "GEMINI_API_KEY", "MISTRAL_API_KEY"}, {"OPENAI_API_KEY", "GEMINI_API_KEY"})
         self.assertEqual(secrets, ["fixture-openai-key", "fixture-gemini-key"])
+        self.assertEqual([env["OPENAI_API_KEY"], env["GEMINI_API_KEY"]], secrets)
         self.assertNotIn("fixture-openai-key", argv)
         self.assertIn("--observer-provider", argv)
         (workspace / "src/recovery.rs").write_text("fixed by candidate\n")
@@ -179,6 +180,77 @@ class LaneTests(unittest.TestCase):
         self.assertFalse(result["gates"]["pinned_run_receipt"])
         self.assertFalse(result["qualified_candidate"])
 
+    def test_source_only_repair_cannot_omit_required_documentation_change(self):
+        self.spec["editable"].append("docs/behavior.md")
+        self.spec["required_changed_paths"] = ["docs/behavior.md"]
+        write_json(self.inputs / "task.json", self.spec)
+        self.prepare()
+        ran = self.execute()
+        result = self.assess(ran["run_receipt_sha256"])
+        self.assertFalse(result["qualified_candidate"])
+        self.assertFalse(result["gates"]["required_paths_changed"])
+        self.assertTrue(result["gates"]["independent_checks_passed"])
+
+    def test_required_documentation_change_can_qualify(self):
+        self.spec["editable"].append("docs/behavior.md")
+        self.spec["required_changed_paths"] = ["docs/behavior.md"]
+        write_json(self.inputs / "task.json", self.spec)
+        self.prepare()
+        self.execute()
+        doc = self.out / "episode/workspace/docs/behavior.md"
+        doc.parent.mkdir()
+        doc.write_text("Document the restored recovery behavior.\n")
+        run_pin = evidence.seal_run(self.out, self.pin)
+        result = self.assess(run_pin)
+        self.assertTrue(result["gates"]["required_paths_changed"])
+        self.assertTrue(result["qualified_candidate"], result["gates"])
+
+    def test_truncated_report_retains_durable_request_count_and_error_receipt(self):
+        self.prepare()
+        self.execute()
+        (self.out / "episode/run/report.json").write_text('{"completed": true, "work":')
+        run_pin = evidence.seal_run(self.out, self.pin)
+        result = self.assess(run_pin)
+        self.assertEqual(result["requests"], 2)
+        self.assertEqual(result["request_roles"], {"coder": 1, "observer": 1})
+        self.assertFalse(result["qualified_candidate"])
+        self.assertFalse(result["gates"]["native_receipts_valid"])
+        receipt = read_json(self.out / "assessment-001.json")
+        self.assertEqual(receipt["native_evidence_source"], "durable_ledger")
+        self.assertEqual(receipt["receipt_errors"][0]["path"], "episode/run/report.json")
+        self.assertIn("JSONDecodeError", receipt["receipt_errors"][0]["reason"])
+        self.assertTrue((self.out / "raw-manifest-001.json").exists())
+
+    def test_malformed_report_ledger_and_process_leave_request_count_unknown(self):
+        self.prepare()
+        self.execute()
+        for name, body in [("run/report.json", "[]"), ("run/state/tui-work.json", '{"requests":'), ("process.json", "null")]:
+            (self.out / "episode" / name).write_text(body)
+        result = self.assess(None)
+        self.assertIsNone(result["requests"])
+        self.assertFalse(result["qualified_candidate"])
+        receipt = read_json(self.out / "assessment-001.json")
+        self.assertEqual(receipt["native_evidence_source"], "unavailable")
+        self.assertEqual(len(receipt["receipt_errors"]), 3)
+
+    def test_padded_keys_share_normalized_environment_and_redaction_bytes(self):
+        self.prepare()
+        def padded(*args):
+            result = self.fake_runtime(*args)
+            (self.out / "episode/key-echo.txt").write_text("fixture-openai-key")
+            return result
+        with patch.dict(os.environ, {"OPENAI_API_KEY": " \tfixture-openai-key\n", "GEMINI_API_KEY": " fixture-gemini-key "}), patch.object(runner, "run_process", padded):
+            result = runner.run(self.args())
+        self.assertIn("key-echo.txt", result["redacted_files"])
+        self.assertEqual((self.out / "episode/key-echo.txt").read_text(), "[REDACTED]")
+
+    def test_whitespace_only_provider_key_is_rejected_before_run_starts(self):
+        self.prepare()
+        with patch.dict(os.environ, {"OPENAI_API_KEY": " \n\t", "GEMINI_API_KEY": "fixture-gemini-key"}):
+            with self.assertRaisesRegex(ValueError, "blank OPENAI_API_KEY"):
+                runner.run(self.args())
+        self.assertFalse((self.out / "episode/started.json").exists())
+
     def test_scope_violation_never_enters_verifier_copy(self):
         self.prepare()
         ran = self.execute()
@@ -250,7 +322,10 @@ class LaneTests(unittest.TestCase):
         for mutate in [lambda s: s["editable"].append("../outside"),
                        lambda s: s["roles"]["observer"].update(provider="openai"),
                        lambda s: s["checks"][0].update(waive=True),
-                       lambda s: s.update(max_requests=True)]:
+                       lambda s: s.update(max_requests=True),
+                       lambda s: s.update(required_changed_paths=["outside.rs"]),
+                       lambda s: s.update(required_changed_paths=["src/recovery.rs", "src/recovery.rs"]),
+                       lambda s: s.update(required_changed_paths="src/recovery.rs")]:
             task = copy.deepcopy(self.spec)
             mutate(task)
             with self.assertRaises(ValueError):
