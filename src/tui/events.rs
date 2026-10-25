@@ -1,3 +1,4 @@
+mod assist_receipt;
 mod coder_run;
 use coder_run::{
     build_coder_request_messages, send_coder_input, send_coder_message, send_coder_with_text,
@@ -1841,6 +1842,14 @@ fn finalize_active_observer_contract(app: &mut App) {
         } else {
             Some(actions.iter().all(|a| a.succeeded == Some(true)))
         };
+        let suggestion_execution =
+            assist_receipt::project(suggestion::primary_suggestion(&env), &actions);
+        let suggestion_executed = suggestion_execution
+            .as_ref()
+            .and_then(|receipt| receipt.executed);
+        let suggestion_succeeded = suggestion_execution
+            .as_ref()
+            .and_then(|receipt| receipt.succeeded);
         let receipt = crate::work_budget::AssistReceipt {
             assist_id: app
                 .active_assist_id
@@ -1853,6 +1862,7 @@ fn finalize_active_observer_contract(app: &mut App) {
             succeeded,
             completed: app.coder_completed,
             pending_exact_checks: evidence.pending_exact_checks,
+            suggestion_execution,
         };
         app.last_observer_contract_outcome = serde_json::to_string(&receipt).ok();
         if let Err(error) = app.work_budget.record_assist(receipt) {
@@ -1860,7 +1870,7 @@ fn finalize_active_observer_contract(app: &mut App) {
                 .push_tool(format!("Could not save assist receipt: {error}"));
         }
         app.coder.push_tool(format!(
-            "{note} executed={executed} succeeded={succeeded:?} completed={:?}; focus: {focus}",
+            "{note} continuation_executed={executed} continuation_succeeded={succeeded:?} suggested_action_executed={suggestion_executed:?} suggested_action_succeeded={suggestion_succeeded:?} completed={:?}; focus: {focus}",
             app.coder_completed
         ));
     } else {

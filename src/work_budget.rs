@@ -27,6 +27,21 @@ pub(crate) struct AssistReceipt {
     pub succeeded: Option<bool>,
     pub completed: Option<bool>,
     pub pending_exact_checks: Vec<String>,
+    /// Exact suggested-action evidence, distinct from the continuation totals.
+    /// Historical receipts and suggestions without a tool have no projection.
+    #[serde(default)]
+    pub suggestion_execution: Option<SuggestedActionReceipt>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub(crate) struct SuggestedActionReceipt {
+    pub tool: String,
+    pub arguments: Value,
+    pub matching_call_ids: Vec<String>,
+    /// None when matching calls exist but execution is still unconfirmed.
+    pub executed: Option<bool>,
+    /// Aggregate only confirmed executed matches, never completion proof.
+    pub succeeded: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

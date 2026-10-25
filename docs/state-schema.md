@@ -809,6 +809,35 @@ explanation for unavailable review panels rather than an HTTP error.
 
 ## Coupled run storage
 
+`src/work_budget.rs` owns durable `AssistReceipt` values. Legacy `call_ids`,
+`executed` and `succeeded` describe all actions in the ensuing Coder continuation;
+they do not establish that an Observer suggestion ran. TUI projection in
+`src/tui/events/assist_receipt.rs` adds nullable `suggestion_execution`, containing
+the primary suggested `tool`, exact JSON `arguments`, every `matching_call_ids`
+entry, and nullable `executed` / `succeeded`. Old receipts deserialize the absent
+field as null. Advice without a tool also has no execution projection.
+
+Matching requires identical tool and complete JSON argument values; object key
+order is irrelevant. Equivalent path spellings, argument subsets and implicit
+defaults are deliberately not inferred. The advisory `decision` remains separate:
+an `accept` can lack a matching execution, while an `override` can later execute
+the same exact action. No matching call means `executed: false, succeeded: null`.
+Only confirmed blocked/rejected matches mean both false. A native `Awaiting
+approval` result retains `executed: false, succeeded: null`; mixing that pending
+approval with a rejection also leaves success unknown. Matching calls with no
+result retain both null when no execution is confirmed. Any confirmed executed
+match makes `executed` true;
+`succeeded` then aggregates only those executed matches: unknown native outcome
+means null, all successes mean true, and any known failure means false. Thus
+blocked-then-success is successful execution, while failed-then-success retains
+false. All matching IDs remain available in either case.
+
+The continuation boundary retains the existing pre-handoff call-ID exclusion.
+A provider reusing a historical ID can therefore cause a conservative false
+negative; it cannot establish absent execution. These receipts describe recorded
+matching actions, not causal Observer benefit, current final proof or task
+completion. They never bypass existing approval, verification or completion gates.
+
 `src/tui/events/coupled_run/roles.rs` owns ephemeral role resolution and redacted
 role receipts. Default Observer configuration clones the actual Coder config;
 explicit Observer provider/model settings resolve their own credential source.
@@ -945,3 +974,14 @@ observations; only an untruncated line-1-through-EOF rendering can populate the
 full-file overwrite cache, using the canonical full-read response. Web exposes
 `complete_read` on `/api/read_file` responses for its matching guard. No new
 persistent state is added. See [file-read ranges](file-read-ranges.md).
+
+`TaskObligations.work_progress` is a derived advisory view owned by
+`agent/work_progress.rs`, shared by Coder and both Observer consumers. It keeps
+the original human task, native edit/command counts, repeated observations and
+authored done claims distinct from completion proof. It adds no persistent
+store; see [Observer work progress](observer-work-progress.md).
+`agent/observation_stall.rs` derives bounded duplicate-read pressure from the
+current task's native exchanges. Its counters are reconstructed across runtime
+handoffs and reset at a new human task or an actual command/edit attempt. They
+do not grant repair, mutation or verification evidence; see
+[observation progress](observation-progress.md).
