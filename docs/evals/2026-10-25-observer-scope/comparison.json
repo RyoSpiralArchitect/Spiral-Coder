@@ -1,0 +1,569 @@
+{
+  "score_definition_changed": false,
+  "assessor": "selection-paraphrases-v4 + accepted-omitted-remaining-v1",
+  "assessor_change": "Only interruption ledger lookup adds run/state/tui-work.json before legacy path. Original frozen driver is unchanged.",
+  "rounds": {
+    "retained": {
+      "runtime_commit": "a3574fabf82607bac7543990f9ff8afadb851262",
+      "binary_sha256": "8ee44a940c38a284faef3987cce6171fac6900bca659124cd3e5a0c631494a1a",
+      "assessment_sha256": "d329353e0a8f6168488bfeb3804cda4dca8967aa8962f17b1adcba407448228f",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 3,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 56,
+        "episodes_with_unknown_request_count": 0
+      },
+      "scope_only_passed": 0,
+      "verified_raw_manifest_entries": {
+        "2": 111
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 16,
+          "request_roles": {
+            "coder": 16
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [
+            ".spiral-coder/policy_patch_queue.json",
+            ".spiral-coder/progress.json",
+            ".spiral-coder/reflection_ledger.json",
+            ".spiral-coder/tui-session.json",
+            ".spiral-coder/tui-work.json",
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 2,
+            "Recovery Gate": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": null,
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 16,
+          "request_roles": {
+            "coder": 16
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [
+            ".spiral-coder/policy_patch_queue.json",
+            ".spiral-coder/progress.json",
+            ".spiral-coder/reflection_ledger.json",
+            ".spiral-coder/tui-session.json",
+            ".spiral-coder/tui-work.json",
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 1,
+            "Think Gate": 1,
+            "Final handoff": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": null,
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "out_of_scope_files": [
+            ".spiral-coder/policy_patch_queue.json",
+            ".spiral-coder/progress.json",
+            ".spiral-coder/reflection_ledger.json",
+            ".spiral-coder/tui-session.json",
+            ".spiral-coder/tui-work.json",
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 1,
+            "Final handoff": 3
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": null,
+          "observer_original_success_responses": 1,
+          "observer_advice": [
+            {
+              "summary": "The regression in scripts/run_coupled_pilot.py must be inspected before any repair can proceed. The file contains the case-selection logic that needs to enforce unique selection and fail on unknown IDs.",
+              "suggestions": [
+                {
+                  "based_on": [
+                    "task_obligations.target_requirement",
+                    "recent_tool_results",
+                    "intent_anchor.target"
+                  ],
+                  "confidence": 0.95,
+                  "kind": "read",
+                  "reason": "The next concrete step is to inspect scripts/run_coupled_pilot.py to identify the regression in case selection logic before making any edits.",
+                  "suggested_args": {
+                    "path": "scripts/run_coupled_pilot.py"
+                  },
+                  "suggested_tool": "read_file"
+                }
+              ]
+            }
+          ],
+          "assists": [
+            {
+              "assist_id": 1,
+              "call_ids": [
+                "YMRoQwQ13",
+                "3UWO10V0Z",
+                "dJaK9FIOB"
+              ],
+              "completed": false,
+              "continuation_id": 2,
+              "decision": "accept",
+              "executed": false,
+              "pending_exact_checks": [],
+              "succeeded": false
+            }
+          ]
+        }
+      ]
+    },
+    "r1": {
+      "runtime_commit": "9bc7351810611310fb7f043219ad90c93ef71c5a",
+      "binary_sha256": "16be4aff77cbec44024d3cb31a8f9b668ecd121d3b393a922ed1db3371bcfa61",
+      "assessment_sha256": "1a6f582628b13ea2b8c9cb2861d78d92def40638dccaa8cf0149d3522126012a",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 0,
+        "wire_requests": 59,
+        "episodes_with_unknown_request_count": 0
+      },
+      "scope_only_passed": 0,
+      "verified_raw_manifest_entries": {
+        "1": 448,
+        "2": 456
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "out_of_scope_files": [
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 2,
+            "Think Gate": 2,
+            "Progress Gate": 1,
+            "Recovery Gate": 1,
+            "Requirement Gate": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 1,
+          "observer_advice": [
+            {
+              "summary": "The code changes in scripts/run_coupled_pilot.py are implemented and verified via unit tests, but documentation in docs/pilot.md needs to be reviewed and updated.",
+              "suggestions": [
+                {
+                  "based_on": [
+                    "task_obligations"
+                  ],
+                  "confidence": 0.95,
+                  "kind": "read",
+                  "reason": "Read docs/pilot.md to inspect documentation before final reporting.",
+                  "suggested_args": {
+                    "end_line": 200,
+                    "path": "docs/pilot.md",
+                    "start_line": 1
+                  },
+                  "suggested_tool": "read_file"
+                }
+              ]
+            }
+          ],
+          "assists": [
+            {
+              "assist_id": 1,
+              "call_ids": [
+                "call_1482892",
+                "call_1552451"
+              ],
+              "completed": false,
+              "continuation_id": 2,
+              "decision": "accept",
+              "executed": true,
+              "pending_exact_checks": [
+                "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+              ],
+              "succeeded": null
+            }
+          ]
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 20,
+          "request_roles": {
+            "coder": 20
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 1,
+            "Requirement Gate": 1,
+            "Final handoff": 1,
+            "Done Gate": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 15,
+          "request_roles": {
+            "coder": 15
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [
+            "scripts/__pycache__/run_coupled_pilot.cpython-312.pyc",
+            "tests/__pycache__/test_coupled_pilot.cpython-312.pyc"
+          ],
+          "blocks": {
+            "Plan Gate": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": false,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        }
+      ]
+    },
+    "r2": {
+      "runtime_commit": "db152f71a286920c35f1cc107049186e88a6347f",
+      "binary_sha256": "fc6d517d9eafca70469e94d93791559c217d3aa1d309f56dece19da58c504fa6",
+      "assessment_sha256": "75f27a6e40dbabcd11095640e71e7345ecaed0caaab0a23839c5c6a1329790ce",
+      "counts": {
+        "declared": 3,
+        "finished": 3,
+        "runtime_completed": 2,
+        "independent_artifacts_passed": 2,
+        "behavior_and_handoff_qualified": 2,
+        "strict_all_files_qualified": 2,
+        "wire_requests": 57,
+        "episodes_with_unknown_request_count": 0
+      },
+      "scope_only_passed": 3,
+      "verified_raw_manifest_entries": {
+        "1": 441,
+        "2": 449
+      },
+      "rows": [
+        {
+          "profile": {
+            "id": "gemini-lite",
+            "provider": "gemini",
+            "model": "gemini-3.5-flash-lite",
+            "comparison_role": "weak baseline"
+          },
+          "requests": 24,
+          "request_roles": {
+            "coder": 23,
+            "observer": 1
+          },
+          "runtime_completed": false,
+          "independent_artifacts_passed": false,
+          "behavior_and_handoff_qualified": false,
+          "strict_all_files_qualified": false,
+          "native": {
+            "native_edit": false,
+            "baseline_before_edit": false,
+            "fresh_exact_checks": false,
+            "no_pending_checks": false,
+            "accepted_done": false,
+            "no_remaining_acceptance": false
+          },
+          "out_of_scope_files": [],
+          "blocks": {
+            "Plan Gate": 2,
+            "Think Gate": 3,
+            "Progress Gate": 1,
+            "Recovery Gate": 2,
+            "unspecified governor": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": true,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 1,
+          "observer_advice": [
+            {
+              "summary": "The previous patch attempt failed due to a search block mismatch. Use patch_file with the exact text from scripts/run_coupled_pilot.py to fix the case-selection logic.",
+              "suggestions": [
+                {
+                  "based_on": [
+                    "execution_evidence",
+                    "task_obligations"
+                  ],
+                  "confidence": 1.0,
+                  "kind": "edit",
+                  "reason": "Patch scripts/run_coupled_pilot.py using the exact lines obtained from read_file to implement unique requested cases preserving order.",
+                  "suggested_args": {
+                    "path": "scripts/run_coupled_pilot.py",
+                    "replace": "    spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n    cases = json.loads(spec_bytes)[\"cases\"]\n    case_map = {case[\"id\"]: case for case in cases}\n    requested = args.case\n    unknown = set(requested) - case_map.keys()\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    if requested:\n        seen = set()\n        unique_requested = []\n        for cid in requested:\n            if cid not in seen:\n                seen.add(cid)\n                unique_requested.append(cid)\n        selected = [case_map[cid] for cid in unique_requested]\n    else:\n        selected = cases",
+                    "search": "    spec_bytes = (repo / \"tests/fixtures/coupled-loop-v1.json\").read_bytes()\n    cases = json.loads(spec_bytes)[\"cases\"]\n    requested = set(args.case)\n    unknown = requested - {case[\"id\"] for case in cases}\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases"
+                  },
+                  "suggested_tool": "patch_file"
+                }
+              ]
+            }
+          ],
+          "assists": [
+            {
+              "assist_id": 1,
+              "call_ids": [
+                "call_1328626",
+                "call_1479812",
+                "call_946755"
+              ],
+              "completed": false,
+              "continuation_id": 2,
+              "decision": "override",
+              "executed": true,
+              "pending_exact_checks": [
+                "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+              ],
+              "succeeded": null
+            }
+          ]
+        },
+        {
+          "profile": {
+            "id": "openai-mini",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 18,
+          "request_roles": {
+            "coder": 18
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": true,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [],
+          "blocks": {
+            "Plan Gate": 1,
+            "Requirement Gate": 1,
+            "unspecified governor": 1,
+            "Final handoff": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": true,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        },
+        {
+          "profile": {
+            "id": "mistral-small",
+            "provider": "mistral",
+            "model": "mistral-small-2603",
+            "comparison_role": "retained weak baseline"
+          },
+          "requests": 15,
+          "request_roles": {
+            "coder": 15
+          },
+          "runtime_completed": true,
+          "independent_artifacts_passed": true,
+          "behavior_and_handoff_qualified": true,
+          "strict_all_files_qualified": true,
+          "native": {
+            "native_edit": true,
+            "baseline_before_edit": true,
+            "fresh_exact_checks": true,
+            "no_pending_checks": true,
+            "accepted_done": true,
+            "no_remaining_acceptance": true
+          },
+          "out_of_scope_files": [],
+          "blocks": {
+            "Plan Gate": 2,
+            "Requirement Gate": 1,
+            "Evidence Gate": 1
+          },
+          "trace_errors": [],
+          "scope_only_passed": true,
+          "runtime_storage": {
+            "python_bytecode": "cache/python",
+            "relative_to": "out_dir",
+            "state": "state"
+          },
+          "observer_original_success_responses": 0,
+          "observer_advice": [],
+          "assists": []
+        }
+      ]
+    }
+  },
+  "new_task_requests": 116,
+  "same_inputs_matrix_driver_prompts_caps": true
+}

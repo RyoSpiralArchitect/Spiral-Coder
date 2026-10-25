@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "created_at": "2026-10-25T02:35:54.960434+00:00",
+  "task": "PR36 current report repair advice and generated workspace state ownership",
+  "maximum_rounds": 2,
+  "maximum_episodes": 6,
+  "maximum_wire_requests": 144,
+  "per_episode_requests": 24,
+  "wall_seconds": 600,
+  "case": "pilot-cli",
+  "profiles": [
+    "gemini-lite",
+    "openai-mini",
+    "mistral-small"
+  ],
+  "same_model_both_roles": true,
+  "input_source": "capacity-20261024-r2/inputs",
+  "matrix_source": "capacity-20261024-r2/matrix.json",
+  "driver_source": "capacity-20261024-r2/driver",
+  "independent_oracle": "selection-paraphrases-v4",
+  "native_contract": "accepted-omitted-remaining-v1",
+  "score_definition_changed": false,
+  "comparison_baseline": "capacity-20261025-preservation-r2/assessment-002.json",
+  "changes": "Run-owned generated state and child Python cache, typed report-repair projection and advisory guard; previous post-run report spacing fix is included. Current reassessor only adds run/state/tui-work.json lookup for interrupted new runtimes. Frozen driver and score semantics stay unchanged.",
+  "protocol": "Prepare new immutable directories after offline checks and review; one process per episode, no probes or in-place retries. Retain every failure. A second round is allowed only to investigate a concrete failure or unexercised route from round one; record its intervention before calls. No broader model ranking or causal attribution."
+}

@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-10-25T02:40:09.250875+00:00",
+  "runtime_commit": "9bc7351810611310fb7f043219ad90c93ef71c5a",
+  "rust_passed": 864,
+  "rust_ignored": 1,
+  "integration_passed": 1,
+  "python_passed": 39,
+  "tui_replay_passed": 7,
+  "checks": {
+    "rust": {
+      "path": "/tmp/spiral36-r2-tests.log",
+      "sha256": "f83f4c6d98ba16181560371613a4a304cea7e8d14b934dbc246f4a7af8f72483",
+      "summary": [
+        "test result: ok. 864 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.68s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.12s"
+      ]
+    },
+    "python": {
+      "path": "/tmp/spiral36-python-all.log",
+      "sha256": "e3dca77dd1bc5649192486e00d116a9a58add33b1deb24062ae2363295f3e9ca",
+      "summary": [
+        "Ran 39 tests in 0.720s"
+      ]
+    },
+    "tui_replay": {
+      "path": "/tmp/spiral36-r2-replay.log",
+      "sha256": "402f843ba406d6ae6b4b5afc1770ad94204db0e3cb7f1f783d87008720cf1f9c",
+      "summary": [
+        "[tui-replay] summary: 7/7 passed, report=/Users/ryospiralarchitect/.cache/spiral-coder/observer-scope-20261025/.tmp/tui_replay_1792896230/report.json"
+      ]
+    }
+  },
+  "fresh_review": {
+    "head": "9bc7351810611310fb7f043219ad90c93ef71c5a",
+    "base": "677835a9f1430eaeaf43449979d4fcbcb6a68096",
+    "actionable_findings": 0,
+    "kind": "read-only fork-review; project AGENTS restored"
+  },
+  "final_runtime_commit": "db152f71a286920c35f1cc107049186e88a6347f",
+  "followup_review": {
+    "head": "db152f71a286920c35f1cc107049186e88a6347f",
+    "base": "9bc7351810611310fb7f043219ad90c93ef71c5a",
+    "actionable_findings": 0,
+    "kind": "read-only fork-review; project AGENTS restored"
+  }
+}
