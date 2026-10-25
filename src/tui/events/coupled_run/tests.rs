@@ -2,6 +2,8 @@ use super::*;
 use clap::Parser;
 use httpmock::prelude::*;
 
+mod cross_family;
+
 #[tokio::test]
 async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
     let server = MockServer::start();
@@ -43,6 +45,8 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
             max_requests: 4,
             seed_session: None,
             without_observer: false,
+            observer: roles::ObserverArgs::default(),
+            coder_chunk_requests: None,
             case_spec: None,
             evaluate_only: false,
         },
@@ -54,6 +58,15 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
     let report: serde_json::Value =
         serde_json::from_slice(&std::fs::read(output.join("report.json")).unwrap()).unwrap();
     assert_eq!(report["completed"], false);
+    assert_eq!(report["same_model_both_roles"], true);
+    for field in ["provider", "transport", "model", "endpoint_origin"] {
+        assert_eq!(
+            report["roles"]["coder"][field],
+            report["roles"]["observer"][field]
+        );
+    }
+    assert_eq!(report["roles"]["observer"]["temperature"], 0.2);
+    assert_eq!(report["role_requests"], json!({"coder":1,"observer":0}));
     assert!(report["error"].is_string());
     assert_eq!(report["work"]["requests"].as_array().unwrap().len(), 1);
     assert!(report["execution"]["actions"]

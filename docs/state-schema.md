@@ -809,6 +809,29 @@ explanation for unavailable review panels rather than an HTTP error.
 
 ## Coupled run storage
 
+`src/tui/events/coupled_run/roles.rs` owns ephemeral role resolution and redacted
+role receipts. Default Observer configuration clones the actual Coder config;
+explicit Observer provider/model settings resolve their own credential source.
+This does not add persisted TUI preferences or change historical same-model
+benchmark selection. `report.json` and `agent_config` trace records add `roles`
+with `coder` and nullable `observer` objects: `provider`, `transport`, `model`,
+`endpoint_origin`, `temperature`, `max_tokens`, `timeout_seconds`. The endpoint
+origin excludes user information, path, query and fragment. Credential values
+and credential variable names are not part of those role receipts.
+Observer sampling uses the shared next-action configuration helper: temperature
+0.2 and `min(configured max_tokens, 1200)` for initial assistance and repair.
+`same_model_both_roles` compares actual transport, model and full endpoint;
+disabled Observer is false. Report `role_requests` separately counts actual
+Coder and Observer wire attempts; configuration alone is not participation.
+
+Optional `coder_chunk_requests` is recorded in the report and trace config. Its
+in-memory App field limits the first Coder chunk, while an ephemeral per-handle
+`WorkBudget` request ceiling also counts compatibility retries. The ceiling is
+not serialized and cannot replace the durable `request_limit`. The shared
+remaining budget continues to drive completion gates; reaching a chunk ceiling
+leaves the task incomplete and permits Observer handoff. Subsequent continuation
+after an actual Observer request retains the original cap and spent ledger.
+
 `src/runtime_storage.rs` owns an ephemeral, task-local mapping from a canonical
 workspace to a fresh external `coupled-run --out-dir`. The existing owners and
 JSON schemas for sessions, budgets, progress, reflection and policy proposals
@@ -832,6 +855,13 @@ ancestors. Existing receipts cannot be replaced. Child commands receive
 string or Python user-site settings. Other caches and arbitrary command writes
 are not redirected or authorized by this mapping. Strict inventory still counts
 every actual workspace change, including untracked and ignored files.
+
+In coupled scope, runtime child commands also remove known provider credential
+environment variables and the explicitly selected Observer credential variable.
+This covers automatic tests and model-authored commands without changing their
+authored strings. Provider calls retain their resolved in-process credentials.
+It is environment hygiene, not an operating-system sandbox: commands can still
+read files accessible to the invoking account.
 
 ## Coupled task contracts
 

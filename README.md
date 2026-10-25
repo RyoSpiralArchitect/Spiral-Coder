@@ -677,6 +677,14 @@ workspace for manual dogfooding. Independent artifact checks, native verificatio
 and full file scope are scored separately. See the
 [initial capacity experiments and remaining failures](docs/evals/2026-10-23-capacity/README.md).
 
+The [self-dogfood lane](docs/self-dogfood.md) lets different model families work
+as Coder and Observer on a real Spiral-Coder source snapshot. Its first
+[recovery-handoff task](benchmarks/self-dogfood-v1/README.md) uses Luna → Argon
+and Argon → Mistral Large 4. The executor, probes, original tests, and request
+limits are frozen before calls; candidate changes are rebuilt and checked in
+separate copies. A qualified candidate remains a patch for review, with no
+automatic adoption or merge.
+
 ### Inventory / Parity CLI
 
 `spiral-coder inventory` prints lightweight repo/runtime inventory views for ops and parity work.

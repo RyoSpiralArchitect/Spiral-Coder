@@ -44,6 +44,12 @@ failed startup cannot expose the previous task's rollback target.
 
 A runtime iteration-cap marker is an incomplete task even when the last tool succeeded. It remains eligible for Observer handoff while the shared budget allows a continuation. Final-answer requirements stop at their own sentence; separate preservation instructions remain artifact obligations rather than fabricated report literals.
 
+A runtime `completed=false` outcome also admits the latest completed Coder reply
+for assistance when no failure marker was printed, including a chunk spent on
+unfinished authored-report retries. It does not admit an older ordinary reply,
+an unknown/successful outcome or an in-flight stream. Packet construction and
+the normal native-proof and advice-validation gates still apply.
+
 Runtime-validated plans, including compatibility-rescued plans that were never
 present in the model's text, are recorded as local `accepted_plan` metadata on
 the admitted assistant action. Resume revalidates the plan against the current
@@ -152,6 +158,49 @@ human approval rejections. The latter list is derived from actual user-rejection
 results in both UI paths.
 
 ## Receipts and budget
+
+`coupled-run` defaults to the same resolved provider, actual model, endpoint and
+credential for both roles. To run different families, keep the normal global
+Coder options and supply the Observer provider/model together:
+
+```sh
+spiral --provider openai --model gpt-5.6-luna coupled-run \
+  --tool-root /path/to/isolated-checkout --prompt-file /path/to/task.txt \
+  --out-dir /path/to/fresh-external-run --max-requests 24 \
+  --observer-provider mistral --observer-model mistral-large-4 \
+  --observer-api-key-env MISTRAL_API_KEY --coder-chunk-requests 10
+```
+
+Explicit Observer configuration resolves only its own vendor credential variable
+(Gemini accepts `GEMINI_API_KEY` or `GOOGLE_API_KEY`) or the one named with
+`--observer-api-key-env`. It never borrows the Coder credential or the general
+`SPIRAL_CODER_API_KEY` fallback. A non-default `--observer-base-url` requires an
+explicit credential variable; URLs with user information, query or fragment are
+rejected. The HF Observer requires no credential variable. Incomplete role
+settings, missing Observer credentials and conflicts with `--without-observer`
+fail before network I/O or creating run output. Credential values are not CLI
+Observer arguments or role receipts.
+
+`report.json` and the trace's `agent_config` record `roles.coder` and
+`roles.observer` (null when disabled), each with resolved `provider`, `transport`,
+`model`, `endpoint_origin`, `temperature`, `max_tokens` and `timeout_seconds`.
+Only the URL origin is retained, excluding custom paths and secrets.
+Sampling fields include the actual next-action Observer override (temperature
+0.2 and at most 1200 output tokens, also for repair); provider compatibility can
+transform or omit those options on the wire. `same_model_both_roles` is true only
+when both roles have identical transport, model and complete endpoint identity;
+it is false for disabled Observer. `role_requests` counts actual wire receipts
+for each role. Configuring an Observer does not establish that it participated;
+qualification must inspect these receipts and the original task's evidence.
+
+The optional `--coder-chunk-requests` limits the initial Coder slice, including
+compatibility retries. It must be at least four and leave two requests within the
+shared cap for Observer and continuation. Existing reserve rules may shorten the
+slice further. An ephemeral allowance on the Coder's budget handle enforces this
+boundary without modifying or refunding the durable task limit. After an actual
+Observer request, continuations use the remaining shared budget normally. The
+option does not force an Observer call after successful early completion, nor
+guarantee that advice, verification or repair can fit the remaining budget.
 
 `work_budget.rs` owns durable `WorkState`: task identity, workspace, original request, request limit, request receipts, assist receipts, and explicit replay-preservation baselines. It reserves a slot before every supported provider HTTP attempt, including compatibility retries and Observer repair. Interrupted attempts remain spent after restart.
 

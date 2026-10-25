@@ -219,6 +219,7 @@ pub struct App {
 
     /// Running task handles used for Ctrl+K cancellation.
     pub(crate) coder_chunk_reserve: usize,
+    pub(crate) coder_chunk_requests: Option<usize>,
     pub(crate) work_budget: crate::work_budget::WorkBudget,
     pub(crate) coder_completed: Option<bool>,
     pub(crate) active_observer_start: std::collections::BTreeSet<String>,
@@ -325,6 +326,7 @@ impl App {
             active_observer_first_tool: None,
             last_observer_contract_outcome: None,
             coder_chunk_reserve: 3,
+            coder_chunk_requests: None,
             work_budget: crate::work_budget::WorkBudget::default(),
             coder_completed: None,
             active_observer_start: Default::default(),

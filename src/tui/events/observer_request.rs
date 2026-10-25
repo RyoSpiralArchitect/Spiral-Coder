@@ -234,12 +234,7 @@ async fn start_request(
         .messages
         .push(Message::new_streaming(Role::Assistant));
 
-    let cfg = {
-        let mut cfg = app.observer_cfg.clone();
-        cfg.temperature = 0.2;
-        cfg.max_tokens = cfg.max_tokens.min(1200);
-        cfg
-    };
+    let cfg = next_action_config(&app.observer_cfg);
     let lang = app.lang.clone();
     let handle = request_stream::spawn(
         tx,
@@ -303,4 +298,12 @@ Focus only on the next concrete step.\n\n\
         },
     );
     app.observer_task = Some(handle);
+}
+
+/// The effective next-action settings are also used by coupled run receipts.
+pub(super) fn next_action_config(cfg: &crate::config::RunConfig) -> crate::config::RunConfig {
+    let mut cfg = cfg.clone();
+    cfg.temperature = 0.2;
+    cfg.max_tokens = cfg.max_tokens.min(1200);
+    cfg
 }

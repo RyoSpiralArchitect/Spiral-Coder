@@ -1,8 +1,9 @@
 //! Bounded headless driver of the actual TUI Coder/Observer consumers.
-//! Uses the same model in both roles; fixtures/oracles stay outside this driver.
+//! Roles share one budget; fixtures/oracles stay outside this driver.
 use super::*;
 use anyhow::{Context, Result};
 
+mod roles;
 #[cfg(test)]
 mod tests;
 
@@ -20,6 +21,11 @@ pub(crate) struct Args {
     pub seed_session: Option<PathBuf>,
     #[arg(long)]
     pub without_observer: bool,
+    #[command(flatten)]
+    pub observer: roles::ObserverArgs,
+    /// Upper bound for the initial Coder slice; leaves Observer + continuation budget.
+    #[arg(long)]
+    pub coder_chunk_requests: Option<usize>,
     #[arg(long)]
     pub case_spec: Option<PathBuf>,
     /// Re-evaluate existing receipts without a provider call.
@@ -73,21 +79,40 @@ pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()>
         (1..=64).contains(&args.max_requests),
         "max-requests must be 1..64"
     );
-    let storage = crate::runtime_storage::RuntimeStorage::create(&args.tool_root, &args.out_dir)?;
+    if let Some(limit) = args.coder_chunk_requests {
+        anyhow::ensure!(
+            !args.without_observer,
+            "--coder-chunk-requests conflicts with --without-observer"
+        );
+        anyhow::ensure!(
+            limit >= 4 && limit <= args.max_requests.saturating_sub(2),
+            "coder-chunk-requests must be at least 4 and leave at least 2 shared requests"
+        );
+    }
+    let roles = roles::resolve(
+        common.to_partial_config().resolve()?,
+        &args.observer,
+        args.without_observer,
+    )?;
+    let storage = crate::runtime_storage::RuntimeStorage::create(&args.tool_root, &args.out_dir)?
+        .with_private_env_names(args.observer.api_key_env.clone());
     args.out_dir = storage.output().to_owned();
-    crate::runtime_storage::scope(Some(storage), run_owned(args, common)).await
+    crate::runtime_storage::scope(Some(storage), run_owned(args, roles)).await
 }
 
-async fn run_owned(args: Args, common: crate::CommonArgs) -> Result<()> {
+async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     let root = args
         .tool_root
         .canonicalize()?
         .to_string_lossy()
         .into_owned();
     let prompt = std::fs::read_to_string(&args.prompt_file)?;
-    let cfg = common.to_partial_config().resolve()?;
-    let mut obs_cfg = cfg.clone();
-    obs_cfg.mode = crate::modes::Mode::Observer;
+    let cfg = roles.coder.clone();
+    let obs_cfg = roles.observer.clone().unwrap_or_else(|| {
+        let mut observer = cfg.clone();
+        observer.mode = crate::modes::Mode::Observer;
+        observer
+    });
     let mut app = App::new(
         cfg.clone(),
         obs_cfg,
@@ -99,11 +124,12 @@ async fn run_owned(args: Args, common: crate::CommonArgs) -> Result<()> {
         Some(args.max_requests),
     );
     app.coder_realize_preset = agent::RealizePreset::Off;
+    app.coder_chunk_requests = args.coder_chunk_requests;
     if args.without_observer {
         app.coder_chunk_reserve = 0;
     }
     let trace = crate::trace_writer::TraceWriter::new(args.out_dir.join("trace.jsonl"))?;
-    trace.event("agent_config", json!({"provider":cfg.provider.to_string(),"model":cfg.model,"coupled":true,"max_requests":args.max_requests}))?;
+    trace.event("agent_config", json!({"provider":cfg.provider.to_string(),"model":cfg.model,"coupled":!args.without_observer,"max_requests":args.max_requests,"roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),"coder_chunk_requests":args.coder_chunk_requests}))?;
     let started = std::time::Instant::now();
     let (coder_tx, mut coder_rx) = mpsc::channel(256);
     let (observer_tx, mut observer_rx) = mpsc::channel(256);
@@ -189,6 +215,12 @@ async fn run_owned(args: Args, common: crate::CommonArgs) -> Result<()> {
     }
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
+        "roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),
+        "coder_chunk_requests":args.coder_chunk_requests,
+        "role_requests":{
+            "coder":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "coder").count(),
+            "observer":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "observer").count(),
+        },
         "runtime_storage":{"state":"state","python_bytecode":"cache/python","relative_to":"out_dir"},
         "error":outcome.as_ref().err().map(ToString::to_string), "wall_elapsed_ms":started.elapsed().as_millis(),
         "work":app.work_budget.snapshot(),

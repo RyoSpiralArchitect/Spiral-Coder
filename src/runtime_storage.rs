@@ -7,6 +7,7 @@ use std::path::{Component, Path, PathBuf};
 pub(crate) struct RuntimeStorage {
     workspace: PathBuf,
     output: PathBuf,
+    private_env_names: Vec<String>,
 }
 
 impl RuntimeStorage {
@@ -29,7 +30,21 @@ impl RuntimeStorage {
             !output.starts_with(&workspace),
             "output resolved inside workspace"
         );
-        Ok(Self { workspace, output })
+        Ok(Self {
+            workspace,
+            output,
+            private_env_names: Vec::new(),
+        })
+    }
+
+    /// Environment names only. Credentials stay in the provider configuration,
+    /// never in child commands that execute model-written code or tests.
+    pub(crate) fn with_private_env_names(
+        mut self,
+        names: impl IntoIterator<Item = String>,
+    ) -> Self {
+        self.private_env_names.extend(names);
+        self
     }
 
     pub(crate) fn output(&self) -> &Path {
@@ -99,6 +114,21 @@ pub(crate) fn state_path(root: &str, name: &str) -> PathBuf {
 pub(crate) fn configure_child(command: &mut tokio::process::Command) {
     if let Some(storage) = current() {
         command.env("PYTHONPYCACHEPREFIX", storage.output.join("cache/python"));
+        for name in [
+            "SPIRAL_CODER_API_KEY",
+            "OPENAI_API_KEY",
+            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "MISTRAL_API_KEY",
+            "HF_TOKEN",
+            "HUGGING_FACE_HUB_TOKEN",
+        ] {
+            command.env_remove(name);
+        }
+        for name in storage.private_env_names {
+            command.env_remove(name);
+        }
     }
 }
 

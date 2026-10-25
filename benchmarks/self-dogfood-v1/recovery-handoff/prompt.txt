@@ -1,0 +1,18 @@
+Repair Spiral-Coder's recovery handoff behavior in this real repository.
+
+Observed defect: a required verification command fails and its localized test file is read; a patch to the actual source file then fails because its search anchor is wrong; a successful exact read of that source file completes the patch diagnosis. The live RecoveryGovernor can now be in Fix. After native session JSON roundtrip / runtime Continue / Coder-Observer handoff, restore_from_session restores Diagnose from the earlier FailureMemory and restore_pending_edits leaves it there. The same already-diagnosed edit becomes blocked again.
+
+Make completed diagnosis survive this handoff only while it still belongs to the current failure. A newer failed check (including a different command), failed edit to another target, or failed read must retain its own diagnosis obligation. Absent, stale, unrelated, uncorrelated reads and assistant assertions are not evidence. Reading is diagnosis, never repair or verification: retain failed-edit counts and the pending original exact check until an actual repair and fresh successful verification satisfy the existing gates. Preserve current task boundaries and normal successful flows.
+
+Editable paths only:
+- src/tui/agent/recovery.rs
+- src/tui/agent/edit_failure.rs
+- src/tui/agent/recovery_progress.rs
+- docs/coupled-work-loop.md
+
+Inspect related source and existing tests as needed, but do not change any other path, existing standalone test, manifest, fixture, completion/proof gate, or evaluation artifact. Add focused regression tests inside an editable Rust module if useful. Document the behavior and its limits in the allowed document. Use native file edit tools for the repair. Work only inside this candidate repository; evaluator/reference inputs outside it are not part of the task. Do not run or modify outer evaluation machinery or access credentials. Build/cache environment is supplied; preserve CARGO_TARGET_DIR and PYTHONPYCACHEPREFIX.
+
+Required exact verification command after the final source/doc edit:
+cargo test --locked --bin spiral-coder -q
+
+The final report must name the modified files, explain why completed diagnosis survives and why a newer failure still blocks, give the exact verification command and observed result, and state any remaining limitation. Do not claim external held-out checks ran. Complete through the native done tool only after all requested work and proof are present.
