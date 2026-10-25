@@ -17,6 +17,7 @@ pub(crate) struct TaskObligations {
     pub current_commands: Vec<String>,
     pub task_requirements: super::requirement_proof::Status,
     pub repair_brief: Option<super::repair_brief::RepairBrief>,
+    pub report_repair: Option<super::report_repair::ReportRepair>,
 }
 
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
@@ -28,7 +29,18 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
     let focus = super::recovery_focus::RecoveryFocus::from_messages(messages, None, test_cmd);
     let plan =
         super::plan_resume::latest_valid(messages, |plan| super::validate_plan(plan).is_ok());
+    let pending_recovery: Vec<_> = focus
+        .hint()
+        .into_iter()
+        .chain(edits.diagnostic_hint())
+        .collect();
     TaskObligations {
+        report_repair: super::report_repair::project(
+            messages,
+            test_cmd,
+            &evidence,
+            !pending_recovery.is_empty(),
+        ),
         repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
         artifact_scope: crate::task_scope::artifact_scope(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
@@ -40,11 +52,7 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
             })
         }),
         required_diagnostic_read: focus.required_read(),
-        pending_recovery: focus
-            .hint()
-            .into_iter()
-            .chain(edits.diagnostic_hint())
-            .collect(),
+        pending_recovery,
         acceptance_criteria: super::acceptance_report::criteria(plan.as_ref()),
         current_commands: super::acceptance_report::current_commands(messages, test_cmd),
         task_requirements: super::requirement_proof::project(messages, test_cmd),

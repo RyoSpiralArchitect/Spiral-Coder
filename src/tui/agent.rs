@@ -102,6 +102,7 @@ mod repair_feedback_tests;
 mod replay_input_tests;
 mod repo_scaffold;
 mod report_outcomes;
+mod report_repair;
 mod report_surface;
 mod requirement_proof;
 #[cfg(test)]

@@ -269,3 +269,19 @@ async fn observer_completed_advice_is_scoped_and_cancel_clears_pending_repair() 
     maybe_observer_action_repair(&mut app, &tx).await;
     assert!(!app.observer.streaming);
 }
+
+#[test]
+fn native_report_refusal_rejects_stale_read_advice_in_tui_replay() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    app.project_test_cmd = Some("python3 -S -m unittest -v".into());
+    let messages = crate::observer_action::report_repair_tests::rejected_report();
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, messages));
+    let raw = suggestion_response("read", "read_file", json!({"path":"greet.py"}));
+    let replay = replay_observer_next_action_case(&mut app, "last-fail", "tool_error", &raw).unwrap();
+    assert!(replay.observer_prompt.contains("reason_hint: authored_report"));
+    assert!(replay.observer_repair_prompt.unwrap().contains("handoff-ready"));
+    assert!(replay.pending_observer_hint.is_none());
+    assert!(replay.pending_observer_contract.is_none());
+    assert!(app.observer.messages.iter().any(|m| m.role == Role::Assistant && m.content == raw));
+}

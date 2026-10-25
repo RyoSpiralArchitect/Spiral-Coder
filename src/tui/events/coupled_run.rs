@@ -63,21 +63,22 @@ async fn drain(
     Ok(())
 }
 
-pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
+pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()> {
     if args.evaluate_only {
         let report = evaluate_receipts(&args, 0)?;
         println!("{}", serde_json::to_string(&report)?);
         return Ok(());
     }
     anyhow::ensure!(
-        !args.out_dir.exists(),
-        "output exists; preserve earlier receipts and choose a fresh directory"
-    );
-    anyhow::ensure!(
         (1..=64).contains(&args.max_requests),
         "max-requests must be 1..64"
     );
-    std::fs::create_dir_all(&args.out_dir)?;
+    let storage = crate::runtime_storage::RuntimeStorage::create(&args.tool_root, &args.out_dir)?;
+    args.out_dir = storage.output().to_owned();
+    crate::runtime_storage::scope(Some(storage), run_owned(args, common)).await
+}
+
+async fn run_owned(args: Args, common: crate::CommonArgs) -> Result<()> {
     let root = args
         .tool_root
         .canonicalize()?
@@ -119,7 +120,7 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
         app.work_budget = crate::work_budget::WorkBudget::new(
             prompt.trim_end(),
             args.max_requests,
-            Some(PathBuf::from(&root).join(".spiral-coder/tui-work.json")),
+            Some(crate::runtime_storage::state_path(&root, "tui-work.json")),
         );
         send_coder_input(
             &mut app,
@@ -188,6 +189,7 @@ pub(crate) async fn run(args: Args, common: crate::CommonArgs) -> Result<()> {
     }
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
+        "runtime_storage":{"state":"state","python_bytecode":"cache/python","relative_to":"out_dir"},
         "error":outcome.as_ref().err().map(ToString::to_string), "wall_elapsed_ms":started.elapsed().as_millis(),
         "work":app.work_budget.snapshot(),
         "execution":app.coder_session.as_ref().map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref())),

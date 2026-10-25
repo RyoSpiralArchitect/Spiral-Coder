@@ -162,7 +162,9 @@ def retained_report(folder):
     report_path = folder / "run/report.json"
     if report_path.exists():
         return read_json(report_path), "native_report"
-    ledger = folder / "workspace/.spiral-coder/tui-work.json"
+    ledger = folder / "run/state/tui-work.json"
+    if not ledger.exists():
+        ledger = folder / "workspace/.spiral-coder/tui-work.json"
     # A failed first stream can exit older runtimes before their report writer.
     # Recover request accounting only, never synthesize native completion/proof.
     report = {"completed": False, "execution": None,
