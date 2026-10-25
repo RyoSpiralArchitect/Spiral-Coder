@@ -1,6 +1,50 @@
 use super::*;
 
 #[tokio::test]
+async fn candidate_commands_do_not_inherit_provider_credentials() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("workspace");
+    std::fs::create_dir(&root).unwrap();
+    let storage = RuntimeStorage::create(&root, &dir.path().join("run"))
+        .unwrap()
+        .with_private_env_names(["SELF_DOGFOOD_OBSERVER_KEY".into()]);
+    scope(Some(storage), async {
+        let mut command = tokio::process::Command::new("unused");
+        for key in [
+            "OPENAI_API_KEY",
+            "GEMINI_API_KEY",
+            "MISTRAL_API_KEY",
+            "SELF_DOGFOOD_OBSERVER_KEY",
+        ] {
+            command.env(key, "test-only-placeholder");
+        }
+        command.env("CARGO_TARGET_DIR", "retained-build-cache");
+        configure_child(&mut command);
+        let env: std::collections::BTreeMap<_, _> = command.as_std().get_envs().collect();
+        for key in [
+            "OPENAI_API_KEY",
+            "GEMINI_API_KEY",
+            "MISTRAL_API_KEY",
+            "SELF_DOGFOOD_OBSERVER_KEY",
+        ] {
+            assert_eq!(env.get(std::ffi::OsStr::new(key)), Some(&None));
+        }
+        assert_eq!(
+            env.get(std::ffi::OsStr::new("CARGO_TARGET_DIR")),
+            Some(&Some(std::ffi::OsStr::new("retained-build-cache")))
+        );
+    })
+    .await;
+    let mut ordinary = tokio::process::Command::new("unused");
+    ordinary.env("OPENAI_API_KEY", "test-only-placeholder");
+    configure_child(&mut ordinary);
+    assert!(ordinary
+        .as_std()
+        .get_envs()
+        .any(|(name, value)| name == "OPENAI_API_KEY" && value.is_some()));
+}
+
+#[tokio::test]
 async fn parallel_scopes_keep_generated_state_owned_and_restore_default() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("workspace");

@@ -194,3 +194,38 @@ fn both_observer_surfaces_use_current_native_receipts_over_stale_display_data() 
         assert!(prompt.contains("historical_action_count"));
     }
 }
+
+#[test]
+fn both_roles_keep_unedited_source_work_visible_beside_documentation_proof() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let root = "Repair src/recovery.rs and document the fix.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"docs\",\"description\":\"document fix\",\"artifacts\":[{\"path\":\"docs/loop.md\",\"kind\":\"documentation\"}],\"checks\":[{\"command\":\"cargo test -q\"}]}]}\n</task_requirements>";
+    let mut messages = vec![json!({"role":"user","content":root})];
+    for id in ["read1", "read2"] {
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":"read_file","arguments":"{\"path\":\"src/recovery.rs\"}"}}]}),
+            json!({"role":"tool","tool_call_id":id,"content":"[src/recovery.rs] (1 lines, 6 bytes)\nsource"}),
+        ]);
+    }
+    messages.push(crate::task_origin::user_message("Continue", crate::task_origin::MessageOrigin::Runtime));
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None, None, None, None, messages.clone()));
+    let tui = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let browser = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"task_obligations":{"work_progress":{"native_file_edits":{"succeeded":42}}}}),
+        messages:messages.clone(), test_command:None, lang:"en".into(), reason:"stalled".into(),
+        response:None, final_summary:None, repair_native:false,
+    });
+    let coder_prompt = agent::task_obligations::prompt(&messages, None).unwrap();
+    let coder: serde_json::Value = serde_json::from_str(coder_prompt.lines().last().unwrap()).unwrap();
+    let expected = &coder["work_progress"];
+    assert_eq!(expected["original_human_task"]["text"], root);
+    assert_eq!(expected["native_file_edits"]["succeeded"], 0);
+    assert_eq!(expected["observations_since_last_edit_or_exec"]["returned"], 2);
+    assert_eq!(tui["task_obligations"]["work_progress"], *expected);
+    assert_eq!(browser.packet["task_obligations"]["work_progress"], *expected);
+    for prompt in [build_tui_next_action_prompt(&tui, "en", "stalled"), browser.prompt] {
+        assert!(prompt.contains("Repair src/recovery.rs and document the fix."));
+        assert!(prompt.contains("A documentation-only requirement does not erase a source repair."));
+        assert!(prompt.contains("name the concrete missing fact before proposing another read"));
+    }
+}

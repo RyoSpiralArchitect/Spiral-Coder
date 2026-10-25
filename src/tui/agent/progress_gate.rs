@@ -20,6 +20,21 @@ pub(in super::super) fn build_progress_gate_block(
     if super::super::requirement_proof::is_pending_baseline(tc, messages, test_cmd) {
         return None;
     }
+    if harness.artifact_mode == ArtifactMode::ExistingFiles
+        && matches!(harness.lane, TaskLane::FixExisting | TaskLane::EditExisting)
+        && recovery_stage != Some(RecoveryStage::Diagnose)
+    {
+        let context = super::super::exec_verification::ExecVerificationContext::from_messages(
+            test_cmd, messages,
+        );
+        let edits =
+            super::super::edit_failure::EditFailureMemory::from_messages(messages, &context);
+        if !edits.needs_target_read(&tc.name, &tc.arguments) {
+            if let Some(block) = super::super::observation_stall::block(messages, tc) {
+                return Some(block);
+            }
+        }
+    }
     if recovery_stage != Some(RecoveryStage::Fix) {
         return None;
     }
@@ -66,7 +81,13 @@ pub(in super::super) fn build_progress_gate_block(
         let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
         let allow_first_target_read = harness.artifact_mode == ArtifactMode::ExistingFiles
             && tc.name == "read_file"
-            && same_successes == 0;
+            && (same_successes == 0
+                || (serde_json::from_str::<Value>(&tc.arguments)
+                    .ok()
+                    .is_some_and(|args| {
+                        args.get("start_line").is_some() || args.get("end_line").is_some()
+                    })
+                    && !super::super::observation_stall::previously_observed(messages, tc)));
         if allow_first_target_read {
             // Listing the project and reading its manifest do not inspect the
             // implementation. Focus inference is a hint, not proof it was read.
@@ -251,6 +272,64 @@ mod tests {
             None,
             0,
         )
+    }
+
+    #[test]
+    fn repeated_ranges_need_no_failure_but_diagnosis_and_new_ranges_remain_open() {
+        let mut messages = vec![];
+        let args = json!({"path":"src/lib.rs","start_line":1,"end_line":20});
+        for _ in 0..2 {
+            tool(
+                &mut messages,
+                "read_file",
+                args.clone(),
+                "[src/lib.rs] (30 lines, 100 bytes) [range: lines 1-20; partial file]\nsame body",
+            );
+        }
+        let call = ToolCallData {
+            thought_signature: None,
+            id: "next".into(),
+            name: "read_file".into(),
+            arguments: args.to_string(),
+        };
+        let harness = TaskHarness {
+            lane: TaskLane::FixExisting,
+            artifact_mode: ArtifactMode::ExistingFiles,
+        };
+        assert!(
+            build_progress_gate_block(harness, &call, &messages, None, None, None, 0).is_some()
+        );
+        assert!(build_progress_gate_block(
+            harness,
+            &call,
+            &messages,
+            Some(RecoveryStage::Diagnose),
+            None,
+            None,
+            0
+        )
+        .is_none());
+        let read_only = TaskHarness {
+            lane: TaskLane::ReadOnlyObserve,
+            artifact_mode: ArtifactMode::ObserveOnly,
+        };
+        assert!(
+            build_progress_gate_block(read_only, &call, &messages, None, None, None, 0).is_none()
+        );
+        let next_range = ToolCallData {
+            arguments: json!({"path":"src/lib.rs","start_line":21,"end_line":30}).to_string(),
+            ..call
+        };
+        assert!(build_progress_gate_block(
+            harness,
+            &next_range,
+            &messages,
+            Some(RecoveryStage::Fix),
+            None,
+            None,
+            0
+        )
+        .is_none());
     }
 
     #[test]

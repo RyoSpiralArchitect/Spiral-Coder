@@ -76,6 +76,7 @@ mod native_arguments;
 mod next_action;
 #[cfg(test)]
 mod next_action_tests;
+mod observation_stall;
 mod outcome;
 mod plan_resume;
 mod progress_bridge;
@@ -110,11 +111,13 @@ mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;
 mod session_bridge;
+mod success_output;
 mod task_harness;
 pub(crate) mod task_obligations;
 mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
+mod work_progress;
 use self::assumption_gate::refuted_assumption_conflict;
 use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
@@ -185,6 +188,7 @@ use self::read_only::{
 use self::recovery::RecoveryGovernor;
 use self::reflection_action::{tool_call_action_sig, ActionIdentity};
 use self::session_bridge::SessionBridgeView;
+use self::success_output::suspicious_success_reason;
 use self::task_harness::{
     allows_artifact_creation_during_diagnose, allows_artifact_creation_during_verify,
     allows_benchmark_plan_followup_during_verify, benchmark_plan_pending_required_exec_command,
@@ -2056,7 +2060,8 @@ fn push_unique_tool_line(
     if trimmed.is_empty() {
         return;
     }
-    let compact = compact_one_line(trimmed, 220);
+    let compact = success_output::compact_passed_test_row(trimmed, 220)
+        .unwrap_or_else(|| compact_one_line(trimmed, 220));
     if seen.insert(compact.clone()) {
         out.push(compact);
     }
@@ -2534,7 +2539,7 @@ fn build_failed_tool_output(stdout: &str, stderr: &str, exit_code: i32) -> Strin
 }
 
 fn build_ok_tool_output(stdout: &str) -> String {
-    let stdout_t = truncate_output(stdout, MAX_STDOUT_CHARS);
+    let stdout_t = success_output::stdout_preview(stdout, MAX_STDOUT_CHARS);
     if stdout_t.is_empty() {
         "OK (exit_code: 0)".to_string()
     } else {
@@ -6307,43 +6312,6 @@ fn fmt_hash(h: u64) -> String {
     format!("{h:016x}")
 }
 
-fn suspicious_success_reason(stdout: &str, stderr: &str) -> Option<String> {
-    // PowerShell often exits 0 even when it printed errors (non-terminating error records).
-    // Cargo warnings also go to stderr, so we only trigger on strong error markers.
-    let bad = [
-        "parsererror",
-        "unexpected token",
-        "missing expression",
-        "commandnotfoundexception",
-        "not recognized",
-        "error:",
-        "fatal:",
-        "exception",
-        "traceback",
-        "access is denied",
-        "permission denied",
-        "does not have a commit checked out",
-        "unable to index file",
-        "could not find a part of the path",
-    ];
-
-    for src in [stderr, stdout] {
-        let low = src.to_ascii_lowercase();
-        if bad.iter().any(|k| low.contains(k)) {
-            // Return just enough to explain why we treated this as failure.
-            let line = pick_interesting_error_line(stdout, stderr);
-            if !line.is_empty() {
-                return Some(format!(
-                    "exit_code was 0, but output contained error markers (e.g. `{line}`)"
-                ));
-            }
-            return Some("exit_code was 0, but output contained error markers".to_string());
-        }
-    }
-
-    None
-}
-
 fn hint_for_known_failure(command: &str, stdout: &str, stderr: &str) -> Option<String> {
     let mut s = String::new();
     s.push_str(stdout);
@@ -9169,7 +9137,7 @@ Execute only the new minimal action: {}",
 
         if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
             if let Some((rewritten, original, coerced)) =
-                coerce_existing_followup_tool_call(&messages, tc, &root_user_text)
+                coerce_existing_followup_tool_call(&messages, tc, &root_user_text, recovery.stage)
             {
                 let _ = tx
                     .send(StreamToken::Delta(format!(
@@ -13565,18 +13533,14 @@ Required now: run `{command}`.\n{verification_status}"
                             .read_for_diagnosis(&tc, base, &mut file_cache)
                     {
                         result
-                    } else if let Some(cached) = file_cache.get(&cache_key) {
+                    } else if let Some(cached) = file_cache.get(&cache_key).and_then(|cached| {
+                        crate::file_tools::read_cache::for_request(cached, &path, base)
+                    }) {
                         let header = cached.lines().next().unwrap_or(&path).to_string();
                         let _ = tx
                             .send(StreamToken::Delta(format!("[CACHE_HIT] {header}\n")))
                             .await;
-                        (
-                            format!(
-                                "{} [⚡ cached — unchanged since last read]\n{cached}",
-                                header
-                            ),
-                            false,
-                        )
+                        (cached, false)
                     } else {
                         let (mut content, err) = crate::file_tools::tool_read_file(&path, base);
                         if err {

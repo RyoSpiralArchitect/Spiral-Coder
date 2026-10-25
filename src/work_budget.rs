@@ -27,6 +27,21 @@ pub(crate) struct AssistReceipt {
     pub succeeded: Option<bool>,
     pub completed: Option<bool>,
     pub pending_exact_checks: Vec<String>,
+    /// Exact suggested-action evidence, distinct from the continuation totals.
+    /// Historical receipts and suggestions without a tool have no projection.
+    #[serde(default)]
+    pub suggestion_execution: Option<SuggestedActionReceipt>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub(crate) struct SuggestedActionReceipt {
+    pub tool: String,
+    pub arguments: Value,
+    pub matching_call_ids: Vec<String>,
+    /// None when matching calls exist but execution is still unconfirmed.
+    pub executed: Option<bool>,
+    /// Aggregate only confirmed executed matches, never completion proof.
+    pub succeeded: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +65,8 @@ pub(crate) struct WorkBudget {
     state: Arc<Mutex<WorkState>>,
     path: Option<PathBuf>,
     claimed: Arc<AtomicBool>,
+    // Per-handle ceiling for one role's slice, never a change to durable cap.
+    request_ceiling: Option<usize>,
 }
 
 static NEXT_TASK: AtomicU64 = AtomicU64::new(0);
@@ -89,6 +106,7 @@ impl WorkBudget {
             })),
             path,
             claimed: Arc::new(AtomicBool::new(false)),
+            request_ceiling: None,
         }
     }
 
@@ -98,6 +116,7 @@ impl WorkBudget {
             state: Arc::new(Mutex::new(state)),
             path: Some(path),
             claimed: Arc::new(AtomicBool::new(true)),
+            request_ceiling: None,
         })
     }
 
@@ -164,6 +183,14 @@ impl WorkBudget {
         s.request_limit.saturating_sub(s.requests.len())
     }
 
+    pub(crate) fn with_request_allowance(&self, allowance: usize) -> Self {
+        let mut bounded = self.clone();
+        let ceiling = self.snapshot().requests.len().saturating_add(allowance);
+        bounded.request_ceiling =
+            Some(self.request_ceiling.map_or(ceiling, |old| old.min(ceiling)));
+        bounded
+    }
+
     fn persist(&self, state: &mut WorkState) -> Result<()> {
         if let Some(path) = &self.path {
             let _write = PERSIST_LOCK.lock().unwrap();
@@ -198,6 +225,12 @@ impl WorkBudget {
         if state.requests.len() >= state.request_limit {
             bail!("Shared task request budget exhausted; work remains incomplete. Send a new scoped task to allocate another budget.");
         }
+        if self
+            .request_ceiling
+            .is_some_and(|ceiling| state.requests.len() >= ceiling)
+        {
+            return Err(ChunkExhausted.into());
+        }
         let id = state.requests.len();
         state.requests.push(RequestReceipt {
             id,
@@ -216,6 +249,17 @@ impl WorkBudget {
         })
     }
 }
+
+#[derive(Debug)]
+pub(crate) struct ChunkExhausted;
+impl std::fmt::Display for ChunkExhausted {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            "Coder request chunk exhausted; shared requests remain for Observer and continuation",
+        )
+    }
+}
+impl std::error::Error for ChunkExhausted {}
 
 pub(crate) struct RequestGuard {
     budget: WorkBudget,
@@ -269,6 +313,40 @@ pub(crate) fn begin(payload: &Value) -> Result<Option<RequestGuard>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn role_allowance_counts_retries_without_changing_the_shared_cap() {
+        let budget = WorkBudget::new("task", 6, None);
+        let chunk = budget.with_request_allowance(4);
+        scope(
+            Some(Context {
+                budget: chunk,
+                role: "coder",
+            }),
+            async {
+                for _ in 0..4 {
+                    drop(begin(&Value::Null).unwrap());
+                }
+                assert!(begin(&Value::Null).err().unwrap().is::<ChunkExhausted>());
+            },
+        )
+        .await;
+        assert_eq!(budget.remaining(), 2);
+        assert_eq!(budget.snapshot().request_limit, 6);
+        drop(budget.begin("observer", &Value::Null).unwrap());
+        drop(budget.begin("coder", &Value::Null).unwrap());
+        assert_eq!(budget.remaining(), 0);
+        assert!(budget.begin("observer", &Value::Null).is_err());
+        assert_eq!(
+            budget
+                .snapshot()
+                .requests
+                .iter()
+                .map(|r| r.role.as_str())
+                .collect::<Vec<_>>(),
+            ["coder", "coder", "coder", "coder", "observer", "coder"]
+        );
+    }
+
     #[test]
     fn canceled_request_cannot_overwrite_a_replacement_tasks_budget() {
         let dir = tempfile::tempdir().unwrap();

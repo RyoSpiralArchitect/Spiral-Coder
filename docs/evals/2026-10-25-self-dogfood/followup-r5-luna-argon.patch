@@ -1,0 +1,32 @@
+diff --git a/docs/coupled-work-loop.md b/docs/coupled-work-loop.md
+index 702fb63..2cd4563 100644
+--- a/docs/coupled-work-loop.md
++++ b/docs/coupled-work-loop.md
+@@ -56,6 +56,14 @@ execution. A progress-policy refusal must not invent a new workspace diagnosis
+ after an Observer handoff. Earlier actual command or automatic-test failures
+ remain visible through those refusals; separate plan, approval, evidence and
+ verification gates still apply. Refusal text never supplies successful proof.
++A completed diagnosis may survive a native session/runtime/role handoff only
++when the retained observation is correlated with the current failure and target;
++this preserves the already-entered Fix stage without converting a read into a
++repair or verification. A newer failed command, failed edit to another target,
++failed read, or uncorrelated/stale/absent observation retains its own Diagnose
++obligation. Assistant assertions are not diagnostic evidence. Failed-edit
++counts and the original exact verification remain pending until an actual
++repair and fresh successful verification satisfy the existing gates.
+ 
+ `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+ arguments before any tool dispatch or workspace-recovery transition. The whole
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..4f88b86 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -86,7 +86,7 @@ impl RecoveryGovernor {
+             required_verification,
+             ..Default::default()
+         };
+-        if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
++        if g.stage.is_none() && (mem.consecutive_failures > 0 || last_tool_looks_failed(messages)) {
+             g.stage = Some(RecoveryStage::Diagnose);
+         }
+         g

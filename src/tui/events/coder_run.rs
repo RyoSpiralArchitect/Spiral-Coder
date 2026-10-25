@@ -233,6 +233,18 @@ pub(super) async fn send_coder_input(
     } else {
         remaining
     };
+    let chunk_limit = app.coder_chunk_requests.filter(|_| {
+        !app.work_budget
+            .snapshot()
+            .requests
+            .iter()
+            .any(|r| r.role == "observer")
+    });
+    let max_iters = chunk_limit.map_or(max_iters, |limit| max_iters.min(limit));
+    let request_budget = chunk_limit.map_or_else(
+        || app.work_budget.clone(),
+        |_| app.work_budget.with_request_allowance(max_iters),
+    );
     app.coder_completed = None;
     app.active_observer_start = app
         .coder_session
@@ -257,7 +269,7 @@ pub(super) async fn send_coder_input(
         tx,
         &mut app.coder_generation,
         Some(crate::work_budget::Context {
-            budget: app.work_budget.clone(),
+            budget: request_budget,
             role: "coder",
         }),
         move |tx| async move {
@@ -286,6 +298,11 @@ pub(super) async fn send_coder_input(
                     end.messages,
                 )),
                 Err(e) => {
+                    if e.downcast_ref::<crate::work_budget::ChunkExhausted>()
+                        .is_some()
+                    {
+                        let _ = tx.send(StreamToken::Delta("[agent] Coder request chunk cap reached; task remains incomplete.\n".into())).await;
+                    }
                     let _ = tx.send(StreamToken::Error(format!("{e:#}"))).await;
                     error_session_path
                         .and_then(|path| crate::agent_session::AgentSession::load(&path).ok())

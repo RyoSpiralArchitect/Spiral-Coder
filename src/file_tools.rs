@@ -16,6 +16,7 @@ pub(crate) mod edit_preview;
 pub(crate) mod json_patch;
 mod json_repair;
 mod overwrite_guard;
+pub(crate) mod read_cache;
 pub(crate) mod read_range;
 
 // ── Path safety ───────────────────────────────────────────────────────────────

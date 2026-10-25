@@ -4,7 +4,12 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     app: &App,
     selector: &str,
 ) -> Result<serde_json::Value, String> {
-    let target_idx = resolve_tui_meta_target(&app.coder.messages, selector)?;
+    let target_idx = resolve_assist_target(
+        &app.coder.messages,
+        app.coder_completed,
+        app.coder.streaming,
+        selector,
+    )?;
     let Some(target_msg) = app.coder.messages.get(target_idx) else {
         return Err(format!(
             "meta-diagnose: no coder message found for `coder-{target_idx}`"
@@ -141,6 +146,59 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     }))
 }
 
+// A structured incomplete outcome is authoritative even when the last branch
+// did not print a failure marker (for example an unfinished authored report).
+fn resolve_assist_target(
+    messages: &[Message],
+    completed: Option<bool>,
+    streaming: bool,
+    selector: &str,
+) -> Result<usize, String> {
+    resolve_tui_meta_target(messages, selector).or_else(|error| {
+        if completed != Some(false) || streaming {
+            return Err(error);
+        }
+        let latest = messages
+            .iter()
+            .rposition(|m| m.role == Role::Assistant && m.complete);
+        match (parse_tui_meta_target_index(selector)?, latest) {
+            (Some(selected), Some(latest)) if selected == latest => Ok(latest),
+            (None, Some(latest)) => Ok(latest),
+            _ => Err(error),
+        }
+    })
+}
+
+#[cfg(test)]
+mod outcome_tests {
+    use super::*;
+
+    #[test]
+    fn structured_incomplete_outcome_allows_only_the_latest_completed_reply() {
+        let messages = vec![
+            Message::new_complete(Role::Assistant, "older ordinary reply".into()),
+            Message::new_complete(Role::Assistant, "The final report is still pending.".into()),
+        ];
+        assert_eq!(
+            resolve_assist_target(&messages, Some(false), false, "msg:coder-1"),
+            Ok(1)
+        );
+        assert_eq!(
+            resolve_assist_target(&messages, Some(false), false, "last-fail"),
+            Ok(1)
+        );
+        for (completed, streaming, selector) in [
+            (Some(true), false, "msg:coder-1"),
+            (None, false, "msg:coder-1"),
+            (Some(false), true, "msg:coder-1"),
+            (Some(false), false, "msg:coder-0"),
+            (Some(false), false, "msg:coder-2"),
+        ] {
+            assert!(resolve_assist_target(&messages, completed, streaming, selector).is_err());
+        }
+    }
+}
+
 pub(crate) fn build_tui_next_action_prompt(
     packet: &serde_json::Value,
     lang: &str,
@@ -196,7 +254,9 @@ Rules:\n\
 - Prefer small, local, reversible actions.\n\
 - Mention exact files, commands, or symbols when possible.\n\
 - task_obligations is projected from the original task and native results. Its explicit artifact_scope.target_files takes precedence over a heuristic intent_anchor.target. referenced_subjects are mentioned as data, not assumed source-edit or read dependencies. Do not widen scope.\n\
+- task_obligations.work_progress preserves the original human task separately from declared proof requirements. Compare the original task and acceptance_criteria with native_file_edits, pending checks and last_done_claims before saying that only documentation or verification remains. A documentation-only requirement does not erase a source repair. A zero edit count is no recorded native file write, not proof the workspace is unchanged; exec can mutate files. Successful writes and old tests do not prove semantic repair.\n\
 - Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
+- When work_progress shows repeated observations without an edit or exec, name the concrete missing fact before proposing another read. Use the current exact region if it supports a small repair; otherwise obtain only the missing region or use no-tool clarification. A returned read is not necessarily successful diagnosis and does not authorize an invented patch.\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
 - When task_obligations.report_repair is non-null, its native feedback is the current blocker. Suggest done with a corrected authored summary using final_answer and current_commands, or no-tool clarify when uncertain. Do not restart reading, editing or passed checks based on selected historical failures. Preserve exact case and spaces.\n\

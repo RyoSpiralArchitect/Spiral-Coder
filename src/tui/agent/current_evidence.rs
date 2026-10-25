@@ -120,7 +120,7 @@ pub(crate) fn observer_prompt_packet(packet: &Value) -> Value {
             "instruction":"Repair done.summary using the native report feedback. Selected historical failures do not require another read, edit or passed check. No-tool clarification remains available when uncertain."
         });
     }
-    packet["evidence_precedence"] = serde_json::json!("execution_evidence contains current correlated results only. selected_failure_context and intent risks describe the selected historical failure, not a current file observation. Pending recovery and exact checks determine remaining obligations. Do not repeat a check or read solely because the historical failure says stale.");
+    packet["evidence_precedence"] = serde_json::json!("execution_evidence contains current correlated results only. selected_failure_context and intent risks describe the selected historical failure, not a current file observation. Pending recovery and exact checks are native obligations, not an exhaustive semantic completion claim. Retain work_progress.original_human_task and acceptance_criteria when identifying unmet source work; a documentation-only proof requirement must not erase a requested source repair. work_progress records activity, not current filesystem differences or correctness. Do not repeat a check or read solely because the historical failure says stale.");
     packet
 }
 
