@@ -264,7 +264,7 @@ impl ReflectionLedger {
 }
 
 pub fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".spiral-coder/reflection_ledger.json")
+    crate::runtime_storage::state_path(root, "reflection_ledger.json")
 }
 
 #[cfg(test)]

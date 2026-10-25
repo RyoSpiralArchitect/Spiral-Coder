@@ -182,7 +182,7 @@ pub(super) async fn send_coder_input(
     }
     let budget_path = tool_root
         .as_deref()
-        .map(|r| PathBuf::from(r).join(".spiral-coder/tui-work.json"));
+        .map(|r| crate::runtime_storage::state_path(r, "tui-work.json"));
     let start = coder_session::start_state(app.coder_session.as_ref(), messages, continuing);
     // Clear the UI rollback handle before startup can fail or be interrupted.
     // A new task may only publish its newly captured checkpoint.

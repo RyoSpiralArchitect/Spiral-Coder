@@ -1,0 +1,11 @@
+{
+  "head": "9bc7351810611310fb7f043219ad90c93ef71c5a",
+  "run_id": 40155159498,
+  "job_id": 121054897558,
+  "job": "native (macos-15-intel, x86_64-apple-darwin, spiral-coder)",
+  "phase": "rustup toolchain install stable --profile minimal",
+  "failure": "DNS lookup of static.rust-lang.org failed before compilation",
+  "job_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40155159498/job/121054897558",
+  "retry_attempt": "Single-job retry refused because workflow was still running; no retry started. A later runtime fix creates a distinct head and CI run.",
+  "classification": "infrastructure failure; not a passing build"
+}

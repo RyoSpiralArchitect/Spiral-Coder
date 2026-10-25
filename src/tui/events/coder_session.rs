@@ -12,7 +12,7 @@ pub(super) enum CoderInput {
 pub(super) fn session_path(app: &App) -> Option<PathBuf> {
     app.tool_root
         .as_deref()
-        .map(|root| PathBuf::from(root).join(".spiral-coder/tui-session.json"))
+        .map(|root| crate::runtime_storage::state_path(root, "tui-session.json"))
 }
 
 pub(super) fn restore(app: &mut App) {

@@ -47,6 +47,7 @@ mod acceptance_schema;
 mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
+mod automatic_test;
 pub(crate) mod current_evidence;
 mod done_gate;
 mod edit_failure;
@@ -102,6 +103,8 @@ mod repair_feedback_tests;
 mod replay_input_tests;
 mod repo_scaffold;
 mod report_outcomes;
+mod report_repair;
+use automatic_test::run as run_test_cmd;
 mod report_surface;
 mod requirement_proof;
 #[cfg(test)]
@@ -7004,43 +7007,6 @@ async fn run_git_cmd(root: &str, args: &[&str]) -> Option<String> {
         return None;
     }
     Some(String::from_utf8_lossy(&out.stdout).trim().to_string())
-}
-
-/// Run the project's test command after a file edit. Returns a formatted result string.
-/// Capped at 120 seconds; preserve bounded diagnostics before shortening output.
-async fn run_test_cmd(cmd: &str, cwd: &str) -> String {
-    let fut = tokio::process::Command::new(if cfg!(target_os = "windows") {
-        "powershell"
-    } else {
-        "sh"
-    })
-    .args(if cfg!(target_os = "windows") {
-        vec!["-Command", cmd]
-    } else {
-        vec!["-c", cmd]
-    })
-    .current_dir(cwd)
-    .stdout(std::process::Stdio::piped())
-    .stderr(std::process::Stdio::piped())
-    .output();
-
-    match tokio::time::timeout(std::time::Duration::from_secs(120), fut).await {
-        Ok(Ok(out)) => {
-            let stdout = String::from_utf8_lossy(&out.stdout);
-            let stderr = String::from_utf8_lossy(&out.stderr);
-            let exit = out.status.code().unwrap_or(-1);
-            failure_diagnostics::automatic_test_output(&stdout, &stderr, exit, cwd)
-        }
-        Ok(Err(e)) => failure_diagnostics::automatic_test_output(
-            "",
-            &format!("error running test: {e}"),
-            -1,
-            cwd,
-        ),
-        Err(_) => {
-            failure_diagnostics::automatic_test_output("", "test timed out after 120s", -1, cwd)
-        }
-    }
 }
 
 fn goal_check_support_line(summary: &str, fallback: &str) -> String {

@@ -151,7 +151,11 @@ pub(crate) fn build_tui_next_action_prompt(
         "en" => "English",
         _ => "Japanese",
     };
-    let reason = reason_hint.trim();
+    let reason = if packet["task_obligations"]["report_repair"].is_object() {
+        "authored_report"
+    } else {
+        reason_hint.trim()
+    };
     let schema = json!({
         "type": "object",
         "required": ["summary", "suggestions"],
@@ -195,7 +199,7 @@ Rules:\n\
 - Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
-- If latest_action_feedback rejects only the final report and pending_exact_checks is empty, suggest done with the required literals in summary, not another inspection or verification. Preserve exact case and spaces.\n\
+- When task_obligations.report_repair is non-null, its native feedback is the current blocker. Suggest done with a corrected authored summary using final_answer and current_commands, or no-tool clarify when uncertain. Do not restart reading, editing or passed checks based on selected historical failures. Preserve exact case and spaces.\n\
 - If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
 - execution_evidence.actions is chronological history. An earlier governor rejection is not a current blocker or a user approval rejection; use the latest action feedback and current pending checks.\n\
 - Use tool_argument_schemas as the tool catalog. Shell programs such as cargo are commands for exec, not tool names.\n\

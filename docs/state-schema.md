@@ -807,6 +807,32 @@ provides these capabilities; the Lite server reports them as unavailable.
 The Web UI waits for status before polling optional endpoints and shows an
 explanation for unavailable review panels rather than an HTTP error.
 
+## Coupled run storage
+
+`src/runtime_storage.rs` owns an ephemeral, task-local mapping from a canonical
+workspace to a fresh external `coupled-run --out-dir`. The existing owners and
+JSON schemas for sessions, budgets, progress, reflection and policy proposals
+are unchanged. In a coupled run their generated files live in `<out-dir>/state/`:
+`tui-session.json`, `tui-work.json`, `progress.json`, `reflection_ledger.json`,
+and `policy_patch_queue.json`. The final `session.json`, report and trace remain
+at the output root. Interrupted/error runs retain autosaves and spent requests.
+An explicit `--seed-session` still starts a new bounded episode from that native
+history; it does not silently refund or reuse another run's durable budget.
+
+Request tasks explicitly inherit the mapping before spawning. It is never a
+process-wide environment variable; concurrent runs keep their owners separate.
+Outside that scope, ordinary TUI storage retains its project-local paths. Project
+instructions, replay fixtures and promoted policy overlays remain workspace
+inputs. Isolated runs start their generated reflection/progress/proposal stores
+fresh rather than reading an unrelated workspace's generated state.
+
+The output must be fresh and outside the canonical workspace, including symlink
+ancestors. Existing receipts cannot be replaced. Child commands receive
+`PYTHONPYCACHEPREFIX=<out-dir>/cache/python` without changing the authored command
+string or Python user-site settings. Other caches and arbitrary command writes
+are not redirected or authorized by this mapping. Strict inventory still counts
+every actual workspace change, including untracked and ignored files.
+
 ## Coupled task contracts
 
 See [One task through Coder and Observer](coupled-work-loop.md) for ownership, provenance, generations, request caps, approval feedback, and preservation rules. Browser-native work and the server wire ledger are separate: browser counts logical calls; the server also counts compatibility retries. Neither may represent an unknown usage value as zero.

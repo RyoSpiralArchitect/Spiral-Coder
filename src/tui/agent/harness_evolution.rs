@@ -726,7 +726,7 @@ impl Default for GovernorContractOverlay {
 }
 
 pub(crate) fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".spiral-coder/policy_patch_queue.json")
+    crate::runtime_storage::state_path(root, "policy_patch_queue.json")
 }
 
 pub(crate) fn overlay_path_for_root(root: &str) -> PathBuf {

@@ -27,6 +27,7 @@ where
     *generation = generation.wrapping_add(1);
     let generation = *generation;
     let out = out.clone();
+    let storage = crate::runtime_storage::current();
     tokio::spawn(async move {
         let (tx, mut rx) = mpsc::channel(256);
         let forward = async {
@@ -49,7 +50,10 @@ where
             }
             error
         };
-        let (session, error) = tokio::join!(crate::work_budget::scope(context, work(tx)), forward);
+        let (session, error) = tokio::join!(
+            crate::runtime_storage::scope(storage, crate::work_budget::scope(context, work(tx))),
+            forward
+        );
         if let Some(session) = session {
             let _ = out
                 .send(RequestEvent {

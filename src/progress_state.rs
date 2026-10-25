@@ -238,7 +238,7 @@ impl RepoProgressState {
 }
 
 pub fn path_for_root(root: &str) -> PathBuf {
-    Path::new(root).join(".spiral-coder/progress.json")
+    crate::runtime_storage::state_path(root, "progress.json")
 }
 
 #[derive(Debug, Clone)]

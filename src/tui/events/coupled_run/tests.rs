@@ -37,7 +37,7 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
     .unwrap();
     let result = run(
         Args {
-            tool_root: root,
+            tool_root: root.clone(),
             prompt_file: prompt,
             out_dir: output.clone(),
             max_requests: 4,
@@ -61,6 +61,9 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
         .unwrap()
         .is_empty());
     assert!(output.join("session.json").is_file());
+    assert!(output.join("state/tui-session.json").is_file());
+    assert!(output.join("state/tui-work.json").is_file());
+    assert!(!root.join(".spiral-coder").exists());
     let trace = std::fs::read_to_string(output.join("trace.jsonl")).unwrap();
     assert!(trace.contains("streamed tool-call id changed"));
     assert!(trace.contains(r#""ok":false"#));

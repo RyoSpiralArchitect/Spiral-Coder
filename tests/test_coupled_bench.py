@@ -180,6 +180,20 @@ class FrozenRunner(unittest.TestCase):
             self.assertFalse(report["completed"])
             self.assertIsNone(report["execution"])
 
+    def test_interrupted_external_run_ledger_takes_precedence_over_workspace_state(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            for name, requests in [("workspace/.spiral-coder/tui-work.json", []),
+                                   ("run/state/tui-work.json", [{"role": "coder", "status": "interrupted"}])]:
+                path = folder / name
+                path.parent.mkdir(parents=True)
+                common.write_json(path, {"requests": requests})
+            report, source = runner.retained_report(folder)
+            self.assertEqual(source, "durable_request_ledger_only")
+            self.assertEqual(len(report["work"]["requests"]), 1)
+            self.assertFalse(report["completed"])
+            self.assertIsNone(report["execution"])
+
     def test_selection_and_invalid_input_fail_before_provider_work(self):
         common.validate(SUITE, MATRIX)
         self.assertEqual([r["id"] for r in common.select(SUITE["cases"], ["replay-json", "large-file", "large-file"])],

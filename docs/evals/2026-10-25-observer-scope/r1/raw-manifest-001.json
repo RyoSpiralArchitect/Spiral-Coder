@@ -1,0 +1,2246 @@
+{
+  "local_root": "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1",
+  "assessment_sha256": "1179c30911fb1dad75041b24551f5155feae4434ef8272b5a52072a01dee36c4",
+  "files": {
+    "assessment-001.json": {
+      "sha256": "1179c30911fb1dad75041b24551f5155feae4434ef8272b5a52072a01dee36c4",
+      "bytes": 84642,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/coupled_bench/__init__.py": {
+      "sha256": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+      "bytes": 66,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/coupled_bench/common.py": {
+      "sha256": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+      "bytes": 5052,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/coupled_bench/evidence.py": {
+      "sha256": "0521892b6c4b0f2c74fda7a4a2dadb0a668b0e5885d707b14c78a048dcd1ee82",
+      "bytes": 4563,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/coupled_bench/oracles.py": {
+      "sha256": "932525d0530373a965db137df29c3293545620900016e2288df34c3e0d6d967f",
+      "bytes": 4854,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/coupled_bench/runner.py": {
+      "sha256": "4f9a2b18de1cfc754299075fa97f7c7e6d2a114664e52032a20ea63fd4d3450e",
+      "bytes": 14040,
+      "mode": 420
+    },
+    "assessors/193fd1694088a5cd6adf2e0b5bc9370047473833dac38a652e80b9127ea37c3a/run_coupled_bench.py": {
+      "sha256": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b",
+      "bytes": 2105,
+      "mode": 420
+    },
+    "driver/coupled_bench/__init__.py": {
+      "sha256": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+      "bytes": 66,
+      "mode": 420
+    },
+    "driver/coupled_bench/__pycache__/__init__.cpython-312.pyc": {
+      "sha256": "d2853587a042451360ee236f219a4f02d7043b1453f46afaffcda17884c66b58",
+      "bytes": 276,
+      "mode": 420
+    },
+    "driver/coupled_bench/__pycache__/common.cpython-312.pyc": {
+      "sha256": "d72ebfa1abcf6d9a2f6cdf7e6be3a670daee12169bf7ca9163f2ef441834c9fb",
+      "bytes": 9027,
+      "mode": 420
+    },
+    "driver/coupled_bench/__pycache__/evidence.cpython-312.pyc": {
+      "sha256": "86f3fd0e7c2cc08573a89da02e10be2e7d3b05a2320e9254bd1196424bfc268a",
+      "bytes": 8496,
+      "mode": 420
+    },
+    "driver/coupled_bench/__pycache__/oracles.cpython-312.pyc": {
+      "sha256": "6781fdc125a8870f2755e81fd1459291d27a749cd5db34accc16e8eb5907c448",
+      "bytes": 7757,
+      "mode": 420
+    },
+    "driver/coupled_bench/__pycache__/runner.cpython-312.pyc": {
+      "sha256": "7cd4ff7b09b81c2de45e67f34b580c4f5dd3d32aaa4e6626e3812383ac21b78f",
+      "bytes": 21147,
+      "mode": 420
+    },
+    "driver/coupled_bench/common.py": {
+      "sha256": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+      "bytes": 5052,
+      "mode": 420
+    },
+    "driver/coupled_bench/evidence.py": {
+      "sha256": "0521892b6c4b0f2c74fda7a4a2dadb0a668b0e5885d707b14c78a048dcd1ee82",
+      "bytes": 4563,
+      "mode": 420
+    },
+    "driver/coupled_bench/oracles.py": {
+      "sha256": "932525d0530373a965db137df29c3293545620900016e2288df34c3e0d6d967f",
+      "bytes": 4854,
+      "mode": 420
+    },
+    "driver/coupled_bench/runner.py": {
+      "sha256": "4f9a2b18de1cfc754299075fa97f7c7e6d2a114664e52032a20ea63fd4d3450e",
+      "bytes": 14040,
+      "mode": 420
+    },
+    "driver/run_coupled_bench.py": {
+      "sha256": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b",
+      "bytes": 2105,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/console.log": {
+      "sha256": "9cba3637aa3aeaf7267d9772450f0f1b2ceaa5bc7071631a688c47c87a6f64f2",
+      "bytes": 189,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/process.json": {
+      "sha256": "d30a684774b6581d29cfd40d190b207d1f8231341ae02119a09e6761b2d77235",
+      "bytes": 237,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_compression.cpython-312.pyc": {
+      "sha256": "241f0a155f41d0acfa95a41b7f9fc6906123a2da672d7e02affe3c6704bd5f40",
+      "bytes": 7524,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_weakrefset.cpython-312.pyc": {
+      "sha256": "64a324a5adcaa92ae53f254d2eeeb6ca9915d246f1749cc51f43c620092e7b02",
+      "bytes": 11783,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/argparse.cpython-312.pyc": {
+      "sha256": "4ba6334234a6309af5ffd8dc21e9f2e2354662369d9febf11c98d4f5f9f35d75",
+      "bytes": 101143,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.cpython-312.pyc": {
+      "sha256": "41747d1619d33da2ada09a8b99d13d35882041182deec992b60d4dd1b68357ec",
+      "bytes": 99670,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/__init__.cpython-312.pyc": {
+      "sha256": "febb5f586cfaccf8b31117958cf4ea2eea20509fc84ef144859a17e2eaaa264d",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.cpython-312.pyc": {
+      "sha256": "a4049eeb4a37d995a75ca52b39561891f78dc6427c428f39ca92489ac199c92c",
+      "bytes": 86548,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_futures.cpython-312.pyc": {
+      "sha256": "d347248eb9545bfd044ac5e6f35c1a7270e99d1900c43ec3b26e63661c5c2dd3",
+      "bytes": 3132,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_subprocess.cpython-312.pyc": {
+      "sha256": "bd5b28d5ce4bcefb8b9db689f818a3693edd62298020aad3a584e002a556d915",
+      "bytes": 16124,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_tasks.cpython-312.pyc": {
+      "sha256": "fe796bacece1e119dab32ba32f6ed51a206a7ca811d9600eebf2915ee10cad93",
+      "bytes": 4124,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/constants.cpython-312.pyc": {
+      "sha256": "dacbeb805461e326edca77ffb8715cdb5635db2b13ee801000e74fa77e362a91",
+      "bytes": 1001,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/coroutines.cpython-312.pyc": {
+      "sha256": "0d49ad0854a748af69b869a171d8f624522b443471bcb81a2a999359f84fbd37",
+      "bytes": 3815,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.cpython-312.pyc": {
+      "sha256": "7f14b413fee1e33093d174e7951f7c5741fd42b4caf6f5ed1d342ca47dd6044f",
+      "bytes": 36788,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/exceptions.cpython-312.pyc": {
+      "sha256": "8a0efd6e05a8de2ecc81ad235404c62eec396fea4ad1cb6d38027ba7d034cc33",
+      "bytes": 3127,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/format_helpers.cpython-312.pyc": {
+      "sha256": "e6e025bfd4f4a28b14a7897a10688889873d07ac0050da39ff6d24d39595265e",
+      "bytes": 3913,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/futures.cpython-312.pyc": {
+      "sha256": "ceabd39f8f4dff04a43d43393cf7424e76d1098c91530d7dbb70e481f433f779",
+      "bytes": 17370,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/locks.cpython-312.pyc": {
+      "sha256": "f31deb5416ddb669e402b2f8eb17306c13233c78e75d46ffdb5743227a753590",
+      "bytes": 27472,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/log.cpython-312.pyc": {
+      "sha256": "d9d9057daa2a58bee4aa1596f87c22bca373ee570f4f4d1c8781438a242757c7",
+      "bytes": 327,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/mixins.cpython-312.pyc": {
+      "sha256": "716d3395a02b6536575ef44ce8bd9d72711fa9edfe398c0d36efe2887e4d5041",
+      "bytes": 1074,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/protocols.cpython-312.pyc": {
+      "sha256": "e7fba630feab34f2f2c1b43dfdbd573a06d605ceb2447e23eef582a0acfa716a",
+      "bytes": 8828,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/queues.cpython-312.pyc": {
+      "sha256": "9cc368e5e3ee0b3f67a9bc5f657bbed41d57499e015b89d6d23e486ae310f956",
+      "bytes": 11987,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.cpython-312.pyc": {
+      "sha256": "50f7486badc77d61fb925d9924db73c8389485ff2bdba00af8242e26a38f4cb1",
+      "bytes": 9970,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/selector_events.cpython-312.pyc": {
+      "sha256": "ac8319e83098a6da36254d43d08fd7a405827a418a3107c44c07da6066169c67",
+      "bytes": 63116,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/sslproto.cpython-312.pyc": {
+      "sha256": "1af1bbb05506836e37d88e750a21f8cf2694a15f372d2b15dde85e601093ebfb",
+      "bytes": 41582,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/staggered.cpython-312.pyc": {
+      "sha256": "a295a2bf5e4c83b2b21763565d2963beba75a9baad9e6e8b2fcf0f42c89e352c",
+      "bytes": 6257,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/streams.cpython-312.pyc": {
+      "sha256": "6c3b2369d5b44760d2f206f3037dabbac88f22fe998441d76c57ba9cc9eb1cf1",
+      "bytes": 33412,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/subprocess.cpython-312.pyc": {
+      "sha256": "6408bfa28ab99b5849d336e60790535dc8dffb2b4b2fd28b8cb6e361b41be2df",
+      "bytes": 12140,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/taskgroups.cpython-312.pyc": {
+      "sha256": "39364e50cb09c2ca7ed9e54d75dc2f7f732f5bf03ac66d4fa34565c77f4aa3ad",
+      "bytes": 7968,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/tasks.cpython-312.pyc": {
+      "sha256": "7244d8c693a1eee1c950dbb97c0325024c7e65b01c669ec186d67f2a19395af7",
+      "bytes": 40360,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/threads.cpython-312.pyc": {
+      "sha256": "f91f5c9238b2b0ac95845c1b1cd28af687ac88bd82b338032cd0e4dc5e859a59",
+      "bytes": 1304,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/timeouts.cpython-312.pyc": {
+      "sha256": "d289cff1668377b36a0f6e65b541f0d9d115d1b27507c44ac68e4c694b1dba1a",
+      "bytes": 7843,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/transports.cpython-312.pyc": {
+      "sha256": "2bd4f1646d66c9d5861ca688c2e3dfaa4e8b85fd5447cfcba62940e957c76718",
+      "bytes": 14050,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/trsock.cpython-312.pyc": {
+      "sha256": "9d76ae04111cd4e9e97439be2cac0b2210e7034b3b277f62975c6175ed11bd7b",
+      "bytes": 5125,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/unix_events.cpython-312.pyc": {
+      "sha256": "e234b60a645b3705563e566c2402dfad1b14854b1a725200581401ae4aafabc5",
+      "bytes": 67788,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/base64.cpython-312.pyc": {
+      "sha256": "de50a17fb9176e7a94595c66128d83709b597f9b3bd824255cbcdb0f683c4002",
+      "bytes": 24443,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bisect.cpython-312.pyc": {
+      "sha256": "40e7cc720f85fc42eb1a05f7214e984acf9a2a266074ab0469ae7e2594c6edb1",
+      "bytes": 3687,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bz2.cpython-312.pyc": {
+      "sha256": "7888c969be37c6e6d789e9d64ed83bcb707ef9d4e6a0d48f29110316287e192c",
+      "bytes": 15179,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/__init__.cpython-312.pyc": {
+      "sha256": "f645eab5a2bd9e9bd67b7ef530b2f9552c49814f45bbc7cf2ad2b9e7da9d9c0a",
+      "bytes": 72983,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/abc.cpython-312.pyc": {
+      "sha256": "3c518e8d98fa8e4d4ba5d51d72425052776e5b9c45cf32ad6e18677090048bbd",
+      "bytes": 295,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/__init__.cpython-312.pyc": {
+      "sha256": "af4e95f977f598014da8763ff9987a4a79def4232a8d2e8c0610225881cba0a8",
+      "bytes": 185,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/__init__.cpython-312.pyc": {
+      "sha256": "4b57c5368c6b21f96f9543d3964189de62b748a1b17a52942d8f730cdf9efdfa",
+      "bytes": 1301,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/_base.cpython-312.pyc": {
+      "sha256": "5be8ef6b887229e2e3feae4258a3a39153141b6bfcb2abdf78dd989d1eae2bda",
+      "bytes": 31984,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.cpython-312.pyc": {
+      "sha256": "0daee1c669af9f14b93f7c0e9cf2c9bf9aa8c94831b983022a3fc707cf8d7e74",
+      "bytes": 30408,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextvars.cpython-312.pyc": {
+      "sha256": "c2020cb6bfa82a97387fde571799b632a9e7458383f03eb41740c921cb477a0d",
+      "bytes": 307,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copy.cpython-312.pyc": {
+      "sha256": "b4a8ca02926e56771f58754adbb833f316d1a9c300abf63ab6e7cc5b1d7ff47f",
+      "bytes": 9803,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copyreg.cpython-312.pyc": {
+      "sha256": "893278cab1e805a7756bddb1a6c65e5fa6256e657a38ae2a014416c393ca714b",
+      "bytes": 7445,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dataclasses.cpython-312.pyc": {
+      "sha256": "8ad502e9e99965bbd2de16c126cadad559457750ee996717a05445339007d2d6",
+      "bytes": 44940,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/difflib.cpython-312.pyc": {
+      "sha256": "ccccf1426b47f1897c12a9f20bced7151db2748435a2b5427a293e7a90873e9c",
+      "bytes": 75365,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dis.cpython-312.pyc": {
+      "sha256": "c8b0e9af1cd3f50bbe98fc400af9b8758d4765989a34aac06a06ca9463bad902",
+      "bytes": 34474,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/__init__.cpython-312.pyc": {
+      "sha256": "874b30f3fcd977032c775e3b02ae1d0af55a61ce71d21535b7774b8031c94d34",
+      "bytes": 5821,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/aliases.cpython-312.pyc": {
+      "sha256": "891d78be66eb68017255471cc220c318b19bd3685746a31b71e8736ad7c0566f",
+      "bytes": 12454,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/utf_8.cpython-312.pyc": {
+      "sha256": "627c6fea777f33810f240caeb0c8e8bc65ce7d027c3ef7ccf2d9ba977ed59803",
+      "bytes": 2193,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/enum.cpython-312.pyc": {
+      "sha256": "0fcdfe7a8e62a25a337b33cd9bd079caf5a91ba9317515b38b468a12f70a3888",
+      "bytes": 80562,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/fnmatch.cpython-312.pyc": {
+      "sha256": "c27cfbc8249502fd9012a04f0a18ae35187e389013ab7640c89a07f715a1b56f",
+      "bytes": 6526,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/functools.cpython-312.pyc": {
+      "sha256": "4e9a20c91263abb3dda136bea02ce061e8d03e7bba03c90e6ccb635d5fe30fde",
+      "bytes": 40345,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/gettext.cpython-312.pyc": {
+      "sha256": "0c916762d9928f249fdb08abf71ccdd0ff74a4063dd473261ac4f501adbec100",
+      "bytes": 21829,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/hashlib.cpython-312.pyc": {
+      "sha256": "b371f7399175c75a367bbc8e6f83a81cb1d9dca9bdcbf9791b2ea4121cd43115",
+      "bytes": 8126,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/heapq.cpython-312.pyc": {
+      "sha256": "cf16a776da2edec3a0468c2ba3667d3ee5f618e4867ce95e5c4c9380ac8dbc80",
+      "bytes": 17984,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.cpython-312.pyc": {
+      "sha256": "739c137c2c25f7ac52041a2ffdb5484b077abe296c8379d71d26e0d69d584cfd",
+      "bytes": 4601,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/_abc.cpython-312.pyc": {
+      "sha256": "5fb62ed558178161fb528985da179b1a6ce23373420687add2094fc3db06ec5b",
+      "bytes": 1689,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/inspect.cpython-312.pyc": {
+      "sha256": "eb237cadac829bd8357d7a5aca9734d313476724a326fa8b4712992234835a23",
+      "bytes": 133902,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ipaddress.cpython-312.pyc": {
+      "sha256": "f521324a3941afda21e54142e0de671d86cbe641f61083f45033e8ff586a5d5c",
+      "bytes": 90867,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.cpython-312.pyc": {
+      "sha256": "c3fe8f3798446e4c607c50cff566fd6f7caeaa3581627f78bb49ca844f9cfeed",
+      "bytes": 13661,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.cpython-312.pyc": {
+      "sha256": "85dd8bd62cca3087f39fee7e2b8644e78500743be8e8d2516732baa0d1b4bfef",
+      "bytes": 13871,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.cpython-312.pyc": {
+      "sha256": "6c55136d1b76ba17430cc8aae809710761a33490dcc45330bd0f6457704f1826",
+      "bytes": 15129,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/scanner.cpython-312.pyc": {
+      "sha256": "061d53ee35b67f3861b46bfed8b20ed9b9d45a2ddb3b9658f2f4d4f74d2ee969",
+      "bytes": 3367,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/keyword.cpython-312.pyc": {
+      "sha256": "cfeaebd81b194d22e98ac9165643512169052aa037160db9e21460e4f12563c0",
+      "bytes": 1087,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/linecache.cpython-312.pyc": {
+      "sha256": "072a6574dfc8a324a81c80b8e9d60ac3e46c4618eb6478a09f32a762ff205c4c",
+      "bytes": 6527,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/locale.cpython-312.pyc": {
+      "sha256": "39f64924d06ca496c8fb23a507aac223459ff8c9056fcc747953d1d9a1971126",
+      "bytes": 59534,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/logging/__init__.cpython-312.pyc": {
+      "sha256": "ed3cfacb7fb31bd29382cbe9b51b1b52028f55c2897a4d14e12f4946349c18fa",
+      "bytes": 95434,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lzma.cpython-312.pyc": {
+      "sha256": "c5108113276400883900a7c2e4a6f9ddc16e3ef9dfd8601bb2e6d698c7adc456",
+      "bytes": 15901,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/opcode.cpython-312.pyc": {
+      "sha256": "e7f4a92162a3195386dd1828c076871cd799aeee0787f20058a8d0ca0a828ad3",
+      "bytes": 14762,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/operator.cpython-312.pyc": {
+      "sha256": "5eb085faf2ef2d6aa98e58d6840520c76896ab7bc3351dbbe42e3d96531b12fb",
+      "bytes": 17398,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.cpython-312.pyc": {
+      "sha256": "46d325979950274b0541bd06be0a451ed7446fb6ace3c362dd0cd15712647883",
+      "bytes": 62031,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pkgutil.cpython-312.pyc": {
+      "sha256": "e9332f1ef0ef79cdcf3a70ebdab8b001d4fdf3c57597b6f77d0182080be845d9",
+      "bytes": 19933,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pprint.cpython-312.pyc": {
+      "sha256": "d483ce1b698d6a583758c226a45739dddfc0d274bba821204285e5476f1f5f60",
+      "bytes": 29474,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/random.cpython-312.pyc": {
+      "sha256": "dfefb5203bea5804daf4d05d6d4b21a58a1543a529eb980835892a5a9da4f859",
+      "bytes": 33193,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/__init__.cpython-312.pyc": {
+      "sha256": "9c5d6273a9033f4e37be132fdf5a5e5c5b75bb62d39ad5a1e2e0ad979ad2683a",
+      "bytes": 17981,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_casefix.cpython-312.pyc": {
+      "sha256": "8e3d5eab6cad49712acadfa80fa3a0a00912291cd59193dd8b90afd48d144a2a",
+      "bytes": 1862,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_compiler.cpython-312.pyc": {
+      "sha256": "1c458fe9c74f2d7acffe208a19500c33ef24f8dbbeb14850044d3660bfa3b699",
+      "bytes": 26467,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_constants.cpython-312.pyc": {
+      "sha256": "0d28fe94215c46dbef7b8b8c4bb1e7122f3e51d73c0769674683b07e188f6dbe",
+      "bytes": 5349,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_parser.cpython-312.pyc": {
+      "sha256": "775fadb3d2cf456b287b8422a650f94f54d24e06cc064486c6776aee5165b12b",
+      "bytes": 41993,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/reprlib.cpython-312.pyc": {
+      "sha256": "d4abfa201ea9513fd71da640b82334eba0240df4df44b8c4f88f5086ebddc523",
+      "bytes": 9953,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/selectors.cpython-312.pyc": {
+      "sha256": "d0e2ba1e62d4b7d0a08d2b3566aa3191b7c642f487a66e22c061c0d0311e4c81",
+      "bytes": 26149,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/shutil.cpython-312.pyc": {
+      "sha256": "2571fc8e71b375aadcb77c9c49abc6bc48de8c7b9b1e5ec645ff4443f6ce9a37",
+      "bytes": 66203,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/signal.cpython-312.pyc": {
+      "sha256": "7e81069a167f4d8ac5c50547289dbc98a04c4ce8dd340dc342eb2575280299a8",
+      "bytes": 4503,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.cpython-312.pyc": {
+      "sha256": "d2e50199111bc5c6d5544f9a6d2ab2eaf7f923a21a3944e557fdf93784c8403c",
+      "bytes": 41951,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.cpython-312.pyc": {
+      "sha256": "bb9670cac59c9e413243fab2fc129a33d139be048d93de7ebd2f1e0aae83709c",
+      "bytes": 63128,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/string.cpython-312.pyc": {
+      "sha256": "40b847410f69bccefd2f66a444576787d4e8b73e2634b1a626e241e2d2df399d",
+      "bytes": 11508,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/struct.cpython-312.pyc": {
+      "sha256": "071f43c6b838ab9e935fe6b986cac390316e0bb01a2516489837464f17a423f6",
+      "bytes": 371,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.cpython-312.pyc": {
+      "sha256": "5952b594101014c2cc79dbd27583b8d6c1f45531bfe03f697d88d12e4237d55c",
+      "bytes": 79080,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tempfile.cpython-312.pyc": {
+      "sha256": "e7d778164ae2c831bc44b4fc78d09ba181c45d41dcedba2406be1dc98b197105",
+      "bytes": 40404,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/textwrap.cpython-312.pyc": {
+      "sha256": "48ee5d0115d5dd1d59a04c676e3079eee31896bdb8604ba5345fd22cd8fec5a8",
+      "bytes": 18326,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.cpython-312.pyc": {
+      "sha256": "d0dec4a3f8b634e3e19fdaf30d0dd57519e954f91e1e26f6535c2e143d466fd1",
+      "bytes": 65279,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/token.cpython-312.pyc": {
+      "sha256": "fd352e3afd3c5be222489d83c10ab2490223e2880b8af34d35aaed167f15f8d4",
+      "bytes": 3608,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tokenize.cpython-312.pyc": {
+      "sha256": "19b8667e7148839b8032992241bc3a60b41e7160f8d528d32bdd95022a52413c",
+      "bytes": 24759,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/traceback.cpython-312.pyc": {
+      "sha256": "f8bc6760a8ccd73a03206dd6b867b028058a894242f64f23f3f677dadc2e2a05",
+      "bytes": 51470,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/types.cpython-312.pyc": {
+      "sha256": "925855c992a266bac55ded699c6db8815a077310479033b79c20f29eba6d6289",
+      "bytes": 14991,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/typing.cpython-312.pyc": {
+      "sha256": "9f19374a1fc2642d01e63996746a1d4da06e91573b234828f3b0a797918b2493",
+      "bytes": 142389,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__init__.cpython-312.pyc": {
+      "sha256": "015dad4d9460d5a9d7d706d579771bcd71b76f45b2f4adbb18a89b0fef16b6a4",
+      "bytes": 3478,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__main__.cpython-312.pyc": {
+      "sha256": "f439416e4657bd31b7b28c7210ba9dbc40741ed409929a2ab0071a7ef40dbb74",
+      "bytes": 662,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/case.cpython-312.pyc": {
+      "sha256": "05e2003db7931dad214e07ab3d7a159bea61a0ac2aa1dc15df2db134e8446d42",
+      "bytes": 69801,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.cpython-312.pyc": {
+      "sha256": "7bf2da04b0039e1bacd18b35e04bec4004f3f7473aa6a0f7d122b380305d4b39",
+      "bytes": 24063,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/main.cpython-312.pyc": {
+      "sha256": "e5ba46dcb8bebfd546eef38295ff3a5e5b2aa9672b34f06f0ed4193772ba2d27",
+      "bytes": 13605,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.cpython-312.pyc": {
+      "sha256": "9adee29165e619b77fe578f886612464bde06b89603976e99fe79c7887d153bf",
+      "bytes": 117831,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/result.cpython-312.pyc": {
+      "sha256": "6fb97a791996f4e31313dfcdcd56c8341875a2df58884e9a08ad2d680254149f",
+      "bytes": 12784,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/runner.cpython-312.pyc": {
+      "sha256": "54ce9aadb9bf38d59e82748f4bb82778acec7cd1c7628d2ca566a1e8c059a473",
+      "bytes": 16505,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/signals.cpython-312.pyc": {
+      "sha256": "399c436ebd018222c82d60b073c2b73e3c137c15395d484033827650d5a7a4ec",
+      "bytes": 3654,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/suite.cpython-312.pyc": {
+      "sha256": "c5bf97e951098aa2e3ffade4dbe28a28d7cd8fd2fec8d54bb80abe20a682a4b7",
+      "bytes": 15475,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/util.cpython-312.pyc": {
+      "sha256": "acc0894d2cab16e8249be06a75aaf8eacb5b11b290b362fea9ef1d1e4daab855",
+      "bytes": 7303,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/__init__.cpython-312.pyc": {
+      "sha256": "8ecf68df82cc2c38a42f3b64642d34bec1d43757d10737915dd18df6d5c6d73c",
+      "bytes": 181,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/parse.cpython-312.pyc": {
+      "sha256": "6ad4f2aec28f9da6c241690e11c4c3954755e0129d56204f7b866adf6fdd18cd",
+      "bytes": 50134,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/warnings.cpython-312.pyc": {
+      "sha256": "53394682c6e913122c6c4b502f345690c8babe3b2f68d0aef3a02fa061f46ba1",
+      "bytes": 23864,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/weakref.cpython-312.pyc": {
+      "sha256": "29877639b2cf28ce4c651d812766a78c5478a7daaf882a4270ec5a5df1d2c926",
+      "bytes": 31257,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/gemini-lite/pilot-cli/workspace/scripts/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "22932568d64ef07b40b179b36fcb43a538a0eccca3ea88f60f5fa8a06c83e0d7",
+      "bytes": 14111,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/gemini-lite/pilot-cli/workspace/tests/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "59b03a63cd30a9d4fc97d06345e1f557675f1ca77b208eef1cb9e659b6801386",
+      "bytes": 12847,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/report.json": {
+      "sha256": "f5c902ba8bd1429a47ebc209d8b9e10bd53e9af4d651b415dbcfb89d698ca13a",
+      "bytes": 67277,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/session.json": {
+      "sha256": "4cf982b6fcb7405b05e954180de6d01afbd7303f9536145f1d1a603b6fe46754",
+      "bytes": 80174,
+      "mode": 384
+    },
+    "episodes/gemini-lite/pilot-cli/run/state/policy_patch_queue.json": {
+      "sha256": "624662cdd66c7a398da134de0a655fb1f67088743f1d9b20469adb65c67bee7d",
+      "bytes": 1409,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/state/progress.json": {
+      "sha256": "da361b99116498ce330c6160e480fcc5f37f9262c5f8de3743d7c87e68f354d5",
+      "bytes": 1154,
+      "mode": 384
+    },
+    "episodes/gemini-lite/pilot-cli/run/state/reflection_ledger.json": {
+      "sha256": "034c55464efc683d5329f29e8f9ae316e0ef1b95935eb178e93184b5ab10f971",
+      "bytes": 528,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/state/tui-session.json": {
+      "sha256": "292b6da18c96bcced3403a15c66bf441ee9a292dfe0faac866eaca5aff8658db",
+      "bytes": 80174,
+      "mode": 384
+    },
+    "episodes/gemini-lite/pilot-cli/run/state/tui-work.json": {
+      "sha256": "4c39571e78c1061d362b28a4008b0015d50979f29aa5b4c2740b409ef1c1ba2f",
+      "bytes": 6627,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/run/trace.jsonl": {
+      "sha256": "0c997926ba8bb982b091c829e4c7a058e2bf1bba94bf12f0519c6e55546d9c0d",
+      "bytes": 31668,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/started.json": {
+      "sha256": "74b16f8303a3b8e7539d8fe4980e845c035cefe0a19385e0c8608943ea3e0287",
+      "bytes": 936,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/task.txt": {
+      "sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+      "bytes": 1640,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/docs/pilot.md": {
+      "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+      "bytes": 101,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/scripts/__pycache__/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "1f238813424b16b47b609b26af25a4e1b97651220cc4ce7e486658aecec445c8",
+      "bytes": 14321,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/scripts/run_coupled_pilot.py": {
+      "sha256": "b2d3c68cb3c04eaf91cb152141afd22c24920d775cf707c33ad81cbf170c1993",
+      "bytes": 9302,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/tests/__pycache__/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "59b03a63cd30a9d4fc97d06345e1f557675f1ca77b208eef1cb9e659b6801386",
+      "bytes": 12847,
+      "mode": 420
+    },
+    "episodes/gemini-lite/pilot-cli/workspace/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/console.log": {
+      "sha256": "8bafbab9066d4a25f0204324389028bca5c2451459b6af681708b9d8155fb08e",
+      "bytes": 190,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/process.json": {
+      "sha256": "f7d9148452f4bd47cbc806b7d38149c6aace6ae908ec5f7a77e16ff6be2701df",
+      "bytes": 236,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_compression.cpython-312.pyc": {
+      "sha256": "241f0a155f41d0acfa95a41b7f9fc6906123a2da672d7e02affe3c6704bd5f40",
+      "bytes": 7524,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_weakrefset.cpython-312.pyc": {
+      "sha256": "64a324a5adcaa92ae53f254d2eeeb6ca9915d246f1749cc51f43c620092e7b02",
+      "bytes": 11783,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/argparse.cpython-312.pyc": {
+      "sha256": "4ba6334234a6309af5ffd8dc21e9f2e2354662369d9febf11c98d4f5f9f35d75",
+      "bytes": 101143,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.cpython-312.pyc": {
+      "sha256": "41747d1619d33da2ada09a8b99d13d35882041182deec992b60d4dd1b68357ec",
+      "bytes": 99670,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/__init__.cpython-312.pyc": {
+      "sha256": "febb5f586cfaccf8b31117958cf4ea2eea20509fc84ef144859a17e2eaaa264d",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.cpython-312.pyc": {
+      "sha256": "a4049eeb4a37d995a75ca52b39561891f78dc6427c428f39ca92489ac199c92c",
+      "bytes": 86548,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_futures.cpython-312.pyc": {
+      "sha256": "d347248eb9545bfd044ac5e6f35c1a7270e99d1900c43ec3b26e63661c5c2dd3",
+      "bytes": 3132,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_subprocess.cpython-312.pyc": {
+      "sha256": "bd5b28d5ce4bcefb8b9db689f818a3693edd62298020aad3a584e002a556d915",
+      "bytes": 16124,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_tasks.cpython-312.pyc": {
+      "sha256": "fe796bacece1e119dab32ba32f6ed51a206a7ca811d9600eebf2915ee10cad93",
+      "bytes": 4124,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/constants.cpython-312.pyc": {
+      "sha256": "dacbeb805461e326edca77ffb8715cdb5635db2b13ee801000e74fa77e362a91",
+      "bytes": 1001,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/coroutines.cpython-312.pyc": {
+      "sha256": "0d49ad0854a748af69b869a171d8f624522b443471bcb81a2a999359f84fbd37",
+      "bytes": 3815,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.cpython-312.pyc": {
+      "sha256": "7f14b413fee1e33093d174e7951f7c5741fd42b4caf6f5ed1d342ca47dd6044f",
+      "bytes": 36788,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/exceptions.cpython-312.pyc": {
+      "sha256": "8a0efd6e05a8de2ecc81ad235404c62eec396fea4ad1cb6d38027ba7d034cc33",
+      "bytes": 3127,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/format_helpers.cpython-312.pyc": {
+      "sha256": "e6e025bfd4f4a28b14a7897a10688889873d07ac0050da39ff6d24d39595265e",
+      "bytes": 3913,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/futures.cpython-312.pyc": {
+      "sha256": "ceabd39f8f4dff04a43d43393cf7424e76d1098c91530d7dbb70e481f433f779",
+      "bytes": 17370,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/locks.cpython-312.pyc": {
+      "sha256": "f31deb5416ddb669e402b2f8eb17306c13233c78e75d46ffdb5743227a753590",
+      "bytes": 27472,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/log.cpython-312.pyc": {
+      "sha256": "d9d9057daa2a58bee4aa1596f87c22bca373ee570f4f4d1c8781438a242757c7",
+      "bytes": 327,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/mixins.cpython-312.pyc": {
+      "sha256": "716d3395a02b6536575ef44ce8bd9d72711fa9edfe398c0d36efe2887e4d5041",
+      "bytes": 1074,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/protocols.cpython-312.pyc": {
+      "sha256": "e7fba630feab34f2f2c1b43dfdbd573a06d605ceb2447e23eef582a0acfa716a",
+      "bytes": 8828,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/queues.cpython-312.pyc": {
+      "sha256": "9cc368e5e3ee0b3f67a9bc5f657bbed41d57499e015b89d6d23e486ae310f956",
+      "bytes": 11987,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.cpython-312.pyc": {
+      "sha256": "50f7486badc77d61fb925d9924db73c8389485ff2bdba00af8242e26a38f4cb1",
+      "bytes": 9970,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/selector_events.cpython-312.pyc": {
+      "sha256": "ac8319e83098a6da36254d43d08fd7a405827a418a3107c44c07da6066169c67",
+      "bytes": 63116,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/sslproto.cpython-312.pyc": {
+      "sha256": "1af1bbb05506836e37d88e750a21f8cf2694a15f372d2b15dde85e601093ebfb",
+      "bytes": 41582,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/staggered.cpython-312.pyc": {
+      "sha256": "a295a2bf5e4c83b2b21763565d2963beba75a9baad9e6e8b2fcf0f42c89e352c",
+      "bytes": 6257,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/streams.cpython-312.pyc": {
+      "sha256": "6c3b2369d5b44760d2f206f3037dabbac88f22fe998441d76c57ba9cc9eb1cf1",
+      "bytes": 33412,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/subprocess.cpython-312.pyc": {
+      "sha256": "6408bfa28ab99b5849d336e60790535dc8dffb2b4b2fd28b8cb6e361b41be2df",
+      "bytes": 12140,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/taskgroups.cpython-312.pyc": {
+      "sha256": "39364e50cb09c2ca7ed9e54d75dc2f7f732f5bf03ac66d4fa34565c77f4aa3ad",
+      "bytes": 7968,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/tasks.cpython-312.pyc": {
+      "sha256": "7244d8c693a1eee1c950dbb97c0325024c7e65b01c669ec186d67f2a19395af7",
+      "bytes": 40360,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/threads.cpython-312.pyc": {
+      "sha256": "f91f5c9238b2b0ac95845c1b1cd28af687ac88bd82b338032cd0e4dc5e859a59",
+      "bytes": 1304,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/timeouts.cpython-312.pyc": {
+      "sha256": "d289cff1668377b36a0f6e65b541f0d9d115d1b27507c44ac68e4c694b1dba1a",
+      "bytes": 7843,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/transports.cpython-312.pyc": {
+      "sha256": "2bd4f1646d66c9d5861ca688c2e3dfaa4e8b85fd5447cfcba62940e957c76718",
+      "bytes": 14050,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/trsock.cpython-312.pyc": {
+      "sha256": "9d76ae04111cd4e9e97439be2cac0b2210e7034b3b277f62975c6175ed11bd7b",
+      "bytes": 5125,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/unix_events.cpython-312.pyc": {
+      "sha256": "e234b60a645b3705563e566c2402dfad1b14854b1a725200581401ae4aafabc5",
+      "bytes": 67788,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/base64.cpython-312.pyc": {
+      "sha256": "de50a17fb9176e7a94595c66128d83709b597f9b3bd824255cbcdb0f683c4002",
+      "bytes": 24443,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bisect.cpython-312.pyc": {
+      "sha256": "40e7cc720f85fc42eb1a05f7214e984acf9a2a266074ab0469ae7e2594c6edb1",
+      "bytes": 3687,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bz2.cpython-312.pyc": {
+      "sha256": "7888c969be37c6e6d789e9d64ed83bcb707ef9d4e6a0d48f29110316287e192c",
+      "bytes": 15179,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/__init__.cpython-312.pyc": {
+      "sha256": "f645eab5a2bd9e9bd67b7ef530b2f9552c49814f45bbc7cf2ad2b9e7da9d9c0a",
+      "bytes": 72983,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/abc.cpython-312.pyc": {
+      "sha256": "3c518e8d98fa8e4d4ba5d51d72425052776e5b9c45cf32ad6e18677090048bbd",
+      "bytes": 295,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/__init__.cpython-312.pyc": {
+      "sha256": "af4e95f977f598014da8763ff9987a4a79def4232a8d2e8c0610225881cba0a8",
+      "bytes": 185,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/__init__.cpython-312.pyc": {
+      "sha256": "4b57c5368c6b21f96f9543d3964189de62b748a1b17a52942d8f730cdf9efdfa",
+      "bytes": 1301,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/_base.cpython-312.pyc": {
+      "sha256": "5be8ef6b887229e2e3feae4258a3a39153141b6bfcb2abdf78dd989d1eae2bda",
+      "bytes": 31984,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.cpython-312.pyc": {
+      "sha256": "0daee1c669af9f14b93f7c0e9cf2c9bf9aa8c94831b983022a3fc707cf8d7e74",
+      "bytes": 30408,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextvars.cpython-312.pyc": {
+      "sha256": "c2020cb6bfa82a97387fde571799b632a9e7458383f03eb41740c921cb477a0d",
+      "bytes": 307,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copy.cpython-312.pyc": {
+      "sha256": "b4a8ca02926e56771f58754adbb833f316d1a9c300abf63ab6e7cc5b1d7ff47f",
+      "bytes": 9803,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copyreg.cpython-312.pyc": {
+      "sha256": "893278cab1e805a7756bddb1a6c65e5fa6256e657a38ae2a014416c393ca714b",
+      "bytes": 7445,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dataclasses.cpython-312.pyc": {
+      "sha256": "8ad502e9e99965bbd2de16c126cadad559457750ee996717a05445339007d2d6",
+      "bytes": 44940,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/difflib.cpython-312.pyc": {
+      "sha256": "ccccf1426b47f1897c12a9f20bced7151db2748435a2b5427a293e7a90873e9c",
+      "bytes": 75365,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dis.cpython-312.pyc": {
+      "sha256": "c8b0e9af1cd3f50bbe98fc400af9b8758d4765989a34aac06a06ca9463bad902",
+      "bytes": 34474,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/__init__.cpython-312.pyc": {
+      "sha256": "874b30f3fcd977032c775e3b02ae1d0af55a61ce71d21535b7774b8031c94d34",
+      "bytes": 5821,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/aliases.cpython-312.pyc": {
+      "sha256": "891d78be66eb68017255471cc220c318b19bd3685746a31b71e8736ad7c0566f",
+      "bytes": 12454,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/utf_8.cpython-312.pyc": {
+      "sha256": "627c6fea777f33810f240caeb0c8e8bc65ce7d027c3ef7ccf2d9ba977ed59803",
+      "bytes": 2193,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/enum.cpython-312.pyc": {
+      "sha256": "0fcdfe7a8e62a25a337b33cd9bd079caf5a91ba9317515b38b468a12f70a3888",
+      "bytes": 80562,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/fnmatch.cpython-312.pyc": {
+      "sha256": "c27cfbc8249502fd9012a04f0a18ae35187e389013ab7640c89a07f715a1b56f",
+      "bytes": 6526,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/functools.cpython-312.pyc": {
+      "sha256": "4e9a20c91263abb3dda136bea02ce061e8d03e7bba03c90e6ccb635d5fe30fde",
+      "bytes": 40345,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/gettext.cpython-312.pyc": {
+      "sha256": "0c916762d9928f249fdb08abf71ccdd0ff74a4063dd473261ac4f501adbec100",
+      "bytes": 21829,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/hashlib.cpython-312.pyc": {
+      "sha256": "b371f7399175c75a367bbc8e6f83a81cb1d9dca9bdcbf9791b2ea4121cd43115",
+      "bytes": 8126,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/heapq.cpython-312.pyc": {
+      "sha256": "cf16a776da2edec3a0468c2ba3667d3ee5f618e4867ce95e5c4c9380ac8dbc80",
+      "bytes": 17984,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.cpython-312.pyc": {
+      "sha256": "739c137c2c25f7ac52041a2ffdb5484b077abe296c8379d71d26e0d69d584cfd",
+      "bytes": 4601,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/_abc.cpython-312.pyc": {
+      "sha256": "5fb62ed558178161fb528985da179b1a6ce23373420687add2094fc3db06ec5b",
+      "bytes": 1689,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/inspect.cpython-312.pyc": {
+      "sha256": "eb237cadac829bd8357d7a5aca9734d313476724a326fa8b4712992234835a23",
+      "bytes": 133902,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ipaddress.cpython-312.pyc": {
+      "sha256": "f521324a3941afda21e54142e0de671d86cbe641f61083f45033e8ff586a5d5c",
+      "bytes": 90867,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.cpython-312.pyc": {
+      "sha256": "c3fe8f3798446e4c607c50cff566fd6f7caeaa3581627f78bb49ca844f9cfeed",
+      "bytes": 13661,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.cpython-312.pyc": {
+      "sha256": "85dd8bd62cca3087f39fee7e2b8644e78500743be8e8d2516732baa0d1b4bfef",
+      "bytes": 13871,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.cpython-312.pyc": {
+      "sha256": "6c55136d1b76ba17430cc8aae809710761a33490dcc45330bd0f6457704f1826",
+      "bytes": 15129,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/scanner.cpython-312.pyc": {
+      "sha256": "061d53ee35b67f3861b46bfed8b20ed9b9d45a2ddb3b9658f2f4d4f74d2ee969",
+      "bytes": 3367,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/keyword.cpython-312.pyc": {
+      "sha256": "cfeaebd81b194d22e98ac9165643512169052aa037160db9e21460e4f12563c0",
+      "bytes": 1087,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/linecache.cpython-312.pyc": {
+      "sha256": "072a6574dfc8a324a81c80b8e9d60ac3e46c4618eb6478a09f32a762ff205c4c",
+      "bytes": 6527,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/locale.cpython-312.pyc": {
+      "sha256": "39f64924d06ca496c8fb23a507aac223459ff8c9056fcc747953d1d9a1971126",
+      "bytes": 59534,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/logging/__init__.cpython-312.pyc": {
+      "sha256": "ed3cfacb7fb31bd29382cbe9b51b1b52028f55c2897a4d14e12f4946349c18fa",
+      "bytes": 95434,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lzma.cpython-312.pyc": {
+      "sha256": "c5108113276400883900a7c2e4a6f9ddc16e3ef9dfd8601bb2e6d698c7adc456",
+      "bytes": 15901,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/opcode.cpython-312.pyc": {
+      "sha256": "e7f4a92162a3195386dd1828c076871cd799aeee0787f20058a8d0ca0a828ad3",
+      "bytes": 14762,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/operator.cpython-312.pyc": {
+      "sha256": "5eb085faf2ef2d6aa98e58d6840520c76896ab7bc3351dbbe42e3d96531b12fb",
+      "bytes": 17398,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.cpython-312.pyc": {
+      "sha256": "46d325979950274b0541bd06be0a451ed7446fb6ace3c362dd0cd15712647883",
+      "bytes": 62031,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pkgutil.cpython-312.pyc": {
+      "sha256": "e9332f1ef0ef79cdcf3a70ebdab8b001d4fdf3c57597b6f77d0182080be845d9",
+      "bytes": 19933,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pprint.cpython-312.pyc": {
+      "sha256": "d483ce1b698d6a583758c226a45739dddfc0d274bba821204285e5476f1f5f60",
+      "bytes": 29474,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/random.cpython-312.pyc": {
+      "sha256": "dfefb5203bea5804daf4d05d6d4b21a58a1543a529eb980835892a5a9da4f859",
+      "bytes": 33193,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/__init__.cpython-312.pyc": {
+      "sha256": "9c5d6273a9033f4e37be132fdf5a5e5c5b75bb62d39ad5a1e2e0ad979ad2683a",
+      "bytes": 17981,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_casefix.cpython-312.pyc": {
+      "sha256": "8e3d5eab6cad49712acadfa80fa3a0a00912291cd59193dd8b90afd48d144a2a",
+      "bytes": 1862,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_compiler.cpython-312.pyc": {
+      "sha256": "1c458fe9c74f2d7acffe208a19500c33ef24f8dbbeb14850044d3660bfa3b699",
+      "bytes": 26467,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_constants.cpython-312.pyc": {
+      "sha256": "0d28fe94215c46dbef7b8b8c4bb1e7122f3e51d73c0769674683b07e188f6dbe",
+      "bytes": 5349,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_parser.cpython-312.pyc": {
+      "sha256": "775fadb3d2cf456b287b8422a650f94f54d24e06cc064486c6776aee5165b12b",
+      "bytes": 41993,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/reprlib.cpython-312.pyc": {
+      "sha256": "d4abfa201ea9513fd71da640b82334eba0240df4df44b8c4f88f5086ebddc523",
+      "bytes": 9953,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/selectors.cpython-312.pyc": {
+      "sha256": "d0e2ba1e62d4b7d0a08d2b3566aa3191b7c642f487a66e22c061c0d0311e4c81",
+      "bytes": 26149,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/shutil.cpython-312.pyc": {
+      "sha256": "2571fc8e71b375aadcb77c9c49abc6bc48de8c7b9b1e5ec645ff4443f6ce9a37",
+      "bytes": 66203,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/signal.cpython-312.pyc": {
+      "sha256": "7e81069a167f4d8ac5c50547289dbc98a04c4ce8dd340dc342eb2575280299a8",
+      "bytes": 4503,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.cpython-312.pyc": {
+      "sha256": "d2e50199111bc5c6d5544f9a6d2ab2eaf7f923a21a3944e557fdf93784c8403c",
+      "bytes": 41951,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.cpython-312.pyc": {
+      "sha256": "bb9670cac59c9e413243fab2fc129a33d139be048d93de7ebd2f1e0aae83709c",
+      "bytes": 63128,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/string.cpython-312.pyc": {
+      "sha256": "40b847410f69bccefd2f66a444576787d4e8b73e2634b1a626e241e2d2df399d",
+      "bytes": 11508,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/struct.cpython-312.pyc": {
+      "sha256": "071f43c6b838ab9e935fe6b986cac390316e0bb01a2516489837464f17a423f6",
+      "bytes": 371,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.cpython-312.pyc": {
+      "sha256": "5952b594101014c2cc79dbd27583b8d6c1f45531bfe03f697d88d12e4237d55c",
+      "bytes": 79080,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tempfile.cpython-312.pyc": {
+      "sha256": "e7d778164ae2c831bc44b4fc78d09ba181c45d41dcedba2406be1dc98b197105",
+      "bytes": 40404,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/textwrap.cpython-312.pyc": {
+      "sha256": "48ee5d0115d5dd1d59a04c676e3079eee31896bdb8604ba5345fd22cd8fec5a8",
+      "bytes": 18326,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.cpython-312.pyc": {
+      "sha256": "d0dec4a3f8b634e3e19fdaf30d0dd57519e954f91e1e26f6535c2e143d466fd1",
+      "bytes": 65279,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/token.cpython-312.pyc": {
+      "sha256": "fd352e3afd3c5be222489d83c10ab2490223e2880b8af34d35aaed167f15f8d4",
+      "bytes": 3608,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tokenize.cpython-312.pyc": {
+      "sha256": "19b8667e7148839b8032992241bc3a60b41e7160f8d528d32bdd95022a52413c",
+      "bytes": 24759,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/traceback.cpython-312.pyc": {
+      "sha256": "f8bc6760a8ccd73a03206dd6b867b028058a894242f64f23f3f677dadc2e2a05",
+      "bytes": 51470,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/types.cpython-312.pyc": {
+      "sha256": "925855c992a266bac55ded699c6db8815a077310479033b79c20f29eba6d6289",
+      "bytes": 14991,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/typing.cpython-312.pyc": {
+      "sha256": "9f19374a1fc2642d01e63996746a1d4da06e91573b234828f3b0a797918b2493",
+      "bytes": 142389,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__init__.cpython-312.pyc": {
+      "sha256": "015dad4d9460d5a9d7d706d579771bcd71b76f45b2f4adbb18a89b0fef16b6a4",
+      "bytes": 3478,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__main__.cpython-312.pyc": {
+      "sha256": "f439416e4657bd31b7b28c7210ba9dbc40741ed409929a2ab0071a7ef40dbb74",
+      "bytes": 662,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/case.cpython-312.pyc": {
+      "sha256": "05e2003db7931dad214e07ab3d7a159bea61a0ac2aa1dc15df2db134e8446d42",
+      "bytes": 69801,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.cpython-312.pyc": {
+      "sha256": "7bf2da04b0039e1bacd18b35e04bec4004f3f7473aa6a0f7d122b380305d4b39",
+      "bytes": 24063,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/main.cpython-312.pyc": {
+      "sha256": "e5ba46dcb8bebfd546eef38295ff3a5e5b2aa9672b34f06f0ed4193772ba2d27",
+      "bytes": 13605,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.cpython-312.pyc": {
+      "sha256": "9adee29165e619b77fe578f886612464bde06b89603976e99fe79c7887d153bf",
+      "bytes": 117831,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/result.cpython-312.pyc": {
+      "sha256": "6fb97a791996f4e31313dfcdcd56c8341875a2df58884e9a08ad2d680254149f",
+      "bytes": 12784,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/runner.cpython-312.pyc": {
+      "sha256": "54ce9aadb9bf38d59e82748f4bb82778acec7cd1c7628d2ca566a1e8c059a473",
+      "bytes": 16505,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/signals.cpython-312.pyc": {
+      "sha256": "399c436ebd018222c82d60b073c2b73e3c137c15395d484033827650d5a7a4ec",
+      "bytes": 3654,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/suite.cpython-312.pyc": {
+      "sha256": "c5bf97e951098aa2e3ffade4dbe28a28d7cd8fd2fec8d54bb80abe20a682a4b7",
+      "bytes": 15475,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/util.cpython-312.pyc": {
+      "sha256": "acc0894d2cab16e8249be06a75aaf8eacb5b11b290b362fea9ef1d1e4daab855",
+      "bytes": 7303,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/__init__.cpython-312.pyc": {
+      "sha256": "8ecf68df82cc2c38a42f3b64642d34bec1d43757d10737915dd18df6d5c6d73c",
+      "bytes": 181,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/parse.cpython-312.pyc": {
+      "sha256": "6ad4f2aec28f9da6c241690e11c4c3954755e0129d56204f7b866adf6fdd18cd",
+      "bytes": 50134,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/warnings.cpython-312.pyc": {
+      "sha256": "53394682c6e913122c6c4b502f345690c8babe3b2f68d0aef3a02fa061f46ba1",
+      "bytes": 23864,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/weakref.cpython-312.pyc": {
+      "sha256": "29877639b2cf28ce4c651d812766a78c5478a7daaf882a4270ec5a5df1d2c926",
+      "bytes": 31257,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/mistral-small/pilot-cli/workspace/scripts/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "ef4c0587b124fd69cdd756b846910d41a04e276e20a2b11112520bc7a8252367",
+      "bytes": 14407,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/mistral-small/pilot-cli/workspace/tests/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "deada31ed112459006ba8d5ca67df89c7ae6f36157420f6a10dc44117356df91",
+      "bytes": 12849,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/report.json": {
+      "sha256": "ec5d70b5440d91d0f52d3592ef439f6b3f78c58dd08e4205bd05685e5b8d2f52",
+      "bytes": 45873,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/session.json": {
+      "sha256": "e10266dc89df3169a5bc2999251df52d78f7e35ca2d5c281f712b9c1aa6d4b40",
+      "bytes": 54907,
+      "mode": 384
+    },
+    "episodes/mistral-small/pilot-cli/run/state/policy_patch_queue.json": {
+      "sha256": "f842c9e6ffd2dc0594d9d49e41ff9b8075d794461a6723265e561dd4d49c04bd",
+      "bytes": 1408,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/state/progress.json": {
+      "sha256": "85b585294f6cfae0f1b647143b4ffeef364bae91cd861dea76357443a8917689",
+      "bytes": 1296,
+      "mode": 384
+    },
+    "episodes/mistral-small/pilot-cli/run/state/reflection_ledger.json": {
+      "sha256": "e407652130896218308c4018780a5edde7844672c539501db49d0080e056bcf0",
+      "bytes": 1133,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/state/tui-session.json": {
+      "sha256": "299261c2d7b9b53caacbee4c95808bfce8deff0f56a023ec9ebd9c55c50d3c8b",
+      "bytes": 54907,
+      "mode": 384
+    },
+    "episodes/mistral-small/pilot-cli/run/state/tui-work.json": {
+      "sha256": "9b90c2bb48a89e3b99597cfeada8de9d58a4e14d8ad6ad18943d6ebccdc58280",
+      "bytes": 9109,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/run/trace.jsonl": {
+      "sha256": "226f5d79031acde4fff0e2994bd7713e6d681e0deb99ce07163fd469404552c9",
+      "bytes": 26539,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/started.json": {
+      "sha256": "6c645657abccf2da989004ce2f74c7d694223691a4d95092659d76ef520e6bd6",
+      "bytes": 911,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/task.txt": {
+      "sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+      "bytes": 1640,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/docs/pilot.md": {
+      "sha256": "cc1eb76c4bb3e26fc22075f6315d27d05c61b9dcc99fdea957348982ea2a4105",
+      "bytes": 897,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/scripts/__pycache__/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "ef4c0587b124fd69cdd756b846910d41a04e276e20a2b11112520bc7a8252367",
+      "bytes": 14407,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/scripts/run_coupled_pilot.py": {
+      "sha256": "5a565669f649b3d33a728ad11aec9ec3195e55d711c21cd68f5179fd22f60601",
+      "bytes": 9414,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/tests/__pycache__/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "deada31ed112459006ba8d5ca67df89c7ae6f36157420f6a10dc44117356df91",
+      "bytes": 12849,
+      "mode": 420
+    },
+    "episodes/mistral-small/pilot-cli/workspace/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/console.log": {
+      "sha256": "98c82aca227356492dd0e967a05527264ba89d90251d4449503dd5de4b5a22b8",
+      "bytes": 188,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/process.json": {
+      "sha256": "afa55e74d6574bd3eb4ba7f1642e2d5bc7ff33f9f814fc6c23c84fac94b62f4c",
+      "bytes": 228,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_compression.cpython-312.pyc": {
+      "sha256": "241f0a155f41d0acfa95a41b7f9fc6906123a2da672d7e02affe3c6704bd5f40",
+      "bytes": 7524,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/_weakrefset.cpython-312.pyc": {
+      "sha256": "64a324a5adcaa92ae53f254d2eeeb6ca9915d246f1749cc51f43c620092e7b02",
+      "bytes": 11783,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/argparse.cpython-312.pyc": {
+      "sha256": "4ba6334234a6309af5ffd8dc21e9f2e2354662369d9febf11c98d4f5f9f35d75",
+      "bytes": 101143,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.cpython-312.pyc": {
+      "sha256": "41747d1619d33da2ada09a8b99d13d35882041182deec992b60d4dd1b68357ec",
+      "bytes": 99670,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/__init__.cpython-312.pyc": {
+      "sha256": "febb5f586cfaccf8b31117958cf4ea2eea20509fc84ef144859a17e2eaaa264d",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.cpython-312.pyc": {
+      "sha256": "a4049eeb4a37d995a75ca52b39561891f78dc6427c428f39ca92489ac199c92c",
+      "bytes": 86548,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_futures.cpython-312.pyc": {
+      "sha256": "d347248eb9545bfd044ac5e6f35c1a7270e99d1900c43ec3b26e63661c5c2dd3",
+      "bytes": 3132,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_subprocess.cpython-312.pyc": {
+      "sha256": "bd5b28d5ce4bcefb8b9db689f818a3693edd62298020aad3a584e002a556d915",
+      "bytes": 16124,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_tasks.cpython-312.pyc": {
+      "sha256": "fe796bacece1e119dab32ba32f6ed51a206a7ca811d9600eebf2915ee10cad93",
+      "bytes": 4124,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/constants.cpython-312.pyc": {
+      "sha256": "dacbeb805461e326edca77ffb8715cdb5635db2b13ee801000e74fa77e362a91",
+      "bytes": 1001,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/coroutines.cpython-312.pyc": {
+      "sha256": "0d49ad0854a748af69b869a171d8f624522b443471bcb81a2a999359f84fbd37",
+      "bytes": 3815,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.cpython-312.pyc": {
+      "sha256": "7f14b413fee1e33093d174e7951f7c5741fd42b4caf6f5ed1d342ca47dd6044f",
+      "bytes": 36788,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/exceptions.cpython-312.pyc": {
+      "sha256": "8a0efd6e05a8de2ecc81ad235404c62eec396fea4ad1cb6d38027ba7d034cc33",
+      "bytes": 3127,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/format_helpers.cpython-312.pyc": {
+      "sha256": "e6e025bfd4f4a28b14a7897a10688889873d07ac0050da39ff6d24d39595265e",
+      "bytes": 3913,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/futures.cpython-312.pyc": {
+      "sha256": "ceabd39f8f4dff04a43d43393cf7424e76d1098c91530d7dbb70e481f433f779",
+      "bytes": 17370,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/locks.cpython-312.pyc": {
+      "sha256": "f31deb5416ddb669e402b2f8eb17306c13233c78e75d46ffdb5743227a753590",
+      "bytes": 27472,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/log.cpython-312.pyc": {
+      "sha256": "d9d9057daa2a58bee4aa1596f87c22bca373ee570f4f4d1c8781438a242757c7",
+      "bytes": 327,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/mixins.cpython-312.pyc": {
+      "sha256": "716d3395a02b6536575ef44ce8bd9d72711fa9edfe398c0d36efe2887e4d5041",
+      "bytes": 1074,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/protocols.cpython-312.pyc": {
+      "sha256": "e7fba630feab34f2f2c1b43dfdbd573a06d605ceb2447e23eef582a0acfa716a",
+      "bytes": 8828,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/queues.cpython-312.pyc": {
+      "sha256": "9cc368e5e3ee0b3f67a9bc5f657bbed41d57499e015b89d6d23e486ae310f956",
+      "bytes": 11987,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.cpython-312.pyc": {
+      "sha256": "50f7486badc77d61fb925d9924db73c8389485ff2bdba00af8242e26a38f4cb1",
+      "bytes": 9970,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/selector_events.cpython-312.pyc": {
+      "sha256": "ac8319e83098a6da36254d43d08fd7a405827a418a3107c44c07da6066169c67",
+      "bytes": 63116,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/sslproto.cpython-312.pyc": {
+      "sha256": "1af1bbb05506836e37d88e750a21f8cf2694a15f372d2b15dde85e601093ebfb",
+      "bytes": 41582,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/staggered.cpython-312.pyc": {
+      "sha256": "a295a2bf5e4c83b2b21763565d2963beba75a9baad9e6e8b2fcf0f42c89e352c",
+      "bytes": 6257,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/streams.cpython-312.pyc": {
+      "sha256": "6c3b2369d5b44760d2f206f3037dabbac88f22fe998441d76c57ba9cc9eb1cf1",
+      "bytes": 33412,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/subprocess.cpython-312.pyc": {
+      "sha256": "6408bfa28ab99b5849d336e60790535dc8dffb2b4b2fd28b8cb6e361b41be2df",
+      "bytes": 12140,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/taskgroups.cpython-312.pyc": {
+      "sha256": "39364e50cb09c2ca7ed9e54d75dc2f7f732f5bf03ac66d4fa34565c77f4aa3ad",
+      "bytes": 7968,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/tasks.cpython-312.pyc": {
+      "sha256": "7244d8c693a1eee1c950dbb97c0325024c7e65b01c669ec186d67f2a19395af7",
+      "bytes": 40360,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/threads.cpython-312.pyc": {
+      "sha256": "f91f5c9238b2b0ac95845c1b1cd28af687ac88bd82b338032cd0e4dc5e859a59",
+      "bytes": 1304,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/timeouts.cpython-312.pyc": {
+      "sha256": "d289cff1668377b36a0f6e65b541f0d9d115d1b27507c44ac68e4c694b1dba1a",
+      "bytes": 7843,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/transports.cpython-312.pyc": {
+      "sha256": "2bd4f1646d66c9d5861ca688c2e3dfaa4e8b85fd5447cfcba62940e957c76718",
+      "bytes": 14050,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/trsock.cpython-312.pyc": {
+      "sha256": "9d76ae04111cd4e9e97439be2cac0b2210e7034b3b277f62975c6175ed11bd7b",
+      "bytes": 5125,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/unix_events.cpython-312.pyc": {
+      "sha256": "e234b60a645b3705563e566c2402dfad1b14854b1a725200581401ae4aafabc5",
+      "bytes": 67788,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/base64.cpython-312.pyc": {
+      "sha256": "de50a17fb9176e7a94595c66128d83709b597f9b3bd824255cbcdb0f683c4002",
+      "bytes": 24443,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bisect.cpython-312.pyc": {
+      "sha256": "40e7cc720f85fc42eb1a05f7214e984acf9a2a266074ab0469ae7e2594c6edb1",
+      "bytes": 3687,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/bz2.cpython-312.pyc": {
+      "sha256": "7888c969be37c6e6d789e9d64ed83bcb707ef9d4e6a0d48f29110316287e192c",
+      "bytes": 15179,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/__init__.cpython-312.pyc": {
+      "sha256": "f645eab5a2bd9e9bd67b7ef530b2f9552c49814f45bbc7cf2ad2b9e7da9d9c0a",
+      "bytes": 72983,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/collections/abc.cpython-312.pyc": {
+      "sha256": "3c518e8d98fa8e4d4ba5d51d72425052776e5b9c45cf32ad6e18677090048bbd",
+      "bytes": 295,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/__init__.cpython-312.pyc": {
+      "sha256": "af4e95f977f598014da8763ff9987a4a79def4232a8d2e8c0610225881cba0a8",
+      "bytes": 185,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/__init__.cpython-312.pyc": {
+      "sha256": "4b57c5368c6b21f96f9543d3964189de62b748a1b17a52942d8f730cdf9efdfa",
+      "bytes": 1301,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/_base.cpython-312.pyc": {
+      "sha256": "5be8ef6b887229e2e3feae4258a3a39153141b6bfcb2abdf78dd989d1eae2bda",
+      "bytes": 31984,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.cpython-312.pyc": {
+      "sha256": "0daee1c669af9f14b93f7c0e9cf2c9bf9aa8c94831b983022a3fc707cf8d7e74",
+      "bytes": 30408,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextvars.cpython-312.pyc": {
+      "sha256": "c2020cb6bfa82a97387fde571799b632a9e7458383f03eb41740c921cb477a0d",
+      "bytes": 307,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copy.cpython-312.pyc": {
+      "sha256": "b4a8ca02926e56771f58754adbb833f316d1a9c300abf63ab6e7cc5b1d7ff47f",
+      "bytes": 9803,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/copyreg.cpython-312.pyc": {
+      "sha256": "893278cab1e805a7756bddb1a6c65e5fa6256e657a38ae2a014416c393ca714b",
+      "bytes": 7445,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dataclasses.cpython-312.pyc": {
+      "sha256": "8ad502e9e99965bbd2de16c126cadad559457750ee996717a05445339007d2d6",
+      "bytes": 44940,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/difflib.cpython-312.pyc": {
+      "sha256": "ccccf1426b47f1897c12a9f20bced7151db2748435a2b5427a293e7a90873e9c",
+      "bytes": 75365,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/dis.cpython-312.pyc": {
+      "sha256": "c8b0e9af1cd3f50bbe98fc400af9b8758d4765989a34aac06a06ca9463bad902",
+      "bytes": 34474,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/__init__.cpython-312.pyc": {
+      "sha256": "874b30f3fcd977032c775e3b02ae1d0af55a61ce71d21535b7774b8031c94d34",
+      "bytes": 5821,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/aliases.cpython-312.pyc": {
+      "sha256": "891d78be66eb68017255471cc220c318b19bd3685746a31b71e8736ad7c0566f",
+      "bytes": 12454,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/encodings/utf_8.cpython-312.pyc": {
+      "sha256": "627c6fea777f33810f240caeb0c8e8bc65ce7d027c3ef7ccf2d9ba977ed59803",
+      "bytes": 2193,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/enum.cpython-312.pyc": {
+      "sha256": "0fcdfe7a8e62a25a337b33cd9bd079caf5a91ba9317515b38b468a12f70a3888",
+      "bytes": 80562,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/fnmatch.cpython-312.pyc": {
+      "sha256": "c27cfbc8249502fd9012a04f0a18ae35187e389013ab7640c89a07f715a1b56f",
+      "bytes": 6526,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/functools.cpython-312.pyc": {
+      "sha256": "4e9a20c91263abb3dda136bea02ce061e8d03e7bba03c90e6ccb635d5fe30fde",
+      "bytes": 40345,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/gettext.cpython-312.pyc": {
+      "sha256": "0c916762d9928f249fdb08abf71ccdd0ff74a4063dd473261ac4f501adbec100",
+      "bytes": 21829,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/hashlib.cpython-312.pyc": {
+      "sha256": "b371f7399175c75a367bbc8e6f83a81cb1d9dca9bdcbf9791b2ea4121cd43115",
+      "bytes": 8126,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/heapq.cpython-312.pyc": {
+      "sha256": "cf16a776da2edec3a0468c2ba3667d3ee5f618e4867ce95e5c4c9380ac8dbc80",
+      "bytes": 17984,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.cpython-312.pyc": {
+      "sha256": "739c137c2c25f7ac52041a2ffdb5484b077abe296c8379d71d26e0d69d584cfd",
+      "bytes": 4601,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/_abc.cpython-312.pyc": {
+      "sha256": "5fb62ed558178161fb528985da179b1a6ce23373420687add2094fc3db06ec5b",
+      "bytes": 1689,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/inspect.cpython-312.pyc": {
+      "sha256": "eb237cadac829bd8357d7a5aca9734d313476724a326fa8b4712992234835a23",
+      "bytes": 133902,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ipaddress.cpython-312.pyc": {
+      "sha256": "f521324a3941afda21e54142e0de671d86cbe641f61083f45033e8ff586a5d5c",
+      "bytes": 90867,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.cpython-312.pyc": {
+      "sha256": "c3fe8f3798446e4c607c50cff566fd6f7caeaa3581627f78bb49ca844f9cfeed",
+      "bytes": 13661,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.cpython-312.pyc": {
+      "sha256": "85dd8bd62cca3087f39fee7e2b8644e78500743be8e8d2516732baa0d1b4bfef",
+      "bytes": 13871,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.cpython-312.pyc": {
+      "sha256": "6c55136d1b76ba17430cc8aae809710761a33490dcc45330bd0f6457704f1826",
+      "bytes": 15129,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/scanner.cpython-312.pyc": {
+      "sha256": "061d53ee35b67f3861b46bfed8b20ed9b9d45a2ddb3b9658f2f4d4f74d2ee969",
+      "bytes": 3367,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/keyword.cpython-312.pyc": {
+      "sha256": "cfeaebd81b194d22e98ac9165643512169052aa037160db9e21460e4f12563c0",
+      "bytes": 1087,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/linecache.cpython-312.pyc": {
+      "sha256": "072a6574dfc8a324a81c80b8e9d60ac3e46c4618eb6478a09f32a762ff205c4c",
+      "bytes": 6527,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/locale.cpython-312.pyc": {
+      "sha256": "39f64924d06ca496c8fb23a507aac223459ff8c9056fcc747953d1d9a1971126",
+      "bytes": 59534,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/logging/__init__.cpython-312.pyc": {
+      "sha256": "ed3cfacb7fb31bd29382cbe9b51b1b52028f55c2897a4d14e12f4946349c18fa",
+      "bytes": 95434,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lzma.cpython-312.pyc": {
+      "sha256": "c5108113276400883900a7c2e4a6f9ddc16e3ef9dfd8601bb2e6d698c7adc456",
+      "bytes": 15901,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/opcode.cpython-312.pyc": {
+      "sha256": "e7f4a92162a3195386dd1828c076871cd799aeee0787f20058a8d0ca0a828ad3",
+      "bytes": 14762,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/operator.cpython-312.pyc": {
+      "sha256": "5eb085faf2ef2d6aa98e58d6840520c76896ab7bc3351dbbe42e3d96531b12fb",
+      "bytes": 17398,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pathlib.cpython-312.pyc": {
+      "sha256": "46d325979950274b0541bd06be0a451ed7446fb6ace3c362dd0cd15712647883",
+      "bytes": 62031,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pkgutil.cpython-312.pyc": {
+      "sha256": "e9332f1ef0ef79cdcf3a70ebdab8b001d4fdf3c57597b6f77d0182080be845d9",
+      "bytes": 19933,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/pprint.cpython-312.pyc": {
+      "sha256": "d483ce1b698d6a583758c226a45739dddfc0d274bba821204285e5476f1f5f60",
+      "bytes": 29474,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/random.cpython-312.pyc": {
+      "sha256": "dfefb5203bea5804daf4d05d6d4b21a58a1543a529eb980835892a5a9da4f859",
+      "bytes": 33193,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/__init__.cpython-312.pyc": {
+      "sha256": "9c5d6273a9033f4e37be132fdf5a5e5c5b75bb62d39ad5a1e2e0ad979ad2683a",
+      "bytes": 17981,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_casefix.cpython-312.pyc": {
+      "sha256": "8e3d5eab6cad49712acadfa80fa3a0a00912291cd59193dd8b90afd48d144a2a",
+      "bytes": 1862,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_compiler.cpython-312.pyc": {
+      "sha256": "1c458fe9c74f2d7acffe208a19500c33ef24f8dbbeb14850044d3660bfa3b699",
+      "bytes": 26467,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_constants.cpython-312.pyc": {
+      "sha256": "0d28fe94215c46dbef7b8b8c4bb1e7122f3e51d73c0769674683b07e188f6dbe",
+      "bytes": 5349,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/re/_parser.cpython-312.pyc": {
+      "sha256": "775fadb3d2cf456b287b8422a650f94f54d24e06cc064486c6776aee5165b12b",
+      "bytes": 41993,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/reprlib.cpython-312.pyc": {
+      "sha256": "d4abfa201ea9513fd71da640b82334eba0240df4df44b8c4f88f5086ebddc523",
+      "bytes": 9953,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/selectors.cpython-312.pyc": {
+      "sha256": "d0e2ba1e62d4b7d0a08d2b3566aa3191b7c642f487a66e22c061c0d0311e4c81",
+      "bytes": 26149,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/shutil.cpython-312.pyc": {
+      "sha256": "2571fc8e71b375aadcb77c9c49abc6bc48de8c7b9b1e5ec645ff4443f6ce9a37",
+      "bytes": 66203,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/signal.cpython-312.pyc": {
+      "sha256": "7e81069a167f4d8ac5c50547289dbc98a04c4ce8dd340dc342eb2575280299a8",
+      "bytes": 4503,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.cpython-312.pyc": {
+      "sha256": "d2e50199111bc5c6d5544f9a6d2ab2eaf7f923a21a3944e557fdf93784c8403c",
+      "bytes": 41951,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.cpython-312.pyc": {
+      "sha256": "bb9670cac59c9e413243fab2fc129a33d139be048d93de7ebd2f1e0aae83709c",
+      "bytes": 63128,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/string.cpython-312.pyc": {
+      "sha256": "40b847410f69bccefd2f66a444576787d4e8b73e2634b1a626e241e2d2df399d",
+      "bytes": 11508,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/struct.cpython-312.pyc": {
+      "sha256": "071f43c6b838ab9e935fe6b986cac390316e0bb01a2516489837464f17a423f6",
+      "bytes": 371,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.cpython-312.pyc": {
+      "sha256": "5952b594101014c2cc79dbd27583b8d6c1f45531bfe03f697d88d12e4237d55c",
+      "bytes": 79080,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tempfile.cpython-312.pyc": {
+      "sha256": "e7d778164ae2c831bc44b4fc78d09ba181c45d41dcedba2406be1dc98b197105",
+      "bytes": 40404,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/textwrap.cpython-312.pyc": {
+      "sha256": "48ee5d0115d5dd1d59a04c676e3079eee31896bdb8604ba5345fd22cd8fec5a8",
+      "bytes": 18326,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.cpython-312.pyc": {
+      "sha256": "d0dec4a3f8b634e3e19fdaf30d0dd57519e954f91e1e26f6535c2e143d466fd1",
+      "bytes": 65279,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/token.cpython-312.pyc": {
+      "sha256": "fd352e3afd3c5be222489d83c10ab2490223e2880b8af34d35aaed167f15f8d4",
+      "bytes": 3608,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/tokenize.cpython-312.pyc": {
+      "sha256": "19b8667e7148839b8032992241bc3a60b41e7160f8d528d32bdd95022a52413c",
+      "bytes": 24759,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/traceback.cpython-312.pyc": {
+      "sha256": "f8bc6760a8ccd73a03206dd6b867b028058a894242f64f23f3f677dadc2e2a05",
+      "bytes": 51470,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/types.cpython-312.pyc": {
+      "sha256": "925855c992a266bac55ded699c6db8815a077310479033b79c20f29eba6d6289",
+      "bytes": 14991,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/typing.cpython-312.pyc": {
+      "sha256": "9f19374a1fc2642d01e63996746a1d4da06e91573b234828f3b0a797918b2493",
+      "bytes": 142389,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__init__.cpython-312.pyc": {
+      "sha256": "015dad4d9460d5a9d7d706d579771bcd71b76f45b2f4adbb18a89b0fef16b6a4",
+      "bytes": 3478,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/__main__.cpython-312.pyc": {
+      "sha256": "f439416e4657bd31b7b28c7210ba9dbc40741ed409929a2ab0071a7ef40dbb74",
+      "bytes": 662,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/case.cpython-312.pyc": {
+      "sha256": "05e2003db7931dad214e07ab3d7a159bea61a0ac2aa1dc15df2db134e8446d42",
+      "bytes": 69801,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.cpython-312.pyc": {
+      "sha256": "7bf2da04b0039e1bacd18b35e04bec4004f3f7473aa6a0f7d122b380305d4b39",
+      "bytes": 24063,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/main.cpython-312.pyc": {
+      "sha256": "e5ba46dcb8bebfd546eef38295ff3a5e5b2aa9672b34f06f0ed4193772ba2d27",
+      "bytes": 13605,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.cpython-312.pyc": {
+      "sha256": "9adee29165e619b77fe578f886612464bde06b89603976e99fe79c7887d153bf",
+      "bytes": 117831,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/result.cpython-312.pyc": {
+      "sha256": "6fb97a791996f4e31313dfcdcd56c8341875a2df58884e9a08ad2d680254149f",
+      "bytes": 12784,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/runner.cpython-312.pyc": {
+      "sha256": "54ce9aadb9bf38d59e82748f4bb82778acec7cd1c7628d2ca566a1e8c059a473",
+      "bytes": 16505,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/signals.cpython-312.pyc": {
+      "sha256": "399c436ebd018222c82d60b073c2b73e3c137c15395d484033827650d5a7a4ec",
+      "bytes": 3654,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/suite.cpython-312.pyc": {
+      "sha256": "c5bf97e951098aa2e3ffade4dbe28a28d7cd8fd2fec8d54bb80abe20a682a4b7",
+      "bytes": 15475,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/util.cpython-312.pyc": {
+      "sha256": "acc0894d2cab16e8249be06a75aaf8eacb5b11b290b362fea9ef1d1e4daab855",
+      "bytes": 7303,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/__init__.cpython-312.pyc": {
+      "sha256": "8ecf68df82cc2c38a42f3b64642d34bec1d43757d10737915dd18df6d5c6d73c",
+      "bytes": 181,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/parse.cpython-312.pyc": {
+      "sha256": "6ad4f2aec28f9da6c241690e11c4c3954755e0129d56204f7b866adf6fdd18cd",
+      "bytes": 50134,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/warnings.cpython-312.pyc": {
+      "sha256": "53394682c6e913122c6c4b502f345690c8babe3b2f68d0aef3a02fa061f46ba1",
+      "bytes": 23864,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/weakref.cpython-312.pyc": {
+      "sha256": "29877639b2cf28ce4c651d812766a78c5478a7daaf882a4270ec5a5df1d2c926",
+      "bytes": 31257,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/openai-mini/pilot-cli/workspace/scripts/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "0fbb452fb0030dfb8ff7beb615618ef27e0839ecd1e11b1be59a3bc185b46c68",
+      "bytes": 14352,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/cache/python/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-scope-r1/episodes/openai-mini/pilot-cli/workspace/tests/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "0463c4451b0b0b7a05ca403d3fa75c7f6418f52fe7ec6f8c9a65af2a61ea24a2",
+      "bytes": 12847,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/report.json": {
+      "sha256": "0a43b040c2233cea9e58410c8a85ff91bede736a084c980fb9cab3e7b13189c2",
+      "bytes": 54164,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/session.json": {
+      "sha256": "159978c8467166d05ccacf04f796d86a9cf4fc0196819d76bb3a8e517124b2e1",
+      "bytes": 70259,
+      "mode": 384
+    },
+    "episodes/openai-mini/pilot-cli/run/state/policy_patch_queue.json": {
+      "sha256": "c3b9957c5212f8781688cbbf9e47f13c26bd4f812c4a5210e64d9ff6714541f2",
+      "bytes": 1408,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/state/progress.json": {
+      "sha256": "b930172cd615577294fc6339c6c87237fa34985990ee5bcc6b186df96cdabe9b",
+      "bytes": 1136,
+      "mode": 384
+    },
+    "episodes/openai-mini/pilot-cli/run/state/reflection_ledger.json": {
+      "sha256": "aa91347892802ad19f197f50f245408cfa30eb6e37f43a58ad4bcae4b95500f5",
+      "bytes": 1869,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/state/tui-session.json": {
+      "sha256": "c7750e7f15e2d5ee7c336d85249b0a680c51baa057b77f717242ba0cdeb83019",
+      "bytes": 70259,
+      "mode": 384
+    },
+    "episodes/openai-mini/pilot-cli/run/state/tui-work.json": {
+      "sha256": "38d8b30ab7bb617246bda0c43075260e0e3afa4213d308367587068f197768f7",
+      "bytes": 5556,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/run/trace.jsonl": {
+      "sha256": "aa9f68b9b53c6e9c14e4ac8222810a9e256521033826a67041dab8232daa9a9f",
+      "bytes": 36470,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/started.json": {
+      "sha256": "9c6f7cf4188c17d19715ae639b1a05b4909c80a47ea0d7d064f1e4207f7756e2",
+      "bytes": 897,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/task.txt": {
+      "sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+      "bytes": 1640,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/docs/pilot.md": {
+      "sha256": "2c54a4c1695ddb806fb253ff304a6c5c0d93c902e874dc85019194db239cd88e",
+      "bytes": 834,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/scripts/__pycache__/run_coupled_pilot.cpython-312.pyc": {
+      "sha256": "0fbb452fb0030dfb8ff7beb615618ef27e0839ecd1e11b1be59a3bc185b46c68",
+      "bytes": 14352,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/scripts/run_coupled_pilot.py": {
+      "sha256": "93fe5d8a846ec66e885718147ddc49e8c408d256110bb6f3e667f2631e40afc7",
+      "bytes": 9474,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/tests/__pycache__/test_coupled_pilot.cpython-312.pyc": {
+      "sha256": "0463c4451b0b0b7a05ca403d3fa75c7f6418f52fe7ec6f8c9a65af2a61ea24a2",
+      "bytes": 12847,
+      "mode": 420
+    },
+    "episodes/openai-mini/pilot-cli/workspace/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "inputs/README.md": {
+      "sha256": "1b2433b5f4424eb85ff3a26beee50204f1fccdd631cc257cee1f87959cd88b35",
+      "bytes": 8510,
+      "mode": 420
+    },
+    "inputs/cases/large-file/reference/greet.py": {
+      "sha256": "b9e09cbec38d3cc26e996383d28db6e539a9bb4734b10e2d153fc16c430873d1",
+      "bytes": 37846,
+      "mode": 420
+    },
+    "inputs/cases/large-file/task.txt": {
+      "sha256": "632bb9d26475ea9bc186ce822b9f00a9ca1e2e5196801a53dab1ba42f829b911",
+      "bytes": 1301,
+      "mode": 420
+    },
+    "inputs/cases/large-file/workspace/.spiral-coder.md": {
+      "sha256": "d75dee15fa274f8bc667cd4294be437c422b3b73256fe7cae75b87071e85ec34",
+      "bytes": 158,
+      "mode": 420
+    },
+    "inputs/cases/large-file/workspace/greet.py": {
+      "sha256": "a9aa6273fa37e3c647c9facdb452ca018117db9656d14e73ca32fd41600e7210",
+      "bytes": 37846,
+      "mode": 420
+    },
+    "inputs/cases/large-file/workspace/test_greet.py": {
+      "sha256": "2f476cfd18849f359600b7360a16bacf9e747fdd679bd76220a73c6f49253e15",
+      "bytes": 310,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/reference/docs/pilot.md": {
+      "sha256": "17b66fd624f27fbdd523a3278b0fbd7c37ab462bb8e07fa0a62f41f57e9d02ff",
+      "bytes": 190,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/reference/scripts/run_coupled_pilot.py": {
+      "sha256": "21ac09017a360ea098c11bb5df4e89c58ed0c926ca117a97ef556b7355027d27",
+      "bytes": 9219,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/task.txt": {
+      "sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+      "bytes": 1640,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/workspace/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/workspace/docs/pilot.md": {
+      "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+      "bytes": 101,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/workspace/scripts/run_coupled_pilot.py": {
+      "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+      "bytes": 9156,
+      "mode": 420
+    },
+    "inputs/cases/pilot-cli/workspace/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/reference/.spiral-coder/tui_replay.json": {
+      "sha256": "dbad3a67fd3bb8ffa0ebc9d904d07fba30826f794fab8258556fcb1f91424bcc",
+      "bytes": 35012,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/reference/docs/replay.md": {
+      "sha256": "62c6d3b050fb4881e9fd50e246aa79de2d8dcbb5303b33d48bd657845cdbe764",
+      "bytes": 133,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/task.txt": {
+      "sha256": "47207496497598fcb62b35e9fca1850ca3315cd8e1648d134010054228da964f",
+      "bytes": 2044,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/workspace/.spiral-coder/tui_replay.json": {
+      "sha256": "06bd2b195f40c4e8d968a6b7f18da0b182ebd4644db0f0a64c0a6e165106bc75",
+      "bytes": 33010,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/workspace/.spiral-coder.md": {
+      "sha256": "16f16b26fdd0f802b2da0c5a7a431920cf7743de848bf945e18a7f2651f88808",
+      "bytes": 132,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/workspace/docs/replay.md": {
+      "sha256": "73b287181fef2ded219d90187b7b6428cf89b8444b55e3e722e1ccf236dbd454",
+      "bytes": 83,
+      "mode": 420
+    },
+    "inputs/cases/replay-json/workspace/tests/test_replay_contract.py": {
+      "sha256": "44f17db3ae0337a2261200ea7e3ad9cdbb3420fe866959157f5b9b8bc355a82f",
+      "bytes": 1067,
+      "mode": 420
+    },
+    "inputs/matrix.json": {
+      "sha256": "88af6bc24fbcc2984fa1ab9b76027f1caabf25518a3ced7aed1d10092566934c",
+      "bytes": 1557,
+      "mode": 420
+    },
+    "inputs/suite.json": {
+      "sha256": "323f1d5937416f9c57491f88037c3b83b74205b91861240de03c9b7ff7f21776",
+      "bytes": 2074,
+      "mode": 420
+    },
+    "matrix.json": {
+      "sha256": "88af6bc24fbcc2984fa1ab9b76027f1caabf25518a3ced7aed1d10092566934c",
+      "bytes": 1557,
+      "mode": 420
+    },
+    "predeclared.json": {
+      "sha256": "53ff9fd2f904dc4ca2eba0df6b70fe0737a64511700750ffafa8e0c5a1b36905",
+      "bytes": 9364,
+      "mode": 420
+    },
+    "preflight.json": {
+      "sha256": "973f78312434ba3816911a31d1157bc2716870491084888f56cb13198690f05a",
+      "bytes": 4665,
+      "mode": 420
+    },
+    "references/pilot-cli/.spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "references/pilot-cli/docs/pilot.md": {
+      "sha256": "17b66fd624f27fbdd523a3278b0fbd7c37ab462bb8e07fa0a62f41f57e9d02ff",
+      "bytes": 190,
+      "mode": 420
+    },
+    "references/pilot-cli/scripts/run_coupled_pilot.py": {
+      "sha256": "21ac09017a360ea098c11bb5df4e89c58ed0c926ca117a97ef556b7355027d27",
+      "bytes": 9219,
+      "mode": 420
+    },
+    "references/pilot-cli/tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    },
+    "runtime/spiral-coder": {
+      "sha256": "16be4aff77cbec44024d3cb31a8f9b668ecd121d3b393a922ed1db3371bcfa61",
+      "bytes": 44113504,
+      "mode": 493
+    },
+    "suite.json": {
+      "sha256": "323f1d5937416f9c57491f88037c3b83b74205b91861240de03c9b7ff7f21776",
+      "bytes": 2074,
+      "mode": 420
+    }
+  }
+}

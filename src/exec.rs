@@ -849,6 +849,7 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
 
     let mut cmd = build_command(cmd_str).await?;
     scrub_poison_proxy_env(&mut cmd);
+    crate::runtime_storage::configure_child(&mut cmd);
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
     if let Some(cwd) = cwd.filter(|s| !s.trim().is_empty()) {
         validate_cwd(cwd).context("invalid cwd")?;

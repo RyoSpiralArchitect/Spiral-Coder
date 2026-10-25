@@ -1,0 +1,16 @@
+{
+  "source_session": "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-20261025-preservation-r2/episodes/mistral-small/pilot-cli/workspace/.spiral-coder/tui-session.json",
+  "provider_calls": 0,
+  "report_repair": {
+    "feedback": "The previously rejected summary now satisfies current report validation. Re-submit done with the verified citations and an accurate authored summary; no new inspection or check is required by this report refusal.",
+    "rejected_call_id": "dJaK9FIOB"
+  },
+  "issue": "The latest native done was rejected only for its authored report; current checks and acceptance citations remain valid. Suggest done with corrected summary, or no-tool clarify when uncertain. Do not restart inspection, edits or passed checks. Authored report feedback:\nThe previously rejected summary now satisfies current report validation. Re-submit done with the verified citations and an accurate authored summary; no new inspection or check is required by this report refusal.",
+  "hint_forwarded": false,
+  "contract_forwarded": false,
+  "repair_scheduled": true,
+  "runtime_commit": "9bc7351",
+  "input_messages_mutated": false,
+  "input_observer_response_mutated": false,
+  "replayed_endpoint": "/api/observer_action"
+}
