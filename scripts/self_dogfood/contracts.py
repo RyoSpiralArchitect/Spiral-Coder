@@ -18,7 +18,7 @@ def bounded_int(value, low, high, label):
 
 
 def validate(spec):
-    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature"}
+    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "visible_fixtures", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature"}
     if set(spec) - allowed:
         raise ValueError("Unknown task contract fields")
     if spec.get("version") != 1:
@@ -108,6 +108,31 @@ def validate(spec):
                 raise ValueError("Reference repair must stay within editable paths")
             if overlay.get("mode", "replace") not in ("replace", "append"):
                 raise ValueError("Unknown overlay mode")
+    validate_visible_fixtures(spec)
+
+
+def validate_visible_fixtures(spec):
+    if "visible_fixtures" not in spec:
+        return
+    fixtures = spec["visible_fixtures"]
+    if not isinstance(fixtures, list) or not 1 <= len(fixtures) <= 8:
+        raise ValueError("visible_fixtures must be a list of 1..8 protected overlays")
+    forbidden = {relative_path(p).as_posix() for p in spec["editable"]}
+    forbidden.update(relative_path(o["target"]).as_posix() for key in ("probes", "reference") for o in spec[key])
+    targets = set()
+    for overlay in fixtures:
+        if not isinstance(overlay, dict) or set(overlay) - {"source", "target", "mode"}:
+            raise ValueError("Visible fixtures only accept source, target and mode")
+        for key in ("source", "target"):
+            value = overlay.get(key)
+            if not isinstance(value, str) or relative_path(value).as_posix() != value or value == ".":
+                raise ValueError("Visible fixture paths must be canonical relative file paths")
+        target = overlay["target"]
+        if target in targets or target in forbidden:
+            raise ValueError("Visible fixture targets must be unique and disjoint from editable, probe and reference paths")
+        targets.add(target)
+        if overlay.get("mode", "replace") not in ("replace", "append"):
+            raise ValueError("Unknown visible fixture overlay mode")
 
 
 def git_commit(repo, revision):
@@ -159,7 +184,7 @@ def git_snapshot(repo, revision, destination):
 
 def copy_inputs(spec_path, spec, target):
     target.mkdir()
-    sources = {spec["prompt"], *(o["source"] for k in ("probes", "reference") for o in spec[k])}
+    sources = {spec["prompt"], *(o["source"] for k in ("probes", "reference", "visible_fixtures") for o in spec.get(k, []))}
     if "spec.json" in sources:
         raise ValueError("spec.json is reserved for the frozen contract")
     for name in sources:

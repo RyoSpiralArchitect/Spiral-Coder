@@ -9,6 +9,7 @@ import time
 
 from coupled_bench.common import PROVIDERS, inventory, read_json, sha, write_json
 from .contracts import apply_overlays, execution_env, load_frozen, now
+from .build_cache import reset_package_cache
 from .process import run_process
 from .evidence import bound_run, native_evidence
 
@@ -35,6 +36,9 @@ def checks(out, spec, label, overlays=(), candidate=None):
                     target.unlink()
         apply_overlays(workspace, out / "inputs", overlays)
         apply_overlays(workspace, out / "inputs", spec["probes"])
+        cache_reset = reset_package_cache(out, workspace, target_dir,
+            out / "checks" / label / "package-cache-reset.json",
+            min(60, max(0.001, deadline - time.monotonic())))
         for check in spec["checks"]:
             replacements = {"workspace": str(workspace), "target_dir": str(target_dir),
                             "runtime": str(out / "runtime/spiral-coder"), "receipts": str(receipts)}
@@ -68,6 +72,7 @@ def checks(out, spec, label, overlays=(), candidate=None):
                            "id": check["id"], "kind": check["kind"], "argv": argv,
                            "passed": passed, "log_sha256": sha(log) if log.exists() else None,
                            "log": str(log.relative_to(out)),
+                           "package_cache_reset_sha256": cache_reset,
                            "candidate_binary_sha256": built_binary})
             results.append(result)
     return results
@@ -144,6 +149,7 @@ def assess(args):
     target = out / "assessment-001.json"
     result = {"version": 1, "assessed_at": now(), "predeclaration_sha256": args.declaration_sha256, "run_receipt_sha256": args.run_sha256,
               "baseline_commit": declaration["baseline_commit"], "runtime_commit": declaration["runtime_commit"],
+              "visible_fixture_paths": declaration.get("visible_fixture_paths", []),
               "qualified_candidate": all(gates.values()), "promotion_authorized": False, "gates": gates,
               "changed_files": changed, "out_of_scope_files": forbidden, "native_checks": fresh,
               "requests": len(requests) if isinstance(requests, list) else None, "request_roles": roles,

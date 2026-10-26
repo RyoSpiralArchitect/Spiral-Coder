@@ -49,7 +49,7 @@ variables are `MISTRAL_API_KEY`, `OPENAI_API_KEY`, and `GEMINI_API_KEY` (or
 `GOOGLE_API_KEY`). Set them in the shell that launches `spiral`; the TUI's `/keys`
 command shows setup help and key status. `/provider` and `/model` change the
 selection. **Coder + Observer form one coding loop** and use the same selected
-model unless explicitly overridden. See the [Quickstart](../README.md#quickstart)
+model unless explicitly overridden. See the [getting-started guide](getting-started.md)
 for provider configuration. Never put credentials in a package.
 
 ### Installation troubleshooting

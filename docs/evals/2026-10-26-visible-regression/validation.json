@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "python": {
+    "command": "python3 -S -m unittest discover -s tests -p 'test_*.py'",
+    "tests_passed": 69,
+    "source_commit": "187babe5579c560822c418ec5341156a7852cbbb",
+    "log_sha256": "620badf43d7140a9ec9b88ac1610ece002aebb00c3c21bd5c945f167faa095a2"
+  },
+  "documentation": {
+    "local_links_checked": 118,
+    "broken_links": [],
+    "readme_lines": {
+      "README.md": 101,
+      "README.ja.md": 95,
+      "README.fr.md": 102
+    },
+    "cli_help_checked": true,
+    "provider_preference_persistence_checked_in_source": true,
+    "markdown_files_checked": 15,
+    "web_default_port_checked_in_cli_help": 8080
+  },
+  "secret_scan": {
+    "changed_files_scanned": 30,
+    "authorized_key_values_checked": 3,
+    "matched_files": []
+  },
+  "registry_observation": {
+    "package": "spiral-coder",
+    "version": "0.2.0",
+    "node": ">=20",
+    "commands": [
+      "spiral",
+      "spiral-coder"
+    ],
+    "fresh_install_performed_in_this_change": false
+  },
+  "fork_review": {
+    "initial_head": "e864c934f064965ff72db6c87c1ad037e8269306",
+    "finding": "P2: normalize all compared targets before testing visible fixture overlap",
+    "fix_commit": "187babe5579c560822c418ec5341156a7852cbbb",
+    "focused_recheck": "no actionable findings",
+    "full_review": {
+      "head": "13f97a93b5f4a0f9ac10769ab8fb4badef201c69",
+      "finding": "P2: Web launch documentation must use the native default port 8080",
+      "separate_concern": "Six unexpected filtered tests in the Argon native log; isolated shared-cache reuse subsequently reproduced",
+      "fix_commit": "40a885460009f3130b953c3b743f783482f08d06"
+    },
+    "cache_and_documentation_recheck": {
+      "head": "40a885460009f3130b953c3b743f783482f08d06",
+      "result": "no actionable introduced findings",
+      "scope": "source and committed evidence only; no reviewer builds, tests or provider calls"
+    }
+  },
+  "python_followup": {
+    "command": "python3 -S -m unittest discover -s tests -p 'test_*.py'",
+    "tests_passed": 73,
+    "source_commit": "40a885460009f3130b953c3b743f783482f08d06",
+    "log_sha256": "d5565d3f402fbd6c8f159d4fc8bf07693db2b426a49e8d196acc1718819d2018",
+    "includes_real_offline_cargo_regression": true,
+    "provider_calls": 0
+  },
+  "raw_manifest_followup": {
+    "luna_argon_files": 942,
+    "argon_large_files": 881,
+    "hash_mismatches": [],
+    "note": "Hash agreement does not establish build-source correspondence."
+  }
+}

@@ -1,5 +1,10 @@
 # Self-dogfood v1: recovery handoff
 
+The [visible-regression variant](recovery-handoff-visible/README.md) adds one
+protected reproducer to the candidate while retaining the same six independent
+checks. It has a different prepared baseline and prompt; report it separately
+from the original task below.
+
 This first real-source task starts from Spiral-Coder commit
 `9982a68a6978058c75a9a700e7407df5a49f010c`. A newer, frozen execution
 runtime uses different Coder and Observer providers to propose a repair to that

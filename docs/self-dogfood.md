@@ -40,6 +40,14 @@ export attributes. Symlinks, submodules and oversized snapshots are rejected.
 The candidate receives a full copy with its own local Git history. Original
 standalone tests and explicitly protected files cannot be editable.
 
+A task may also declare `visible_fixtures`: operator-owned test and registration
+overlays applied before the prepared baseline is inventoried and copied into the
+candidate. Their targets are protected automatically. `baseline_commit` still
+identifies the original Git source; `baseline_inventory` binds the assembled
+baseline, and `visible_fixture_paths` records which paths received overlays.
+The frozen spec/input inventory binds their source bytes and application modes.
+This is a separately labeled task variant, not an unchanged-baseline comparison.
+
 The external episode directory contains the frozen binary, driver, task contract,
 prompt, probes, reference repair and baseline. Preparation runs the declared
 checks on disposable baseline and reference copies. The original defect must
@@ -90,6 +98,7 @@ Version 1 JSON contains these fields:
 | `editable` | Exact production/document paths the candidate may change; up to 16. |
 | `required_changed_paths` | Optional unique subset of `editable` whose files must actually differ from baseline, such as required behavior documentation. |
 | `protected` | Additional original paths that must exist and remain unchanged. Standalone test paths are also protected automatically. |
+| `visible_fixtures` | Optional 1–8 `{source, target, mode}` overlays applied to the baseline before candidate creation. Every target is protected, unique, and disjoint from editable, probe and reference paths. |
 | `native_checks` | Exact shell command strings that must succeed in native execution after the last mutation. |
 | `roles` | `coder` and `observer`, each with exact `provider`, `model`, optional standard `key_env`. Providers must differ. |
 | `max_requests` | Shared durable cap, including retries and both roles; 6–64. |
@@ -105,6 +114,14 @@ Overlay source paths are relative to the spec's directory. The runner copies the
 exact bytes and adds no separators, so appended Rust probes should start with a
 newline. Probes are applied only to disposable verifier copies. Reference edits
 are applied only to the reference verifier, never to the live candidate.
+
+Visible fixtures are different: the candidate can read and run them. Their test
+registration must be protected too. Every verifier uses the same prepared
+baseline, so a candidate cannot weaken a visible test in the independent copy.
+Changing either the test or its registration also fails candidate scope and
+protected-file checks. Visible checks should declare exact test counts and an
+expected failure identity; an empty test selection must not count as a pass.
+Keep independent controls in `probes` even when a visible reproducer is supplied.
 
 A check has `id`, `kind` (`build`, `regression`, `improvement`), `baseline`
 (`pass`, `fail`), `argv`, and `timeout_seconds`. A failing baseline also requires
@@ -177,7 +194,20 @@ process group on timeout or exit, including descendants left by a shell. Native
 wire reservations remain in the external durable ledger if a request is killed.
 Cargo build artifacts never belong in the candidate: every execution uses the
 external `CARGO_TARGET_DIR`, `CARGO_INCREMENTAL=0`, and disabled dev/test debug
-info. Separate episodes can reuse one validation cache sequentially.
+info. Separate episodes can reuse one validation cache sequentially, but the lock
+alone does not establish artifact provenance: Cargo can reuse a root-package
+test binary from another source copy with older timestamps. Before baseline,
+reference, live and candidate-assessment execution, `build_cache.py` runs
+`cargo clean --locked --offline --package spiral-coder` under that lock. Only this
+repository's package artifacts are invalidated; dependency artifacts stay cached.
+Each reset has a bounded log and JSON receipt. A failed reset stops before checks
+or provider calls. The live reset has a separate 60-second pre-start bound;
+verifier resets count against the declared evaluation deadline.
+This lane targets the `spiral-coder` package; it is not a general workspace cleaner.
+
+Older frozen drivers retain their original behavior and receipts. In particular,
+the [first visible episodes](evals/2026-10-26-visible-regression/README.md#post-run-build-provenance-limitation)
+used the earlier shared-cache behavior and were not rerun after this correction.
 
 Execution receives a small environment allowlist and only the two declared
 provider credential variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`,

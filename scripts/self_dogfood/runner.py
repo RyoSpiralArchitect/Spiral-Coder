@@ -7,9 +7,10 @@ import subprocess
 import time
 
 from coupled_bench.common import PROVIDERS, inventory, read_json, sha, write_json
-from .contracts import (copy_inputs, execution_env, freeze_driver, git_commit, git_snapshot,
+from .contracts import (apply_overlays, copy_inputs, execution_env, freeze_driver, git_commit, git_snapshot,
                         load_frozen, now, validate)
 from .assessment import assess, checks
+from .build_cache import reset_package_cache
 from .process import run_process
 from .evidence import seal_run
 
@@ -38,6 +39,7 @@ def cache_lock(target, seconds=60):
 
 def protected_files(baseline, spec):
     protected = set(spec.get("protected", []))
+    protected.update(o["target"] for o in spec.get("visible_fixtures", []))
     for name in baseline:
         path = Path(name)
         if "tests" in path.parts or path.name.startswith("test_") or path.name.endswith(("_tests.rs", "_test.rs", ".test.mjs")):
@@ -65,6 +67,7 @@ def prepare(args):
     (out / "scratch").mkdir(); (out / "runtime").mkdir(); (out / "episode").mkdir()
     baseline_commit = git_snapshot(repo, args.baseline_ref, out / "baseline")
     copy_inputs(spec_path, spec, out / "inputs")
+    apply_overlays(out / "baseline", out / "inputs", spec.get("visible_fixtures", []))
     shutil.copy2(binary, out / "runtime/spiral-coder")
     baseline = inventory(out / "baseline")
     protected = protected_files(baseline, spec)
@@ -82,6 +85,7 @@ def prepare(args):
                    "max_requests": spec["max_requests"], "wall_seconds": spec["wall_seconds"],
                    "baseline_inventory": baseline, "inputs_inventory": inventory(out / "inputs"),
                    "driver_sha256": freeze_driver(out), "protected_paths": protected,
+                   "visible_fixture_paths": sorted(o["target"] for o in spec.get("visible_fixtures", [])),
                    "layout_sha256": sha(out / "layout.json"), "prompt_sha256": sha(out / "episode/task.txt"),
                    "executor_reloads_candidate": False, "promotion_authorized": False,
                    "boundary": "Frozen evaluator and separate copies, not an OS security sandbox"}
@@ -147,8 +151,11 @@ def run(args):
     command, env, secrets = command_and_env(out, spec)
     target = Path(read_json(out / "layout.json")["target_dir"])
     with cache_lock(target):
+        cache_reset = reset_package_cache(out, episode / "workspace", target,
+                                          episode / "package-cache-reset.json")
         with (episode / "started.json").open("x") as handle:
             __import__("json").dump({"started_at": now(), "command": command,
+                                   "package_cache_reset_sha256": cache_reset,
                                    "predeclaration_sha256": sha(out / "predeclared.json")}, handle, indent=2)
         result = run_process(command, episode / "workspace", env, spec["wall_seconds"], episode / "console.log", secrets)
     redacted = []

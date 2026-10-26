@@ -778,6 +778,28 @@ Runtime eval merge gates are written next to `report.json`. They should be used
 as closeout evidence for self-dogfood changes, but they should remain disposable
 and reproducible from a fresh eval run.
 
+### Frozen self-dogfood receipts
+
+`scripts/self_dogfood/runner.py` owns preparation of the versioned
+`predeclared.json`; `contracts.py` validates and reloads it against the external
+operator pin. `assessment.py` owns the independent assessment receipt. These are
+evaluation artifacts, not resumable Coder or Observer state.
+
+`baseline_commit` identifies the original Git source, while `baseline_inventory`
+binds the prepared tree after any operator `visible_fixtures` overlays.
+`visible_fixture_paths` records their target paths in both the declaration and
+assessment (empty when absent in older receipts). All these paths, including
+test registration, enter `protected_paths`. Their source bytes/modes are bound
+by the frozen spec and inputs inventory. See the [self-dogfood contract](self-dogfood.md).
+
+`build_cache.py` owns `package-cache-reset.json` and its bounded log for each
+verifier copy and the live episode. Check rows and `episode/started.json` bind
+the reset receipt with `package_cache_reset_sha256`. The receipt records the
+explicit package-clean command, workspace, shared cache, process result and log
+digest. A failed reset prevents execution. These operational provenance receipts
+do not grant model completion or repair evidence; older frozen drivers and their
+receipts are preserved without retroactively adding the reset.
+
 ## Rules for adding new state
 
 Before adding a field, answer these questions:

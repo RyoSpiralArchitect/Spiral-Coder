@@ -1,0 +1,1013 @@
+{
+  "version": 1,
+  "plan_sha256": "6a1ed211ecb85a479ddcf2fbdfaeb9fbdaee351b1870d6f2eb9a9b2c71da170d",
+  "driver_source_commit": "187babe5579c560822c418ec5341156a7852cbbb",
+  "episodes": [
+    {
+      "pair": "luna-argon",
+      "preparation_revision": 2,
+      "live_attempt": 1,
+      "baseline_git_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+      "executor_source_commit": "5b9315dbfb4fbfc134b5a98ae59e658837f94d6d",
+      "executor_sha256": "5279c0f6b8719863bec83f38d47b192574c4ddb52c34c6ff4080eaacff69165c",
+      "predeclaration_sha256": "6ea93e99cb472d2e297972d2fac7d186bd78839256319173c74516ca2cef86c9",
+      "run_receipt_sha256": "970179591cd20b8f29c3f8acf1cdbcfe7e154afbb49574a5d9c2679bb59ad514",
+      "assessment_sha256": "6252f2a6e92a3e5e45d464544a628650d0cb576f485ad1ce5167a14e3c1408cd",
+      "raw_manifest_sha256": "01055ebf81f8105d58c358199a1e00d6f9c7def1cef371f637616dba5af65f28",
+      "verified_raw_files": 942,
+      "inputs_inventory": {
+        "probe.rs": {
+          "sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+          "bytes": 11206,
+          "mode": 420
+        },
+        "prompt.txt": {
+          "sha256": "a2367bf9ed84a317205a29787fc8054a4776cb55e1d5d1f6b5759e7eee18105d",
+          "bytes": 3685,
+          "mode": 420
+        },
+        "reference/handoff-note.md": {
+          "sha256": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+          "bytes": 553,
+          "mode": 420
+        },
+        "reference/src/tui/agent/edit_failure.rs": {
+          "sha256": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+          "bytes": 11695,
+          "mode": 420
+        },
+        "reference/src/tui/agent/recovery.rs": {
+          "sha256": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+          "bytes": 12223,
+          "mode": 420
+        },
+        "spec.json": {
+          "sha256": "68a7954569b1be366ad8495cea8801d47fe11f2abcfb072006c615e07f3f52a7",
+          "bytes": 3889,
+          "mode": 420
+        },
+        "visible-registration.rs": {
+          "sha256": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+          "bytes": 112,
+          "mode": 420
+        },
+        "visible-test.rs": {
+          "sha256": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25",
+          "bytes": 6989,
+          "mode": 420
+        }
+      },
+      "visible_fixture_paths": [
+        "src/tui/agent.rs",
+        "src/tui/agent/self_dogfood_visible_recovery_tests.rs"
+      ],
+      "preflight": {
+        "baseline_expected": true,
+        "reference_passed": true,
+        "provider_calls": 0,
+        "baseline": [
+          {
+            "id": "candidate-build",
+            "kind": "build",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "be1a38b181605321ae44bdcb1ae141409843a06b6ad3b7270c825715f4cba40d",
+            "test_summary": null
+          },
+          {
+            "id": "existing-rust-tests",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "59518c50c332137fa11e0987dafbda4e654d4bf30997cffc57dde55dad0471de",
+            "test_summary": {
+              "status": "ok",
+              "passed": 864,
+              "failed": 0,
+              "ignored": 1
+            }
+          },
+          {
+            "id": "visible-recovery-regression",
+            "kind": "improvement",
+            "passed": false,
+            "exit_code": 101,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": false,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "9432151f129e6779227ffd3a8016fb5ade322dff7b1c3268abc3956fb6b13225",
+            "test_summary": {
+              "status": "FAILED",
+              "passed": 0,
+              "failed": 1,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "recovery-handoff-oracle",
+            "kind": "improvement",
+            "passed": false,
+            "exit_code": 101,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": false,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "5aab105e5c65fe55df16896d4480432d879a4bc97d59e51cc2bd737b14eb1717",
+            "test_summary": {
+              "status": "FAILED",
+              "passed": 5,
+              "failed": 1,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "candidate-tui-replay",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "ab30677cdeea5abff5c763dc5beba10dcae95a07fc5f24a3d4cdfa61970f1a1b",
+            "test_summary": null
+          }
+        ],
+        "reference": [
+          {
+            "id": "candidate-build",
+            "kind": "build",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "d1ab5e8528ab20b56da42285cefb528e7172b1becb0d0dd883cc8dc93adcdc62",
+            "test_summary": null
+          },
+          {
+            "id": "existing-rust-tests",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "9fb3ec40eb0229391947bec5cd7a653ca355a15fc6bd6b965a3845b5b89aa3df",
+            "test_summary": {
+              "status": "ok",
+              "passed": 864,
+              "failed": 0,
+              "ignored": 1
+            }
+          },
+          {
+            "id": "visible-recovery-regression",
+            "kind": "improvement",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": false,
+            "baseline_failure_matches": false,
+            "log_sha256": "a156fa893d4c91441954937e4f79c05ca41c102b11f2c689b56b78a942aee57c",
+            "test_summary": {
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "recovery-handoff-oracle",
+            "kind": "improvement",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": false,
+            "baseline_failure_matches": false,
+            "log_sha256": "3160c2adaa25e206dd043f2d57ba911021b7b2dffa9d99614248117dfee16bbf",
+            "test_summary": {
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "candidate-tui-replay",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "c0aa03713ceb38f7caaf4a7c2a3c5483bd501e7735414ba5c127ab54808a4b43",
+            "test_summary": null
+          }
+        ]
+      },
+      "native_completed": false,
+      "qualified_candidate": false,
+      "promotion_authorized": false,
+      "requests": 32,
+      "request_roles": {
+        "coder": 31,
+        "observer": 1
+      },
+      "request_statuses": {
+        "completed": 32
+      },
+      "native_roles": {
+        "coder": {
+          "endpoint_origin": "https://api.openai.com",
+          "max_tokens": 32768,
+          "model": "gpt-5.6-luna",
+          "provider": "openai",
+          "temperature": 0.0,
+          "timeout_seconds": 90,
+          "transport": "openai-compatible"
+        },
+        "observer": {
+          "endpoint_origin": "https://generativelanguage.googleapis.com",
+          "max_tokens": 8192,
+          "model": "gemini-4-argon",
+          "provider": "gemini",
+          "temperature": 0.2,
+          "timeout_seconds": 90,
+          "transport": "openai-compatible"
+        }
+      },
+      "gates": {
+        "native_receipts_valid": true,
+        "required_paths_changed": true,
+        "pinned_run_receipt": true,
+        "native_ledger_binding": true,
+        "native_completed": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false,
+        "native_edit": true,
+        "actual_edit": true,
+        "fresh_native_checks": false,
+        "no_pending_checks": false,
+        "strict_scope": true,
+        "original_protected_files_preserved": true,
+        "both_roles_called": true,
+        "exact_role_configuration": true,
+        "role_accounting_consistent": true,
+        "bounded_requests": true,
+        "process_ok": true,
+        "independent_checks_passed": false,
+        "candidate_unchanged_by_assessor": true,
+        "no_secret_redactions": true,
+        "patch_retained": true
+      },
+      "changed_files": [
+        "docs/coupled-work-loop.md",
+        "src/tui/agent/recovery.rs"
+      ],
+      "process": {
+        "exit_code": 0,
+        "timed_out": false,
+        "output_limit": false,
+        "wall_seconds": 228.995,
+        "log_redactions": 0,
+        "redacted_files": []
+      },
+      "independent_checks": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "f145961016f48045fca8373c55f626508d377d09d8c4ca6fe4788fcde1d0f3f8",
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "1704f9787f13069d4ec3f7ded3b19af5b090eb44d28b79bbd14bb83b1b2050c3",
+          "test_summary": {
+            "status": "ok",
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "3f707f1dbc108e87617e63a92ccb9e7098086f22b506ee7f74c1d8ea226079be",
+          "test_summary": {
+            "status": "FAILED",
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "d159bd84c19963480397e4fe4d51151f9e06e457014cdd0da54839e184deffd2",
+          "test_summary": {
+            "status": "FAILED",
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "dcf9eb107c933a5566adedc8676fe998ee5c9c482444a5a77e038ddbc0cb7023",
+          "test_summary": null
+        }
+      ],
+      "native_activity": {
+        "actions": 34,
+        "executed": 19,
+        "blocked": 15,
+        "visible_read_action_indices": [
+          5,
+          13,
+          23
+        ],
+        "filtered_reproducer_attempts": 0,
+        "filtered_reproducer_executions": 0,
+        "execs": [
+          {
+            "index": 10,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 11,
+            "test_summary": null,
+            "result_sha256": "0206a7445bd774dfc9e2d1e418de6b081d371b9277ad37061743335ecf5afb2f"
+          },
+          {
+            "index": 21,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 22,
+            "test_summary": null,
+            "result_sha256": "0206a7445bd774dfc9e2d1e418de6b081d371b9277ad37061743335ecf5afb2f"
+          },
+          {
+            "index": 22,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 23,
+            "test_summary": null,
+            "result_sha256": "0206a7445bd774dfc9e2d1e418de6b081d371b9277ad37061743335ecf5afb2f"
+          },
+          {
+            "index": 24,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": true,
+            "succeeded": false,
+            "result_step": 25,
+            "test_summary": null,
+            "result_sha256": "3a992152d223752032928e17ed21458cac9639b78921837b4c3dc1f06c875cdb"
+          },
+          {
+            "index": 30,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 31,
+            "test_summary": null,
+            "result_sha256": "712ff9b529208d4dde26c25e5b28b77746fc61681e9db10dfc77458345b2c3fc"
+          },
+          {
+            "index": 31,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 32,
+            "test_summary": null,
+            "result_sha256": "712ff9b529208d4dde26c25e5b28b77746fc61681e9db10dfc77458345b2c3fc"
+          },
+          {
+            "index": 32,
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 33,
+            "test_summary": null,
+            "result_sha256": "712ff9b529208d4dde26c25e5b28b77746fc61681e9db10dfc77458345b2c3fc"
+          }
+        ],
+        "assists": [
+          {
+            "executed": true,
+            "succeeded": null,
+            "completed": false,
+            "suggestion_execution": {
+              "tool": "read_file",
+              "arguments": {
+                "end_line": 200,
+                "path": "src/tui/agent/recovery_progress.rs",
+                "start_line": 1
+              },
+              "matching_call_count": 2,
+              "executed": true,
+              "succeeded": null
+            }
+          }
+        ]
+      },
+      "observer_answers": [
+        {
+          "characters": 2730,
+          "text_sha256": "3170e9fa391b4915db45bb3cd434fbce48c15897522f55b5acc358390e447054"
+        }
+      ],
+      "observer_request_usage": [],
+      "candidate_patch_sha256": "db6117cb9db79ad5b0c865646bc0471e05e2ea2abf9b59877354b925fc89ed65"
+    },
+    {
+      "pair": "argon-large",
+      "preparation_revision": 2,
+      "live_attempt": 1,
+      "baseline_git_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+      "executor_source_commit": "5b9315dbfb4fbfc134b5a98ae59e658837f94d6d",
+      "executor_sha256": "5279c0f6b8719863bec83f38d47b192574c4ddb52c34c6ff4080eaacff69165c",
+      "predeclaration_sha256": "cdf44ae1ee098880917dcf21a261d847358fac25d3a867f75a04a72b416924a3",
+      "run_receipt_sha256": "186d5b1bcaf9bfd9146af5967dad67d08ea1ca5403a2ed3a9374a94cf7c062d0",
+      "assessment_sha256": "00201afd9946d0a1f72bfd8a1ec7813f27cd34bec7922a8cad3769aa115bc170",
+      "raw_manifest_sha256": "ce4433e35f2ed8abe378d0c74d148dfb35dfaeacdffac6f2b57b825d2cb62966",
+      "verified_raw_files": 881,
+      "inputs_inventory": {
+        "probe.rs": {
+          "sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+          "bytes": 11206,
+          "mode": 420
+        },
+        "prompt.txt": {
+          "sha256": "a2367bf9ed84a317205a29787fc8054a4776cb55e1d5d1f6b5759e7eee18105d",
+          "bytes": 3685,
+          "mode": 420
+        },
+        "reference/handoff-note.md": {
+          "sha256": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+          "bytes": 553,
+          "mode": 420
+        },
+        "reference/src/tui/agent/edit_failure.rs": {
+          "sha256": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+          "bytes": 11695,
+          "mode": 420
+        },
+        "reference/src/tui/agent/recovery.rs": {
+          "sha256": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+          "bytes": 12223,
+          "mode": 420
+        },
+        "spec.json": {
+          "sha256": "ad2f5784f1914a7e0441724a6861e60b98ebce7c314e8e658d096abfa3e8cbbe",
+          "bytes": 3893,
+          "mode": 420
+        },
+        "visible-registration.rs": {
+          "sha256": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+          "bytes": 112,
+          "mode": 420
+        },
+        "visible-test.rs": {
+          "sha256": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25",
+          "bytes": 6989,
+          "mode": 420
+        }
+      },
+      "visible_fixture_paths": [
+        "src/tui/agent.rs",
+        "src/tui/agent/self_dogfood_visible_recovery_tests.rs"
+      ],
+      "preflight": {
+        "baseline_expected": true,
+        "reference_passed": true,
+        "provider_calls": 0,
+        "baseline": [
+          {
+            "id": "candidate-build",
+            "kind": "build",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "3c7917720ece4fbca75b807e756d8d7146a68623b0f758600654ef5595d22aab",
+            "test_summary": null
+          },
+          {
+            "id": "existing-rust-tests",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "e0ce69fa9505672e3a16f4164247713b666c87a53b447badc4a3922a783bc2f4",
+            "test_summary": {
+              "status": "ok",
+              "passed": 864,
+              "failed": 0,
+              "ignored": 1
+            }
+          },
+          {
+            "id": "visible-recovery-regression",
+            "kind": "improvement",
+            "passed": false,
+            "exit_code": 101,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": false,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "7e4a7d5419f05912beb0080ce2fc422099e638859faec5849e6845d4795e33e0",
+            "test_summary": {
+              "status": "FAILED",
+              "passed": 0,
+              "failed": 1,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "recovery-handoff-oracle",
+            "kind": "improvement",
+            "passed": false,
+            "exit_code": 101,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": false,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "e36658a47d7c8041c62f2b8bdec2833beb69b966594a1fd1160c5e99fff7c589",
+            "test_summary": {
+              "status": "FAILED",
+              "passed": 5,
+              "failed": 1,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "candidate-tui-replay",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "5abf78ddc3238a106b71639796d7ce1c334929aa82a59e90faad7a8f593b2a43",
+            "test_summary": null
+          }
+        ],
+        "reference": [
+          {
+            "id": "candidate-build",
+            "kind": "build",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "4731b8f0e48a23f67d410b16e89db11a915b03b1b3eabfe1ee5b01ede03e3a64",
+            "test_summary": null
+          },
+          {
+            "id": "existing-rust-tests",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "c1fa0dcdce668933a3053f4866679e90b410eab3b37b4790ab3a5bcf31ddd0f3",
+            "test_summary": {
+              "status": "ok",
+              "passed": 864,
+              "failed": 0,
+              "ignored": 1
+            }
+          },
+          {
+            "id": "visible-recovery-regression",
+            "kind": "improvement",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": false,
+            "baseline_failure_matches": false,
+            "log_sha256": "a809ee6997fba26c223594ee1a12a1bdfacf09fd0090b2f354c7bf5ff3f19831",
+            "test_summary": {
+              "status": "ok",
+              "passed": 1,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "recovery-handoff-oracle",
+            "kind": "improvement",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": false,
+            "baseline_failure_matches": false,
+            "log_sha256": "1660a7106c59859c866b8c9b3bddfabd0864a98dc3bac728f3a7129316ef169f",
+            "test_summary": {
+              "status": "ok",
+              "passed": 6,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          {
+            "id": "candidate-tui-replay",
+            "kind": "regression",
+            "passed": true,
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "expected_test_count_matches": true,
+            "baseline_test_count_matches": true,
+            "baseline_failure_matches": true,
+            "log_sha256": "48ad526dcac2b4ce94336126ea13b94f37fff7575028d187d6e6350e398376f6",
+            "test_summary": null
+          }
+        ]
+      },
+      "native_completed": false,
+      "qualified_candidate": false,
+      "promotion_authorized": false,
+      "requests": 10,
+      "request_roles": {
+        "coder": 8,
+        "observer": 2
+      },
+      "request_statuses": {
+        "completed": 10
+      },
+      "native_roles": {
+        "coder": {
+          "endpoint_origin": "https://generativelanguage.googleapis.com",
+          "max_tokens": 32768,
+          "model": "gemini-4-argon",
+          "provider": "gemini",
+          "temperature": 0.0,
+          "timeout_seconds": 90,
+          "transport": "openai-compatible"
+        },
+        "observer": {
+          "endpoint_origin": "https://api.mistral.ai",
+          "max_tokens": 8192,
+          "model": "mistral-large-4",
+          "provider": "mistral",
+          "temperature": 0.2,
+          "timeout_seconds": 90,
+          "transport": "mistral"
+        }
+      },
+      "gates": {
+        "native_receipts_valid": true,
+        "required_paths_changed": false,
+        "pinned_run_receipt": true,
+        "native_ledger_binding": true,
+        "native_completed": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false,
+        "native_edit": false,
+        "actual_edit": false,
+        "fresh_native_checks": false,
+        "no_pending_checks": false,
+        "strict_scope": true,
+        "original_protected_files_preserved": true,
+        "both_roles_called": true,
+        "exact_role_configuration": true,
+        "role_accounting_consistent": true,
+        "bounded_requests": true,
+        "process_ok": true,
+        "independent_checks_passed": false,
+        "candidate_unchanged_by_assessor": true,
+        "no_secret_redactions": true,
+        "patch_retained": true
+      },
+      "changed_files": [],
+      "process": {
+        "exit_code": 0,
+        "timed_out": false,
+        "output_limit": false,
+        "wall_seconds": 130.24,
+        "log_redactions": 0,
+        "redacted_files": []
+      },
+      "independent_checks": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "1cf3b739bd8481e5dc374f8f2d0b41b7a4059e2680f110adfc618d4d413442f0",
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "46094abee5e5378ec3dae9a0959d297caa2b11c202bbdee04c86edc51c54fec3",
+          "test_summary": {
+            "status": "ok",
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "f08f6ecbfdd1bf8aeb7b70447e78029197d6818e517207ed43cecb8be0e19f1c",
+          "test_summary": {
+            "status": "FAILED",
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "b2465c1664a72889f6b2b74fabef9580b9f45a30968c736e4a0c437c3c04db0e",
+          "test_summary": {
+            "status": "FAILED",
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "log_sha256": "9193b2e1ee0ae6e079512712fec273527a29d0e0a68959dbb31d2cc895ceb698",
+          "test_summary": null
+        }
+      ],
+      "native_activity": {
+        "actions": 7,
+        "executed": 6,
+        "blocked": 1,
+        "visible_read_action_indices": [
+          1
+        ],
+        "filtered_reproducer_attempts": 2,
+        "filtered_reproducer_executions": 1,
+        "execs": [
+          {
+            "index": 0,
+            "command": "cargo test --locked --bin spiral-coder self_dogfood_visible_recovery_tests -- --nocapture",
+            "executed": false,
+            "succeeded": false,
+            "result_step": 1,
+            "test_summary": null,
+            "result_sha256": "200ca0e2804fdf24c624d0b668fbc971d03777d2e50dba688f48644a4969ec97"
+          },
+          {
+            "index": 2,
+            "command": "cargo test --locked --bin spiral-coder self_dogfood_visible_recovery_tests -- --nocapture",
+            "executed": true,
+            "succeeded": false,
+            "result_step": 3,
+            "test_summary": {
+              "status": "FAILED",
+              "passed": 0,
+              "failed": 1,
+              "ignored": 0
+            },
+            "result_sha256": "7268fdef8650fc84f97e743b0a2e3080d56f50a3e12680beae802f675ae1d00f"
+          }
+        ],
+        "assists": []
+      },
+      "observer_answers": [
+        {
+          "characters": 2495,
+          "text_sha256": "dab3c3530c8eb4e0883935e2a8ab74d71838ea3b4cd61854045e911f6118d839",
+          "prefix": "\"summary\": \"",
+          "suffix": "y.\"\n}",
+          "offline_prefix_only_json_parse": {
+            "added_prefix": "{",
+            "strict_runtime_contract_validated": false,
+            "forwarded": false,
+            "root_fields": [
+              "fallback",
+              "primary_blocker",
+              "quickest_check",
+              "response_contract",
+              "scores",
+              "suggestions",
+              "summary",
+              "why_this_first"
+            ],
+            "suggestions": [
+              {
+                "tool": "read_file",
+                "arguments": {
+                  "path": "src/tui/agent/self_dogfood_visible_recovery_tests.rs",
+                  "start_line": 140,
+                  "end_line": 200
+                }
+              }
+            ]
+          }
+        },
+        {
+          "characters": 2276,
+          "text_sha256": "306ba6eb5ccaa599c0613af5c5e4b1ef9602d90ae69513b849f6f09a40317dda",
+          "prefix": "summary\":\"Th",
+          "suffix": "ry.\"}",
+          "offline_prefix_only_json_parse": {
+            "added_prefix": "{\"",
+            "strict_runtime_contract_validated": false,
+            "forwarded": false,
+            "root_fields": [
+              "fallback",
+              "primary_blocker",
+              "quickest_check",
+              "response_contract",
+              "scores",
+              "suggestions",
+              "summary",
+              "why_this_first"
+            ],
+            "suggestions": [
+              {
+                "tool": "read_file",
+                "arguments": {
+                  "path": "src/tui/agent/self_dogfood_visible_recovery_tests.rs",
+                  "start_line": 140,
+                  "end_line": 200
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "observer_request_usage": [
+        {
+          "duration_ms": 29047,
+          "estimated_input_tokens": 11853,
+          "provider_usage": {
+            "completion_tokens": 2909,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2292
+            },
+            "prompt_tokens": 10416,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13325
+          },
+          "status": "completed"
+        },
+        {
+          "duration_ms": 10130,
+          "estimated_input_tokens": 12709,
+          "provider_usage": {
+            "completion_tokens": 1059,
+            "completion_tokens_details": {
+              "reasoning_tokens": 538
+            },
+            "prompt_tokens": 11186,
+            "prompt_tokens_details": {
+              "cached_tokens": 9708
+            },
+            "service_tier": "standard",
+            "total_tokens": 12245
+          },
+          "status": "completed"
+        }
+      ],
+      "candidate_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "total_requests": 42,
+  "qualified_candidates": 0,
+  "post_run_provenance_review": {
+    "native_argon_expected_total_tests": 866,
+    "native_argon_reported_total_tests": 872,
+    "native_argon_extra_filtered_tests": 6,
+    "exact_reused_binary_origin": "unconfirmed",
+    "isolated_cache_reuse_reproduced": true,
+    "diagnostic": "cache-provenance.json",
+    "applies_to": "All retained Cargo outcomes in these episodes; hashes do not establish source-to-binary correspondence.",
+    "episodes_rerun": false,
+    "assessments_rerun": false,
+    "future_driver_cleans_root_package": true,
+    "behavioral_uplift_claims_supported": false
+  }
+}
