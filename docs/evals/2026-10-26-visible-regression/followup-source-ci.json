@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "headRevision": "40a885460009f3130b953c3b743f783482f08d06",
+  "checks": [
+    {
+      "name": "checks (ubuntu-latest)",
+      "head_sha": "40a885460009f3130b953c3b743f783482f08d06",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40267955627/job/121394367338"
+    },
+    {
+      "name": "checks (macos-latest)",
+      "head_sha": "40a885460009f3130b953c3b743f783482f08d06",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40267955627/job/121394367075"
+    }
+  ],
+  "note": "Model-free CI for the reviewed implementation. The later evidence-only commit is checked separately on the PR."
+}
