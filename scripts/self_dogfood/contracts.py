@@ -117,7 +117,8 @@ def validate_visible_fixtures(spec):
     fixtures = spec["visible_fixtures"]
     if not isinstance(fixtures, list) or not 1 <= len(fixtures) <= 8:
         raise ValueError("visible_fixtures must be a list of 1..8 protected overlays")
-    forbidden = set(spec["editable"]) | {o["target"] for key in ("probes", "reference") for o in spec[key]}
+    forbidden = {relative_path(p).as_posix() for p in spec["editable"]}
+    forbidden.update(relative_path(o["target"]).as_posix() for key in ("probes", "reference") for o in spec[key])
     targets = set()
     for overlay in fixtures:
         if not isinstance(overlay, dict) or set(overlay) - {"source", "target", "mode"}:

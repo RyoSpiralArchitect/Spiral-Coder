@@ -95,6 +95,21 @@ class VisibleFixtureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "disjoint"):
             contracts.validate(task)
 
+    def test_aliases_in_every_other_target_group_cannot_overlap_visible_fixtures(self):
+        for group in ("editable", "probes", "reference"):
+            for alias in ("./src/registration.rs", "src/./registration.rs", "src//registration.rs"):
+                with self.subTest(group=group, alias=alias):
+                    task = copy.deepcopy(self.lane.spec)
+                    task["visible_fixtures"][1]["target"] = "src/registration.rs"
+                    if group == "editable":
+                        task["editable"].append(alias)
+                    else:
+                        task[group].append({"source": "probe.rs", "target": alias})
+                        if group == "reference":
+                            task["editable"].append(alias)
+                    with self.assertRaisesRegex(ValueError, "disjoint"):
+                        contracts.validate(task)
+
 
 if __name__ == "__main__":
     unittest.main()
