@@ -218,33 +218,19 @@ pub(super) async fn send_coder_input(
         app.active_observer_contract = None;
         return;
     }
-    let max_iters = if observer_contract.is_none() && remaining >= 8 && app.coder_chunk_reserve > 0
-    {
-        remaining
-            .saturating_sub(
-                app.coder_chunk_reserve.max(
-                    agent::evidence_packet::project(&start.messages, test_cmd.as_deref())
-                        .pending_exact_checks
-                        .len()
-                        + 3,
-                ),
-            )
-            .max(1)
-    } else {
-        remaining
-    };
-    let chunk_limit = app.coder_chunk_requests.filter(|_| {
-        !app.work_budget
-            .snapshot()
-            .requests
-            .iter()
-            .any(|r| r.role == "observer")
-    });
-    let max_iters = chunk_limit.map_or(max_iters, |limit| max_iters.min(limit));
-    let request_budget = chunk_limit.map_or_else(
-        || app.work_budget.clone(),
-        |_| app.work_budget.with_request_allowance(max_iters),
+    let max_iters = coder_slice::allowance(
+        remaining,
+        app.coder_chunk_reserve,
+        agent::evidence_packet::project(&start.messages, test_cmd.as_deref())
+            .pending_exact_checks
+            .len(),
+        app.coder_chunk_requests,
     );
+    let request_budget = if app.coder_chunk_reserve > 0 {
+        app.work_budget.with_observer_return(max_iters)
+    } else {
+        app.work_budget.clone()
+    };
     app.coder_completed = None;
     app.active_observer_start = app
         .coder_session
@@ -274,7 +260,9 @@ pub(super) async fn send_coder_input(
         }),
         move |tx| async move {
             let approver = crate::approvals::AutoApprover;
-            match agent::run_agentic_json(
+            // The agent future is large; keep it out of nested request/driver
+            // futures so another handoff does not exhaust the worker stack.
+            match Box::pin(agent::run_agentic_json(
                 start,
                 &cfg,
                 tool_root.as_deref(),
@@ -287,7 +275,7 @@ pub(super) async fn send_coder_input(
                 Some(realize_preset),
                 autosaver,
                 &approver,
-            )
+            ))
             .await
             {
                 Ok(end) => Some(crate::agent_session::AgentSession::new(

@@ -106,6 +106,7 @@ mod repo_scaffold;
 mod report_outcomes;
 mod report_repair;
 use automatic_test::run as run_test_cmd;
+mod observer_handoff;
 mod report_surface;
 mod requirement_proof;
 #[cfg(test)]
@@ -7655,7 +7656,20 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
     let first_action_deadline = first_action_deadline_iters(root_read_only, goal_wants_actions);
 
     let max_iters = max_iters.max(1).min(64);
+    let initial_handoff_steps = step_seq;
+    let mut observer_handoff = None;
     for iter in 0..max_iters {
+        if let Some(failure) = observer_handoff::newly_executed(
+            &messages,
+            test_cmd.as_deref(),
+            initial_handoff_steps,
+            step_seq,
+        ) {
+            emit_telemetry_event(&tx, "observer_verification_handoff", json!(&failure)).await;
+            let _ = tx.send(StreamToken::Delta("\n[agent] New verification failure; returning to Observer with the same task and remaining budget.\n".into())).await;
+            observer_handoff = Some(failure);
+            break;
+        }
         // ── Prune old tool results before sending to save context tokens ───
         prune_old_tool_results(&mut messages);
         prune_old_assistant_messages(&mut messages);
@@ -14556,7 +14570,9 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         test_cmd.as_deref(),
         last_mutation_step,
         last_verify_ok_step,
-    ) {
+    )
+    .filter(|_| observer_handoff.is_none())
+    {
         task_outcome.finalized(&final_text);
         let final_text = enrich_text_final_handoff(
             final_text.as_str(),
@@ -14632,8 +14648,9 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         &tx,
         "agent_outcome",
         json!({
-            "completed": task_outcome.completed(&messages),
+            "completed": observer_handoff.is_none() && task_outcome.completed(&messages),
             "state": format!("{state:?}").to_ascii_lowercase(),
+            "yield_reason": observer_handoff.as_ref().map(|_| "verification_failure"),
         }),
     )
     .await;

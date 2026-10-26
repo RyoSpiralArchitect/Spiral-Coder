@@ -157,6 +157,9 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             .to_string(),
         );
     } else if let Some(parsed) = parsed.as_ref() {
+        if let Some(recovery) = suggestion::framing_recovery(&raw) {
+            app.observer.push_tool(format!("(next-action) JSON envelope framing recovered: {recovery:?}; authored values and raw response retained; normal action and evidence gates apply."));
+        }
         app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);

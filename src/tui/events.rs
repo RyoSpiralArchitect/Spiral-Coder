@@ -1,5 +1,6 @@
 mod assist_receipt;
 mod coder_run;
+mod coder_slice;
 use coder_run::{
     build_coder_request_messages, send_coder_input, send_coder_message, send_coder_with_text,
 };

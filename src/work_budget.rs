@@ -67,6 +67,8 @@ pub(crate) struct WorkBudget {
     claimed: Arc<AtomicBool>,
     // Per-handle ceiling for one role's slice, never a change to durable cap.
     request_ceiling: Option<usize>,
+    // Transient role-slice policy; not new durable requests or task authority.
+    return_on_verification_failure: bool,
 }
 
 static NEXT_TASK: AtomicU64 = AtomicU64::new(0);
@@ -107,6 +109,7 @@ impl WorkBudget {
             path,
             claimed: Arc::new(AtomicBool::new(false)),
             request_ceiling: None,
+            return_on_verification_failure: false,
         }
     }
 
@@ -117,6 +120,7 @@ impl WorkBudget {
             path: Some(path),
             claimed: Arc::new(AtomicBool::new(true)),
             request_ceiling: None,
+            return_on_verification_failure: false,
         })
     }
 
@@ -189,6 +193,16 @@ impl WorkBudget {
         bounded.request_ceiling =
             Some(self.request_ceiling.map_or(ceiling, |old| old.min(ceiling)));
         bounded
+    }
+
+    pub(crate) fn with_observer_return(&self, allowance: usize) -> Self {
+        let mut bounded = self.with_request_allowance(allowance);
+        bounded.return_on_verification_failure = true;
+        bounded
+    }
+
+    pub(crate) fn can_return_to_observer(&self) -> bool {
+        self.return_on_verification_failure && self.remaining() >= 2
     }
 
     fn persist(&self, state: &mut WorkState) -> Result<()> {

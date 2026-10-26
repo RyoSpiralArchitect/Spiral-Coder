@@ -881,12 +881,31 @@ disabled Observer is false. Report `role_requests` separately counts actual
 Coder and Observer wire attempts; configuration alone is not participation.
 
 Optional `coder_chunk_requests` is recorded in the report and trace config. Its
-in-memory App field limits the first Coder chunk, while an ephemeral per-handle
+in-memory App field limits each Coder chunk, while an ephemeral per-handle
 `WorkBudget` request ceiling also counts compatibility retries. The ceiling is
 not serialized and cannot replace the durable `request_limit`. The shared
 remaining budget continues to drive completion gates; reaching a chunk ceiling
 leaves the task incomplete and permits Observer handoff. Subsequent continuation
 after an actual Observer request retains the original cap and spent ledger.
+`events/coder_slice.rs` owns the repeated allowance calculation (default ceiling
+eight when Observer is enabled). `WorkBudget.return_on_verification_failure`
+is another transient handle property, never serialized or restored as authority.
+`agent/observer_handoff.rs` projects the latest correlated failure only after the
+local tool counter advances in the current slice. Its telemetry records call ID,
+tool, explicit command when present, and whether the failure was an automatic
+test. `agent_outcome.yield_reason=verification_failure` denotes an incomplete
+handoff, not a completion, new budget or satisfied proof obligation.
+
+`tui/suggestion/framing.rs` owns the optional `opening_brace` or
+`opening_brace_and_quote` recovery classification. `observer_action::Response`
+exposes it as `format_recovery` for the shared Web evaluator; TUI records a
+diagnostic and keeps the unmodified original in `Message.raw_content`. The
+classification only describes JSON framing. Existing suggestion and evidence
+validation still decide whether advice can be forwarded; no new tool authority,
+confidence or native proof is stored.
+`TuiReplayCheck` also supports `suggestion_not_parsed` and `hint_not_queued`
+assertions so malformed-response fixtures verify refusal, rather than merely
+matching text. Existing positive checks retain their meaning.
 
 `src/runtime_storage.rs` owns an ephemeral, task-local mapping from a canonical
 workspace to a fresh external `coupled-run --out-dir`. The existing owners and

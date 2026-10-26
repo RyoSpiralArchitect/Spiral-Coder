@@ -3,6 +3,7 @@ use clap::Parser;
 use httpmock::prelude::*;
 
 mod cross_family;
+mod verification_return;
 
 #[tokio::test]
 async fn failed_first_stream_retains_incomplete_report_and_spent_request() {

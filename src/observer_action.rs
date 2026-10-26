@@ -33,6 +33,7 @@ pub(crate) struct Response {
     pub prompt: String,
     pub issue: Option<String>,
     pub envelope: Option<suggestion::ObserverSuggestionEnvelope>,
+    pub format_recovery: Option<suggestion::FramingRecovery>,
     pub hint: Option<String>,
     pub response_contract: Option<String>,
     pub repair_prompt: Option<String>,
@@ -181,6 +182,10 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         prompt,
         issue,
         envelope,
+        format_recovery: request
+            .response
+            .as_deref()
+            .and_then(suggestion::framing_recovery),
         hint,
         response_contract,
         repair_prompt,
