@@ -8,6 +8,8 @@ use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
 mod accounting;
+#[cfg(test)]
+mod completion_tests;
 pub(crate) mod provider_metadata;
 pub(crate) mod request_guard;
 pub(crate) mod tool_calls;
@@ -659,6 +661,10 @@ pub async fn stream_openai_compat_json(
         }
     }
 
+    anyhow::ensure!(
+        !last_finish_reason.is_empty() && String::from_utf8_lossy(&buf).trim().is_empty(),
+        "stream ended before a terminal frame"
+    );
     if let Some(note) = abnormal_empty_finish_note(&last_finish_reason, saw_output) {
         let _ = tx.send(StreamToken::Delta(note)).await;
     }
@@ -849,8 +855,7 @@ pub async fn stream_anthropic(
         }
     }
 
-    let _ = tx.send(StreamToken::Done).await;
-    Ok(())
+    Err(anyhow!("Anthropic stream ended before message_stop"))
 }
 
 fn take_next_sse_frame(buf: &mut Vec<u8>) -> Option<Vec<u8>> {

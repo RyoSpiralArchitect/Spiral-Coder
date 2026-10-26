@@ -525,6 +525,39 @@
           "kind": "hint_not_queued"
         }
       ]
+    },
+    {
+      "id": "blocked-terminal-diagnosis-is-advisory",
+      "prompt": "Repair the current failure and verify it.",
+      "tags": [
+        "observer",
+        "blocked",
+        "incomplete"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the current failure and verify it."
+        },
+        {
+          "role": "assistant",
+          "content": "[BLOCKED — incomplete] The failed assertion is not yet diagnosed. No completion is claimed."
+        }
+      ],
+      "observer_response": "{\"summary\": \"The failing assertion still needs a diagnostic read.\", \"suggestions\": [{\"kind\": \"clarify\", \"confidence\": 0.9, \"reason\": \"Identify the exact failed assertion before repair.\", \"suggested_args\": {}}]}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_not_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "diagnostic read"
+        }
+      ],
+      "reason_hint": "blocked_terminal_diagnosis"
     }
   ]
 }

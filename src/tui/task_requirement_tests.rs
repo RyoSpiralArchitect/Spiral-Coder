@@ -59,7 +59,7 @@ async fn check_task_requirement_handoff(claim_complete: bool) {
     if claim_complete {
         assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"].as_str().unwrap_or("").contains("[Requirement Gate]")), "{messages:?}");
     } else {
-        assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"]=="OK: done"), "an honest partial report may stop, remaining incomplete: {messages:?}");
+        assert!(messages.iter().any(|m| m["tool_call_id"]=="overclaim" && m["content"]=="OK: blocked"), "an honest partial report may stop, remaining incomplete: {messages:?}");
     }
     let view=serde_json::to_value(agent::task_obligations::project(messages,None)).unwrap();
     assert!(view["task_requirements"]["pending"].to_string().contains("test_runner.py"));

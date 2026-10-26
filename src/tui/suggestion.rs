@@ -150,6 +150,18 @@ pub(crate) fn framing_recovery(raw: &str) -> Option<FramingRecovery> {
     framing::object(raw).ok().and_then(|(_, recovery)| recovery)
 }
 
+/// Only framing and typed deserialization failures qualify for transport credit.
+/// Empty valid advice, confidence and semantic/tool/evidence conflicts do not.
+pub(crate) fn transport_issue_for_raw(raw: &str) -> Option<String> {
+    let object = match framing::object(raw) {
+        Ok((object, _)) => object,
+        Err(error) => return Some(error),
+    };
+    serde_json::from_value::<ObserverSuggestionEnvelope>(object)
+        .err()
+        .map(|e| e.to_string())
+}
+
 fn parse_envelope_checked(raw: &str) -> Result<ObserverSuggestionEnvelope, String> {
     let (object, _) = framing::object(raw)?;
     let mut env = serde_json::from_value::<ObserverSuggestionEnvelope>(object)

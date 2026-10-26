@@ -52,6 +52,7 @@ pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
                 object.remove("recovery_focus");
                 object.remove("ui_context");
                 object.remove("accepted_plan");
+                object.remove("blocked_report");
             }
             message
         })

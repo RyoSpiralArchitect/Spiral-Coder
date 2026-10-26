@@ -7,6 +7,8 @@ pub(crate) struct ObserverAssistRequest {
     source_stamp: u64,
     original_prompt: String,
     repair_used: bool,
+    request_cursor: usize,
+    terminal_diagnosis: bool,
     pub(super) pending_repair: Option<String>,
 }
 
@@ -16,8 +18,15 @@ impl ObserverAssistRequest {
             source_stamp: source_stamp(app),
             original_prompt,
             repair_used: false,
+            request_cursor: app.work_budget.snapshot().requests.len(),
+            terminal_diagnosis: false,
             pending_repair: None,
         }
+    }
+
+    pub(super) fn for_reason(mut self, reason: &str) -> Self {
+        self.terminal_diagnosis = reason == "blocked_terminal_diagnosis";
+        self
     }
 
     fn schedule_repair(&mut self, raw: &str, issue: &str) -> bool {
@@ -95,6 +104,10 @@ pub(super) async fn maybe_observer_action_repair(app: &mut App, tx: &mpsc::Sende
     else {
         return;
     };
+    if app.work_budget.remaining_for("observer") == 0 {
+        app.observer.push_tool("(next-action) repair not started: task allowance exhausted; the incomplete outcome and raw response are retained.".into());
+        return;
+    }
     if let Some(problem) = validate_pane_ready(app, PaneId::Observer) {
         app.observer.push_tool(problem);
         app.observer_assist_request = None;
@@ -141,6 +154,20 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
     app.pending_observer_hint = None;
     app.pending_observer_contract = None;
     if let Some(issue) = issue {
+        if suggestion::transport_issue_for_raw(&raw).is_some() {
+            if let Some(request) = &app.observer_assist_request {
+                if let Err(error) = app.work_budget.reject_transport(
+                    "observer",
+                    request.request_cursor,
+                    crate::work_budget::TransportRejection::ObserverEnvelope,
+                ) {
+                    app.observer
+                        .push_tool(format!("Transport accounting failed: {error}"));
+                    app.observer_assist_request = None;
+                    return;
+                }
+            }
+        }
         // Keep the failed answer intact for inspection; neither free text nor
         // quickest_check can supply missing tool identity or arguments.
         app.observer.push_tool(format!("(next-action) invalid response prevented automatic forwarding: {issue}; raw Observer output was preserved."));
@@ -163,7 +190,11 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);
-        if let Some(hint) = build_observer_suggestion_soft_hint(parsed) {
+        if let Some(hint) = build_observer_suggestion_soft_hint(parsed).filter(|_| {
+            !app.observer_assist_request
+                .as_ref()
+                .is_some_and(|r| r.terminal_diagnosis)
+        }) {
             app.pending_observer_hint = Some(hint);
             app.pending_observer_contract = build_observer_response_contract(parsed);
             app.coder.push_tool("(observer suggestion) queued an advisory next step for the next coder continuation.".to_string());
@@ -204,14 +235,18 @@ pub(super) async fn send_next_action_assist(
         .get("failure_kind")
         .and_then(|v| v.as_str())
         .unwrap_or("unclear");
-    let prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
+    let mut prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
+    if reason_hint == "blocked_terminal_diagnosis" {
+        prompt.push_str("\n[Blocked terminal diagnosis] This episode is stopping incomplete. Diagnose why the Coder is blocked using native evidence, identify the exact missing fact or next action, and preserve every pending obligation. Return a no-tool clarify suggestion with empty suggested_args. Do not claim completion, request execution, or raise confidence to obtain forwarding. This is one diagnostic round trip, not another work loop.");
+    }
     let label = format!("[NEXT-ACTION] target={target_id} kind={failure_kind}");
 
     if let Some(handle) = app.observer_task.take() {
         handle.abort();
     }
 
-    app.observer_assist_request = Some(ObserverAssistRequest::new(app, prompt.clone()));
+    app.observer_assist_request =
+        Some(ObserverAssistRequest::new(app, prompt.clone()).for_reason(reason_hint));
     start_request(app, tx, prompt, label).await;
 }
 
@@ -221,6 +256,9 @@ async fn start_request(
     prompt: String,
     label: String,
 ) {
+    if let Some(request) = app.observer_assist_request.as_mut() {
+        request.request_cursor = app.work_budget.snapshot().requests.len();
+    }
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;

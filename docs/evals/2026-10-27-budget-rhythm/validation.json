@@ -1,0 +1,26 @@
+{
+  "status": "offline_gates_passed_before_live",
+  "rust": {
+    "passed": 951,
+    "ignored": 1,
+    "server_integration_passed": 1
+  },
+  "tui_replay": {
+    "passed": 11,
+    "total": 11
+  },
+  "python_tests_passed": 76,
+  "unchanged_web_tests_passed": 80,
+  "unchanged_npm_tests_passed": 5,
+  "repo_map_cases_passed": 14,
+  "server_smoke": "passed",
+  "fork_review": {
+    "initial_findings": {
+      "P2": 3,
+      "P3": 1
+    },
+    "resolved": 4,
+    "corrective_recheck": "no additional actionable findings"
+  },
+  "live_provider_calls_before_freeze": 0
+}

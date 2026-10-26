@@ -109,10 +109,21 @@ async fn coder_stream_and_observer_send_compatible_payloads_on_first_request() {
 #[tokio::test]
 async fn native_claude_stream_and_observer_omit_unsupported_sampling() {
     let server = MockServer::start();
-    let wire = server.mock(|when, then| {
+    let stream = server.mock(|when, then| {
         when.method(POST)
             .path("/messages")
-            .matches(compatible_payload);
+            .matches(compatible_payload)
+            .body_contains("\"stream\":true");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body("event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n");
+    });
+    let wire = server.mock(|when, then| {
+        when.method(POST).path("/messages").matches(|request| {
+            let body: serde_json::Value =
+                serde_json::from_slice(request.body.as_deref().unwrap_or_default()).unwrap();
+            compatible_payload(request) && body["stream"] != true
+        });
         then.status(200)
             .json_body(json!({"content":[{"type":"text","text":"ok"}]}));
     });
@@ -141,7 +152,8 @@ async fn native_claude_stream_and_observer_omit_unsupported_sampling() {
         })
         .await
         .unwrap();
-    wire.assert_hits(2);
+    wire.assert_hits(1);
+    stream.assert_hits(1);
 }
 
 #[tokio::test]

@@ -2504,7 +2504,8 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
-    app.observer_assist_request = Some(ObserverAssistRequest::new(app, observer_prompt.clone()));
+    app.observer_assist_request =
+        Some(ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint));
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
@@ -2854,6 +2855,9 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     let (idx, msg) = app.coder.messages.iter().enumerate().rev().find(|(_, m)| {
         matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
     })?;
+    if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::Blocked) {
+        return Some((idx, "blocked_terminal_diagnosis".into()));
+    }
     if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::VerificationFailure) {
         return Some((idx, "native_verification_failure".into()));
     }

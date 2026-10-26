@@ -1,4 +1,4 @@
-//! One durable request budget for a Coder/Observer task, including HTTP retries.
+//! Durable task and transport accounting. Every wire attempt has one receipt.
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -6,6 +6,9 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
+
+mod allocation;
+pub(crate) use allocation::{BudgetPolicy, RequestCharge, TransportRejection};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct RequestReceipt {
@@ -15,6 +18,10 @@ pub(crate) struct RequestReceipt {
     pub provider_usage: Option<Value>,
     pub duration_ms: Option<u128>,
     pub status: String,
+    #[serde(default)]
+    pub charge: RequestCharge,
+    #[serde(default)]
+    pub transport_rejection: Option<TransportRejection>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -54,6 +61,8 @@ pub(crate) struct WorkState {
     pub tool_root: Option<PathBuf>,
     pub started_at_ms: u128,
     pub request_limit: usize,
+    #[serde(default)]
+    pub policy: BudgetPolicy,
     pub requests: Vec<RequestReceipt>,
     pub assists: Vec<AssistReceipt>,
     #[serde(default)]
@@ -102,6 +111,7 @@ impl WorkBudget {
                 tool_root: None,
                 started_at_ms: now_ms(),
                 request_limit,
+                policy: BudgetPolicy::default(),
                 requests: Vec::new(),
                 assists: Vec::new(),
                 protected_artifacts: Default::default(),
@@ -184,12 +194,12 @@ impl WorkBudget {
     }
     pub fn remaining(&self) -> usize {
         let s = self.state.lock().unwrap();
-        s.request_limit.saturating_sub(s.requests.len())
+        s.request_limit.saturating_sub(s.task_requests())
     }
 
     pub(crate) fn with_request_allowance(&self, allowance: usize) -> Self {
         let mut bounded = self.clone();
-        let ceiling = self.snapshot().requests.len().saturating_add(allowance);
+        let ceiling = self.snapshot().task_requests().saturating_add(allowance);
         bounded.request_ceiling =
             Some(self.request_ceiling.map_or(ceiling, |old| old.min(ceiling)));
         bounded
@@ -202,7 +212,13 @@ impl WorkBudget {
     }
 
     pub(crate) fn can_return_to_observer(&self) -> bool {
-        self.return_on_verification_failure && self.remaining() >= 2
+        self.return_on_verification_failure
+            && self.remaining_for("observer")
+                >= if self.snapshot().policy.observer_reserved_requests > 0 {
+                    1
+                } else {
+                    2
+                }
     }
 
     fn persist(&self, state: &mut WorkState) -> Result<()> {
@@ -236,12 +252,18 @@ impl WorkBudget {
 
     pub fn begin(&self, role: &str, payload: &Value) -> Result<RequestGuard> {
         let mut state = self.state.lock().unwrap();
-        if state.requests.len() >= state.request_limit {
+        if state.task_requests() >= state.request_limit
+            || state.requests.len()
+                >= state
+                    .request_limit
+                    .saturating_add(state.policy.transport_repair_limit)
+        {
             bail!("Shared task request budget exhausted; work remains incomplete. Send a new scoped task to allocate another budget.");
         }
-        if self
-            .request_ceiling
-            .is_some_and(|ceiling| state.requests.len() >= ceiling)
+        if (role == "coder" && state.coder_remaining() == 0)
+            || self
+                .request_ceiling
+                .is_some_and(|ceiling| state.task_requests() >= ceiling)
         {
             return Err(ChunkExhausted.into());
         }
@@ -253,6 +275,8 @@ impl WorkBudget {
             provider_usage: None,
             duration_ms: None,
             status: "in_flight_or_interrupted".into(),
+            charge: RequestCharge::Task,
+            transport_rejection: None,
         });
         // Reserve durably before any network I/O, including compatibility retries.
         self.persist(&mut state)?;
