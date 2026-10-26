@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "question": "Does tracking each unresolved failed check separately let both roles diagnose the newest failure without repeatedly reading an older failure location or forgetting its verification obligation?",
+  "task_baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+  "task_variant": "recovery-handoff-visible",
+  "task_inputs": "Unchanged visible test, registration, prompt, six-case independent probe, reference and protected/editable scope. Only the provider pair differs from the previous observer-return experiment.",
+  "driver_source": "Unchanged PR38 package-cache-reset driver, frozen per episode.",
+  "baseline_executor_source": "5be9d51f54520d5e8ff57a018247d734a2703859",
+  "baseline_executor_sha256": "b74db0f8649898fffb76f80686f56ace4d5e62c74c027bd5e51d12991e811b9c",
+  "waves": [
+    "baseline",
+    "candidate"
+  ],
+  "pair_order": [
+    "luna-large",
+    "large-luna"
+  ],
+  "candidate_executor_pin": "Reviewed commit and binary digest frozen in fresh per-episode predeclarations before candidate calls.",
+  "specs": [
+    {
+      "path": "benchmarks/self-dogfood-v1/recovery-handoff-visible/luna-large.json",
+      "sha256": "33e45b90638ac67f3dacf68d0e452163f6d49bfd67d36aa487ede32af6088158",
+      "roles": {
+        "coder": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        },
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      }
+    },
+    {
+      "path": "benchmarks/self-dogfood-v1/recovery-handoff-visible/large-luna.json",
+      "sha256": "b790bbb31f7dcbadfd05b2e7fd0a78cabbb0a568cf131cebc2799b11d394ebe8",
+      "roles": {
+        "coder": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        },
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      }
+    }
+  ],
+  "max_episodes": 4,
+  "max_requests_per_episode": 32,
+  "max_requests_total": 128,
+  "wall_seconds_per_episode": 1200,
+  "provider_timeout_seconds": 90,
+  "coder_chunk_requests": 8,
+  "coder_max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "retry_policy": "One live attempt per pair per wave; no in-place episode or assessment retry. Native bounded provider and Observer contract-repair attempts consume the same shared cap. Retain interruptions and do not steer active runs.",
+  "report_axes": [
+    "native completion and independent qualification",
+    "role request order and verification handoffs",
+    "latest failure owner and required diagnostic path",
+    "repeated reads before and after different check failures",
+    "actual edits, exact checks and final report",
+    "visible, independent and original test results",
+    "raw manifests, frozen inputs and package cache resets"
+  ],
+  "gemini_calls_authorized": false,
+  "promotion_authorized": false,
+  "causal_success_rate_or_model_ranking_claim": false,
+  "comparison_boundary": "Within this new Mistral/OpenAI matrix only; prior Gemini episodes remain separate observations."
+}
