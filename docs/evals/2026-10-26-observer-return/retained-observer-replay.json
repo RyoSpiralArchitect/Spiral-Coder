@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "defaults": {
+    "tool_root": ".",
+    "lang": "en"
+  },
+  "cases": [
+    {
+      "id": "retained-large4-missing-opener-1",
+      "prompt": "Repair the recovery handoff.",
+      "tags": [
+        "observer",
+        "retained-live-output",
+        "offline-replay"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the recovery handoff."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] New verification failure requires diagnosis."
+        }
+      ],
+      "observer_response": "  \"summary\": \"The last edit to src/tui/agent/recovery_progress.rs was a doc-comment-only change; the protected regression completed_source_diagnosis_survives_handoff_without_clearing_verification still panics at src/tui/agent/self_dogfood_visible_recovery_tests.rs:170. The actual behavioral repair for the handoff is incomplete. Next: read the exact failing assertion and the restore/handoff source to target a real fix.\",\n  \"primary_blocker\": \"The protected behavioral regression still fails after a doc-only edit; the source repair for completed-diagnosis-survives-handoff is not yet implemented.\",\n  \"quickest_check\": \"Read src/tui/agent/self_dogfood_visible_recovery_tests.rs around line 170 to see the exact assertion, then read src/tui/agent/recovery.rs and src/tui/agent/recovery_progress.rs to locate where restore_from_session/restore_pending_edits drops the completed diagnosis.\",\n  \"suggestions\": [\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The auto-test after the last edit shows the protected regression panicked at line 170; reading the exact assertion is the missing fact needed to make a targeted repair instead of another blind edit.\",\n      \"confidence\": 0.95,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/self_dogfood_visible_recovery_tests.rs\",\n        \"start_line\": 130,\n        \"end_line\": 200\n      },\n      \"based_on\": [\"execution_evidence\", \"failure_kind\", \"task_obligations\"]\n    },\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The defect is in the session-restore/handoff path (restore_from_session restores Diagnose from earlier FailureMemory; restore_pending_edits leaves it there). Reading recovery.rs reveals where the completed diagnosis is lost.\",\n      \"confidence\": 0.85,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/recovery.rs\"\n      },\n      \"based_on\": [\"intent_anchor\", \"task_obligations\", \"execution_evidence\"]\n    },\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The last successful edit touched recovery_progress.rs; reading its current content confirms what the doc-comment change did and what logic still needs repair.\",\n      \"confidence\": 0.8,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/recovery_progress.rs\"\n      },\n      \"based_on\": [\"execution_evidence\", \"recent_tool_results\"]\n    }\n  ],\n  \"scores\": {\n    \"correctness\": 0.25,\n    \"security\": 0.9,\n    \"efficiency\": 0.75,\n    \"readability\": 0.7\n  },\n  \"response_contract\": {\n    \"focus_axes\": [\"correctness\"],\n    \"note\": \"The next turn must either follow the suggested reads to diagnose the failing assertion, or explicitly override with a concrete alternative (e.g., run the specific failing test with --nocapture for the full panic message). Do not make another blind edit without first seeing the exact assertion at line 170.\",\n    \"required\": true\n  },\n  \"why_this_first\": \"The last edit was doc-only and the protected regression still fails; the exact assertion at line 170 is the concrete missing fact. Reading it before any further edit prevents another ineffective patch.\",\n  \"fallback\": \"If the test read does not clarify the gap, run: cargo test --locked --bin spiral-coder self_dogfood_visible_recovery_tests -- --nocapture to capture the full panic message and assertion diff.\"\n}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=130"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=200"
+        }
+      ]
+    },
+    {
+      "id": "retained-large4-missing-opener-2",
+      "prompt": "Repair the recovery handoff.",
+      "tags": [
+        "observer",
+        "retained-live-output",
+        "offline-replay"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the recovery handoff."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] New verification failure requires diagnosis."
+        }
+      ],
+      "observer_response": " \"summary\": \"The last edit to src/tui/agent/recovery_progress.rs was a doc-comment-only change; the protected regression completed_source_diagnosis_survives_handoff_without_clearing_verification still panics at src/tui/agent/self_dogfood_visible_recovery_tests.rs:170. The actual behavioral repair for the handoff is incomplete. Next: read the exact failing assertion and the restore/handoff source to target a real fix.\",\n  \"primary_blocker\": \"The protected behavioral regression still fails after a doc-only edit; the source repair for completed-diagnosis-survives-handoff is not yet implemented.\",\n  \"quickest_check\": \"Read src/tui/agent/self_dogfood_visible_recovery_tests.rs around line 170 to see the exact assertion, then read src/tui/agent/recovery.rs and src/tui/agent/recovery_progress.rs to locate where restore_from_session/restore_pending_edits drops the completed diagnosis.\",\n  \"suggestions\": [\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The auto-test after the last edit shows the protected regression panicked at line 170; reading the exact assertion is the missing fact needed to make a targeted repair instead of another blind edit.\",\n      \"confidence\": 0.95,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/self_dogfood_visible_recovery_tests.rs\",\n        \"start_line\": 130,\n        \"end_line\": 200\n      },\n      \"based_on\": [\"execution_evidence\", \"failure_kind\", \"task_obligations\"]\n    },\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The defect is in the session-restore/handoff path (restore_from_session restores Diagnose from earlier FailureMemory; restore_pending_edits leaves it there). Reading recovery.rs reveals where the completed diagnosis is lost.\",\n      \"confidence\": 0.85,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/recovery.rs\"\n      },\n      \"based_on\": [\"intent_anchor\", \"task_obligations\", \"execution_evidence\"]\n    },\n    {\n      \"kind\": \"read\",\n      \"reason\": \"The last successful edit touched recovery_progress.rs; reading its current content confirms what the doc-comment change did and what logic still needs repair.\",\n      \"confidence\": 0.8,\n      \"suggested_tool\": \"read_file\",\n      \"suggested_args\": {\n        \"path\": \"src/tui/agent/recovery_progress.rs\"\n      },\n      \"based_on\": [\"execution_evidence\", \"recent_tool_results\"]\n    }\n  ],\n  \"scores\": {\n    \"correctness\": 0.25,\n    \"security\": 0.9,\n    \"efficiency\": 0.75,\n    \"readability\": 0.7\n  },\n  \"response_contract\": {\n    \"focus_axes\": [\"correctness\"],\n    \"note\": \"The next turn must either follow the suggested reads to diagnose the failing assertion, or explicitly override with a concrete alternative (e.g., run the specific failing test with --nocapture for the full panic message). Do not make another blind edit without first seeing the exact assertion at line 170.\",\n    \"required\": true\n  },\n  \"why_this_first\": \"The last edit was doc-only and the protected regression still fails; the exact assertion at line 170 is the concrete missing fact. Reading it before any further edit prevents another ineffective patch.\",\n  \"fallback\": \"If the test read does not clarify the gap, run: cargo test --locked --bin spiral-coder self_dogfood_visible_recovery_tests -- --nocapture to capture the full panic message and assertion diff.\"\n}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=130"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=200"
+        }
+      ]
+    }
+  ]
+}

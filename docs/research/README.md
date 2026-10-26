@@ -21,6 +21,15 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [Observer-return readout](../evals/2026-10-26-observer-return/README.md)
+compares a cache-corrected baseline with repeated Coder slices, fresh-failure
+handoffs and narrow JSON opener recovery: four attempts, 77 requests. Luna's
+new trajectory records three failure handoffs and passes the visible test, but
+its patch regresses later-failure controls and does not qualify. The new Argon
+episode stops at a provider HTTP 402 before Observer; two retained malformed
+Large 4 responses recover in offline replay. Freshness across multiple failed
+checks and overbroad candidate state transitions remain open questions.
+
 The [visible-regression readout](../evals/2026-10-26-visible-regression/README.md)
 records two episodes and 42 requests with a protected, executable failing test
 and the original six independent controls. Neither pair repaired the defect;
