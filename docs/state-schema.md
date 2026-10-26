@@ -904,6 +904,10 @@ change clears it. The Observer evidence packet includes the optional reason.
 verification exec's reflection obligation and exact `ActionIdentity` (including
 cwd) from native history on continuation. It creates no durable duplicate state
 or new reflection obligation for a successful edit's failed automatic test.
+Restoration skips native governor/user refusals because they execute no action;
+the fresh-failure yield detector does not skip those results. Thus a blocked
+retry preserves reflection on another continuation without repeatedly yielding
+the old failure.
 
 `tui/suggestion/framing.rs` owns the optional `opening_brace` or
 `opening_brace_and_quote` recovery classification. `observer_action::Response`

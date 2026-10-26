@@ -78,7 +78,17 @@ pub(super) fn pending_exec_reflection(
     messages: &[Value],
     configured: Option<&str>,
 ) -> Option<(String, Option<ActionIdentity>)> {
-    let failure = latest(messages, configured)?;
+    // Refusals execute no action and cannot discharge the original obligation.
+    // Keep the early-yield detector strict: skipping them there would repeatedly
+    // yield the same historical failure after a newly blocked action.
+    let messages = crate::task_origin::current_task_messages(messages);
+    let index = messages.iter().rposition(|m| {
+        m["role"] == "tool"
+            && m["content"]
+                .as_str()
+                .is_none_or(crate::execution_evidence::exec_may_have_run)
+    })?;
+    let failure = latest(&messages[..=index], configured)?;
     if failure.automatic_test {
         return None;
     }
@@ -127,6 +137,20 @@ mod tests {
                 cwd: Some("crate1".into())
             })
         );
+        for content in [
+            "GOVERNOR BLOCKED\nReflection/action mismatch blocked.",
+            "REJECTED BY USER",
+        ] {
+            messages.extend([
+                json!({"role":"assistant","tool_calls":[{"id":"blocked","function":{"name":"exec","arguments":args.to_string()}}]}),
+                json!({"role":"tool","tool_call_id":"blocked","content":content}),
+            ]);
+            assert!(pending_exec_reflection(&messages, None).is_some());
+            assert!(
+                latest(&messages, None).is_none(),
+                "old failure must not cause another early yield"
+            );
+        }
         messages.extend([
             json!({"role":"assistant","tool_calls":[{"id":"read","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\"}"}}]}),
             json!({"role":"tool","tool_call_id":"read","content":"[src/lib.rs]\nsource"}),
@@ -148,7 +172,7 @@ mod tests {
         use super::super::*;
         use clap::Parser;
         use httpmock::prelude::*;
-        for valid in [false, true] {
+        for (blocked_first, valid) in [(false, false), (false, true), (true, false), (true, true)] {
             let server = MockServer::start();
             let reflection = format!("<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: the test would pass\nstrategy_change: {}\nnext_minimal_action: read fixture.txt\n</reflect>", if valid {"adjust"} else {"keep"});
             let content = format!("{reflection}\n<think>\ngoal: fix fixture.txt\nstep: 1\ntool: read_file\nrisk: none\ndoubt: cause is unknown\nnext: read fixture.txt\nverify: cargo test -q\n</think>");
@@ -180,6 +204,56 @@ mod tests {
             messages[0]["content"] =
                 json!("Fix fixture.txt and verify it.\nRun exactly: cargo test -q");
             messages[1]["accepted_plan"] = json!({"goal":"Fix fixture.txt","steps":["Read fixture.txt","Repair fixture.txt","Run cargo test -q"],"acceptance_criteria":["cargo test -q passes"],"risks":"preserve coverage","assumptions":"fixture exists"});
+            if blocked_first {
+                let retry_server = MockServer::start();
+                let retry_content = "<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: the test would pass\nstrategy_change: adjust\nnext_minimal_action: inspect fixture.txt\n</reflect>\n<think>\ngoal: fix fixture.txt\nstep: 3\ntool: exec\nrisk: none\ndoubt: test failed\nnext: run cargo test -q\nverify: cargo test -q\n</think>";
+                let retry = retry_server.mock(|when, then| {
+                    when.method(POST).path("/chat/completions");
+                    then.status(200).header("content-type", "text/event-stream")
+                        .body(format!("data: {}\n\ndata: [DONE]\n\n", json!({"choices":[{"delta":{"content":retry_content,"tool_calls":[{"index":0,"id":"blocked-retry","function":{"name":"exec","arguments":"{\"command\":\"cargo test -q\"}"}}]},"finish_reason":"tool_calls"}]})));
+                });
+                let mut retry_cfg = cfg.clone();
+                retry_cfg.base_url = retry_server.base_url();
+                let (tx, _rx) = mpsc::channel(512);
+                let retry_start = AgenticStartState {
+                    messages,
+                    checkpoint: None,
+                    cur_cwd: None,
+                    observation_cache: None,
+                    session_bridge: None,
+                    create_checkpoint: false,
+                };
+                let retried = Box::pin(run_agentic_json(
+                    retry_start,
+                    &retry_cfg,
+                    root.path().to_str(),
+                    1,
+                    tx,
+                    None,
+                    None,
+                    None,
+                    true,
+                    Some(RealizePreset::Off),
+                    None,
+                    &crate::approvals::AutoApprover,
+                ))
+                .await
+                .unwrap();
+                retry.assert_hits(1);
+                assert!(
+                    retried.messages.iter().any(|m| m["role"] == "tool"
+                        && m["tool_call_id"] == "blocked-retry"
+                        && m["content"]
+                            .as_str()
+                            .is_some_and(|s| s.starts_with("GOVERNOR BLOCKED")
+                                && s.contains("Reflection/action mismatch blocked"))),
+                    "{:?}",
+                    retried.messages
+                );
+                // Serialize the native transcript as a real second continuation.
+                messages = serde_json::from_str(&serde_json::to_string(&retried.messages).unwrap())
+                    .unwrap();
+            }
             let start = AgenticStartState {
                 messages,
                 checkpoint: None,

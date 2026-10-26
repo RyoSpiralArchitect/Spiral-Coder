@@ -224,6 +224,9 @@ exact operation identity from the latest failed native verification exec; invali
 reflection cannot bypass the pre-tool gate by crossing a role boundary. A later
 diagnostic result clears this immediate-failure restoration, and successful edits
 with failed automatic tests keep their existing diagnosis/impact requirements.
+Nonexecuted governor/user refusals do not discharge the original reflection
+obligation, including an identical retry rejected for contradicting `adjust`.
+They also cannot re-trigger early yield for the same historical failure.
 
 `agent/observer_handoff.rs` recognizes a new, correlated native verification
 failure before the next Coder provider request. Explicit failed checks and failed
