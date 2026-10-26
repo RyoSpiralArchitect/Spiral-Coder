@@ -1120,7 +1120,10 @@ cannot become evidence for a later completed acceptance item.
 The coupled driver requests one terminal Observer diagnosis (plus the existing
 single schema-repair attempt if needed and budgeted), then stops. No automatic
 Coder continuation follows that report. A human may explicitly resume the same
-native session with its remaining ledger and obligations. `report.termination`
+native session with its remaining ledger and obligations. Both the interactive
+TUI and coupled driver can start that terminal diagnosis with one remaining task
+request; ordinary automatic TUI assistance still needs two for Observer and
+Coder. No new request starts with an exhausted allowance. `report.termination`
 distinguishes `completed`, `blocked`, `budget_exhausted`, `observer_unavailable`
 and `interrupted`; provider errors from either pane reach `report.error` and a
 nonzero driver exit. A body interrupted after HTTP 200 is recorded as

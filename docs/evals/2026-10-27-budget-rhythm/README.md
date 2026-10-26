@@ -122,6 +122,16 @@ passes. This guard is **not in the frozen live executable**, so no live outcome
 is attributed to it. [validation.json](validation.json) keeps these evidence
 classes separate.
 
+A subsequent GitHub P2 identified the interactive TUI's ordinary two-request
+assistance guard also suppressing terminal blocked diagnosis with one funded
+slot. The follow-up uses one slot only for terminal diagnosis and preserves the
+two-slot rule for ordinary assistance. A failing-before-fix mock TUI test now
+proves the last reserved Observer slot is used without Coder continuation or
+lost obligations; negative cases cover exhaustion and already completed work.
+The updated source passes 954 Rust tests plus server integration (one existing
+ignored) and all 11 TUI replays. This TUI follow-up is also outside the frozen
+live executor and does not alter the four assessments.
+
 The next useful experiments should isolate byte-level no-op mutation reporting,
 exact-command adherence, and constructing a complete repair after the correct
 later-failure test is read. Provider interruption needs its own predeclared

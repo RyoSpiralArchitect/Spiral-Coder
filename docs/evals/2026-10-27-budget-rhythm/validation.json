@@ -44,5 +44,24 @@
     "results_sha256": "8b96dee5e94e9f309a5a4e44372c666a1ec6d5ed17d19790eb0408f05f658c12",
     "patches_adopted": 0,
     "retries_or_replacements": 0
+  },
+  "post_freeze_tui_terminal_request_guard": {
+    "parent_commit": "71923253d4549ec05e6e53a9d017bfa52dd8195f",
+    "review_comment": "https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/40#discussion_r4383644588",
+    "included_in_frozen_live_executor": false,
+    "change": "Allow terminal blocked diagnosis with one funded TUI request; retain two-request ordinary assistance and exhausted/completed guards.",
+    "regression_failed_before_fix": true,
+    "red_regression_log_sha256": "ee7517e9cae97e6e0410e724744aa5374f0946d22415484777f5ad886746c53f",
+    "rust_passed": 954,
+    "rust_ignored": 1,
+    "server_integration_passed": 1,
+    "tui_replay_passed": 11,
+    "tui_replay_total": 11,
+    "negative_cases": [
+      "no task allowance",
+      "ordinary assist with one slot",
+      "already completed task"
+    ],
+    "provider_calls": 0
   }
 }

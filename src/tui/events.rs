@@ -2897,6 +2897,7 @@ mod tests {
     include!("dogfood_boundary_tests.rs");
     include!("task_requirement_tests.rs");
     include!("verification_yield_tests.rs");
+    include!("terminal_diagnosis_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3974,7 +3975,13 @@ async fn dispatch_selected_task(
 }
 
 async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
-    if app.work_budget.remaining() < 2 || app.coder_completed == Some(true) {
+    let required_requests =
+        if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::Blocked) {
+            1 // Terminal diagnosis does not resume Coder.
+        } else {
+            2
+        };
+    if app.work_budget.remaining() < required_requests || app.coder_completed == Some(true) {
         return;
     }
     if app.observer.streaming || app.coder.streaming {
