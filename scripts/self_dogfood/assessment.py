@@ -144,6 +144,7 @@ def assess(args):
     target = out / "assessment-001.json"
     result = {"version": 1, "assessed_at": now(), "predeclaration_sha256": args.declaration_sha256, "run_receipt_sha256": args.run_sha256,
               "baseline_commit": declaration["baseline_commit"], "runtime_commit": declaration["runtime_commit"],
+              "visible_fixture_paths": declaration.get("visible_fixture_paths", []),
               "qualified_candidate": all(gates.values()), "promotion_authorized": False, "gates": gates,
               "changed_files": changed, "out_of_scope_files": forbidden, "native_checks": fresh,
               "requests": len(requests) if isinstance(requests, list) else None, "request_roles": roles,

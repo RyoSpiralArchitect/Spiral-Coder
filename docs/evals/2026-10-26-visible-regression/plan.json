@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "task_variant": "recovery-handoff-visible",
+  "question": "Can a cross-family Coder-Observer pair use a visible protected reproducer to repair the recovery handoff while retaining newer failure obligations?",
+  "baseline_git_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+  "prepared_baseline": "Original Git tree plus declared visible test and registration overlays; not a runtime-only comparison with prior episodes",
+  "executor_source_commit": "5b9315dbfb4fbfc134b5a98ae59e658837f94d6d",
+  "executor_sha256": "5279c0f6b8719863bec83f38d47b192574c4ddb52c34c6ff4080eaacff69165c",
+  "independent_probe_sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+  "visible_test_count": 1,
+  "visible_baseline_failures": 1,
+  "independent_test_count": 6,
+  "independent_baseline_failures": 1,
+  "visible_case_relationship": "Derived from the positive independent probe case; not an additional independent observation",
+  "matrix": [
+    {
+      "spec": "benchmarks/self-dogfood-v1/recovery-handoff-visible/luna-argon.json",
+      "coder": "gpt-5.6-luna",
+      "observer": "gemini-4-argon"
+    },
+    {
+      "spec": "benchmarks/self-dogfood-v1/recovery-handoff-visible/argon-large.json",
+      "coder": "gemini-4-argon",
+      "observer": "mistral-large-4"
+    }
+  ],
+  "episodes_per_pair": 1,
+  "max_requests_per_episode": 32,
+  "coder_chunk_requests": 8,
+  "wall_seconds_per_episode": 1200,
+  "provider_timeout_seconds": 90,
+  "coder_max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "retry_policy": "No automatic retries; retain failures and any spent requests",
+  "report_axes": [
+    "native completion",
+    "actual changed paths",
+    "visible test execution and outcome",
+    "independent checks",
+    "strict scope",
+    "role participation and request accounting",
+    "all qualification gates"
+  ],
+  "qualification": "All existing gates plus the visible one-case and independent six-case checks; both roles must make native requests",
+  "promotion_authorized": false,
+  "causal_success_rate_or_model_ranking_claim": false
+}
