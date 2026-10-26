@@ -22,5 +22,15 @@
     "resolved": 4,
     "corrective_recheck": "no additional actionable findings"
   },
-  "live_provider_calls_before_freeze": 0
+  "live_provider_calls_before_freeze": 0,
+  "post_freeze_terminal_evidence_guard": {
+    "live_executor_source_commit": "7d2f558644a9e32635ddce023ab8cd99353116c8",
+    "included_in_frozen_live_executor": false,
+    "change": "Exclude all native done calls, including OK: blocked and historical OK: done, from citable acceptance evidence after resume.",
+    "regression_failed_before_fix": true,
+    "rust_passed": 952,
+    "rust_ignored": 1,
+    "server_integration_passed": 1,
+    "focused_fork_recheck": "no actionable findings"
+  }
 }

@@ -62,6 +62,11 @@ pub(super) fn current_commands(
     let evidence = evidence_packet::project(messages, test_cmd);
     let mut commands = Vec::new();
     for action in evidence.current_actions() {
+        // Terminal narration is never independent proof of an acceptance item,
+        // including an honest blocked report retained across continuation.
+        if action.tool == "done" {
+            continue;
+        }
         let result = action.result.as_deref().unwrap_or("");
         let command = if action.tool == "exec" && action.succeeded == Some(true) {
             action.arguments["command"].as_str().map(str::to_owned)

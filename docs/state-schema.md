@@ -1113,6 +1113,9 @@ It cannot clear pending checks, recovery state or task requirements. The correla
 tool result is **`OK: blocked`**, with local `blocked_report` metadata; it is never
 `OK: done`. `agent_outcome.completed` stays false and its typed yield reason is
 `blocked`. Neither successful-finalizer authority nor qualification is granted.
+`acceptance_report::current_commands` excludes every native `done` call, including
+historical `OK: done` and `OK: blocked` results after resume. Terminal narration
+cannot become evidence for a later completed acceptance item.
 
 The coupled driver requests one terminal Observer diagnosis (plus the existing
 single schema-repair attempt if needed and budgeted), then stops. No automatic

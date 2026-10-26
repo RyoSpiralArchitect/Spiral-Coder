@@ -73,6 +73,25 @@ impl BlockedReport {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn terminal_reports_cannot_be_cited_as_evidence_after_resume() {
+        for result in ["OK: blocked", "OK: done"] {
+            let messages = vec![
+                crate::task_origin::user_message(
+                    "Repair the parser",
+                    crate::task_origin::MessageOrigin::User,
+                ),
+                json!({"role":"assistant", "tool_calls":[{"id":"terminal", "function":{"name":"done", "arguments":"{\"summary\":\"unverified\",\"remaining_acceptance\":[\"acceptance 1\"]}"}}]}),
+                json!({"role":"tool","tool_call_id":"terminal","content":result}),
+            ];
+            assert!(
+                acceptance_report::current_commands(&messages, None).is_empty(),
+                "terminal narration is not a verification receipt"
+            );
+        }
+    }
+
     #[test]
     fn truthful_incomplete_report_preserves_unmet_checks_and_cannot_claim_unproved_work() {
         let plan = PlanBlock {
