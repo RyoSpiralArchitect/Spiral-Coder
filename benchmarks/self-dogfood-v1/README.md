@@ -5,6 +5,11 @@ protected reproducer to the candidate while retaining the same six independent
 checks. It has a different prepared baseline and prompt; report it separately
 from the original task below.
 
+The [budget-rhythm variant](recovery-handoff-rhythm/README.md) keeps those tests
+and adds an explicit reproducer, failure-boundary contract, and final artifact
+checklist. Its frozen comparison separately allocates Observer and transport
+repair capacity, with development milestones that do not change qualification.
+
 This first real-source task starts from Spiral-Coder commit
 `9982a68a6978058c75a9a700e7407df5a49f010c`. A newer, frozen execution
 runtime uses different Coder and Observer providers to propose a repair to that

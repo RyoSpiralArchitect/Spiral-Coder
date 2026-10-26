@@ -21,6 +21,14 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [budget-rhythm readout](../evals/2026-10-27-budget-rhythm/README.md) implements
+a bounded transport-rejection pool, protected Observer capacity, truthful blocked
+reports and development milestones under a new explicit prompt. Four fixed
+Luna/Large 4 episodes spend 77 requests; none qualifies. The new cadence runs,
+but both treatment episodes stop on Mistral body interruptions. One candidate
+has only a no-op edit receipt; the other regresses a later-failure control and
+then fails to compile. No repair-performance improvement is established.
+
 The [failure-routing readout](../evals/2026-10-26-failure-routing/README.md)
 uses a Gemini-free Luna/large-Mistral matrix in both directions, with separate
 baseline and candidate attempts: 101 requests, no independently qualified repair.
