@@ -102,7 +102,7 @@ Version 1 JSON contains these fields:
 | `native_checks` | Exact shell command strings that must succeed in native execution after the last mutation. |
 | `roles` | `coder` and `observer`, each with exact `provider`, `model`, optional standard `key_env`. Providers must differ. |
 | `max_requests` | Shared durable cap, including retries and both roles; 6–64. |
-| `coder_chunk_requests` | Initial Coder wire slice, including compatibility retries; 4 through `max_requests - 2`. It reserves capacity but does not guarantee Observer participation. |
+| `coder_chunk_requests` | Maximum Coder wire slice, including compatibility retries; 4 through `max_requests - 2`. Current executors apply it to continuations too. Frozen older executors may limit only the initial slice. It reserves capacity but does not guarantee Observer participation. |
 | `wall_seconds` | Live process-tree wall cap, at most 3,600 seconds. |
 | `evaluation_wall_seconds` | Combined check cap for each baseline, reference or candidate assessment, at most 3,600 seconds. |
 | `timeout_seconds`, `max_tokens`, `temperature` | Coder request configuration. Observer next-action configuration retains the timeout and uses temperature 0.2. |

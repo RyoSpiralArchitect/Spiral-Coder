@@ -37,6 +37,13 @@ Use either `luna-argon.json` or `argon-large.json` with the normal
 90-second provider timeout, Coder output cap of 32,768 and Observer cap of 8,192.
 Both roles must make a request; no retry or promotion is automatic.
 
+The `luna-large.json` and `large-luna.json` specs provide a Gemini-free matrix:
+Luna 5.6 Coder with Mistral Large 4 Observer, and the reverse pairing. They retain
+the exact same task inputs, scope, oracle and limits. The
+[failure-routing comparison](../../../docs/evals/2026-10-26-failure-routing/README.md)
+uses these pairs with a separate predeclared baseline/candidate comparison;
+provider changes are not treated as a runtime improvement over the Gemini runs.
+
 Preparation verifies build, old tests, the visible one-case failure, the
 independent six-case failure, and TUI replay on the baseline; every check must
 pass on the reference. The declaration freezes both added paths and their bytes.

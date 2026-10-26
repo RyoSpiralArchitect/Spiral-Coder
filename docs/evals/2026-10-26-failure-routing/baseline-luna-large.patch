@@ -1,0 +1,17 @@
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..5dd7e11 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -49,6 +49,12 @@ impl RecoveryGovernor {
+                 RecoveryStage::Diagnose
+             });
+         }
++        if self.stage == Some(RecoveryStage::Diagnose)
++            && edits.target_was_read()
++            && self.focus.observed()
++        {
++            self.stage = Some(RecoveryStage::Fix);
++        }
+     }
+ 
+     pub(super) fn on_successful_edit(

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "question": "Can repeated bounded Coder slices and a handoff after a new native verification failure, together with narrow Observer JSON opening-prefix recovery, improve the coupled repair loop?",
+  "base_commit": "d9042feb4328f17eb077670408d58b1e60eac6a0",
+  "task_baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+  "task_variant": "recovery-handoff-visible",
+  "task_inputs": "Unchanged PR38 visible test, registration, prompt, six-case independent probe, reference and role specs. The baseline includes visible overlays.",
+  "driver_source": "PR38 driver with package cache reset before every execution workspace; unchanged across both waves.",
+  "baseline_executor_source": "5b9315dbfb4fbfc134b5a98ae59e658837f94d6d",
+  "baseline_executor_sha256": "5279c0f6b8719863bec83f38d47b192574c4ddb52c34c6ff4080eaacff69165c",
+  "baseline_executor_source_matches_base_src": true,
+  "waves": [
+    "cache-corrected baseline",
+    "reviewed observer-return and framing-recovery executor"
+  ],
+  "candidate_executor_pin": "Commit and binary digest frozen in fresh per-episode predeclarations before requests.",
+  "specs": [
+    {
+      "path": "benchmarks/self-dogfood-v1/recovery-handoff-visible/luna-argon.json",
+      "sha256": "68a7954569b1be366ad8495cea8801d47fe11f2abcfb072006c615e07f3f52a7"
+    },
+    {
+      "path": "benchmarks/self-dogfood-v1/recovery-handoff-visible/argon-large.json",
+      "sha256": "ad2f5784f1914a7e0441724a6861e60b98ebce7c314e8e658d096abfa3e8cbbe"
+    }
+  ],
+  "max_episodes": 4,
+  "max_requests_per_episode": 32,
+  "max_requests_total": 128,
+  "wall_seconds_per_episode": 1200,
+  "provider_timeout_seconds": 90,
+  "coder_chunk_requests": 8,
+  "coder_max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "retry_policy": "One live attempt per pair per wave; no episode or assessment retry in place. Existing one explicit Observer action-contract repair remains inside the shared cap. Retain interruptions.",
+  "report_axes": [
+    "native completion",
+    "role request order",
+    "native verification failure and subsequent Observer call",
+    "framing recovery and raw preserved response",
+    "actual changed files",
+    "visible and independent test results",
+    "scope, all qualification gates and cache-reset receipts"
+  ],
+  "promotion_authorized": false,
+  "causal_success_rate_or_model_ranking_claim": false,
+  "prior_PR38_runs": "Excluded from clean-build comparison because of recorded cache ambiguity."
+}

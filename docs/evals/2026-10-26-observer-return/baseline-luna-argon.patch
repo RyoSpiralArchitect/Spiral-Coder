@@ -1,0 +1,54 @@
+diff --git a/docs/coupled-work-loop.md b/docs/coupled-work-loop.md
+index 702fb63..73fe1c9 100644
+--- a/docs/coupled-work-loop.md
++++ b/docs/coupled-work-loop.md
+@@ -56,6 +56,13 @@ execution. A progress-policy refusal must not invent a new workspace diagnosis
+ after an Observer handoff. Earlier actual command or automatic-test failures
+ remain visible through those refusals; separate plan, approval, evidence and
+ verification gates still apply. Refusal text never supplies successful proof.
++A completed diagnosis may advance back to the fix stage across a native session
++handoff only when the successful read remains correlated with the current failed
++check and failed edit. A newer failed check, failed edit, or failed read keeps
++its own diagnosis obligation; absent, stale, unrelated reads and assistant
++assertions are not evidence. Reading diagnoses the failure but neither repairs
++the edit nor satisfies the pending exact verification, so a fresh repair and
++successful verification are still required.
+ 
+ `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+ arguments before any tool dispatch or workspace-recovery transition. The whole
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..06400ce 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -32,6 +32,9 @@ impl RecoveryGovernor {
+             self.stage = Some(if self.focus.repaired() {
+                 RecoveryStage::Verify
+             } else if self.focus.observed() {
++                // Preserve a Fix stage restored from the failed edit memory.
++                // This assignment occurs after restore_pending_edits during a
++                // handoff; an observed read belongs to that current failure.
+                 RecoveryStage::Fix
+             } else {
+                 RecoveryStage::Diagnose
+@@ -42,7 +45,20 @@ impl RecoveryGovernor {
+     /// Keep both the failed edit and completed diagnosis across a role handoff.
+     /// A later failure's active recovery stage still takes precedence.
+     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
+-        if self.stage.is_none() && edits.count() > 0 {
++        if edits.count() == 0 {
++            return;
++        }
++
++        // `restore_from_session` starts from the failed check as Diagnose.  A
++        // correlated successful read of the failed edit target is the bounded
++        // evidence that advances that same failure to Fix; it must not erase
++        // the pending verification or permit unrelated/newer failures through.
++        if edits.target_was_read()
++            && self.stage == Some(RecoveryStage::Diagnose)
++            && self.focus.observed()
++        {
++            self.stage = Some(RecoveryStage::Fix);
++        } else if self.stage.is_none() {
+             self.stage = Some(if edits.target_was_read() {
+                 RecoveryStage::Fix
+             } else {

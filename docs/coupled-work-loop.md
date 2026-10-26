@@ -63,6 +63,16 @@ after an Observer handoff. Earlier actual command or automatic-test failures
 remain visible through those refusals; separate plan, approval, evidence and
 verification gates still apply. Refusal text never supplies successful proof.
 
+Multiple failed checks retain separate recovery obligations. The newest failure
+owns the immediate diagnostic read shown to both Coder and Observer, while older
+checks remain pending until their own successful native results. For example, a
+visible baseline test may fail first and a full-suite automatic test may later
+fail in a different supplied test: the next read follows the new test location,
+and passing the full suite does not discharge the original exact check. A new
+failure with no confirmed location asks for broader diagnosis instead of another
+read of the old test. These states survive role handoff, save/resume and pruning;
+read progress does not become verification evidence.
+
 `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
 arguments before any tool dispatch or workspace-recovery transition. The whole
 turn remains unexecuted, with the original call IDs, arguments and provider
@@ -201,14 +211,52 @@ it is false for disabled Observer. `role_requests` counts actual wire receipts
 for each role. Configuring an Observer does not establish that it participated;
 qualification must inspect these receipts and the original task's evidence.
 
-The optional `--coder-chunk-requests` limits the initial Coder slice, including
-compatibility retries. It must be at least four and leave two requests within the
-shared cap for Observer and continuation. Existing reserve rules may shorten the
-slice further. An ephemeral allowance on the Coder's budget handle enforces this
-boundary without modifying or refunding the durable task limit. After an actual
-Observer request, continuations use the remaining shared budget normally. The
-option does not force an Observer call after successful early completion, nor
-guarantee that advice, verification or repair can fit the remaining budget.
+The optional `--coder-chunk-requests` limits every Coder slice, including
+compatibility retries and continuations after Observer advice. It must be at
+least four and leave two requests within the initial shared cap. With Observer
+enabled, the default slice ceiling is eight. At eight or more remaining requests,
+reserve rules preserve capacity for checks, repair and reporting. An explicit
+slice also reserves one Observer request and one Coder continuation while three
+to seven requests remain. Small default sessions keep their existing Coder
+report-retry allowance; a new verification failure can still yield early.
+The last one or two requests remain available to Coder.
+An ephemeral allowance on the Coder budget handle
+enforces this boundary without modifying or refunding the durable task limit.
+The option does not force an Observer call after successful early completion,
+nor guarantee that advice, verification or repair fits the remaining budget.
+
+The interactive TUI selects the next Observer intervention from the typed
+`CoderYieldReason::VerificationFailure` outcome, even with auto-observe disabled
+and no failure keyword in the displayed Coder text. This transient reason clears
+on the next Coder send, workspace change or error. Duplicate-assist and remaining
+budget guards still apply. Continuation restores a pending reflection and its
+exact operation identity from the latest failed native verification exec; invalid
+reflection cannot bypass the pre-tool gate by crossing a role boundary. A later
+diagnostic result clears this immediate-failure restoration, and successful edits
+with failed automatic tests keep their existing diagnosis/impact requirements.
+Nonexecuted governor/user refusals do not discharge the original reflection
+obligation, including an identical retry rejected for contradicting `adjust`.
+They also cannot re-trigger early yield for the same historical failure.
+
+`agent/observer_handoff.rs` recognizes a new, correlated native verification
+failure before the next Coder provider request. Explicit failed checks and failed
+automatic tests after a successful edit yield while at least two shared requests
+remain. A local monotonic tool counter excludes historical failures on resume;
+blocked/awaiting-approval tools, read output, unknown outcomes and unrelated shell
+failures cannot trigger this return. The native session and pending proof survive
+the handoff. `observer_verification_handoff` records the failure and the outcome
+stays incomplete; it neither marks a repair nor clears a check. Standalone CLI
+and `--without-observer` executions retain their existing continuation behavior.
+
+Observer suggestion parsing can recover only a missing initial `{`, or `{"`,
+when the first field is an exact known envelope key and all remaining bytes form
+one complete JSON object. It never appends a closing delimiter or supplies a
+value, tool, argument or confidence. The 64 KiB bound and recursive duplicate-key
+checks still apply; ambiguous, truncated and trailing content remains invalid.
+TUI retains the original response in `raw_content` and records the recovery;
+the shared Web evaluator exposes `format_recovery`. Tool schema, confidence,
+pending-diagnosis, scope and native-completion gates remain unchanged. An
+unrecoverable response can still use the existing one explicit repair request.
 
 `work_budget.rs` owns durable `WorkState`: task identity, workspace, original request, request limit, request receipts, assist receipts, and explicit replay-preservation baselines. It reserves a slot before every supported provider HTTP attempt, including compatibility retries and Observer repair. Interrupted attempts remain spent after restart.
 

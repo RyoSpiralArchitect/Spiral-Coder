@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "runtime_source_commit": "5be9d51f54520d5e8ff57a018247d734a2703859",
+  "full_local_check_commit": "512dda38b1a54acfcd02f905c91adc9b28e8e488",
+  "full_local_check_exit": 0,
+  "rust_tests_passed": 929,
+  "rust_tests_ignored": 1,
+  "server_integration_tests_passed": 1,
+  "python_tests_passed": 73,
+  "web_tests_passed": 80,
+  "npm_tests_passed": 5,
+  "tui_replay_passed": 10,
+  "repo_map_passed": 14,
+  "local_server_smoke_passed": true,
+  "final_delta_validation": "All Rust targets and TUI replay repeated after blocked-retry restoration; Python/Web/npm unchanged. No RUST_MIN_STACK override.",
+  "logs_sha256": {
+    "full_local": "030f6fc50b5fae07986cb45ee5cbb1d8e039c515c6b451b34d041eeb4fc36a0c",
+    "final_rust": "902f203ae44052c0acafa78984831d94ddcfc7fdfd0f95a42ccd43aeba546d6a",
+    "final_replay": "7fcc3bef81e5f6d5d2d2aacc1c936fa9a45d033965ac9e0892d560c260bfc1e9",
+    "two_continuations": "6f62c6290cb6ceae6c117644f6d842ec0f27d38a53e6d44021f4a29ac649edb9"
+  },
+  "review": {
+    "initial_head": "d95c77a62a2cb7b47d33059a51e173fd5d754614",
+    "findings": [
+      "P2: connect native yield to interactive TUI selection without display keywords",
+      "P2: restore pending failed-verification reflection and operation identity on continuation"
+    ],
+    "first_fix": "512dda38b1a54acfcd02f905c91adc9b28e8e488",
+    "second_finding": "P2: nonexecuted blocked retry masks the original reflection obligation on a second continuation",
+    "second_fix": "5be9d51f54520d5e8ff57a018247d734a2703859",
+    "corrective_recheck": "No actionable findings; inspected actual blocked-retry then serialized second-continuation regression.",
+    "scope": "Read-only diff and immediate consumers; no reviewer builds, tests, provider calls or hidden context. Project context thawed after each pass."
+  },
+  "ci_observed_failure": {
+    "source_head": "d95c77a62a2cb7b47d33059a51e173fd5d754614",
+    "job_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40323356579/job/121573696055",
+    "cause": "npm fake-child receipt published before SIGTERM handler registration; exit 143 instead of 23",
+    "fix_commit": "512dda38b1a54acfcd02f905c91adc9b28e8e488",
+    "correction": "Register signal handler before publishing readiness receipt; launcher production code unchanged."
+  },
+  "live_task_boundary": "The fixed task baseline has 864 original passing Rust tests plus one ignored and seven replay cases; these are separate from the current runtime source suite.",
+  "retained_observer_replay": {
+    "provider_calls": 0,
+    "cases_passed": 2,
+    "input_spec": "retained-observer-replay.json",
+    "spec_sha256": "f2d37f861da24ae364d055e0e6ad1331e7a03b99b9ad8b2a2059cfcabbfe40de",
+    "report_sha256": "c434ef03d3fc0199f593e5ac48fd1024b4042c08ed10ccf6f91d71bc58bce109",
+    "log_sha256": "0ab3adf90cd184c99f1e7ef83f22bec7370afb4919bc08278945c99e67b6a0bc",
+    "context": "Fixed replay Coder context, unmodified baseline Large 4 raw responses; not a new live episode."
+  },
+  "source_ci": {
+    "head": "5be9d51f54520d5e8ff57a018247d734a2703859",
+    "snapshot": "source-ci.json",
+    "quality_jobs": 2,
+    "native_platform_jobs": 5,
+    "package_passed": true,
+    "publish": "skipped"
+  },
+  "public_artifact_checks": {
+    "changed_files_scanned": 36,
+    "authorized_key_values_checked": 3,
+    "matched_files": [],
+    "local_document_links_checked": 50,
+    "broken_links": []
+  }
+}

@@ -65,7 +65,7 @@ store state without first choosing the correct owner.
 | Native message provenance | `src/task_origin.rs` | resumable run | optional `origin` in session messages | human task versus runtime continuation/feedback; stripped before provider requests |
 | Provider tool continuation | `src/streaming/provider_metadata.rs` | resumable exchange | optional `tool_calls[].extra_content.google.thought_signature` | opaque Google metadata attached to the original call; not execution evidence |
 | Unresolved edit attempts | `src/tui/agent/edit_failure.rs` | current human task | reconstructed from correlated transcript exchanges | failed edit count, repeated arguments, last successful edit reset anchor |
-| Localized verification failure | `src/tui/agent/recovery_focus.rs` | current human task, resumable | optional local tool-result metadata | failed check, confirmed workspace target, bounded diagnostic and observation state |
+| Verification failure ownership | `src/tui/agent/recovery_focus.rs`, `recovery_obligations.rs`, `recovery_snapshot.rs` | current human task, resumable | optional local tool-result metadata | newest failure to diagnose plus older unresolved checks; each retains its own location and observation state |
 | Project-local repo progress snapshot | `src/progress_state.rs` | cross-session | `.spiral-coder/progress.json` | current objective, completed artifacts, verified commands, repo-level progress bridge memory |
 | Project-local reflection ledger | `src/reflection_ledger.rs` | cross-session | `.spiral-coder/reflection_ledger.json` | recurring wrong assumptions, next minimal actions, reflection counts |
 | Project-local harness evolution queue | `src/tui/agent/harness_evolution.rs` | cross-session | `.spiral-coder/policy_patch_queue.json` | trace-derived runtime overlay proposals, seen/applied counts, promotion readiness |
@@ -309,6 +309,14 @@ Localized verification failures:
   When the original pending check fails again, its current diagnostic replaces
   the old cause. Without a confirmed current location, the previous path becomes
   `last_confirmed` context and exact-path inspection is no longer required.
+- `recovery_obligations.rs` retains one failure per exact command. `pending` is
+  the most recently failed check; `deferred` retains older unresolved checks in
+  failure order. A new explicit or automatic check failure selects its own
+  diagnostic location, including a supplied test different from the edited file.
+  A new failure without a confirmed location suppresses the older exact-path read
+  rather than borrowing that path. A read of an older failure cannot diagnose the
+  new one. Both roles receive the same current read target and the list of other
+  unresolved checks through `task_obligations`.
 - Successful edits do not certify repair. The original automatic test or the
   exact failed explicit command must pass when launched from the workspace root before this pending
   failure is cleared. A different configured check or another working directory
@@ -317,25 +325,49 @@ Localized verification failures:
   A baseline failure records the command that actually failed, even when the
   automatic-test configuration differs (for example, by `2>&1`). A read made
   before that failure does not count as a fresh diagnosis.
+  A passing result clears only its own command. When the active check passes,
+  the most recent remaining failure becomes active with its existing diagnosis;
+  an older unread failure restores Diagnose in the live governor. An unrelated
+  repair marks previously observed deferred failures as needing verification,
+  without erasing unread diagnoses. Completion remains blocked while any check
+  is unresolved.
+  On resume, `recovery_progress.rs` excludes an older managed failure from the
+  active diagnosis only when a later matching native success resolves it. For
+  automatic tests, version 2 snapshot transitions bind the removed check instead
+  of assuming the current configuration was also used in the past. Refusals do
+  not break that correlation. A new unrelated read or check failure still takes
+  precedence over older completed diagnosis.
+  Context pruning retains the successful exchange and its preceding ownership
+  snapshot when a native result clears a check, in addition to the latest full
+  snapshot. This prevents an older failure surviving after its resolution was
+  dropped. The window remains a soft cap when these complete exchanges need
+  retention; this protects restoration, not additional execution authority.
 - Local tool-result metadata preserves validated failure context across a
   save/resume and context pruning, including after the file has changed. This
   raw metadata stays out of provider requests and does not grant execution proof;
   bounded diagnostic hints are intentionally visible to the model.
   New human task boundaries discard the previous task's recovery focus.
-- Tool messages may carry `recovery_focus: {version: 1, state: {pending: ...}}`.
+- Tool messages carry `recovery_focus: {version: 2, state: {pending: ..., deferred: [...]}}`.
+  `recovery_snapshot.rs` validates and restores this state, accepting version 1
+  single-failure snapshots as well. Empty `deferred` is omitted. Duplicate check
+  identities and a deferred list without an active failure are invalid.
   Pending data contains `path`, `diagnostic`, `check`, `observation`
   (`awaiting_read`, `observed`, `repair_attempted`, `unavailable`, or `unlocalized`),
-  and `location` (`current` or `last_confirmed`; absent defaults to `current`).
+  and `location` (`current`, `last_confirmed`, or `unknown`; absent defaults to
+  `current`). `unknown` has an empty path and cannot require or claim a file read.
   Reads of a last-confirmed path cannot turn it into current location evidence.
   `pending: null` records a clear, not successful execution evidence. This optional field
   does not change the session container version.
-  Legacy snapshots without `location` can refresh a stale cause from their
+  Version 1 snapshots without `location` can refresh a stale cause from their
   correlated failed automatic-test result when the stored and configured check
   match; missing or mismatched check identity is not guessed.
-- Localization is conservative: a diagnostic must identify the edited workspace
-  path, or a pathless JSON parse position must match a bounded parse of the
-  current edited JSON inside the canonical workspace. An unrelated failure
-  remains generic; the last edited file alone is not evidence of its cause.
+- `baseline_failure.rs` shares conservative Rust/Python location extraction
+  between explicit checks and automatic tests. Multiple or unsafe reported
+  locations cannot fall back to the edited or previously failing file. Without
+  those native locations, `recovery_location.rs` permits a diagnostic explicitly
+  naming the edited or same-check previous path, or a pathless JSON parse position
+  matching a bounded parse of the current edited JSON inside the workspace.
+  The last edited file alone is not evidence of the failure's cause.
 
 Autosave ordering:
 
@@ -881,12 +913,44 @@ disabled Observer is false. Report `role_requests` separately counts actual
 Coder and Observer wire attempts; configuration alone is not participation.
 
 Optional `coder_chunk_requests` is recorded in the report and trace config. Its
-in-memory App field limits the first Coder chunk, while an ephemeral per-handle
+in-memory App field limits each Coder chunk, while an ephemeral per-handle
 `WorkBudget` request ceiling also counts compatibility retries. The ceiling is
 not serialized and cannot replace the durable `request_limit`. The shared
 remaining budget continues to drive completion gates; reaching a chunk ceiling
 leaves the task incomplete and permits Observer handoff. Subsequent continuation
 after an actual Observer request retains the original cap and spent ledger.
+`events/coder_slice.rs` owns the repeated allowance calculation (default ceiling
+eight when Observer is enabled). `WorkBudget.return_on_verification_failure`
+is another transient handle property, never serialized or restored as authority.
+`agent/observer_handoff.rs` projects the latest correlated failure only after the
+local tool counter advances in the current slice. Its telemetry records call ID,
+tool, explicit command when present, and whether the failure was an automatic
+test. `agent_outcome.yield_reason=verification_failure` denotes an incomplete
+handoff, not a completion, new budget or satisfied proof obligation.
+
+`tui/coder_yield.rs::CoderYieldReason` is the typed in-memory outcome stored in
+`App.coder_yield_reason`. The interactive selector consumes it independently of
+display keywords and the auto-observe preference; the next send, error or root
+change clears it. The Observer evidence packet includes the optional reason.
+`agent/observer_handoff.rs::pending_exec_reflection` restores the immediate failed
+verification exec's reflection obligation and exact `ActionIdentity` (including
+cwd) from native history on continuation. It creates no durable duplicate state
+or new reflection obligation for a successful edit's failed automatic test.
+Restoration skips native governor/user refusals because they execute no action;
+the fresh-failure yield detector does not skip those results. Thus a blocked
+retry preserves reflection on another continuation without repeatedly yielding
+the old failure.
+
+`tui/suggestion/framing.rs` owns the optional `opening_brace` or
+`opening_brace_and_quote` recovery classification. `observer_action::Response`
+exposes it as `format_recovery` for the shared Web evaluator; TUI records a
+diagnostic and keeps the unmodified original in `Message.raw_content`. The
+classification only describes JSON framing. Existing suggestion and evidence
+validation still decide whether advice can be forwarded; no new tool authority,
+confidence or native proof is stored.
+`TuiReplayCheck` also supports `suggestion_not_parsed` and `hint_not_queued`
+assertions so malformed-response fixtures verify refusal, rather than merely
+matching text. Existing positive checks retain their meaning.
 
 `src/runtime_storage.rs` owns an ephemeral, task-local mapping from a canonical
 workspace to a fresh external `coupled-run --out-dir`. The existing owners and

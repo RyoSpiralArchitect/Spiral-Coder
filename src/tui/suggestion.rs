@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 mod action;
+mod framing;
 pub(crate) use action::tool_schemas_for;
+pub(crate) use framing::Recovery as FramingRecovery;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -144,9 +146,13 @@ pub fn parse_observer_suggestion_envelope(raw: &str) -> Option<ObserverSuggestio
     parse_envelope_checked(raw).ok()
 }
 
+pub(crate) fn framing_recovery(raw: &str) -> Option<FramingRecovery> {
+    framing::object(raw).ok().and_then(|(_, recovery)| recovery)
+}
+
 fn parse_envelope_checked(raw: &str) -> Result<ObserverSuggestionEnvelope, String> {
-    let object = crate::structured_output::object(raw)?;
-    let mut env = serde_json::from_value::<ObserverSuggestionEnvelope>(object.value)
+    let (object, _) = framing::object(raw)?;
+    let mut env = serde_json::from_value::<ObserverSuggestionEnvelope>(object)
         .map_err(|error| error.to_string())?;
     for suggestion in &mut env.suggestions {
         // Some models double-encode this object. Decode authored JSON once;

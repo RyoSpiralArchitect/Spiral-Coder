@@ -1,0 +1,15 @@
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..ed05115 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -86,7 +86,9 @@ impl RecoveryGovernor {
+             required_verification,
+             ..Default::default()
+         };
+-        if mem.consecutive_failures > 0 || last_tool_looks_failed(messages) {
++        // Preserve an already-correlated restored stage; otherwise any recorded
++        // failure still requires diagnosis until the handoff restores its evidence.
++        if g.stage.is_none() && (mem.consecutive_failures > 0 || last_tool_looks_failed(messages)) {
+             g.stage = Some(RecoveryStage::Diagnose);
+         }
+         g

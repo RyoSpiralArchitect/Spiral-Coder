@@ -1,0 +1,12 @@
+diff --git a/src/tui/agent/recovery_progress.rs b/src/tui/agent/recovery_progress.rs
+index 538bc5c..a3ecf57 100644
+--- a/src/tui/agent/recovery_progress.rs
++++ b/src/tui/agent/recovery_progress.rs
+@@ -1,5 +1,6 @@
+ //! A completed diagnosis can advance a restored generic Diagnose phase only
+-//! when the last actual failure belongs to that same localized obligation.
++//! when the last actual failure belongs to that same localized obligation or a
++//! diagnosed edit retry on the current failure.
+ use super::*;
+ 
+ pub(super) fn survives(

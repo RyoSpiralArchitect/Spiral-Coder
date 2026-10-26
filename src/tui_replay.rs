@@ -71,7 +71,9 @@ pub enum TuiReplayMessageRole {
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum TuiReplayCheck {
     SuggestionParsed,
+    SuggestionNotParsed,
     HintQueued,
+    HintNotQueued,
     ContractQueued,
     ObserverContains { value: String },
     CoderSystemContains { value: String },
@@ -452,6 +454,16 @@ fn evaluate_checks(
                 label: "contract_queued".to_string(),
                 ok: metrics.contract_queued,
                 detail: observer_detail("contract_queued", metrics.contract_queued),
+            },
+            TuiReplayCheck::SuggestionNotParsed => TuiReplayCheckResult {
+                label: "suggestion_not_parsed".into(),
+                ok: !metrics.suggestion_parsed,
+                detail: format!("suggestion_parsed={}", metrics.suggestion_parsed),
+            },
+            TuiReplayCheck::HintNotQueued => TuiReplayCheckResult {
+                label: "hint_not_queued".into(),
+                ok: !metrics.hint_queued,
+                detail: format!("hint_queued={}", metrics.hint_queued),
             },
             TuiReplayCheck::ObserverContains { value } => {
                 let observed = outcome

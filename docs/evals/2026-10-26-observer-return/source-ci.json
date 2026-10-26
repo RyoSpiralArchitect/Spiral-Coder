@@ -1,0 +1,76 @@
+{
+  "headRevision": "5be9d51f54520d5e8ff57a018247d734a2703859",
+  "checks": [
+    {
+      "name": "publish",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121588635846"
+    },
+    {
+      "name": "package",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121588451230"
+    },
+    {
+      "name": "native (ubuntu-22.04-arm, aarch64-unknown-linux-gnu, spiral-coder)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584561541"
+    },
+    {
+      "name": "native (macos-15-intel, x86_64-apple-darwin, spiral-coder)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584561514"
+    },
+    {
+      "name": "native (ubuntu-22.04, x86_64-unknown-linux-gnu, spiral-coder)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584561310"
+    },
+    {
+      "name": "native (windows-2022, x86_64-pc-windows-msvc, spiral-coder.exe)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584561283"
+    },
+    {
+      "name": "native (macos-15, aarch64-apple-darwin, spiral-coder)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584561230"
+    },
+    {
+      "name": "plan",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522190/job/121584517259"
+    },
+    {
+      "name": "checks (macos-latest)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522191/job/121584516974"
+    },
+    {
+      "name": "checks (ubuntu-latest)",
+      "head_sha": "5be9d51f54520d5e8ff57a018247d734a2703859",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40326522191/job/121584516639"
+    }
+  ],
+  "statuses": []
+}

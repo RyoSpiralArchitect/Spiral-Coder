@@ -23,7 +23,7 @@ pub(crate) struct Args {
     pub without_observer: bool,
     #[command(flatten)]
     pub observer: roles::ObserverArgs,
-    /// Upper bound for the initial Coder slice; leaves Observer + continuation budget.
+    /// Upper bound for each Coder slice; leaves Observer + continuation budget.
     #[arg(long)]
     pub coder_chunk_requests: Option<usize>,
     #[arg(long)]

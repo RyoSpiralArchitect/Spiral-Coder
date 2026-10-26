@@ -421,6 +421,110 @@
           "value": "read_file(path=src/tui/prefs.rs)"
         }
       ]
+    },
+    {
+      "id": "observer-missing-opening-brace",
+      "prompt": "Repair the recovery handoff.",
+      "tags": [
+        "observer",
+        "framing-recovery"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the recovery handoff."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] New verification failure requires diagnosis."
+        }
+      ],
+      "observer_response": "\"summary\": \"Read the failed source location.\", \"response_contract\": {\"required\": true, \"focus_axes\": [\"correctness\"]}, \"suggestions\": [{\"kind\": \"read\", \"reason\": \"Diagnose before editing.\", \"confidence\": 0.9, \"suggested_tool\": \"read_file\", \"suggested_args\": {\"path\": \"src/tui/agent/recovery.rs\", \"start_line\": 10, \"end_line\": 30}}]}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=10"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=30"
+        }
+      ]
+    },
+    {
+      "id": "observer-missing-opening-brace-and-quote",
+      "prompt": "Repair the recovery handoff.",
+      "tags": [
+        "observer",
+        "framing-recovery"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the recovery handoff."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] New verification failure requires diagnosis."
+        }
+      ],
+      "observer_response": "summary\": \"Read the failed source location.\", \"response_contract\": {\"required\": true, \"focus_axes\": [\"correctness\"]}, \"suggestions\": [{\"kind\": \"read\", \"reason\": \"Diagnose before editing.\", \"confidence\": 0.9, \"suggested_tool\": \"read_file\", \"suggested_args\": {\"path\": \"src/tui/agent/recovery.rs\", \"start_line\": 10, \"end_line\": 30}}]}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "start_line=10"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "end_line=30"
+        }
+      ]
+    },
+    {
+      "id": "observer-recovered-framing-rejects-duplicate-arguments",
+      "prompt": "Repair the recovery handoff.",
+      "tags": [
+        "observer",
+        "framing-recovery",
+        "invalid"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Repair the recovery handoff."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] New verification failure requires diagnosis."
+        }
+      ],
+      "observer_response": "\"suggestions\":[{\"kind\":\"read\",\"confidence\":0.9,\"suggested_tool\":\"read_file\",\"suggested_args\":{\"path\":\"src/one.rs\",\"path\":\"src/two.rs\"}}]}",
+      "checks": [
+        {
+          "kind": "suggestion_not_parsed"
+        },
+        {
+          "kind": "hint_not_queued"
+        }
+      ]
     }
   ]
 }
