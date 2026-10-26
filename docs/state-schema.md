@@ -896,6 +896,15 @@ tool, explicit command when present, and whether the failure was an automatic
 test. `agent_outcome.yield_reason=verification_failure` denotes an incomplete
 handoff, not a completion, new budget or satisfied proof obligation.
 
+`tui/coder_yield.rs::CoderYieldReason` is the typed in-memory outcome stored in
+`App.coder_yield_reason`. The interactive selector consumes it independently of
+display keywords and the auto-observe preference; the next send, error or root
+change clears it. The Observer evidence packet includes the optional reason.
+`agent/observer_handoff.rs::pending_exec_reflection` restores the immediate failed
+verification exec's reflection obligation and exact `ActionIdentity` (including
+cwd) from native history on continuation. It creates no durable duplicate state
+or new reflection obligation for a successful edit's failed automatic test.
+
 `tui/suggestion/framing.rs` owns the optional `opening_brace` or
 `opening_brace_and_quote` recovery classification. `observer_action::Response`
 exposes it as `format_recovery` for the shared Web evaluator; TUI records a

@@ -7288,6 +7288,12 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     if let Some(reason) = edit_failures.reflection_reason() {
         reflection_required = Some(reason);
     }
+    if let Some((reason, trigger)) =
+        observer_handoff::pending_exec_reflection(&start.messages, test_cmd.as_deref())
+    {
+        reflection_required = Some(reason);
+        reflection_trigger_sig = trigger;
+    }
 
     let root_user_text = crate::task_origin::root_user_text(&start.messages).to_string();
     let root_user_text_low = root_user_text.to_ascii_lowercase();
@@ -14650,7 +14656,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         json!({
             "completed": observer_handoff.is_none() && task_outcome.completed(&messages),
             "state": format!("{state:?}").to_ascii_lowercase(),
-            "yield_reason": observer_handoff.as_ref().map(|_| "verification_failure"),
+            "yield_reason": observer_handoff.as_ref().map(|_| super::coder_yield::CoderYieldReason::VerificationFailure),
         }),
     )
     .await;

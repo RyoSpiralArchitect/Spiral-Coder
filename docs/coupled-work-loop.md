@@ -215,6 +215,16 @@ enforces this boundary without modifying or refunding the durable task limit.
 The option does not force an Observer call after successful early completion,
 nor guarantee that advice, verification or repair fits the remaining budget.
 
+The interactive TUI selects the next Observer intervention from the typed
+`CoderYieldReason::VerificationFailure` outcome, even with auto-observe disabled
+and no failure keyword in the displayed Coder text. This transient reason clears
+on the next Coder send, workspace change or error. Duplicate-assist and remaining
+budget guards still apply. Continuation restores a pending reflection and its
+exact operation identity from the latest failed native verification exec; invalid
+reflection cannot bypass the pre-tool gate by crossing a role boundary. A later
+diagnostic result clears this immediate-failure restoration, and successful edits
+with failed automatic tests keep their existing diagnosis/impact requirements.
+
 `agent/observer_handoff.rs` recognizes a new, correlated native verification
 failure before the next Coder provider request. Explicit failed checks and failed
 automatic tests after a successful edit yield while at least two shared requests

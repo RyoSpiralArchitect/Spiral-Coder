@@ -106,6 +106,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "expected_outcome": app.coder_intent_anchor.as_ref().map(|anchor| anchor.success_criteria.join("; ")).filter(|text| !text.is_empty()).unwrap_or_else(|| task_summary.clone()),
         "actual_outcome": actual_outcome,
         "failure_kind": meta_failure_kind(&target_msg.content),
+        "coder_yield_reason": app.coder_yield_reason,
         "coder_mode": format!("{:?}", app.coder_cfg.mode),
         "coder_provider": app.coder_cfg.provider.to_string(),
         "coder_model": app.coder_cfg.model.clone(),

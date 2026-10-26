@@ -109,7 +109,8 @@ test('publication verifies the packed payload and rejects local, incomplete or c
 test('launcher preserves literal arguments, cwd, environment, exit code and signals', { skip: process.platform === 'win32' }, async t => {
   const { root, input } = await fixture(t);
   const target = targets[`${process.platform}-${process.arch}`];
-  const fake = `#!${process.execPath}\nconst fs=require('node:fs');\nfs.writeFileSync(process.env.RECEIPT,JSON.stringify({args:process.argv.slice(2),cwd:process.cwd(),marker:process.env.MARKER}));\nif(process.env.WAIT_SIGNAL){process.on('SIGTERM',()=>process.exit(23));setInterval(()=>{},1000);}else{process.exit(17);}\n`;
+  // Receipt publication is the readiness barrier for the parent's signal.
+  const fake = `#!${process.execPath}\nconst fs=require('node:fs');\nif(process.env.WAIT_SIGNAL){process.on('SIGTERM',()=>process.exit(23));setInterval(()=>{},1000);}\nfs.writeFileSync(process.env.RECEIPT,JSON.stringify({args:process.argv.slice(2),cwd:process.cwd(),marker:process.env.MARKER}));\nif(!process.env.WAIT_SIGNAL){process.exit(17);}\n`;
   await fs.writeFile(path.join(input, target, 'spiral-coder'), fake);
   const out = path.join(root, 'local');
   await prepare({ input, out, localTarget: target });

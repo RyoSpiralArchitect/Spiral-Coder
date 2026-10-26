@@ -41,6 +41,7 @@ pub(super) async fn send_coder_input(
 
     // Reset state for the new send.
     app.coder_iter = 0;
+    app.coder_yield_reason = None;
     app.coder.scroll = 0; // pin to bottom for new output
     app.ignore_coder_tokens = false;
     app.coder_realize_state = None;

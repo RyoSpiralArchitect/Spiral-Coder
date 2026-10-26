@@ -109,6 +109,7 @@ pub(super) fn change_root(app: &mut App) {
     app.last_git_checkpoint = None;
     app.coder_intent_anchor = None;
     app.coder_completed = None;
+    app.coder_yield_reason = None;
     app.active_observer_contract = None;
     app.active_assist_id = None;
     app.project_stack_label = None;

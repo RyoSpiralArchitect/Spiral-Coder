@@ -1698,6 +1698,8 @@ fn handle_coder_token(token: StreamToken, app: &mut App) {
         StreamToken::Telemetry(event) => {
             if event.event == "agent_outcome" {
                 app.coder_completed = event.data["completed"].as_bool();
+                app.coder_yield_reason =
+                    serde_json::from_value(event.data["yield_reason"].clone()).ok();
             }
         }
         StreamToken::Done => {
@@ -1713,6 +1715,7 @@ fn handle_coder_token(token: StreamToken, app: &mut App) {
             app.coder.push_tool(format!("ERROR: {e}"));
             app.coder.finish_stream();
             app.coder_completed = Some(false);
+            app.coder_yield_reason = None;
             finalize_active_observer_contract(app);
         }
         StreamToken::Checkpoint(hash) => {
@@ -2851,6 +2854,9 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     let (idx, msg) = app.coder.messages.iter().enumerate().rev().find(|(_, m)| {
         matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
     })?;
+    if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::VerificationFailure) {
+        return Some((idx, "native_verification_failure".into()));
+    }
     if !meta_failure_like(&msg.content) {
         return None;
     }
@@ -2886,6 +2892,7 @@ mod tests {
     include!("refusal_continuation_tests.rs");
     include!("dogfood_boundary_tests.rs");
     include!("task_requirement_tests.rs");
+    include!("verification_yield_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())

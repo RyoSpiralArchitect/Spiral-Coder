@@ -1,5 +1,6 @@
 pub mod agent;
 pub mod app;
+mod coder_yield;
 pub mod events;
 mod input;
 pub mod intent;

@@ -1,5 +1,5 @@
 //! New native verification failures yield a Coder slice without granting proof.
-use super::{exec_verification::ExecVerificationContext, ExecKind};
+use super::{exec_verification::ExecVerificationContext, ActionIdentity, ExecKind, ToolCallData};
 use crate::execution_evidence::{auto_test_outcome, exec_outcome, AutoTestOutcome};
 use serde::Serialize;
 use serde_json::Value;
@@ -10,6 +10,8 @@ pub(super) struct Failure {
     tool: String,
     command: Option<String>,
     automatic_test: bool,
+    #[serde(skip)]
+    trigger: Option<ActionIdentity>,
 }
 
 pub(super) fn latest(messages: &[Value], configured: Option<&str>) -> Option<Failure> {
@@ -60,7 +62,33 @@ pub(super) fn latest(messages: &[Value], configured: Option<&str>) -> Option<Fai
         tool: tool.to_owned(),
         command,
         automatic_test,
+        trigger: super::tool_call_action_sig(&ToolCallData {
+            id: id.to_owned(),
+            name: tool.to_owned(),
+            arguments: call["function"]["arguments"].as_str()?.to_owned(),
+            thought_signature: None,
+        }),
     })
+}
+
+/// A handoff cannot discharge the reflection required by a failed native exec.
+/// Automatic tests on successful edits retain their existing diagnosis/impact
+/// gates; they did not impose this exec reflection requirement before yielding.
+pub(super) fn pending_exec_reflection(
+    messages: &[Value],
+    configured: Option<&str>,
+) -> Option<(String, Option<ActionIdentity>)> {
+    let failure = latest(messages, configured)?;
+    if failure.automatic_test {
+        return None;
+    }
+    Some((
+        format!(
+            "Native verification failed before continuation: {}. Diagnose the failure before retrying.",
+            failure.command.as_deref().unwrap_or("verification")
+        ),
+        failure.trigger,
+    ))
 }
 
 pub(super) fn newly_executed(
@@ -85,6 +113,117 @@ pub(super) fn newly_executed(
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn pending_exec_reflection_preserves_trigger_and_stops_after_diagnosis() {
+        let args = json!({"command":"cargo test -q","cwd":"crate1"});
+        let mut messages = transcript("exec", args.clone(), "FAILED (exit_code: 1)");
+        let (reason, trigger) = pending_exec_reflection(&messages, None).unwrap();
+        assert!(reason.contains("cargo test -q"));
+        assert_eq!(
+            trigger,
+            Some(ActionIdentity::Exec {
+                command: "cargo test -q".into(),
+                cwd: Some("crate1".into())
+            })
+        );
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":"read","function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\"}"}}]}),
+            json!({"role":"tool","tool_call_id":"read","content":"[src/lib.rs]\nsource"}),
+        ]);
+        assert!(pending_exec_reflection(&messages, None).is_none());
+        assert!(pending_exec_reflection(
+            &transcript(
+                "patch_file",
+                json!({"path":"x"}),
+                "OK: patched 'x'\n[auto-test] ✗ FAILED (exit 1)"
+            ),
+            None
+        )
+        .is_none());
+    }
+
+    #[tokio::test]
+    async fn continuation_rejects_invalid_reflection_before_a_diagnostic_read() {
+        use super::super::*;
+        use clap::Parser;
+        use httpmock::prelude::*;
+        for valid in [false, true] {
+            let server = MockServer::start();
+            let reflection = format!("<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: the test would pass\nstrategy_change: {}\nnext_minimal_action: read fixture.txt\n</reflect>", if valid {"adjust"} else {"keep"});
+            let content = format!("{reflection}\n<think>\ngoal: fix fixture.txt\nstep: 1\ntool: read_file\nrisk: none\ndoubt: cause is unknown\nnext: read fixture.txt\nverify: cargo test -q\n</think>");
+            let mock = server.mock(|when, then| {
+                when.method(POST).path("/chat/completions").body_contains("Native verification failed before continuation");
+                then.status(200).header("content-type", "text/event-stream")
+                    .body(format!("data: {}\n\ndata: [DONE]\n\n", json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"resumed-read","function":{"name":"read_file","arguments":"{\"path\":\"fixture.txt\"}"}}]},"finish_reason":"tool_calls"}]})));
+            });
+            let root = tempfile::tempdir().unwrap();
+            std::fs::write(root.path().join("fixture.txt"), "before\n").unwrap();
+            let cli = crate::Cli::try_parse_from([
+                "spiral-coder",
+                "--provider",
+                "openai-compatible",
+                "--base-url",
+                &server.base_url(),
+                "--api-key",
+                "offline",
+                "--timeout-seconds",
+                "3",
+            ])
+            .unwrap();
+            let cfg = cli.common.to_partial_config().resolve().unwrap();
+            let mut messages = transcript(
+                "exec",
+                json!({"command":"cargo test -q"}),
+                "FAILED (exit_code: 1)",
+            );
+            messages[0]["content"] =
+                json!("Fix fixture.txt and verify it.\nRun exactly: cargo test -q");
+            messages[1]["accepted_plan"] = json!({"goal":"Fix fixture.txt","steps":["Read fixture.txt","Repair fixture.txt","Run cargo test -q"],"acceptance_criteria":["cargo test -q passes"],"risks":"preserve coverage","assumptions":"fixture exists"});
+            let start = AgenticStartState {
+                messages,
+                checkpoint: None,
+                cur_cwd: None,
+                observation_cache: None,
+                session_bridge: None,
+                create_checkpoint: false,
+            };
+            let (tx, mut rx) = mpsc::channel(512);
+            let result = Box::pin(run_agentic_json(
+                start,
+                &cfg,
+                root.path().to_str(),
+                1,
+                tx,
+                None,
+                None,
+                None,
+                true,
+                Some(RealizePreset::Off),
+                None,
+                &crate::approvals::AutoApprover,
+            ))
+            .await
+            .unwrap();
+            mock.assert_hits(1);
+            assert_eq!(
+                result.messages.iter().any(|m| m["role"] == "tool"
+                    && m["tool_call_id"] == "resumed-read"
+                    && m["content"].as_str().is_some_and(|s| s.contains("before"))),
+                valid
+            );
+            let mut rejected = false;
+            while let Some(token) = rx.recv().await {
+                if let StreamToken::Telemetry(event) = token {
+                    if event.event == "pre_tool_gate_rejected" && event.data["gate"] == "reflection"
+                    {
+                        rejected = true;
+                    }
+                }
+            }
+            assert_eq!(rejected, !valid);
+        }
+    }
 
     fn transcript(tool: &str, args: Value, result: &str) -> Vec<Value> {
         vec![
