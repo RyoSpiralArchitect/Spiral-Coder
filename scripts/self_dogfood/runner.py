@@ -10,6 +10,7 @@ from coupled_bench.common import PROVIDERS, inventory, read_json, sha, write_jso
 from .contracts import (apply_overlays, copy_inputs, execution_env, freeze_driver, git_commit, git_snapshot,
                         load_frozen, now, validate)
 from .assessment import assess, checks
+from .build_cache import reset_package_cache
 from .process import run_process
 from .evidence import seal_run
 
@@ -150,8 +151,11 @@ def run(args):
     command, env, secrets = command_and_env(out, spec)
     target = Path(read_json(out / "layout.json")["target_dir"])
     with cache_lock(target):
+        cache_reset = reset_package_cache(out, episode / "workspace", target,
+                                          episode / "package-cache-reset.json")
         with (episode / "started.json").open("x") as handle:
             __import__("json").dump({"started_at": now(), "command": command,
+                                   "package_cache_reset_sha256": cache_reset,
                                    "predeclaration_sha256": sha(out / "predeclared.json")}, handle, indent=2)
         result = run_process(command, episode / "workspace", env, spec["wall_seconds"], episode / "console.log", secrets)
     redacted = []

@@ -81,7 +81,7 @@ modification, utilisez le [CLI sans interface](docs/usage.md#headless-coding-and
 spiral serve
 ```
 
-Ouvrez **http://127.0.0.1:18080/**, puis choisissez le dossier du projet, le
+Ouvrez **http://127.0.0.1:8080/**, puis choisissez le dossier du projet, le
 fournisseur et le modèle dans Settings. Coder, Observer et Chat sont aussi
 accessibles dans cette interface Web locale.
 

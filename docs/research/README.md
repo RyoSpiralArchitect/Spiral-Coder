@@ -25,7 +25,9 @@ The [visible-regression readout](../evals/2026-10-26-visible-regression/README.m
 records two episodes and 42 requests with a protected, executable failing test
 and the original six independent controls. Neither pair repaired the defect;
 both stayed natively incomplete. It changes the task presentation and prepared
-baseline, so it is reported separately from a runtime-only comparison.
+baseline, so it is reported separately from a runtime-only comparison. Post-run
+review also found shared Cargo cache ambiguity; the readout preserves that
+limitation and the runner now invalidates package artifacts between copies.
 
 The preceding [cross-family readout](../evals/2026-10-25-self-dogfood/followup-r5.md)
 records six episodes and 131 provider requests across its full series. No repair

@@ -194,7 +194,20 @@ process group on timeout or exit, including descendants left by a shell. Native
 wire reservations remain in the external durable ledger if a request is killed.
 Cargo build artifacts never belong in the candidate: every execution uses the
 external `CARGO_TARGET_DIR`, `CARGO_INCREMENTAL=0`, and disabled dev/test debug
-info. Separate episodes can reuse one validation cache sequentially.
+info. Separate episodes can reuse one validation cache sequentially, but the lock
+alone does not establish artifact provenance: Cargo can reuse a root-package
+test binary from another source copy with older timestamps. Before baseline,
+reference, live and candidate-assessment execution, `build_cache.py` runs
+`cargo clean --locked --offline --package spiral-coder` under that lock. Only this
+repository's package artifacts are invalidated; dependency artifacts stay cached.
+Each reset has a bounded log and JSON receipt. A failed reset stops before checks
+or provider calls. The live reset has a separate 60-second pre-start bound;
+verifier resets count against the declared evaluation deadline.
+This lane targets the `spiral-coder` package; it is not a general workspace cleaner.
+
+Older frozen drivers retain their original behavior and receipts. In particular,
+the [first visible episodes](evals/2026-10-26-visible-regression/README.md#post-run-build-provenance-limitation)
+used the earlier shared-cache behavior and were not rerun after this correction.
 
 Execution receives a small environment allowlist and only the two declared
 provider credential variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`,

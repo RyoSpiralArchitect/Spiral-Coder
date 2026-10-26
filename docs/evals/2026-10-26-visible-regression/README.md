@@ -1,10 +1,13 @@
 # Visible recovery regression: first live pair
 
-The protected reproducer exposes the defect during native execution, but neither
+Both native logs report the protected assertion failing, and neither
 Coder–Observer pair produced a qualifying repair. These are **two episodes,
 42 provider requests, zero adopted candidates**. The [plan](plan.json) was
 committed before calls; [selected receipts](results.json) retain the pins, gates,
 test summaries, role accounting and native action evidence.
+Post-run review found a [shared build-cache provenance limitation](#post-run-build-provenance-limitation).
+The numbers below are the retained evaluator's reports, not a new clean-build
+qualification. These episodes are excluded from claims about behavioral uplift.
 
 | Coder → Observer | Requests | Native complete | Visible test | Independent probe | Qualified |
 | --- | ---: | --- | --- | --- | --- |
@@ -37,7 +40,7 @@ no run or assessment was retried in place. The original preparations have no
 The no-rerun policy applies to episodes; the existing runtime's one bounded
 Observer action-contract repair is included in the declared shared request cap.
 
-For each pair, preflight verified the expected visible one-case failure and
+For each pair, preflight reported the expected visible one-case failure and
 independent five-pass/one-fail baseline, then one-pass and six-pass reference
 results. Original regressions passed 864 tests with one existing ignored test,
 and TUI replay passed 7/7 on baseline and reference.
@@ -74,7 +77,9 @@ requests or an estimate of model ability.
 
 The pair spent 10 requests in 130.240 seconds. After an initial plan-gate refusal,
 Argon read the visible test and executed its filtered command. The
-command ran exactly one test and failed at the intended assertion. Argon then
+command log reports one executed test failing at the intended assertion, but
+also reports six unexpected filtered tests; its binary cannot be attributed to
+the unchanged native candidate from that log alone. Argon then
 read production code, but made no edit.
 
 Both native-observed Observer answers identified the pending post-failure read
@@ -93,10 +98,39 @@ would have to be invented for this read. Whether a bounded framing recovery is
 appropriate remains a separate implementation question. Raw HTTP/SSE bytes were
 not captured, so this record does not establish where the missing prefix arose.
 
+## Post-run build provenance limitation
+
+The Argon native command reports `0 passed; 1 failed; 871 filtered out`: 872
+tests in the executable. Its candidate source contains 865 original tests and
+one visible test, with no six-case independent probe (866 total). The native
+Cargo log also reports a 0.38-second finish without compilation. Luna's full
+native run reports 866 tests. The six-extra-test discrepancy is consistent with
+reuse of a verifier executable, but retained logs do not establish exactly which
+earlier workspace supplied it.
+
+An isolated, provider-free two-copy Cargo diagnostic reproduced the mechanism:
+after compiling a verifier with an extra test, an older candidate source copy
+using the same target directory still listed that extra test. Cleaning only the
+root package removed it on the next build. [Diagnostic output](cache-provenance.json)
+retains the commands and observations. The new offline integration regression
+also makes the verifier pass and the candidate fail, then confirms that package
+reset restores the candidate failure while retaining dependency artifacts.
+
+The runner now invalidates `spiral-coder` artifacts under the cache lock before
+each workspace executes and binds a reset receipt. That correction applies to
+future preparations; it was **not present in these frozen episodes**. Neither
+episode nor its assessment was rerun, and no raw receipt or pin was modified.
+Hashes establish that the stored bytes were retained; they do not resolve this
+build-source ambiguity. Treat all recorded Cargo outcomes in this pair of
+episodes as having this limitation. Native completion remains false, Argon made
+no edit, Luna's retained patch is a semantic no-op for the target defect, and
+there is still no repair candidate to adopt.
+
 ## Integrity and next questions
 
 Both candidates preserved all protected files, stayed in the four-path edit
-scope, and passed independent build, the original Rust regressions and TUI replay.
+scope. The assessor reported passing build, original Rust regressions and TUI
+replay, subject to the build provenance limitation above.
 Both retained valid native receipts, role/configuration binding and request
 accounting. Neither hit the wall/output cap or required secret redaction.
 The raw manifests were checked against all 942 Luna files and 881 Argon files.
@@ -111,6 +145,6 @@ The next useful questions are concrete:
 3. Can the harness distinguish byte-identical edits from changes, and report
    actual changed files accurately? Semantic no-ops still require behavioral tests.
 
-The visible test supplied native evidence and kept these runs incomplete; it did
-not repair the defect. No success-rate, causal-effect or model-ranking claim is
+The logs retain visible failure reports and incomplete runs; they do not
+establish a repair. No success-rate, causal-effect or model-ranking claim is
 supported by this small sample, and no candidate was promoted.

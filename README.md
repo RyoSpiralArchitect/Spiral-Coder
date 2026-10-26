@@ -80,7 +80,7 @@ file edits, use the [headless CLI](docs/usage.md#headless-coding-and-resume).
 spiral serve
 ```
 
-Open **http://127.0.0.1:18080/** and choose your project folder, provider and model
+Open **http://127.0.0.1:8080/** and choose your project folder, provider and model
 in Settings. Coder, Observer and Chat are available in the local Web UI.
 
 ![Spiral-Coder local Web UI with Coder and Observer side by side](docs/screenshots/spiral-coder-overview.png)

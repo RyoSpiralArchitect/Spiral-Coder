@@ -80,7 +80,7 @@ available controls, and `/lang ja`, `/lang en` or `/lang fr` changes the languag
 spiral serve
 ```
 
-Open `http://127.0.0.1:18080/`. In Settings, choose Provider/Model/Base URL,
+Open `http://127.0.0.1:8080/`. In Settings, choose Provider/Model/Base URL,
 configure the API key, and set `toolRoot` to your project folder. The Web UI keeps
 keys in browser storage and sends them to your local server for provider calls.
 Commands and edits appear as pending approvals in Settings; the header badge

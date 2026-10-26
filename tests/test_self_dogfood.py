@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from coupled_bench.common import inventory, read_json, sha, write_json
-from self_dogfood import assessment, contracts, evidence, process, runner
+from self_dogfood import assessment, build_cache, contracts, evidence, process, runner
 
 
 def spec():
@@ -61,6 +61,19 @@ class LaneTests(unittest.TestCase):
         self.binary.write_text("fake frozen executor\n")
         self.out = self.root / "episode"
         self.observed_checks = []
+        self.cache_resets = []
+        cache_mock = patch.object(build_cache, "run_process", self.fake_cache_reset)
+        cache_mock.start()
+        self.addCleanup(cache_mock.stop)
+
+    def fake_cache_reset(self, argv, workspace, env, timeout, log):
+        self.assertEqual(argv, ["cargo", "clean", "--locked", "--offline", "--package", "spiral-coder"])
+        self.assertNotIn("OPENAI_API_KEY", env)
+        self.assertNotIn("GEMINI_API_KEY", env)
+        self.cache_resets.append(workspace)
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text("root package artifacts removed\n")
+        return {"exit_code": 0, "timed_out": False, "output_limit": False, "wall_seconds": 0}
 
     def git(self, *args):
         return subprocess.check_output(["git", *args], cwd=self.repo, text=True, stderr=subprocess.PIPE)
@@ -154,6 +167,50 @@ class LaneTests(unittest.TestCase):
         self.assertTrue(all("held-out probe" in item[2] for item in self.observed_checks))
         declaration, _ = contracts.load_frozen(self.out, self.pin)
         self.assertIn("tests/existing.rs", declaration["protected_paths"])
+
+    def test_each_workspace_resets_package_artifacts_and_binds_receipt(self):
+        self.prepare()
+        ran = self.execute()
+        self.assess(ran["run_receipt_sha256"])
+        self.assertEqual(len(self.cache_resets), 4)
+        self.assertEqual(len(set(self.cache_resets)), 4)
+        self.assertEqual(self.cache_resets[2], self.out / "episode/workspace")
+        for label in ("baseline", "reference", "candidate"):
+            receipt = self.out / "checks" / label / "package-cache-reset.json"
+            rows = (read_json(self.out / "assessment-001.json")["independent_checks"]
+                    if label == "candidate" else read_json(self.out / "preflight.json")[label])
+            self.assertTrue(read_json(receipt)["passed"])
+            self.assertTrue(all(r["package_cache_reset_sha256"] == sha(receipt) for r in rows))
+        self.assertEqual(read_json(self.out / "episode/started.json")["package_cache_reset_sha256"],
+                         sha(self.out / "episode/package-cache-reset.json"))
+
+    def test_failed_cache_reset_stops_before_provider_and_keeps_failure(self):
+        self.prepare()
+
+        def failed(*args):
+            result = self.fake_cache_reset(*args)
+            result["exit_code"] = 1
+            return result
+
+        with patch.object(build_cache, "run_process", failed), patch.object(runner, "run_process") as provider:
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fixture-openai-key", "GEMINI_API_KEY": "fixture-gemini-key"}):
+                with self.assertRaisesRegex(ValueError, "Package cache reset failed"):
+                    runner.run(self.args())
+            provider.assert_not_called()
+        self.assertFalse((self.out / "episode/started.json").exists())
+        self.assertFalse(read_json(self.out / "episode/package-cache-reset.json")["passed"])
+
+    def test_failed_cache_reset_stops_preflight_before_checks(self):
+        def failed(*args):
+            result = self.fake_cache_reset(*args)
+            result["timed_out"] = True
+            return result
+
+        with patch.object(build_cache, "run_process", failed):
+            with self.assertRaisesRegex(ValueError, "Package cache reset failed"):
+                self.prepare()
+        self.assertFalse(self.observed_checks)
+        self.assertFalse((self.out / "preflight.json").exists())
 
     def test_complete_episode_qualifies_and_candidate_commit_does_not_hide_patch(self):
         self.prepare()

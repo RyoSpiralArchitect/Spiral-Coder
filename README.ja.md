@@ -76,7 +76,7 @@ TUIではツール操作が自動実行される。コマンドや編集の前�
 spiral serve
 ```
 
-**http://127.0.0.1:18080/** を開き、Settingsでプロジェクトのフォルダ、
+**http://127.0.0.1:8080/** を開き、Settingsでプロジェクトのフォルダ、
 プロバイダ、モデルを設定する。ローカルのWeb UIでもCoder・Observer・Chatを使える。
 
 ![CoderとObserverを並べたSpiral-CoderのローカルWeb UI](docs/screenshots/spiral-coder-overview.png)

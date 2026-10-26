@@ -996,5 +996,18 @@
     }
   ],
   "total_requests": 42,
-  "qualified_candidates": 0
+  "qualified_candidates": 0,
+  "post_run_provenance_review": {
+    "native_argon_expected_total_tests": 866,
+    "native_argon_reported_total_tests": 872,
+    "native_argon_extra_filtered_tests": 6,
+    "exact_reused_binary_origin": "unconfirmed",
+    "isolated_cache_reuse_reproduced": true,
+    "diagnostic": "cache-provenance.json",
+    "applies_to": "All retained Cargo outcomes in these episodes; hashes do not establish source-to-binary correspondence.",
+    "episodes_rerun": false,
+    "assessments_rerun": false,
+    "future_driver_cleans_root_package": true,
+    "behavioral_uplift_claims_supported": false
+  }
 }

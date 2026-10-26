@@ -1,0 +1,71 @@
+{
+  "root": "/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b",
+  "rows": [
+    {
+      "label": "verifier",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--",
+        "--list"
+      ],
+      "cwd": "/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/verifier",
+      "exit_code": 0,
+      "stdout": "independent_probe_only: test\nvisible_failure: test\n\n2 tests, 0 benchmarks\n0 tests, 0 benchmarks\n",
+      "stderr": "   Compiling spiral-cache-probe v0.1.0 (/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/verifier)\n    Finished `test` profile [unoptimized] target(s) in 1.20s\n     Running unittests src/lib.rs (/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/target/debug/deps/spiral_cache_probe-c957a0a04f0900fa)\n   Doc-tests spiral_cache_probe\n"
+    },
+    {
+      "label": "candidate-before-clean",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--",
+        "--list"
+      ],
+      "cwd": "/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/candidate",
+      "exit_code": 0,
+      "stdout": "independent_probe_only: test\nvisible_failure: test\n\n2 tests, 0 benchmarks\n0 tests, 0 benchmarks\n",
+      "stderr": "    Finished `test` profile [unoptimized] target(s) in 0.00s\n     Running unittests src/lib.rs (/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/target/debug/deps/spiral_cache_probe-c957a0a04f0900fa)\n   Doc-tests spiral_cache_probe\n"
+    },
+    {
+      "label": "clean-root",
+      "command": [
+        "cargo",
+        "clean",
+        "--locked",
+        "--offline",
+        "-p",
+        "spiral-cache-probe"
+      ],
+      "cwd": "/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/candidate",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "     Removed 13 files, 905.4KiB total\n"
+    },
+    {
+      "label": "candidate-after-clean",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--",
+        "--list"
+      ],
+      "cwd": "/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/candidate",
+      "exit_code": 0,
+      "stdout": "visible_failure: test\n\n1 test, 0 benchmarks\n0 tests, 0 benchmarks\n",
+      "stderr": "   Compiling spiral-cache-probe v0.1.0 (/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/candidate)\n    Finished `test` profile [unoptimized] target(s) in 0.07s\n     Running unittests src/lib.rs (/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral38-cache-provenance-8c632_8b/target/debug/deps/spiral_cache_probe-c957a0a04f0900fa)\n   Doc-tests spiral_cache_probe\n"
+    }
+  ],
+  "version": 1,
+  "provider_calls": 0,
+  "source_diagnostic_sha256": "e1d67faed8aaf71f75a762c86aa188b40642f8634cb1f0fe5c6a8c537a472815",
+  "cargo_version": "cargo 1.97.0 (c980f4866 2026-06-30)",
+  "rustc_version": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+  "interpretation": "Isolated reproduction of cross-copy package artifact reuse. Does not identify the exact cached binary used by the sealed Argon episode. No sealed episode or assessment was rerun."
+}

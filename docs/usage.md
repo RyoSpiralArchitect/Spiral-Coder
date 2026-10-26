@@ -76,7 +76,7 @@ your machine; the tool root is not an operating-system sandbox.
 
 ## Local Web UI
 
-`spiral serve` serves the interface at `http://127.0.0.1:18080/` by default.
+`spiral serve` serves the interface at `http://127.0.0.1:8080/` by default.
 Set `toolRoot`, provider, model and key in Settings before starting work. The
 Coder, Observer and Chat panels keep execution, review and discussion visible
 together. The server binds to loopback by default.
