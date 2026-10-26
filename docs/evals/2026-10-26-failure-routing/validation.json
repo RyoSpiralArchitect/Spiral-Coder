@@ -1,0 +1,50 @@
+{
+  "source_commit": "3a9e523f3ac147acf7c70f7fe4914f0623bca3ec",
+  "plan_committed_before_calls": "41d2fd0",
+  "final_rust": {
+    "passed": 939,
+    "failed": 0,
+    "ignored": 1,
+    "native_server_integration_passed": 1
+  },
+  "tui_replay": {
+    "passed": 10,
+    "failed": 0
+  },
+  "full_local_suite_before_review_corrections": {
+    "rust_passed": 937,
+    "rust_ignored": 1,
+    "native_server_integration_passed": 1,
+    "python_passed": 73,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "tui_replay_passed": 10,
+    "repo_map_passed": 14,
+    "server_smoke_passed": true
+  },
+  "correction_scope": "After the full local gate, only Rust recovery/pruning code, its regressions and documentation changed. Final all-target Rust tests and TUI replay rerun successfully.",
+  "new_regressions": 10,
+  "red_evidence": [
+    "Four initial routing cases failed on the previous runtime.",
+    "Automatic-success/handoff reproduced Diagnose instead of Verify.",
+    "Actual >48-message pruning removed the second check success exchange."
+  ],
+  "review": {
+    "mode": "disk-blinded read-only fork-review",
+    "findings_fixed": [
+      "P2 automatic-success restoration lost the older pending verification stage",
+      "P2 actual pruning dropped the success required to restore that stage"
+    ],
+    "corrective_recheck": "no actionable findings",
+    "all_context_files_restored": true
+  },
+  "log_sha256": {
+    "full_local_suite": "3bb0dfa87d6e1943f5fa358ab329069f7db213ec9785f5b6bd732cb2577c1c51",
+    "final_rust_all_targets": "6c35bafcdc8d3ba51282cc87f8e8535403a1fc4faaaae92bf51f164fe084fb4b",
+    "final_tui_replay": "7776d5d74814368339aa7ee2f2de7ae9a1d3a3f8c18f524cde47ceb22c286c15",
+    "initial_routing_red": "9fa28704a6dc5f576a7d7021ae033b8b296dbc713d87dd48b31953fb0b427cbb",
+    "automatic_resume_red": "49b43925a255f73b2b4f8c59afa430797015fe863585ab30d76c3e0d3f5658e1",
+    "actual_pruning_red": "10402d91b15cd47a85a672a8f385fda594dbcca776d12dee8c2879c2d24ca2db"
+  },
+  "live_results": "Recorded separately in results.json; deterministic gates do not establish model repair success."
+}

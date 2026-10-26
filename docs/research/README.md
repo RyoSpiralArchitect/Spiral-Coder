@@ -21,6 +21,14 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [failure-routing readout](../evals/2026-10-26-failure-routing/README.md)
+uses a Gemini-free Luna/large-Mistral matrix in both directions, with separate
+baseline and candidate attempts: 101 requests, no independently qualified repair.
+The runtime retains distinct failed checks through handoff and actual context
+pruning; seven malformed Mistral opening prefixes recover live. A later Observer
+stream interruption and blocked truthful incomplete reports identify the next
+control-flow questions.
+
 The [Observer-return readout](../evals/2026-10-26-observer-return/README.md)
 compares a cache-corrected baseline with repeated Coder slices, fresh-failure
 handoffs and narrow JSON opener recovery: four attempts, 77 requests. Luna's
