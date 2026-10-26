@@ -12,6 +12,16 @@ pub(super) struct RecoveryGovernor {
 }
 
 impl RecoveryGovernor {
+    fn pending_stage(&self) -> RecoveryStage {
+        if self.focus.repaired() {
+            RecoveryStage::Verify
+        } else if self.focus.observed() {
+            RecoveryStage::Fix
+        } else {
+            RecoveryStage::Diagnose
+        }
+    }
+
     /// Learned progress pressure cannot supersede an outstanding diagnosis.
     /// Persisted policies are retained for later use.
     pub(super) fn allows_progress_pressure(&self) -> bool {
@@ -29,13 +39,7 @@ impl RecoveryGovernor {
             && (self.stage != Some(RecoveryStage::Diagnose)
                 || self.focus.progress_survives(messages, root, check))
         {
-            self.stage = Some(if self.focus.repaired() {
-                RecoveryStage::Verify
-            } else if self.focus.observed() {
-                RecoveryStage::Fix
-            } else {
-                RecoveryStage::Diagnose
-            });
+            self.stage = Some(self.pending_stage());
         }
     }
 
@@ -204,6 +208,10 @@ Required now: {}",
             self.stage = None;
             return;
         }
+        if self.focus.is_pending() {
+            self.stage = Some(self.pending_stage());
+            return;
+        }
         match self.stage {
             Some(RecoveryStage::Diagnose) | Some(RecoveryStage::Fix) => {
                 self.stage = Some(RecoveryStage::Verify);
@@ -230,6 +238,10 @@ Required now: {}",
         {
             // A successful verification ends recovery regardless of the current stage.
             self.stage = None;
+            return;
+        }
+        if kind == ExecKind::Verify && self.focus.is_pending() {
+            self.stage = Some(self.pending_stage());
             return;
         }
         match (self.stage, kind) {

@@ -548,8 +548,8 @@ fn changed_configured_auto_test_cannot_clear_original_check_and_restore_preserve
         &context(),
     );
     assert!(g.focus.requires_read());
-    assert!(g.focus.check_matches(CHECK));
-    assert!(!g.focus.check_matches("cargo check"));
+    assert!(g.focus.contains_check(CHECK));
+    assert!(g.focus.check_matches("cargo check"));
     g.focus.record_result(
         &edit,
         output,
@@ -777,7 +777,7 @@ fn repaired_schema_error_gives_way_to_current_pathless_cause_through_resume_and_
 }
 
 #[test]
-fn original_exec_failures_refresh_cause_and_localization_without_other_checks_replacing_them() {
+fn original_exec_failures_refresh_cause_while_newer_checks_keep_their_own_diagnosis() {
     let root = tempfile::tempdir().unwrap();
     let (mut g, _) = focused(root.path());
     let check = call("check", "exec", json!({"command":CHECK}));
@@ -806,14 +806,18 @@ fn original_exec_failures_refresh_cause_and_localization_without_other_checks_re
         Some(CHECK),
         &context(),
     );
-    assert_eq!(g.focus, unchanged);
+    assert!(g.focus.check_matches("cargo check"));
+    assert_eq!(g.focus.deferred, vec![unchanged.pending.clone().unwrap()]);
+    assert!(!g.focus.requires_read());
     let edit = call(
         "different-config-edit",
         "patch_file",
         json!({"path":TARGET}),
     );
     g.focus.record_result(&edit, &format!("OK: patched '{TARGET}'\n[auto-test] ✗ FAILED (exit 1)\nError: another check; path={TARGET}"), root.path().to_str(), Some("cargo check"), &context());
-    assert_eq!(g.focus, unchanged);
+    assert!(g.focus.check_matches("cargo check"));
+    assert_eq!(g.focus.required_read().unwrap().path, TARGET);
+    assert_eq!(g.focus.deferred, vec![unchanged.pending.unwrap()]);
     let current = exec_output(
         &format!("FAILED (exit_code: 1)\nError: invalid replay data; path={TARGET}"),
         root.path(),
@@ -844,6 +848,7 @@ fn legacy_stale_snapshot_refreshes_only_with_matching_check_and_correlated_failu
     assert!(!error);
     output.push_str("\n[auto-test] ✗ FAILED (exit 1)\nError: could not infer a stuck target from coder_messages");
     let mut legacy = g.focus.tool_message(&repair, output);
+    legacy[METADATA_KEY]["version"] = json!(1);
     legacy[METADATA_KEY]["state"]["pending"]
         .as_object_mut()
         .unwrap()
@@ -853,6 +858,7 @@ fn legacy_stale_snapshot_refreshes_only_with_matching_check_and_correlated_failu
     let (output, error) = crate::file_tools::tool_read_file(TARGET, root.path().to_str());
     assert!(!error);
     let mut old_read = g.focus.tool_message(&read, output);
+    old_read[METADATA_KEY]["version"] = json!(1);
     old_read[METADATA_KEY]["state"]["pending"]
         .as_object_mut()
         .unwrap()
@@ -864,6 +870,7 @@ fn legacy_stale_snapshot_refreshes_only_with_matching_check_and_correlated_failu
         json!({"command":"python repair_fixture.py"}),
     );
     let mut old_action = g.focus.tool_message(&action, "OK (exit_code: 0)".into());
+    old_action[METADATA_KEY]["version"] = json!(1);
     old_action[METADATA_KEY]["state"]["pending"]
         .as_object_mut()
         .unwrap()

@@ -63,6 +63,16 @@ after an Observer handoff. Earlier actual command or automatic-test failures
 remain visible through those refusals; separate plan, approval, evidence and
 verification gates still apply. Refusal text never supplies successful proof.
 
+Multiple failed checks retain separate recovery obligations. The newest failure
+owns the immediate diagnostic read shown to both Coder and Observer, while older
+checks remain pending until their own successful native results. For example, a
+visible baseline test may fail first and a full-suite automatic test may later
+fail in a different supplied test: the next read follows the new test location,
+and passing the full suite does not discharge the original exact check. A new
+failure with no confirmed location asks for broader diagnosis instead of another
+read of the old test. These states survive role handoff, save/resume and pruning;
+read progress does not become verification evidence.
+
 `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
 arguments before any tool dispatch or workspace-recovery transition. The whole
 turn remains unexecuted, with the original call IDs, arguments and provider

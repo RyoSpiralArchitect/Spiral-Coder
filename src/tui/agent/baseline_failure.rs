@@ -2,29 +2,50 @@
 //! read; they never authorize an edit or provide successful execution evidence.
 use super::*;
 
+#[cfg(test)]
 pub(super) fn localize(
     command: &str,
     output: &str,
     root: Option<&str>,
     context: &ExecVerificationContext<'_>,
 ) -> Option<FailureFocus> {
-    if command.trim().is_empty()
-        || command.len() > 4096
-        || context.classify(command).kind != ExecKind::Verify
-        || !super::super::exec_classification::preserves_working_directory(command)
-        || !super::super::parse_exit_code_from_tool_text(output).is_some_and(|code| code != 0)
-    {
+    if !is_check_failure(command, output, context) {
         return None;
     }
-    let root_path = Path::new(root?);
-    let root = std::fs::canonicalize(root_path).ok()?;
+    let (path, diagnostic) = diagnostic(output, root).ok()??;
+    Some(FailureFocus {
+        path,
+        diagnostic,
+        check: command.trim().into(),
+        observation: Observation::AwaitingRead,
+        location: LocationEvidence::Current,
+    })
+}
+
+pub(super) fn is_check_failure(
+    command: &str,
+    output: &str,
+    context: &ExecVerificationContext<'_>,
+) -> bool {
+    !command.trim().is_empty()
+        && command.len() <= 4096
+        && context.classify(command).kind == ExecKind::Verify
+        && super::super::exec_classification::preserves_working_directory(command)
+        && super::super::parse_exit_code_from_tool_text(output).is_some_and(|code| code != 0)
+}
+
+/// None means no supported location was reported. Err means reported locations
+/// were ambiguous or unsafe; neither the edited nor previous file may override it.
+pub(super) fn diagnostic(output: &str, root: Option<&str>) -> Result<Option<(String, String)>, ()> {
+    let root_path = Path::new(root.ok_or(())?);
+    let root = std::fs::canonicalize(root_path).map_err(|_| ())?;
     // Multiple different reported files are ambiguous. Do not guess that the
     // last edited/read source or a path mentioned in ordinary output is causal.
     let mut candidates = BTreeMap::new();
     let mut python_frame = None;
     for line in output.lines().map(str::trim) {
         if let Some(path) = rust_location(line) {
-            candidates.insert(workspace_file(path, root_path, &root)?, line);
+            candidates.insert(workspace_file(path, root_path, &root).ok_or(())?, line);
         }
         if let Some(path) = python_location(line) {
             // Tracebacks list callers first; only the final frame is the
@@ -33,19 +54,19 @@ pub(super) fn localize(
         }
     }
     if let Some((path, line)) = python_frame {
-        candidates.insert(workspace_file(path, root_path, &root)?, line);
+        candidates.insert(workspace_file(path, root_path, &root).ok_or(())?, line);
+    }
+    if candidates.is_empty() {
+        return Ok(None);
     }
     if candidates.len() != 1 {
-        return None;
+        return Err(());
     }
-    let (path, diagnostic) = candidates.into_iter().next()?;
-    Some(FailureFocus {
+    let (path, diagnostic) = candidates.into_iter().next().expect("one location");
+    Ok(Some((
         path,
-        diagnostic: super::super::failure_diagnostics::recovery_summary(output, Some(diagnostic)),
-        check: command.trim().into(),
-        observation: Observation::AwaitingRead,
-        location: LocationEvidence::Current,
-    })
+        super::super::failure_diagnostics::recovery_summary(output, Some(diagnostic)),
+    )))
 }
 
 fn rust_location(line: &str) -> Option<&str> {

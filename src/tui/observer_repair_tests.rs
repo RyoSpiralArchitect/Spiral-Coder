@@ -96,6 +96,36 @@ fn observer_wrong_diagnostic_target_is_repaired_consistently_after_resume() {
 }
 
 #[test]
+fn observer_replay_routes_the_new_failure_and_keeps_the_previous_check_pending() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Repair source.rs; preserve both supplied tests"}),
+        json!({"role":"assistant","tool_calls":[{"id":"new","function":{"name":"patch_file","arguments":"{\"path\":\"source.rs\"}"}}]}),
+        json!({"role":"tool","tool_call_id":"new","content":"OK: patched 'source.rs'\n[auto-test] ✗ FAILED (exit 101)","recovery_focus":{"version":2,"state":{
+            "pending":{"path":"later_test.rs","diagnostic":"thread 'regression' panicked at later_test.rs:397:5:","check":"cargo test --locked","observation":"awaiting_read","location":"current"},
+            "deferred":[{"path":"visible_test.rs","diagnostic":"visible regression failed","check":"cargo test visible","observation":"repair_attempted","location":"current"}]
+        }}}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(None,None,None,None,messages.clone()));
+    let stale = suggestion_response("read", "read_file", json!({"path":"visible_test.rs"}));
+    let tui = replay_observer_next_action_case(&mut app, "last-fail", "diagnose", &stale).unwrap();
+    assert!(tui.pending_observer_hint.is_none());
+    assert!(tui.observer_repair_prompt.unwrap().contains("read_file(path=later_test.rs)"));
+    assert!(tui.observer_prompt.contains("cargo test visible"));
+    let right = suggestion_response("read", "read_file", json!({"path":"later_test.rs","start_line":380,"end_line":410}));
+    let tui = replay_observer_next_action_case(&mut app,"last-fail","diagnose",&right).unwrap();
+    assert!(tui.pending_observer_hint.is_some());
+    let web = crate::observer_action::evaluate(crate::observer_action::Request {
+        packet:json!({"task_obligations":{"required_diagnostic_read":{"path":"visible_test.rs"}}}),messages,
+        test_command:Some("cargo test --locked".into()),lang:"en".into(),reason:"diagnose".into(),response:Some(stale),final_summary:None,repair_native:true,
+    });
+    assert!(web.hint.is_none());
+    assert!(web.issue.unwrap().contains("read_file(path=later_test.rs)"));
+    assert_eq!(web.packet["task_obligations"]["required_diagnostic_read"]["failed_check"], "cargo test --locked");
+}
+
+#[test]
 fn observer_repair_keeps_invalid_source_and_never_infers_a_tool() {
     let (mut app, _root) = interaction_app();
     seed_observer_failure(&mut app);
