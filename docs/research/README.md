@@ -21,10 +21,11 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
-The [visible-regression plan](../evals/2026-10-26-visible-regression/plan.json)
-adds a protected, executable failing test to the candidate while retaining the
-six independent controls. It changes the task presentation and prepared
-baseline; report it separately from a runtime-only comparison.
+The [visible-regression readout](../evals/2026-10-26-visible-regression/README.md)
+records two episodes and 42 requests with a protected, executable failing test
+and the original six independent controls. Neither pair repaired the defect;
+both stayed natively incomplete. It changes the task presentation and prepared
+baseline, so it is reported separately from a runtime-only comparison.
 
 The preceding [cross-family readout](../evals/2026-10-25-self-dogfood/followup-r5.md)
 records six episodes and 131 provider requests across its full series. No repair

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "python": {
+    "command": "python3 -S -m unittest discover -s tests -p 'test_*.py'",
+    "tests_passed": 69,
+    "source_commit": "187babe5579c560822c418ec5341156a7852cbbb",
+    "log_sha256": "620badf43d7140a9ec9b88ac1610ece002aebb00c3c21bd5c945f167faa095a2"
+  },
+  "documentation": {
+    "local_links_checked": 115,
+    "broken_links": [],
+    "readme_lines": {
+      "README.md": 101,
+      "README.ja.md": 95,
+      "README.fr.md": 102
+    },
+    "cli_help_checked": true,
+    "provider_preference_persistence_checked_in_source": true
+  },
+  "secret_scan": {
+    "changed_files_scanned": 30,
+    "authorized_key_values_checked": 3,
+    "matched_files": []
+  },
+  "registry_observation": {
+    "package": "spiral-coder",
+    "version": "0.2.0",
+    "node": ">=20",
+    "commands": [
+      "spiral",
+      "spiral-coder"
+    ],
+    "fresh_install_performed_in_this_change": false
+  },
+  "fork_review": {
+    "initial_head": "e864c934f064965ff72db6c87c1ad037e8269306",
+    "finding": "P2: normalize all compared targets before testing visible fixture overlap",
+    "fix_commit": "187babe5579c560822c418ec5341156a7852cbbb",
+    "focused_recheck": "no actionable findings"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "head": "49b8b5c7f5c3176e48206a8c8ed9a7cf3dc1252e",
+  "checks": [
+    {
+      "name": "checks (macos-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40265213805/job/121386015893"
+    },
+    {
+      "name": "checks (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/actions/runs/40265213805/job/121386015717"
+    }
+  ]
+}

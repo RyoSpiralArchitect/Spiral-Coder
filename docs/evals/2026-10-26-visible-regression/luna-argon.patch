@@ -1,0 +1,49 @@
+diff --git a/docs/coupled-work-loop.md b/docs/coupled-work-loop.md
+index 702fb63..252d726 100644
+--- a/docs/coupled-work-loop.md
++++ b/docs/coupled-work-loop.md
+@@ -56,6 +56,11 @@ execution. A progress-policy refusal must not invent a new workspace diagnosis
+ after an Observer handoff. Earlier actual command or automatic-test failures
+ remain visible through those refusals; separate plan, approval, evidence and
+ verification gates still apply. Refusal text never supplies successful proof.
++A completed diagnosis for the current failed edit may survive a native session
++handoff when its correlated target read has advanced recovery to Fix; restoration
++must not let older failure memory rewind that stage. A newer failed check, edit
++target, or read remains a separate diagnosis obligation, and reading alone never
++repairs or verifies the pending original check.
+ 
+ `agent/native_arguments.rs` rejects malformed JSON and non-object native tool
+ arguments before any tool dispatch or workspace-recovery transition. The whole
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..177ba52 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -42,12 +42,22 @@ impl RecoveryGovernor {
+     /// Keep both the failed edit and completed diagnosis across a role handoff.
+     /// A later failure's active recovery stage still takes precedence.
+     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
+-        if self.stage.is_none() && edits.count() > 0 {
+-            self.stage = Some(if edits.target_was_read() {
+-                RecoveryStage::Fix
+-            } else {
+-                RecoveryStage::Diagnose
+-            });
++        if edits.count() == 0 {
++            return;
++        }
++        match self.stage {
++            // A correlated target read completed this edit's diagnosis. Preserve
++            // Fix rather than letting session failure memory rewind it to Diagnose.
++            Some(RecoveryStage::Fix) if edits.target_was_read() => {}
++            // Any other active stage represents a newer or different obligation.
++            Some(_) => {}
++            None => {
++                self.stage = Some(if edits.target_was_read() {
++                    RecoveryStage::Fix
++                } else {
++                    RecoveryStage::Diagnose
++                });
++            }
+         }
+     }
+ 
