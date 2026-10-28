@@ -15,6 +15,8 @@ mod diagnostics_tests;
 pub(crate) mod edit_preview;
 pub(crate) mod json_patch;
 mod json_repair;
+#[cfg(test)]
+mod no_change_tests;
 mod overwrite_guard;
 pub(crate) mod read_cache;
 pub(crate) mod read_range;
@@ -166,6 +168,9 @@ pub fn tool_write_file(path: &str, content: &str, base: Option<&str>) -> (String
             true,
         );
     }
+    if std::fs::read(&abs_path).is_ok_and(|old| old == content.as_bytes()) {
+        return (edit_preview::unchanged_message(path), false);
+    }
     // Create parent directories.
     if let Some(parent) = abs_path.parent() {
         if let Err(e) = std::fs::create_dir_all(parent) {
@@ -258,6 +263,9 @@ fn write_patch_result(
     old_content: &str,
     new_content: &str,
 ) -> (String, bool) {
+    if old_content == new_content {
+        return (edit_preview::unchanged_message(path), false);
+    }
     if let Err(error) = check_preserved_write(abs_path, new_content) {
         return (
             format!(
@@ -774,6 +782,10 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
         Ok(preview) => preview,
         Err(error) => return (error.to_string(), true),
     };
+
+    if content == new_content {
+        return (edit_preview::unchanged_message(path), false);
+    }
 
     // Atomic write.
     if let Err(error) = check_preserved_write(&abs_path, &new_content) {

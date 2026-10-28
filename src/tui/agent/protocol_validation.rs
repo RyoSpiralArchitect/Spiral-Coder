@@ -188,7 +188,9 @@ pub(super) fn validate_think(
     } else if tc.name == "exec" {
         let command = parse_exec_command_from_args(&tc.arguments)
             .unwrap_or_else(|| tc.arguments.trim().to_string());
-        if !think_next_matches_exec_command(&think.next, &command) {
+        if !think_next_matches_exec_command(&think.next, &command)
+            && !super::check_catalog::think_names_selection(&think.next, &tc.arguments)
+        {
             errors.push(contract::think_exec_prefix_mismatch_message());
         }
     }

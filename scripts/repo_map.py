@@ -789,7 +789,10 @@ def score_file(
             "symbol_partial": 0.0,
             "symbol_query": 0.0,
         }
-        if query and query in sym_blob:
+        # A spaced identifier query names the same symbol as its snake_case
+        # spelling. Keep that whole-name signal ahead of several partial hits.
+        spaced_name = " ".join(str(symbol.get("name", "")).lower().split("_"))
+        if query and (query in sym_blob or query == spaced_name):
             sym_score += 10.0
             sym_features["symbol_query"] += 10.0
         for term in terms:

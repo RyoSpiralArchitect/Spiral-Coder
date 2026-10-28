@@ -13,6 +13,7 @@ pub(crate) struct ActionEvidence {
     /// None when execution returned no recognized runtime status. Parsed from
     /// the full correlated result, independently of the bounded display text.
     pub succeeded: Option<bool>,
+    pub edit_outcome: Option<crate::execution_evidence::FileEditOutcome>,
     /// Tool-result order, not assistant prose or call scheduling order.
     pub result_step: Option<usize>,
     pub freshness: super::current_evidence::Freshness,
@@ -24,6 +25,7 @@ pub(crate) struct ExecutionPacket {
     pub mutation_step: Option<usize>,
     pub verification_step: Option<usize>,
     pub pending_exact_checks: Vec<String>,
+    pub available_checks: Vec<super::check_catalog::Check>,
 }
 
 impl ExecutionPacket {
@@ -67,6 +69,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                         result: None,
                         executed: None,
                         succeeded: None,
+                        edit_outcome: None,
                         result_step: None,
                         freshness: super::current_evidence::Freshness::Pending,
                     });
@@ -89,6 +92,8 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("REJECTED BY USER");
             let pending = result.starts_with("Awaiting approval");
             action.executed = Some(!rejected && !pending);
+            action.edit_outcome =
+                crate::execution_evidence::file_edit_outcome(&action.tool, result);
             action.succeeded = if pending {
                 None
             } else if rejected {
@@ -96,9 +101,11 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
             } else {
                 match action.tool.as_str() {
                     "exec" => crate::execution_evidence::exec_outcome(result),
-                    "write_file" | "patch_file" | "apply_diff" => Some(
-                        crate::execution_evidence::file_edit_succeeded(&action.tool, result),
-                    ),
+                    "write_file" | "patch_file" | "apply_diff" => {
+                        action.edit_outcome.map(|outcome| {
+                            outcome != crate::execution_evidence::FileEditOutcome::Failed
+                        })
+                    }
                     // Read/search formats are not uniform. A returned result is
                     // evidence of execution, not by itself evidence of success.
                     _ => None,
@@ -115,6 +122,10 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
         actions,
         mutation_step,
         verification_step: build.max(behavioral),
+        available_checks: super::check_catalog::Catalog::from_root(
+            crate::task_origin::root_user_text(messages),
+        )
+        .checks,
         pending_exact_checks: task_harness::benchmark_proof::pending_commands(
             messages,
             crate::task_origin::root_user_text(messages),

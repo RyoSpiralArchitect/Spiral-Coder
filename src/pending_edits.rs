@@ -328,19 +328,22 @@ impl PendingEditStore {
         if let Some(budget) = &it.budget {
             budget.check_write(&abs, &it.content)?;
         }
-        if let Some(parent) = abs.parent() {
-            std::fs::create_dir_all(parent)
-                .with_context(|| format!("create_dir_all failed: {}", parent.display()))?;
+        let changed = current.as_deref() != Some(it.content.as_str());
+        if changed {
+            if let Some(parent) = abs.parent() {
+                std::fs::create_dir_all(parent)
+                    .with_context(|| format!("create_dir_all failed: {}", parent.display()))?;
+            }
+            std::fs::write(&abs, it.content.as_bytes())
+                .with_context(|| format!("write failed: {}", abs.display()))?;
         }
-
-        std::fs::write(&abs, it.content.as_bytes())
-            .with_context(|| format!("write failed: {}", abs.display()))?;
 
         it.status = "approved".to_string();
         it.result = Some(serde_json::json!({
             "ok": true,
-            "bytes_written": it.content.as_bytes().len(),
-            "message": it.message,
+            "changed": changed,
+            "bytes_written": if changed { it.content.len() } else { 0 },
+            "message": if changed { it.message.clone() } else { crate::file_tools::edit_preview::unchanged_message(&it.path) },
         }));
 
         Ok(PendingEditResolvedItem {

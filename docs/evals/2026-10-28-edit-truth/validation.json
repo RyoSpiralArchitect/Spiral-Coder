@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "scope": "operator implementation before live provider calls",
+  "rust": {
+    "passed": 970,
+    "ignored": 1,
+    "integration_passed": 1
+  },
+  "python": {
+    "passed": 79
+  },
+  "javascript_web_and_npm": {
+    "passed": 85
+  },
+  "tui_replay": {
+    "passed": 12,
+    "total": 12
+  },
+  "repo_map": {
+    "passed": 14,
+    "total": 14
+  },
+  "lite_server_smoke": "passed",
+  "format_and_js_shell_syntax": "passed",
+  "review": {
+    "fresh_fork_findings": 4,
+    "fixed": 4,
+    "reproduced_before_fix": true
+  },
+  "strict_clippy": "Additional, non-required -D warnings attempt failed on style warnings. Not claimed clean; CI uses scripts/check-local.sh.",
+  "log_sha256": {
+    "spiral41-full-tests.log": "7f889f93cd14bab5931478eeaa6976dc65146066a1333069f4f142a869a885ce",
+    "spiral41-python-tests.log": "b24f6c3af5e2e6c5362ab3e3b873c585d7adf668de77b9d19f674dc0339a08cb",
+    "spiral41-node-tests.log": "d0061ff92a4714537d25fc70da086cce61a273dadbab580988c32ea3c6e36cd9",
+    "spiral41-tui-replay.log": "e4ab69367bfb1e6ce13a08dbe50a543f7c3d9bfc952457788bdd964708673e3e",
+    "spiral41-repo-map.log": "8b844951b425d8975bf3f7e29f4c37cb4eb266d08239890a77bc292f2e702130",
+    "spiral41-smoke.log": "fdf33169ad224760c5af111fc6f191158db7a346f07de2cc4a84304b17bc7b2b",
+    "spiral41-review-red.log": "d22f02b66a51ae380a2fbb4b5e589306fec3842ed4ada40d2e6aa0f69079c5cf",
+    "spiral41-eval-red.log": "28265097cf7e778b8f1422c617371383a0edbc0be527353d8aafcdabe9ba14a8",
+    "spiral41-ranking-red.log": "7d3e40a775e0439c2ad980172653382dc77c7b61052f80e387e502176e5cb68e"
+  },
+  "post_live_followup": {
+    "in_frozen_live_executor": false,
+    "rust": {
+      "passed": 972,
+      "ignored": 1,
+      "integration_passed": 1
+    },
+    "tui_replay": {
+      "passed": 13,
+      "total": 13
+    },
+    "repo_map": {
+      "passed": 14,
+      "total": 14
+    },
+    "reproduced_before_fix": [
+      "output-limited Observer response borrowed transport credit",
+      "Observer range repair omitted native bounds failure"
+    ],
+    "log_sha256": {
+      "spiral41-output-limit-red.log": "f3bead1c12e9bc20e2fdf74dcf9405f62dc02b74342578c1979f76ba8c7d1ba2",
+      "spiral41-range-repair-red.log": "8ad4db2b33171a552e3004c48a75f7f6cac67b2eebbc43fac54e2ec39f6d114c",
+      "spiral41-followup-tests.log": "91290287f865ef4d469b09d487551ab8043903d7f90e1c0cf9c5d781736e179f",
+      "spiral41-followup-tui.log": "ee481e2d7a23961551725d00922a717ebf3a94d50f8b893b96f36c6cec2ddd74",
+      "spiral41-followup-repo-map.log": "bddc78fbde6f77755f6a426c97c19b4013181be7bd50a649f74d74803878317c"
+    }
+  }
+}

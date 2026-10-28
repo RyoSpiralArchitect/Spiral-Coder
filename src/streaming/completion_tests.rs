@@ -4,10 +4,25 @@ use httpmock::prelude::*;
 
 #[tokio::test]
 async fn clean_eof_without_terminal_frame_is_not_completed_or_transport_credit() {
-    for ending in [
-        "",
-        ",\"finish_reason\":\"stop\"",
-        ",\"finish_reason\":\"length\"",
+    for (reason, content, expected_status, transport_eligible) in [
+        (None, "{unfinished", "stream_interrupted", false),
+        (Some("stop"), "{unfinished", "completed", true),
+        (Some("length"), "{unfinished", "output_limited", false),
+        (Some("length"), "", "output_limited", false),
+        (Some("content_filter"), "", "output_filtered", false),
+        (
+            Some("function_call_filter: MALFORMED_FUNCTION_CALL"),
+            "",
+            "output_filtered",
+            false,
+        ),
+        (
+            Some("unexpected_stop"),
+            "{unfinished",
+            "provider_stopped",
+            false,
+        ),
+        (Some("stop"), "", "empty_response", false),
     ] {
         let server = MockServer::start();
         let wire = server.mock(|when, then| {
@@ -15,8 +30,11 @@ async fn clean_eof_without_terminal_frame_is_not_completed_or_transport_credit()
             then.status(200)
                 .header("content-type", "text/event-stream")
                 .body(format!(
-                "data: {{\"choices\":[{{\"delta\":{{\"content\":\"{{unfinished\"}}{ending}}}]}}\n\n"
-            ));
+                    "data: {}\n\n",
+                    json!({"choices":[{
+                        "delta":{"content":content}, "finish_reason":reason
+                    }]})
+                ));
         });
         let cli = crate::Cli::try_parse_from([
             "spiral-coder",
@@ -54,15 +72,8 @@ async fn clean_eof_without_terminal_frame_is_not_completed_or_transport_credit()
         )
         .await;
         wire.assert_hits(1);
-        assert_eq!(result.is_err(), ending.is_empty());
-        assert_eq!(
-            budget.snapshot().requests[0].status,
-            if ending.is_empty() {
-                "stream_interrupted"
-            } else {
-                "completed"
-            }
-        );
+        assert_eq!(result.is_err(), reason.is_none());
+        assert_eq!(budget.snapshot().requests[0].status, expected_status);
         assert_eq!(
             budget
                 .reject_transport(
@@ -71,12 +82,12 @@ async fn clean_eof_without_terminal_frame_is_not_completed_or_transport_credit()
                     crate::work_budget::TransportRejection::ObserverEnvelope
                 )
                 .unwrap(),
-            !ending.is_empty()
+            transport_eligible
         );
         let mut done = false;
         while let Ok(token) = rx.try_recv() {
             done |= matches!(token, StreamToken::Done);
         }
-        assert_eq!(done, !ending.is_empty());
+        assert_eq!(done, reason.is_some());
     }
 }

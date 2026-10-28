@@ -8,6 +8,7 @@ use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
 
 mod accounting;
+mod completion;
 #[cfg(test)]
 mod completion_tests;
 pub(crate) mod provider_metadata;
@@ -603,11 +604,11 @@ pub async fn stream_openai_compat_json(
                     saw_output = true;
                     let _ = tx.send(StreamToken::ToolCall(call)).await;
                 }
-                if let Some(note) = abnormal_empty_finish_note(&last_finish_reason, saw_output) {
+                if let Some(note) = completion::empty_finish_note(&last_finish_reason, saw_output) {
                     let _ = tx.send(StreamToken::Delta(note)).await;
                 }
                 if let Some(meter) = request_meter.as_mut() {
-                    meter.status("completed");
+                    meter.status(completion::status(&last_finish_reason, saw_output));
                 }
                 drop(request_meter.take());
                 let _ = tx.send(StreamToken::Done).await;
@@ -665,34 +666,15 @@ pub async fn stream_openai_compat_json(
         !last_finish_reason.is_empty() && String::from_utf8_lossy(&buf).trim().is_empty(),
         "stream ended before a terminal frame"
     );
-    if let Some(note) = abnormal_empty_finish_note(&last_finish_reason, saw_output) {
+    if let Some(note) = completion::empty_finish_note(&last_finish_reason, saw_output) {
         let _ = tx.send(StreamToken::Delta(note)).await;
     }
     if let Some(meter) = request_meter.as_mut() {
-        meter.status("completed");
+        meter.status(completion::status(&last_finish_reason, saw_output));
     }
     drop(request_meter.take());
     let _ = tx.send(StreamToken::Done).await;
     Ok(())
-}
-
-/// Some providers (e.g. Gemini's OpenAI-compatible endpoint) end a stream with
-/// an empty message when the generated tool call is filtered or malformed.
-/// Surface that finish_reason as a visible note so the agent can retry with a
-/// different shape instead of silently burning an empty turn.
-fn abnormal_empty_finish_note(finish_reason: &str, saw_output: bool) -> Option<String> {
-    if saw_output
-        || finish_reason.is_empty()
-        || finish_reason == "stop"
-        || finish_reason == "tool_calls"
-    {
-        return None;
-    }
-    Some(format!(
-        "\n[provider] Empty response: finish_reason={finish_reason}. \
-The provider dropped the generated output (e.g. a malformed or filtered tool call); \
-retry with simpler valid tool arguments or plain text.\n"
-    ))
 }
 
 /// Send streaming tokens from the Anthropic provider.
@@ -997,11 +979,11 @@ mod tests {
 
     #[test]
     fn abnormal_empty_finish_note_is_quiet_for_normal_stops() {
-        assert!(abnormal_empty_finish_note("stop", false).is_none());
-        assert!(abnormal_empty_finish_note("tool_calls", false).is_none());
-        assert!(abnormal_empty_finish_note("length", true).is_none());
-        assert!(abnormal_empty_finish_note("length", false).is_some());
-        assert!(abnormal_empty_finish_note("", false).is_none());
+        assert!(completion::empty_finish_note("stop", false).is_none());
+        assert!(completion::empty_finish_note("tool_calls", false).is_none());
+        assert!(completion::empty_finish_note("length", true).is_none());
+        assert!(completion::empty_finish_note("length", false).is_some());
+        assert!(completion::empty_finish_note("", false).is_none());
     }
 
     #[test]

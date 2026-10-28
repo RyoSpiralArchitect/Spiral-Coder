@@ -76,6 +76,8 @@ fn history(messages: &[Value]) -> BTreeMap<String, Observation> {
         };
         let text = message["content"].as_str().unwrap_or("");
         if matches!(name, "exec" | "patch_file" | "write_file" | "apply_diff")
+            && crate::execution_evidence::file_edit_outcome(name, text)
+                != Some(crate::execution_evidence::FileEditOutcome::Unchanged)
             && !text.trim_start().starts_with("Awaiting approval")
             && crate::execution_evidence::exec_may_have_run(text)
         {
@@ -159,6 +161,24 @@ mod tests {
             );
         }
         messages
+    }
+
+    #[test]
+    fn unchanged_edits_preserve_observation_pressure_review_regression() {
+        for name in ["write_file", "patch_file", "apply_diff"] {
+            let mut messages = repeated();
+            tool(
+                &mut messages,
+                name,
+                json!({"path":"src/a.rs"}),
+                "OK: unchanged 'src/a.rs'",
+            );
+            assert!(block(
+                &messages,
+                &call(json!({"path":"src/a.rs","start_line":1,"end_line":20}))
+            )
+            .is_some());
+        }
     }
 
     #[test]

@@ -281,12 +281,13 @@ fn automatic_failure_keeps_exact_diagnosis_through_unrelated_successes_and_allow
 
 #[test]
 fn cached_read_observes_but_blocked_and_failed_reads_do_not_claim_diagnosis() {
-    let root = tempfile::tempdir().unwrap();
     for suffix in [
         "",
         " [⚡ cached — unchanged since last read]",
         " [pruned 4L]",
     ] {
+        // Each case needs an actual failed edit, not an identical rewrite.
+        let root = tempfile::tempdir().unwrap();
         let (mut g, _) = focused(root.path());
         let read = call("read", "read_file", json!({"path":TARGET}));
         g.focus.record_result(
@@ -308,6 +309,7 @@ fn cached_read_observes_but_blocked_and_failed_reads_do_not_claim_diagnosis() {
         g.on_diagnostic_result(true);
         assert_eq!(g.stage, Some(RecoveryStage::Fix), "{suffix}");
     }
+    let root = tempfile::tempdir().unwrap();
     let (mut g, _) = focused(root.path());
     std::fs::remove_file(root.path().join(TARGET)).unwrap();
     let read = call("missing", "read_file", json!({"path":TARGET}));

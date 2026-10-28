@@ -1136,3 +1136,72 @@ and failed-test count; dependency/build failure is not reproduction. Behavioral 
 observed improvement against the frozen baseline counts, not merely a source diff.
 Qualification is still the conjunction of all existing gates; the budget gate now
 checks the separately frozen pools, role reservation and exact ledger charges.
+
+### Edit outcomes and declared check selections
+
+`execution_evidence::FileEditOutcome` distinguishes `changed`, `unchanged` and
+`failed` native file operations; unrecognized/refused/pending results remain
+unknown. Direct writes, text/JSON patches, diffs and approved pending edits
+compare content before writing. Creating a previously absent empty file is a
+change. `OK: unchanged` never writes the file, runs a post-edit test, resets
+failed-edit memory, advances recovery, completes a working-memory step, supplies
+acceptance evidence, invalidates current proof or requests a mutation impact.
+The approval store still rejects stale previews; its result records `changed`
+and zero `bytes_written` for an unchanged operation.
+
+`evidence_packet::ActionEvidence.edit_outcome` and
+`work_progress.native_file_edits.unchanged` expose this distinction to both panes.
+An unchanged operation can succeed as an operation without being an edit.
+Historic `OK: wrote/patched/applied` receipts retain their legacy interpretation;
+without before/after content, older no-op receipts cannot be repaired retroactively.
+The coupled and self-dogfood evaluators count only `edit_outcome: changed` as a
+native edit. Missing fields retain the legacy interpretation; explicit unknown
+or unchanged outcomes do not supply edit credit. Unchanged operations also
+preserve repeated-observation pressure.
+
+`agent/check_catalog.rs` derives `available_checks` from the current human task.
+Existing exact required commands receive `required-1`, `required-2`, etc. A
+standalone optional `<task_checks>` JSON block (`version: 1`, `checks` array of
+`id`/`command`) can name recognized verification commands such as a reproducer.
+It neither adds nor satisfies a completion obligation. Quoted/fenced examples
+and runtime/Observer messages cannot create a catalog. Invalid or duplicate
+catalog declarations disable selections while preserving original requirements.
+
+A Coder selects `exec({"check_id":"reproduce"})` alone. The runtime resolves
+it before action/recovery gates, pins `cwd` to the normalized task root, and
+records the ID, full command and directory in `check_selected` telemetry and
+the correlated native exec arguments. Those expanded arguments are runtime
+resolution of the authored ID, not a model-authored command. Unknown IDs,
+command/directory overrides and missing roots execute nothing and consume the
+ordinary task allowance. Approval, action classification, exact proof, failure
+routing and post-mutation freshness stay on the ordinary exec path. Output is
+bounded by that path; shell output filters are unnecessary and are never
+silently removed or accepted as the required command.
+Current-evidence identity uses the exact command and runtime execution directory,
+so a newer failed direct call or another ID for that command supersedes an older
+success. Observer assist receipts correlate the selected ID with the resolved
+call even when approval is refused or pending; correlation never grants execution.
+
+Catalogs are derived state, not a new persisted authority. Provider-signed
+arguments cannot be rewritten: Google endpoints keep the existing full-command
+schema, and any signed ID selection is rejected without modifying the call.
+Unsigned OpenAI-compatible/Mistral calls can use ID selections. Full commands
+remain available on every supported Coder provider.
+
+### Provider termination and Observer range repair
+
+OpenAI-compatible streams (including Mistral and Gemini) retain provider output
+termination in the existing request `status`: `output_limited` for `length`,
+`output_filtered` for filtering, `empty_response` for a normal empty answer, and
+`provider_stopped` for an unrecognized terminal reason. These terminal streams
+still deliver `Done` to end UI streaming; that signal does not mean a complete
+authored envelope. Only `completed` responses can receive transport repair credit,
+so truncated/empty/filtered output remains task work even when it also fails JSON
+validation. Visible provider notes are diagnostics, never authored proof. Existing
+receipts retain their recorded status; no historical ledger is rewritten.
+
+Observer read-range validation uses `ReadRequest::bounds`, as native reads do.
+Its specific failure (one-based ordering or the 200-line ceiling) is retained in
+the UI and explicit repair prompt rather than replaced by a generic schema error.
+Invalid ranges still cannot be forwarded, and only a newly valid suggestion can
+be queued. No bounds are silently clamped.

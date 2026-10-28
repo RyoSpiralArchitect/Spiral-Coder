@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "runtime_commit": "e3a6c228a09f01db0a24d06ab0efb6c3afb5aa57",
+  "source_clean_at_freeze": true,
+  "binary_sha256": "f8ddfe032ea2da35c6c0a55091868708bafc9e359514c6bdfd8924cda33bfeb6",
+  "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+  "frozen_before_provider_calls": true,
+  "candidate_reloaded_into_executor": false
+}

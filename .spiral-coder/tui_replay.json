@@ -558,6 +558,106 @@
         }
       ],
       "reason_hint": "blocked_terminal_diagnosis"
+    },
+    {
+      "id": "observer-declared-check-selection",
+      "prompt": "Run the exact declared test after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "check-selection"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Run the exact declared test after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Required check remains pending. The last file edit was unchanged; it supplied no edit progress or verification."
+        }
+      ],
+      "observer_response": {
+        "summary": "Select the exact required check by ID. An unchanged edit does not verify the task.",
+        "primary_blocker": "missing_verification",
+        "suggestions": [
+          {
+            "kind": "verify",
+            "reason": "The declared exact check is pending. Use its runtime selection without adding a filter.",
+            "confidence": 0.95,
+            "suggested_tool": "exec",
+            "suggested_args": {
+              "check_id": "required-1"
+            },
+            "based_on": [
+              "task_obligations",
+              "execution_evidence"
+            ]
+          }
+        ],
+        "quickest_check": "exec(check_id=required-1)",
+        "why_this_first": "Execute the exact declared command and inspect its native result.",
+        "fallback": "If approval is refused, retain the missing verification in the report."
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "check_id=required-1"
+        }
+      ]
+    },
+    {
+      "id": "observer-rejects-oversized-read-range",
+      "prompt": "Inspect the recovery source in bounded ranges before making a repair.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "bounded-read",
+        "repair"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect the recovery source in bounded ranges before making a repair."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Inspect the relevant source before editing."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the remaining recovery source.",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "Inspect the restoration path.",
+            "confidence": 0.95,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent/recovery.rs",
+              "start_line": 100,
+              "end_line": 312
+            }
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "hint_not_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "recovery.rs"
+        }
+      ]
     }
   ]
 }

@@ -39,6 +39,7 @@ struct TaskText {
 #[derive(Debug, Default, Serialize)]
 struct FileEdits {
     succeeded: usize,
+    unchanged: usize,
     failed: usize,
     blocked: usize,
     unconfirmed: usize,
@@ -76,6 +77,10 @@ pub(super) fn project(root: &str, evidence: &ExecutionPacket) -> WorkProgress {
     let mut native_file_edits = FileEdits::default();
     let mut successful_paths = BTreeSet::new();
     for action in evidence.actions.iter().filter(|a| is_file_edit(a)) {
+        if action.edit_outcome == Some(crate::execution_evidence::FileEditOutcome::Unchanged) {
+            native_file_edits.unchanged += 1;
+            continue;
+        }
         match (action.executed, action.succeeded) {
             (Some(true), Some(true)) => {
                 native_file_edits.succeeded += 1;
@@ -126,7 +131,8 @@ fn observations(evidence: &ExecutionPacket) -> Observations {
         .iter()
         .filter(|a| {
             a.executed == Some(true)
-                && (a.tool == "exec" || (is_file_edit(a) && a.succeeded == Some(true)))
+                && (a.tool == "exec"
+                    || a.edit_outcome == Some(crate::execution_evidence::FileEditOutcome::Changed))
         })
         .filter_map(|a| a.result_step)
         .max()
@@ -220,7 +226,7 @@ mod tests {
         );
         assert_eq!(
             facts["native_file_edits"],
-            json!({"succeeded":0,"failed":0,"blocked":0,"unconfirmed":0,"successful_paths":[],"omitted_successful_paths":0,"successes_without_a_path":0})
+            json!({"succeeded":0,"unchanged":0,"failed":0,"blocked":0,"unconfirmed":0,"successful_paths":[],"omitted_successful_paths":0,"successes_without_a_path":0})
         );
         assert_eq!(
             facts["observations_since_last_edit_or_exec"],
@@ -291,7 +297,7 @@ mod tests {
         let facts = view(&messages);
         assert_eq!(
             facts["native_file_edits"],
-            json!({"succeeded":1,"failed":1,"blocked":1,"unconfirmed":1,"successful_paths":["docs/loop.md"],"omitted_successful_paths":0,"successes_without_a_path":0})
+            json!({"succeeded":1,"unchanged":0,"failed":1,"blocked":1,"unconfirmed":1,"successful_paths":["docs/loop.md"],"omitted_successful_paths":0,"successes_without_a_path":0})
         );
         assert_eq!(facts["executed_commands"], 1);
         assert_eq!(facts["observations_since_last_edit_or_exec"]["returned"], 1);

@@ -1,0 +1,1256 @@
+{
+  "version": 1,
+  "plan_sha256": "1e2bac31b7b76ef888f58cc283b152ba183e7f32c9a55a1b8f60f53e24b658df",
+  "diagnostic_only": true,
+  "concurrent_baseline_arm": false,
+  "promotion_authorized": false,
+  "provider_requests": 26,
+  "verified_raw_files": 1789,
+  "episodes": [
+    {
+      "qualified_candidate": false,
+      "promotion_authorized": false,
+      "gates": {
+        "native_receipts_valid": true,
+        "required_paths_changed": false,
+        "pinned_run_receipt": true,
+        "native_ledger_binding": true,
+        "native_completed": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false,
+        "native_edit": false,
+        "actual_edit": false,
+        "fresh_native_checks": false,
+        "no_pending_checks": false,
+        "strict_scope": true,
+        "original_protected_files_preserved": true,
+        "both_roles_called": true,
+        "exact_role_configuration": true,
+        "role_accounting_consistent": true,
+        "bounded_requests": true,
+        "process_ok": false,
+        "independent_checks_passed": false,
+        "candidate_unchanged_by_assessor": true,
+        "no_secret_redactions": true,
+        "patch_retained": true
+      },
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "native_checks": {
+        "cargo test --locked --bin spiral-coder -q": false
+      },
+      "requests": 14,
+      "request_roles": {
+        "coder": 9,
+        "observer": 5
+      },
+      "process": {
+        "exit_code": 1,
+        "timed_out": false,
+        "output_limit": false,
+        "log_redactions": 0,
+        "wall_seconds": 387.533,
+        "finished_at": "2026-10-28T02:40:53.908284+00:00",
+        "redacted_files": [],
+        "patch_exit_code": 0
+      },
+      "budget_accounting": {
+        "valid": true,
+        "wire_requests": 14,
+        "task_requests": 12,
+        "transport_requests": 2,
+        "coder_task_requests": 9,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      },
+      "development_progress": {
+        "development_only": true,
+        "qualification_unchanged": true,
+        "milestones": {
+          "reproduced": "observed",
+          "behavior_changed": "not_observed",
+          "visible_passed": "not_observed",
+          "control_non_regression": "observed",
+          "fresh_full_check": "not_observed",
+          "docs_and_receipts": "not_observed"
+        },
+        "highest_contiguous_stage": 1,
+        "first_unmet_stage": "behavior_changed",
+        "termination": "interrupted"
+      },
+      "roles": {
+        "coder": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        },
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "receipt_errors": [],
+      "independent_checks": [
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 21.622,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "candidate-build",
+          "kind": "build",
+          "argv": [
+            "cargo",
+            "build",
+            "--locked",
+            "--bin",
+            "spiral-coder"
+          ],
+          "test_summary": null,
+          "passed": true,
+          "log_sha256": "807c5fad06139a89295bf6c7560638c02578a2e631e355af85f5ebe1e7294172",
+          "log": "checks/candidate/candidate-build.log",
+          "package_cache_reset_sha256": "3c1e62674095b7988e9d26eceabfb7d87f269d15944941e971de248871fe2757",
+          "candidate_binary_sha256": "e8b000240abe3d4b9b9f1607db56e04d576ebc19c62b4f3b2ef7faf69dc8958c"
+        },
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 33.003,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "-q",
+            "--",
+            "--skip",
+            "self_dogfood_recovery_resume_probe",
+            "--skip",
+            "self_dogfood_visible_recovery_tests"
+          ],
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          },
+          "passed": true,
+          "log_sha256": "22fe4a5b387a674514274ad9c249dfdf53e3afc9541a8e7001b429cc6feb16ef",
+          "log": "checks/candidate/existing-rust-tests.log",
+          "package_cache_reset_sha256": "3c1e62674095b7988e9d26eceabfb7d87f269d15944941e971de248871fe2757",
+          "candidate_binary_sha256": "e8b000240abe3d4b9b9f1607db56e04d576ebc19c62b4f3b2ef7faf69dc8958c"
+        },
+        {
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.678,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "self_dogfood_visible_recovery_tests",
+            "--",
+            "--nocapture"
+          ],
+          "test_summary": {
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          },
+          "passed": false,
+          "log_sha256": "844d53409a906d3c4e39f59943ab27f0bd5e536f22b762cfb9036c3ab8cddf46",
+          "log": "checks/candidate/visible-recovery-regression.log",
+          "package_cache_reset_sha256": "3c1e62674095b7988e9d26eceabfb7d87f269d15944941e971de248871fe2757",
+          "candidate_binary_sha256": "e8b000240abe3d4b9b9f1607db56e04d576ebc19c62b4f3b2ef7faf69dc8958c"
+        },
+        {
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.346,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "self_dogfood_recovery_resume_probe",
+            "--",
+            "--nocapture"
+          ],
+          "test_summary": {
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          },
+          "passed": false,
+          "log_sha256": "f254a9c58f32614874b141cc4832bad6a8684faba2be8ee5d00d693c84bd8a7e",
+          "log": "checks/candidate/recovery-handoff-oracle.log",
+          "package_cache_reset_sha256": "3c1e62674095b7988e9d26eceabfb7d87f269d15944941e971de248871fe2757",
+          "candidate_binary_sha256": "e8b000240abe3d4b9b9f1607db56e04d576ebc19c62b4f3b2ef7faf69dc8958c"
+        },
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 1.671,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "argv": [
+            "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-runtime-20261024/target/debug/spiral-coder",
+            "tui-replay",
+            "--spec",
+            ".spiral-coder/tui_replay.json",
+            "--out-dir",
+            "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-luna-large/checks/candidate/artifacts/tui-replay"
+          ],
+          "test_summary": null,
+          "passed": true,
+          "log_sha256": "d98174c12881bed000b44b8477cbd52d036bba34687bf91e42619f8545a4e724",
+          "log": "checks/candidate/candidate-tui-replay.log",
+          "package_cache_reset_sha256": "3c1e62674095b7988e9d26eceabfb7d87f269d15944941e971de248871fe2757",
+          "candidate_binary_sha256": "e8b000240abe3d4b9b9f1607db56e04d576ebc19c62b4f3b2ef7faf69dc8958c"
+        }
+      ],
+      "pair": "luna-large",
+      "attempt": 1,
+      "local_episode": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-luna-large",
+      "executor_source_commit": "e3a6c228a09f01db0a24d06ab0efb6c3afb5aa57",
+      "executor_sha256": "f8ddfe032ea2da35c6c0a55091868708bafc9e359514c6bdfd8924cda33bfeb6",
+      "predeclaration_sha256": "fca8d9b04733826dc2197de8e077ee35f700f9482154d1e2b32d928837614c29",
+      "run_receipt_sha256": "16d268f28623e308d002987d01cd57b6516fcce203b68b1400819dc97e1bd366",
+      "assessment_sha256": "3b3045ff6685be09270babe5950239fe91a38dbe724a6503a889267d51605e98",
+      "raw_manifest_sha256": "e833f44296662cdb95b89239314a35a5b42d9f50886f857d9ebcce78282a3f77",
+      "verified_raw_files": 895,
+      "inputs_inventory": {
+        "probe.rs": {
+          "sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+          "bytes": 11206,
+          "mode": 420
+        },
+        "prompt.txt": {
+          "sha256": "f3ef05fe1bb79b55d87e6663285df1de1352fc83a641a8ded011fd8669cbdd39",
+          "bytes": 6389,
+          "mode": 420
+        },
+        "reference/handoff-note.md": {
+          "sha256": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+          "bytes": 553,
+          "mode": 420
+        },
+        "reference/src/tui/agent/edit_failure.rs": {
+          "sha256": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+          "bytes": 11695,
+          "mode": 420
+        },
+        "reference/src/tui/agent/recovery.rs": {
+          "sha256": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+          "bytes": 12223,
+          "mode": 420
+        },
+        "spec.json": {
+          "sha256": "af049787b4555b62407b1faa7597999fa4f5685acdf4eb8db9a4eb25c4895a40",
+          "bytes": 4220,
+          "mode": 420
+        },
+        "visible-registration.rs": {
+          "sha256": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+          "bytes": 112,
+          "mode": 420
+        },
+        "visible-test.rs": {
+          "sha256": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25",
+          "bytes": 6989,
+          "mode": 420
+        }
+      },
+      "driver_sha256": {
+        "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+        "coupled_bench/common.py": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+        "coupled_bench/evidence.py": "104d99a935bcb3c288bad8cc16ef78a54208f256f2d3c92668ffd6ab24d6b8df",
+        "coupled_bench/oracles.py": "57e93e9869ff39766719f2412e740e8f69ce2378e71c3264fcee6d2b7376c649",
+        "coupled_bench/runner.py": "e4078f3fdde3e68d5233a32b0345f2c72e36132c0c479923d5290457de176a53",
+        "run_self_dogfood.py": "d1d7b352d4b42f3ecd5ca581ce6c3b69a1dad5b09a491c80114d0d543588af90",
+        "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+        "self_dogfood/assessment.py": "6d38e27fdd6d84b85c20d3a5940adfcef4600fba42699c270cfa9b3daabea148",
+        "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+        "self_dogfood/contracts.py": "3dd23231c027456d99b7c1922e5c52f5f0f8db2b275dd1cb642b62cbf1d6b68f",
+        "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+        "self_dogfood/measurement.py": "86a26ca50300eb11a5c159c38532db215f8aa227a95d61791ca4be6929d6fab7",
+        "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+        "self_dogfood/runner.py": "b8b37a0beb2f87b4b832e270c5634c4ddb79b337990395bee16dbd956c1d997f"
+      },
+      "native_completed": false,
+      "termination": "interrupted",
+      "error": "Observer: Observer next-action failed: error decoding response body",
+      "request_ledger": [
+        {
+          "charge": "task",
+          "duration_ms": 8489,
+          "estimated_input_tokens": 11518,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 22408,
+          "estimated_input_tokens": 9771,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 2435,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2049
+            },
+            "prompt_tokens": 8346,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10781
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8882,
+          "estimated_input_tokens": 14019,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4803,
+          "estimated_input_tokens": 14930,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4857,
+          "estimated_input_tokens": 14767,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4552,
+          "estimated_input_tokens": 15366,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "transport",
+          "duration_ms": 77351,
+          "estimated_input_tokens": 11708,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 8192,
+            "completion_tokens_details": {
+              "reasoning_tokens": 8191
+            },
+            "prompt_tokens": 10303,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 18495
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": "observer_envelope"
+        },
+        {
+          "charge": "task",
+          "duration_ms": 36154,
+          "estimated_input_tokens": 11910,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 3209,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2539
+            },
+            "prompt_tokens": 10457,
+            "prompt_tokens_details": {
+              "cached_tokens": 9708
+            },
+            "service_tier": "standard",
+            "total_tokens": 13666
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8280,
+          "estimated_input_tokens": 18346,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5761,
+          "estimated_input_tokens": 19593,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4184,
+          "estimated_input_tokens": 20618,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5973,
+          "estimated_input_tokens": 22419,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "transport",
+          "duration_ms": 78344,
+          "estimated_input_tokens": 12832,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 8192,
+            "completion_tokens_details": {
+              "reasoning_tokens": 8191
+            },
+            "prompt_tokens": 11403,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 19595
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": "observer_envelope"
+        },
+        {
+          "charge": "task",
+          "duration_ms": 90004,
+          "estimated_input_tokens": 13034,
+          "id": 13,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "stream_interrupted",
+          "transport_rejection": null
+        }
+      ],
+      "assist_receipts": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_Wr15GoLx94evGKoOMiD4zkh9",
+            "call_APP6RbW9rSjvLrbNp8iRrYF9",
+            "call_55T6MiMHT9wt5EtVv1uU23XD",
+            "call_ckAuyd4Zwev3oByiLa8SC1G8"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "cargo test --locked --bin spiral-coder -q"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "src/tui/agent/self_dogfood_visible_recovery_tests.rs",
+              "start_line": 140
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_Wr15GoLx94evGKoOMiD4zkh9"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "call_QXmZPqMXN3Ow2BwVzTrcZXdR",
+            "call_vrnxA3HmugBFxBkSZGH12vRl",
+            "call_LKkTefxIWNLgXsxIpfAcuoUl",
+            "call_8u6r3pX8mwAAcHsa0mF9iZK4"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "cargo test --locked --bin spiral-coder -q"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 312,
+              "path": "src/tui/agent/recovery.rs",
+              "start_line": 200
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_QXmZPqMXN3Ow2BwVzTrcZXdR"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        }
+      ],
+      "selected_checks": [
+        {
+          "call_id": "call_nUrynBt0ZnJwxSnzB7a6Y4uv",
+          "arguments": {
+            "check_id": "reproduce",
+            "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-luna-large/episode/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "current"
+        }
+      ],
+      "native_edit_outcomes": {
+        "unconfirmed": 1,
+        "unchanged": 1
+      },
+      "native_mutation_step": null,
+      "pending_exact_checks": [
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "observer_validation_messages": [
+        "(next-action) JSON envelope framing recovered: OpeningBraceAndQuote; authored values and raw response retained; normal action and evidence gates apply.",
+        "(next-action) invalid response prevented automatic forwarding: missing JSON object; raw Observer output was preserved.",
+        "(next-action) JSON envelope framing recovered: OpeningBrace; authored values and raw response retained; normal action and evidence gates apply.",
+        "(next-action) invalid response prevented automatic forwarding: missing JSON object; raw Observer output was preserved."
+      ],
+      "transport_eligibility_audit": {
+        "conforms_to_declared_pure_framing_policy": false,
+        "abnormal_provider_finishes": [
+          {
+            "request_id": 6,
+            "finish_reason": "length",
+            "recorded_status": "completed",
+            "recorded_charge": "transport",
+            "raw_sha256": "d30245dd2a5a2e68f050e591d25da6d575b1e35de3d77efba44a8f2d5f7a6ef4",
+            "transport_eligible": false
+          },
+          {
+            "request_id": 12,
+            "finish_reason": "length",
+            "recorded_status": "completed",
+            "recorded_charge": "transport",
+            "raw_sha256": "d30245dd2a5a2e68f050e591d25da6d575b1e35de3d77efba44a8f2d5f7a6ef4",
+            "transport_eligible": false
+          }
+        ],
+        "note": "Frozen ledger and assessor retained. This supplemental audit distinguishes output exhaustion from pure authored-envelope violations; no retrospective reclassification or extra live attempt."
+      },
+      "candidate_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "qualified_candidate": false,
+      "promotion_authorized": false,
+      "gates": {
+        "native_receipts_valid": true,
+        "required_paths_changed": false,
+        "pinned_run_receipt": true,
+        "native_ledger_binding": true,
+        "native_completed": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false,
+        "native_edit": false,
+        "actual_edit": false,
+        "fresh_native_checks": false,
+        "no_pending_checks": false,
+        "strict_scope": true,
+        "original_protected_files_preserved": true,
+        "both_roles_called": true,
+        "exact_role_configuration": true,
+        "role_accounting_consistent": true,
+        "bounded_requests": true,
+        "process_ok": true,
+        "independent_checks_passed": false,
+        "candidate_unchanged_by_assessor": true,
+        "no_secret_redactions": true,
+        "patch_retained": true
+      },
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "native_checks": {
+        "cargo test --locked --bin spiral-coder -q": false
+      },
+      "requests": 12,
+      "request_roles": {
+        "coder": 8,
+        "observer": 4
+      },
+      "process": {
+        "exit_code": 0,
+        "timed_out": false,
+        "output_limit": false,
+        "log_redactions": 0,
+        "wall_seconds": 105.839,
+        "finished_at": "2026-10-28T02:45:53.701773+00:00",
+        "redacted_files": [],
+        "patch_exit_code": 0
+      },
+      "budget_accounting": {
+        "valid": true,
+        "wire_requests": 12,
+        "task_requests": 12,
+        "transport_requests": 0,
+        "coder_task_requests": 8,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      },
+      "development_progress": {
+        "development_only": true,
+        "qualification_unchanged": true,
+        "milestones": {
+          "reproduced": "observed",
+          "behavior_changed": "not_observed",
+          "visible_passed": "not_observed",
+          "control_non_regression": "observed",
+          "fresh_full_check": "not_observed",
+          "docs_and_receipts": "not_observed"
+        },
+        "highest_contiguous_stage": 1,
+        "first_unmet_stage": "behavior_changed",
+        "termination": "observer_unavailable"
+      },
+      "roles": {
+        "coder": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        },
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "receipt_errors": [],
+      "independent_checks": [
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 16.668,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "candidate-build",
+          "kind": "build",
+          "argv": [
+            "cargo",
+            "build",
+            "--locked",
+            "--bin",
+            "spiral-coder"
+          ],
+          "test_summary": null,
+          "passed": true,
+          "log_sha256": "4e174c7853eef374e33cf89bcc7bbba46f8dfc082459c6b1607591de2085e9de",
+          "log": "checks/candidate/candidate-build.log",
+          "package_cache_reset_sha256": "82bf05095a1d6e3b7fcd31d1140d67b50d3c2fe7ae983a7b6d3a791176869436",
+          "candidate_binary_sha256": "5453202df1f196c97abfc050bee6406bb3f0804df483003dfd7ad5f3686b2ca1"
+        },
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 20.987,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "-q",
+            "--",
+            "--skip",
+            "self_dogfood_recovery_resume_probe",
+            "--skip",
+            "self_dogfood_visible_recovery_tests"
+          ],
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          },
+          "passed": true,
+          "log_sha256": "7b5c344b9610e4d5a9f3c79f46884f7a67c2e93732b089f00fcae8b8fa1dcf40",
+          "log": "checks/candidate/existing-rust-tests.log",
+          "package_cache_reset_sha256": "82bf05095a1d6e3b7fcd31d1140d67b50d3c2fe7ae983a7b6d3a791176869436",
+          "candidate_binary_sha256": "5453202df1f196c97abfc050bee6406bb3f0804df483003dfd7ad5f3686b2ca1"
+        },
+        {
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.186,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "self_dogfood_visible_recovery_tests",
+            "--",
+            "--nocapture"
+          ],
+          "test_summary": {
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          },
+          "passed": false,
+          "log_sha256": "aedcd2dec24e6452d107f4a713881e6f2a01609c3ee2ad61c2ad429aa8c76d79",
+          "log": "checks/candidate/visible-recovery-regression.log",
+          "package_cache_reset_sha256": "82bf05095a1d6e3b7fcd31d1140d67b50d3c2fe7ae983a7b6d3a791176869436",
+          "candidate_binary_sha256": "5453202df1f196c97abfc050bee6406bb3f0804df483003dfd7ad5f3686b2ca1"
+        },
+        {
+          "exit_code": 101,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.18,
+          "expected_test_count_matches": false,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "argv": [
+            "cargo",
+            "test",
+            "--locked",
+            "--bin",
+            "spiral-coder",
+            "self_dogfood_recovery_resume_probe",
+            "--",
+            "--nocapture"
+          ],
+          "test_summary": {
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          },
+          "passed": false,
+          "log_sha256": "56c0c06867961dbf4f591c67978275b465822284b94aa75a235ac28a6dbc154e",
+          "log": "checks/candidate/recovery-handoff-oracle.log",
+          "package_cache_reset_sha256": "82bf05095a1d6e3b7fcd31d1140d67b50d3c2fe7ae983a7b6d3a791176869436",
+          "candidate_binary_sha256": "5453202df1f196c97abfc050bee6406bb3f0804df483003dfd7ad5f3686b2ca1"
+        },
+        {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 1.047,
+          "expected_test_count_matches": true,
+          "baseline_test_count_matches": true,
+          "baseline_failure_matches": true,
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "argv": [
+            "/Users/ryospiralarchitect/.cache/spiral-coder/capacity-runtime-20261024/target/debug/spiral-coder",
+            "tui-replay",
+            "--spec",
+            ".spiral-coder/tui_replay.json",
+            "--out-dir",
+            "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna/checks/candidate/artifacts/tui-replay"
+          ],
+          "test_summary": null,
+          "passed": true,
+          "log_sha256": "db652baa5ddbb1e707fb091d458ce3cb2ac01aa2ac7a4ce7a1a2e4e3dd460013",
+          "log": "checks/candidate/candidate-tui-replay.log",
+          "package_cache_reset_sha256": "82bf05095a1d6e3b7fcd31d1140d67b50d3c2fe7ae983a7b6d3a791176869436",
+          "candidate_binary_sha256": "5453202df1f196c97abfc050bee6406bb3f0804df483003dfd7ad5f3686b2ca1"
+        }
+      ],
+      "pair": "large-luna",
+      "attempt": 1,
+      "local_episode": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna",
+      "executor_source_commit": "e3a6c228a09f01db0a24d06ab0efb6c3afb5aa57",
+      "executor_sha256": "f8ddfe032ea2da35c6c0a55091868708bafc9e359514c6bdfd8924cda33bfeb6",
+      "predeclaration_sha256": "72e8810e3695cc8cc1d48b8963389ba975c1f0328b0c3b31d42bde5f672d8f87",
+      "run_receipt_sha256": "f2b39ea2dad31812481ffd698116a939425e08ed2f0818d2914c69a580807a08",
+      "assessment_sha256": "dfc11478fe480b6bbe1a7fc706a2376b0fdc3945e9757b6ce13fc9a948511295",
+      "raw_manifest_sha256": "b359dea6396f659d8d8c68a1e4c9a14855fd71182e791996c2c53fd09103b64f",
+      "verified_raw_files": 894,
+      "inputs_inventory": {
+        "probe.rs": {
+          "sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+          "bytes": 11206,
+          "mode": 420
+        },
+        "prompt.txt": {
+          "sha256": "f3ef05fe1bb79b55d87e6663285df1de1352fc83a641a8ded011fd8669cbdd39",
+          "bytes": 6389,
+          "mode": 420
+        },
+        "reference/handoff-note.md": {
+          "sha256": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+          "bytes": 553,
+          "mode": 420
+        },
+        "reference/src/tui/agent/edit_failure.rs": {
+          "sha256": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+          "bytes": 11695,
+          "mode": 420
+        },
+        "reference/src/tui/agent/recovery.rs": {
+          "sha256": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+          "bytes": 12223,
+          "mode": 420
+        },
+        "spec.json": {
+          "sha256": "d0f06fb4833f17a972c2f249d00e815cfe66a14c74b46d8632165006796ff458",
+          "bytes": 4220,
+          "mode": 420
+        },
+        "visible-registration.rs": {
+          "sha256": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+          "bytes": 112,
+          "mode": 420
+        },
+        "visible-test.rs": {
+          "sha256": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25",
+          "bytes": 6989,
+          "mode": 420
+        }
+      },
+      "driver_sha256": {
+        "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+        "coupled_bench/common.py": "e521d29e3f7b7bb5f6a4a108d581c77f60243d81b1093cae903b940ad11ed66b",
+        "coupled_bench/evidence.py": "104d99a935bcb3c288bad8cc16ef78a54208f256f2d3c92668ffd6ab24d6b8df",
+        "coupled_bench/oracles.py": "57e93e9869ff39766719f2412e740e8f69ce2378e71c3264fcee6d2b7376c649",
+        "coupled_bench/runner.py": "e4078f3fdde3e68d5233a32b0345f2c72e36132c0c479923d5290457de176a53",
+        "run_self_dogfood.py": "d1d7b352d4b42f3ecd5ca581ce6c3b69a1dad5b09a491c80114d0d543588af90",
+        "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+        "self_dogfood/assessment.py": "6d38e27fdd6d84b85c20d3a5940adfcef4600fba42699c270cfa9b3daabea148",
+        "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+        "self_dogfood/contracts.py": "3dd23231c027456d99b7c1922e5c52f5f0f8db2b275dd1cb642b62cbf1d6b68f",
+        "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+        "self_dogfood/measurement.py": "86a26ca50300eb11a5c159c38532db215f8aa227a95d61791ca4be6929d6fab7",
+        "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+        "self_dogfood/runner.py": "b8b37a0beb2f87b4b832e270c5634c4ddb79b337990395bee16dbd956c1d997f"
+      },
+      "native_completed": false,
+      "termination": "observer_unavailable",
+      "error": null,
+      "request_ledger": [
+        {
+          "charge": "task",
+          "duration_ms": 6616,
+          "estimated_input_tokens": 11515,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 337,
+            "completion_tokens_details": {
+              "reasoning_tokens": 13
+            },
+            "prompt_tokens": 9979,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10316
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3724,
+          "estimated_input_tokens": 12056,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 353,
+            "completion_tokens_details": {
+              "reasoning_tokens": 29
+            },
+            "prompt_tokens": 10608,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10961
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5772,
+          "estimated_input_tokens": 12692,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 514,
+            "completion_tokens_details": {
+              "reasoning_tokens": 178
+            },
+            "prompt_tokens": 11184,
+            "prompt_tokens_details": {
+              "cached_tokens": 6124
+            },
+            "service_tier": "standard",
+            "total_tokens": 11698
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8742,
+          "estimated_input_tokens": 9106,
+          "id": 3,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 11592,
+          "estimated_input_tokens": 14606,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 106,
+            "completion_tokens_details": {
+              "reasoning_tokens": 56
+            },
+            "prompt_tokens": 12749,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 12855
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6614,
+          "estimated_input_tokens": 9961,
+          "id": 5,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3805,
+          "estimated_input_tokens": 15903,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 122,
+            "completion_tokens_details": {
+              "reasoning_tokens": 50
+            },
+            "prompt_tokens": 13989,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14111
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 12095,
+          "estimated_input_tokens": 17477,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 226,
+            "completion_tokens_details": {
+              "reasoning_tokens": 118
+            },
+            "prompt_tokens": 15342,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 15568
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3411,
+          "estimated_input_tokens": 17733,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 76,
+            "completion_tokens_details": {
+              "reasoning_tokens": 29
+            },
+            "prompt_tokens": 15527,
+            "prompt_tokens_details": {
+              "cached_tokens": 2540
+            },
+            "service_tier": "standard",
+            "total_tokens": 15603
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8975,
+          "estimated_input_tokens": 17782,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 445,
+            "completion_tokens_details": {
+              "reasoning_tokens": 368
+            },
+            "prompt_tokens": 15433,
+            "prompt_tokens_details": {
+              "cached_tokens": 2540
+            },
+            "service_tier": "standard",
+            "total_tokens": 15878
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7467,
+          "estimated_input_tokens": 11562,
+          "id": 10,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6236,
+          "estimated_input_tokens": 12547,
+          "id": 11,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assist_receipts": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "0aWMQA5Uk"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "cargo test --locked --bin spiral-coder -q"
+          ],
+          "succeeded": false,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "src/tui/agent/self_dogfood_visible_recovery_tests.rs"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "eZeC137AZ",
+            "6hAuUFlRs",
+            "huDsn82o5",
+            "76N8NpC8m",
+            "qz7iEFhmA",
+            "GrtwETBCu"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "cargo test --locked --bin spiral-coder -q"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 190,
+              "path": "src/tui/agent/self_dogfood_visible_recovery_tests.rs",
+              "start_line": 130
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        }
+      ],
+      "selected_checks": [
+        {
+          "call_id": "KMDNTWqjS",
+          "arguments": {
+            "check_id": "reproduce",
+            "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna/episode/workspace"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 1,
+          "freshness": "unexecuted"
+        },
+        {
+          "call_id": "EGPKr3TwC",
+          "arguments": {
+            "check_id": "reproduce",
+            "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna/episode/workspace"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 2,
+          "freshness": "unexecuted"
+        },
+        {
+          "call_id": "pXxaKLfDm",
+          "arguments": {
+            "check_id": "reproduce",
+            "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna/episode/workspace"
+          },
+          "executed": false,
+          "succeeded": false,
+          "result_step": 3,
+          "freshness": "unexecuted"
+        },
+        {
+          "call_id": "0aWMQA5Uk",
+          "arguments": {
+            "check_id": "reproduce",
+            "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261028-edit-truth-large-luna/episode/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "result_step": 4,
+          "freshness": "current"
+        }
+      ],
+      "native_edit_outcomes": {},
+      "native_mutation_step": null,
+      "pending_exact_checks": [
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "observer_validation_messages": [
+        "(next-action) invalid response prevented automatic forwarding: suggested_args for read_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields; raw Observer output was preserved.",
+        "(next-action) invalid response prevented automatic forwarding: suggested_args for read_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields; raw Observer output was preserved."
+      ],
+      "transport_eligibility_audit": {
+        "conforms_to_declared_pure_framing_policy": true,
+        "abnormal_provider_finishes": [],
+        "note": "Frozen ledger and assessor retained. This supplemental audit distinguishes output exhaustion from pure authored-envelope violations; no retrospective reclassification or extra live attempt."
+      },
+      "candidate_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -108,12 +108,31 @@ pub(super) fn validation_issue(suggestion: &ObserverSuggestion) -> Option<String
                 && args.get("replace").is_some_and(Value::is_string)
         }
     };
-    let read_shape = tool != "read_file"
-        || serde_json::from_value::<crate::file_tools::read_range::ReadRequest>(
+    if tool == "read_file" {
+        match serde_json::from_value::<crate::file_tools::read_range::ReadRequest>(
             suggestion.suggested_args.clone(),
-        )
-        .is_ok_and(|request| !request.is_range() || request.bounds().is_ok());
-    let valid = read_shape
+        ) {
+            Ok(request) if request.is_range() => {
+                if let Err(error) = request.bounds() {
+                    return Some(format!("suggested_args for read_file: {error}"));
+                }
+            }
+            Ok(_) => {}
+            Err(error) => return Some(format!("suggested_args for read_file: {error}")),
+        }
+    }
+    let exec_shape = tool != "exec"
+        || if args.contains_key("check_id") {
+            args.len() == 1
+                && args["check_id"]
+                    .as_str()
+                    .is_some_and(|id| !id.trim().is_empty())
+        } else {
+            args.get("command")
+                .and_then(Value::as_str)
+                .is_some_and(|command| !command.trim().is_empty())
+        };
+    let valid = exec_shape
         && patch_shape
         && matches_schema(&normalized, &schema["parameters"])
         && ["path", "command", "pattern", "search", "diff"]

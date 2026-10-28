@@ -1,6 +1,10 @@
 //! Pure edit preparation shared by direct tools and approval previews.
 use super::*;
 
+pub(crate) fn unchanged_message(path: &str) -> String {
+    format!("OK: unchanged '{path}' (identical contents; no write performed)\nNo edit progress or verification was produced. Pending failures and checks remain.")
+}
+
 pub(crate) fn patch(path: &str, content: &str, search: &str, replace: &str) -> Result<String> {
     anyhow::ensure!(!search.is_empty(), "search string cannot be empty");
     let count = content.matches(search).count();

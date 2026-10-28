@@ -45,7 +45,22 @@ pub(super) fn mark(
         .filter_map(|a| a.result_step)
         .max()
         .unwrap_or(0);
-    let key = |a: &ActionEvidence| (a.tool.clone(), a.arguments.to_string());
+    let key = |a: &ActionEvidence| {
+        let arguments = if a.tool == "exec" {
+            // Use the runtime location header, never a cwd printed in stdout.
+            // Selection IDs label a command; they are not distinct executions.
+            let cwd = a
+                .result
+                .as_deref()
+                .and_then(|r| r.lines().nth(1))
+                .and_then(|line| line.strip_prefix("cwd: "))
+                .or_else(|| a.arguments["cwd"].as_str());
+            serde_json::json!({"command":a.arguments["command"], "cwd":cwd})
+        } else {
+            a.arguments.clone()
+        };
+        (a.tool.clone(), arguments.to_string())
+    };
     for action in actions.iter().filter(|a| a.executed == Some(true)) {
         latest
             .entry(key(action))

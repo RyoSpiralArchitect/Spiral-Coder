@@ -1,5 +1,6 @@
 """Development diagnostics only. These never replace binary qualification gates."""
 import re
+from coupled_bench.evidence import native_file_edit_changed
 
 
 def budget_accounting(work, spec):
@@ -33,7 +34,7 @@ def budget_accounting(work, spec):
 
 def development_progress(spec, report, independent, baseline, gates):
     actions = (report.get("execution") or {}).get("actions", [])
-    edits = [a.get("result_step", 0) or 0 for a in actions if a.get("tool") in ("write_file", "patch_file", "apply_diff") and a.get("executed") is True and a.get("succeeded") is True]
+    edits = [a.get("result_step", 0) or 0 for a in actions if native_file_edit_changed(a)]
     command = spec.get("reproducer_command")
     visible_contract = next((c for c in spec.get("checks", []) if c["id"] == spec.get("visible_check_id")), {})
     markers = visible_contract.get("baseline_failure_contains", [])

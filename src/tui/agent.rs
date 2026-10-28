@@ -49,6 +49,9 @@ mod assumption_gate;
 mod auto_test_recovery_tests;
 mod automatic_test;
 mod blocked_report;
+mod check_catalog;
+#[cfg(test)]
+mod check_catalog_tests;
 pub(crate) mod current_evidence;
 mod done_gate;
 mod edit_failure;
@@ -77,6 +80,8 @@ mod native_arguments;
 mod next_action;
 #[cfg(test)]
 mod next_action_tests;
+#[cfg(test)]
+mod no_change_runtime_tests;
 mod observation_stall;
 mod outcome;
 mod plan_resume;
@@ -1381,10 +1386,15 @@ pub fn exec_tool_def() -> serde_json::Value {
                             On Windows: PowerShell.  On Linux/macOS: sh.\n\
                             ALWAYS check exit_code — 0 = success, non-zero = failure.\n\
                             If exit_code != 0: STOP, diagnose the error, then fix it.\n\
-                            Do NOT proceed to the next step while any command is failing.",
+                            Do NOT proceed to the next step while any command is failing.\n\
+                            Supply either command (optional cwd), or a declared check_id alone.",
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "check_id": {
+                        "type": "string",
+                        "description": "Select a declared exact check at tool_root. Use alone, without command or cwd."
+                    },
                     "command": {
                         "type": "string",
                         "description": "The shell command to execute. Single-line preferred."
@@ -1394,7 +1404,7 @@ pub fn exec_tool_def() -> serde_json::Value {
                         "description": "Optional working directory (absolute or relative path)."
                     }
                 },
-                "required": ["command"]
+                "required": []
             }
         }
     })
@@ -3903,6 +3913,7 @@ fn working_memory_facts_for_exec(command: &str, stdout: &str, tool_output: &str)
 fn non_exec_tool_succeeded(content: &str) -> bool {
     let low = content.to_ascii_lowercase();
     !low.starts_with("error:")
+        && !low.starts_with("ok: unchanged ")
         && !low.contains("rejected by user")
         && !low.contains("governor blocked")
         && !low.contains("failed (exit_code:")
@@ -5692,7 +5703,7 @@ fn upgrade_required_verification_from_messages(
             continue;
         };
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        if matches!(name.as_str(), "write_file" | "patch_file" | "apply_diff")
+        if crate::execution_evidence::file_edit_succeeded(&name, content)
             && content.contains("[hash]")
         {
             required = required.max(verification_level_for_mutation_path(path.as_str()));
@@ -7379,7 +7390,12 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     let tool_root_abs = tool_root
         .map(|s| s.trim())
         .filter(|s| !s.is_empty())
-        .and_then(absolutize_path);
+        .and_then(absolutize_path)
+        .map(|root| {
+            std::fs::canonicalize(&root)
+                .map(|path| path.to_string_lossy().into_owned())
+                .unwrap_or(root)
+        });
     // Rebuild loop governor memory from the existing session so resuming runs doesn't
     // repeat the same failures from scratch.
     let mut mem = FailureMemory::from_recent_messages(&messages, test_cmd.as_deref());
@@ -8323,6 +8339,10 @@ This is the LAST model call for this run.\n\
         let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
         let cfg_clone = cfg.clone();
         let mut tools_clone = next_action.tools(&tools);
+        let check_catalog = check_catalog::Catalog::from_root(&root_user_text);
+        if let Some(prompt) = check_catalog.bind(&mut tools_clone, &cfg.base_url) {
+            msgs_for_call.push(json!({"role":"system", "content":prompt}));
+        }
         acceptance_schema::bind(
             &mut tools_clone,
             active_plan.as_ref(),
@@ -8491,6 +8511,34 @@ This is the LAST model call for this run.\n\
             pending_system_hint = Some(hint);
             state = AgentState::Recovery;
             continue;
+        }
+
+        if let [call] = tool_calls.as_mut_slice() {
+            match check_catalog.resolve(call, tool_root_abs.as_deref()) {
+                Ok(Some(receipt)) => emit_telemetry_event(&tx, "check_selected", receipt).await,
+                Ok(None) => {}
+                Err(error) => {
+                    let hint = format!("[Check selection] {error}. No tool executed; choose a listed ID or the original full command.");
+                    provider_turn::retain_rejected_calls(
+                        &mut messages,
+                        &assistant_text,
+                        &tool_calls,
+                        &hint,
+                    );
+                    let _ = tx.send(StreamToken::Delta(format!("\n{hint}\n"))).await;
+                    pending_system_hint = Some(hint);
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+                    continue;
+                }
+            }
         }
 
         // Incomplete reporting does not execute a repair or claim success. It
@@ -9062,7 +9110,10 @@ Execute only the new minimal action: {}",
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, canonical)) =
                 rewrite_tool_call_with_resolution(tc, &observation_evidence)
             {
@@ -9083,7 +9134,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = coerce_read_only_observation_tool_call(
                 &messages,
                 tc,
@@ -9111,7 +9165,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = coerce_read_only_followup_read_tool_call(
                 &messages,
                 tc,
@@ -9141,7 +9198,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = coerce_benchmark_plan_tool_call(
                 task_harness,
                 &messages,
@@ -9173,7 +9233,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) =
                 repair_fix_existing_mutation_tool_call(task_harness, &messages, tc, &root_user_text)
             {
@@ -9199,7 +9262,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) =
                 coerce_fix_existing_blocked_mutation_tool_call(
                     task_harness,
@@ -9231,7 +9297,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) =
                 coerce_existing_followup_tool_call(&messages, tc, &root_user_text, recovery.stage)
             {
@@ -9262,7 +9331,10 @@ Execute only the new minimal action: {}",
             .is_some_and(|tc| matches_required_existing_followup(&messages, tc, &root_user_text));
 
         if !preserves_required_followup {
-            if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+            if let Some(tc) = tool_call
+                .as_ref()
+                .filter(|tc| check_catalog::allows_coercion(tc))
+            {
                 if let Some((rewritten, original, coerced)) =
                     coerce_fix_existing_literal_mutation_tool_call(
                         task_harness,
@@ -9295,7 +9367,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = coerce_fix_existing_tool_call(
                 task_harness,
                 &messages,
@@ -9325,7 +9400,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) =
                 coerce_artifact_creation_tool_call(task_harness, &messages, tc)
             {
@@ -9350,7 +9428,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = coerce_repo_goal_completion_tool_call(
                 task_harness,
                 &messages,
@@ -9380,7 +9461,10 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call.as_ref().filter(|tc| tc.can_rewrite()) {
+        if let Some(tc) = tool_call
+            .as_ref()
+            .filter(|tc| check_catalog::allows_coercion(tc))
+        {
             if let Some((rewritten, original, coerced)) = repair_repo_scaffold_write_tool_call(
                 task_harness,
                 &messages,
@@ -11281,7 +11365,12 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                             state = AgentState::Executing;
                             let (mut r_text, r_err) =
                                 crate::file_tools::tool_write_file(&path, &imf.content, base);
-                            if !r_err {
+                            if !r_err
+                                && crate::execution_evidence::file_edit_succeeded(
+                                    "write_file",
+                                    &r_text,
+                                )
+                            {
                                 // Update cache (canonical absolute path string).
                                 let cache_key = abs.to_string_lossy().into_owned();
                                 file_cache.insert(cache_key, imf.content.clone());
@@ -12803,7 +12892,8 @@ Required now: run `{command}`.\n{verification_status}"
             };
 
             // Invalidate file cache on success + auto-test
-            if !is_error {
+            let changed = crate::execution_evidence::file_edit_succeeded("apply_diff", &result);
+            if changed {
                 let cache_key = crate::file_tools::resolve_safe_path(&path, base)
                     .ok()
                     .map(|p| p.to_string_lossy().into_owned())
@@ -12854,7 +12944,7 @@ Required now: run `{command}`.\n{verification_status}"
             };
             if is_error {
                 recovery.on_fix_result(false, None);
-            } else {
+            } else if changed {
                 exec_proof::record_file_result(
                     exec_proof::FileProofResult {
                         name: "apply_diff",
@@ -12917,40 +13007,42 @@ Required now: run `{command}`.\n{verification_status}"
                 } else {
                     None
                 };
-                update_working_memory_after_non_exec(
-                    &mut working_mem,
-                    "apply_diff",
-                    verified,
-                    step_label_for_turn.as_deref(),
-                    next_action_for_turn,
-                    test_cmd.as_deref(),
-                );
-                assumption_ledger.refresh_confirmations(&working_mem);
-                let path_level = verification_level_for_mutation_path(path.as_str());
-                if path_level > path_required_verification {
-                    path_required_verification = path_level;
-                    required_verification =
-                        intent_required_verification.max(path_required_verification);
-                    recovery.required_verification = required_verification;
-                    last_verify_ok_step = effective_verify_ok_step(
-                        required_verification,
-                        last_build_verify_ok_step,
-                        last_behavioral_verify_ok_step,
+                if changed {
+                    update_working_memory_after_non_exec(
+                        &mut working_mem,
+                        "apply_diff",
+                        verified,
+                        step_label_for_turn.as_deref(),
+                        next_action_for_turn,
+                        test_cmd.as_deref(),
                     );
-                    if recovery.stage == Some(RecoveryStage::Verify) {
-                        pending_system_hint = Some(format!(
-                            "Recovery stage=verify: {}",
-                            verification_requirement_hint(
-                                required_verification,
-                                test_cmd.as_deref()
-                            )
-                        ));
+                    assumption_ledger.refresh_confirmations(&working_mem);
+                    let path_level = verification_level_for_mutation_path(path.as_str());
+                    if path_level > path_required_verification {
+                        path_required_verification = path_level;
+                        required_verification =
+                            intent_required_verification.max(path_required_verification);
+                        recovery.required_verification = required_verification;
+                        last_verify_ok_step = effective_verify_ok_step(
+                            required_verification,
+                            last_build_verify_ok_step,
+                            last_behavioral_verify_ok_step,
+                        );
+                        if recovery.stage == Some(RecoveryStage::Verify) {
+                            pending_system_hint = Some(format!(
+                                "Recovery stage=verify: {}",
+                                verification_requirement_hint(
+                                    required_verification,
+                                    test_cmd.as_deref()
+                                )
+                            ));
+                        }
                     }
+                    impact_required = Some(format!(
+                        "successful mutation via apply_diff: {}",
+                        compact_one_line(path.as_str(), 80)
+                    ));
                 }
-                impact_required = Some(format!(
-                    "successful mutation via apply_diff: {}",
-                    compact_one_line(path.as_str(), 80)
-                ));
             }
 
             if is_error {
@@ -12968,7 +13060,7 @@ Required now: run `{command}`.\n{verification_status}"
                 compact_success_tool_result_for_history("apply_diff", &result)
             };
             messages.push(recovery.focus.tool_message(&tc, history_result));
-            if !is_error && !root_read_only {
+            if changed && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
                     &messages,
@@ -13733,7 +13825,12 @@ Action required: obtain a complete read of current contents before write_file. F
                         } else {
                             let (mut r_text, r_err) =
                                 crate::file_tools::tool_write_file(&path, &content, base);
-                            if !r_err {
+                            if !r_err
+                                && crate::execution_evidence::file_edit_succeeded(
+                                    "write_file",
+                                    &r_text,
+                                )
+                            {
                                 file_cache.insert(cache_key.clone(), content.clone());
                                 r_text.push_str(&format!(
                                     "\n[hash] before={} after={}",
@@ -13806,7 +13903,12 @@ Action required: obtain a complete read of current contents before write_file. F
                                         &path, &search, &replace, base,
                                     );
 
-                                if !patch_err {
+                                if !patch_err
+                                    && crate::execution_evidence::file_edit_succeeded(
+                                        "patch_file",
+                                        &patch_result,
+                                    )
+                                {
                                     file_cache.remove(&cache_key); // invalidate stale cache
 
                                     // B — append diff preview (shows exactly what changed).
@@ -13859,6 +13961,7 @@ Action required: obtain a complete read of current contents before write_file. F
                 }
             };
 
+            let changed = crate::execution_evidence::file_edit_succeeded(&tc.name, &result);
             edit_failures.on_result(&tc, &result, &exec_verification_context);
             file_tool_consec_failures = edit_failures.count();
             if is_error && !rejected_by_user && tc.name != "read_file" {
@@ -13888,7 +13991,7 @@ Action required: obtain a complete read of current contents before write_file. F
                 "write_file" | "patch_file" => {
                     if is_error {
                         recovery.on_fix_result(false, None);
-                    } else {
+                    } else if changed {
                         exec_proof::record_file_result(
                             exec_proof::FileProofResult {
                                 name: tc.name.as_str(),
@@ -13961,14 +14064,16 @@ Action required: obtain a complete read of current contents before write_file. F
                 } else {
                     None
                 };
-                update_working_memory_after_non_exec(
-                    &mut working_mem,
-                    tc.name.as_str(),
-                    verified,
-                    step_label_for_turn.as_deref(),
-                    next_action_for_turn,
-                    test_cmd.as_deref(),
-                );
+                if tc.name == "read_file" || changed {
+                    update_working_memory_after_non_exec(
+                        &mut working_mem,
+                        tc.name.as_str(),
+                        verified,
+                        step_label_for_turn.as_deref(),
+                        next_action_for_turn,
+                        test_cmd.as_deref(),
+                    );
+                }
                 if tc.name.as_str() == "read_file" {
                     let command =
                         canonicalize_tool_call_command("read_file", tc.arguments.as_str())
@@ -13992,7 +14097,7 @@ Action required: obtain a complete read of current contents before write_file. F
                     &result,
                 );
                 assumption_ledger.refresh_confirmations(&working_mem);
-                if matches!(tc.name.as_str(), "write_file" | "patch_file") {
+                if changed {
                     let path_level = verification_level_for_mutation_path(path.as_str());
                     if path_level > path_required_verification {
                         path_required_verification = path_level;
@@ -14038,7 +14143,7 @@ Action required: obtain a complete read of current contents before write_file. F
                 compact_success_tool_result_for_history(tc.name.as_str(), &result)
             };
             messages.push(recovery.focus.tool_message(&tc, history_result));
-            if !is_error && !root_read_only {
+            if !is_error && (tc.name == "read_file" || changed) && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
                     &messages,
@@ -18143,7 +18248,7 @@ verify: exit code is zero\n\
     fn upgrade_required_verification_from_messages_detects_code_mutation() {
         let messages = vec![
             json!({"role":"assistant","content":"","tool_calls":[{"id":"call_1","type":"function","function":{"name":"patch_file","arguments":"{\"path\":\"src/tui/agent.rs\",\"search\":\"a\",\"replace\":\"b\"}"}}]}),
-            json!({"role":"tool","tool_call_id":"call_1","content":"OK\n[hash] before=1 after=2"}),
+            json!({"role":"tool","tool_call_id":"call_1","content":"OK: patched 'src/tui/agent.rs'\n[hash] before=1 after=2"}),
         ];
 
         assert_eq!(

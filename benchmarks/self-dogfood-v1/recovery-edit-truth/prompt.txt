@@ -1,0 +1,75 @@
+Repair Spiral-Coder's recovery handoff behavior in this real repository.
+
+This is the recovery-edit-truth task variant. Before editing, run the protected behavioral regression and inspect its actual failure:
+cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture
+
+Read src/tui/agent/self_dogfood_visible_recovery_tests.rs to understand the observed transition. That file and its registration in src/tui/agent.rs are protected: do not delete, ignore, weaken, rename or disconnect the test. Repair production behavior in the editable files below. The visible regression covers the successful handoff; it does not replace the obligation to preserve newer failure boundaries. The independent evaluator still checks those boundaries separately.
+
+Observed defect: a required verification command fails and its localized test file is read; a patch to the actual source file then fails because its search anchor is wrong; a successful exact read of that source file completes the patch diagnosis. The live RecoveryGovernor can now be in Fix. After native session JSON roundtrip / runtime Continue / Coder-Observer handoff, restore_from_session restores Diagnose from the earlier FailureMemory and restore_pending_edits leaves it there. The same already-diagnosed edit becomes blocked again.
+
+Make completed diagnosis survive this handoff only while it still belongs to the current failure. A newer failed check (including a different command), failed edit to another target, or failed read must retain its own diagnosis obligation. Absent, stale, unrelated, uncorrelated reads and assistant assertions are not evidence. Reading is diagnosis, never repair or verification: retain failed-edit counts and the pending original exact check until an actual repair and fresh successful verification satisfy the existing gates. Preserve current task boundaries and normal successful flows.
+
+Control invariants to preserve (a passing visible test is insufficient):
+- After native session roundtrip, a completed diagnosis of the current failed edit may restore Fix.
+- A later failed verification, including a different command, MUST keep Diagnose; an older successful read cannot promote it to Fix.
+- A later failed read or failed edit to a different target MUST keep its own diagnosis boundary.
+- A successful read is diagnosis only: it never clears failed-edit counts or the original pending verification.
+- Missing, stale, unrelated, or uncorrelated reads must not grant diagnosis credit.
+
+Deliverable checklist (every item is required for successful completion):
+1. A focused production repair within the editable Rust modules.
+2. An actual edit to docs/coupled-work-loop.md describing the behavior and its limits. Reading that document does not satisfy this requirement.
+3. Fresh native verification after ALL final source AND documentation edits.
+4. An authored final report with files, behavior, newer-failure boundaries, exact commands/results, and limitations.
+
+Use the exact filtered reproducer above first. Then read the relevant failure and source; avoid running the full suite to discover the initial defect. After the repair and documentation edit, use the full native check below to detect control regressions in the existing tests. In particular, preserving newer failures is mandatory even when the visible handoff succeeds. If the full check fails, return to diagnosis and repair before claiming success. Do not weaken any test or acceptance gate.
+
+Editable paths only:
+- src/tui/agent/recovery.rs
+- src/tui/agent/edit_failure.rs
+- src/tui/agent/recovery_progress.rs
+- docs/coupled-work-loop.md
+
+Inspect related source and existing tests as needed, but do not change any other path, existing standalone test, manifest, fixture, completion/proof gate, or evaluation artifact. Add focused regression tests inside an editable Rust module if useful. Document the behavior and its limits in the allowed document. Use native file edit tools for the repair. Work only inside this candidate repository; evaluator/reference inputs outside it are not part of the task. Do not run or modify outer evaluation machinery or access credentials. Build/cache environment is supplied; preserve CARGO_TARGET_DIR and PYTHONPYCACHEPREFIX.
+
+Required exact verification command after the final source/doc edit:
+cargo test --locked --bin spiral-coder -q
+
+The final report must name the modified files, explain why completed diagnosis survives and why a newer failure still blocks, give the exact verification command and observed result, and state any remaining limitation. Do not claim external held-out checks ran. Complete successfully through the native done tool only after all requested work and proof are present. If blocked, report the concrete blocker in done.summary, leave the relevant criteria in remaining_acceptance, and state the exact next action in next_steps. Such a report is incomplete and does not claim qualification; do not repeat success claims or invent evidence.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "recovery-handoff-visible",
+      "description": "Preserve completed current diagnosis across handoff, retain newer failure obligations, and document the behavior",
+      "artifacts": [
+        {
+          "path": "docs/coupled-work-loop.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>
+
+<task_checks>
+{
+  "version": 1,
+  "checks": [
+    {
+      "id": "reproduce",
+      "command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture"
+    }
+  ]
+}
+</task_checks>
+
+The runtime offers exec check selections. Use exec({"check_id":"reproduce"}) for the initial regression and exec({"check_id":"required-1"}) for final full verification. These execute the exact listed commands at the task root; do not add cwd or command overrides or shell output filters. A native unchanged edit result means no content changed: retain pending repair and checks, inspect the intended difference, and choose a real repair or a truthful blocked report.
