@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "wave": "r6",
+  "intervention": "Add limited leading plan delimiter recovery for complete plan> or standalone > blocks observed in r5, retaining the exact authored fields and ordinary semantic gates.",
+  "baseline_commit": "728014ff87b4db683073759a8939e1bed1806dcc",
+  "runtime_commit": "15da20219936bc6cef49f7a50b9bf3bc949f4337",
+  "episodes": [
+    "large-large/event-summary",
+    "large-large/env-bool"
+  ],
+  "attempts": 2,
+  "maximum_wire_requests": 56,
+  "task_requests_per_episode": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "episode_wall_seconds": 600,
+  "coder": "mistral-large-4",
+  "observer": "mistral-large-4",
+  "prompt_revision": 2,
+  "task_prompt_test_oracle_and_assessor_changed": false,
+  "no_retry_in_place": true,
+  "qualification": "Unchanged strict task qualification: independent original tests, native baseline/final check, source+docs edits, authored outcome rows, exact roles/budgets and scope.",
+  "supplementary_review": [
+    "Plan Gate refusals and reason",
+    "Final reported counts against native receipts, distinguishing subtest events",
+    "Final explanation conditions against candidate source and tests"
+  ],
+  "claim_boundary": "Adaptive development evidence, not a controlled causal comparison or general success rate. Count validation is bounded English and does not certify arbitrary prose. Preserve every failure and incomplete attempt. Further live waves require separate frozen declarations.",
+  "previous_wave": "r5",
+  "previous_wave_runtime_commit": "9077edf69b4ee8b643cc3081eca08da6e7e526a4",
+  "adaptive_change_reason": "r5 event-summary reached strict qualification but spent two Plan Gate refusals on complete plans with truncated opening delimiters. The second raw refusal was retained in a regression fixture; the first was already content-compacted before fixture export."
+}
