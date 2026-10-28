@@ -1,0 +1,12 @@
+{
+  "runtime_commit": "3aa0390ee1ce48cf9c7d63504447407976c14020",
+  "binary_sha256": "00bb4a6862d08dc9adbb7c3a44f0c7a4b0a93df7b2c8cf1be88531539fa004bf",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "maximum_wire_requests": 56,
+  "driver_commit": "3aa0390ee1ce48cf9c7d63504447407976c14020",
+  "predeclaration_sha256": "16048ab8ba55627adbe8a979f7700523f9fbd523463c418e0fe765243beda2b9",
+  "preflight_sha256": "92869628b42f7b7e17d532ad5e104f8ca3a731f57ee2416a0cd373667e75bd28",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r4-diagnostic",
+  "provider_calls_at_pin": 0
+}
