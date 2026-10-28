@@ -1,0 +1,12 @@
+{
+  "runtime_commit": "4038617d035052ad4db97978325719240b1be0e8",
+  "driver_commit": "4098682208c3a2838dec93a2b3da8a8efe4a83e7",
+  "binary_sha256": "e4b1d0d71dd918afa0876569b0868d33f1f301a8f88b1dce75c4d416e47d593f",
+  "predeclaration_sha256": "bca924e8f7acd3b1d8e4dfb6574fcf600703738a17311e0ae67c0df26be15bb1",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "preflight_sha256": "2d265e369171c5f0cab91f55fb048ea29c780c05caa8c370ed354280ffa69a36",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r3-report",
+  "maximum_wire_requests": 28,
+  "provider_calls_at_pin": 0
+}

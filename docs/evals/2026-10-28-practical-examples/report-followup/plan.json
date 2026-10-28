@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "reason": "Make the existing native before/after report obligation explicit; keep the strict report predicate unchanged",
+  "prompt_revision": 2,
+  "episodes": [
+    "large-large/env-bool"
+  ],
+  "attempts": 1,
+  "maximum_wire_requests": 28,
+  "task_requests": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "episode_wall_seconds": 600,
+  "runtime_unchanged_from_previous_mistral_wave": true,
+  "prior_env_bool_native_report_sha256": "bd0c55b9143666d90fa0caa795127e7883cb4c963bfaafe43294af82dec53252",
+  "test_and_oracle_changes": false,
+  "no_retry_in_place": true,
+  "qualification": "Original frozen independent tests, native evidence, canonical authored report, role accounting and strict all-file scope must all pass.",
+  "claim_boundary": "One adaptive follow-up with clearer task wording; not a causal effect estimate or a benchmark aggregate that replaces earlier rows."
+}
