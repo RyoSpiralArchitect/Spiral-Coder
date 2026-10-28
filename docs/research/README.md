@@ -22,6 +22,11 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [plan and report follow-up](../evals/2026-10-29-plan-report/README.md)
+adds admitted-plan anchors and native test-count facts shared by both roles.
+The adaptive runs retain a checker false positive and its correction, plus an
+Observer completion-contract repair that exhausted its output limit.
+
 The [diagnostic-action follow-up](../evals/2026-10-29-diagnostic-actions/README.md)
 uses the current native failure location to constrain Coder's next offered tools,
 then restores work tools after an actual read. Mistral Large 4 in both roles

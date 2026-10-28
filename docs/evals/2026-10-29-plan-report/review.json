@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "method": "Manual source and artifact review by the implementing agent, plus recorded deterministic red/green regressions and frozen live trials. No independent fork review is claimed.",
+  "base_commit": "728014ff87b4db683073759a8939e1bed1806dcc",
+  "reviewed_runtime_commit": "d2fe7876e358589c4836ba70d14c17e576127b8b",
+  "scope": [
+    "Admitted plan alignment anchors, shape/read-only gates, pruning and new-task boundaries",
+    "Limited leading plan delimiter recovery without changing retained authored fields",
+    "Native runner count capture, phase/call association and provider-wire projection",
+    "Count-claim boundaries, unknown/multiple suites, event units and false-positive field pairing",
+    "Unchanged frozen assessor, inputs, roles, per-episode budgets and retained incomplete handoffs"
+  ],
+  "blocking_introduced_findings": [],
+  "corrected_during_live_review": "The new count checker falsely refused two correct structured reports in r5. Exact fixtures fail before the correction and pass afterward; altered counts still fail. r7 accepts the structured report without retry.",
+  "frozen_suite_matrix_driver_and_all_inputs_equal": true,
+  "episodes": [
+    {
+      "wave": "r5",
+      "case": "env-bool",
+      "requests": 18,
+      "strict_qualified": true,
+      "independent_artifacts_passed": true,
+      "transport_requests": 0
+    },
+    {
+      "wave": "r5",
+      "case": "event-summary",
+      "requests": 21,
+      "strict_qualified": true,
+      "independent_artifacts_passed": true,
+      "transport_requests": 0
+    },
+    {
+      "wave": "r6",
+      "case": "env-bool",
+      "requests": 13,
+      "strict_qualified": false,
+      "independent_artifacts_passed": true,
+      "transport_requests": 0
+    },
+    {
+      "wave": "r6",
+      "case": "event-summary",
+      "requests": 14,
+      "strict_qualified": true,
+      "independent_artifacts_passed": true,
+      "transport_requests": 0
+    },
+    {
+      "wave": "r7",
+      "case": "env-bool",
+      "requests": 16,
+      "strict_qualified": true,
+      "independent_artifacts_passed": true,
+      "transport_requests": 0
+    }
+  ],
+  "wire_requests": 82,
+  "qualification_boundary": "Four of five adaptive development attempts qualify; one Observer handoff remains incomplete despite passing source/docs artifacts. These observations are not a general success-rate, causal-efficiency or arbitrary-prose-accuracy guarantee.",
+  "remaining_work": [
+    "Observer done suggestion acceptance-evidence coverage and output-limited action-contract repair",
+    "Goal paraphrases still require normal new-plan validation; missing fields and mutation evidence remain refusals",
+    "General natural-language correctness and additional runner formats remain outside the bounded count checker"
+  ]
+}

@@ -96,6 +96,11 @@ completion receipt. Never mix manual edits into a declared automated episode.
 
 ## Recorded runs
 
+The [plan and report follow-up](../../docs/evals/2026-10-29-plan-report/README.md)
+retains admitted objectives during replanning and preserves native test counts
+for both roles. Its live loops include corrected report-checker false refusals
+and an incomplete Observer handoff, alongside the qualified examples.
+
 The [diagnostic-action follow-up](../../docs/evals/2026-10-29-diagnostic-actions/README.md)
 qualifies both tasks with Mistral Large 4 in both roles: 14 requests per task,
 including source, docs, independent original tests and native completion. It also
