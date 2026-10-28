@@ -1,0 +1,12 @@
+{
+  "runtime_commit": "4038617d035052ad4db97978325719240b1be0e8",
+  "driver_commit": "4038617d035052ad4db97978325719240b1be0e8",
+  "binary_sha256": "5b064db2d8b804fcbb13aa9a78f282635023ff691cbeff7f440ab694b5a656c7",
+  "predeclaration_sha256": "1906432ad1b78a949ea3793d98b9c4b049bc02ba9c9b5d8a0288f84d6bab969c",
+  "suite_sha256": "5a729693a4f205d69d7364be12d563041304c05e550337adfa2c7e1f78e96bd5",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "preflight_sha256": "bcc4a5302919c4592e5b1ef708c63fc47da6c3c441920f7dd9f642ef2e523afb",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral",
+  "maximum_wire_requests": 56,
+  "provider_calls_at_pin": 0
+}

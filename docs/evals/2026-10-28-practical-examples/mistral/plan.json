@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "reason": "User selected Mistral x Mistral after OpenAI credit exhaustion",
+  "runtime_commit": "4038617d035052ad4db97978325719240b1be0e8",
+  "profiles": [
+    "large-large"
+  ],
+  "episodes": [
+    "env-bool",
+    "event-summary"
+  ],
+  "attempts_per_episode": 1,
+  "maximum_wire_requests": 56,
+  "task_requests_per_episode": 24,
+  "transport_repair_requests_per_episode": 4,
+  "observer_reserved_requests": 6,
+  "coder_chunk_ceiling": 8,
+  "request_timeout_seconds": 90,
+  "episode_wall_seconds": 600,
+  "no_retries_in_place": true,
+  "task_and_gate_changes": false,
+  "qualification": "The same frozen examples-v1 contracts, exact native role receipts and strict all-file gates.",
+  "comparison_limit": "Role pair and runtime change from the initial wave. No causal effect or broad capability claim."
+}
