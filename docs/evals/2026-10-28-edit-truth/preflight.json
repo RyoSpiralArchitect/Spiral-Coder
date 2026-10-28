@@ -1,0 +1,240 @@
+{
+  "luna-large": {
+    "declaration_sha256": "fca8d9b04733826dc2197de8e077ee35f700f9482154d1e2b32d928837614c29",
+    "preflight_sha256": "868a6168c5066f86fdf64b35a0e2564f512cb584617d6b2e28621bce766033ac",
+    "runtime_commit": "e3a6c228a09f01db0a24d06ab0efb6c3afb5aa57",
+    "binary_sha256": "f8ddfe032ea2da35c6c0a55091868708bafc9e359514c6bdfd8924cda33bfeb6",
+    "baseline_expected": true,
+    "reference_passed": true,
+    "provider_calls": 0,
+    "checks": {
+      "baseline": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        }
+      ],
+      "reference": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        }
+      ]
+    }
+  },
+  "large-luna": {
+    "declaration_sha256": "72e8810e3695cc8cc1d48b8963389ba975c1f0328b0c3b31d42bde5f672d8f87",
+    "preflight_sha256": "462cba835530ad30debe31d460b48d139c7231afa626a7d0cf8c3dfc59b59c5e",
+    "runtime_commit": "e3a6c228a09f01db0a24d06ab0efb6c3afb5aa57",
+    "binary_sha256": "f8ddfe032ea2da35c6c0a55091868708bafc9e359514c6bdfd8924cda33bfeb6",
+    "baseline_expected": true,
+    "reference_passed": true,
+    "provider_calls": 0,
+    "checks": {
+      "baseline": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 0,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": false,
+          "exit_code": 101,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 5,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        }
+      ],
+      "reference": [
+        {
+          "id": "candidate-build",
+          "kind": "build",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        },
+        {
+          "id": "existing-rust-tests",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 864,
+            "failed": 0,
+            "ignored": 1
+          }
+        },
+        {
+          "id": "visible-recovery-regression",
+          "kind": "improvement",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "recovery-handoff-oracle",
+          "kind": "improvement",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        {
+          "id": "candidate-tui-replay",
+          "kind": "regression",
+          "passed": true,
+          "exit_code": 0,
+          "timed_out": false,
+          "test_summary": null
+        }
+      ]
+    }
+  }
+}
