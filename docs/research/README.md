@@ -17,6 +17,7 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 | Understand what counts as completion | [Task requirements](../task-requirements.md), [evaluation contract](../evaluation.md) |
 | Run bounded cross-family self-dogfood | [Runner and frozen contracts](../self-dogfood.md), [task catalog](../../benchmarks/self-dogfood-v1/README.md) |
 | Reproduce ordinary runtime examples | [Benchmark examples](../examples/README.md) |
+| Practice a small complete coding loop | [Boolean settings and JSONL examples](../../benchmarks/examples-v1/README.md) |
 | Contribute a change | [Build and checks](../usage.md#build-and-contribute), [contributor rules](../../AGENTS.md) |
 
 ## Experiments and open questions

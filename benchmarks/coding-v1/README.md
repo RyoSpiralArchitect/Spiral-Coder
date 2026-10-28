@@ -6,6 +6,10 @@ failure modes. It is not held out, a broad coding leaderboard, or proof that a
 model can maintain the full repository. The historical runtime/coupled panels
 and their failures remain unchanged.
 
+For shorter tasks with explicit cross-family Coder/Observer pairs, start with
+the separate [practical examples suite](../examples-v1/README.md). The original
+v1 matrix below keeps its same-model settings and request limits.
+
 | Case | Task and independent check | Shared request cap |
 | --- | --- | ---: |
 | `large-file` | Repair punctuation after 600 preserved lines; frozen original tests and prefix preservation | 18 |

@@ -12,6 +12,7 @@ from .common import (PROVIDERS, clean_env, inventory, read_json, run_process,
                      select, sha, validate, write_json)
 from .evidence import assess
 from .oracles import score
+from .roles import command_and_env, configuration_evidence, pair, wire_limit
 
 
 def now():
@@ -81,10 +82,10 @@ def prepare(args):
                    "input_inventory": inventory(out / "inputs"),
                    "driver_sha256": driver_inventory(out / "driver"),
                    "profiles": profiles, "cases": cases, "episodes": episodes,
-                   "maximum_wire_requests": sum(c["max_requests"] for c in cases) * len(profiles),
-                   "same_model_both_roles": True,
+                   "maximum_wire_requests": sum(wire_limit(c) for c in cases) * len(profiles),
+                   "same_model_both_roles": all(pair(p)["coder"] == pair(p)["observer"] for p in profiles),
                    "scope_policy": "Retain every changed path except Git internals. Report behavior/handoff and strict all-file qualification separately; runtime/cache changes are not removed.",
-                   "retry_policy": "One process per episode; no driver retries or fallback model. Native transport attempts consume the shared cap. A new trial requires a new output directory."}
+                   "retry_policy": "One process per episode; no driver retries or fallback model. Every wire attempt is retained; explicit v2 transport repair is bounded separately. A new trial requires a new output directory."}
     write_json(out / "predeclared.json", declaration)
     return {"prepared": str(out), "episodes": len(episodes),
             "maximum_wire_requests": declaration["maximum_wire_requests"], "provider_calls": 0,
@@ -122,35 +123,33 @@ def run(args):
         folder = out / "episodes" / profile["id"] / case["id"]
         if (folder / "started.json").exists() or (folder / "run").exists():
             raise ValueError(f"Episode already started: {profile['id']}/{case['id']}; no retry in place")
-        key_name = PROVIDERS[profile["provider"]][0]
-        if not os.environ.get(key_name):
-            raise ValueError(f"Missing {key_name}; credentials must come from the environment")
+        command_and_env(out / declaration["binary_path"], folder, profile, case, matrix)
         episode = next(e for e in declaration["episodes"] if e["profile"] == profile["id"] and e["case"] == case["id"])
         if inventory(folder / "workspace") != episode["workspace_before"] or sha(folder / "task.txt") != episode["prompt_sha256"]:
             raise ValueError("Workspace or prompt changed before execution")
     for profile, case in selected:
         folder = out / "episodes" / profile["id"] / case["id"]
         binary = out / declaration["binary_path"]
-        key_name, base_url = PROVIDERS[profile["provider"]]
-        secret = os.environ[key_name]
-        env = clean_env(binary)
-        env[key_name] = secret
-        command = [str(binary), "--provider", profile["provider"], "--base-url", base_url,
-                   "--model", profile["model"], "--temperature", str(matrix["temperature"]),
-                   "--max-tokens", str(matrix["max_tokens"]), "--timeout-seconds", str(matrix["timeout_seconds"]),
-                   "coupled-run", "--tool-root", str(folder / "workspace"), "--prompt-file", str(folder / "task.txt"),
-                   "--out-dir", str(folder / "run"), "--max-requests", str(case["max_requests"])]
+        command, env, secrets = command_and_env(binary, folder, profile, case, matrix)
         with (folder / "started.json").open("x") as handle:
-            json.dump({"started_at": now(), "command": command, "credential_env_name": key_name}, handle, indent=2)
+            json.dump({"started_at": now(), "command": command,
+                       "credential_env_names": sorted({PROVIDERS[r["provider"]][0] for r in pair(profile).values()})}, handle, indent=2)
         print(json.dumps({"started": f"{profile['id']}/{case['id']}", "max_requests": case["max_requests"]}), flush=True)
         started = time.monotonic()
         code, log, expired = run_process(command, folder / "workspace", env, matrix["wall_seconds"])
-        (folder / "console.log").write_text(log.replace(secret, "[REDACTED]"))
+        for secret in secrets:
+            log = log.replace(secret, "[REDACTED]")
+        (folder / "console.log").write_text(log)
         redactions = []
         for path in (folder / "run").rglob("*"):
-            if path.is_file() and secret.encode() in path.read_bytes():
-                path.write_bytes(path.read_bytes().replace(secret.encode(), b"[REDACTED]"))
-                redactions.append(path.relative_to(folder).as_posix())
+            if path.is_file():
+                original = path.read_bytes()
+                redacted = original
+                for secret in secrets:
+                    redacted = redacted.replace(secret.encode(), b"[REDACTED]")
+                if redacted != original:
+                    path.write_bytes(redacted)
+                    redactions.append(path.relative_to(folder).as_posix())
         result = {"profile": profile["id"], "model": profile["model"], "case": case["id"],
                   "exit_code": code, "timed_out": expired, "wall_seconds": round(time.monotonic() - started, 3),
                   "finished_at": now(), "redacted_raw_files": redactions}
@@ -175,6 +174,7 @@ def retained_report(folder):
 def summarize(args):
     out = args.out.resolve()
     declaration = load_frozen(out, require_driver=not args.reassess)
+    matrix = read_json(out / "matrix.json")
     current_driver = Path(__file__).resolve().parent.parent
     assessor = {f"coupled_bench/{k}": v for k, v in driver_inventory(current_driver / "coupled_bench").items()}
     assessor["run_coupled_bench.py"] = sha(current_driver / "run_coupled_bench.py")
@@ -206,10 +206,12 @@ def summarize(args):
                     pre_tool_rejections.append(event.get("data"))
         state = "finished" if process else ("started_without_receipt" if (folder / "started.json").exists() else "not_run")
         oracle = score(case, out / "inputs", folder / "workspace", out / declaration["binary_path"])
+        configuration = configuration_evidence(report, profile, case, matrix) if matrix["version"] == 2 else None
         rows.append({"profile": profile, "case": case["id"], "state": state, "process": process,
                      "receipt_source": receipt_source, "trace_errors": errors,
                      "pre_tool_rejections": pre_tool_rejections,
-                     **assess(case, episode["workspace_before"], folder / "workspace", report, process, oracle)})
+                     **assess(case, episode["workspace_before"], folder / "workspace", report, process, oracle,
+                              configuration=configuration)})
     result = {"version": 1, "evaluated_at": now(), "predeclaration_sha256": sha(out / "predeclared.json"),
               "assessor_driver_sha256": assessor, "assessor_snapshot": snapshot.relative_to(out).as_posix(),
               "matches_declared_driver": assessor == declaration["driver_sha256"],

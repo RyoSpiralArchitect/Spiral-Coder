@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "examples-v1",
+  "origin_commit": "3a4add279d6b3efa6a63380ef7d55e6d3232addf",
+  "claim_boundary": "Two small authored practice fixtures. Not repository bug discoveries, held-out tasks, full self-dogfood or a model leaderboard. Previous coding and self-dogfood suites are unchanged.",
+  "cases": [
+    {
+      "id": "env-bool",
+      "workspace": "cases/env-bool/workspace",
+      "prompt": "cases/env-bool/task.txt",
+      "reference": "cases/env-bool/reference",
+      "oracle": "python_contract",
+      "editable": [
+        "settings.py",
+        "docs/settings.md"
+      ],
+      "checks": [
+        {
+          "command": "python3 -B -S -m unittest discover -s tests -v",
+          "baseline_failure": true
+        }
+      ],
+      "max_requests": 24,
+      "transport_repair_requests": 4,
+      "observer_reserved_requests": 6,
+      "coder_chunk_requests": 8,
+      "minimum_tests": 10
+    },
+    {
+      "id": "event-summary",
+      "workspace": "cases/event-summary/workspace",
+      "prompt": "cases/event-summary/task.txt",
+      "reference": "cases/event-summary/reference",
+      "oracle": "python_contract",
+      "editable": [
+        "summary.py",
+        "docs/summary.md"
+      ],
+      "checks": [
+        {
+          "command": "python3 -B -S -m unittest discover -s tests -v",
+          "baseline_failure": true
+        }
+      ],
+      "max_requests": 24,
+      "transport_repair_requests": 4,
+      "observer_reserved_requests": 6,
+      "coder_chunk_requests": 8,
+      "minimum_tests": 10
+    }
+  ]
+}

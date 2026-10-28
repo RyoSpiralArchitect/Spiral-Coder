@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "temperature": 0,
+  "max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "timeout_seconds": 90,
+  "wall_seconds": 600,
+  "same_model_both_roles": false,
+  "reasoning": "Reuse the existing compatible-mode transports: Luna reasoning none, Large 4 defaults. Native role receipts record actual configurations; equal request limits do not imply equal compute or cost.",
+  "profiles": [
+    {
+      "id": "luna-large",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "observer": {
+        "provider": "mistral",
+        "model": "mistral-large-4"
+      }
+    },
+    {
+      "id": "large-luna",
+      "provider": "mistral",
+      "model": "mistral-large-4",
+      "observer": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    }
+  ]
+}
