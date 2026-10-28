@@ -62,6 +62,11 @@ pub(super) fn report_context(root: &str, messages: &[Value], test_cmd: Option<&s
     report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
         root, messages, test_cmd
     ));
+    report["check_facts"] =
+        serde_json::json!(super::report_counts::facts(root, messages, test_cmd));
+    report["claim_guidance"] = serde_json::json!(
+        "Only state test counts present in check_facts for that phase and command; null means unknown. Unittest failure_events may include multiple subtests per test method, so never subtract them from tests_run or call them distinct failed tests. Keep observed test results separate from explanations of code behavior. For every example output, state its input condition (for example, empty input); an example value is not a constant result for all inputs. Passing the recorded checks supports those checks, not an unbounded correctness claim."
+    );
     report
 }
 
@@ -326,6 +331,13 @@ pub(super) fn validate_authored_done_summary(
     let clauses = instructions(root);
     let evidence = collect_evidence(root, messages, test_cmd);
     let mut missing = Vec::new();
+    missing.extend(super::report_counts::issues(
+        summary,
+        report["check_facts"]
+            .as_array()
+            .map(Vec::as_slice)
+            .unwrap_or(&[]),
+    ));
     if summary.trim().is_empty() {
         missing.push("nonempty authored summary".to_string());
     }

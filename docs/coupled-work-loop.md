@@ -582,3 +582,29 @@ This remains an interrupted, incomplete task. No HTTP failure receives transport
 repair credit, no Observer response or completion is invented, and no request is
 refunded. Restore provider availability or start a separately declared model
 pair before another episode. The native Anthropic route is unchanged.
+
+### Revise remaining steps without rewriting the objective
+
+A Coder can shorten or replace pending steps while keeping the exact admitted
+goal and ordered acceptance criteria. Alignment is revalidated against a retained
+native plan anchor; plan shape, task scope, read-only restrictions, verification
+and final-report gates still apply. Neither completed-step prose nor an Observer
+suggestion establishes completion. Ordinary changes of goal or acceptance use
+the existing full task-alignment validation. Multiline plan parsing preserves
+parenthesized exit statuses as data, rather than accidental new steps.
+
+### Report observed counts and the conditions of examples
+
+Both roles receive `final_answer.check_facts` with the selected before/after
+command, call ID, status and any retained unittest/libtest counts. Unknown counts
+stay unknown. Unittest failure events include subtests and can exceed the number
+of test methods; do not subtract them to invent a passed count. Reports need no
+numeric count, but recognized English assertions about before/after counts must
+match these receipts. A rejected number is repaired in `done`; passed checks do
+not need to run again.
+
+Keep behavior explanations distinct from test receipts. Label an example's
+input conditions: an all-zero result for empty input is not a claim that every
+input returns zeros. These instructions guide authored explanations; bounded
+count validation is not a general semantic fact checker. See
+[state ownership and validation limits](state-schema.md).

@@ -2,7 +2,7 @@
 use super::compact_one_line;
 
 fn parse_numbered_steps(s: &str) -> Vec<String> {
-    let normalized = s.replace("\r\n", "\n").replace('\n', " ");
+    let normalized = s.replace("\r\n", "\n");
     let bytes = normalized.as_bytes();
     let mut markers: Vec<(usize, usize)> = Vec::new();
     let mut i = 0usize;
@@ -42,6 +42,26 @@ fn parse_numbered_steps(s: &str) -> Vec<String> {
         return Vec::new();
     }
 
+    // An explicitly multiline list owns its line-start ordinals. Numeric
+    // data inside a step, such as `(exit 1) recorded`, is not another item.
+    // Keep the legacy inline format when there is no multiline structure.
+    let starts_line = |start: usize| {
+        normalized[..start]
+            .rsplit('\n')
+            .next()
+            .unwrap_or("")
+            .trim()
+            .is_empty()
+    };
+    if markers
+        .iter()
+        .filter(|(start, _)| starts_line(*start))
+        .count()
+        >= 2
+    {
+        markers.retain(|(start, _)| starts_line(*start));
+    }
+
     let mut steps = Vec::new();
     for (idx, (_, content_start)) in markers.iter().enumerate() {
         let content_end = markers
@@ -49,6 +69,7 @@ fn parse_numbered_steps(s: &str) -> Vec<String> {
             .map(|(next_start, _)| *next_start)
             .unwrap_or(normalized.len());
         let step = normalized[*content_start..content_end]
+            .replace('\n', " ")
             .trim()
             .trim_end_matches(';')
             .trim()

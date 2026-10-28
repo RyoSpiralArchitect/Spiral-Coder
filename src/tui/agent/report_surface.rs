@@ -44,6 +44,19 @@ pub(super) fn guidance(report: &Value) -> String {
     if report["cite_current_verification_command"] == true {
         text.push_str("Cite the current exact verification command in the report.\n");
     }
+    if let Some(guidance) = report["claim_guidance"].as_str() {
+        text.push_str(guidance);
+        text.push('\n');
+    }
+    if report["check_facts"]
+        .as_array()
+        .is_some_and(|facts| !facts.is_empty())
+    {
+        text.push_str(&format!(
+            "Observed check facts (optional counts; never fill unknown values):\n{}\n",
+            report["check_facts"]
+        ));
+    }
     text
 }
 

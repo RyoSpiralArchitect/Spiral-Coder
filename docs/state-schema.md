@@ -1021,6 +1021,36 @@ pruning, is revalidated on resume, and never crosses a new human task boundary.
 `task_origin::provider_messages` strips it from provider requests. Older sessions
 fall back to parsing their assistant plan text; no schema migration is required.
 
+`plan_revision.rs` can attach an optional `accepted_plan.alignment_anchor` holding
+a previously admitted complete plan. Pending-step revisions may reuse alignment
+only with the exact same goal and ordered acceptance criteria, and the anchor
+must still pass shape and original-task alignment validation. New steps retain
+all shape, read-only, tool, evidence and completion gates. The self-contained
+anchor survives pruning; assistant prose, changed objectives, a malformed anchor
+and a new human task cannot authorize this exception. It is not a claim of work
+completed. Multiline numbered lists use line-start ordinals, so an in-step
+`(exit 1) recorded` is data; the seven-step ceiling is unchanged.
+
+`report_counts.rs` owns optional `test_counts` on native `exec` result messages.
+It recognizes one complete unittest/libtest summary from bounded captured output
+before display truncation. Multiple suites, unsupported fields, oversized or
+incomplete output retain unknown counts. Unittest `failure_events` can exceed
+`tests_run` because of subtests; passed test methods are not inferred. Local
+metadata survives JSON round trips and content compaction and is stripped from
+provider messages. `final_answer.check_facts` projects it to both roles with the
+same before/after call IDs, exact commands and statuses as the outcome rows.
+Counts are optional reporting facts, never verification authority. Missing
+metadata in older sessions means unknown, not zero.
+
+The authored-report gate checks bounded English before/baseline and after/final
+integer-count assertions (digits or zero through twenty) against these selected
+receipts. Exact backticked commands disambiguate multiple checks. Unknown,
+contradictory or ambiguous counts require correction or omission, without
+invalidating passed checks. This is not a general natural-language fact checker:
+unlabelled claims and arbitrary descriptions of behavior still need review.
+Shared guidance requires input conditions on example outputs and separates
+observed checks from claims about behavior for all inputs.
+
 `task_scope::ArtifactScope` and `agent/task_obligations::TaskObligations` are
 derived views, not persistent authorities. They are recomputed from the current
 human task and correlated native exchanges. TUI and the Rust browser endpoint
