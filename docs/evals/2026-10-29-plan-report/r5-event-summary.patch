@@ -1,0 +1,44 @@
+--- a/docs/summary.md
++++ b/docs/summary.md
+@@ -1,4 +1,16 @@
+ # Event summary
+ 
+-`summarize(lines)` counts levels in a JSON Lines export.
+-Each line currently needs a JSON object with a known level.
++`summarize(lines)` counts levels in a JSON Lines event export.
++
++- `lines` is an iterable of strings, including generators; input strings are not modified.
++- Empty or whitespace-only lines are blank and are skipped.
++- Each non-blank line must be a JSON object with a `level` field whose value is exactly one of the lowercase strings `info`, `warning`, or `error`. Other object fields are ignored.
++- The return value is always exactly `{"info": 0, "warning": 0, "error": 0}` for empty input, with integer counts including zeros.
++
++Invalid records are never silently skipped. Malformed JSON, non-object records, and missing, unknown, or non-string `level` values raise `ValueError` with the physical 1-based line number, including skipped blank lines. For example, input `["\n", '{"level":"info"}', "{"]` raises `ValueError` mentioning `line 3`.
++
++Run the tests with:
++
++```bash
++python3 -B -S -m unittest discover -s tests -v
++```
+--- a/summary.py
++++ b/summary.py
+@@ -4,7 +4,17 @@
+ 
+ def summarize(lines):
+     counts = {"info": 0, "warning": 0, "error": 0}
+-    for line in lines:
+-        event = json.loads(line)
+-        counts[event["level"]] += 1
++    for lineno, line in enumerate(lines, start=1):
++        if line.strip() == "":
++            continue
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError as exc:
++            raise ValueError(f"line {lineno}: invalid JSON") from exc
++        if not isinstance(event, dict):
++            raise ValueError(f"line {lineno}: record must be a JSON object")
++        level = event.get("level")
++        if not isinstance(level, str) or level not in counts:
++            raise ValueError(f"line {lineno}: level must be one of info, warning, error")
++        counts[level] += 1
+     return counts

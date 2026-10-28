@@ -41,5 +41,25 @@
       "spiral-plan-framing-green.log": "c65bed4e81e26c615a9448824485ba5346ef709cf2aa35935b262414f6243437",
       "spiral-plan-report-framing-check-local.log": "170dd75043da548900868802692519d39b830e40e23f917ea90804981e405c9d"
     }
+  },
+  "structured_count_followup": {
+    "source_commit": "d2fe7876e358589c4836ba70d14c17e576127b8b",
+    "before_change_reproduction": "1 failed on the first retained correct report",
+    "check_local": {
+      "rust_passed": 990,
+      "rust_ignored": 1,
+      "integration_passed": 1,
+      "python_passed": 91,
+      "web_passed": 80,
+      "npm_passed": 5,
+      "tui_replay_passed": 13,
+      "repo_map_passed": 14,
+      "server_ui_smoke": true
+    },
+    "log_sha256": {
+      "spiral-structured-count-red.log": "35734a3b68e246775dd1770f7d1bcacd9f95059a31bf2612b7e8ddcc7850ef8f",
+      "spiral-structured-count-green.log": "a39473125c3b32374a69d466333161f739b73af75c0434f4a8a6bc6c5c5b96c3",
+      "spiral-structured-count-check-local.log": "7e5d3fb03db73f07f9b6045c6172436905b0cb6fcaca5702a330fe46d2d472f0"
+    }
   }
 }
