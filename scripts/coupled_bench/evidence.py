@@ -5,11 +5,19 @@ import re
 from .common import inventory
 
 
+def native_file_edit_changed(action):
+    """New receipts distinguish operation success from a write. Missing outcome
+    keeps legacy receipt semantics; null/unknown modern outcomes grant no edit.
+    """
+    return (action.get("tool") in ("write_file", "patch_file", "apply_diff")
+            and action.get("executed") is True and action.get("succeeded") is True
+            and action.get("edit_outcome", "changed") == "changed")
+
+
 def assess(case, before, workspace, report, process, oracle):
     execution = report.get("execution") or {}
     actions = execution.get("actions", [])
-    edits = [a for a in actions if a.get("tool") in ("write_file", "patch_file", "apply_diff")
-             and a.get("executed") is True and a.get("succeeded") is True
+    edits = [a for a in actions if native_file_edit_changed(a)
              and isinstance(a.get("result_step"), int)]
     first = min((a["result_step"] for a in edits), default=None)
     last = max((a["result_step"] for a in edits), default=None)
@@ -61,11 +69,11 @@ def assess(case, before, workspace, report, process, oracle):
         reasons = re.findall(r"\[([^\]\n]*(?:Gate|handoff|BLOCK)[^\]\n]*)\]", result, re.I)
         if result.startswith("GOVERNOR BLOCKED"):
             blocks.update(reasons or ["unspecified governor"])
-        sequence.append({k: action.get(k) for k in ["call_id", "tool", "arguments", "executed", "succeeded", "result_step", "freshness"]}
+        sequence.append({k: action.get(k) for k in ["call_id", "tool", "arguments", "executed", "succeeded", "edit_outcome", "result_step", "freshness"]}
                         | {"result_excerpt": result[:800]})
     return {"runtime_completed": accepted, "independent_artifacts_passed": oracle["passed"],
             "behavior_and_handoff_qualified": core, "strict_all_files_qualified": core and not other,
-            "native": native, "native_contract_revision": "accepted-omitted-remaining-v1",
+            "native": native, "native_contract_revision": "edit-outcome-v2",
             "completion_field_presence": {"remaining_acceptance": "remaining_acceptance" in args},
             "baseline_commands": baselines, "verified_commands": verified,
             "report_fields": report_fields, "authored_summary": summary,

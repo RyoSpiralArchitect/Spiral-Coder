@@ -119,6 +119,12 @@ class NativeEvidence(unittest.TestCase):
     def assess(self):
         return evidence.assess(self.case, self.before, self.root, self.report, self.process, {"passed": True})
 
+    def test_unchanged_edit_does_not_invalidate_proof_or_count_as_edit_review_regression(self):
+        self.report["execution"]["actions"].append({"tool":"patch_file", "executed":True, "succeeded":True, "edit_outcome":"unchanged", "result_step":5})
+        self.assertTrue(self.assess()["native"]["fresh_exact_checks"])
+        self.report["execution"]["actions"][1]["edit_outcome"] = "unchanged"
+        self.assertFalse(self.assess()["native"]["native_edit"])
+
     def test_full_filesystem_scope_retains_untracked_runtime_files(self):
         self.assertTrue(self.assess()["strict_all_files_qualified"])
         (self.root / ".spiral-coder").mkdir()

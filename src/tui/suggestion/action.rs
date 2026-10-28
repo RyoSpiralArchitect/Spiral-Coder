@@ -113,7 +113,19 @@ pub(super) fn validation_issue(suggestion: &ObserverSuggestion) -> Option<String
             suggestion.suggested_args.clone(),
         )
         .is_ok_and(|request| !request.is_range() || request.bounds().is_ok());
-    let valid = read_shape
+    let exec_shape = tool != "exec"
+        || if args.contains_key("check_id") {
+            args.len() == 1
+                && args["check_id"]
+                    .as_str()
+                    .is_some_and(|id| !id.trim().is_empty())
+        } else {
+            args.get("command")
+                .and_then(Value::as_str)
+                .is_some_and(|command| !command.trim().is_empty())
+        };
+    let valid = exec_shape
+        && read_shape
         && patch_shape
         && matches_schema(&normalized, &schema["parameters"])
         && ["path", "command", "pattern", "search", "diff"]

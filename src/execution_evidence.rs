@@ -81,12 +81,36 @@ pub(crate) fn exec_outcome(content: &str) -> Option<bool> {
 /// A correlated file-tool result records the write independently of any later
 /// automatic test. A hash is optional when the post-write cache read fails.
 pub(crate) fn file_edit_succeeded(name: &str, content: &str) -> bool {
+    file_edit_outcome(name, content) == Some(FileEditOutcome::Changed)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum FileEditOutcome {
+    Changed,
+    Unchanged,
+    Failed,
+}
+
+pub(crate) fn file_edit_outcome(name: &str, content: &str) -> Option<FileEditOutcome> {
+    if !matches!(name, "write_file" | "patch_file" | "apply_diff") {
+        return None;
+    }
     let header = content.trim_start().lines().next().unwrap_or("");
-    match name {
+    let changed = match name {
         "write_file" => header.starts_with("OK: wrote '"),
         "patch_file" => header.starts_with("OK: patched '"),
         "apply_diff" => header.starts_with("OK: applied "),
         _ => false,
+    };
+    if changed {
+        Some(FileEditOutcome::Changed)
+    } else if header.starts_with("OK: unchanged '") {
+        Some(FileEditOutcome::Unchanged)
+    } else if header.starts_with("ERROR:") || header.starts_with("ERROR ") {
+        Some(FileEditOutcome::Failed)
+    } else {
+        None
     }
 }
 

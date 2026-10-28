@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "status": "predeclared_before_provider_calls",
+  "task_variant": "recovery-edit-truth",
+  "task_baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+  "merged_runtime_base": "94236ea19a4beebcefc167086f88f7f07a270aa8",
+  "executor": "source commit and binary SHA256 pinned before provider calls in executor.json and per-episode declarations",
+  "order": [
+    "luna-large",
+    "large-luna"
+  ],
+  "models": {
+    "luna": "gpt-5.6-luna",
+    "large": "mistral-large-4"
+  },
+  "limits": {
+    "task_requests_per_episode": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "maximum_total_wire_requests": 72,
+    "wall_seconds_per_episode": 1200,
+    "provider_timeout_seconds": 90,
+    "coder_max_tokens": 32768,
+    "observer_max_tokens": 8192,
+    "coder_chunk_ceiling": 8
+  },
+  "comparison": "Two diagnostic follow-up episodes, one per direction. No concurrent old-runtime arm; do not infer causal improvement or pool with older prompt variants.",
+  "no_retries": "One attempt per cell. Retain failures and interruptions without replacement or in-place retry. Preflight must pass before provider calls.",
+  "qualification": "All original completion, authored acceptance, fresh native proof, both-role, scope, protected-file, process, build, original864, visible, six-probe oracle, TUI replay and receipt gates remain required.",
+  "measurement": [
+    "actual file changes versus changed/unchanged tool outcomes",
+    "selected check IDs and exact executed commands",
+    "six development stages including not_evaluated outcomes",
+    "provider interruptions separately from transport rejections"
+  ],
+  "promotion_authorized": false,
+  "inputs": {
+    "README.md": "d86c8bdb008527ad75d172a6aedc4f58a3336893a3699e6b0427202c2eff5cc7",
+    "large-luna.json": "d0f06fb4833f17a972c2f249d00e815cfe66a14c74b46d8632165006796ff458",
+    "luna-large.json": "af049787b4555b62407b1faa7597999fa4f5685acdf4eb8db9a4eb25c4895a40",
+    "probe.rs": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+    "prompt.txt": "f3ef05fe1bb79b55d87e6663285df1de1352fc83a641a8ded011fd8669cbdd39",
+    "reference/handoff-note.md": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+    "reference/src/tui/agent/edit_failure.rs": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+    "reference/src/tui/agent/recovery.rs": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+    "visible-registration.rs": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+    "visible-test.rs": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25"
+  }
+}

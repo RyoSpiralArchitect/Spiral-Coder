@@ -532,3 +532,27 @@ Do not pool it with earlier prompt variants as a runtime-only comparison.
 Development milestones show reproduction, measured behavior change, visible
 pass, control non-regression, fresh full native check, and docs/receipts; the final
 qualification gate remains binary and independent.
+
+### Unchanged edits and exact check selection
+
+Both Coder and Observer receive an explicit `unchanged` outcome when a native
+edit would write identical content. Such an operation leaves repair, failure,
+verification and acceptance obligations intact. It does not trigger another
+automatic test or claim an edit completed. The next action should address the
+missing difference, or report a concrete blocker if no valid repair is available.
+
+Required exact checks are available as `exec` selections such as
+`{"check_id":"required-1"}`. Optional reproducer names can be declared in the
+human task:
+
+```text
+<task_checks>
+{"version":1,"checks":[{"id":"reproduce","command":"cargo test --locked regression_name -- --exact"}]}
+</task_checks>
+```
+
+Selection runs the exact command at the task root through normal approval and
+recovery. Supply only `check_id`; use full `command` when no selection is offered.
+A selected check is still pending until its real execution succeeds, and edits
+invalidate earlier verification as before. The optional reproducer is not an
+extra completion requirement. See [state ownership and limits](state-schema.md).

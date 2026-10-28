@@ -12,11 +12,16 @@ pub(super) fn project(
         .as_deref()
         .filter(|tool| !tool.is_empty())?;
     // This receipt is deliberately stricter than the legacy decision inference:
-    // no subset matching, path alias resolution or invented/default arguments.
+    // Apart from the defined check-ID expansion, no subset matching, path alias
+    // resolution or invented/default arguments.
     let matches: Vec<_> = actions
         .iter()
         .copied()
-        .filter(|action| action.tool == tool && action.arguments == primary.suggested_args)
+        .filter(|action| {
+            action.tool == tool
+                && (action.arguments == primary.suggested_args
+                    || resolved_check_matches(action, &primary.suggested_args))
+        })
         .collect();
     let executed_matches: Vec<_> = matches
         .iter()
@@ -61,6 +66,23 @@ pub(super) fn project(
     })
 }
 
+// A resolved native selection records the ID plus its runtime-resolved command
+// and root. This is one defined normalization, not arbitrary subset matching.
+fn resolved_check_matches(action: &ActionEvidence, proposed: &serde_json::Value) -> bool {
+    action.tool == "exec"
+        && proposed.as_object().is_some_and(|args| args.len() == 1)
+        && proposed["check_id"]
+            .as_str()
+            .is_some_and(|id| action.arguments["check_id"] == id)
+        && action.arguments.as_object().is_some_and(|args| {
+            args.len() == 3
+                && args
+                    .get("command")
+                    .is_some_and(serde_json::Value::is_string)
+                && args.get("cwd").is_some_and(serde_json::Value::is_string)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -88,6 +110,7 @@ mod tests {
         succeeded: Option<bool>,
     ) -> ActionEvidence {
         ActionEvidence {
+            edit_outcome: None,
             call_id: id.into(),
             tool: tool.into(),
             arguments,
@@ -104,6 +127,51 @@ mod tests {
         actions: &[ActionEvidence],
     ) -> SuggestedActionReceipt {
         project(Some(proposal), &actions.iter().collect::<Vec<_>>()).unwrap()
+    }
+
+    #[test]
+    fn rejected_and_pending_check_selections_keep_their_call_ids_review_regression() {
+        let proposal = suggestion(Some("exec"), json!({"check_id":"required-1"}));
+        for outcome in [Some(false), None] {
+            let resolved = action(
+                "check",
+                "exec",
+                json!({"check_id":"required-1","command":"cargo test","cwd":"/workspace"}),
+                Some(false),
+                outcome,
+            );
+            let receipt = project_actions(&proposal, &[resolved]);
+            assert_eq!(receipt.matching_call_ids, ["check"]);
+            assert_eq!(receipt.executed, Some(false));
+            assert_eq!(receipt.succeeded, outcome);
+        }
+    }
+
+    #[test]
+    fn a_check_id_matches_only_its_executed_runtime_resolution() {
+        let proposal = suggestion(Some("exec"), json!({"check_id":"required-1"}));
+        let mut resolved = action(
+            "check",
+            "exec",
+            json!({"check_id":"required-1", "command":"cargo test", "cwd":"/workspace"}),
+            Some(true),
+            Some(true),
+        );
+        assert_eq!(
+            project_actions(&proposal, std::slice::from_ref(&resolved)).executed,
+            Some(true)
+        );
+        resolved.executed = Some(false);
+        assert_eq!(
+            project_actions(&proposal, std::slice::from_ref(&resolved)).executed,
+            Some(false)
+        );
+        resolved.executed = Some(true);
+        resolved.arguments["check_id"] = json!("required-2");
+        assert_eq!(
+            project_actions(&proposal, &[resolved]).executed,
+            Some(false)
+        );
     }
 
     #[test]

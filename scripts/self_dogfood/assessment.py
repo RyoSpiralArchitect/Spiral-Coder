@@ -8,6 +8,7 @@ import tempfile
 import time
 
 from coupled_bench.common import PROVIDERS, inventory, read_json, sha, write_json
+from coupled_bench.evidence import native_file_edit_changed
 from .contracts import apply_overlays, execution_env, load_frozen, now
 from .build_cache import reset_package_cache
 from .process import run_process
@@ -126,7 +127,7 @@ def assess(args):
     expected_roles["observer"].update(temperature=0.2, max_tokens=spec.get("observer_max_tokens", min(spec["max_tokens"], 1200)))
     role_match = report.get("roles") == expected_roles
     actions = (report.get("execution") or {}).get("actions", [])
-    edits = [a for a in actions if a.get("tool") in ("write_file", "patch_file", "apply_diff") and a.get("executed") is True and a.get("succeeded") is True]
+    edits = [a for a in actions if native_file_edit_changed(a)]
     last_mutation = max([(report.get("execution") or {}).get("mutation_step") or 0] + [a.get("result_step") or 0 for a in edits])
     fresh = {command: any(a.get("tool") == "exec" and a.get("executed") is True and a.get("succeeded") is True
                           and (a.get("arguments") or {}).get("command") == command
