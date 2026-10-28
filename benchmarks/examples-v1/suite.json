@@ -48,5 +48,6 @@
       "coder_chunk_requests": 8,
       "minimum_tests": 10
     }
-  ]
+  ],
+  "prompt_revision": 2
 }

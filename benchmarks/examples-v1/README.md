@@ -77,6 +77,14 @@ receipts must match them; output-limited/empty responses cannot qualify for the
 transport pool. Matrix v1 retains same-model defaults and its historical limits.
 Results separate artifact behavior, native proof, authored report and file scope.
 
+Prompt revision 2 explicitly requests **before/after test outcomes**, activating
+the runtime's existing native outcome-row checks in `done.summary`. The first
+revision asked for outcomes without naming tests in the final-answer clause;
+the runtime accepted a loose report that the frozen benchmark rejected. The
+strict report predicate is unchanged. A regression exercises both real prompt
+files through the native report validator, including rejection of qualified
+labels such as `Before (baseline): FAILED`.
+
 ## Try one manually
 
 Prepare a separate directory with one case, enter its `episodes/<profile>/<case>/workspace`,

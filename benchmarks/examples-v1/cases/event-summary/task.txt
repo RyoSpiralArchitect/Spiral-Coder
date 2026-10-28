@@ -5,7 +5,7 @@ Update docs/summary.md to explain the contract, blank lines and ValueError with 
 Change only summary.py and docs/summary.md. Preserve tests and .spiral-coder.md. Read both source and tests. Run the exact check BEFORE editing to record its failing baseline; use native file tools for the repair and documentation, then repeat the exact check after all edits. Do not install dependencies, call providers, commit or push. Both Coder and Observer share these obligations. The source is short: full-file reads are sufficient. The task is complete only when the original tests pass and both artifacts are updated.
 
 Exact check: python3 -B -S -m unittest discover -s tests -v
-You may select it with exec({"check_id":"required-1"}). Keep one tool call per response; file edits need the usual complete think plan and target_files for the actual path. A failed baseline is expected evidence to diagnose, not permission to change tests. Finish with an authored report naming both changed files, actual Before: FAILED and After: PASSED outcomes and the exact command, plus any remaining work.
+You may select it with exec({"check_id":"required-1"}). Keep one tool call per response; file edits need the usual complete think plan and target_files for the actual path. A failed baseline is expected evidence to diagnose, not permission to change tests. Finish with an authored report naming both changed files and the actual before/after test outcomes with the exact command; disclose any remaining work. Put each recorded outcome row in done.summary on its own line, keeping the command exact. Report the native receipt status; never fill in a missing outcome.
 
 <task_requirements>
 {

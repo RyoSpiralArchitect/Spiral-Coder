@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "runtime_source_commit": "4038617d035052ad4db97978325719240b1be0e8",
+  "required_script": "bash scripts/check-local.sh",
+  "passed": true,
+  "counts": {
+    "rust_passed": 978,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "python_passed": 89,
+    "web_npm_passed": 85,
+    "tui_replay_passed": 13,
+    "repo_map_passed": 14
+  },
+  "server_ui_smoke_passed": true,
+  "before_fix": {
+    "tests_failed": 3,
+    "production_source_commit": "3a4add279d6b3efa6a63380ef7d55e6d3232addf",
+    "test_source_commit": "4038617d035052ad4db97978325719240b1be0e8",
+    "regressions": [
+      "Coder quota retries",
+      "Observer quota retries",
+      "HTTP cause lost on retry budget exhaustion"
+    ]
+  },
+  "logs": {
+    "provider-red": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-provider-red.log",
+      "sha256": "095b7caf5d5e7b4ccbd73e0a098f5dfe2e24702b7ba7470811c252ec7584f386"
+    },
+    "provider-green": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-provider-green.log",
+      "sha256": "dee8bc771ad7dbd573b81623e0fac3a8f461cd064cf6b061f4cbdd557cb36232"
+    },
+    "final-check-local": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-final-check-local.log",
+      "sha256": "fad015f985818e50d15ef3bbb154b8bcb4a2692be38cef70c3a7dfdbd9599ac2"
+    },
+    "example-followup": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-example-followup.log",
+      "sha256": "3bd7a346383a981a916592d265056e67d4f0b594256b33a58b518351f0af1db7"
+    }
+  }
+}
