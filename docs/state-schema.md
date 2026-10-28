@@ -17,6 +17,14 @@ its correlated failure still awaits inspection. Its path is the failure location
 not authority to edit that file. Both Observer consumers validate a confident
 tool suggestion against this pending read before forwarding or using their one
 repair attempt; no-tool and uncertain advice is not retried for confidence.
+The Coder's `next_action::Contract` projects the same current diagnostic read
+into a `diagnose` phase with an exact-path `read_file` schema and runtime
+refusal for other proposed actions. `done` stays available for a blocked report;
+the final shared report slot wins over diagnosis. Actual failed reads release
+the narrow schema for ordinary access/path diagnosis without resolving the
+failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
+of declared artifacts without native edit receipts, shared with both roles and
+the next-action contract. These fields add no persisted state or proof authority.
 `report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
 explicit before/after test-result report clauses. Before is the last confirmed
 check before the first mutation; after is the latest check after the last

@@ -7797,7 +7797,8 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             shared_remaining,
             &pending_checks,
             &requirement_proof::project(&messages, test_cmd.as_deref()),
-        );
+        )
+        .with_diagnostic_read(recovery.focus.required_read());
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
@@ -8486,7 +8487,7 @@ This is the LAST model call for this run.\n\
         } else {
             next_action
                 .rejection(&tool_calls)
-                .map(|hint| ("closeout_action", hint))
+                .map(|hint| (next_action.rejection_gate(), hint))
         };
         if let Some((gate, hint)) = turn_rejection {
             provider_turn::retain_rejected_calls(

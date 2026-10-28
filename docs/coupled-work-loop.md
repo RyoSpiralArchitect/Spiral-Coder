@@ -104,6 +104,18 @@ outside the offered report-only tool set are retained and refused without
 execution. No additional requests, automatic report text, acceptance repair or
 completion authority are introduced; all existing done gates still apply.
 
+When the native recovery focus requires a current diagnostic read, the same
+contract offers only `read_file` with that exact path and `done` for an honest
+blocked report. It rejects edits, checks and other paths before execution even
+if a provider ignores the offered schema. This is the existing diagnosis
+obligation exposed at action selection, not an automatic read or weakened check.
+A correlated native read (or actual read failure) releases the narrow tool set;
+the failed check remains pending. Prior reads and advisory Observer overrides
+cannot release it. The final shared report slot still takes precedence.
+`pending_artifact_paths` carries explicit artifacts without native edit receipts
+into the compact next-action view, so source repair does not hide a remaining
+documentation obligation. It does not claim semantic completion of edited files.
+
 `agent/final_instructions.rs` owns bounded explicit English report clauses:
 “final answer/report/response/summary must” followed by a supported positive verb
 such as include, name, state or disclose. It preserves literal case and sentence
