@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "method": "manual source and artifact review",
+  "base": "3a4add279d6b3efa6a63380ef7d55e6d3232addf",
+  "reviewed_code_head": "3aa0390ee1ce48cf9c7d63504447407976c14020",
+  "scope": [
+    "diagnostic tool schema and native refusal path",
+    "read success/error reopening and unresolved check evidence",
+    "task artifact projection and scope",
+    "429 retry accounting and retained causes",
+    "frozen benchmark roles, budgets, original tests and authored reports"
+  ],
+  "blocking_introduced_findings": [],
+  "public_candidate_patch_validation": "Both patches apply to their frozen original workspaces and reproduce the retained candidate files byte for byte. Unified-diff context markers are preserved.",
+  "manual_report_observations": {
+    "event-summary": "The all-zero result is the empty-input value, not the result for every input. The authored prose overstates this; nonzero-count source/tests pass.",
+    "env-bool": "The authored failure count of nine is unsupported by the retained native digest. The independent frozen baseline reports fourteen failure events including subtests."
+  },
+  "claim_boundary": "A manual bounded review and two practice qualifications; not a general capability or natural-language semantic-quality guarantee."
+}

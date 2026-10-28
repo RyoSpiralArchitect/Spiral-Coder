@@ -75,13 +75,21 @@ def score(case, suite_root, workspace, binary):
                 doc = (isolated / "docs/pilot.md").read_text().lower()
                 checks["requested_documentation"] = pilot_documentation(doc)
                 exact_reference = (isolated / "scripts/run_coupled_pilot.py").read_bytes() == (Path(suite_root) / case["reference"] / "scripts/run_coupled_pilot.py").read_bytes()
-            else:
+            elif case["oracle"] == "replay_json":
                 before = json.loads((original / ".spiral-coder/tui_replay.json").read_text())
                 candidate = json.loads((isolated / ".spiral-coder/tui_replay.json").read_text())
                 checks["preserved_existing_json"] = preserved_json(before, candidate)
                 doc = (isolated / "docs/replay.md").read_text().lower()
                 checks["requested_documentation"] = all(x in doc for x in ["observer-range-tail", "src/tui/agent.rs", "1200", "1240", "advice"])
                 exact_reference = None  # Valid new-case prose/JSON formatting need not match a golden patch.
+            elif case["oracle"] == "python_contract":
+                # Frozen original tests include the explicitly requested documentation
+                # examples. Candidate tests are never copied into this directory.
+                exact_reference = all((isolated / p).read_bytes() ==
+                                      (Path(suite_root) / case["reference"] / p).read_bytes()
+                                      for p in case["editable"])
+            else:
+                raise ValueError("Unknown independent oracle")
         except (OSError, ValueError, KeyError, TypeError):
             checks["artifact_structure"] = False
             exact_reference = False

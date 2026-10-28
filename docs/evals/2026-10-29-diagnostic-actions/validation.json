@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "runtime_source_commit": "3aa0390ee1ce48cf9c7d63504447407976c14020",
+  "required_script": "bash scripts/check-local.sh",
+  "passed": true,
+  "counts": {
+    "rust_passed": 981,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "python_passed": 91,
+    "web_npm_passed": 85,
+    "tui_replay_passed": 13,
+    "repo_map_passed": 14
+  },
+  "server_ui_smoke_passed": true,
+  "diagnostic_wire_regression": {
+    "failed_before": true,
+    "passed_after": true,
+    "before_source": "9d545eb6f91602f450114c4e1abb05bc25507bd1",
+    "same_real_coupled_test": true
+  },
+  "logs": {
+    "followup-wire-red": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-validation/spiral42-followup-wire-red.log",
+      "sha256": "7cbe9acc0292f15c2e3c2f069ab306eb47a7ea3c2126386b0f35995b799008df"
+    },
+    "followup-wire-green": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-validation/spiral42-followup-wire-green.log",
+      "sha256": "cd0dec28485139a883102ab786ea75e6b3392c7e1e35a931c00165aa954fe304"
+    },
+    "followup-check-local": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-validation/spiral42-followup-check-local.log",
+      "sha256": "2ac6b70628fd75e76502dfaaaf4f09a11c182a2061e1e12ec187930229fb0ab3"
+    },
+    "followup-env-mismatch": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-validation/spiral42-followup-env-mismatch.log",
+      "sha256": "2f02e4526498d7422eb3ca8c563628d35a705af5c31f3762b82cdb220429c097"
+    }
+  },
+  "runner_environment_note": "An initial required-check invocation set PYTHONDONTWRITEBYTECODE globally and failed two intentional bytecode-location tests. The unmodified tests passed when that runner override was removed. No production change was made for those failures."
+}

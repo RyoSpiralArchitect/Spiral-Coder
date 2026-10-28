@@ -3,6 +3,8 @@ from collections import Counter
 import re
 
 from .common import inventory
+from .roles import wire_limit
+from .reporting import states_outcome
 
 
 def native_file_edit_changed(action):
@@ -14,7 +16,7 @@ def native_file_edit_changed(action):
             and action.get("edit_outcome", "changed") == "changed")
 
 
-def assess(case, before, workspace, report, process, oracle):
+def assess(case, before, workspace, report, process, oracle, *, configuration=None):
     execution = report.get("execution") or {}
     actions = execution.get("actions", [])
     edits = [a for a in actions if native_file_edit_changed(a)
@@ -41,8 +43,8 @@ def assess(case, before, workspace, report, process, oracle):
     args = ((done or attempts)[-1].get("arguments") or {}) if attempts else {}
     summary = args.get("summary", "")
     report_fields = {"all_artifacts_named": all(p in summary for p in case["editable"]),
-                     "before_failed": bool(re.search(r"\bbefore\s*:\s*failed\b", summary, re.I)),
-                     "after_passed": bool(re.search(r"\bafter\s*:\s*passed\b", summary, re.I)),
+                     "before_failed": states_outcome(summary, "Before", "FAILED"),
+                     "after_passed": states_outcome(summary, "After", "PASSED"),
                      "baseline_commands_named": all(c["command"] in summary for c in case["checks"] if c["baseline_failure"])}
     after = inventory(workspace)
     changed = sorted(p for p in set(before) | set(after) if before.get(p) != after.get(p))
@@ -61,7 +63,8 @@ def assess(case, before, workspace, report, process, oracle):
     accepted = report.get("completed") is True
     core = (accepted and oracle["passed"] and all(native.values()) and all(report_fields.values())
             and process.get("exit_code") == 0 and not process.get("timed_out")
-            and bool(requests) and len(requests) <= case["max_requests"])
+            and bool(requests) and len(requests) <= wire_limit(case)
+            and (configuration is None or configuration["valid"]))
     blocks = Counter()
     sequence = []
     for action in actions:
@@ -72,11 +75,13 @@ def assess(case, before, workspace, report, process, oracle):
         sequence.append({k: action.get(k) for k in ["call_id", "tool", "arguments", "executed", "succeeded", "edit_outcome", "result_step", "freshness"]}
                         | {"result_excerpt": result[:800]})
     return {"runtime_completed": accepted, "independent_artifacts_passed": oracle["passed"],
+            "configuration": configuration,
             "behavior_and_handoff_qualified": core, "strict_all_files_qualified": core and not other,
             "native": native, "native_contract_revision": "edit-outcome-v2",
             "completion_field_presence": {"remaining_acceptance": "remaining_acceptance" in args},
             "baseline_commands": baselines, "verified_commands": verified,
             "report_fields": report_fields, "authored_summary": summary,
+            "report_contract_revision": "asserted-outcomes-v2",
             "changed_files": changed, "out_of_scope_files": other,
             "requests": len(requests) if isinstance(recorded_requests, list) else None,
             "request_roles": dict(Counter(r.get("role") for r in requests)),

@@ -31,6 +31,82 @@ fn verified_edits() -> Vec<Value> {
 }
 
 #[test]
+fn practical_example_prompts_activate_native_before_after_report_checks() {
+    let command = "python3 -B -S -m unittest discover -s tests -v";
+    for (root, source, doc) in [
+        (
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/benchmarks/examples-v1/cases/env-bool/task.txt"
+            )),
+            "settings.py",
+            "docs/settings.md",
+        ),
+        (
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/benchmarks/examples-v1/cases/event-summary/task.txt"
+            )),
+            "summary.py",
+            "docs/summary.md",
+        ),
+    ] {
+        assert!(
+            super::super::report_outcomes::requested(root),
+            "{source}: missing native report obligation"
+        );
+        let mut messages = vec![json!({"role":"user","content":root})];
+        exchange(
+            &mut messages,
+            "exec",
+            json!({"command":command}),
+            "FAILED (exit_code: 1)",
+        );
+        for path in [source, doc] {
+            exchange(
+                &mut messages,
+                "patch_file",
+                json!({"path":path}),
+                &format!("OK: patched '{path}'"),
+            );
+        }
+        exchange(
+            &mut messages,
+            "exec",
+            json!({"command":command}),
+            "OK (exit_code: 0)",
+        );
+        let rows = super::super::report_outcomes::required_rows(root, &messages, Some(command));
+        assert_eq!(
+            rows,
+            [
+                format!("Before: FAILED — `{command}`"),
+                format!("After: PASSED — `{command}`")
+            ]
+        );
+        let loose = format!("Changed {source} and {doc}. Before (baseline): FAILED. After (all edits): PASSED. Command: {command}");
+        let error = validate_authored_done_summary(root, &loose, &loose, &messages, Some(command))
+            .unwrap_err();
+        assert!(
+            error.contains("recorded outcome row in done.summary"),
+            "{error}"
+        );
+        let complete = format!(
+            "Changed {source} and {doc}.\n{}\nNo remaining work.",
+            rows.join("\n")
+        );
+        assert!(validate_authored_done_summary(
+            root,
+            &complete,
+            &complete,
+            &messages,
+            Some(command)
+        )
+        .is_ok());
+    }
+}
+
+#[test]
 fn basename_only_done_is_rejected_then_full_rendered_handoff_is_accepted() {
     let root = "Fix classification of `src/agent/target.rs`. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, and the verification command.";
     let messages = verified_edits();

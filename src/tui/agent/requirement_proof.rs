@@ -50,6 +50,7 @@ pub(crate) struct Status {
     pub declared: bool,
     pub pending: Vec<String>,
     pub pending_baselines: Vec<String>,
+    pub pending_artifact_paths: Vec<String>,
     requirements: Vec<Value>,
 }
 
@@ -180,6 +181,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                 declared: true,
                 pending: vec![format!("Invalid task requirements: {error}")],
                 pending_baselines: vec![],
+                pending_artifact_paths: vec![],
                 requirements: vec![],
             }
         }
@@ -216,6 +218,9 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                     .map(|p| p.trim_start_matches("./"))
                     == Some(artifact.path.as_str())
             }) {
+                if !status.pending_artifact_paths.contains(&artifact.path) {
+                    status.pending_artifact_paths.push(artifact.path.clone());
+                }
                 missing.push(format!(
                     "native file edit for {:?} {}",
                     artifact.kind, artifact.path
@@ -367,6 +372,10 @@ mod tests {
             "OK (exit_code: 0)",
         );
         let issue = issue(&messages, None).unwrap();
+        assert_eq!(
+            serde_json::to_value(project(&messages, None)).unwrap()["pending_artifact_paths"],
+            json!(["tests/test_runner.py", "docs/usage.md"])
+        );
         assert!(issue.contains("tests/test_runner.py"));
         assert!(issue.contains("docs/usage.md"));
         assert!(issue.contains("failing baseline"));

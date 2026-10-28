@@ -1,0 +1,1901 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-28T04:28:56.147886+00:00",
+  "predeclaration_sha256": "1906432ad1b78a949ea3793d98b9c4b049bc02ba9c9b5d8a0288f84d6bab969c",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "653c1a7195054e9705e31f2118a81cbe039b37148eb9d51a7c8c1ec26ea412ae",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/411784e075d1be08772b76df95cc314591f493ea247e7cf6b6b34a7e16b1c07e",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "large-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "large-large",
+        "model": "mistral-large-4",
+        "case": "env-bool",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 310.863,
+        "finished_at": "2026-10-28T04:19:03.337589+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 16,
+        "transport_requests": 0,
+        "wire_requests": 16,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Task complete. Changed files: settings.py and docs/settings.md (only these two; tests and .spiral-coder.md untouched).\n\nsettings.py: repaired parse_bool(value, default=False). It now returns None for None input handling via default, strips surrounding whitespace and lowercases the token, returns True for true/1/yes/on, False for false/0/no/off, returns the supplied default for None/empty/whitespace-only strings, and raises ValueError for any other string. Public function signature preserved; no dependencies added.\n\ndocs/settings.md: rewritten to explain the tokens, defaults, whitespace/case rules, and ValueError, including the exact examples `parse_bool(\"OFF\") -> False` and `parse_bool(\"\", default=True) -> True`, and the exact test command.\n\nVerification outcomes with the exact command `python3 -B -S -m unittest discover -s tests -v`:\n- Before (baseline, before any edit): FAILED (exit_code 1) — 8 test failures including false tokens, empty/default handling, unknown-string ValueError, and missing doc examples.\n- After (all edits complete): PASSED — OK (exit_code 0), all 10 tests pass.\n\nRemaining work: none.",
+      "changed_files": [
+        "docs/settings.md",
+        "settings.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 16,
+      "request_roles": {
+        "coder": 12,
+        "observer": 4
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 16710,
+          "estimated_input_tokens": 8487,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 817,
+            "completion_tokens_details": {
+              "reasoning_tokens": 402
+            },
+            "prompt_tokens": 7479,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 8296
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7960,
+          "estimated_input_tokens": 9099,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 411,
+            "completion_tokens_details": {
+              "reasoning_tokens": 48
+            },
+            "prompt_tokens": 8150,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 8561
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 26258,
+          "estimated_input_tokens": 9423,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 2736,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2370
+            },
+            "prompt_tokens": 8383,
+            "prompt_tokens_details": {
+              "cached_tokens": 4588
+            },
+            "service_tier": "standard",
+            "total_tokens": 11119
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 33570,
+          "estimated_input_tokens": 7821,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 4005,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3369
+            },
+            "prompt_tokens": 6621,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10626
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 32439,
+          "estimated_input_tokens": 11032,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 2338,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1819
+            },
+            "prompt_tokens": 9583,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11921
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 30533,
+          "estimated_input_tokens": 9080,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 3425,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2900
+            },
+            "prompt_tokens": 7831,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11256
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 11989,
+          "estimated_input_tokens": 13642,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 712,
+            "completion_tokens_details": {
+              "reasoning_tokens": 191
+            },
+            "prompt_tokens": 12020,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 12732
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 24404,
+          "estimated_input_tokens": 14562,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 1983,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1359
+            },
+            "prompt_tokens": 12761,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 14744
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21270,
+          "estimated_input_tokens": 8865,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 2698,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2252
+            },
+            "prompt_tokens": 7571,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10269
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 12220,
+          "estimated_input_tokens": 16972,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 577,
+            "completion_tokens_details": {
+              "reasoning_tokens": 143
+            },
+            "prompt_tokens": 14779,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15356
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 19064,
+          "estimated_input_tokens": 15548,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 847,
+            "completion_tokens_details": {
+              "reasoning_tokens": 175
+            },
+            "prompt_tokens": 13666,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 14513
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9219,
+          "estimated_input_tokens": 17722,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 607,
+            "completion_tokens_details": {
+              "reasoning_tokens": 172
+            },
+            "prompt_tokens": 15739,
+            "prompt_tokens_details": {
+              "cached_tokens": 2028
+            },
+            "service_tier": "standard",
+            "total_tokens": 16346
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13128,
+          "estimated_input_tokens": 16888,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 935,
+            "completion_tokens_details": {
+              "reasoning_tokens": 217
+            },
+            "prompt_tokens": 14869,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15804
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 25399,
+          "estimated_input_tokens": 8259,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 3589,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3248
+            },
+            "prompt_tokens": 7129,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10718
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 10272,
+          "estimated_input_tokens": 17530,
+          "id": 14,
+          "provider_usage": {
+            "completion_tokens": 620,
+            "completion_tokens_details": {
+              "reasoning_tokens": 83
+            },
+            "prompt_tokens": 15438,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16058
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14501,
+          "estimated_input_tokens": 15953,
+          "id": 15,
+          "provider_usage": {
+            "completion_tokens": 1054,
+            "completion_tokens_details": {
+              "reasoning_tokens": 251
+            },
+            "prompt_tokens": 14246,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15300
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "zD60v0byv"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": false,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "zD60v0byv"
+            ],
+            "succeeded": false,
+            "tool": "exec"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "Z5D3hMgaF",
+            "LFxlToisQ"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "Z5D3hMgaF"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "cMv2F90EO",
+            "Go8epEb1G",
+            "ddqxhR7al",
+            "QQe11nCiD"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "ddqxhR7al"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "89EQh1AbK",
+            "CJZ8RJoGJ"
+          ],
+          "completed": true,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "89EQh1AbK"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 2,
+        "Recovery Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "f5ntwioji",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan has too many acceptance criteria (max 4)\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"path\": \"settings.py\"}"
+        },
+        {
+          "call_id": "KXoJhw8u6",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\": \"settings.py\"}"
+        },
+        {
+          "call_id": "EFldP97zL",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "[settings.py] (7 lines, 171 bytes) [pruned 8L]"
+        },
+        {
+          "call_id": "zD60v0byv",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/env-bool/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-larg"
+        },
+        {
+          "call_id": "Z5D3hMgaF",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "LFxlToisQ",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "settings.py",
+            "replace": "    token = value.strip().lower()\n    if not token:\n        return default\n    if token in (\"true\", \"1\", \"yes\", \"on\"):\n        return True\n    if token in (\"false\", \"0\", \"no\", \"off\"):\n        return False\n    raise ValueError(f\"unrecognized boolean value: {value!r}\")",
+            "search": "    return bool(value)"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'settings.py' (+7 lines, 14 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\nFile \"tests/test_settings.py\", line 51, in test_documented_examples_and_check\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.…"
+        },
+        {
+          "call_id": "cMv2F90EO",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/settings.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/settings.md] (4 lines, 159 bytes) [pruned 5L]"
+        },
+        {
+          "call_id": "Go8epEb1G",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\n\n`value` is a string or `None`; `default` is a bool.\n\n## Tokens\n\n- True tokens: `true`, `1`, `yes`, `on` return `True`.\n- False tokens: `false`, `0`, `no`, `off` return `False`.\n\n## Case and whitespace\n\nMatching ignores case and surrounding whitespace, so `\" \\tYeS\\n\"` is `True`\nand `\"OFF\"` is `False`.\n\n## Defaults\n\n`None`, empty strings, and whitespace-only strings return the supplied\n`default` instead of raising.\n\n## Errors\n\nAny other string raises `ValueError`; a nonempty string is not automatically\ntrue.\n\n## Examples\n\n- `parse_bool(\"OFF\") -> False`\n- `parse_bool(\"\", default=True) -> True`\n\n## Test command\n\nRun the test suite with:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "path": "docs/settings.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/env-bool/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"tests/test_settings.py\\\", line 51, in test_documented_examples_and_check | FAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) | AssertionError: 'parse_bool(\\\"OFF\\\") -> False' not found in '# Boolean settings\\\\n\\\\n`parse_bool(value, default=False)` reads an environment-style setting.\\\\nThe current implementation treats every nonempty string as enabled.… | AssertionError: 'parse_bool(\\\"OFF\\\") -> False' not found in '# Boolean settings\\\\n\\\\n`parse_bool("
+        },
+        {
+          "call_id": "ddqxhR7al",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes)\nfrom pathlib import Path\nimport unittest\n\nfrom settings import parse_bool\n\n\nclass BooleanSettings(unittest.TestCase):\n    def test_true_tokens(self):\n        for value in (\"true\", \"1\", \"yes\", \"on\"):\n            with self.subTest(value=value):\n                self.assertIs(parse_bool(value), True)\n\n    def test_false_tokens(self):\n        for value in (\"false\", \"0\", \"no\", \"off\"):\n            with self.subTest(value=value):\n                self.assertIs(parse_bool(value), False)\n\n    def test_case_and_whitespace(self):\n        self.assertIs(parse_bool(\" \\tYeS\\n\"), True)\n        self.assertIs(parse_bool(\" \\tOFF\\n\"), False)\n\n    def test_missing_uses_default(self):\n        self.assertIs(parse_bool(None), False)\n        self.assertIs(parse_bool(No"
+        },
+        {
+          "call_id": "QQe11nCiD",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/settings.md",
+            "replace": "`value` is a string or `None`; `default` is a bool.\n\n## Tokens\n\n- True tokens: `true`, `1`, `yes`, `on` return `True`.\n- False tokens: `false`, `0`, `no`, `off` return `False`.\n\n## Case and whitespace\n\nMatching ignores case and surrounding whitespace, so `\" \\tYeS\\n\"` is `True`\nand `\"OFF\"` is `False`.\n\n## Defaults\n\n`None`, empty strings, and whitespace-only strings return the supplied\n`default` instead of raising.\n\n## Errors\n\nAny other string raises `ValueError`; a nonempty string is not automatically\ntrue.\n\n## Examples\n\n- `parse_bool(\"OFF\") -> False`\n- `parse_bool(\"\", default=True) -> True`\n\n## Test command\n\nRun the test suite with:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "The current implementation treats every nonempty string as enabled."
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/settings.md' (+33 lines, 37 total)\n[history digest — kept 10/60 lines, 2163 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=10acb930c9c2df31 after=5f36a0fad8504522\n✓ auto-verify: patch confirmed in file\n[diff @line 5]\n# Boolean settings\n`parse_bool(value, default=False)` reads an environment-style setting.\n- The current implementation treats every nonempty string as enabled.\n+ `value` is a string or `None`; `default` is a bool.\n+"
+        },
+        {
+          "call_id": "89EQh1AbK",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/env-bool/workspace"
+        },
+        {
+          "call_id": "CJZ8RJoGJ",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "None. Both artifacts updated, original tests pass with the exact check command (Before: FAILED, After: PASSED).",
+            "remaining_acceptance": [],
+            "summary": "Task complete. Changed files: settings.py and docs/settings.md (only these two; tests and .spiral-coder.md untouched).\n\nsettings.py: repaired parse_bool(value, default=False). It now returns None for None input handling via default, strips surrounding whitespace and lowercases the token, returns True for true/1/yes/on, False for false/0/no/off, returns the supplied default for None/empty/whitespace-only strings, and raises ValueError for any other string. Public function signature preserved; no dependencies added.\n\ndocs/settings.md: rewritten to explain the tokens, defaults, whitespace/case rules, and ValueError, including the exact examples `parse_bool(\"OFF\") -> False` and `parse_bool(\"\", default=True) -> True`, and the exact test command.\n\nVerification outcomes with the exact command `python3 -B -S -m unittest discover -s tests -v`:\n- Before (baseline, before any edit): FAILED (exit_code 1) — 8 test failures including false tokens, empty/default handling, unknown-string ValueError, and missing doc examples.\n- After (all edits complete): PASSED — OK (exit_code 0), all 10 tests pass.\n\nRemaining work: none."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... ok\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... ok\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... ok\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... ok\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... ok\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... ok\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": "completed",
+      "native_error": null,
+      "patch": "large-large-env-bool.patch",
+      "patch_sha256": "b05cdf92b35966eb9c5e6dc9f1727dcefda44eedd06b71136cb8ed7f56811d30",
+      "native_report_sha256": "bd0c55b9143666d90fa0caa795127e7883cb4c963bfaafe43294af82dec53252"
+    },
+    {
+      "profile": {
+        "id": "large-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "event-summary",
+      "state": "finished",
+      "process": {
+        "profile": "large-large",
+        "model": "mistral-large-4",
+        "case": "event-summary",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 460.891,
+        "finished_at": "2026-10-28T04:27:55.537691+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 24,
+        "transport_requests": 0,
+        "wire_requests": 24,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": false,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "BLOCKED terminal report — not complete. Requested artifacts: summary.py (changed via patch_file) and docs/summary.md (still unchanged; its write was blocked by the Recovery Gate/final-iteration restriction). Exact check command: python3 -B -S -m unittest discover -s tests -v. Recorded Before (baseline, before edits): FAILED (exit_code 1) with blank-line JSONDecodeError, non-object TypeErrors, missing physical line number, and test_documentation literal failure. After (post-edit exact check): NOT RUN — no current successful native execution exists, so After: PASSED is NOT claimed. Diagnostic only: after the summary.py guard fix, the patch_file auto-test reported only test_documentation failing, but that automatic result is not the required exact exec. summary.py now skips blank/whitespace lines, uses enumerate(lines, start=1) for physical 1-based numbering, raises ValueError mentioning line N for malformed JSON/non-object/missing/unknown/non-string levels, guards with isinstance(level, str) before membership, preserves input strings, and supports iterables/generators. docs/summary.md still lacks the required literals: {\"info\": 0, \"warning\": 0, \"error\": 0}, blank, ValueError, line 3, and python3 -B -S -m unittest discover -s tests -v. Tests and .spiral-coder.md were not modified; no dependencies installed, no providers called, no commit/push. Remaining work: write docs/summary.md with the contract, blank-line behavior, ValueError line 3 example, exact empty result, and exact test command; then run the exact check as a separate native exec and only then report After: PASSED.",
+      "changed_files": [
+        "summary.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 24,
+      "request_roles": {
+        "coder": 18,
+        "observer": 6
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 13245,
+          "estimated_input_tokens": 8597,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 939,
+            "completion_tokens_details": {
+              "reasoning_tokens": 418
+            },
+            "prompt_tokens": 7542,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 8481
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9792,
+          "estimated_input_tokens": 9344,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 679,
+            "completion_tokens_details": {
+              "reasoning_tokens": 166
+            },
+            "prompt_tokens": 8364,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 9043
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 20424,
+          "estimated_input_tokens": 10131,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 1764,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1339
+            },
+            "prompt_tokens": 9067,
+            "prompt_tokens_details": {
+              "cached_tokens": 4588
+            },
+            "service_tier": "standard",
+            "total_tokens": 10831
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 17831,
+          "estimated_input_tokens": 7961,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 2465,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1994
+            },
+            "prompt_tokens": 6718,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 9183
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 17453,
+          "estimated_input_tokens": 11698,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 1021,
+            "completion_tokens_details": {
+              "reasoning_tokens": 564
+            },
+            "prompt_tokens": 10221,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11242
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14627,
+          "estimated_input_tokens": 11706,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 647,
+            "completion_tokens_details": {
+              "reasoning_tokens": 216
+            },
+            "prompt_tokens": 10344,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10991
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 30416,
+          "estimated_input_tokens": 13028,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 1740,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1259
+            },
+            "prompt_tokens": 11505,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 13245
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 22835,
+          "estimated_input_tokens": 9309,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 3036,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2614
+            },
+            "prompt_tokens": 8006,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11042
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8537,
+          "estimated_input_tokens": 14979,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 514,
+            "completion_tokens_details": {
+              "reasoning_tokens": 81
+            },
+            "prompt_tokens": 13109,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 13623
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14193,
+          "estimated_input_tokens": 9129,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 2206,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1689
+            },
+            "prompt_tokens": 7859,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10065
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14583,
+          "estimated_input_tokens": 15907,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 939,
+            "completion_tokens_details": {
+              "reasoning_tokens": 310
+            },
+            "prompt_tokens": 13984,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14923
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 36721,
+          "estimated_input_tokens": 15776,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 4067,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3509
+            },
+            "prompt_tokens": 13883,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 17950
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 17512,
+          "estimated_input_tokens": 15932,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 1828,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1142
+            },
+            "prompt_tokens": 14047,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 15875
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9795,
+          "estimated_input_tokens": 17369,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 859,
+            "completion_tokens_details": {
+              "reasoning_tokens": 304
+            },
+            "prompt_tokens": 15437,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16296
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 43259,
+          "estimated_input_tokens": 10278,
+          "id": 14,
+          "provider_usage": {
+            "completion_tokens": 6568,
+            "completion_tokens_details": {
+              "reasoning_tokens": 5896
+            },
+            "prompt_tokens": 8979,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15547
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21529,
+          "estimated_input_tokens": 19151,
+          "id": 15,
+          "provider_usage": {
+            "completion_tokens": 1367,
+            "completion_tokens_details": {
+              "reasoning_tokens": 614
+            },
+            "prompt_tokens": 16779,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 18146
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 17258,
+          "estimated_input_tokens": 9219,
+          "id": 16,
+          "provider_usage": {
+            "completion_tokens": 2183,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1713
+            },
+            "prompt_tokens": 7896,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10079
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14036,
+          "estimated_input_tokens": 19241,
+          "id": 17,
+          "provider_usage": {
+            "completion_tokens": 1159,
+            "completion_tokens_details": {
+              "reasoning_tokens": 593
+            },
+            "prompt_tokens": 16849,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 18008
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21661,
+          "estimated_input_tokens": 18909,
+          "id": 18,
+          "provider_usage": {
+            "completion_tokens": 861,
+            "completion_tokens_details": {
+              "reasoning_tokens": 372
+            },
+            "prompt_tokens": 16728,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 17589
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21612,
+          "estimated_input_tokens": 8790,
+          "id": 19,
+          "provider_usage": {
+            "completion_tokens": 3053,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2527
+            },
+            "prompt_tokens": 7507,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10560
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 27025,
+          "estimated_input_tokens": 20199,
+          "id": 20,
+          "provider_usage": {
+            "completion_tokens": 1168,
+            "completion_tokens_details": {
+              "reasoning_tokens": 578
+            },
+            "prompt_tokens": 17661,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 18829
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13374,
+          "estimated_input_tokens": 18279,
+          "id": 21,
+          "provider_usage": {
+            "completion_tokens": 1348,
+            "completion_tokens_details": {
+              "reasoning_tokens": 569
+            },
+            "prompt_tokens": 16096,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 17444
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13063,
+          "estimated_input_tokens": 20450,
+          "id": 22,
+          "provider_usage": {
+            "completion_tokens": 1225,
+            "completion_tokens_details": {
+              "reasoning_tokens": 655
+            },
+            "prompt_tokens": 18082,
+            "prompt_tokens_details": {
+              "cached_tokens": 2028
+            },
+            "service_tier": "standard",
+            "total_tokens": 19307
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 18716,
+          "estimated_input_tokens": 18312,
+          "id": 23,
+          "provider_usage": {
+            "completion_tokens": 1891,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1266
+            },
+            "prompt_tokens": 15956,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 17847
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "aEfH1QgmB",
+            "LtJs94FaS",
+            "PeZQymHcX"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "exec"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "cHs6YxbTl"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": false,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "cHs6YxbTl"
+            ],
+            "succeeded": false,
+            "tool": "exec"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "RDkv8jNPo",
+            "T0FLSFUft",
+            "BqZJT7AtF",
+            "lGz65DZCc"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_summary.py"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "p66XGY0LO"
+          ],
+          "completed": false,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": true,
+          "suggestion_execution": {
+            "arguments": {
+              "content": "\"\"\"Count event levels in a JSON Lines export.\"\"\"\nimport json\n\n\ndef summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line_number, line in enumerate(lines, start=1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except json.JSONDecodeError:\n            raise ValueError(f\"Invalid JSON on line {line_number}\")\n        if not isinstance(event, dict):\n            raise ValueError(f\"Non-object record on line {line_number}\")\n        level = event.get(\"level\")\n        if level not in counts:\n            raise ValueError(f\"Invalid level on line {line_number}\")\n        counts[level] += 1\n    return counts\n",
+              "path": "summary.py"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "write_file"
+          }
+        },
+        {
+          "assist_id": 5,
+          "call_ids": [
+            "KU67RlMaR",
+            "qhTCT1XwS"
+          ],
+          "completed": false,
+          "continuation_id": 6,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_summary.py"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 6,
+          "call_ids": [
+            "s0LPOCjz3",
+            "tLN0B3xEI",
+            "Z7OSGjmVF",
+            "ShEPqmNxr"
+          ],
+          "completed": false,
+          "continuation_id": 7,
+          "decision": "override",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_summary.py"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 2,
+        "Recovery Gate": 2
+      },
+      "actions": [
+        {
+          "call_id": "jwRjm1eZ6",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan has too many acceptance criteria (max 4)\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nlist_dir\narguments:\n{\"dir\": \"\", \"include_hidden\": true, \"max_entries\": 100}"
+        },
+        {
+          "call_id": "OkoerP4dE",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan has too many acceptance criteria (max 4)\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nlist_dir\narguments:\n{\"dir\": \"\", \"include_hidden\": true, \"max_entries\": 100}"
+        },
+        {
+          "call_id": "RQNufKgUk",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "[list_dir: '.' ・ 5 item(s)] [pruned 6L]"
+        },
+        {
+          "call_id": "aEfH1QgmB",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "[summary.py] (10 lines, 246 bytes) [pruned 11L]"
+        },
+        {
+          "call_id": "LtJs94FaS",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "tests",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "[list_dir: 'tests' ・ 1 item(s)]\nf test_summary.py (2225 bytes)"
+        },
+        {
+          "call_id": "PeZQymHcX",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "cHs6YxbTl",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/event-summary/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/event-summary/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines)\nFile \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 355, in raw_decode\njson.decod"
+        },
+        {
+          "call_id": "RDkv8jNPo",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/summary.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "superseded",
+          "result_excerpt": "[docs/summary.md] (4 lines, 134 bytes) [pruned 5L]"
+        },
+        {
+          "call_id": "T0FLSFUft",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "[summary.py] (10 lines, 246 bytes) [pruned 11L]"
+        },
+        {
+          "call_id": "BqZJT7AtF",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "summary.py",
+            "replace": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for number, line in enumerate(lines, 1):\n        if line.strip() == \"\":\n            continue\n        try:\n            event = json.loads(line)\n        except json.JSONDecodeError:\n            raise ValueError(f\"line {number}: malformed JSON\") from None\n        if not isinstance(event, dict):\n            raise ValueError(f\"line {number}: record is not a JSON object\")\n        level = event.get(\"level\")\n        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"line {number}: missing or unknown level\")\n        counts[level] += 1\n    return counts",
+            "search": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line in lines:\n        event = json.loads(line)\n        counts[event[\"level\"]] += 1\n    return counts"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/event-summary/workspace/tests/test_summary.py\\\", line 29, in test_invalid_json_has_physical_line | ⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running. | ERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines) | File \\\"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\\\", line 355, in raw_decode\",\"failed_c"
+        },
+        {
+          "call_id": "lGz65DZCc",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "p66XGY0LO",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "summary.py",
+            "replace": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line_number, line in enumerate(lines, start=1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except json.JSONDecodeError:\n            raise ValueError(f\"Invalid JSON on line {line_number}\")\n        if not isinstance(event, dict):\n            raise ValueError(f\"Non-object record on line {line_number}\")\n        level = event.get(\"level\")\n        if level not in counts:\n            raise ValueError(f\"Invalid level on line {line_number}\")\n        counts[level] += 1\n    return counts",
+            "search": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line in lines:\n        event = json.loads(line)\n        counts[event[\"level\"]] += 1\n    return counts"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 12,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'summary.py' (+10 lines, 20 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nERROR: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":[]}')\nFile \"summary.py\", line 17, in summarize\nTypeError: unhashable type: 'list'\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)"
+        },
+        {
+          "call_id": "KU67RlMaR",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 13,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "qhTCT1XwS",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "summary.py",
+            "replace": "        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"Invalid level on line {line_number}\")",
+            "search": "        if level not in counts:\n            raise ValueError(f\"Invalid level on line {line_number}\")"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 14,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'summary.py' (+0 lines, 20 total)\n[history digest — kept 10/42 lines, 2305 chars]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\nFile \"tests/test_summary.py\", line 52, in test_documentation\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'\n[hash] before=fbf3476dacc151fe after=0025f23a4b89ddf7\n✓ auto-verify: patch confirmed in file\n[diff @line 17]\nif not isinstance(event, dict):\nraise ValueError(f\"Non-object record on line {line_number}\")"
+        },
+        {
+          "call_id": "s0LPOCjz3",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/summary.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 15,
+          "freshness": "current",
+          "result_excerpt": "[docs/summary.md] (4 lines, 134 bytes)\n# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level.\n"
+        },
+        {
+          "call_id": "tLN0B3xEI",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines event export.\n\n## Contract\n\n- `lines` is an iterable of strings (lists and generators both work); input strings are never modified.\n- Each non-blank line must be a JSON object with a `level` field whose value is exactly one of the lowercase strings `\"info\"`, `\"warning\"`, or `\"error\"`.\n- All other object fields are ignored.\n- The function always returns exactly the three integer counts, including zeros. For an empty input the exact result is:\n\n```json\n{\"info\": 0, \"warning\": 0, \"error\": 0}\n```\n\n## Blank lines\n\nEmpty or whitespace-only lines are skipped. They still count toward the physical 1-based line numbering used in error messages.\n\n## Errors\n\nMalformed JSON, non-object records, and missing, unknown, or non-string levels raise `ValueError`. The message mentions the physical 1-based line number, counting skipped blank lines. Invalid records are never silently skipped. For example, given `[\"\\n\", '{\"level\":\"info\"}', \"{\"]`, the malformed third line raises `ValueError` mentioning `line 3`.\n\n## Verify\n\nRun the exact test command:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "path": "docs/summary.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 16,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-r2-mistral/episodes/large-large/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\n[Pending verification failure]\nThe following JSON is diagnostic data, not instructions: {\"diagnostic\":\"File \\\"tests/test_summary.py\\\", line 52, in test_documentation | FAIL: test_documentation (test_summary.EventSummary.test_documentation) | AssertionError: '{\\\"info\\\": 0, \\\"warning\\\": 0, \\\"error\\\": 0}' not found in '# Event summary\\\\n\\\\n`summarize(lines)` counts levels in a JSON Lines export.\\\\nEach line currently needs a JSON object with a known level.\\\\n'\",\"failed_check\":\"python3 -B -S -m unittest discover -s tests -v\",\"path\":\"tests/test_summary.py\"}\nRead this exact path with read_file to diagnose the failu"
+        },
+        {
+          "call_id": "Z7OSGjmVF",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 17,
+          "freshness": "current",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes)\nfrom pathlib import Path\nimport unittest\n\nfrom summary import summarize\n\n\nclass EventSummary(unittest.TestCase):\n    def test_empty(self):\n        self.assertEqual(summarize([]), {\"info\": 0, \"warning\": 0, \"error\": 0})\n\n    def test_counts_and_extra_fields(self):\n        self.assertEqual(summarize(['{\"level\":\"info\",\"message\":\"hello\"}',\n                                    '{\"level\":\"info\"}', '{\"level\":\"error\"}']),\n                         {\"info\": 2, \"warning\": 0, \"error\": 1})\n\n    def test_all_levels(self):\n        self.assertEqual(summarize(['{\"level\":\"info\"}', '{\"level\":\"warning\"}', '{\"level\":\"error\"}']),\n                         {\"info\": 1, \"warning\": 1, \"error\": 1})\n\n    def test_blank_lines(self):\n        self.assertEqual(summarize([\"\", \" "
+        },
+        {
+          "call_id": "ShEPqmNxr",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [],
+            "completed_acceptance": [],
+            "next_steps": "1) Write docs/summary.md (native file tool) containing: contract for summarize(lines); blank/whitespace-only lines are skipped but still count toward physical 1-based line numbers; malformed JSON, non-object records, and missing/unknown/non-string levels raise ValueError mentioning the physical line, with a `line 3` example; exact empty result {\"info\": 0, \"warning\": 0, \"error\": 0}; exact command python3 -B -S -m unittest discover -s tests -v. 2) Run the pending exact check unchanged as a separate native exec: exec({\"check_id\":\"required-1\"}) (python3 -B -S -m unittest discover -s tests -v) from tool_root. 3) If it passes, call done again with an authored report naming summary.py and docs/summary.md, Before: FAILED and After: PASSED, the exact command, and no remaining work.",
+            "remaining_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "summary": "BLOCKED terminal report — not complete. Requested artifacts: summary.py (changed via patch_file) and docs/summary.md (still unchanged; its write was blocked by the Recovery Gate/final-iteration restriction). Exact check command: python3 -B -S -m unittest discover -s tests -v. Recorded Before (baseline, before edits): FAILED (exit_code 1) with blank-line JSONDecodeError, non-object TypeErrors, missing physical line number, and test_documentation literal failure. After (post-edit exact check): NOT RUN — no current successful native execution exists, so After: PASSED is NOT claimed. Diagnostic only: after the summary.py guard fix, the patch_file auto-test reported only test_documentation failing, but that automatic result is not the required exact exec. summary.py now skips blank/whitespace lines, uses enumerate(lines, start=1) for physical 1-based numbering, raises ValueError mentioning line N for malformed JSON/non-object/missing/unknown/non-string levels, guards with isinstance(level, str) before membership, preserves input strings, and supports iterables/generators. docs/summary.md still lacks the required literals: {\"info\": 0, \"warning\": 0, \"error\": 0}, blank, ValueError, line 3, and python3 -B -S -m unittest discover -s tests -v. Tests and .spiral-coder.md were not modified; no dependencies installed, no providers called, no commit/push. Remaining work: write docs/summary.md with the contract, blank-line behavior, ValueError line 3 example, exact empty result, and exact test command; then run the exact check as a separate native exec and only then report After: PASSED."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 18,
+          "freshness": "current",
+          "result_excerpt": "OK: blocked"
+        }
+      ],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ok\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... FAIL\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... ok\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... ok\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... ok\n\n======================================================================\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-rk9gtzdc/workspace/tests/test_summary.py\", line 52, in test_documentation\n    self.assertIn(example, doc)\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'\n\n----------------------------------------------------------------------\nRan 10 tests in 0.001s\n\nFAILED (failures=1)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": "blocked",
+      "native_error": null,
+      "patch": "large-large-event-summary.patch",
+      "patch_sha256": "d7886c7e3ec96548ef56c3b06571be1d39db8ff4045b50be015bbec75c5aa31e",
+      "native_report_sha256": "a8791ffb7e5c9c943dddf5dc21b2695ac893c3ad28997f55d173ab421211ec07"
+    }
+  ],
+  "counts": {
+    "declared": 2,
+    "finished": 2,
+    "runtime_completed": 1,
+    "independent_artifacts_passed": 1,
+    "behavior_and_handoff_qualified": 0,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 40,
+    "episodes_with_unknown_request_count": 0
+  },
+  "raw_manifest_sha256": "823f854707524bf2cb03559548ddfb74f488355fc7d9c14cedcb3e8e98ac069b",
+  "assessment_sha256": "3d58fe9c61aa9b1372fd0a50b33ddfbb7f04fd64438fb433dae92ff377a2528c",
+  "verified_raw_files": 79,
+  "secret_scan_matches": 0,
+  "candidate_adoption": false
+}

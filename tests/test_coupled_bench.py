@@ -142,6 +142,31 @@ class NativeEvidence(unittest.TestCase):
         self.assertFalse(result["native"]["fresh_exact_checks"])
         self.assertFalse(result["behavior_and_handoff_qualified"])
 
+    def test_negated_or_quoted_outcome_mentions_cannot_qualify_a_report(self):
+        command = self.case["checks"][0]["command"]
+        for sentence in [
+            "After: PASSED is NOT claimed.",
+            "Do not claim: After: PASSED.",
+            "Example: After: PASSED.",
+            f"After: PASSED — `{command}` was not recorded.",
+        ]:
+            with self.subTest(sentence=sentence):
+                self.report["execution"]["actions"][-1]["arguments"]["summary"] = (
+                    f"Changed greet.py. Before: FAILED — `{command}`. {sentence}")
+                result = self.assess()
+                self.assertTrue(all(result["native"].values()))
+                self.assertFalse(result["report_fields"]["after_passed"])
+                self.assertFalse(result["behavior_and_handoff_qualified"])
+
+    def test_parenthetical_labels_remain_invalid_in_the_frozen_report_contract(self):
+        command = self.case["checks"][0]["command"]
+        self.report["execution"]["actions"][-1]["arguments"]["summary"] = (
+            f"Changed greet.py. Before (baseline): FAILED. After (edits): PASSED. Command: {command}")
+        result = self.assess()
+        self.assertFalse(result["report_fields"]["before_failed"])
+        self.assertFalse(result["report_fields"]["after_passed"])
+        self.assertFalse(result["behavior_and_handoff_qualified"])
+
     def test_omitted_empty_remaining_matches_only_accepted_native_completion(self):
         done = self.report["execution"]["actions"][-1]
         del done["arguments"]["remaining_acceptance"]

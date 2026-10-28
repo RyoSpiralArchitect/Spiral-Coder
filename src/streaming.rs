@@ -13,6 +13,9 @@ mod completion;
 mod completion_tests;
 pub(crate) mod provider_metadata;
 pub(crate) mod request_guard;
+mod retry_policy;
+#[cfg(test)]
+mod retry_policy_tests;
 pub(crate) mod tool_calls;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -403,7 +406,11 @@ pub async fn stream_openai_compat_json(
             }
 
             drop(request_meter.take());
-            request_meter = Some(accounting::RequestMeter::begin(&payload_try, &tx).await?);
+            request_meter = Some(
+                accounting::RequestMeter::begin(&payload_try, &tx)
+                    .await
+                    .map_err(|error| retry_policy::retain_previous(error, last_err.as_ref()))?,
+            );
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
@@ -432,6 +439,7 @@ pub async fn stream_openai_compat_json(
 
             let ra = retry_after_duration(r.headers());
             let body = r.text().await.unwrap_or_default();
+            last_err = Some(anyhow!(format_provider_http_error(label, status, &body)));
 
             // Some models reject `max_tokens` and require `max_completion_tokens`.
             if status == reqwest::StatusCode::BAD_REQUEST
@@ -466,17 +474,15 @@ pub async fn stream_openai_compat_json(
 
             if should_use_v1_completions(status, &body) {
                 want_completions = true;
-                last_err = Some(anyhow!(format_provider_http_error(label, status, &body)));
                 break;
             }
 
             // Endpoint mismatch (e.g. Codestral uses /chat/completion). Try next candidate.
             if status == reqwest::StatusCode::NOT_FOUND {
-                last_err = Some(anyhow!(format_provider_http_error(label, status, &body)));
                 break;
             }
 
-            if attempt < max_connect_retries && is_retryable_status(status) {
+            if attempt < max_connect_retries && retry_policy::retryable(status, &body) {
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);
@@ -519,11 +525,16 @@ pub async fn stream_openai_compat_json(
             }
 
             drop(request_meter.take());
-            request_meter = Some(accounting::RequestMeter::begin(&comp_payload, &tx).await?);
+            request_meter = Some(
+                accounting::RequestMeter::begin(&comp_payload, &tx)
+                    .await
+                    .map_err(|error| retry_policy::retain_previous(error, last_err.as_ref()))?,
+            );
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
                     if attempt < max_connect_retries && is_retryable_send_error(&e) {
+                        last_err = Some(anyhow!(e).context("request failed"));
                         let d = backoff_delay(&cfg.provider, None, attempt, None);
                         emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
                         attempt = attempt.saturating_add(1);
@@ -544,6 +555,7 @@ pub async fn stream_openai_compat_json(
 
             let ra = retry_after_duration(r.headers());
             let body = r.text().await.unwrap_or_default();
+            last_err = Some(anyhow!(format_provider_http_error(label, status, &body)));
 
             if status == reqwest::StatusCode::BAD_REQUEST
                 && body.contains("max_completion_tokens")
@@ -562,7 +574,7 @@ pub async fn stream_openai_compat_json(
                 continue;
             }
 
-            if attempt < max_connect_retries && is_retryable_status(status) {
+            if attempt < max_connect_retries && retry_policy::retryable(status, &body) {
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);

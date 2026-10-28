@@ -17,9 +17,23 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 | Understand what counts as completion | [Task requirements](../task-requirements.md), [evaluation contract](../evaluation.md) |
 | Run bounded cross-family self-dogfood | [Runner and frozen contracts](../self-dogfood.md), [task catalog](../../benchmarks/self-dogfood-v1/README.md) |
 | Reproduce ordinary runtime examples | [Benchmark examples](../examples/README.md) |
+| Practice a small complete coding loop | [Boolean settings and JSONL examples](../../benchmarks/examples-v1/README.md) |
 | Contribute a change | [Build and checks](../usage.md#build-and-contribute), [contributor rules](../../AGENTS.md) |
 
 ## Experiments and open questions
+
+The [diagnostic-action follow-up](../evals/2026-10-29-diagnostic-actions/README.md)
+uses the current native failure location to constrain Coder's next offered tools,
+then restores work tools after an actual read. Mistral Large 4 in both roles
+qualifies both small tasks with 14 requests each. Frozen qualification, remaining
+plan refusals and inaccuracies in incidental report prose are recorded separately.
+
+The [practical examples readout](../evals/2026-10-28-practical-examples/README.md)
+starts with short source-and-documentation tasks. After OpenAI quota exhaustion,
+Mistral Large 4 fills both roles. A boolean parser repair reaches strict
+qualification in one adaptive follow-up; the initial JSONL attempt stopped before
+its documentation update. Frozen failures, report-contract alignment, quota
+retry repairs and an offline report-assessment correction are recorded separately.
 
 The [budget-rhythm readout](../evals/2026-10-27-budget-rhythm/README.md) implements
 a bounded transport-rejection pool, protected Observer capacity, truthful blocked

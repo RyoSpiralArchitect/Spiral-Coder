@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "created_date": "2026-10-28",
+  "question": "Can the current coupled runtime finish short practical bugfix plus documentation tasks?",
+  "runtime_commit": "3a4add279d6b3efa6a63380ef7d55e6d3232addf",
+  "suite": "benchmarks/examples-v1/suite.json",
+  "matrix": "benchmarks/examples-v1/matrix.json",
+  "episodes": [
+    [
+      "luna-large",
+      "env-bool"
+    ],
+    [
+      "luna-large",
+      "event-summary"
+    ],
+    [
+      "large-luna",
+      "env-bool"
+    ],
+    [
+      "large-luna",
+      "event-summary"
+    ]
+  ],
+  "attempts_per_episode": 1,
+  "maximum_wire_requests": 112,
+  "task_requests_per_episode": 24,
+  "transport_repair_requests_per_episode": 4,
+  "observer_reserved_requests": 6,
+  "coder_chunk_ceiling": 8,
+  "request_timeout_seconds": 90,
+  "episode_wall_seconds": 600,
+  "qualification": "Strict all-file qualification: native baseline, changed edit, exact fresh checks, accepted authored completion, independent original tests, exact roles and budgets, only declared changed files.",
+  "controls": "Broken baseline, known reference repair, source-only documentation omission, tampered tests, equivalent non-identical repair, bounded role/transport receipt checks.",
+  "hypothesis": "Smaller source and explicit visible behavioral contracts may permit useful complete loops. This is task scoping, not a causal runtime improvement experiment.",
+  "no_retry": true,
+  "no_candidate_adoption": true,
+  "comparability": "New authored development tasks; do not compare their pass rate directly with full-repository recovery tasks.",
+  "post_run": "Retain all four outcomes, first divergence, candidate diffs and request counts. Any further live intervention needs a separate frozen wave."
+}

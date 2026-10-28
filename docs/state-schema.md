@@ -17,6 +17,14 @@ its correlated failure still awaits inspection. Its path is the failure location
 not authority to edit that file. Both Observer consumers validate a confident
 tool suggestion against this pending read before forwarding or using their one
 repair attempt; no-tool and uncertain advice is not retried for confidence.
+The Coder's `next_action::Contract` projects the same current diagnostic read
+into a `diagnose` phase with an exact-path `read_file` schema and runtime
+refusal for other proposed actions. `done` stays available for a blocked report;
+the final shared report slot wins over diagnosis. Actual failed reads release
+the narrow schema for ordinary access/path diagnosis without resolving the
+failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
+of declared artifacts without native edit receipts, shared with both roles and
+the next-action contract. These fields add no persisted state or proof authority.
 `report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
 explicit before/after test-result report clauses. Before is the last confirmed
 check before the first mutation; after is the latest check after the last
@@ -1205,3 +1213,13 @@ Its specific failure (one-based ordering or the 200-line ceiling) is retained in
 the UI and explicit repair prompt rather than replaced by a generic schema error.
 Invalid ranges still cannot be forwarded, and only a newly valid suggestion can
 be queued. No bounds are silently clamped.
+
+Structured account-exhaustion errors on the OpenAI-compatible chat/completions
+routes stop retries without changing the receipt schema: the request remains
+`status=http_429`, `charge=task`, and the task remains interrupted/incomplete.
+Only exact `error.code` / `error.type` values `insufficient_quota` and
+`credit_balance_exhausted` trigger this policy. Temporary/unknown 429 responses
+keep bounded retry behavior. A retry denied by the request allocator retains
+the previous provider error as context while preserving the underlying typed
+budget error. This transient error context is owned by the streaming call; it
+adds no persisted authority or completion evidence.

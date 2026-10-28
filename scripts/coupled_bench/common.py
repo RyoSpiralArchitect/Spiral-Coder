@@ -108,24 +108,45 @@ def select(rows, requested):
 
 
 def validate(suite, matrix):
-    if suite.get("version") != 1 or matrix.get("version") != 1:
-        raise ValueError("Only suite/matrix version 1 is supported")
+    if suite.get("version") != 1 or matrix.get("version") not in (1, 2):
+        raise ValueError("Only suite version 1 and matrix versions 1/2 are supported")
     select(suite["cases"], [])
     select(matrix["profiles"], [])
     for case in suite["cases"]:
         if type(case["max_requests"]) is not int or not 1 <= case["max_requests"] <= 64:
             raise ValueError("max_requests must be 1..64")
-        if case["oracle"] not in ("large_file", "pilot_cli", "replay_json"):
+        if case["oracle"] not in ("large_file", "pilot_cli", "replay_json", "python_contract"):
             raise ValueError("Unknown independent oracle")
         for value in [case["workspace"], case["reference"], case["prompt"], *case["editable"]]:
             relative_path(value)
         if not case["checks"] or not any(c["baseline_failure"] for c in case["checks"]):
             raise ValueError("At least one declared failing baseline is required")
+        if matrix["version"] == 2:
+            for field, low, high in [("transport_repair_requests", 0, 8),
+                                     ("observer_reserved_requests", 0, case["max_requests"] - 1),
+                                     ("coder_chunk_requests", 4, case["max_requests"] - 2)]:
+                if type(case.get(field)) is not int or not low <= case[field] <= high:
+                    raise ValueError(f"Invalid {field}")
+        elif any(key in case for key in ("transport_repair_requests", "observer_reserved_requests", "coder_chunk_requests")):
+            raise ValueError("Explicit budget policy requires matrix version 2")
     for profile in matrix["profiles"]:
         if profile["provider"] not in PROVIDERS or not profile.get("model"):
             raise ValueError("Unknown provider or empty model")
+        if matrix["version"] == 2:
+            observer = profile.get("observer", {})
+            if set(observer) != {"provider", "model"} or observer["provider"] not in PROVIDERS or not isinstance(observer["model"], str) or not observer["model"].strip():
+                raise ValueError("Version 2 requires an explicit Observer provider/model")
+        elif "observer" in profile:
+            raise ValueError("Explicit Observer requires matrix version 2")
     for key, maximum in [("max_tokens", 65536), ("timeout_seconds", 600), ("wall_seconds", 3600)]:
         if type(matrix[key]) is not int or not 1 <= matrix[key] <= maximum:
             raise ValueError(f"Invalid {key}")
-    if matrix.get("same_model_both_roles") is not True:
+    if matrix["version"] == 1 and matrix.get("same_model_both_roles") is not True:
         raise ValueError("This benchmark requires the same model for Coder and Observer")
+    if matrix["version"] == 2:
+        if type(matrix.get("observer_max_tokens")) is not int or not 1 <= matrix["observer_max_tokens"] <= 65536:
+            raise ValueError("Invalid observer_max_tokens")
+        from .roles import pair
+        same = all(pair(p)["coder"] == pair(p)["observer"] for p in matrix["profiles"])
+        if matrix.get("same_model_both_roles") is not same:
+            raise ValueError("same_model_both_roles does not match the declared pairs")

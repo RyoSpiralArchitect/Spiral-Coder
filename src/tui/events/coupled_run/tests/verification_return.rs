@@ -61,8 +61,17 @@ async fn later_verification_failure_returns_to_observer_before_another_coder_req
             .path("/chat/completions")
             .body_contains("Read the actual failure location.")
             .matches(|req| {
-                !String::from_utf8_lossy(req.body.as_deref().unwrap_or_default())
-                    .contains("current-diagnostic-read")
+                let body: serde_json::Value =
+                    serde_json::from_slice(req.body.as_deref().unwrap()).unwrap();
+                let tools = body["tools"].as_array().unwrap();
+                !body.to_string().contains("current-diagnostic-read")
+                    && tools.len() == 2
+                    && tools.iter().any(|t| t["function"]["name"] == "done")
+                    && tools.iter().any(|t| {
+                        t["function"]["name"] == "read_file"
+                            && t["function"]["parameters"]["properties"]["path"]["enum"]
+                                == json!(["test_failure.py"])
+                    })
             });
         then.status(200)
             .header("content-type", "text/event-stream")

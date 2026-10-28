@@ -1,0 +1,25 @@
+diff --git a/summary.py b/summary.py
+index 4a90dee..e136211 100644
+--- a/summary.py
++++ b/summary.py
+@@ -4,7 +4,17 @@ import json
+ 
+ def summarize(lines):
+     counts = {"info": 0, "warning": 0, "error": 0}
+-    for line in lines:
+-        event = json.loads(line)
+-        counts[event["level"]] += 1
++    for line_number, line in enumerate(lines, start=1):
++        if not line.strip():
++            continue
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError:
++            raise ValueError(f"Invalid JSON on line {line_number}")
++        if not isinstance(event, dict):
++            raise ValueError(f"Non-object record on line {line_number}")
++        level = event.get("level")
++        if not isinstance(level, str) or level not in counts:
++            raise ValueError(f"Invalid level on line {line_number}")
++        counts[level] += 1
+     return counts

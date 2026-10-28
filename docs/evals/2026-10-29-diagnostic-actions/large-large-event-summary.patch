@@ -1,0 +1,58 @@
+diff --git a/docs/summary.md b/docs/summary.md
+index a6db6ee..31e74e3 100644
+--- a/docs/summary.md
++++ b/docs/summary.md
+@@ -1,4 +1,26 @@
+ # Event summary
+ 
+-`summarize(lines)` counts levels in a JSON Lines export.
+-Each line currently needs a JSON object with a known level.
++`summarize(lines)` counts levels in a JSON Lines event export.
++
++## Contract
++
++- `lines` is an iterable of strings (a list or a generator both work); input strings are never modified.
++- The function always returns exactly the integer counts for the three known levels, including zeros:
++  `{"info": 0, "warning": 0, "error": 0}`
++- Each non-blank line must be a JSON object whose `level` field is one of the exact lowercase strings `"info"`, `"warning"`, or `"error"`. All other object fields are ignored.
++
++## Blank lines
++
++Empty or whitespace-only lines are skipped. They still count toward the physical 1-based line number used in error messages.
++
++## Errors
++
++Malformed JSON, non-object records, and missing, unknown, or non-string levels raise `ValueError` mentioning the physical 1-based line number, including skipped blank lines. For example, if line 1 is blank, line 2 is valid, and line 3 is malformed, the error mentions `line 3`. Invalid records are never silently skipped.
++
++## Verify
++
++Run the exact test command:
++
++```
++python3 -B -S -m unittest discover -s tests -v
++```
+diff --git a/summary.py b/summary.py
+index 4a90dee..8e627fe 100644
+--- a/summary.py
++++ b/summary.py
+@@ -4,7 +4,17 @@ import json
+ 
+ def summarize(lines):
+     counts = {"info": 0, "warning": 0, "error": 0}
+-    for line in lines:
+-        event = json.loads(line)
+-        counts[event["level"]] += 1
++    for number, line in enumerate(lines, start=1):
++        if line.strip() == "":
++            continue
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError as exc:
++            raise ValueError(f"line {number}: invalid JSON: {exc}") from exc
++        if not isinstance(event, dict):
++            raise ValueError(f"line {number}: expected a JSON object")
++        level = event.get("level")
++        if not isinstance(level, str) or level not in counts:
++            raise ValueError(f"line {number}: missing or unknown level")
++        counts[level] += 1
+     return counts

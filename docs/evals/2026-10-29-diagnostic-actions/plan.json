@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "intervention": "Expose current required diagnostic reads in the offered tools and keep pending artifact paths in the compact next-action contract. Native reads and original completion gates remain mandatory.",
+  "prompt_revision": 2,
+  "episodes": [
+    "large-large/event-summary",
+    "large-large/env-bool"
+  ],
+  "attempts": 2,
+  "maximum_wire_requests": 56,
+  "task_requests_per_episode": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "episode_wall_seconds": 600,
+  "coder": "mistral-large-4",
+  "observer": "mistral-large-4",
+  "task_prompt_test_and_oracle_changes_from_PR42_head": false,
+  "baseline_head": "9d545eb6f91602f450114c4e1abb05bc25507bd1",
+  "no_retry_in_place": true,
+  "qualification": "Original independent tests, current native baseline/final checks, authored report, matched role accounting and strict file scope must all pass.",
+  "claim_boundary": "Two adaptive practice attempts, not a randomized comparison or general success rate. Earlier failures remain. Historical JSONL used prompt revision 1; this wave keeps the already-committed revision 2 and strengthened assessor unchanged. No additional live attempts without a new frozen declaration."
+}
