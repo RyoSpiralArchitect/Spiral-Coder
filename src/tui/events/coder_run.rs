@@ -198,6 +198,11 @@ pub(super) async fn send_coder_input(
     ));
     if !continuing {
         app.work_budget = crate::work_budget::WorkBudget::new(root_request, max_iters, budget_path);
+        if let Err(error) = app.work_budget.configure(app.work_policy) {
+            app.coder.push_tool(format!("Invalid work budget: {error}"));
+            app.coder.finish_stream();
+            return;
+        }
     } else if app.work_budget.snapshot().root != root_request {
         app.work_budget = budget_path
             .and_then(|path| crate::work_budget::WorkBudget::load(root_request, path))
@@ -211,7 +216,7 @@ pub(super) async fn send_coder_input(
             return;
         }
     }
-    let remaining = app.work_budget.remaining();
+    let remaining = app.work_budget.remaining_for("coder");
     if remaining == 0 {
         app.coder.push_tool("Shared task budget exhausted; completion is unconfirmed. Remaining checks and the final report stay pending.".into());
         app.coder.finish_stream();
@@ -219,14 +224,19 @@ pub(super) async fn send_coder_input(
         app.active_observer_contract = None;
         return;
     }
-    let max_iters = coder_slice::allowance(
-        remaining,
-        app.coder_chunk_reserve,
-        agent::evidence_packet::project(&start.messages, test_cmd.as_deref())
-            .pending_exact_checks
-            .len(),
-        app.coder_chunk_requests,
-    );
+    let suggested = if app.work_budget.snapshot().policy.observer_reserved_requests > 0 {
+        app.coder_chunk_requests.unwrap_or(8)
+    } else {
+        coder_slice::allowance(
+            remaining,
+            app.coder_chunk_reserve,
+            agent::evidence_packet::project(&start.messages, test_cmd.as_deref())
+                .pending_exact_checks
+                .len(),
+            app.coder_chunk_requests,
+        )
+    };
+    let max_iters = app.work_budget.paced_coder_allowance(suggested);
     let request_budget = if app.coder_chunk_reserve > 0 {
         app.work_budget.with_observer_return(max_iters)
     } else {

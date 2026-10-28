@@ -2504,7 +2504,8 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
-    app.observer_assist_request = Some(ObserverAssistRequest::new(app, observer_prompt.clone()));
+    app.observer_assist_request =
+        Some(ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint));
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
@@ -2854,6 +2855,9 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     let (idx, msg) = app.coder.messages.iter().enumerate().rev().find(|(_, m)| {
         matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
     })?;
+    if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::Blocked) {
+        return Some((idx, "blocked_terminal_diagnosis".into()));
+    }
     if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::VerificationFailure) {
         return Some((idx, "native_verification_failure".into()));
     }
@@ -2893,6 +2897,7 @@ mod tests {
     include!("dogfood_boundary_tests.rs");
     include!("task_requirement_tests.rs");
     include!("verification_yield_tests.rs");
+    include!("terminal_diagnosis_tests.rs");
 
     fn msg(role: Role, content: &str) -> Message {
         Message::new_complete(role, content.to_string())
@@ -3970,7 +3975,13 @@ async fn dispatch_selected_task(
 }
 
 async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
-    if app.work_budget.remaining() < 2 || app.coder_completed == Some(true) {
+    let required_requests =
+        if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::Blocked) {
+            1 // Terminal diagnosis does not resume Coder.
+        } else {
+            2
+        };
+    if app.work_budget.remaining() < required_requests || app.coder_completed == Some(true) {
         return;
     }
     if app.observer.streaming || app.coder.streaming {

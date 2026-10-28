@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "id": "recovery-handoff-rhythm",
+  "prompt": "prompt.txt",
+  "editable": [
+    "src/tui/agent/recovery.rs",
+    "src/tui/agent/edit_failure.rs",
+    "src/tui/agent/recovery_progress.rs",
+    "docs/coupled-work-loop.md"
+  ],
+  "protected": [
+    "src/tui/agent/edit_failure_tests.rs",
+    "Cargo.toml",
+    "Cargo.lock",
+    ".spiral-coder/tui_replay.json"
+  ],
+  "native_checks": [
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "checks": [
+    {
+      "id": "candidate-build",
+      "kind": "build",
+      "baseline": "pass",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "timeout_seconds": 180
+    },
+    {
+      "id": "existing-rust-tests",
+      "kind": "regression",
+      "baseline": "pass",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--bin",
+        "spiral-coder",
+        "-q",
+        "--",
+        "--skip",
+        "self_dogfood_recovery_resume_probe",
+        "--skip",
+        "self_dogfood_visible_recovery_tests"
+      ],
+      "timeout_seconds": 180,
+      "minimum_passed_tests": 864
+    },
+    {
+      "id": "visible-recovery-regression",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--bin",
+        "spiral-coder",
+        "self_dogfood_visible_recovery_tests",
+        "--",
+        "--nocapture"
+      ],
+      "expected_test_count": 1,
+      "expected_baseline_failures": 1,
+      "baseline_failure_contains": [
+        "completed_source_diagnosis_survives_handoff_without_clearing_verification ... FAILED",
+        "0 passed; 1 failed"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "recovery-handoff-oracle",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--bin",
+        "spiral-coder",
+        "self_dogfood_recovery_resume_probe",
+        "--",
+        "--nocapture"
+      ],
+      "expected_test_count": 6,
+      "baseline_failure_contains": [
+        "completed_source_diagnosis_survives_handoff_without_clearing_verification ... FAILED",
+        "5 passed; 1 failed"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "candidate-tui-replay",
+      "kind": "regression",
+      "baseline": "pass",
+      "argv": [
+        "{target_dir}/debug/spiral-coder",
+        "tui-replay",
+        "--spec",
+        ".spiral-coder/tui_replay.json",
+        "--out-dir",
+        "{receipts}/tui-replay"
+      ],
+      "timeout_seconds": 90
+    }
+  ],
+  "probes": [
+    {
+      "source": "probe.rs",
+      "target": "src/tui/agent/recovery.rs",
+      "mode": "append"
+    }
+  ],
+  "reference": [
+    {
+      "source": "reference/src/tui/agent/recovery.rs",
+      "target": "src/tui/agent/recovery.rs",
+      "mode": "replace"
+    },
+    {
+      "source": "reference/src/tui/agent/edit_failure.rs",
+      "target": "src/tui/agent/edit_failure.rs",
+      "mode": "replace"
+    },
+    {
+      "source": "reference/handoff-note.md",
+      "target": "docs/coupled-work-loop.md",
+      "mode": "append"
+    }
+  ],
+  "max_requests": 32,
+  "coder_chunk_requests": 8,
+  "wall_seconds": 1200,
+  "evaluation_wall_seconds": 600,
+  "timeout_seconds": 90,
+  "max_tokens": 32768,
+  "temperature": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "mistral",
+      "model": "mistral-large-4"
+    }
+  },
+  "required_changed_paths": [
+    "docs/coupled-work-loop.md"
+  ],
+  "observer_max_tokens": 8192,
+  "visible_fixtures": [
+    {
+      "source": "visible-test.rs",
+      "target": "src/tui/agent/self_dogfood_visible_recovery_tests.rs"
+    },
+    {
+      "source": "visible-registration.rs",
+      "target": "src/tui/agent.rs",
+      "mode": "append"
+    }
+  ],
+  "reproducer_command": "cargo test --locked --bin spiral-coder tui::agent::self_dogfood_visible_recovery_tests::completed_source_diagnosis_survives_handoff_without_clearing_verification -- --exact --nocapture",
+  "visible_check_id": "visible-recovery-regression"
+}

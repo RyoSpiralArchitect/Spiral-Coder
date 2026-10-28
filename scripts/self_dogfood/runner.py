@@ -132,6 +132,9 @@ def command_and_env(out, spec):
                "--observer-provider", observer["provider"], "--observer-model", observer["model"],
                "--observer-base-url", PROVIDERS[observer["provider"]][1],
                "--observer-api-key-env", PROVIDERS[observer["provider"]][0]]
+    for field in ("transport_repair_requests", "observer_reserved_requests"):
+        if field in spec:
+            command.extend(["--" + field.replace("_", "-"), str(spec[field])])
     if "observer_max_tokens" in spec:
         command.extend(["--observer-max-tokens", str(spec["observer_max_tokens"])])
     return command, env, secrets

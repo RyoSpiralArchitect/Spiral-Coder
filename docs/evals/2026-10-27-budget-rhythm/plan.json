@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "status": "predeclared_before_provider_calls",
+  "task_variant": "recovery-handoff-rhythm",
+  "task_baseline_commit": "9982a68a6978058c75a9a700e7407df5a49f010c",
+  "baseline_executor_commit": "3a9e523f3ac147acf7c70f7fe4914f0623bca3ec",
+  "baseline_executor_sha256": "a56753512abaa04f8dd0ba309d4b2cf8fed837952546da371a69c21baea2bbe2",
+  "candidate_executor": "reviewed source commit and binary SHA-256 pinned in executor.json and each predeclared.json before live work",
+  "comparison": "same new prompt and unchanged tests/reference; treatment bundles runtime, role allocation and transport accounting; not a prompt-invariant comparison with prior variants",
+  "pairs": [
+    "luna-large",
+    "large-luna"
+  ],
+  "models": {
+    "luna": "gpt-5.6-luna",
+    "large": "mistral-large-4"
+  },
+  "excluded_providers": [
+    "gemini"
+  ],
+  "order": [
+    "baseline-luna-large",
+    "baseline-large-luna",
+    "candidate-luna-large",
+    "candidate-large-luna"
+  ],
+  "limits": {
+    "task_requests_per_episode": 32,
+    "baseline_transport_requests": 0,
+    "candidate_transport_requests": 4,
+    "baseline_observer_reservation": 0,
+    "candidate_observer_reservation": 8,
+    "maximum_total_wire_requests": 136,
+    "wall_seconds_per_episode": 1200,
+    "provider_timeout_seconds": 90,
+    "coder_max_tokens": 32768,
+    "observer_max_tokens": 8192,
+    "coder_chunk_ceiling": 8
+  },
+  "no_retries": "One attempt per declared cell; interruptions remain negative evidence, no in-place rerun or replacement. Preflight failure stops before calls.",
+  "qualification": "All original native completion, authored acceptance, fresh exact native proof, both-role, scope, protected-file, process, build, 864-original-test minimum, visible regression, six-probe oracle, replay, receipt and secrecy gates remain required. Blocked never qualifies.",
+  "measurement": "Separate six development milestones with observed/not_observed/not_evaluated and first unmet stage. No weighted pass score and no qualification override.",
+  "oracle_policy": "Visible fixture, six-probe independent oracle and reference content byte-identical to recovery-handoff-visible. Task prompt and budgets are separate frozen inputs.",
+  "promotion_authorized": false,
+  "inputs": {
+    "baseline-large-luna.json": "4016d05d73a96acc08988adc0a53f15a26dfedd9cb3b8c50487b094170d1c123",
+    "baseline-luna-large.json": "94891f2ed2fe4ea88397625796e1c6aa860f1dc03931b099d387d3fc4c62945a",
+    "large-luna.json": "31a48de9096365c35c5a37273fc34f5883b558fefbdd4786e824e973a7457a9e",
+    "luna-large.json": "7586d94c4bc705b27b23a3434354e4ec502e6f63de90c373f2cec1cd5946e9fb",
+    "probe.rs": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+    "prompt.txt": "82b5ca42982d818d4ab0c9e82e450c214fb1c000e5da9bf0ac502b395fa5338a",
+    "reference/handoff-note.md": "843825f88cf7e029397246f796042778ca1d451ee4d66aca0705d873aa471d45",
+    "reference/src/tui/agent/edit_failure.rs": "1f037a406cee9e4e14d583c2303407f7147183171e5d0106125a00e884748b82",
+    "reference/src/tui/agent/recovery.rs": "60ce49eb64a2e0d2e0118917542acdc8f3a76460f17360ec006373fd17d250b5",
+    "visible-registration.rs": "3605d8f98694f361946703c79d9bdcfc53981be1f3f9e2029d2f2ff97f3c7e08",
+    "visible-test.rs": "ef947c5516e99db60a426e88b941027845a3d471ce29160197d8d5c5418c9c25"
+  }
+}

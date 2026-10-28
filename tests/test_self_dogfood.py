@@ -129,7 +129,7 @@ class LaneTests(unittest.TestCase):
         (run / "state").mkdir(parents=True)
         work = {"task_id": "fixture-task", "root": (self.out / "episode/task.txt").read_text().strip(),
                 "tool_root": str(workspace), "request_limit": 12,
-                "requests": [{"id": 1, "role": "coder", "status": "ok"}] + ([{"id": 2, "role": "observer", "status": "ok"}] if observer else [])}
+                "requests": [{"id": 0, "role": "coder", "status": "ok"}] + ([{"id": 1, "role": "observer", "status": "ok"}] if observer else [])}
         roles = {}
         for name, provider, model, origin in [("coder", "openai", "fixture-coder", "https://api.openai.com"), ("observer", "gemini", "fixture-observer", "https://generativelanguage.googleapis.com")]:
             roles[name] = {"provider": provider, "transport": "openai-compatible", "model": model, "endpoint_origin": origin,

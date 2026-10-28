@@ -18,7 +18,7 @@ def bounded_int(value, low, high, label):
 
 
 def validate(spec):
-    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "visible_fixtures", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature"}
+    allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "visible_fixtures", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature", "transport_repair_requests", "observer_reserved_requests", "reproducer_command", "visible_check_id"}
     if set(spec) - allowed:
         raise ValueError("Unknown task contract fields")
     if spec.get("version") != 1:
@@ -42,6 +42,10 @@ def validate(spec):
     if any(not isinstance(c, str) or not c.strip() for c in spec["native_checks"]):
         raise ValueError("native_checks must contain exact nonempty commands")
     bounded_int(spec["max_requests"], 6, 64, "max_requests")
+    bounded_int(spec.get("transport_repair_requests", 0), 0, 8, "transport_repair_requests")
+    bounded_int(spec.get("observer_reserved_requests", 0), 0, spec["max_requests"] - 1, "observer_reserved_requests")
+    if "reproducer_command" in spec and (not isinstance(spec["reproducer_command"], str) or not spec["reproducer_command"].strip()):
+        raise ValueError("reproducer_command must be an exact nonempty command")
     bounded_int(spec["coder_chunk_requests"], 4, spec["max_requests"] - 2, "coder_chunk_requests")
     bounded_int(spec["wall_seconds"], 1, 3600, "wall_seconds")
     bounded_int(spec["evaluation_wall_seconds"], 1, 3600, "evaluation_wall_seconds")
@@ -93,6 +97,8 @@ def validate(spec):
             if not isinstance(markers, list) or not markers or any(not isinstance(x, str) or not x.strip() for x in markers):
                 raise ValueError("baseline_failure_contains must be a nonempty list of nonblank diagnostic strings")
         bounded_int(check["timeout_seconds"], 1, spec["evaluation_wall_seconds"], "check timeout")
+    if "visible_check_id" in spec and spec["visible_check_id"] not in ids:
+        raise ValueError("visible_check_id must identify a declared check")
     if len(ids) > 8 or not {"build", "regression", "improvement"}.issubset(c["kind"] for c in spec["checks"]):
         raise ValueError("Declare build, regression and improvement checks (up to 8)")
     if not any(c["kind"] == "improvement" and c["baseline"] == "fail" for c in spec["checks"]):

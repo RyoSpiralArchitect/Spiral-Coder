@@ -4,6 +4,7 @@ use super::*;
 use anyhow::{Context, Result};
 
 mod roles;
+mod termination;
 #[cfg(test)]
 mod tests;
 
@@ -17,6 +18,12 @@ pub(crate) struct Args {
     pub out_dir: PathBuf,
     #[arg(long, default_value_t = 18)]
     pub max_requests: usize,
+    /// Pure rejected framing/schema responses may spend this separate pool.
+    #[arg(long, default_value_t = 0)]
+    pub transport_repair_requests: usize,
+    /// Task requests unavailable to Coder, distributed across role slices.
+    #[arg(long, default_value_t = 0)]
+    pub observer_reserved_requests: usize,
     #[arg(long)]
     pub seed_session: Option<PathBuf>,
     #[arg(long)]
@@ -61,7 +68,14 @@ async fn drain(
                 _ => {}
             }
         }
+        let error = match &event.payload {
+            request_stream::Payload::Token(StreamToken::Error(error)) => Some(error.clone()),
+            _ => None,
+        };
         request_stream::dispatch(event, app, pane);
+        if let Some(error) = error {
+            anyhow::bail!("{pane:?}: {error}");
+        }
         if terminal {
             break;
         }
@@ -78,6 +92,18 @@ pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()>
     anyhow::ensure!(
         (1..=64).contains(&args.max_requests),
         "max-requests must be 1..64"
+    );
+    anyhow::ensure!(
+        args.transport_repair_requests <= 8,
+        "transport-repair-requests must be 0..8"
+    );
+    anyhow::ensure!(
+        args.observer_reserved_requests < args.max_requests,
+        "Observer reservation must leave a Coder request"
+    );
+    anyhow::ensure!(
+        !args.without_observer || args.observer_reserved_requests == 0,
+        "Observer reservation conflicts with --without-observer"
     );
     if let Some(limit) = args.coder_chunk_requests {
         anyhow::ensure!(
@@ -125,12 +151,16 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     );
     app.coder_realize_preset = agent::RealizePreset::Off;
     app.coder_chunk_requests = args.coder_chunk_requests;
+    app.work_policy = crate::work_budget::BudgetPolicy {
+        transport_repair_limit: args.transport_repair_requests,
+        observer_reserved_requests: args.observer_reserved_requests,
+    };
     app.observer_assist_max_tokens = roles.observer_max_tokens;
     if args.without_observer {
         app.coder_chunk_reserve = 0;
     }
     let trace = crate::trace_writer::TraceWriter::new(args.out_dir.join("trace.jsonl"))?;
-    trace.event("agent_config", json!({"provider":cfg.provider.to_string(),"model":cfg.model,"coupled":!args.without_observer,"max_requests":args.max_requests,"roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),"coder_chunk_requests":args.coder_chunk_requests}))?;
+    trace.event("agent_config", json!({"provider":cfg.provider.to_string(),"model":cfg.model,"coupled":!args.without_observer,"max_requests":args.max_requests,"roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),"coder_chunk_requests":args.coder_chunk_requests,"budget_policy":app.work_policy}))?;
     let started = std::time::Instant::now();
     let (coder_tx, mut coder_rx) = mpsc::channel(256);
     let (observer_tx, mut observer_rx) = mpsc::channel(256);
@@ -149,6 +179,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             args.max_requests,
             Some(crate::runtime_storage::state_path(&root, "tui-work.json")),
         );
+        app.work_budget.configure(app.work_policy)?;
         send_coder_input(
             &mut app,
             &coder_tx,
@@ -169,10 +200,12 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
             if app.coder_completed == Some(true)
                 || args.without_observer
-                || app.work_budget.remaining() < 2
+                || app.work_budget.remaining_for("observer") == 0
             {
                 break;
             }
+            let blocked = app.coder_yield_reason
+                == Some(super::super::coder_yield::CoderYieldReason::Blocked);
             let idx = app
                 .coder
                 .messages
@@ -183,7 +216,11 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
                 &mut app,
                 &observer_tx,
                 &format!("msg:coder-{idx}"),
-                "incomplete_task",
+                if blocked {
+                    "blocked_terminal_diagnosis"
+                } else {
+                    "incomplete_task"
+                },
             )
             .await;
             if app.observer.streaming {
@@ -193,7 +230,10 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             if app.observer.streaming {
                 drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
             }
-            if app.pending_observer_hint.is_none() || app.work_budget.remaining() == 0 {
+            if blocked
+                || app.pending_observer_hint.is_none()
+                || app.work_budget.remaining_for("coder") == 0
+            {
                 break;
             }
             send_coder_input(
@@ -216,8 +256,10 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     }
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
+        "termination":termination::project(&app, outcome.as_ref().err()),
         "roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),
         "coder_chunk_requests":args.coder_chunk_requests,
+        "budget_policy":app.work_policy,
         "role_requests":{
             "coder":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "coder").count(),
             "observer":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "observer").count(),

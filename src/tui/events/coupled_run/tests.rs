@@ -2,6 +2,8 @@ use super::*;
 use clap::Parser;
 use httpmock::prelude::*;
 
+mod blocked_terminal;
+mod budget_rhythm;
 mod cross_family;
 mod verification_return;
 
@@ -44,6 +46,8 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
             prompt_file: prompt,
             out_dir: output.clone(),
             max_requests: 4,
+            transport_repair_requests: 0,
+            observer_reserved_requests: 0,
             seed_session: None,
             without_observer: false,
             observer: roles::ObserverArgs::default(),

@@ -160,6 +160,8 @@ async fn later_verification_failure_returns_to_observer_before_another_coder_req
         prompt_file: prompt,
         out_dir: output.clone(),
         max_requests: 9,
+        transport_repair_requests: 0,
+        observer_reserved_requests: 0,
         seed_session: Some(seed),
         without_observer: false,
         observer: roles::ObserverArgs::default(),

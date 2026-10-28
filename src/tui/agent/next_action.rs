@@ -14,7 +14,7 @@ enum Phase {
 #[derive(Debug, Serialize)]
 pub(super) struct Contract {
     phase: Phase,
-    shared_requests_remaining: Option<usize>,
+    coder_requests_remaining: Option<usize>,
     max_native_tool_calls: usize,
     pending_exact_checks: Vec<String>,
 }
@@ -35,7 +35,7 @@ impl Contract {
             requirements.declared && remaining.is_some_and(|n| n == 1 || (n <= 3 && proof_ready));
         Self {
             phase: if report { Phase::Report } else { Phase::Work },
-            shared_requests_remaining: remaining,
+            coder_requests_remaining: remaining,
             max_native_tool_calls: 1,
             pending_exact_checks: pending.to_vec(),
         }
@@ -56,9 +56,9 @@ impl Contract {
 
     pub(super) fn prompt(&self) -> String {
         let action = if self.phase == Phase::Report {
-            "Only done is available now. Author the requested report from retained native evidence. If anything remains unverified, list it in remaining_acceptance and describe the exact next action. This restriction does not certify completion or bypass any gate. Do not claim unexecuted checks passed."
+            "Only done is available now. Author the requested report from retained native evidence. If anything remains unverified, list it in remaining_acceptance, explain the blocker in summary, and supply the concrete next action in next_steps. This produces a BLOCKED terminal report and one Observer diagnosis, not a successful done. This restriction does not certify completion or bypass any gate. Do not claim unexecuted checks passed."
         } else {
-            "Choose exactly one native function call. Keep required plan/think/reflect/impact blocks in assistant text alongside that call; text or XML is not tool execution. Leave one shared request for your authored done report after the final exact check."
+            "Choose exactly one native function call. Keep required plan/think/reflect/impact blocks in assistant text alongside that call; text or XML is not tool execution. After the final mutation, execute each pending exact verification command before a successful done; automatic checks are not a substitute. Leave one Coder request for your authored done report. If blocked, use done with nonempty remaining_acceptance, a blocker summary, and concrete next_steps; this terminates incomplete without clearing obligations."
         };
         format!(
             "[Next action contract]\n{}\n{action}",

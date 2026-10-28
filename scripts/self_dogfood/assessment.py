@@ -12,6 +12,7 @@ from .contracts import apply_overlays, execution_env, load_frozen, now
 from .build_cache import reset_package_cache
 from .process import run_process
 from .evidence import bound_run, native_evidence
+from .measurement import budget_accounting, development_progress
 
 
 def checks(out, spec, label, overlays=(), candidate=None):
@@ -70,6 +71,7 @@ def checks(out, spec, label, overlays=(), candidate=None):
                 built_binary = sha(binary) if passed and binary.is_file() else None
             result.update({"expected_test_count_matches": count_matches, "baseline_test_count_matches": baseline_count_matches, "baseline_failure_matches": failure_matches,
                            "id": check["id"], "kind": check["kind"], "argv": argv,
+                           "test_summary": dict(zip(("passed", "failed", "ignored"), map(int, final_summary[1:]))) if final_summary else None,
                            "passed": passed, "log_sha256": sha(log) if log.exists() else None,
                            "log": str(log.relative_to(out)),
                            "package_cache_reset_sha256": cache_reset,
@@ -109,9 +111,10 @@ def assess(args):
     forbidden = [p for p in changed if p not in spec["editable"]]
     report, durable, process, receipt_evidence = native_evidence(out)
     work = report.get("work") or {}
-    ledger_match = durable is not None and all(work.get(k) == durable.get(k) for k in ("task_id", "root", "tool_root", "request_limit", "requests"))
+    ledger_match = durable is not None and all(work.get(k) == durable.get(k) for k in ("task_id", "root", "tool_root", "request_limit", "policy", "requests"))
     work_match = work.get("root") == (out / "episode/task.txt").read_text().strip() and work.get("tool_root") == str(candidate) and bool(work.get("task_id"))
     requests = (report.get("work") or {}).get("requests")
+    budget = budget_accounting(work, spec)
     roles = {r: sum(x.get("role") == r for x in requests) for r in ("coder", "observer")} if isinstance(requests, list) else {}
     expected_roles = {}
     for name, role in spec["roles"].items():
@@ -142,7 +145,7 @@ def assess(args):
              "both_roles_called": all(roles.get(r, 0) > 0 for r in ("coder", "observer")),
              "exact_role_configuration": role_match and report.get("same_model_both_roles") is False and report.get("coder_chunk_requests") == spec["coder_chunk_requests"],
              "role_accounting_consistent": report.get("role_requests") == roles and (report.get("work") or {}).get("request_limit") == spec["max_requests"],
-             "bounded_requests": isinstance(requests, list) and 0 < len(requests) <= spec["max_requests"],
+             "bounded_requests": budget["valid"],
              "process_ok": process.get("exit_code") == 0 and not process.get("timed_out") and not process.get("output_limit"),
              "independent_checks_passed": all(c["passed"] for c in independent), "candidate_unchanged_by_assessor": candidate_unchanged,
              "no_secret_redactions": process.get("redacted_files") == [] and process.get("log_redactions") == 0, "patch_retained": process.get("patch_exit_code") == 0}
@@ -154,7 +157,9 @@ def assess(args):
               "changed_files": changed, "out_of_scope_files": forbidden, "native_checks": fresh,
               "requests": len(requests) if isinstance(requests, list) else None, "request_roles": roles,
               "process": process, "native_evidence_source": receipt_evidence["source"], "receipt_errors": receipt_evidence["errors"], "independent_checks": independent,
-              "candidate_inventory": after, "roles": spec["roles"], "native_roles": report.get("roles")}
+              "candidate_inventory": after, "roles": spec["roles"], "native_roles": report.get("roles"),
+              "budget_accounting": budget,
+              "development_progress": development_progress(spec, report, independent, read_json(out / "preflight.json")["baseline"], gates)}
     write_json(target, result)
     write_json(out / "raw-manifest-001.json", manifest(out, target))
     return {"assessment": str(target), "qualified_candidate": result["qualified_candidate"], "gates": gates,

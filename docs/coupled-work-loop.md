@@ -493,3 +493,42 @@ validation. See [state ownership and receipt semantics](state-schema.md).
 ignores only complete passing Rust test rows when scanning for error markers.
 Real errors elsewhere remain failures, including when a command exits zero;
 preview/history shortening preserves this distinction across handoff.
+
+
+### Bounded repair pools, Observer cadence and truthful stopping
+
+For self-dogfood experiments, a 32-task-request run can use:
+
+```text
+--max-requests 32 --coder-chunk-requests 8 \
+  --observer-reserved-requests 8 --transport-repair-requests 4
+```
+
+The maximum is 36 wire attempts: up to 32 task requests and four wholly rejected
+framing/type responses. All attempts and their classification remain in the
+ledger. HTTP errors, interrupted bodies, semantic errors and failed verification
+are not free retries. Local opening-brace recovery costs no extra request. These
+options default to zero reservation/repair credit for compatibility; a benchmark
+must freeze them explicitly before calling providers.
+
+The eight Observer-only task slots cannot be borrowed by Coder. Remaining work is
+paced over those opportunities, normally three Coder requests then an Observer
+intervention. A new failed check returns earlier. Stop on success, exhaustion or
+an explicit blocked report instead of consuming calls just to reach a quota.
+
+A blocked Coder uses native `done` with remaining criterion references, a concrete
+blocker summary and `next_steps`. Completed criterion claims still need valid
+native citations. Runtime retains all pending checks and diagnosis, records
+`OK: blocked`, asks Observer for one no-tool diagnosis, and ends incomplete. This
+path is not a successful completion and cannot qualify a candidate. Provider
+stream failures are surfaced in the report rather than hidden behind a clean
+process exit.
+
+The `recovery-handoff-rhythm` benchmark is a new prompt variant: it gives the exact
+single-test reproducer, semantic failure-boundary invariants, a required docs
+edit, and the full native test command after the final mutation. Its visible test,
+independent oracle, reference patch and original-regression floor are unchanged.
+Do not pool it with earlier prompt variants as a runtime-only comparison.
+Development milestones show reproduction, measured behavior change, visible
+pass, control non-regression, fresh full native check, and docs/receipts; the final
+qualification gate remains binary and independent.

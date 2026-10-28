@@ -1,0 +1,25 @@
+diff --git a/src/tui/agent/recovery.rs b/src/tui/agent/recovery.rs
+index 28a5dc8..9990a63 100644
+--- a/src/tui/agent/recovery.rs
++++ b/src/tui/agent/recovery.rs
+@@ -42,12 +42,18 @@ impl RecoveryGovernor {
+     /// Keep both the failed edit and completed diagnosis across a role handoff.
+     /// A later failure's active recovery stage still takes precedence.
+     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
+-        if self.stage.is_none() && edits.count() > 0 {
+-            self.stage = Some(if edits.target_was_read() {
++        if edits.count() == 0 {
++            return;
++        }
++        let diagnosed = edits.current_failure_diagnosed();
++        if self.stage.is_none() {
++            self.stage = Some(if diagnosed {
+                 RecoveryStage::Fix
+             } else {
+                 RecoveryStage::Diagnose
+             });
++        } else if self.stage == Some(RecoveryStage::Diagnose) && diagnosed {
++            self.stage = Some(RecoveryStage::Fix);
+         }
+     }
+ 

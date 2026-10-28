@@ -50,6 +50,9 @@ impl RequestMeter {
 }
 impl Drop for RequestMeter {
     fn drop(&mut self) {
+        if self.status.starts_with("http_2") {
+            self.status("stream_interrupted");
+        }
         let _ = self.tx.try_send(StreamToken::Telemetry(TelemetryEvent {
             event: "request_usage".into(), data: json!({
                 "estimated_input_tokens": self.estimated_input_tokens,

@@ -48,6 +48,7 @@ mod assumption_gate;
 #[cfg(test)]
 mod auto_test_recovery_tests;
 mod automatic_test;
+mod blocked_report;
 pub(crate) mod current_evidence;
 mod done_gate;
 mod edit_failure;
@@ -7664,7 +7665,16 @@ IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the t
     let max_iters = max_iters.max(1).min(64);
     let initial_handoff_steps = step_seq;
     let mut observer_handoff = None;
-    for iter in 0..max_iters {
+    let mut blocked_terminal = false;
+    let mut repair_extensions = 0;
+    let repair_iterations =
+        crate::work_budget::current().map_or(0, |c| c.budget.transport_remaining());
+    for iter in 0..max_iters.saturating_add(repair_iterations) {
+        if iter >= max_iters.saturating_add(repair_extensions)
+            || crate::work_budget::current().is_some_and(|c| c.budget.slice_remaining("coder") == 0)
+        {
+            break;
+        }
         if let Some(failure) = observer_handoff::newly_executed(
             &messages,
             test_cmd.as_deref(),
@@ -7758,10 +7768,9 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             ));
         }
 
-        let shared_remaining = crate::work_budget::current().map(|c| c.budget.remaining());
-        let remaining_calls = shared_remaining
-            .unwrap_or(max_iters - iter)
-            .min(max_iters - iter);
+        let shared_remaining =
+            crate::work_budget::current().map(|c| c.budget.remaining_for("coder"));
+        let remaining_calls = shared_remaining.unwrap_or(max_iters.saturating_sub(iter));
         let pending_checks = task_harness::benchmark_proof::pending_commands(
             crate::task_origin::current_task_messages(&messages),
             &root_user_text,
@@ -7839,7 +7848,7 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
         // ── Final iteration handoff ─────────────────────────────────────────
         // If we hit the iteration cap, force a clean handoff via `done()` so
         // long sessions are resumable (session JSON keeps full history).
-        if iter + 1 == max_iters {
+        if shared_remaining.map_or(iter + 1 == max_iters, |remaining| remaining == 1) {
             let final_hint = format!(
                 "[Final Iteration — iter {}/{}]\n\
 This is the LAST model call for this run.\n\
@@ -8328,6 +8337,9 @@ This is the LAST model call for this run.\n\
         let msgs_clone = msgs_for_call;
 
         let request_context = crate::work_budget::current();
+        let request_cursor = request_context
+            .as_ref()
+            .map(|c| c.budget.snapshot().requests.len());
         let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
             stream_openai_compat_json(
                 &client_clone,
@@ -8425,8 +8437,22 @@ This is the LAST model call for this run.\n\
             )
             .await;
             pending_system_hint = Some(hint);
-            // Transport rejection is not an executed edit/command failure. Keep
-            // any real recovery focus and current proof, and spend only this request.
+            if let (Some(context), Some(cursor)) = (crate::work_budget::current(), request_cursor) {
+                if context.budget.reject_transport(
+                    "coder",
+                    cursor,
+                    crate::work_budget::TransportRejection::NativeArguments,
+                )? {
+                    repair_extensions += 1;
+                    emit_telemetry_event(
+                        &tx,
+                        "transport_rejection",
+                        json!({"role":"coder", "cursor":cursor, "reason":"native_arguments"}),
+                    )
+                    .await;
+                }
+            }
+            // No tool ran; keep all recovery and proof obligations unchanged.
             continue;
         }
 
@@ -8464,6 +8490,56 @@ This is the LAST model call for this run.\n\
             .await;
             pending_system_hint = Some(hint);
             state = AgentState::Recovery;
+            continue;
+        }
+
+        // Incomplete reporting does not execute a repair or claim success. It
+        // remains possible during diagnosis/reflection and at the last task slot.
+        let blocked_plan = parse_plan_block(&assistant_text).filter(|plan| {
+            validate_plan_for_task_contract(
+                plan,
+                root_read_only,
+                &task_contract,
+                &instruction_resolver,
+            )
+            .is_ok()
+        });
+        if let Some(report) = blocked_report::prepare(
+            &tool_calls,
+            blocked_plan.as_ref().or(active_plan.as_ref()),
+            &messages,
+            test_cmd.as_deref(),
+            &observation_evidence,
+        ) {
+            let call = &tool_calls[0];
+            messages.push(json!({"role":"assistant", "content":assistant_text, "tool_calls":[call.to_json()], "accepted_plan": if report.is_ok() { blocked_plan } else { None }}));
+            match report {
+                Ok(report) => {
+                    let text = report.render();
+                    messages.push(json!({"role":"tool", "tool_call_id":call.id, "content":"OK: blocked", "blocked_report":report}));
+                    messages.push(json!({"role":"assistant", "content":text}));
+                    let _ = tx.send(StreamToken::Delta(format!("\n{text}\n"))).await;
+                    blocked_terminal = true;
+                    emit_telemetry_event(&tx, "blocked_report", json!(report)).await;
+                }
+                Err(error) => {
+                    let hint = format!("[Blocked report] {error}. Preserve every remaining criterion; cite native evidence for any claimed completed item.");
+                    messages.push(json!({"role":"tool", "tool_call_id":call.id, "content":format!("GOVERNOR BLOCKED\n{hint}")}));
+                    pending_system_hint = Some(hint);
+                }
+            }
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+            if blocked_terminal {
+                break;
+            }
             continue;
         }
 
@@ -14577,7 +14653,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         last_mutation_step,
         last_verify_ok_step,
     )
-    .filter(|_| observer_handoff.is_none())
+    .filter(|_| observer_handoff.is_none() && !blocked_terminal)
     {
         task_outcome.finalized(&final_text);
         let final_text = enrich_text_final_handoff(
@@ -14654,9 +14730,9 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         &tx,
         "agent_outcome",
         json!({
-            "completed": observer_handoff.is_none() && task_outcome.completed(&messages),
+            "completed": !blocked_terminal && observer_handoff.is_none() && task_outcome.completed(&messages),
             "state": format!("{state:?}").to_ascii_lowercase(),
-            "yield_reason": observer_handoff.as_ref().map(|_| super::coder_yield::CoderYieldReason::VerificationFailure),
+            "yield_reason": if blocked_terminal { Some(super::coder_yield::CoderYieldReason::Blocked) } else { observer_handoff.as_ref().map(|_| super::coder_yield::CoderYieldReason::VerificationFailure) },
         }),
     )
     .await;

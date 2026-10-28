@@ -1071,3 +1071,68 @@ current task's native exchanges. Its counters are reconstructed across runtime
 handoffs and reset at a new human task or an actual command/edit attempt. They
 do not grant repair, mutation or verification evidence; see
 [observation progress](observation-progress.md).
+
+
+### Frozen role allocation and transport repair accounting
+
+`WorkState.policy` (`src/work_budget/allocation.rs`) owns
+`observer_reserved_requests` and `transport_repair_limit`. Both default to zero
+for historical ledgers and are frozen before the first request. The coupled CLI
+opts in with `--observer-reserved-requests` and `--transport-repair-requests`.
+The latter accepts 0..8; reservation must leave a Coder request.
+
+Every wire attempt retains its monotonic `RequestReceipt.id`, role, duration,
+usage and status. Its `charge` defaults to `task`. A completed response rejected
+before **any** execution for invalid native argument JSON or invalid Observer
+JSON/typed envelope may be reclassified as `transport`, with a typed
+`transport_rejection` reason. This consumes the separate pool; no receipt is
+removed. The cursor captured before the request must identify exactly one wire
+attempt for that role. EOF without a terminal frame, interrupted streams, compatibility retry sequences,
+semantic/action/evidence/governor rejection and actual failed checks remain task
+requests. Deterministic opening-brace repair makes no extra request and uses no
+transport credit. The hard wire ceiling is `request_limit + transport_repair_limit`;
+productive/task charges cannot exceed `request_limit`.
+
+Coder may consume at most `request_limit - observer_reserved_requests` task
+requests. Slices distribute remaining Coder allowance over still-reserved
+Observer opportunities (24/8 gives three Coder requests per Observer initially).
+Early verification failure still yields immediately. Successful completion may
+stop early; reservation does not promise a minimum number of useless requests.
+The derived next-action contract exposes `coder_requests_remaining`, excluding
+Observer-only slots. Coder slices do not force a premature terminal report merely
+because their local ceiling is close. Transport credits do not increase task
+allowance, clear obligations or bypass a gate.
+
+### Blocked terminal reports and interrupted episodes
+
+`src/tui/agent/blocked_report.rs` owns native incomplete-report validation. A
+`done` call with nonempty `remaining_acceptance` and a blocker `summary` may end the slice
+(`next_steps` is requested but remains optional for protocol compatibility) even during diagnosis/reflection. It must cover the
+accepted plan and cite current native evidence for any claimed completed item.
+It cannot clear pending checks, recovery state or task requirements. The correlated
+tool result is **`OK: blocked`**, with local `blocked_report` metadata; it is never
+`OK: done`. `agent_outcome.completed` stays false and its typed yield reason is
+`blocked`. Neither successful-finalizer authority nor qualification is granted.
+`acceptance_report::current_commands` excludes every native `done` call, including
+historical `OK: done` and `OK: blocked` results after resume. Terminal narration
+cannot become evidence for a later completed acceptance item.
+
+The coupled driver requests one terminal Observer diagnosis (plus the existing
+single schema-repair attempt if needed and budgeted), then stops. No automatic
+Coder continuation follows that report. A human may explicitly resume the same
+native session with its remaining ledger and obligations. Both the interactive
+TUI and coupled driver can start that terminal diagnosis with one remaining task
+request; ordinary automatic TUI assistance still needs two for Observer and
+Coder. No new request starts with an exhausted allowance. `report.termination`
+distinguishes `completed`, `blocked`, `budget_exhausted`, `observer_unavailable`
+and `interrupted`; provider errors from either pane reach `report.error` and a
+nonzero driver exit. A body interrupted after HTTP 200 is recorded as
+`stream_interrupted`, not a completed response. Unused budgets remain unused.
+
+`self_dogfood/measurement.py` derives development-only milestones from sealed
+native receipts and independent test summaries. Missing measurements are
+`not_evaluated`, unsuccessful ones `not_observed`. Reproduction requires the exact pre-edit command plus the frozen failing-test identity
+and failed-test count; dependency/build failure is not reproduction. Behavioral change requires an
+observed improvement against the frozen baseline counts, not merely a source diff.
+Qualification is still the conjunction of all existing gates; the budget gate now
+checks the separately frozen pools, role reservation and exact ledger charges.
