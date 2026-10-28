@@ -81,7 +81,8 @@ Prompt revision 2 explicitly requests **before/after test outcomes**, activating
 the runtime's existing native outcome-row checks in `done.summary`. The first
 revision asked for outcomes without naming tests in the final-answer clause;
 the runtime accepted a loose report that the frozen benchmark rejected. The
-strict report predicate is unchanged. A regression exercises both real prompt
+follow-up used that same frozen report predicate; the current assessor also
+rejects negated or example-only outcome mentions. A regression exercises both real prompt
 files through the native report validator, including rejection of qualified
 labels such as `Before (baseline): FAILED`.
 
@@ -92,3 +93,12 @@ launch the frozen `runtime/spiral-coder tui` and paste the neighboring `task.txt
 Use explicit Coder and Observer model options for your chosen pair. Manual
 sessions are useful practice but do not manufacture the headless runner's native
 completion receipt. Never mix manual edits into a declared automated episode.
+
+## Recorded runs
+
+The [first readout](../../docs/evals/2026-10-28-practical-examples/README.md) retains
+the provider-quota interruption and both Mistral × Mistral tasks. An adaptive
+`env-bool` follow-up strictly qualified with 21 requests after the report
+obligation was made explicit. JSONL remained blocked before its documentation
+update. This provides one reproducible completed example and a retained next
+failure to investigate, not a general model success rate.

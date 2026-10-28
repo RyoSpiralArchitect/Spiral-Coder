@@ -4,10 +4,10 @@
   "required_script": "bash scripts/check-local.sh",
   "passed": true,
   "counts": {
-    "rust_passed": 978,
+    "rust_passed": 979,
     "rust_ignored": 1,
     "integration_passed": 1,
-    "python_passed": 89,
+    "python_passed": 91,
     "web_npm_passed": 85,
     "tui_replay_passed": 13,
     "repo_map_passed": 14
@@ -39,6 +39,51 @@
     "example-followup": {
       "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-example-followup.log",
       "sha256": "3bd7a346383a981a916592d265056e67d4f0b594256b33a58b518351f0af1db7"
+    },
+    "prompt-red": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-prompt-red.log",
+      "sha256": "81faca4b1ec888e01f25b96c90aa7ba36261c3575ce325e3843eb2146dbfc2c3"
+    },
+    "prompt-green": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-prompt-green.log",
+      "sha256": "c35b0b42f40e344d24c64224dbd976f9272d099fa4dcf85d7f841caadc1b9516"
+    },
+    "contract-tests": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-contract-tests.log",
+      "sha256": "e1dcede92477b89bd92a128a147f0a7dc130bd04f4b78313f7192039da3ad117"
+    },
+    "contract-python": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-contract-python.log",
+      "sha256": "9f64e0410ec1a96dc8015ba95cdff0c2e0dcb5bd4d0ff58c305d0daba3990102"
+    },
+    "reporting-red": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-reporting-red.log",
+      "sha256": "882d15b4a848142fab1d6e94e2b30f54831f997087097526480be2bea9d30a9e"
+    },
+    "reporting-green": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-reporting-green.log",
+      "sha256": "78ad06f79a4c3b0605ee7cab46a1e8121a3b88d34fb7fa1b0abbfb74f19da1bf"
+    },
+    "final-python": {
+      "path": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261028-validation/spiral42-final-python.log",
+      "sha256": "612770729f141a3fd043891ffd09bc75880f8e29525c465b9550f777f366ac1d"
     }
+  },
+  "prompt_contract": {
+    "regression_failed_before_prompt_change": true,
+    "passed_after": true,
+    "production_logic_changed": false,
+    "test_and_prompt_commit": "4098682208c3a2838dec93a2b3da8a8efe4a83e7"
+  },
+  "reporting_regression": {
+    "failed_before": true,
+    "passed_after": true,
+    "original_scores_rewritten": false
+  },
+  "candidate_patch_validation": {
+    "passed": true,
+    "patches": 3,
+    "method": "git apply --check, then byte comparison with each retained candidate",
+    "whitespace_note": "Recorded unified diffs retain space-prefixed empty context lines. Source whitespace check excludes these patch artifacts."
   }
 }

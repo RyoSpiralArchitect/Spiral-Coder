@@ -1,4 +1,4 @@
-# Small practical examples: provider availability and the next bounded wave
+# Practical examples: Mistral Coder + Observer results
 
 The [examples suite](../../../benchmarks/examples-v1/README.md) adds two authored
 practice tasks: boolean settings and JSONL summaries. Each changes one short
@@ -47,3 +47,82 @@ After the quota result, Ryō selected Mistral × Mistral. The follow-up uses a
 separate matrix and fresh output directory, two tasks once each, at most 56 wire
 requests. It does not retry or replace the first wave's rows. The role pair and
 runtime both change, so this cannot isolate a causal harness effect.
+
+[Plan](mistral/plan.json), [executor](mistral/executor.json),
+[results](mistral/results.json).
+
+| Task, prompt revision 1 | Coder / Observer requests | Result |
+| --- | ---: | --- |
+| env-bool | 12 / 4 | Native completion, fresh exact checks, independent tests and strict file scope pass; report labels fail |
+| event-summary | 18 / 6 | Source repaired; documentation unchanged; truthful `blocked` terminal, no final exact check or accepted completion |
+
+The first task's final summary used `Before (baseline, before any edit): FAILED`
+and `After (all edits complete): PASSED`. Its actual repair is valid, but the
+frozen canonical report predicate rejects those labels: **0/2 strictly qualified**,
+**1/2 independently passing artifacts**. The runtime did not activate its native
+before/after report check because the final-answer clause omitted a test/check
+term. A regression with both real prompt files fails before the wording fix and
+passes afterward, exercising the native validator rather than a text substring.
+
+The second task spends two Plan Gate and two Recovery Gate refusals, repairs a
+non-string-level regression, then runs out of Coder allowance before its docs
+edit. It explicitly retains pending checks and remaining work. Its automatic
+test shows the documentation failure; that does not become a fresh exact native
+exec. Only `summary.py` changes, and the original tests correctly reject the
+incomplete deliverable. All 79 final-manifest entries were verified.
+
+## One adaptive report-contract follow-up
+
+[Plan](report-followup/plan.json), [executor](report-followup/executor.json),
+[results](report-followup/results.json),
+[candidate diff](report-followup/large-large-env-bool.patch).
+
+Prompt revision 2 explicitly asks for **before/after test outcomes** and places
+recorded outcome rows in `done.summary`. The existing native guard now supplies
+the exact recorded rows and requires the model to author them. Tests, reference
+behavior, file scope, budgets and the frozen assessor are unchanged. The frozen
+assessor still rejects parenthetical label variants.
+
+The one `env-bool` attempt uses **21 task requests: 15 Coder + 6 Observer**, no
+transport credits, and **strictly qualifies (1/1)**. Both requested files change,
+the failing baseline precedes edits, the separate exact check passes afterward,
+all ten original tests pass independently, no other file changes, and the native
+`done` contains the actual canonical before/after rows. Its implementation and
+usage notes were also inspected manually. All 58 raw-manifest entries were
+verified; no selected credentials appeared in retained text.
+
+The executable was rebuilt during validation and its hash differs from the
+preceding wave, although the only Rust source delta is a `cfg(test)` regression.
+The pre-run runtime label retained the production-logic base; the full build-tree
+revision and actual frozen hashes are clarified in the append-only
+[provenance note](report-followup/provenance-note.json). This adaptive single
+attempt is not an isolated causal estimate or a general success rate. No
+generated candidate was adopted into the repository implementation.
+
+## Offline report assessment repair
+
+The frozen assessor tagged the blocked JSONL report's phrase `After: PASSED is
+NOT claimed` as a positive report field. Overall qualification was already false
+because the native completion/check and independent artifact gates failed.
+The new assessor recognizes bounded affirmative fields and rejects negation or
+example prefixes. Canonical label requirements stay intact. Two regression tests
+retain parenthetical-label rejection and prevent denial text from qualifying.
+
+The [offline audit](reporting-audit.json) preserves and hashes both original and
+new assessments, including their exact assessor snapshots. It makes no provider
+calls: original Mistral qualification remains 0/2; the report follow-up remains
+1/1. This is a measurement correction, not another successful live episode.
+
+## Validation and next work
+
+[Validation receipts](validation.json): 979 Rust tests plus integration (one
+ignored), 91 Python tests, 85 Web/npm tests, 13/13 TUI replays, 14/14 repo-map
+cases and server/UI smoke. Required tests, independent behavior, native reports
+and live outcomes remain distinct evidence.
+
+The next useful problem is source-to-documentation handoff after an expected
+partial-task test failure. The JSONL run still spends several reads and refused
+fixes before updating the next required artifact. Measure this against the
+retained incomplete candidate with unchanged gates; do not pool it with the
+successful smaller parser task. Task report obligations should also be made
+less dependent on natural-language trigger words in a later typed-contract PR.

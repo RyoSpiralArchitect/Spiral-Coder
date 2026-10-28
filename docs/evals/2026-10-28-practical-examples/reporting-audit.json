@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "provider_calls": 0,
+  "policy": "Strengthen report assertions; preserve every original assessment and qualification result.",
+  "audits": [
+    {
+      "wave": "r2-mistral",
+      "original_assessment_sha256": "3d58fe9c61aa9b1372fd0a50b33ddfbb7f04fd64438fb433dae92ff377a2528c",
+      "reassessment_sha256": "42623c075b47c3009547edaf14e8a7ecff9439187799849b689ef0896f1520e8",
+      "raw_manifest_sha256": "0b5f02546494b403064eeab0c1aa479ef9f934a27ddd2764b178300b768e04b0",
+      "verified_raw_files": 89,
+      "assessor_sha256": {
+        "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+        "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+        "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+        "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+        "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+        "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+        "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+        "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+      },
+      "matches_original_driver": false,
+      "rows": [
+        {
+          "case": "env-bool",
+          "before_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": false,
+            "after_passed": false,
+            "baseline_commands_named": true
+          },
+          "after_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": false,
+            "after_passed": false,
+            "baseline_commands_named": true
+          },
+          "original_qualified": false,
+          "reassessed_qualified": false
+        },
+        {
+          "case": "event-summary",
+          "before_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": false,
+            "after_passed": true,
+            "baseline_commands_named": true
+          },
+          "after_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": false,
+            "after_passed": false,
+            "baseline_commands_named": true
+          },
+          "original_qualified": false,
+          "reassessed_qualified": false
+        }
+      ]
+    },
+    {
+      "wave": "r3-report",
+      "original_assessment_sha256": "a9a7ea582c43683abd4f66415d698b8cdec0d49a89f14605570b76b2e404ad02",
+      "reassessment_sha256": "cf5c514fc7af6d36404841775498b0041d42994aa6166f363435c98738a5f22a",
+      "raw_manifest_sha256": "18a15649151522d0353a4ad149ca4fff75d3e40ad39f99bc4e5807245eba5675",
+      "verified_raw_files": 68,
+      "assessor_sha256": {
+        "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+        "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+        "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+        "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+        "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+        "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+        "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+        "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+      },
+      "matches_original_driver": false,
+      "rows": [
+        {
+          "case": "env-bool",
+          "before_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": true,
+            "after_passed": true,
+            "baseline_commands_named": true
+          },
+          "after_report_fields": {
+            "all_artifacts_named": true,
+            "before_failed": true,
+            "after_passed": true,
+            "baseline_commands_named": true
+          },
+          "original_qualified": true,
+          "reassessed_qualified": true
+        }
+      ]
+    }
+  ]
+}

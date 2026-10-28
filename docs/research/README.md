@@ -22,6 +22,13 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [practical examples readout](../evals/2026-10-28-practical-examples/README.md)
+starts with short source-and-documentation tasks. After OpenAI quota exhaustion,
+Mistral Large 4 fills both roles. A boolean parser repair reaches strict
+qualification in one adaptive follow-up; a JSONL task remains blocked before
+its documentation update. Frozen failures, report-contract alignment, quota
+retry repairs and an offline report-assessment correction are recorded separately.
+
 The [budget-rhythm readout](../evals/2026-10-27-budget-rhythm/README.md) implements
 a bounded transport-rejection pool, protected Observer capacity, truthful blocked
 reports and development milestones under a new explicit prompt. Four fixed
