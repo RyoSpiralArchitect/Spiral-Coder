@@ -1050,7 +1050,10 @@ metadata in older sessions means unknown, not zero.
 
 The authored-report gate checks bounded English before/baseline and after/final
 integer-count assertions (digits or zero through twenty) against these selected
-receipts. Exact backticked commands disambiguate multiple checks. Unknown,
+receipts. Native field/value notation such as `tests_run 10`, `errors=0` and
+`failure_events: 14` keeps its identifier and punctuation boundaries; values are
+never attached to the next comma-separated field. Exact backticked commands
+disambiguate multiple checks. Unknown,
 contradictory or ambiguous counts require correction or omission, without
 invalidating passed checks. This is not a general natural-language fact checker:
 unlabelled claims and arbitrary descriptions of behavior still need review.

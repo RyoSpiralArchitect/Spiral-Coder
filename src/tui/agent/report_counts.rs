@@ -207,6 +207,33 @@ fn number(word: &str) -> Option<u64> {
     })
 }
 
+fn count_field(word: &str) -> Option<&'static str> {
+    match word {
+        "tests_run" => Some("tests_run"),
+        "failure_events" => Some("failure_events"),
+        "errors" => Some("errors"),
+        "skipped" => Some("skipped"),
+        "passed" => Some("passed"),
+        _ => None,
+    }
+}
+
+fn words_with_spans(text: &str) -> Vec<(&str, usize, usize)> {
+    let mut words = Vec::new();
+    let mut start = None;
+    for (index, c) in text
+        .char_indices()
+        .chain(std::iter::once((text.len(), ' ')))
+    {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            start.get_or_insert(index);
+        } else if let Some(start) = start.take() {
+            words.push((&text[start..index], start, index));
+        }
+    }
+    words
+}
+
 /// Bounded English before/baseline and after/final count assertions. This does
 /// not claim to understand arbitrary prose, code behavior or unlabelled numbers.
 pub(super) fn issues(summary: &str, facts: &[Value]) -> Vec<String> {
@@ -227,10 +254,8 @@ pub(super) fn issues(summary: &str, facts: &[Value]) -> Vec<String> {
     let mut issues = Vec::new();
     for (raw, sentence) in segments {
         let lower = sentence.to_ascii_lowercase();
-        let words: Vec<_> = lower
-            .split(|c: char| !c.is_ascii_alphanumeric())
-            .filter(|w| !w.is_empty())
-            .collect();
+        let spans = words_with_spans(&lower);
+        let words: Vec<_> = spans.iter().map(|(word, _, _)| *word).collect();
         let before = words.iter().any(|w| matches!(*w, "before" | "baseline"));
         let after = words.iter().any(|w| matches!(*w, "after" | "final"));
         if !before && !after {
@@ -250,17 +275,35 @@ pub(super) fn issues(summary: &str, facts: &[Value]) -> Vec<String> {
             if i > 0 && matches!(words[i - 1], "not" | "example") {
                 continue;
             }
-            let field = match (words.get(i + 1).copied(), words.get(i + 2).copied()) {
-                (Some("failures" | "failure"), _) => "failure_events",
-                (Some("failed"), _) => "failed_tests",
-                (Some("errors" | "error"), _) => "errors",
-                (Some("skipped"), _) => "skipped",
-                (Some("passed"), _) => "passed",
-                (Some("tests" | "test"), Some("passed")) => "passed",
-                (Some("tests" | "test"), Some("failed")) => "failed_tests",
-                (Some("tests" | "test"), _) => "tests_run",
-                _ => continue,
+            // Keep native field/value pairs intact. Flattening punctuation and
+            // underscores read `tests_run 10, failure_events 14, errors 0` as
+            // "10 failures" and "14 errors", falsely rejecting a truthful report.
+            let field_first = i.checked_sub(1).and_then(|previous| {
+                let separator = lower[spans[previous].2..spans[i].1].trim();
+                matches!(separator, "" | ":" | "=")
+                    .then(|| count_field(words[previous]))
+                    .flatten()
+            });
+            let following = |offset| {
+                let (_, _, end) = spans.get(i + offset - 1)?;
+                let (word, start, _) = spans.get(i + offset)?;
+                lower[*end..*start]
+                    .chars()
+                    .all(char::is_whitespace)
+                    .then_some(*word)
             };
+            let field = field_first.or_else(|| match (following(1), following(2)) {
+                (Some("failures" | "failure"), _) => Some("failure_events"),
+                (Some("failed"), _) => Some("failed_tests"),
+                (Some("errors" | "error"), _) => Some("errors"),
+                (Some("skipped"), _) => Some("skipped"),
+                (Some("passed"), _) => Some("passed"),
+                (Some("tests" | "test"), Some("passed")) => Some("passed"),
+                (Some("tests" | "test"), Some("failed")) => Some("failed_tests"),
+                (Some("tests" | "test"), _) => Some("tests_run"),
+                _ => None,
+            });
+            let Some(field) = field else { continue };
             let mut selected: Vec<_> = facts.iter().filter(|fact| fact["phase"] == phase).collect();
             let cited: Vec<_> = selected
                 .iter()

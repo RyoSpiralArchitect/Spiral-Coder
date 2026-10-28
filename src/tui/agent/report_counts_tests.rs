@@ -45,6 +45,15 @@ fn authored_baseline_failure_count_must_match_the_native_receipt_or_be_omitted()
     validate_authored_done_summary(root, &correct, &correct, &messages, Some(check)).unwrap();
     let no_count = format!("Changed settings.py.\n{rows}\nNo remaining work.");
     validate_authored_done_summary(root, &no_count, &no_count, &messages, Some(check)).unwrap();
+    messages[6]["test_counts"] =
+        json!({"runner":"unittest","tests_run":10,"failure_events":0,"errors":0,"skipped":0});
+    let structured = format!("Changed settings.py.\n{rows}\nBefore: tests_run 10, failure_events 14, errors 0.\nAfter: errors=0, failure_events=0, tests_run=10.\nNo remaining work.");
+    validate_authored_done_summary(root, &structured, &structured, &messages, Some(check)).unwrap();
+    let incorrect = structured.replace("failure_events 14", "failure_events 9");
+    assert!(
+        validate_authored_done_summary(root, &incorrect, &incorrect, &messages, Some(check))
+            .is_err()
+    );
 }
 
 #[test]
@@ -231,5 +240,45 @@ async fn native_exec_preserves_stderr_counts_before_preview_and_projects_them_to
             .as_str()
             .unwrap();
         assert!(guidance.contains("input condition") && guidance.contains("failure_events"));
+    }
+}
+
+#[test]
+fn retained_structured_count_reports_keep_field_value_pairs() {
+    let summaries: Vec<String> = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/plan-revision/structured-count-reports.json"
+    )))
+    .unwrap();
+    let facts = vec![
+        json!({"phase":"Before","counts":{"runner":"unittest","tests_run":10,"failure_events":14,"errors":0,"skipped":0}}),
+        json!({"phase":"After","counts":{"runner":"unittest","tests_run":10,"failure_events":0,"errors":0,"skipped":0}}),
+    ];
+    for summary in &summaries {
+        assert_eq!(report_counts::issues(summary, &facts), Vec::<String>::new());
+        let incorrect = summary
+            .replace("failure_events 14", "failure_events 9")
+            .replace("failure_events=14", "failure_events=9");
+        assert_ne!(&incorrect, summary);
+        let issues = report_counts::issues(&incorrect, &facts);
+        assert_eq!(issues.len(), 1, "{issues:?}");
+        assert!(issues[0].contains("Before failure_events count") && issues[0].contains("value 9"));
+        assert!(
+            !report_counts::issues(summary, &[json!({"phase":"Before","counts":null})]).is_empty()
+        );
+    }
+    for text in [
+        "Before: tests_run: 10, failure_events: 14, errors: 0, skipped: 0.",
+        "Before: 10 tests, 14 failure events, 0 errors, 0 skipped.",
+        "Before: tests_run 10, failure_events 14; After: tests_run 10, failure_events 0.",
+    ] {
+        assert!(report_counts::issues(text, &facts).is_empty(), "{text}");
+    }
+    for text in [
+        "Before: tests_run=14, failure_events=10, errors=0.",
+        "After: errors: 1, failure_events: 0, tests_run: 10.",
+        "Before: tests_run 10, failure_events 14, skipped 1.",
+    ] {
+        assert!(!report_counts::issues(text, &facts).is_empty(), "{text}");
     }
 }
