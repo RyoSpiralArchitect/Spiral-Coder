@@ -181,6 +181,36 @@ async fn observer_provider_failure_is_an_interrupted_episode_not_a_clean_exit() 
 }
 
 #[tokio::test]
+async fn observer_output_limit_stays_in_task_budget_for_empty_and_partial_answers() {
+    for content in ["", "{unfinished"] {
+        let coder = MockServer::start();
+        let observer = MockServer::start();
+        coder.mock(|when, then| {
+            when.method(POST).path("/chat/completions");
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(sse("The repair remains unfinished.", None));
+        });
+        let limited = observer.mock(|when, then| {
+            when.method(POST).path("/chat/completions");
+            let payload =
+                json!({"choices":[{"delta":{"content":content},"finish_reason":"length"}]});
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+        });
+        let report = episode(&coder, &observer, 2, 1, 4).await;
+        let rows = report["work"]["requests"].as_array().unwrap();
+        assert_eq!(rows.len(), 2, "{rows:?}");
+        limited.assert_hits(1);
+        assert!(rows.iter().all(|r| r["charge"] == "task"));
+        assert_eq!(rows[1]["status"], "output_limited");
+        assert_eq!(report["termination"], "budget_exhausted");
+        assert_eq!(report["completed"], false);
+    }
+}
+
+#[tokio::test]
 async fn final_semantic_rejection_cannot_start_an_unfunded_repair() {
     let coder = MockServer::start();
     let observer = MockServer::start();

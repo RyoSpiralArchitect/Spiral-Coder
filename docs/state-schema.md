@@ -1187,3 +1187,21 @@ arguments cannot be rewritten: Google endpoints keep the existing full-command
 schema, and any signed ID selection is rejected without modifying the call.
 Unsigned OpenAI-compatible/Mistral calls can use ID selections. Full commands
 remain available on every supported Coder provider.
+
+### Provider termination and Observer range repair
+
+OpenAI-compatible streams (including Mistral and Gemini) retain provider output
+termination in the existing request `status`: `output_limited` for `length`,
+`output_filtered` for filtering, `empty_response` for a normal empty answer, and
+`provider_stopped` for an unrecognized terminal reason. These terminal streams
+still deliver `Done` to end UI streaming; that signal does not mean a complete
+authored envelope. Only `completed` responses can receive transport repair credit,
+so truncated/empty/filtered output remains task work even when it also fails JSON
+validation. Visible provider notes are diagnostics, never authored proof. Existing
+receipts retain their recorded status; no historical ledger is rewritten.
+
+Observer read-range validation uses `ReadRequest::bounds`, as native reads do.
+Its specific failure (one-based ordering or the 200-line ceiling) is retained in
+the UI and explicit repair prompt rather than replaced by a generic schema error.
+Invalid ranges still cannot be forwarded, and only a newly valid suggestion can
+be queued. No bounds are silently clamped.

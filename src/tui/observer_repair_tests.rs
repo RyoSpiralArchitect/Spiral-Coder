@@ -55,6 +55,27 @@ fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
 }
 
 #[test]
+fn oversized_observer_read_repair_names_the_actual_range_constraint() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let raw = suggestion_response("read", "read_file", json!({
+        "path":"src/tui/agent/recovery.rs", "start_line":100, "end_line":312
+    }));
+    let tui = replay_observer_next_action_case(&mut app, "last-fail", "diagnose", &raw).unwrap();
+    assert!(tui.pending_observer_hint.is_none());
+    let repair = tui.observer_repair_prompt.unwrap();
+    assert!(repair.contains("read at most 200 lines per call"), "{repair}");
+    let issue = crate::observer_action::validation_issue(&raw, &[], None).unwrap();
+    assert!(issue.contains("read at most 200 lines per call"), "{issue}");
+    let valid = suggestion_response("read", "read_file", json!({
+        "path":"src/tui/agent/recovery.rs", "start_line":113, "end_line":312
+    }));
+    let tui = replay_observer_next_action_case(&mut app, "last-fail", "diagnose", &valid).unwrap();
+    assert!(tui.pending_observer_hint.is_some());
+    assert!(tui.observer_repair_prompt.is_none());
+}
+
+#[test]
 fn observer_wrong_diagnostic_target_is_repaired_consistently_after_resume() {
     let (mut app, _root) = interaction_app();
     seed_observer_failure(&mut app);

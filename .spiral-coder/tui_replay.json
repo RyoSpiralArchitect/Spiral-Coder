@@ -612,6 +612,52 @@
           "value": "check_id=required-1"
         }
       ]
+    },
+    {
+      "id": "observer-rejects-oversized-read-range",
+      "prompt": "Inspect the recovery source in bounded ranges before making a repair.",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "bounded-read",
+        "repair"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Inspect the recovery source in bounded ranges before making a repair."
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Inspect the relevant source before editing."
+        }
+      ],
+      "observer_response": {
+        "summary": "Read the remaining recovery source.",
+        "suggestions": [
+          {
+            "kind": "read",
+            "reason": "Inspect the restoration path.",
+            "confidence": 0.95,
+            "suggested_tool": "read_file",
+            "suggested_args": {
+              "path": "src/tui/agent/recovery.rs",
+              "start_line": 100,
+              "end_line": 312
+            }
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "hint_not_queued"
+        },
+        {
+          "kind": "observer_contains",
+          "value": "recovery.rs"
+        }
+      ]
     }
   ]
 }
