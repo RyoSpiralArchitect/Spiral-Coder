@@ -91,6 +91,7 @@ mod plan_revision_tests;
 mod progress_bridge;
 mod prose_context;
 mod protocol_fields;
+mod protocol_framing;
 mod protocol_lists;
 mod protocol_validation;
 mod provider_compat;
@@ -5207,7 +5208,11 @@ Rules:\n\
 fn extract_tag_block<'a>(text: &'a str, tag: &str) -> Option<&'a str> {
     let open = format!("<{tag}>");
     let close = format!("</{tag}>");
-    let start = text.find(&open)?;
+    let Some(start) = text.find(&open) else {
+        return (tag == "plan")
+            .then(|| protocol_framing::leading_plan_body(text))
+            .flatten();
+    };
     let rest = &text[start + open.len()..];
     let end = rest
         .find(&close)

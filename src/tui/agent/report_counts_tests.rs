@@ -133,6 +133,7 @@ async fn native_exec_preserves_stderr_counts_before_preview_and_projects_them_to
         let server = MockServer::start();
         let command = "python3 -B -S acceptance.py";
         let plan = "<plan>\ngoal: Repair source.txt and verify behavior\nsteps:\n1) Record baseline\n2) Repair source and verify behavior\nacceptance: Source behavior passes the exact check\nrisks: regression\nassumptions: check exposes missing behavior\n</plan>\n<think>\ngoal: Record baseline\nstep: 1\ntool: exec\nrisk: expected baseline failure\ndoubt: none\nnext: python3 -B -S acceptance.py\nverify: python3 -B -S acceptance.py\n</think>";
+        let plan = plan.replacen("<plan>", if failed { ">" } else { "plan>" }, 1);
         let wire = server.mock(|when, then| {
             when.method(POST).path("/chat/completions");
             let call = json!([{"index":0,"id":"baseline","function":{"name":"exec","arguments":json!({"command":command}).to_string()}}]);
@@ -187,6 +188,12 @@ async fn native_exec_preserves_stderr_counts_before_preview_and_projects_them_to
         .await
         .unwrap();
         wire.assert_hits(1);
+        let authored = result
+            .messages
+            .iter()
+            .find(|m| m["tool_calls"][0]["id"] == "baseline")
+            .unwrap();
+        assert_eq!(authored["content"], plan);
         let native = result
             .messages
             .iter()

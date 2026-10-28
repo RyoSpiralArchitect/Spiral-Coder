@@ -1031,6 +1031,12 @@ and a new human task cannot authorize this exception. It is not a claim of work
 completed. Multiline numbered lists use line-start ordinals, so an in-step
 `(exit 1) recorded` is data; the seven-step ceiling is unchanged.
 
+`protocol_framing.rs` can read a leading `plan>` or standalone `>` with a full
+closing `</plan>` and exactly one of each authored plan field. It rejects
+quotations, duplicate/missing fields, nested tags and ambiguous closing tags.
+This only recovers an opening delimiter: retained text and native calls stay
+unchanged, and normal plan validation still runs. It grants no transport credit.
+
 `report_counts.rs` owns optional `test_counts` on native `exec` result messages.
 It recognizes one complete unittest/libtest summary from bounded captured output
 before display truncation. Multiple suites, unsupported fields, oversized or
