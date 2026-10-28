@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "temperature": 0,
+  "max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "timeout_seconds": 90,
+  "wall_seconds": 600,
+  "same_model_both_roles": true,
+  "reasoning": "Reuse the existing compatible-mode transports: Luna reasoning none, Large 4 defaults. Native role receipts record actual configurations; equal request limits do not imply equal compute or cost.",
+  "profiles": [
+    {
+      "id": "large-large",
+      "provider": "mistral",
+      "model": "mistral-large-4",
+      "observer": {
+        "provider": "mistral",
+        "model": "mistral-large-4"
+      }
+    }
+  ]
+}

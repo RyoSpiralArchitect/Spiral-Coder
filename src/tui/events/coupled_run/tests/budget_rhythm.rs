@@ -15,7 +15,7 @@ fn advice() -> String {
     json!({"summary":"Inspect the source before repair", "suggestions":[{"kind":"read", "reason":"Locate the defect", "confidence":0.95,"suggested_tool":"read_file","suggested_args":{"path":"engine.rs"}}]}).to_string()
 }
 
-async fn episode(
+pub(super) async fn episode(
     coder: &MockServer,
     observer: &MockServer,
     cap: usize,

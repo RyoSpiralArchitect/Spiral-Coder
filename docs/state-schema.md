@@ -1205,3 +1205,13 @@ Its specific failure (one-based ordering or the 200-line ceiling) is retained in
 the UI and explicit repair prompt rather than replaced by a generic schema error.
 Invalid ranges still cannot be forwarded, and only a newly valid suggestion can
 be queued. No bounds are silently clamped.
+
+Structured account-exhaustion errors on the OpenAI-compatible chat/completions
+routes stop retries without changing the receipt schema: the request remains
+`status=http_429`, `charge=task`, and the task remains interrupted/incomplete.
+Only exact `error.code` / `error.type` values `insufficient_quota` and
+`credit_balance_exhausted` trigger this policy. Temporary/unknown 429 responses
+keep bounded retry behavior. A retry denied by the request allocator retains
+the previous provider error as context while preserving the underlying typed
+budget error. This transient error context is owned by the streaming call; it
+adds no persisted authority or completion evidence.

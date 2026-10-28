@@ -30,37 +30,38 @@ Build a current source runtime, then prepare a fresh directory:
 cargo build --locked
 python3 -B -S scripts/run_coupled_bench.py prepare \
   --suite benchmarks/examples-v1/suite.json \
-  --matrix benchmarks/examples-v1/matrix.json \
+  --matrix benchmarks/examples-v1/matrix-mistral.json \
   --binary target/debug/spiral-coder --runtime-commit "$(git rev-parse HEAD)" \
   --out /tmp/spiral-examples-r1
 ```
 
 Preparation makes no provider calls. It verifies broken baselines and known
 repairs, then freezes the driver, runtime, fixtures, checks, roles and budgets.
-Set `OPENAI_API_KEY` and `MISTRAL_API_KEY` through your environment, then use the
-frozen driver:
+Set `MISTRAL_API_KEY` through your environment, then use the frozen driver:
 
 ```sh
 python3 -B -S /tmp/spiral-examples-r1/driver/run_coupled_bench.py run \
-  --out /tmp/spiral-examples-r1 --profile luna-large
-python3 -B -S /tmp/spiral-examples-r1/driver/run_coupled_bench.py run \
-  --out /tmp/spiral-examples-r1 --profile large-luna
+  --out /tmp/spiral-examples-r1 --profile large-large
 python3 -B -S /tmp/spiral-examples-r1/driver/run_coupled_bench.py summarize \
   --out /tmp/spiral-examples-r1
 ```
 
-The supplied matrix pairs `gpt-5.6-luna` Coder with `mistral-large-4` Observer,
-then reverses them. Both roles form one research unit. Each episode allows
+The quick-start matrix uses `mistral-large-4` for both Coder and Observer, in
+separate role contexts. For cross-family comparison, prepare a separate output
+with `matrix.json`, which pairs `gpt-5.6-luna` Coder with `mistral-large-4` Observer
+(`luna-large`), then reverses them (`large-luna`). That matrix needs both
+`OPENAI_API_KEY` and `MISTRAL_API_KEY`. Both roles form one research unit. Each episode allows
 24 task requests (6 reserved for Observer), at most 4 transport repairs, an
 8-request Coder slice ceiling, 90 seconds per request and 600 seconds per episode.
-The four-episode maximum is **112 wire requests**. Coder output cap is 32,768,
+The Mistral pair has a two-episode maximum of **56 wire requests**; the four-episode
+cross-family maximum is **112**. Coder output cap is 32,768,
 Observer 8,192. Existing compatible-mode provider settings apply; missing usage
 remains unknown and equal request ceilings do not mean equal compute or cost.
 
 Select one task or direction with `--case` / `--profile` during preparation.
 No automatic episode retry, replacement model or reuse of a started workspace
-is allowed. Keep interrupted attempts in the denominator. Run the other profile
-only after inspecting the first; a new intervention needs a new frozen directory.
+is allowed. Keep interrupted attempts in the denominator. Inspect completed
+profiles before starting another; a new intervention needs a new frozen directory.
 
 ## What counts as success
 

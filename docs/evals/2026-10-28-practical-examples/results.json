@@ -1,0 +1,824 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-28T04:09:23.403276+00:00",
+  "predeclaration_sha256": "076b981de6f490ed17a63962703dfa8a16aeb15c5e2d1562f4488ca0f614b85c",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "653c1a7195054e9705e31f2118a81cbe039b37148eb9d51a7c8c1ec26ea412ae",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/411784e075d1be08772b76df95cc314591f493ea247e7cf6b6b34a7e16b1c07e",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "luna-large",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "luna-large",
+        "model": "gpt-5.6-luna",
+        "case": "env-bool",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 20.93,
+        "finished_at": "2026-10-28T04:03:19.471066+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [
+        {
+          "message": "Coder request chunk exhausted; shared requests remain for Observer and continuation",
+          "pane": "Coder"
+        }
+      ],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": false,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": false,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 3,
+        "transport_requests": 0,
+        "wire_requests": 3,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "requests": 3,
+      "request_roles": {
+        "coder": 3
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 2759,
+          "estimated_input_tokens": 8488,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5296,
+          "estimated_input_tokens": 8488,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 12288,
+          "estimated_input_tokens": 8488,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [],
+      "blocks": {},
+      "actions": [],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... FAIL\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... FAIL\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... FAIL\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... FAIL\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... \n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='false') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='0') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='no') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='off') ... FAIL\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... \n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='maybe') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='enabled') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='2') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='truth') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='false true') ... FAIL\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... FAIL\n\n======================================================================\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 20, in test_case_and_whitespace\n    self.assertIs(parse_bool(\" \\tOFF\\n\"), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 51, in test_documented_examples_and_check\n    self.assertIn(example, doc)\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.\\n'\n\n======================================================================\nFAIL: test_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 28, in test_empty_uses_default\n    self.assertIs(parse_bool(\"\", default=True), True)\nAssertionError: False is not True\n\n======================================================================\nFAIL: test_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 35, in test_explicit_false_overrides_default\n    self.assertIs(parse_bool(\"false\", default=True), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='false')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='0')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='no')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='off')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='maybe')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='enabled')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='2')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='truth')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='false true')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-uo76fjyg/workspace/tests/test_settings.py\", line 31, in test_whitespace_uses_default\n    self.assertIs(parse_bool(\" \\n\\t\"), False)\nAssertionError: True is not False\n\n----------------------------------------------------------------------\nRan 10 tests in 0.001s\n\nFAILED (failures=14)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": "interrupted",
+      "native_error": "Coder: Coder request chunk exhausted; shared requests remain for Observer and continuation",
+      "patch": "luna-large-env-bool.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": {
+        "id": "luna-large",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "event-summary",
+      "state": "finished",
+      "process": {
+        "profile": "luna-large",
+        "model": "gpt-5.6-luna",
+        "case": "event-summary",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 10.806,
+        "finished_at": "2026-10-28T04:04:29.388175+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [
+        {
+          "message": "Coder request chunk exhausted; shared requests remain for Observer and continuation",
+          "pane": "Coder"
+        }
+      ],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": false,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": false,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 3,
+        "transport_requests": 0,
+        "wire_requests": 3,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "requests": 3,
+      "request_roles": {
+        "coder": 3
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 4915,
+          "estimated_input_tokens": 8597,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 1920,
+          "estimated_input_tokens": 8597,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3820,
+          "estimated_input_tokens": 8597,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "http_429",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [],
+      "blocks": {},
+      "actions": [],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ERROR\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... FAIL\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... FAIL\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... \n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"debug\"}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"INFO\"}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":null}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":1}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":[]}') ... FAIL\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... \n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='null') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='[]') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='42') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='\"text\"') ... ERROR\n\n======================================================================\nERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 21, in test_blank_lines\n    self.assertEqual(summarize([\"\", \" \\t\\n\", '{\"level\":\"warning\"}', \"\\n\"]),\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/summary.py\", line 8, in summarize\n    event = json.loads(line)\n            ^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='null')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: 'NoneType' object is not subscriptable\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='[]')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: list indices must be integers or slices, not str\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='42')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: 'int' object is not subscriptable\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='\"text\"')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: string indices must be integers, not 'str'\n\n======================================================================\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 52, in test_documentation\n    self.assertIn(example, doc)\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'\n\n======================================================================\nFAIL: test_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line)\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 2 column 1 (char 1)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 29, in test_invalid_json_has_physical_line\n    with self.assertRaisesRegex(ValueError, r\"\\bline 3\\b\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 3\\b\" does not match \"Expecting value: line 2 column 1 (char 1)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"debug\"}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"INFO\"}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":null}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":1}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":[]}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-sy7qj3ie/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n----------------------------------------------------------------------\nRan 10 tests in 0.002s\n\nFAILED (failures=8, errors=5)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": "interrupted",
+      "native_error": "Coder: Coder request chunk exhausted; shared requests remain for Observer and continuation",
+      "patch": "luna-large-event-summary.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": {
+        "id": "large-luna",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "large-luna",
+        "model": "mistral-large-4",
+        "case": "env-bool",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 36.831,
+        "finished_at": "2026-10-28T04:05:44.620300+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [
+        {
+          "message": "Observer next-action failed: OpenAI-compatible API error (HTTP 429 Too Many Requests)\n{\n    \"error\": {\n        \"message\": \"You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"credit_balance_exhausted\"\n    }\n}\n",
+          "pane": "Observer"
+        }
+      ],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 8,
+        "transport_requests": 0,
+        "wire_requests": 8,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 8192,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "requests": 8,
+      "request_roles": {
+        "coder": 3,
+        "observer": 5
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 11548,
+          "estimated_input_tokens": 8485,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 527,
+            "completion_tokens_details": {
+              "reasoning_tokens": 159
+            },
+            "prompt_tokens": 7477,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 8004
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2638,
+          "estimated_input_tokens": 9052,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 169,
+            "completion_tokens_details": {
+              "reasoning_tokens": 80
+            },
+            "prompt_tokens": 8038,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8207
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6546,
+          "estimated_input_tokens": 9009,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 341,
+            "completion_tokens_details": {
+              "reasoning_tokens": 210
+            },
+            "prompt_tokens": 8036,
+            "prompt_tokens_details": {
+              "cached_tokens": 3564
+            },
+            "service_tier": "standard",
+            "total_tokens": 8377
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5388,
+          "estimated_input_tokens": 8164,
+          "id": 3,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 1521,
+          "estimated_input_tokens": 8164,
+          "id": 4,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2598,
+          "estimated_input_tokens": 8164,
+          "id": 5,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4702,
+          "estimated_input_tokens": 8164,
+          "id": 6,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "http_429",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 1643,
+          "estimated_input_tokens": 8164,
+          "id": 7,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "http_429",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [],
+      "blocks": {},
+      "actions": [
+        {
+          "call_id": "naEaKkM40",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "current",
+          "result_excerpt": "[list_dir: '.' ・ 5 item(s)]\nd .git/\nd docs/\nd tests/\nf .spiral-coder.md (135 bytes)\nf settings.py (171 bytes)"
+        },
+        {
+          "call_id": "D7nPWsxCx",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "current",
+          "result_excerpt": "[settings.py] (7 lines, 171 bytes)\n\"\"\"Read a boolean setting from an environment-style string.\"\"\"\n\n\ndef parse_bool(value, default=False):\n    if value is None:\n        return default\n    return bool(value)\n"
+        },
+        {
+          "call_id": "7sOAQfQ0F",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "tests",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "current",
+          "result_excerpt": "[list_dir: 'tests' ・ 1 item(s)]\nf test_settings.py (1940 bytes)"
+        }
+      ],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... FAIL\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... FAIL\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... FAIL\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... FAIL\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... \n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='false') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='0') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='no') ... FAIL\n  test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='off') ... FAIL\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... \n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='maybe') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='enabled') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='2') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='truth') ... FAIL\n  test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='false true') ... FAIL\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... FAIL\n\n======================================================================\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 20, in test_case_and_whitespace\n    self.assertIs(parse_bool(\" \\tOFF\\n\"), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 51, in test_documented_examples_and_check\n    self.assertIn(example, doc)\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.\\n'\n\n======================================================================\nFAIL: test_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 28, in test_empty_uses_default\n    self.assertIs(parse_bool(\"\", default=True), True)\nAssertionError: False is not True\n\n======================================================================\nFAIL: test_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 35, in test_explicit_false_overrides_default\n    self.assertIs(parse_bool(\"false\", default=True), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='false')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='0')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='no')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_false_tokens (test_settings.BooleanSettings.test_false_tokens) (value='off')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 16, in test_false_tokens\n    self.assertIs(parse_bool(value), False)\nAssertionError: True is not False\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='maybe')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='enabled')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='2')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='truth')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) (value='false true')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 39, in test_unknown_strings_raise\n    with self.subTest(value=value), self.assertRaises(ValueError):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-g9xxshln/workspace/tests/test_settings.py\", line 31, in test_whitespace_uses_default\n    self.assertIs(parse_bool(\" \\n\\t\"), False)\nAssertionError: True is not False\n\n----------------------------------------------------------------------\nRan 10 tests in 0.001s\n\nFAILED (failures=14)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": "interrupted",
+      "native_error": "Observer: Observer next-action failed: OpenAI-compatible API error (HTTP 429 Too Many Requests)\n{\n    \"error\": {\n        \"message\": \"You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"credit_balance_exhausted\"\n    }\n}\n",
+      "patch": "large-luna-env-bool.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": {
+        "id": "large-luna",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "event-summary",
+      "state": "not_run",
+      "process": {},
+      "receipt_source": "missing",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": false,
+        "checks": {
+          "roles_match": false,
+          "same_model_flag": false,
+          "both_roles_called": false,
+          "role_counts_match": false,
+          "known_roles_and_charges": true,
+          "native_policy_match": false,
+          "coder_chunk_match": false,
+          "bounded_requests": false,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 0,
+        "transport_requests": 0,
+        "wire_requests": null,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": null
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "requests": null,
+      "request_roles": {},
+      "wire_requests": [],
+      "assists": [],
+      "blocks": {},
+      "actions": [],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ERROR\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... FAIL\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... FAIL\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... \n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"debug\"}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"INFO\"}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":null}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":1}') ... FAIL\n  test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":[]}') ... FAIL\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... \n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='null') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='[]') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='42') ... ERROR\n  test_non_objects (test_summary.EventSummary.test_non_objects) (value='\"text\"') ... ERROR\n\n======================================================================\nERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 21, in test_blank_lines\n    self.assertEqual(summarize([\"\", \" \\t\\n\", '{\"level\":\"warning\"}', \"\\n\"]),\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/summary.py\", line 8, in summarize\n    event = json.loads(line)\n            ^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='null')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: 'NoneType' object is not subscriptable\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='[]')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: list indices must be integers or slices, not str\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='42')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: 'int' object is not subscriptable\n\n======================================================================\nERROR: test_non_objects (test_summary.EventSummary.test_non_objects) (value='\"text\"')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 35, in test_non_objects\n    summarize([value])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/summary.py\", line 9, in summarize\n    counts[event[\"level\"]] += 1\n           ~~~~~^^^^^^^^^\nTypeError: string indices must be integers, not 'str'\n\n======================================================================\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 52, in test_documentation\n    self.assertIn(example, doc)\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'\n\n======================================================================\nFAIL: test_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line)\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 2 column 1 (char 1)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 29, in test_invalid_json_has_physical_line\n    with self.assertRaisesRegex(ValueError, r\"\\bline 3\\b\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 3\\b\" does not match \"Expecting value: line 2 column 1 (char 1)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"debug\"}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":\"INFO\"}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":null}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":1}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n======================================================================\nFAIL: test_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) (value='{\"level\":[]}')\n----------------------------------------------------------------------\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-3sbo3st6/workspace/tests/test_summary.py\", line 40, in test_missing_or_invalid_level\n    with self.subTest(value=value), self.assertRaisesRegex(ValueError, r\"\\bline 2\\b\"):\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"\\bline 2\\b\" does not match \"Expecting value: line 1 column 1 (char 0)\"\n\n----------------------------------------------------------------------\nRan 10 tests in 0.002s\n\nFAILED (failures=8, errors=5)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      },
+      "native_termination": null,
+      "native_error": null,
+      "patch": "large-luna-event-summary.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "counts": {
+    "declared": 4,
+    "finished": 3,
+    "runtime_completed": 0,
+    "independent_artifacts_passed": 0,
+    "behavior_and_handoff_qualified": 0,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 14,
+    "episodes_with_unknown_request_count": 1
+  },
+  "runtime_commit": "3a4add279d6b3efa6a63380ef7d55e6d3232addf",
+  "raw_manifest_sha256": "fb7137a45620a8ab579f0ce0fec8bdf202ccd10b3787f496c59972a845f31e57",
+  "assessment_sha256": "f6b1af6d922d182f231842c4f6060e764430364c98b1749bcdd480a5dc946794",
+  "verified_raw_files": 92,
+  "secret_scan_matches": 0,
+  "live_interpretation": "Provider availability failure, not evidence of task capability. Three attempted episodes interrupted; fourth not started after an explicit credit_balance_exhausted response. Post-live retry fixes are excluded from this frozen wave."
+}

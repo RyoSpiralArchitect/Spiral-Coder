@@ -3,8 +3,9 @@
 Start with the [small practical examples](../../benchmarks/examples-v1/README.md):
 repair a boolean setting parser or a JSONL event summary with Coder + Observer.
 Each uses one short source file, documentation and ten original tests, with no
-third-party dependencies. The frozen runner supports Luna / Mistral Large in
-both directions and records behavior, native checks and completion separately.
+third-party dependencies. The quick start uses Mistral Large in both roles;
+a separate matrix supports Luna / Large in both directions. The frozen runner
+records behavior, native checks and completion separately.
 
 The historical pages below document repeatable Spiral-Coder benchmark runs
 without checking the generated repos into git.

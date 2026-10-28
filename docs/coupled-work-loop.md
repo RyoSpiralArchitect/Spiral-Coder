@@ -556,3 +556,17 @@ recovery. Supply only `check_id`; use full `command` when no selection is offere
 A selected check is still pending until its real execution succeeds, and edits
 invalidate earlier verification as before. The optional reproducer is not an
 extra completion requirement. See [state ownership and limits](state-schema.md).
+
+### Explicit account exhaustion is not temporary throttling
+
+The OpenAI-compatible chat and completions routes stop retrying HTTP 429 when
+the structured `error.code` or `error.type` is `insufficient_quota` or
+`credit_balance_exhausted`. Unknown 429s and transient server failures retain
+their existing bounded backoff. Error-message prose is not used for this decision.
+If a later retry cannot reserve a request, the error chain preserves both the
+previous provider failure and the typed budget refusal.
+
+This remains an interrupted, incomplete task. No HTTP failure receives transport
+repair credit, no Observer response or completion is invented, and no request is
+refunded. Restore provider availability or start a separately declared model
+pair before another episode. The native Anthropic route is unchanged.
