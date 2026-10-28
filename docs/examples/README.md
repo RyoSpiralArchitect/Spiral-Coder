@@ -6,6 +6,9 @@ Each uses one short source file, documentation and ten original tests, with no
 third-party dependencies. The quick start uses Mistral Large in both roles;
 a separate matrix supports Luna / Large in both directions. The frozen runner
 records behavior, native checks and completion separately.
+The [recorded Mistral pair run](../evals/2026-10-29-diagnostic-actions/README.md)
+completes both tasks in 14 requests each, with candidate diffs and independent
+checks available for inspection.
 
 The historical pages below document repeatable Spiral-Coder benchmark runs
 without checking the generated repos into git.

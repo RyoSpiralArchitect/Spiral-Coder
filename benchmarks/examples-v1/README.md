@@ -96,9 +96,14 @@ completion receipt. Never mix manual edits into a declared automated episode.
 
 ## Recorded runs
 
+The [diagnostic-action follow-up](../../docs/evals/2026-10-29-diagnostic-actions/README.md)
+qualifies both tasks with Mistral Large 4 in both roles: 14 requests per task,
+including source, docs, independent original tests and native completion. It also
+records remaining plan refusals and inaccuracies in optional report prose.
+
 The [first readout](../../docs/evals/2026-10-28-practical-examples/README.md) retains
 the provider-quota interruption and both Mistral × Mistral tasks. An adaptive
 `env-bool` follow-up strictly qualified with 21 requests after the report
 obligation was made explicit. JSONL remained blocked before its documentation
-update. This provides one reproducible completed example and a retained next
-failure to investigate, not a general model success rate.
+update in that earlier wave. These are reproducible development examples, not a
+general model success rate.

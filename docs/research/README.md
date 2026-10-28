@@ -22,10 +22,16 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [diagnostic-action follow-up](../evals/2026-10-29-diagnostic-actions/README.md)
+uses the current native failure location to constrain Coder's next offered tools,
+then restores work tools after an actual read. Mistral Large 4 in both roles
+qualifies both small tasks with 14 requests each. Frozen qualification, remaining
+plan refusals and inaccuracies in incidental report prose are recorded separately.
+
 The [practical examples readout](../evals/2026-10-28-practical-examples/README.md)
 starts with short source-and-documentation tasks. After OpenAI quota exhaustion,
 Mistral Large 4 fills both roles. A boolean parser repair reaches strict
-qualification in one adaptive follow-up; a JSONL task remains blocked before
+qualification in one adaptive follow-up; the initial JSONL attempt stopped before
 its documentation update. Frozen failures, report-contract alignment, quota
 retry repairs and an offline report-assessment correction are recorded separately.
 
