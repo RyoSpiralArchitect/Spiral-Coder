@@ -24,12 +24,26 @@ pub(crate) struct RequestReceipt {
     pub transport_rejection: Option<TransportRejection>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub purpose: Option<RequestPurpose>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retry_of: Option<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stream_interruption: Option<StreamInterruption>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum RequestPurpose {
     ReportCloseout,
+    ObserverReconnect,
+}
+
+/// Only native stream readers assign these causes. Error text and broad
+/// `stream_interrupted` statuses cannot authorize reconnection on their own.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum StreamInterruption {
+    MissingTerminalFrame,
+    ReadFailed,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -86,8 +100,10 @@ pub(crate) struct WorkBudget {
     request_ceiling: Option<usize>,
     // Transient role-slice policy; not new durable requests or task authority.
     return_on_verification_failure: bool,
-    // One wire attempt for a report fallback, including transport/API retries.
-    report_closeout_ceiling: Option<usize>,
+    // Per-handle wire ceiling includes transport reclassification/API retries.
+    wire_ceiling: Option<usize>,
+    purpose: Option<RequestPurpose>,
+    retry_of: Option<usize>,
 }
 
 static NEXT_TASK: AtomicU64 = AtomicU64::new(0);
@@ -130,7 +146,9 @@ impl WorkBudget {
             claimed: Arc::new(AtomicBool::new(false)),
             request_ceiling: None,
             return_on_verification_failure: false,
-            report_closeout_ceiling: None,
+            wire_ceiling: None,
+            purpose: None,
+            retry_of: None,
         }
     }
 
@@ -142,7 +160,9 @@ impl WorkBudget {
             claimed: Arc::new(AtomicBool::new(true)),
             request_ceiling: None,
             return_on_verification_failure: false,
-            report_closeout_ceiling: None,
+            wire_ceiling: None,
+            purpose: None,
+            retry_of: None,
         })
     }
 
@@ -233,19 +253,30 @@ impl WorkBudget {
                 }
     }
 
-    pub(crate) fn with_report_closeout(&self) -> Self {
+    fn with_one_wire_attempt(&self) -> Self {
         let mut bounded = self.with_request_allowance(1);
         let ceiling = self.snapshot().requests.len().saturating_add(1);
-        bounded.report_closeout_ceiling = Some(
-            self.report_closeout_ceiling
-                .map_or(ceiling, |old| old.min(ceiling)),
-        );
+        bounded.wire_ceiling = Some(self.wire_ceiling.map_or(ceiling, |old| old.min(ceiling)));
         bounded.return_on_verification_failure = false;
         bounded
     }
 
+    pub(crate) fn with_report_closeout(&self) -> Self {
+        let mut bounded = self.with_one_wire_attempt();
+        bounded.purpose = Some(RequestPurpose::ReportCloseout);
+        bounded.retry_of = None;
+        bounded
+    }
+
+    pub(crate) fn with_observer_reconnect(&self, interrupted_request: usize) -> Self {
+        let mut bounded = self.with_one_wire_attempt();
+        bounded.purpose = Some(RequestPurpose::ObserverReconnect);
+        bounded.retry_of = Some(interrupted_request);
+        bounded
+    }
+
     pub(crate) fn is_report_closeout(&self) -> bool {
-        self.report_closeout_ceiling.is_some()
+        self.purpose == Some(RequestPurpose::ReportCloseout)
     }
 
     fn persist(&self, state: &mut WorkState) -> Result<()> {
@@ -292,7 +323,7 @@ impl WorkBudget {
                 .request_ceiling
                 .is_some_and(|ceiling| state.task_requests() >= ceiling)
             || self
-                .report_closeout_ceiling
+                .wire_ceiling
                 .is_some_and(|ceiling| state.requests.len() >= ceiling)
         {
             return Err(ChunkExhausted.into());
@@ -307,9 +338,9 @@ impl WorkBudget {
             status: "in_flight_or_interrupted".into(),
             charge: RequestCharge::Task,
             transport_rejection: None,
-            purpose: self
-                .is_report_closeout()
-                .then_some(RequestPurpose::ReportCloseout),
+            purpose: self.purpose,
+            retry_of: self.retry_of,
+            stream_interruption: None,
         });
         // Reserve durably before any network I/O, including compatibility retries.
         self.persist(&mut state)?;
@@ -338,6 +369,13 @@ pub(crate) struct RequestGuard {
     started: Instant,
 }
 impl RequestGuard {
+    pub fn interrupted(&self, cause: StreamInterruption) {
+        let mut state = self.budget.state.lock().unwrap();
+        state.requests[self.id].status = "stream_interrupted".into();
+        state.requests[self.id].stream_interruption = Some(cause);
+        let _ = self.budget.persist(&mut state);
+    }
+
     pub fn usage(&self, usage: &Value) {
         let mut state = self.budget.state.lock().unwrap();
         state.requests[self.id].provider_usage = Some(usage.clone());
@@ -413,6 +451,53 @@ mod tests {
         assert_eq!(receipt["purpose"], "report_closeout");
         assert_eq!(receipt["charge"], "transport");
         assert!(!budget.is_report_closeout());
+    }
+
+    #[test]
+    fn reconnect_wire_cap_and_receipt_roundtrip_keep_old_receipts_unclassified() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("work.json");
+        let budget = WorkBudget::new("task", 10, Some(path.clone()));
+        budget
+            .configure(BudgetPolicy {
+                observer_reserved_requests: 3,
+                transport_repair_limit: 4,
+            })
+            .unwrap();
+        let original = budget.begin("observer", &Value::Null).unwrap();
+        original.interrupted(StreamInterruption::MissingTerminalFrame);
+        drop(original);
+        let bounded = budget.with_observer_reconnect(0);
+        let attempt = bounded.begin("observer", &Value::Null).unwrap();
+        attempt.status("completed");
+        drop(attempt);
+        bounded
+            .reject_transport("observer", 1, TransportRejection::ObserverEnvelope)
+            .unwrap();
+        assert_eq!(bounded.slice_remaining("observer"), 0);
+        assert!(bounded
+            .begin("observer", &Value::Null)
+            .err()
+            .unwrap()
+            .is::<ChunkExhausted>());
+        assert!(!bounded.is_report_closeout());
+        let saved: WorkState = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        assert_eq!(
+            saved.requests[0].stream_interruption,
+            Some(StreamInterruption::MissingTerminalFrame)
+        );
+        assert_eq!(saved.requests[0].charge, RequestCharge::Task);
+        assert_eq!(saved.requests[1].retry_of, Some(0));
+        assert_eq!(
+            saved.requests[1].purpose,
+            Some(RequestPurpose::ObserverReconnect)
+        );
+        let mut old = serde_json::to_value(&saved.requests[0]).unwrap();
+        old.as_object_mut().unwrap().remove("stream_interruption");
+        let old: RequestReceipt = serde_json::from_value(old).unwrap();
+        assert_eq!(old.stream_interruption, None);
+        assert_eq!(old.retry_of, None);
+        assert_eq!(old.purpose, None);
     }
 
     #[tokio::test]

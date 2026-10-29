@@ -149,6 +149,17 @@ quoted failed response. Tool identity and arguments are never filled in by the
 runtime. Valid uncertainty does not trigger a confidence-raising retry. Changed
 Coder context invalidates late advice and pending repair.
 
+Native next-action stream EOF/read failures use
+`events/observer_request/reconnect.rs`: one fresh Observer delivery from the
+unchanged context, with current budget accounting and no partial response in the
+new input. The native receipt supplies a typed interruption cause and the fresh
+receipt links to it through `retry_of`. The same pending-work owner handles TUI
+and headless recovery, protects a Coder continuation slot, rejects changed routes
+or context, and suppresses automatic retry loops after failure. The reconnect
+has one wire attempt even if the HTTP adapter requests a compatibility retry.
+Authentication, quota and protocol errors never activate it. This is separate
+from the existing single schema repair and does not change completion gates.
+
 Coder and Observer share the current `done` vocabulary through
 `agent/acceptance_schema.rs`: stable criterion references, exact current commands
 and report guidance. Returned arguments still require authored evidence mapping.

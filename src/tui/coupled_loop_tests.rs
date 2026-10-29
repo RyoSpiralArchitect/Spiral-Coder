@@ -21,7 +21,19 @@ async fn runtime_accepted_plan_survives_observer_continuation_without_replanning
     assert_native_continuation("[agent] iteration cap (4) reached.", 2, true).await;
 }
 
+#[tokio::test]
+async fn observer_reconnect_preserves_native_evidence_through_a_validated_coder_done() {
+    native_continuation("[GOVERNOR BLOCK] Missing final report.", 0, false, ObserverDelivery::Interrupted).await;
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum ObserverDelivery { Complete, Interrupted }
+
 async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: bool) {
+    native_continuation(display, spent, rescued_plan, ObserverDelivery::Complete).await;
+}
+
+async fn native_continuation(display: &str, spent: usize, rescued_plan: bool, delivery: ObserverDelivery) {
     use httpmock::prelude::*;
     let server = MockServer::start();
     let (mut app, root) = interaction_app();
@@ -57,8 +69,16 @@ async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: b
         cfg.base_url = server.base_url(); cfg.api_key = Some("local-test-key".into()); cfg.timeout_seconds = 5;
     }
     let sse = |content: serde_json::Value| format!("data: {content}\n\ndata: [DONE]\n\n");
+    let interrupted = (delivery == ObserverDelivery::Interrupted).then(|| server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").body_contains("intervention mode").matches(|r| !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains("Observer stream recovery"));
+        // Even syntactically valid, confident advice is untrusted without a terminal frame.
+        then.status(200).header("content-type", "text/event-stream").body(format!("data: {}\n\n", json!({"choices":[{"delta":{"content":suggestion_response("verify","exec",json!({"command":"echo untrusted-partial"}))}}]})));
+    }));
     let observer = server.mock(|when, then| {
-        when.method(POST).path("/chat/completions").body_contains("intervention mode");
+        let when = when.method(POST).path("/chat/completions").body_contains("intervention mode");
+        if delivery == ObserverDelivery::Interrupted {
+            when.body_contains("Observer stream recovery").matches(|r| !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains("untrusted-partial"));
+        }
         then.status(200).header("content-type", "text/event-stream").body(sse(json!({"choices":[{"delta":{"content":suggestion_response("done", "done", json!({"summary":"inspection complete","completed_acceptance":["inspection complete"],"remaining_acceptance":[],"acceptance_evidence":[{"criterion":"inspection complete","command":"read_file note.txt","evidence":"retained evidence"}]}))},"finish_reason":"stop"}]})));
     });
     let coder = server.mock(|when, then| {
@@ -71,7 +91,7 @@ async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: b
         tokio::time::timeout(std::time::Duration::from_secs(10), async {
             loop {
                 let event = rx.recv().await.unwrap();
-                let done = matches!(&event.payload, request_stream::Payload::Token(StreamToken::Done));
+                let done = matches!(&event.payload, request_stream::Payload::Token(StreamToken::Done | StreamToken::Error(_)));
                 request_stream::dispatch(event, app, pane);
                 if done { break; }
             }
@@ -80,6 +100,14 @@ async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: b
     let (obs_tx, mut obs_rx) = mpsc::channel(64);
     maybe_auto_next_action_assist(&mut app, &obs_tx).await;
     drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+    if let Some(interrupted) = &interrupted {
+        interrupted.assert_hits(1);
+        assert!(app.pending_observer_hint.is_none());
+        assert!(app.last_observer_suggestion.is_none());
+        assert!(observer_request::reconnect::maybe_start(&mut app, &obs_tx).await);
+        drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+        assert!(!observer_request::reconnect::maybe_start(&mut app, &obs_tx).await);
+    }
     assert!(app.pending_observer_hint.is_some(), "{:?}", app.observer.messages);
     let (tx, mut rx) = mpsc::channel(256);
     send_coder_input(&mut app, &tx, "Continue.".into(), CoderInput::RuntimeContinuation).await;
@@ -92,7 +120,8 @@ async fn assert_native_continuation(display: &str, spent: usize, rescued_plan: b
     assert_eq!(app.coder_completed, Some(true), "{:?}", app.coder.messages);
     let receipt = &app.work_budget.snapshot().assists[0];
     assert_eq!(receipt.completed, Some(true));
-    assert_eq!(app.work_budget.snapshot().requests.len(), spent + 2);
+    assert_eq!(app.work_budget.snapshot().requests.len(), spent + 2 + usize::from(delivery == ObserverDelivery::Interrupted));
+    assert!(!session.messages.iter().any(|m| m.to_string().contains("untrusted-partial")));
 }
 
 #[test]

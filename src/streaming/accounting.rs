@@ -7,6 +7,7 @@ pub(super) struct RequestMeter {
     estimated_input_tokens: usize,
     usage: Option<serde_json::Value>,
     status: String,
+    interruption: Option<crate::work_budget::StreamInterruption>,
     guard: Option<crate::work_budget::RequestGuard>,
 }
 
@@ -29,6 +30,7 @@ impl RequestMeter {
             estimated_input_tokens,
             usage: None,
             status: "interrupted_or_failed".into(),
+            interruption: None,
             guard,
         })
     }
@@ -47,6 +49,13 @@ impl RequestMeter {
             guard.status(status);
         }
     }
+    pub fn interrupted(&mut self, cause: crate::work_budget::StreamInterruption) {
+        self.status = "stream_interrupted".into();
+        self.interruption = Some(cause);
+        if let Some(guard) = &self.guard {
+            guard.interrupted(cause);
+        }
+    }
 }
 impl Drop for RequestMeter {
     fn drop(&mut self) {
@@ -57,6 +66,7 @@ impl Drop for RequestMeter {
             event: "request_usage".into(), data: json!({
                 "estimated_input_tokens": self.estimated_input_tokens,
                 "provider_usage":self.usage, "duration_ms":self.started.elapsed().as_millis(), "status":self.status,
+                "stream_interruption":self.interruption,
             }),
         }));
     }

@@ -88,7 +88,7 @@ store state without first choosing the correct owner.
 | In-memory orchestration state | `src/tui/app.rs` + `src/tui/agent/task_harness.rs` + `src/tui/agent/meta_harness.rs` + `src/tui/agent/evaluator_loop.rs` | live TUI session / live coder loop | memory only | `App`, `pending_auto_fix`, `TaskHarness`, `TaskLane`, `ArtifactMode`, `MetaHarness`, `FailurePattern`, `PolicyDelta`, `EvaluatorLoop`, `EvaluatorFinding`, `PolicyPatch` |
 | Intent state | `src/tui/intent.rs` | live session, optionally persisted later | memory only today | `IntentAnchor`, `IntentUpdateKind`, normalized constraints/success criteria |
 | Web message provenance | `web/app.js` + `web/core/state.js` | Web thread lifetime | browser-local thread state | optional `message.origin` (`user` or `runtime`) for human messages versus runtime handoffs |
-| TUI next-action repair | `src/tui/events/observer_request.rs` + `src/tui/app.rs` | one Observer assist request | memory only | `ObserverAssistRequest`: source-context stamp, original prompt, one repair budget, pending repair prompt |
+| TUI next-action repair | `src/tui/events/observer_request.rs` + `src/tui/app.rs` | one Observer assist request | memory only | `ObserverAssistRequest`: source-context stamp, active prompt, one action repair, one typed stream reconnect and failure owner |
 | Web recovery attempt history | `web/app.js` + `web/observer/logic.js` | Web thread lifetime | browser-local thread messages | existing `metaKind=observer_next_action` and `metaTargetId` identify assistance already attempted for a Coder message |
 | Replay/eval fixtures | `.spiral-coder/*.json` + `src/runtime_eval.rs` + `src/tui_replay.rs` | versioned test input/output | repo files + `.tmp/` artifacts | runtime eval spec, TUI replay spec, reports, file-existence/file-content checks |
 
@@ -515,10 +515,13 @@ Examples:
 JSON envelope or unusable primary tool action queues one explicit model request;
 valid low-confidence and valid no-tool suggestions do not request repair. Both
 answers remain visible, and only the usual action/argument and confidence checks
-can queue advisory text. The request expires on cancellation, transport error,
-replacement Observer work, or changed Coder transcript/intent/root. New Coder
+can queue advisory text. The request expires on cancellation,
+replacement Observer work, or changed Coder transcript/intent/root/routing. New Coder
 work cancels in-flight assistance; completed advice is consumed only for a
-continuation of the same intent. No retry budget or source stamp is persisted.
+continuation of the same intent. Native stream EOF/read errors retain this request
+for the bounded reconnect below; other errors stop automatic assistance for the
+same context. No retry budget, active prompt, credential hash or source stamp is
+persisted.
 
 TUI replay keeps its first-response checks unchanged and additionally exports
 `observer_repair_prompt.txt` and `observer_repair_prompt_path` when repair is
@@ -1299,3 +1302,44 @@ keep bounded retry behavior. A retry denied by the request allocator retains
 the previous provider error as context while preserving the underlying typed
 budget error. This transient error context is owned by the streaming call; it
 adds no persisted authority or completion evidence.
+
+### Bounded Observer stream reconnection
+
+`events/observer_request/reconnect.rs` owns one optional reconnect per native
+next-action assist, shared by interactive TUI ticks and `coupled-run`. The
+streaming adapters assign optional `RequestReceipt.stream_interruption` only for
+`missing_terminal_frame` (EOF before a terminal response) or `read_failed`
+(response-body read failure). The receipt must be from the current Observer
+request cursor. Error text, a broad `stream_interrupted` status in old receipts,
+HTTP errors, provider error frames and tool-call protocol errors cannot authorize
+reconnection. Empty, filtered or output-limited terminal responses retain their
+existing action-repair handling.
+
+A reconnect repeats the active native prompt and any existing schema-validation
+feedback, excluding the interrupted output. It appends current remaining-budget
+accounting; the original evidence and task obligations stay unchanged. The
+interrupted text and original error remain visible and in the trace. Even valid
+JSON received without terminal delivery is never parsed or forwarded as advice.
+The recovered response must pass the ordinary action, argument, confidence and
+native-evidence gates.
+
+Consumption rechecks the Coder transcript/intent/root, both routes and credentials
+(in-memory hash only), sampling limits, UI language and project check command.
+New work, manual replacement or cancellation invalidates the pending reconnect.
+It requires at least two remaining task requests and positive Coder allowance;
+blocked-terminal diagnosis never reconnects. The interrupted attempt stays spent.
+`WorkBudget::with_observer_reconnect` bounds the fresh delivery to **one wire
+attempt**, including HTTP compatibility/retry paths. Its durable receipt has
+`purpose: "observer_reconnect"` and `retry_of: <original request id>`. No budget
+cap or reserved role share increases. Only a separate, complete response rejected
+for pure schema reasons can receive existing transport credit; that credit does
+not expand the reconnect wire ceiling.
+
+One reconnect and one action-contract repair can occur in either order. Repeated
+stream failure never grants a second reconnect. A failed request owner suppresses
+ordinary automatic Observer assistance for the same context, avoiding a next-tick
+retry loop. The headless driver retains recovered errors in `trace.jsonl` but
+uses the terminal outcome for `report.error`; `completed` still requires a valid
+Coder `done`. Failed/exhausted reconnects end interrupted, with unknown usage left
+unknown. Pending reconnect state is transient and is not rearmed from a saved
+receipt; resume remains an explicit continuation within the spent ledger.

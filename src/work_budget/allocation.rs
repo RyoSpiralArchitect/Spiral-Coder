@@ -75,7 +75,7 @@ impl WorkBudget {
 
     pub(crate) fn slice_remaining(&self, role: &str) -> usize {
         let remaining = self
-            .report_closeout_ceiling
+            .wire_ceiling
             .map_or(self.remaining_for(role), |ceiling| {
                 self.remaining_for(role)
                     .min(ceiling.saturating_sub(self.snapshot().requests.len()))
