@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "wave": "r8",
+  "intervention": "Share native completion vocabulary with Observer; after its done repair hits the output limit, permit at most one native-gated Coder report-only wire attempt. Associate authored counts with their own phase-prefixed clause.",
+  "baseline_commit": "728014ff87b4db683073759a8939e1bed1806dcc",
+  "runtime_commit": "f14c943ce3c1aae225a58cbef5eba31bf946d52a",
+  "episodes": [
+    "large-large/env-bool",
+    "large-large/event-summary"
+  ],
+  "attempts": 2,
+  "maximum_wire_requests": 56,
+  "task_requests_per_episode": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "episode_wall_seconds": 600,
+  "coder": "mistral-large-4",
+  "observer": "mistral-large-4",
+  "prompt_revision": 2,
+  "task_prompt_test_oracle_and_assessor_changed": false,
+  "no_retry_in_place": true,
+  "qualification": "Unchanged strict task qualification: independent original tests, native baseline/final check, source+docs edits, authored outcome rows, exact roles/budgets and scope.",
+  "supplementary_review": [
+    "Observer done proposals: criterion coverage, current exact commands, retained refusals",
+    "Any report_closeout: trigger, purpose receipt, one wire maximum, no automatic cycle and unchanged completion gates",
+    "Final report numbers and input conditions versus native receipts, source and original tests"
+  ],
+  "claim_boundary": "Adaptive development evidence, not a controlled causal comparison or general success rate. Count validation is bounded English and does not certify arbitrary prose. Preserve every failure and incomplete attempt. Further live waves require separate frozen declarations.",
+  "previous_wave": "r7",
+  "adaptive_change_reason": "r6 env-bool had four completed criteria but two evidence rows; its single repair returned no content at the output limit. PR review also found truthful mixed-phase count clauses were falsely refused."
+}

@@ -1,0 +1,11 @@
+{
+  "runtime_commit": "f14c943ce3c1aae225a58cbef5eba31bf946d52a",
+  "binary_sha256": "690df369fd092470b30a21620460c4646441a60ded3d6a61270bd3a445e1ec8a",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "driver_commit": "f14c943ce3c1aae225a58cbef5eba31bf946d52a",
+  "predeclaration_sha256": "923d82e124c9fee184f825ac30cb4f498ae5daefec845197b54cfccf2d8799c4",
+  "preflight_sha256": "68493aba7aa13e7f3647f1cd3aeefcfe1dbfdda36821dbaa4e0cf81508cb320f",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r8-observer-closeout",
+  "provider_calls_at_pin": 0
+}
