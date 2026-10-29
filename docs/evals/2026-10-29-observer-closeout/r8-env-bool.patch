@@ -1,0 +1,17 @@
+diff --git a/settings.py b/settings.py
+index b3c7c3f..fe9c6c1 100644
+--- a/settings.py
++++ b/settings.py
+@@ -4,4 +4,11 @@
+ def parse_bool(value, default=False):
+     if value is None:
+         return default
+-    return bool(value)
++    token = value.strip().lower()
++    if not token:
++        return default
++    if token in ("true", "1", "yes", "on"):
++        return True
++    if token in ("false", "0", "no", "off"):
++        return False
++    raise ValueError(f"invalid boolean setting: {value!r}")

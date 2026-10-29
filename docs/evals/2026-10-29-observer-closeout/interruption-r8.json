@@ -1,0 +1,24 @@
+{
+  "source": "r8 / large-large / env-bool / run/report.json",
+  "source_sha256": "1992dc3de64ff646624b9ff5d3036f0996df41d9d7b31042f4c37192affcd806",
+  "termination": "interrupted",
+  "error": "Observer: Observer next-action failed: stream ended before a terminal frame",
+  "last_wire_receipt": {
+    "charge": "task",
+    "duration_ms": 28013,
+    "estimated_input_tokens": 10123,
+    "id": 9,
+    "provider_usage": null,
+    "role": "observer",
+    "status": "stream_interrupted",
+    "transport_rejection": null
+  },
+  "partial_observer_content": "summary\":\"settings.py has been repaired (parse_bool now handles case/whitespace/defaults/ValueError correctly), but the test suite still fails because docs/settings.md lacks the required exact examples. The test test_documented_examples_and_check asserts that docs/settings.md contains the literal strings `parse_bool(\\\"OFF\\\") -> False",
+  "pending_exact_checks": [
+    "python3 -B -S -m unittest discover -s tests -v"
+  ],
+  "missing_declared_artifact": "docs/settings.md",
+  "report_closeout_attempted": false,
+  "accepted_done": false,
+  "claim_boundary": "Selected original receipt fragment. Stream interruption with pending work does not authorize recovery into a completed report."
+}
