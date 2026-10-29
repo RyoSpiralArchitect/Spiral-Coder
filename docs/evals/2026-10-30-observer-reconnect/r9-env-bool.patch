@@ -1,0 +1,41 @@
+diff --git a/docs/settings.md b/docs/settings.md
+index c6d3d99..65d71d6 100644
+--- a/docs/settings.md
++++ b/docs/settings.md
+@@ -1,4 +1,18 @@
+ # Boolean settings
+ 
+ `parse_bool(value, default=False)` reads an environment-style setting.
+-The current implementation treats every nonempty string as enabled.
++
++- Accepted true tokens: `true`, `1`, `yes`, `on`.
++- Accepted false tokens: `false`, `0`, `no`, `off`.
++- Matching ignores case and surrounding whitespace.
++- `None`, empty strings, and whitespace-only strings return `default`.
++- Any other string raises `ValueError`; a nonempty string is not automatically true.
++
++Examples:
++
++- `parse_bool("OFF") -> False`
++- `parse_bool("", default=True) -> True`
++
++Run the tests with:
++
++`python3 -B -S -m unittest discover -s tests -v`
+diff --git a/settings.py b/settings.py
+index b3c7c3f..44393e2 100644
+--- a/settings.py
++++ b/settings.py
+@@ -4,4 +4,11 @@
+ def parse_bool(value, default=False):
+     if value is None:
+         return default
+-    return bool(value)
++    normalized = value.strip().lower()
++    if normalized == "":
++        return default
++    if normalized in {"true", "1", "yes", "on"}:
++        return True
++    if normalized in {"false", "0", "no", "off"}:
++        return False
++    raise ValueError(f"invalid boolean setting: {value!r}")

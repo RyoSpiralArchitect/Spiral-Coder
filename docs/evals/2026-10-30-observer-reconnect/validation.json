@@ -18,5 +18,13 @@
     "Native TUI Observer reconnect followed by Coder continuation and validated done with preserved original evidence",
     "Repeated EOF, HTTP/auth/quota/provider/protocol failures, compatibility retry, action-repair ordering, exhausted allowance, blocked diagnosis, context/route changes and cancellation",
     "Typed HTTP body-read failure and Anthropic EOF classification; original interruption cannot become transport credit; one wire ceiling survives completed schema rejection"
-  ]
+  ],
+  "post_freeze_test_portability": {
+    "change": "Drain the entire mock HTTP request before closing its deliberately short response, avoiding an OS-specific unread-socket reset; production runtime unchanged.",
+    "check": "cargo test --locked --bin spiral-coder broken_http_body_records_read_failure",
+    "result": "passed",
+    "local_log": "/private/tmp/spiral-pr45-read-failure-portability.log",
+    "log_sha256": "1465e4cd25cc2a14f72fe09719be014840da4f38c304218bb64ccb3abd2705be",
+    "test_commit": "ff6e4e4255063bfe5e0d9b15d207d35a94b71f46"
+  }
 }

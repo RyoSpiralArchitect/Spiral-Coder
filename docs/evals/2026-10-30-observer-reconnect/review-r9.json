@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "wave": "r9",
+  "manifest_entries_verified": 80,
+  "selected_credential_absence_checked_files": 80,
+  "assessment_sha256": "83f2780b2fd1990066f1b5e6615a9676b533a3437616b37d2a29b05d9f51e4bd",
+  "rows": [
+    {
+      "case": "env-bool",
+      "strict_qualified": true,
+      "termination": "completed",
+      "wire_requests": 16,
+      "request_roles": {
+        "coder": 12,
+        "observer": 4
+      },
+      "patch_sha256": "f4a5e65605cc30b7247c3f7b1eecfb03d9a63932e5f90ed54ea7b641802771bc",
+      "patch_replays_exactly": true,
+      "reapplied_patch_original_tests_pass": true,
+      "native_count_receipts": {
+        "tf2RIoNKF": {
+          "errors": 0,
+          "failure_events": 14,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "iszV04Hsw": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "done_attempts": 2,
+      "stream_interruption_receipts": [],
+      "reconnect_receipts": [],
+      "report_closeout_attempted": false,
+      "manual_report_review": "Both requested files changed; original tests and .spiral-coder.md preserved. Independent original tests pass 10/10. Accepted report counts agree with native evidence: before 10 run, 14 failure events, zero errors; after 10 run, zero failures/errors. The first done attempt was rejected by Plan Gate; the second was accepted. No reconnect or report closeout occurred."
+    },
+    {
+      "case": "event-summary",
+      "strict_qualified": false,
+      "termination": "blocked",
+      "wire_requests": 24,
+      "request_roles": {
+        "coder": 18,
+        "observer": 6
+      },
+      "patch_sha256": "e16e5e61885052c93c2fc98b8d2ef5657db18ae0e234e0205d0376fc5df431fe",
+      "patch_replays_exactly": true,
+      "reapplied_patch_original_tests_pass": true,
+      "native_count_receipts": {
+        "Uo6eKP36K": {
+          "errors": 5,
+          "failure_events": 8,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "done_attempts": 1,
+      "stream_interruption_receipts": [],
+      "reconnect_receipts": [],
+      "report_closeout_attempted": false,
+      "manual_report_review": "Both requested source/docs artifacts satisfy the original independent tests (10/10), including physical line numbers, strict levels, generators and conditional empty-input zeros. Three pending post-edit exact exec attempts were rejected by Plan Gate, so there is no native after-check receipt. The authored done states After: NOT VERIFIED, marks acceptance 2-4 remaining and returns OK: blocked. Independent tests must not be promoted into native completion. Neither reconnect nor report closeout occurred."
+    }
+  ],
+  "claim_boundary": "Frozen strict qualification and supplementary source/report review are separate. Adaptive development observations do not establish general success rates or causal improvements.",
+  "manual_review": "Implementation-author review of both candidate source/docs patches, exact commands and native count receipts, all rejected actions, blocked/accepted final reports and Observer suggestions. Not an independent fork review.",
+  "findings": [
+    {
+      "case": "env-bool",
+      "kind": "retained_plan_refusal",
+      "finding": "One final-report plan revision was rejected before the subsequent admitted plan and valid done."
+    },
+    {
+      "case": "event-summary",
+      "kind": "verification_plan_stall",
+      "finding": "Three exact post-edit checks were blocked as plan drift after source/docs edits. Reworded goals and shortened acceptance text differ from the last admitted plan, so the existing exact-obligation anchor does not apply. Preserve these as follow-up cases; no alignment/completion gate was relaxed here."
+    },
+    {
+      "case": "event-summary",
+      "kind": "terminal_observer_misattribution",
+      "finding": "The terminal no-tool Observer diagnosis describes the done report as governor-blocked. Its correlated native result is OK: blocked, accepting an explicitly incomplete report. The actual preceding work refusals were three Plan Gate checks. Preserve this explanation error separately from the correct incomplete terminal status; the diagnosis grants no continuation or completion authority."
+    }
+  ],
+  "unexercised_live_path": "No r9 receipt has stream_interruption or purpose observer_reconnect. New reconnect behavior is supported by deterministic native TUI/headless wire tests, not a live recovery observation. The existing report-closeout path also did not run."
+}

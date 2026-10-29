@@ -1,0 +1,13 @@
+{
+  "case": "event-summary",
+  "patch_sha256": "e16e5e61885052c93c2fc98b8d2ef5657db18ae0e234e0205d0376fc5df431fe",
+  "patch_applied": true,
+  "candidate_inventory_matches": true,
+  "checks": [
+    {
+      "command": "python3 -B -S -m unittest discover -s tests -v",
+      "exit_code": 0,
+      "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ok\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... ok\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... ok\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... ok\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+    }
+  ]
+}
