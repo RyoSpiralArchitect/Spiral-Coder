@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "archived_on": "2026-10-29",
+  "pull_request": "https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/42",
+  "merged_commit": "728014ff87b4db683073759a8939e1bed1806dcc",
+  "runtime_commit": "3aa0390ee1ce48cf9c7d63504447407976c14020",
+  "binary_sha256": "00bb4a6862d08dc9adbb7c3a44f0c7a4b0a93df7b2c8cf1be88531539fa004bf",
+  "wave": "r4-diagnostic",
+  "model_pair": {
+    "coder": "mistral-large-4",
+    "observer": "mistral-large-4"
+  },
+  "counts": {
+    "declared": 2,
+    "finished": 2,
+    "runtime_completed": 2,
+    "independent_artifacts_passed": 2,
+    "behavior_and_handoff_qualified": 2,
+    "strict_all_files_qualified": 2,
+    "wire_requests": 28,
+    "episodes_with_unknown_request_count": 0
+  },
+  "episodes": [
+    {
+      "case": "env-bool",
+      "requests": 14,
+      "request_roles": {
+        "coder": 11,
+        "observer": 3
+      },
+      "strict_all_files_qualified": true
+    },
+    {
+      "case": "event-summary",
+      "requests": 14,
+      "request_roles": {
+        "coder": 11,
+        "observer": 3
+      },
+      "strict_all_files_qualified": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/README.md",
+      "sha256": "59333dcc7d81cdc099aa220119f5cd1492cf1b4139449564ce1872ffecc21326",
+      "bytes": 5249,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/README.md"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/executor.json",
+      "sha256": "be2fb55196a61b2f27fcf53459f738de568c9d829a97316a7d20b2b68f5cbab4",
+      "bytes": 747,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/executor.json"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/large-large-env-bool.patch",
+      "sha256": "5373caf577638e1135111b76cba284f16963ccae09b0597f37e6e1d2537a441f",
+      "bytes": 1599,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/large-large-env-bool.patch"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/large-large-event-summary.patch",
+      "sha256": "f1916446ee1d5962b203bae9131afea4cf5f80fee3e1b208807230dbf4f7117d",
+      "bytes": 2290,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/large-large-event-summary.patch"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/plan.json",
+      "sha256": "a4096f09a53fed4590dc7c9309cb33b00efdae6746872193faa2cf9b6654e6df",
+      "bytes": 1255,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/plan.json"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/preflight.json",
+      "sha256": "92869628b42f7b7e17d532ad5e104f8ca3a731f57ee2416a0cd373667e75bd28",
+      "bytes": 27470,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/preflight.json"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/results.json",
+      "sha256": "39e8d8869a69203210305364ef16a0950b3bf56357a25739f618cbeafab34b1e",
+      "bytes": 63373,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/results.json"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/review.json",
+      "sha256": "05f66606bdab78155721e1c5e1df58cb8e53c0aba300509e99f6a8f8eda01a37",
+      "bytes": 1276,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/review.json"
+    },
+    {
+      "path": "docs/evals/2026-10-29-diagnostic-actions/validation.json",
+      "sha256": "aff58c1c67d0d70695632f1ac881585c01117288ceb7092c83d1ecb6be77e051",
+      "bytes": 1896,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-29-diagnostic-actions/validation.json"
+    },
+    {
+      "path": "docs/evals/2026-10-28-practical-examples/README.md",
+      "sha256": "9dac92242b2967ed33ee1e3d80a26c8389d4925b9160e9a193a48974c487312a",
+      "bytes": 7595,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/docs/evals/2026-10-28-practical-examples/README.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/suite.json",
+      "sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+      "bytes": 1576,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/suite.json"
+    },
+    {
+      "path": "benchmarks/examples-v1/matrix-mistral.json",
+      "sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+      "bytes": 603,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/matrix-mistral.json"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/reference/docs/settings.md",
+      "sha256": "fa9d03ca9dd9cf83cd26a6d5d498c4cd1e4c652fd6dfc2de5edff9d1acdc66f9",
+      "bytes": 408,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/reference/docs/settings.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/reference/settings.py",
+      "sha256": "d67111f137c21d97b987fad8629291eaa699226d661a0179a7a52026ce572573",
+      "bytes": 408,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/reference/settings.py"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/task.txt",
+      "sha256": "03b1172d3f88bca939d0ba14325af4da01d36b2ac759892a89f8cebaff4ce4f4",
+      "bytes": 2370,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/task.txt"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/workspace/.spiral-coder.md",
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/workspace/.spiral-coder.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/workspace/docs/settings.md",
+      "sha256": "1ae00725cfd3bf6c53b2d3157cef1815fa93570ef9f145d8ae96c53657ff8da6",
+      "bytes": 159,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/workspace/docs/settings.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/workspace/settings.py",
+      "sha256": "7add5301d5fa2c94d66ffd11e4866a57ae5cec117a65593ff55e21f0100f8f00",
+      "bytes": 171,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/workspace/settings.py"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/env-bool/workspace/tests/test_settings.py",
+      "sha256": "9f4cff8f82936525d3da0f9139523248bbba2a806492b432c6326026ba907c5b",
+      "bytes": 1940,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/env-bool/workspace/tests/test_settings.py"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/reference/docs/summary.md",
+      "sha256": "15cebd948174e694ab6fd410cb0232c7e3361eaf22e1fd13c702014c690548f7",
+      "bytes": 592,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/reference/docs/summary.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/reference/summary.py",
+      "sha256": "2ed2ca5a60dc5d4b43213cafdd5e25a04131f95bc07112976b37aa93f8825c86",
+      "bytes": 641,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/reference/summary.py"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/task.txt",
+      "sha256": "c6dbb4459fb17a6983aed2af3227913251371abf21912a9a33348cdca3b80503",
+      "bytes": 2535,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/task.txt"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/workspace/.spiral-coder.md",
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/workspace/.spiral-coder.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/workspace/docs/summary.md",
+      "sha256": "4934770921987efc97eb4879b51d5d9f1c013cc76c32185fc3add8b8d7517f3f",
+      "bytes": 134,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/workspace/docs/summary.md"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/workspace/summary.py",
+      "sha256": "f5dd1992e1e559bd89468c3294226b2c0cfd4e143c840573869badfe5c0ace38",
+      "bytes": 246,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/workspace/summary.py"
+    },
+    {
+      "path": "benchmarks/examples-v1/cases/event-summary/workspace/tests/test_summary.py",
+      "sha256": "b80c06eed33e3dcbed930ba82d01d8fb39eb4fd05509af87b8df7b47b718345a",
+      "bytes": 2225,
+      "url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/blob/728014ff87b4db683073759a8939e1bed1806dcc/benchmarks/examples-v1/cases/event-summary/workspace/tests/test_summary.py"
+    }
+  ],
+  "limits": "Historical visible development fixtures. Native completion, independent behavior checks, authored prose quality and broader capability remain separate. Original inaccurate incidental prose and all earlier failures are preserved."
+}
