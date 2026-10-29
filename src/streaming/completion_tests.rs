@@ -133,7 +133,29 @@ async fn broken_http_body_records_read_failure_without_completion_or_refund() {
             .set_read_timeout(Some(Duration::from_secs(2)))
             .unwrap();
         let mut buf = [0; 4096];
-        socket.read(&mut buf).unwrap();
+        let mut request = Vec::new();
+        // Drain the request before closing the response. Otherwise some OSes
+        // reset a socket with unread request bytes before headers reach reqwest,
+        // accidentally testing connection failure instead of body truncation.
+        loop {
+            let count = socket.read(&mut buf).unwrap();
+            assert!(count > 0);
+            request.extend_from_slice(&buf[..count]);
+            if let Some(end) = request.windows(4).position(|s| s == b"\r\n\r\n") {
+                let length = String::from_utf8_lossy(&request[..end])
+                    .lines()
+                    .filter_map(|line| line.split_once(':'))
+                    .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+                    .unwrap()
+                    .1
+                    .trim()
+                    .parse::<usize>()
+                    .unwrap();
+                if request.len() >= end + 4 + length {
+                    break;
+                }
+            }
+        }
         socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nContent-Length: 10000\r\nConnection: close\r\n\r\ndata: {\"choices\":[]}\n\n").unwrap();
     });
     let cfg = config_for_stream(&base_url, "openai");
