@@ -21,6 +21,12 @@ pub(crate) struct TaskObligations {
     pub report_repair: Option<super::report_repair::ReportRepair>,
 }
 
+impl TaskObligations {
+    pub(crate) fn bind_observer_tools(&self, schemas: &mut Value) {
+        super::acceptance_schema::bind_observer(schemas, self);
+    }
+}
+
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
     let root = crate::task_origin::root_user_text(messages);
     let evidence = evidence_packet::project(messages, test_cmd);

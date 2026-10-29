@@ -189,6 +189,7 @@ pub struct App {
     pub pending_auto_fix: Option<String>,
     /// Pending advisory-only Observer suggestion for the next Coder continuation turn.
     pub pending_observer_hint: Option<String>,
+    pub(crate) report_closeout_attempted: bool,
     /// Pending Observer contract for the next Coder continuation turn.
     pub pending_observer_contract: Option<ObserverSuggestionEnvelope>,
     pub coder_max_iters: Option<usize>,
@@ -315,6 +316,7 @@ impl App {
             auto_fix_mode: false,
             pending_auto_fix: None,
             pending_observer_hint: None,
+            report_closeout_attempted: false,
             pending_observer_contract: None,
             coder_max_iters,
             quit: false,

@@ -199,6 +199,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
         while app.coder.streaming {
             drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
             if app.coder_completed == Some(true)
+                || app.report_closeout_attempted
                 || args.without_observer
                 || app.work_budget.remaining_for("observer") == 0
             {
@@ -230,6 +231,9 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             if app.observer.streaming {
                 drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
             }
+            if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
+                continue;
+            }
             if blocked
                 || app.pending_observer_hint.is_none()
                 || app.work_budget.remaining_for("coder") == 0
@@ -259,6 +263,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
         "termination":termination::project(&app, outcome.as_ref().err()),
         "roles":roles.receipts(),"same_model_both_roles":roles.same_model_both_roles(),
         "coder_chunk_requests":args.coder_chunk_requests,
+        "report_closeout_attempted":app.report_closeout_attempted,
         "budget_policy":app.work_policy,
         "role_requests":{
             "coder":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "coder").count(),

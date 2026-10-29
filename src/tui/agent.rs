@@ -7816,6 +7816,9 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             &pending_checks,
             &requirement_proof::project(&messages, test_cmd.as_deref()),
         )
+        .with_report_closeout(
+            crate::work_budget::current().is_some_and(|c| c.budget.is_report_closeout()),
+        )
         .with_diagnostic_read(recovery.focus.required_read());
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());

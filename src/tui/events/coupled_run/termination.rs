@@ -8,6 +8,7 @@ pub(super) enum Termination {
     Blocked,
     BudgetExhausted,
     ObserverUnavailable,
+    ReportIncomplete,
     Interrupted,
 }
 
@@ -20,6 +21,9 @@ pub(super) fn project(app: &App, error: Option<&anyhow::Error>) -> Termination {
     }
     if app.coder_yield_reason == Some(crate::tui::coder_yield::CoderYieldReason::Blocked) {
         return Termination::Blocked;
+    }
+    if app.report_closeout_attempted {
+        return Termination::ReportIncomplete;
     }
     if app.work_budget.remaining_for("coder") == 0 {
         return Termination::BudgetExhausted;

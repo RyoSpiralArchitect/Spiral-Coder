@@ -20,13 +20,43 @@ pub(super) fn bind(tools: &mut Value, plan: Option<&PlanBlock>, commands: &[Stri
     }) else {
         return;
     };
-    let properties = &mut done["function"]["parameters"]["properties"];
+    bind_parameters(&mut done["function"]["parameters"], &references, commands);
+}
+
+pub(super) fn bind_observer(
+    schemas: &mut Value,
+    obligations: &super::task_obligations::TaskObligations,
+) {
+    let Some(done) = schemas
+        .as_array_mut()
+        .and_then(|schemas| schemas.iter_mut().find(|s| s["name"] == "done"))
+    else {
+        return;
+    };
+    let references: Vec<String> = obligations
+        .acceptance_criteria
+        .iter()
+        .filter_map(|c| c["reference"].as_str().map(str::to_owned))
+        .collect();
+    bind_parameters(
+        &mut done["parameters"],
+        &references,
+        &obligations.current_commands,
+    );
+    bind_summary_parameters(&mut done["parameters"], &obligations.final_answer);
+}
+
+fn bind_parameters(parameters: &mut Value, references: &[String], commands: &[String]) {
+    if references.is_empty() {
+        return;
+    }
+    let properties = &mut parameters["properties"];
     for field in ["completed_acceptance", "remaining_acceptance"] {
-        set_enum(&mut properties[field]["items"], &references);
+        set_enum(&mut properties[field]["items"], references);
     }
     let items = &mut properties["acceptance_evidence"]["items"];
     if items["type"] == "object" {
-        set_enum(&mut items["properties"]["criterion"], &references);
+        set_enum(&mut items["properties"]["criterion"], references);
         set_enum(&mut items["properties"]["command"], commands);
     } else if items["type"] == "string" {
         // Google compatibility needs flat rows. Bound the Cartesian product
@@ -62,18 +92,22 @@ fn set_enum(schema: &mut Value, choices: &[String]) {
 }
 
 pub(super) fn bind_summary(tools: &mut Value, report: &Value) {
-    if report["clauses"].as_array().is_none_or(Vec::is_empty) {
-        return;
-    }
     let Some(done) = tools
         .as_array_mut()
         .and_then(|tools| tools.iter_mut().find(|t| t["function"]["name"] == "done"))
     else {
         return;
     };
+    bind_summary_parameters(&mut done["function"]["parameters"], report);
+}
+
+fn bind_summary_parameters(parameters: &mut Value, report: &Value) {
+    if report["clauses"].as_array().is_none_or(Vec::is_empty) {
+        return;
+    }
     let guidance = super::report_surface::guidance(report);
     if guidance.len() <= MAX_ENUM_BYTES {
-        done["function"]["parameters"]["properties"]["summary"]["description"] = json!(guidance);
+        parameters["properties"]["summary"]["description"] = json!(guidance);
     }
 }
 

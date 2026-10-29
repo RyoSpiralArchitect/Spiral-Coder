@@ -11,6 +11,7 @@ use coder_session::CoderInput;
 use request_stream::RequestEvent;
 pub(crate) mod observer_assist;
 pub(crate) mod observer_request;
+mod report_closeout;
 use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
 use observer_request::{
     finalize_observer_next_action_suggestion, maybe_observer_action_repair,
@@ -1110,6 +1111,7 @@ pub async fn run_event_loop(
             AppEvent::Tick => {
                 app.tick_count = app.tick_count.wrapping_add(1);
                 maybe_observer_action_repair(app, &observer_tx).await;
+                observer_request::maybe_report_closeout(app, &coder_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
                 maybe_auto_observe(app, &observer_tx).await;
                 maybe_observer_lang_retry(app, &observer_tx).await;
@@ -2893,6 +2895,7 @@ mod tests {
     include!("observer_repair_tests.rs");
     include!("coupled_loop_tests.rs");
     include!("closeout_loop_tests.rs");
+    include!("report_closeout_tests.rs");
     include!("refusal_continuation_tests.rs");
     include!("dogfood_boundary_tests.rs");
     include!("task_requirement_tests.rs");
@@ -3975,6 +3978,9 @@ async fn dispatch_selected_task(
 }
 
 async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
+    if app.report_closeout_attempted {
+        return;
+    }
     let required_requests =
         if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::Blocked) {
             1 // Terminal diagnosis does not resume Coder.
@@ -4001,6 +4007,9 @@ async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender
 }
 
 async fn maybe_auto_observe(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
+    if app.report_closeout_attempted {
+        return;
+    }
     if app.work_budget.remaining() < 2 {
         return;
     }

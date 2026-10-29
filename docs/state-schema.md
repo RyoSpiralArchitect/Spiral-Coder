@@ -1053,7 +1053,12 @@ integer-count assertions (digits or zero through twenty) against these selected
 receipts. Native field/value notation such as `tests_run 10`, `errors=0` and
 `failure_events: 14` keeps its identifier and punctuation boundaries; values are
 never attached to the next comma-separated field. Exact backticked commands
-disambiguate multiple checks. Unknown,
+disambiguate multiple checks within their phase-prefixed clause. A new phase
+prefix after a count starts a new clause: `Before: 14 failures, After: 0 failures`
+checks each count against its own phase. Adjacent prefixes joined by `and`, `&` or `/`
+share the claim: `Before and after: 0 failures` requires both phases to
+support zero. Quoted Unicode command names retain their original byte offsets.
+Unknown,
 contradictory or ambiguous counts require correction or omission, without
 invalidating passed checks. This is not a general natural-language fact checker:
 unlabelled claims and arbitrary descriptions of behavior still need review.
@@ -1094,6 +1099,13 @@ redirects and full length. A known command is provenance, not a semantic proof
 that an arbitrary criterion is satisfied; the independent task/verification
 gates remain mandatory. Legacy automatic summaries are separate from authored
 `done` and cannot satisfy an explicit authored-report requirement.
+
+`agent/acceptance_schema.rs` binds the same criterion references, current exact
+commands and final-summary guidance to both the Coder function schema and the
+Observer's `tool_argument_schemas`, including Google's flat evidence rows.
+TUI and the browser endpoint derive these choices from native history, replacing
+caller-supplied vocabulary. Choices guide authorship; returned arguments are
+never filled, mapped to a different criterion or accepted without validation.
 
 Protocol list fields preserve line boundaries. Bulleted acceptance items and
 their continuation lines remain separate criteria, avoiding implicit merging
@@ -1236,6 +1248,31 @@ Unsigned OpenAI-compatible/Mistral calls can use ID selections. Full commands
 remain available on every supported Coder provider.
 
 ### Provider termination and Observer range repair
+
+After an invalid Observer `done` proposal, its single explicit repair can reach
+the provider output limit. `events/report_closeout.rs` then admits **one Coder
+report-only wire attempt** only when the source context is still current, a
+declared task has no pending artifacts/checks/baselines/recovery, accepted plan
+references and current commands exist, and Coder has remaining allowance.
+Blocked terminal diagnosis, missing evidence, stale advice, malformed repairs
+without an output-limit receipt and provider errors do not activate it.
+
+`ObserverAssistRequest` owns the transient pending handoff. Consumption rechecks
+native obligations and clears the request. `App.report_closeout_attempted`
+suppresses further automatic Observer/Coder cycles until a new explicit Coder
+input or workspace reset. `WorkBudget::with_report_closeout` owns the transient
+one-wire ceiling, including transport and API retries, without changing shared
+limits or the Observer reservation. Its durable request receipt adds optional
+`purpose: "report_closeout"`; older receipts omit it. Coupled reports expose
+`report_closeout_attempted`. The restriction is also enforced on actual returned
+tool calls, so an out-of-schema edit cannot execute.
+
+Observer raw responses and rejections stay intact. This does not manufacture
+valid advice, evidence rows or a final answer. Only a fresh model-authored `done`
+passing every existing gate completes the task. A rejected/empty report records
+`termination: "report_incomplete"` and a provider failure remains interrupted; no automatic second
+closeout is started. Resume requires explicit continuation and does not restore
+an in-flight closeout or grant new budget.
 
 OpenAI-compatible streams (including Mistral and Gemini) retain provider output
 termination in the existing request `status`: `output_limited` for `length`,

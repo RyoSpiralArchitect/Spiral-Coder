@@ -248,7 +248,12 @@ pub(super) fn issues(summary: &str, facts: &[Value]) -> Vec<String> {
             segments.push((std::mem::take(&mut raw), std::mem::take(&mut prose)));
         } else {
             raw.push(c);
-            prose.push(if !quoted && c != '`' { c } else { ' ' });
+            if !quoted && c != '`' {
+                prose.push(c);
+            } else {
+                // Keep byte offsets aligned with raw exact command citations.
+                prose.extend(std::iter::repeat_n(' ', c.len_utf8()));
+            }
         }
     }
     let mut issues = Vec::new();
@@ -256,82 +261,120 @@ pub(super) fn issues(summary: &str, facts: &[Value]) -> Vec<String> {
         let lower = sentence.to_ascii_lowercase();
         let spans = words_with_spans(&lower);
         let words: Vec<_> = spans.iter().map(|(word, _, _)| *word).collect();
-        let before = words.iter().any(|w| matches!(*w, "before" | "baseline"));
-        let after = words.iter().any(|w| matches!(*w, "after" | "final"));
-        if !before && !after {
-            continue;
+        // A phase prefix owns the following count claims until another prefix
+        // appears. Explicitly joined adjacent prefixes share a claim
+        // ("Before and after: 0 failures" must be true for both receipts).
+        let claims = count_claims(&lower, &spans);
+        let mut scopes: Vec<(usize, usize, Vec<&str>)> = Vec::new();
+        let mut last_phase: Option<usize> = None;
+        for (index, word) in words.iter().enumerate() {
+            let phase = match *word {
+                "before" | "baseline" => "Before",
+                "after" | "final" => "After",
+                _ => continue,
+            };
+            let joined = last_phase.is_some_and(|previous| {
+                matches!(
+                    lower[spans[previous].2..spans[index].1].trim(),
+                    "and" | "&" | "/"
+                )
+            });
+            last_phase = Some(index);
+            if let Some((_, _, phases)) = scopes.last_mut() {
+                if joined {
+                    if !phases.contains(&phase) {
+                        phases.push(phase);
+                    }
+                    continue;
+                }
+            }
+            if let Some((_, end, _)) = scopes.last_mut() {
+                *end = index;
+            }
+            scopes.push((index, words.len(), vec![phase]));
         }
-        let phase = if before && after {
-            "Before/After"
-        } else if before {
-            "Before"
-        } else {
-            "After"
-        };
-        for (i, word) in words.iter().enumerate() {
-            let Some(value) = number(word) else {
-                continue;
-            };
-            if i > 0 && matches!(words[i - 1], "not" | "example") {
-                continue;
-            }
-            // Keep native field/value pairs intact. Flattening punctuation and
-            // underscores read `tests_run 10, failure_events 14, errors 0` as
-            // "10 failures" and "14 errors", falsely rejecting a truthful report.
-            let field_first = i.checked_sub(1).and_then(|previous| {
-                let separator = lower[spans[previous].2..spans[i].1].trim();
-                matches!(separator, "" | ":" | "=")
-                    .then(|| count_field(words[previous]))
-                    .flatten()
-            });
-            let following = |offset| {
-                let (_, _, end) = spans.get(i + offset - 1)?;
-                let (word, start, _) = spans.get(i + offset)?;
-                lower[*end..*start]
-                    .chars()
-                    .all(char::is_whitespace)
-                    .then_some(*word)
-            };
-            let field = field_first.or_else(|| match (following(1), following(2)) {
-                (Some("failures" | "failure"), _) => Some("failure_events"),
-                (Some("failed"), _) => Some("failed_tests"),
-                (Some("errors" | "error"), _) => Some("errors"),
-                (Some("skipped"), _) => Some("skipped"),
-                (Some("passed"), _) => Some("passed"),
-                (Some("tests" | "test"), Some("passed")) => Some("passed"),
-                (Some("tests" | "test"), Some("failed")) => Some("failed_tests"),
-                (Some("tests" | "test"), _) => Some("tests_run"),
-                _ => None,
-            });
-            let Some(field) = field else { continue };
-            let mut selected: Vec<_> = facts.iter().filter(|fact| fact["phase"] == phase).collect();
-            let cited: Vec<_> = selected
-                .iter()
-                .copied()
-                .filter(|fact| {
-                    fact["command"]
-                        .as_str()
-                        .is_some_and(|command| raw.contains(&format!("`{command}`")))
-                })
-                .collect();
-            if !cited.is_empty() {
-                selected = cited;
-            }
-            if selected.is_empty()
-                || selected.iter().any(|fact| {
-                    let observed = if field == "failed_tests" {
-                        (fact["counts"]["runner"] == "libtest")
-                            .then(|| fact["counts"]["failure_events"].as_u64())
-                            .flatten()
-                    } else {
-                        fact["counts"][field].as_u64()
-                    };
-                    observed != Some(value)
-                })
-            {
-                issues.push(format!("supported {phase} {field} count: the authored value {value} is not established by the selected native receipts. Use final_answer.check_facts, label the phase, or omit the count; do not infer counts from partial diagnostics or rerun a check merely to repair prose."));
+        for (start, end, phases) in scopes {
+            let clause_end = spans.get(end).map_or(raw.len(), |s| s.1);
+            let clause = &raw[spans[start].1..clause_end];
+            for (_, value, field) in claims.iter().filter(|(i, _, _)| *i >= start && *i < end) {
+                for phase in &phases {
+                    let mut selected: Vec<_> = facts
+                        .iter()
+                        .filter(|fact| fact["phase"] == *phase)
+                        .collect();
+                    let cited: Vec<_> = selected
+                        .iter()
+                        .copied()
+                        .filter(|fact| {
+                            fact["command"]
+                                .as_str()
+                                .is_some_and(|command| clause.contains(&format!("`{command}`")))
+                        })
+                        .collect();
+                    if !cited.is_empty() {
+                        selected = cited;
+                    }
+                    if selected.is_empty()
+                        || selected.iter().any(|fact| {
+                            let observed = if *field == "failed_tests" {
+                                (fact["counts"]["runner"] == "libtest")
+                                    .then(|| fact["counts"]["failure_events"].as_u64())
+                                    .flatten()
+                            } else {
+                                fact["counts"][*field].as_u64()
+                            };
+                            observed != Some(*value)
+                        })
+                    {
+                        issues.push(format!("supported {phase} {field} count: the authored value {value} is not established by the selected native receipts. Use final_answer.check_facts, label the phase, or omit the count; do not infer counts from partial diagnostics or rerun a check merely to repair prose."));
+                    }
+                }
             }
         }
     }
     issues
+}
+
+fn count_claims(lower: &str, spans: &[(&str, usize, usize)]) -> Vec<(usize, u64, &'static str)> {
+    let words: Vec<_> = spans.iter().map(|(word, _, _)| *word).collect();
+    let mut claims = Vec::new();
+    for (i, word) in words.iter().enumerate() {
+        let Some(value) = number(word) else {
+            continue;
+        };
+        if i > 0 && matches!(words[i - 1], "not" | "example") {
+            continue;
+        }
+        // Keep native field/value pairs intact. Flattening punctuation and
+        // underscores read `tests_run 10, failure_events 14, errors 0` as
+        // "10 failures" and "14 errors", falsely rejecting a truthful report.
+        let field_first = i.checked_sub(1).and_then(|previous| {
+            let separator = lower[spans[previous].2..spans[i].1].trim();
+            matches!(separator, "" | ":" | "=")
+                .then(|| count_field(words[previous]))
+                .flatten()
+        });
+        let following = |offset| {
+            let (_, _, end) = spans.get(i + offset - 1)?;
+            let (word, start, _) = spans.get(i + offset)?;
+            lower[*end..*start]
+                .chars()
+                .all(char::is_whitespace)
+                .then_some(*word)
+        };
+        let field = field_first.or_else(|| match (following(1), following(2)) {
+            (Some("failures" | "failure"), _) => Some("failure_events"),
+            (Some("failed"), _) => Some("failed_tests"),
+            (Some("errors" | "error"), _) => Some("errors"),
+            (Some("skipped"), _) => Some("skipped"),
+            (Some("passed"), _) => Some("passed"),
+            (Some("tests" | "test"), Some("passed")) => Some("passed"),
+            (Some("tests" | "test"), Some("failed")) => Some("failed_tests"),
+            (Some("tests" | "test"), _) => Some("tests_run"),
+            _ => None,
+        });
+        let Some(field) = field else { continue };
+        claims.push((i, value, field));
+    }
+    claims
 }

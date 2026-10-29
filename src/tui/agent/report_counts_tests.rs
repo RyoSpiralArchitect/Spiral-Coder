@@ -134,6 +134,39 @@ fn count_assertions_distinguish_phases_subtest_events_and_non_count_literals() {
     assert!(!report_counts::issues("Before there were 14 failures.", &multiple).is_empty());
 }
 
+#[test]
+fn count_phases_and_command_citations_are_local_to_each_clause() {
+    let facts = vec![
+        json!({"phase":"Before","command":"python a.py","counts":{"failure_events":14,"tests_run":10}}),
+        json!({"phase":"Before","command":"python 日本語.py","counts":{"failure_events":3,"tests_run":10}}),
+        json!({"phase":"After","command":"python a.py","counts":{"failure_events":0,"tests_run":10}}),
+        json!({"phase":"After","command":"python 日本語.py","counts":{"failure_events":0,"tests_run":10}}),
+    ];
+    for summary in [
+        "Before: `python a.py` had 14 failures, After: 0 failures.",
+        "After: 0 failures, Before: `python a.py` had 14 failures.",
+        "Before: `python a.py` failure_events=14, After: failure_events=0.",
+        "Before: `python a.py` had 14 failures, baseline: `python 日本語.py` had 3 failures, After: 0 failures.",
+        "Before and after: tests_run=10.",
+        "Before check failed, after: 0 failures.",
+        "Before `python a.py` failed but after there were 0 failures.",
+    ] {
+        assert!(report_counts::issues(summary, &facts).is_empty(), "{summary}");
+    }
+    for summary in [
+        "Before: 0 failures, After: 14 failures.",
+        "Before and after: 0 failures.",
+        "Before/after: 0 failures.",
+        "Before: `python a.py` had 14 failures, After: 14 failures.",
+        "Before: `python a.py` had 14 failures, baseline: `python 日本語.py` had 14 failures.",
+    ] {
+        assert!(
+            !report_counts::issues(summary, &facts).is_empty(),
+            "{summary}"
+        );
+    }
+}
+
 #[cfg(not(target_os = "windows"))]
 #[tokio::test]
 async fn native_exec_preserves_stderr_counts_before_preview_and_projects_them_to_both_roles() {

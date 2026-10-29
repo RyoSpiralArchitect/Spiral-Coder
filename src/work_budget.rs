@@ -22,6 +22,14 @@ pub(crate) struct RequestReceipt {
     pub charge: RequestCharge,
     #[serde(default)]
     pub transport_rejection: Option<TransportRejection>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<RequestPurpose>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum RequestPurpose {
+    ReportCloseout,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +86,8 @@ pub(crate) struct WorkBudget {
     request_ceiling: Option<usize>,
     // Transient role-slice policy; not new durable requests or task authority.
     return_on_verification_failure: bool,
+    // One wire attempt for a report fallback, including transport/API retries.
+    report_closeout_ceiling: Option<usize>,
 }
 
 static NEXT_TASK: AtomicU64 = AtomicU64::new(0);
@@ -120,6 +130,7 @@ impl WorkBudget {
             claimed: Arc::new(AtomicBool::new(false)),
             request_ceiling: None,
             return_on_verification_failure: false,
+            report_closeout_ceiling: None,
         }
     }
 
@@ -131,6 +142,7 @@ impl WorkBudget {
             claimed: Arc::new(AtomicBool::new(true)),
             request_ceiling: None,
             return_on_verification_failure: false,
+            report_closeout_ceiling: None,
         })
     }
 
@@ -221,6 +233,21 @@ impl WorkBudget {
                 }
     }
 
+    pub(crate) fn with_report_closeout(&self) -> Self {
+        let mut bounded = self.with_request_allowance(1);
+        let ceiling = self.snapshot().requests.len().saturating_add(1);
+        bounded.report_closeout_ceiling = Some(
+            self.report_closeout_ceiling
+                .map_or(ceiling, |old| old.min(ceiling)),
+        );
+        bounded.return_on_verification_failure = false;
+        bounded
+    }
+
+    pub(crate) fn is_report_closeout(&self) -> bool {
+        self.report_closeout_ceiling.is_some()
+    }
+
     fn persist(&self, state: &mut WorkState) -> Result<()> {
         if let Some(path) = &self.path {
             let _write = PERSIST_LOCK.lock().unwrap();
@@ -264,6 +291,9 @@ impl WorkBudget {
             || self
                 .request_ceiling
                 .is_some_and(|ceiling| state.task_requests() >= ceiling)
+            || self
+                .report_closeout_ceiling
+                .is_some_and(|ceiling| state.requests.len() >= ceiling)
         {
             return Err(ChunkExhausted.into());
         }
@@ -277,6 +307,9 @@ impl WorkBudget {
             status: "in_flight_or_interrupted".into(),
             charge: RequestCharge::Task,
             transport_rejection: None,
+            purpose: self
+                .is_report_closeout()
+                .then_some(RequestPurpose::ReportCloseout),
         });
         // Reserve durably before any network I/O, including compatibility retries.
         self.persist(&mut state)?;
@@ -351,6 +384,37 @@ pub(crate) fn begin(payload: &Value) -> Result<Option<RequestGuard>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn report_closeout_has_one_wire_attempt_even_after_transport_reclassification() {
+        let budget = WorkBudget::new("task", 10, None);
+        budget
+            .configure(BudgetPolicy {
+                observer_reserved_requests: 3,
+                transport_repair_limit: 4,
+            })
+            .unwrap();
+        let bounded = budget.with_report_closeout();
+        let attempt = bounded.begin("coder", &Value::Null).unwrap();
+        attempt.status("completed");
+        drop(attempt);
+        bounded
+            .reject_transport("coder", 0, TransportRejection::NativeArguments)
+            .unwrap();
+        assert_eq!(bounded.slice_remaining("coder"), 0);
+        assert!(bounded
+            .with_report_closeout()
+            .begin("coder", &Value::Null)
+            .err()
+            .unwrap()
+            .is::<ChunkExhausted>());
+        assert_eq!(budget.remaining_for("coder"), 7);
+        assert_eq!(budget.snapshot().request_limit, 10);
+        let receipt = serde_json::to_value(&budget.snapshot().requests[0]).unwrap();
+        assert_eq!(receipt["purpose"], "report_closeout");
+        assert_eq!(receipt["charge"], "transport");
+        assert!(!budget.is_report_closeout());
+    }
+
     #[tokio::test]
     async fn role_allowance_counts_retries_without_changing_the_shared_cap() {
         let budget = WorkBudget::new("task", 6, None);

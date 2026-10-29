@@ -7,6 +7,9 @@ pub(crate) struct ObserverAssistRequest {
     source_stamp: u64,
     original_prompt: String,
     repair_used: bool,
+    repair_started: bool,
+    repairing_done: bool,
+    pending_report_closeout: bool,
     request_cursor: usize,
     terminal_diagnosis: bool,
     pub(super) pending_repair: Option<String>,
@@ -18,6 +21,9 @@ impl ObserverAssistRequest {
             source_stamp: source_stamp(app),
             original_prompt,
             repair_used: false,
+            repair_started: false,
+            repairing_done: false,
+            pending_report_closeout: false,
             request_cursor: app.work_budget.snapshot().requests.len(),
             terminal_diagnosis: false,
             pending_repair: None,
@@ -34,6 +40,10 @@ impl ObserverAssistRequest {
             return false;
         }
         self.repair_used = true;
+        self.repairing_done = suggestion::parse_observer_suggestion_envelope(raw)
+            .as_ref()
+            .and_then(suggestion::primary_suggestion)
+            .is_some_and(|s| s.suggested_tool.as_deref() == Some("done"));
         self.pending_repair = Some(crate::observer_action::repair_prompt(
             &self.original_prompt,
             raw,
@@ -50,6 +60,11 @@ fn source_stamp(app: &App) -> u64 {
         .as_ref()
         .map(|a| a.revision)
         .hash(&mut stamp);
+    if let Some(session) = &app.coder_session {
+        serde_json::to_string(&session.messages)
+            .unwrap_or_default()
+            .hash(&mut stamp);
+    }
     for message in &app.coder.messages {
         std::mem::discriminant(&message.role).hash(&mut stamp);
         message.content.hash(&mut stamp);
@@ -112,6 +127,9 @@ pub(super) async fn maybe_observer_action_repair(app: &mut App, tx: &mpsc::Sende
         app.observer.push_tool(problem);
         app.observer_assist_request = None;
         return;
+    }
+    if let Some(request) = &mut app.observer_assist_request {
+        request.repair_started = true;
     }
     start_request(
         app,
@@ -183,6 +201,21 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             }
             .to_string(),
         );
+        let limited_done_repair = app.observer_assist_request.as_ref().is_some_and(|r| {
+            let work = app.work_budget.snapshot();
+            r.repair_started
+                && r.repairing_done
+                && !r.terminal_diagnosis
+                && matches!(&work.requests[r.request_cursor.min(work.requests.len())..], [receipt]
+                    if receipt.role == "observer" && receipt.status == "output_limited")
+        });
+        if !scheduled && limited_done_repair && super::report_closeout::ready(app) {
+            app.observer_assist_request
+                .as_mut()
+                .unwrap()
+                .pending_report_closeout = true;
+            app.observer.push_tool("(next-action) done repair reached the output limit. Native checks are current; reserving one Coder report-only wire attempt within the existing task budget. Observer advice remains rejected and completion still requires a validated authored done.".into());
+        }
     } else if let Some(parsed) = parsed.as_ref() {
         if let Some(recovery) = suggestion::framing_recovery(&raw) {
             app.observer.push_tool(format!("(next-action) JSON envelope framing recovered: {recovery:?}; authored values and raw response retained; normal action and evidence gates apply."));
@@ -205,6 +238,21 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
     if let Some(request) = app.observer_assist_request.as_mut() {
         request.source_stamp = stamp;
     }
+}
+
+pub(super) async fn maybe_report_closeout(app: &mut App, tx: &mpsc::Sender<RequestEvent>) -> bool {
+    if app.coder.streaming || app.observer.streaming || !request_is_current(app) {
+        return false;
+    }
+    let pending = app
+        .observer_assist_request
+        .as_mut()
+        .is_some_and(|r| std::mem::take(&mut r.pending_report_closeout));
+    if !pending || !super::report_closeout::ready(app) {
+        return false;
+    }
+    send_coder_input(app, tx, "Observer's done repair reached its output limit; its advice was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. Do not execute more work or infer missing proof. If anything is unverified, report it as remaining. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
+    app.report_closeout_attempted
 }
 
 pub(super) async fn send_next_action_assist(

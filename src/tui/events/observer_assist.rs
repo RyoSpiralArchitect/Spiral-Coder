@@ -93,7 +93,13 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .filter(|goal| !goal.trim().is_empty())
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
-    let available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
+    let mut available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
+    let obligations = app.coder_session.as_ref().map(|session| {
+        agent::task_obligations::project(&session.messages, app.project_test_cmd.as_deref())
+    });
+    if let Some(obligations) = &obligations {
+        obligations.bind_observer_tools(&mut available_tools);
+    }
     let execution = app.coder_session.as_ref().map(|session| {
         agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
     });
@@ -125,7 +131,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "recent_assistant_messages": recent_assistant,
         "recent_tool_calls": native_actions,
         "execution_evidence": execution,
-        "task_obligations": app.coder_session.as_ref().map(|s| agent::task_obligations::project(&s.messages, app.project_test_cmd.as_deref())),
+        "task_obligations": obligations,
         "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
         "previous_assist_outcome": app.last_observer_contract_outcome,
         "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining()},
@@ -261,6 +267,7 @@ Rules:\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
 - Use final_answer.check_facts for test counts, preserving phase, exact command and runner units. Null counts are unknown. Keep failure events distinct from failed test methods. Check that any example output states its input condition; do not turn the empty-input example into a constant result for every input.\n\
+- For done, use acceptance_criteria.reference exactly in completed_acceptance, remaining_acceptance and acceptance_evidence.criterion. Provide exactly one evidence row for every completed criterion, citing current_commands verbatim. Do not paraphrase references or cover only the test-related criteria. Available command choices are not proof for every criterion: decide each mapping from native evidence and leave unsupported criteria remaining. Keep the envelope concise; one primary suggestion is sufficient.\n\
 - When task_obligations.report_repair is non-null, its native feedback is the current blocker. Suggest done with a corrected authored summary using final_answer and current_commands, or no-tool clarify when uncertain. Do not restart reading, editing or passed checks based on selected historical failures. Preserve exact case and spaces.\n\
 - If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
 - execution_evidence.actions is chronological history. An earlier governor rejection is not a current blocker or a user approval rejection; use the latest action feedback and current pending checks.\n\
