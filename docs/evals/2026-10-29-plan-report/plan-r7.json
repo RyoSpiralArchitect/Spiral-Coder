@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "wave": "r7",
+  "intervention": "Preserve native count field/value boundaries in authored reports; retain positive and false-count controls from both actual r5 refused reports.",
+  "baseline_commit": "728014ff87b4db683073759a8939e1bed1806dcc",
+  "runtime_commit": "d2fe7876e358589c4836ba70d14c17e576127b8b",
+  "episodes": [
+    "large-large/env-bool"
+  ],
+  "attempts": 1,
+  "maximum_wire_requests": 28,
+  "task_requests_per_episode": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "episode_wall_seconds": 600,
+  "coder": "mistral-large-4",
+  "observer": "mistral-large-4",
+  "prompt_revision": 2,
+  "task_prompt_test_oracle_and_assessor_changed": false,
+  "no_retry_in_place": true,
+  "qualification": "Unchanged strict task qualification: independent original tests, native baseline/final check, source+docs edits, authored outcome rows, exact roles/budgets and scope.",
+  "supplementary_review": [
+    "Plan Gate refusals and reason",
+    "Final reported counts against native receipts, distinguishing subtest events",
+    "Final explanation conditions against candidate source and tests"
+  ],
+  "claim_boundary": "Adaptive development evidence, not a controlled causal comparison or general success rate. Count validation is bounded English and does not certify arbitrary prose. Preserve every failure and incomplete attempt. Further live waves require separate frozen declarations.",
+  "previous_wave": "r6",
+  "adaptive_change_reason": "Both correct structured count reports in r5 env-bool were falsely refused by the new checker, which attached values to the following field. r6 was already frozen and started before that diagnosis. This targeted confirmation uses final code; all earlier waves remain unchanged."
+}

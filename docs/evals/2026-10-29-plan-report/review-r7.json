@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "wave": "r7",
+  "manifest_entries_verified": 61,
+  "selected_credential_absence_checked_text_files": 83,
+  "assessment_sha256": "760d4c39d997046870a75aa1192edc8b1844f3d23a17e3d85d50f457f74a6412",
+  "rows": [
+    {
+      "case": "env-bool",
+      "strict_qualified": true,
+      "wire_requests": 16,
+      "request_roles": {
+        "coder": 12,
+        "observer": 4
+      },
+      "patch_sha256": "00cb9ecdb7b466d8f5194149040eb8d5897314ffdc74cf9c1abfd529c681defd",
+      "patch_replays_exactly": true,
+      "native_count_receipts": {
+        "CrpQeBlAQ": {
+          "errors": 0,
+          "failure_events": 14,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "kjzSHYPaK": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "retained_leading_plan_admissions": [
+        {
+          "call_id": "ysqzhmZxV",
+          "prefix": "plan>"
+        },
+        {
+          "call_id": "prG0C2G6T",
+          "prefix": ">"
+        },
+        {
+          "call_id": "kjzSHYPaK",
+          "prefix": ">"
+        }
+      ],
+      "manual_report_review": "The authored Before tests_run=10, failure_events=14, errors=0, skipped=0 and After tests_run=10, failure_events=0, errors=0, skipped=0 match their native receipts. The report explicitly distinguishes subtest failure events from test methods. Structured fields were accepted on the first done call; no Final handoff refusal occurred. Source and documentation match the task contract."
+    }
+  ],
+  "claim_boundary": "Frozen strict qualification and supplementary manual review are separate. Adaptive development evidence does not establish a general success rate, improved efficiency or arbitrary prose accuracy.",
+  "manual_review": "Source, documentation, final authored report, native count receipts and every refused action inspected.",
+  "findings": [
+    {
+      "case": "env-bool",
+      "finding": "One missing-plan refusal and one missing mutation-evidence block remain. They do not provide execution or completion evidence; subsequent admitted actions repaired both artifacts and ran the fresh exact check."
+    }
+  ]
+}

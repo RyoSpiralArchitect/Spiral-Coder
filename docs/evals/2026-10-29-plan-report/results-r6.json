@@ -1,0 +1,1335 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-28T22:38:02.638483+00:00",
+  "predeclaration_sha256": "653adfe66f6253522a5f35711bef8295602d9eae590907694375b6b3e55fda8d",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "large-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "large-large",
+        "model": "mistral-large-4",
+        "case": "env-bool",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 212.989,
+        "finished_at": "2026-10-28T22:36:35.822016+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": false,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 13,
+        "transport_requests": 0,
+        "wire_requests": 13,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": false
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": false,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": false
+      },
+      "authored_summary": "",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        "docs/settings.md",
+        "settings.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 13,
+      "request_roles": {
+        "coder": 9,
+        "observer": 4
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 7144,
+          "estimated_input_tokens": 9234,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 538,
+            "completion_tokens_details": {
+              "reasoning_tokens": 218
+            },
+            "prompt_tokens": 8102,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8640
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3878,
+          "estimated_input_tokens": 9445,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 366,
+            "completion_tokens_details": {
+              "reasoning_tokens": 46
+            },
+            "prompt_tokens": 8367,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8733
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7173,
+          "estimated_input_tokens": 10327,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 770,
+            "completion_tokens_details": {
+              "reasoning_tokens": 428
+            },
+            "prompt_tokens": 9044,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 9814
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 19793,
+          "estimated_input_tokens": 9446,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 2614,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2106
+            },
+            "prompt_tokens": 8113,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10727
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8902,
+          "estimated_input_tokens": 12050,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 419,
+            "completion_tokens_details": {
+              "reasoning_tokens": 31
+            },
+            "prompt_tokens": 10445,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10864
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 15025,
+          "estimated_input_tokens": 13973,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 1036,
+            "completion_tokens_details": {
+              "reasoning_tokens": 463
+            },
+            "prompt_tokens": 12265,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13301
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 29244,
+          "estimated_input_tokens": 9439,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 4273,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3828
+            },
+            "prompt_tokens": 8075,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 12348
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 10402,
+          "estimated_input_tokens": 14998,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 476,
+            "completion_tokens_details": {
+              "reasoning_tokens": 53
+            },
+            "prompt_tokens": 12991,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13467
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6594,
+          "estimated_input_tokens": 16179,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 418,
+            "completion_tokens_details": {
+              "reasoning_tokens": 40
+            },
+            "prompt_tokens": 14232,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14650
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8329,
+          "estimated_input_tokens": 16222,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 803,
+            "completion_tokens_details": {
+              "reasoning_tokens": 110
+            },
+            "prompt_tokens": 14273,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15076
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9607,
+          "estimated_input_tokens": 16090,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 647,
+            "completion_tokens_details": {
+              "reasoning_tokens": 102
+            },
+            "prompt_tokens": 14299,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 14946
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 32350,
+          "estimated_input_tokens": 8635,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 4285,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3394
+            },
+            "prompt_tokens": 7459,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 11744
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 53132,
+          "estimated_input_tokens": 9871,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 8192,
+            "completion_tokens_details": {
+              "reasoning_tokens": 8191
+            },
+            "prompt_tokens": 8491,
+            "prompt_tokens_details": {
+              "cached_tokens": 6636
+            },
+            "service_tier": "standard",
+            "total_tokens": 16683
+          },
+          "role": "observer",
+          "status": "output_limited",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "lgkml4Sym",
+            "My7lmfKxR"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "lgkml4Sym"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "0JpAOfYVe",
+            "4B3gtE2xG",
+            "7ZSREnBJM",
+            "xgGRroElW"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "0JpAOfYVe"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "87fRAqnBc",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\": \"settings.py\"}"
+        },
+        {
+          "call_id": "5gs4sQCzn",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[settings.py] (7 lines, 171 bytes) [pruned 8L]"
+        },
+        {
+          "call_id": "PgCXfQxWG",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/env-bool/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/"
+        },
+        {
+          "call_id": "lgkml4Sym",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "My7lmfKxR",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "settings.py",
+            "replace": "_TRUE_TOKENS = frozenset({\"true\", \"1\", \"yes\", \"on\"})\n_FALSE_TOKENS = frozenset({\"false\", \"0\", \"no\", \"off\"})\n\n\ndef parse_bool(value, default=False):\n    if value is None:\n        return default\n    token = value.strip().lower()\n    if token == \"\":\n        return default\n    if token in _TRUE_TOKENS:\n        return True\n    if token in _FALSE_TOKENS:\n        return False\n    raise ValueError(f\"invalid boolean setting: {value!r}\")",
+            "search": "def parse_bool(value, default=False):\n    if value is None:\n        return default\n    return bool(value)"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'settings.py' (+11 lines, 18 total)\n[history digest — kept 10/53 lines, 2574 chars]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\nFile \"tests/test_settings.py\", line 51, in test_documented_examples_and_check\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.…\n[hash] before=5b40989b524810bd after=1ddef7bee231e07c\n✓ auto-verify: patch confirmed in file\n[diff @line 4]\n\"\"\"Read a boolean setting from an environment-style string.\"\"\"\n- def parse_bool(value, default=False):"
+        },
+        {
+          "call_id": "0JpAOfYVe",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes)\nfrom pathlib import Path\nimport unittest\n\nfrom settings import parse_bool\n\n\nclass BooleanSettings(unittest.TestCase):\n    def test_true_tokens(self):\n        for value in (\"true\", \"1\", \"yes\", \"on\"):\n            with self.subTest(value=value):\n                self.assertIs(parse_bool(value), True)\n\n    def test_false_tokens(self):\n        for value in (\"false\", \"0\", \"no\", \"off\"):\n            with self.subTest(value=value):\n                self.assertIs(parse_bool(value), False)\n\n    def test_case_and_whitespace(self):\n        self.assertIs(parse_bool(\" \\tYeS\\n\"), True)\n        self.assertIs(parse_bool(\" \\tOFF\\n\"), False)\n\n    def test_missing_uses_default(self):\n        self.assertIs(parse_bool(None), False)\n        self.assertIs(parse_bool(No"
+        },
+        {
+          "call_id": "4B3gtE2xG",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/settings.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/settings.md] (4 lines, 159 bytes)\n# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled.\n"
+        },
+        {
+          "call_id": "7ZSREnBJM",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/settings.md",
+            "replace": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style boolean setting.\n\n## Accepted tokens\n\n- True tokens: `true`, `1`, `yes`, `on` return `True`.\n- False tokens: `false`, `0`, `no`, `off` return `False`.\n\n## Case and whitespace\n\nMatching ignores case and surrounding whitespace, so `\" \\tYeS\\n\"` is `True`\nand `\" \\tOFF\\n\"` is `False`.\n\n## Defaults\n\n`None`, empty strings, and whitespace-only strings return the supplied\n`default` (a bool, `False` unless overridden). An explicit false token\noverrides the default.\n\n## Errors\n\nAny other string raises `ValueError`; a nonempty string is not automatically\ntrue.\n\n## Examples\n\n- `parse_bool(\"OFF\") -> False`\n- `parse_bool(\"\", default=True) -> True`\n\n## Verify\n\nRun the test suite with:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled."
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 8,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/settings.md' (+33 lines, 37 total)\n[history digest — kept 10/64 lines, 2330 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=10acb930c9c2df31 after=698d98c5be0d9cff\n✓ auto-verify: patch confirmed in file\n[diff @line 2]\n[docs/settings.md] (4 lines, 159 bytes)\n- # Boolean settings\n-\n- `parse_bool(value, default=False)` reads an environment-style setting.\n- The current implementation treats every nonempty string as enabled."
+        },
+        {
+          "call_id": "xgGRroElW",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/env-bool/workspace"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... ok\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... ok\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... ok\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... ok\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... ok\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... ok\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "large-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "event-summary",
+      "state": "finished",
+      "process": {
+        "profile": "large-large",
+        "model": "mistral-large-4",
+        "case": "event-summary",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 227.932,
+        "finished_at": "2026-10-28T22:32:20.587014+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 14,
+        "transport_requests": 0,
+        "wire_requests": 14,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Task complete. Changed files (full paths):\n- /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace/summary.py\n- /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace/docs/summary.md\n\nsummary.py repair: summarize(lines) now iterates the input with enumerate(start=1) so physical 1-based line numbers include skipped blank lines; it skips empty/whitespace-only lines; parses each remaining line as JSON; raises ValueError mentioning the physical line number (e.g. \"line 3\") for malformed JSON, non-object records, and missing/unknown/non-string levels; counts only the exact lowercase string levels \"info\", \"warning\", \"error\" while ignoring other object fields; and always returns exactly {\"info\": int, \"warning\": int, \"error\": int} including zeros. Input strings are preserved unchanged and generator/iterable support is retained. Invalid records are never silently skipped.\n\ndocs/summary.md update: documents the contract, blank-line skipping with physical line numbering, and ValueError behavior with a `line 3` example; includes the exact empty-input result {\"info\": 0, \"warning\": 0, \"error\": 0} (an example value for empty input, not a constant result for all inputs) and the exact test command python3 -B -S -m unittest discover -s tests -v.\n\nTests were preserved unchanged; only summary.py and docs/summary.md were modified. No dependencies installed, no providers called, no commits or pushes.\n\nRecorded outcome rows (exact command: python3 -B -S -m unittest discover -s tests -v):\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`\n\nBefore (baseline, unchanged code): FAILED — 10 tests run, 5 errors, 8 failure events, 0 skipped (call_id MsjYjSgvY).\nAfter (both artifacts repaired): PASSED — 10 tests run, 0 errors, 0 failure events, 0 skipped, exit_code 0, unittest reported OK (call_id RdnflZVCf).\n\nRemaining work: none. All four acceptance criteria are satisfied.",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        "docs/summary.md",
+        "summary.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 14,
+      "request_roles": {
+        "coder": 11,
+        "observer": 3
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 7978,
+          "estimated_input_tokens": 9342,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 383,
+            "completion_tokens_details": {
+              "reasoning_tokens": 80
+            },
+            "prompt_tokens": 8167,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8550
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3627,
+          "estimated_input_tokens": 9799,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 336,
+            "completion_tokens_details": {
+              "reasoning_tokens": 50
+            },
+            "prompt_tokens": 8743,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 9079
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 17357,
+          "estimated_input_tokens": 10546,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 1614,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1269
+            },
+            "prompt_tokens": 9323,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 10937
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 16911,
+          "estimated_input_tokens": 9531,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 1286,
+            "completion_tokens_details": {
+              "reasoning_tokens": 888
+            },
+            "prompt_tokens": 8188,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 9474
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6077,
+          "estimated_input_tokens": 12026,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 396,
+            "completion_tokens_details": {
+              "reasoning_tokens": 19
+            },
+            "prompt_tokens": 10502,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10898
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 35887,
+          "estimated_input_tokens": 13999,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 3036,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2455
+            },
+            "prompt_tokens": 12433,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 15469
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 27113,
+          "estimated_input_tokens": 9528,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 2813,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2378
+            },
+            "prompt_tokens": 8160,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10973
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7701,
+          "estimated_input_tokens": 14773,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 459,
+            "completion_tokens_details": {
+              "reasoning_tokens": 72
+            },
+            "prompt_tokens": 12926,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13385
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 14415,
+          "estimated_input_tokens": 16072,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 1085,
+            "completion_tokens_details": {
+              "reasoning_tokens": 407
+            },
+            "prompt_tokens": 14352,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 15437
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 10646,
+          "estimated_input_tokens": 18251,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 635,
+            "completion_tokens_details": {
+              "reasoning_tokens": 116
+            },
+            "prompt_tokens": 16434,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 17069
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13568,
+          "estimated_input_tokens": 16863,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 1061,
+            "completion_tokens_details": {
+              "reasoning_tokens": 197
+            },
+            "prompt_tokens": 15060,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16121
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 27573,
+          "estimated_input_tokens": 8978,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 2631,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2133
+            },
+            "prompt_tokens": 7685,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10316
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9659,
+          "estimated_input_tokens": 17999,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 565,
+            "completion_tokens_details": {
+              "reasoning_tokens": 100
+            },
+            "prompt_tokens": 15946,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16511
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 26125,
+          "estimated_input_tokens": 16181,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 1844,
+            "completion_tokens_details": {
+              "reasoning_tokens": 719
+            },
+            "prompt_tokens": 14522,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16366
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "xltdwtiwU",
+            "NA1ECHnxJ"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_summary.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "xltdwtiwU"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "ce4mB0Mpy",
+            "KAt6IzWgA",
+            "iybWNER1o",
+            "HuQ2l7OzY"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_summary.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "ce4mB0Mpy"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "RdnflZVCf",
+            "Btvb7b1VQ"
+          ],
+          "completed": true,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "RdnflZVCf"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1,
+        "Evidence Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "AyNgcpY2W",
+          "tool": "read_file",
+          "arguments": {
+            "path": "summary.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan has too many acceptance criteria (max 4)\nRepair all listed fields together. Use one field per line: goal, steps (2..7 numbered items), acceptance (1..4 items), risks, assumptions. Keep the user's task and acceptance obligations.\nMinimal valid shape (plain lines, no markdown bullets or bold):\n<plan>\ngoal: <one sentence>\nsteps:\n1) <first action>\n2) <verify the result>\nacceptance:\n1) <a checkable criterion>\nrisks: <main risk>\nassumptions: <main assumption>\n</plan>\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\nread_file\narguments:\n{\"path\": \"summary.py\"}"
+        },
+        {
+          "call_id": "IhajJ6cit",
+          "tool": "read_file",
+          "arguments": {
+            "path": "summary.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[summary.py] (10 lines, 246 bytes) [pruned 11L]"
+        },
+        {
+          "call_id": "MsjYjSgvY",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines)\nFile \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 355, in raw_decode\njson."
+        },
+        {
+          "call_id": "xltdwtiwU",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_summary.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "NA1ECHnxJ",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "summary.py",
+            "replace": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line_number, line in enumerate(lines, start=1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except json.JSONDecodeError as exc:\n            raise ValueError(f\"line {line_number}: invalid JSON: {exc}\") from exc\n        if not isinstance(event, dict):\n            raise ValueError(f\"line {line_number}: expected a JSON object\")\n        level = event.get(\"level\")\n        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"line {line_number}: missing or unknown level\")\n        counts[level] += 1\n    return counts",
+            "search": "def summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line in lines:\n        event = json.loads(line)\n        counts[event[\"level\"]] += 1\n    return counts"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'summary.py' (+10 lines, 20 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\nFile \"tests/test_summary.py\", line 52, in test_documentation\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'"
+        },
+        {
+          "call_id": "ce4mB0Mpy",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_summary.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "KAt6IzWgA",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/summary.md",
+            "replace": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines event export.\n\n## Contract\n\n`lines` is an iterable of strings (a list or a generator). Each non-blank\nline must be a JSON object with a `\"level\"` field set to one of the exact\nlowercase strings `\"info\"`, `\"warning\"`, or `\"error\"`. All other object\nfields are ignored. The function always returns exactly the integer counts\nfor the three levels, including zeros. For empty input the exact result is:\n\n{\"info\": 0, \"warning\": 0, \"error\": 0}\n\n## Blank lines\n\nEmpty or whitespace-only lines are skipped. They still count toward the\nphysical 1-based line number used in error messages.\n\n## Errors\n\nMalformed JSON, non-object records, and missing, unknown, or non-string\nlevels raise `ValueError` mentioning the physical 1-based line number,\nincluding skipped blank lines. For example, given the input:\n\n```\n\"\\n\"\n'{\"level\":\"info\"}'\n\"{\"\n```\n\nthe malformed third record raises `ValueError` mentioning `line 3`.\nInvalid records are never silently skipped. Input strings are preserved\nunchanged.\n\n## Verify\n\nRun the exact test command:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level."
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evidence Gate]\nYou are about to mutate an existing file via patch_file.\nTarget path: docs/summary.md\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(path=summary.py) -> summary.py\n- read_file(path=tests/test_summary.py) "
+        },
+        {
+          "call_id": "iybWNER1o",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/summary.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/summary.md] (4 lines, 134 bytes)\n# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level.\n"
+        },
+        {
+          "call_id": "HuQ2l7OzY",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/summary.md",
+            "replace": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines event export.\n\n## Contract\n\n`lines` is an iterable of strings (a list or a generator). Each non-blank\nline must be a JSON object with a `\"level\"` field set to one of the exact\nlowercase strings `\"info\"`, `\"warning\"`, or `\"error\"`. All other object\nfields are ignored. The function always returns exactly the integer counts\nfor the three levels, including zeros. For empty input the exact result is:\n\n{\"info\": 0, \"warning\": 0, \"error\": 0}\n\n## Blank lines\n\nEmpty or whitespace-only lines are skipped. They still count toward the\nphysical 1-based line number used in error messages.\n\n## Errors\n\nMalformed JSON, non-object records, and missing, unknown, or non-string\nlevels raise `ValueError` mentioning the physical 1-based line number,\nincluding skipped blank lines. For example, given the input:\n\n```\n\"\\n\"\n'{\"level\":\"info\"}'\n\"{\"\n```\n\nthe malformed third record raises `ValueError` mentioning `line 3`.\nInvalid records are never silently skipped. Input strings are preserved\nunchanged.\n\n## Verify\n\nRun the exact test command:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level."
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 9,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/summary.md' (+38 lines, 42 total)\n[history digest — kept 10/69 lines, 2478 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=405a18cf331bf201 after=6ce8489b7a716ed7\n✓ auto-verify: patch confirmed in file\n[diff @line 2]\n[docs/summary.md] (4 lines, 134 bytes)\n- # Event summary\n-\n- `summarize(lines)` counts levels in a JSON Lines export.\n- Each line currently needs a JSON object with a known level."
+        },
+        {
+          "call_id": "RdnflZVCf",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace"
+        },
+        {
+          "call_id": "Btvb7b1VQ",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "None — task complete. Both artifacts updated, original tests pass with the exact check, and no remaining work is disclosed.",
+            "remaining_acceptance": [],
+            "summary": "Task complete. Changed files (full paths):\n- /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace/summary.py\n- /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing/episodes/large-large/event-summary/workspace/docs/summary.md\n\nsummary.py repair: summarize(lines) now iterates the input with enumerate(start=1) so physical 1-based line numbers include skipped blank lines; it skips empty/whitespace-only lines; parses each remaining line as JSON; raises ValueError mentioning the physical line number (e.g. \"line 3\") for malformed JSON, non-object records, and missing/unknown/non-string levels; counts only the exact lowercase string levels \"info\", \"warning\", \"error\" while ignoring other object fields; and always returns exactly {\"info\": int, \"warning\": int, \"error\": int} including zeros. Input strings are preserved unchanged and generator/iterable support is retained. Invalid records are never silently skipped.\n\ndocs/summary.md update: documents the contract, blank-line skipping with physical line numbering, and ValueError behavior with a `line 3` example; includes the exact empty-input result {\"info\": 0, \"warning\": 0, \"error\": 0} (an example value for empty input, not a constant result for all inputs) and the exact test command python3 -B -S -m unittest discover -s tests -v.\n\nTests were preserved unchanged; only summary.py and docs/summary.md were modified. No dependencies installed, no providers called, no commits or pushes.\n\nRecorded outcome rows (exact command: python3 -B -S -m unittest discover -s tests -v):\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`\n\nBefore (baseline, unchanged code): FAILED — 10 tests run, 5 errors, 8 failure events, 0 skipped (call_id MsjYjSgvY).\nAfter (both artifacts repaired): PASSED — 10 tests run, 0 errors, 0 failure events, 0 skipped, exit_code 0, unittest reported OK (call_id RdnflZVCf).\n\nRemaining work: none. All four acceptance criteria are satisfied."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ok\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... ok\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... ok\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... ok\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    }
+  ],
+  "counts": {
+    "declared": 2,
+    "finished": 2,
+    "runtime_completed": 1,
+    "independent_artifacts_passed": 2,
+    "behavior_and_handoff_qualified": 1,
+    "strict_all_files_qualified": 1,
+    "wire_requests": 27,
+    "episodes_with_unknown_request_count": 0
+  }
+}

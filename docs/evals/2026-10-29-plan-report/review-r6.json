@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "wave": "r6",
+  "manifest_entries_verified": 82,
+  "selected_credential_absence_checked_text_files": 126,
+  "assessment_sha256": "0056dcf37f0bbc2051564132649361ea0dfd1ce66664e17589fa07e6d72974b3",
+  "rows": [
+    {
+      "case": "env-bool",
+      "strict_qualified": false,
+      "wire_requests": 13,
+      "request_roles": {
+        "coder": 9,
+        "observer": 4
+      },
+      "patch_sha256": "856048ce33297e7ba4421225a0b4fcaec833f9d9d47a3e4d88832056c632adb2",
+      "patch_replays_exactly": true,
+      "native_count_receipts": {
+        "PgCXfQxWG": {
+          "errors": 0,
+          "failure_events": 14,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "xgGRroElW": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "retained_leading_plan_admissions": [
+        {
+          "call_id": "lgkml4Sym",
+          "prefix": ">"
+        },
+        {
+          "call_id": "My7lmfKxR",
+          "prefix": "plan>"
+        },
+        {
+          "call_id": "0JpAOfYVe",
+          "prefix": "plan>"
+        }
+      ],
+      "manual_report_review": "Source and documentation agree with the boolean contract and original tests pass. No final authored report exists. The first final Observer done suggestion failed exact coverage of completed acceptance criteria; its one permitted action-contract repair then used 8192 completion tokens (8191 reasoning tokens), emitted no response content and ended output_limited. Native completion and strict qualification remain false (observer_unavailable)."
+    },
+    {
+      "case": "event-summary",
+      "strict_qualified": true,
+      "wire_requests": 14,
+      "request_roles": {
+        "coder": 11,
+        "observer": 3
+      },
+      "patch_sha256": "f70124e4ab9c9ad358fd451f7151e1230784ca1f4e8746abef55b0ce6255c02f",
+      "patch_replays_exactly": true,
+      "native_count_receipts": {
+        "MsjYjSgvY": {
+          "errors": 5,
+          "failure_events": 8,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "RdnflZVCf": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "retained_leading_plan_admissions": [
+        {
+          "call_id": "NA1ECHnxJ",
+          "prefix": "plan>"
+        }
+      ],
+      "manual_report_review": "Both native counts match the authored Before/After statements: 10 tests, 8 failure events and 5 errors before; 10 tests and no failures/errors after. The all-zero example explicitly says empty input, not all inputs. Source and documentation agree. A retained plan> turn was admitted with unchanged authored fields."
+    }
+  ],
+  "claim_boundary": "Frozen strict qualification and supplementary manual review are separate. Adaptive development evidence does not establish a general success rate, improved efficiency or arbitrary prose accuracy.",
+  "findings": [
+    {
+      "case": "event-summary",
+      "finding": "One real oversized acceptance list and one missing mutation-evidence block were refused; the original gates remain active."
+    },
+    {
+      "case": "env-bool",
+      "finding": "Observer proposed done without acceptance_evidence covering each completed criterion exactly once; the existing gate correctly refused it. Its one bounded repair exhausted output tokens and returned no JSON. Passing artifacts are not a completed authored handoff."
+    }
+  ]
+}

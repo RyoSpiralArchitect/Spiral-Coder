@@ -1,0 +1,813 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-28T22:42:48.135116+00:00",
+  "predeclaration_sha256": "29690ce97c17c32a317350e5b6e107b1c2f6eefc3893fca2c27646ec53c1cadb",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "large-large",
+        "provider": "mistral",
+        "model": "mistral-large-4",
+        "observer": {
+          "provider": "mistral",
+          "model": "mistral-large-4"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "large-large",
+        "model": "mistral-large-4",
+        "case": "env-bool",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 219.682,
+        "finished_at": "2026-10-28T22:41:40.986512+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 16,
+        "transport_requests": 0,
+        "wire_requests": 16,
+        "expected_roles": {
+          "coder": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "mistral",
+            "model": "mistral-large-4",
+            "transport": "mistral",
+            "endpoint_origin": "https://api.mistral.ai",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 32768,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.mistral.ai",
+            "max_tokens": 8192,
+            "model": "mistral-large-4",
+            "provider": "mistral",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "mistral"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Task complete. Changed exactly two files: settings.py and docs/settings.md. tests/ and .spiral-coder.md untouched; no dependencies installed; no commits.\n\nsettings.py: repaired parse_bool(value, default=False). It now strips surrounding whitespace and lowercases the input; true/1/yes/on return True; false/0/no/off return False; None, empty, and whitespace-only strings return the supplied default; any other string raises ValueError. Public function signature preserved; no new dependencies.\n\ndocs/settings.md: rewritten to document the true/false tokens, the default behavior for None/empty/whitespace-only inputs, the case-insensitive and whitespace-trimming rules, and the ValueError for unknown strings. Includes the exact examples `parse_bool(\"OFF\") -> False` and `parse_bool(\"\", default=True) -> True`, and the exact test command `python3 -B -S -m unittest discover -s tests -v`.\n\nRecorded outcomes (exact command, native receipts):\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`\n\nBefore (baseline, unchanged code): FAILED — tests_run=10, failure_events=14, errors=0, skipped=0 (14 failure events across the 10 tests, including subtests). After (both artifacts repaired): PASSED — tests_run=10, failure_events=0, errors=0, skipped=0, exit_code 0. Passing the recorded checks supports those checks, not an unbounded correctness claim.\n\nRemaining work: none.",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        "docs/settings.md",
+        "settings.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 16,
+      "request_roles": {
+        "coder": 12,
+        "observer": 4
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 5444,
+          "estimated_input_tokens": 9234,
+          "id": 0,
+          "provider_usage": {
+            "completion_tokens": 416,
+            "completion_tokens_details": {
+              "reasoning_tokens": 183
+            },
+            "prompt_tokens": 8102,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8518
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8518,
+          "estimated_input_tokens": 9347,
+          "id": 1,
+          "provider_usage": {
+            "completion_tokens": 348,
+            "completion_tokens_details": {
+              "reasoning_tokens": 101
+            },
+            "prompt_tokens": 8287,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 8635
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13033,
+          "estimated_input_tokens": 10170,
+          "id": 2,
+          "provider_usage": {
+            "completion_tokens": 402,
+            "completion_tokens_details": {
+              "reasoning_tokens": 165
+            },
+            "prompt_tokens": 8949,
+            "prompt_tokens_details": {
+              "cached_tokens": 1004
+            },
+            "service_tier": "standard",
+            "total_tokens": 9351
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 16870,
+          "estimated_input_tokens": 9001,
+          "id": 3,
+          "provider_usage": {
+            "completion_tokens": 1291,
+            "completion_tokens_details": {
+              "reasoning_tokens": 938
+            },
+            "prompt_tokens": 7660,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 8951
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 10929,
+          "estimated_input_tokens": 11625,
+          "id": 4,
+          "provider_usage": {
+            "completion_tokens": 325,
+            "completion_tokens_details": {
+              "reasoning_tokens": 54
+            },
+            "prompt_tokens": 10116,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 10441
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21505,
+          "estimated_input_tokens": 9542,
+          "id": 5,
+          "provider_usage": {
+            "completion_tokens": 2399,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1810
+            },
+            "prompt_tokens": 8181,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 10580
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 12491,
+          "estimated_input_tokens": 12584,
+          "id": 6,
+          "provider_usage": {
+            "completion_tokens": 966,
+            "completion_tokens_details": {
+              "reasoning_tokens": 649
+            },
+            "prompt_tokens": 10886,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 11852
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9560,
+          "estimated_input_tokens": 15384,
+          "id": 7,
+          "provider_usage": {
+            "completion_tokens": 837,
+            "completion_tokens_details": {
+              "reasoning_tokens": 403
+            },
+            "prompt_tokens": 13497,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 14334
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 31039,
+          "estimated_input_tokens": 9410,
+          "id": 8,
+          "provider_usage": {
+            "completion_tokens": 3573,
+            "completion_tokens_details": {
+              "reasoning_tokens": 3043
+            },
+            "prompt_tokens": 8013,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 11586
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7685,
+          "estimated_input_tokens": 15215,
+          "id": 9,
+          "provider_usage": {
+            "completion_tokens": 438,
+            "completion_tokens_details": {
+              "reasoning_tokens": 128
+            },
+            "prompt_tokens": 13076,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "service_tier": "standard",
+            "total_tokens": 13514
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 16184,
+          "estimated_input_tokens": 15964,
+          "id": 10,
+          "provider_usage": {
+            "completion_tokens": 1563,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1003
+            },
+            "prompt_tokens": 14024,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15587
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 9520,
+          "estimated_input_tokens": 17471,
+          "id": 11,
+          "provider_usage": {
+            "completion_tokens": 561,
+            "completion_tokens_details": {
+              "reasoning_tokens": 45
+            },
+            "prompt_tokens": 15553,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 16114
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8626,
+          "estimated_input_tokens": 16536,
+          "id": 12,
+          "provider_usage": {
+            "completion_tokens": 607,
+            "completion_tokens_details": {
+              "reasoning_tokens": 71
+            },
+            "prompt_tokens": 14551,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15158
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 13955,
+          "estimated_input_tokens": 8763,
+          "id": 13,
+          "provider_usage": {
+            "completion_tokens": 1563,
+            "completion_tokens_details": {
+              "reasoning_tokens": 1055
+            },
+            "prompt_tokens": 7505,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 9068
+          },
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 21203,
+          "estimated_input_tokens": 17299,
+          "id": 14,
+          "provider_usage": {
+            "completion_tokens": 408,
+            "completion_tokens_details": {
+              "reasoning_tokens": 78
+            },
+            "prompt_tokens": 15217,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 15625
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 10234,
+          "estimated_input_tokens": 15317,
+          "id": 15,
+          "provider_usage": {
+            "completion_tokens": 981,
+            "completion_tokens_details": {
+              "reasoning_tokens": 212
+            },
+            "prompt_tokens": 13651,
+            "prompt_tokens_details": {
+              "cached_tokens": 1516
+            },
+            "service_tier": "standard",
+            "total_tokens": 14632
+          },
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "CrpQeBlAQ"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": false,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "CrpQeBlAQ"
+            ],
+            "succeeded": false,
+            "tool": "exec"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "QgHIu5hlI",
+            "ysqzhmZxV"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "QgHIu5hlI"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "prG0C2G6T",
+            "8beUBXwsu",
+            "Eg2OwWLxp",
+            "1nq4OPrmx"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_settings.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "prG0C2G6T"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "kjzSHYPaK",
+            "bbEUSoasy"
+          ],
+          "completed": true,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "kjzSHYPaK"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1,
+        "Evidence Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "UkaNznAEU",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nread_file\narguments:\n{\"path\": \"tests/test_settings.py\"}"
+        },
+        {
+          "call_id": "syAvEoG92",
+          "tool": "read_file",
+          "arguments": {
+            "path": "settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "before_mutation",
+          "result_excerpt": "[settings.py] (7 lines, 171 bytes) [pruned 8L]"
+        },
+        {
+          "call_id": "IBmbh5rS5",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "CrpQeBlAQ",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r7-count-fields/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r7-count-fields/episodes/large-large/env-bool/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r7-count-fields/episodes/"
+        },
+        {
+          "call_id": "QgHIu5hlI",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "ysqzhmZxV",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "settings.py",
+            "replace": "\"\"\"Read a boolean setting from an environment-style string.\"\"\"\n\n\n_TRUE_TOKENS = frozenset({\"true\", \"1\", \"yes\", \"on\"})\n_FALSE_TOKENS = frozenset({\"false\", \"0\", \"no\", \"off\"})\n\n\ndef parse_bool(value, default=False):\n    if value is None:\n        return default\n    token = value.strip().lower()\n    if not token:\n        return default\n    if token in _TRUE_TOKENS:\n        return True\n    if token in _FALSE_TOKENS:\n        return False\n    raise ValueError(f\"invalid boolean setting: {value!r}\")",
+            "search": "\"\"\"Read a boolean setting from an environment-style string.\"\"\"\n\n\ndef parse_bool(value, default=False):\n    if value is None:\n        return default\n    return bool(value)"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'settings.py' (+11 lines, 18 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\nFile \"tests/test_settings.py\", line 51, in test_documented_examples_and_check\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.…"
+        },
+        {
+          "call_id": "prG0C2G6T",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_settings.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "8beUBXwsu",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/settings.md",
+            "replace": "`parse_bool(value, default=False)` reads an environment-style boolean setting.\n\n## Tokens\n\n- True tokens: `true`, `1`, `yes`, `on`\n- False tokens: `false`, `0`, `no`, `off`\n\nMatching ignores case and surrounding whitespace, so `\" \\tYeS\\n\"` is `True` and `\" \\tOFF\\n\"` is `False`.\n\n## Defaults\n\n`None`, empty strings, and whitespace-only strings return the supplied `default` (a bool, `False` unless overridden). An explicit token always wins over the default.\n\n## Errors\n\nAny other string raises `ValueError`; a nonempty string is not automatically true.\n\n## Examples\n\n- `parse_bool(\"OFF\") -> False`\n- `parse_bool(\"\", default=True) -> True`\n\n## Verify\n\nRun the exact check:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled."
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evidence Gate]\nYou are about to mutate an existing file via patch_file.\nTarget path: docs/settings.md\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(path=settings.py) -> settings.py\n- read_file(path=tests/test_settings."
+        },
+        {
+          "call_id": "Eg2OwWLxp",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/settings.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/settings.md] (4 lines, 159 bytes)\n# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled.\n"
+        },
+        {
+          "call_id": "1nq4OPrmx",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/settings.md",
+            "replace": "`parse_bool(value, default=False)` reads an environment-style boolean setting.\n\n## Tokens\n\n- True tokens: `true`, `1`, `yes`, `on`\n- False tokens: `false`, `0`, `no`, `off`\n\nMatching ignores case and surrounding whitespace, so `\" \\tYeS\\n\"` is `True` and `\" \\tOFF\\n\"` is `False`.\n\n## Defaults\n\n`None`, empty strings, and whitespace-only strings return the supplied `default` (a bool, `False` unless overridden). An explicit token always wins over the default.\n\n## Errors\n\nAny other string raises `ValueError`; a nonempty string is not automatically true.\n\n## Examples\n\n- `parse_bool(\"OFF\") -> False`\n- `parse_bool(\"\", default=True) -> True`\n\n## Verify\n\nRun the exact check:\n\n```\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled."
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/settings.md' (+27 lines, 31 total)\n[history digest — kept 10/56 lines, 2227 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=10acb930c9c2df31 after=1bc92bd194899824\n✓ auto-verify: patch confirmed in file\n[diff @line 4]\n[docs/settings.md] (4 lines, 159 bytes)\n# Boolean settings\n- `parse_bool(value, default=False)` reads an environment-style setting.\n- The current implementation treats every nonempty string as enabled.\n+ `parse_bool(value, default=False)` reads an environment-style boolean setting."
+        },
+        {
+          "call_id": "kjzSHYPaK",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r7-count-fields/episodes/large-large/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r7-count-fields/episodes/large-large/env-bool/workspace"
+        },
+        {
+          "call_id": "bbEUSoasy",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "None. Both artifacts are updated and the exact check passes (exit_code 0).",
+            "remaining_acceptance": [],
+            "summary": "Task complete. Changed exactly two files: settings.py and docs/settings.md. tests/ and .spiral-coder.md untouched; no dependencies installed; no commits.\n\nsettings.py: repaired parse_bool(value, default=False). It now strips surrounding whitespace and lowercases the input; true/1/yes/on return True; false/0/no/off return False; None, empty, and whitespace-only strings return the supplied default; any other string raises ValueError. Public function signature preserved; no new dependencies.\n\ndocs/settings.md: rewritten to document the true/false tokens, the default behavior for None/empty/whitespace-only inputs, the case-insensitive and whitespace-trimming rules, and the ValueError for unknown strings. Includes the exact examples `parse_bool(\"OFF\") -> False` and `parse_bool(\"\", default=True) -> True`, and the exact test command `python3 -B -S -m unittest discover -s tests -v`.\n\nRecorded outcomes (exact command, native receipts):\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`\n\nBefore (baseline, unchanged code): FAILED — tests_run=10, failure_events=14, errors=0, skipped=0 (14 failure events across the 10 tests, including subtests). After (both artifacts repaired): PASSED — tests_run=10, failure_events=0, errors=0, skipped=0, exit_code 0. Passing the recorded checks supports those checks, not an unbounded correctness claim.\n\nRemaining work: none."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... ok\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... ok\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... ok\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... ok\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... ok\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... ok\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    }
+  ],
+  "counts": {
+    "declared": 1,
+    "finished": 1,
+    "runtime_completed": 1,
+    "independent_artifacts_passed": 1,
+    "behavior_and_handoff_qualified": 1,
+    "strict_all_files_qualified": 1,
+    "wire_requests": 16,
+    "episodes_with_unknown_request_count": 0
+  }
+}

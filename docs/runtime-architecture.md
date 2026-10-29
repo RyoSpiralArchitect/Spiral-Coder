@@ -149,6 +149,16 @@ quoted failed response. Tool identity and arguments are never filled in by the
 runtime. Valid uncertainty does not trigger a confidence-raising retry. Changed
 Coder context invalidates late advice and pending repair.
 
+Coder and Observer share the current `done` vocabulary through
+`agent/acceptance_schema.rs`: stable criterion references, exact current commands
+and report guidance. Returned arguments still require authored evidence mapping.
+If a rejected Observer `done` repair ends at the output limit,
+`events/report_closeout.rs` can admit one Coder report-only wire attempt from
+remaining budget after rechecking declared native obligations. The same TUI and
+headless path restricts execution to `done` and stops automatic assistance after
+that attempt. `WorkBudget` records its purpose and bounds all wire retries;
+neither rejected advice nor an empty response becomes completion proof.
+
 ### 5) Safety Governor
 
 Responsibilities:

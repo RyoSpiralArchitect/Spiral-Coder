@@ -85,9 +85,13 @@ mod no_change_runtime_tests;
 mod observation_stall;
 mod outcome;
 mod plan_resume;
+mod plan_revision;
+#[cfg(test)]
+mod plan_revision_tests;
 mod progress_bridge;
 mod prose_context;
 mod protocol_fields;
+mod protocol_framing;
 mod protocol_lists;
 mod protocol_validation;
 mod provider_compat;
@@ -109,6 +113,9 @@ mod repair_feedback_tests;
 #[cfg(test)]
 mod replay_input_tests;
 mod repo_scaffold;
+mod report_counts;
+#[cfg(test)]
+mod report_counts_tests;
 mod report_outcomes;
 mod report_repair;
 use automatic_test::run as run_test_cmd;
@@ -5201,7 +5208,11 @@ Rules:\n\
 fn extract_tag_block<'a>(text: &'a str, tag: &str) -> Option<&'a str> {
     let open = format!("<{tag}>");
     let close = format!("</{tag}>");
-    let start = text.find(&open)?;
+    let Some(start) = text.find(&open) else {
+        return (tag == "plan")
+            .then(|| protocol_framing::leading_plan_body(text))
+            .flatten();
+    };
     let rest = &text[start + open.len()..];
     let end = rest
         .find(&close)
@@ -5761,9 +5772,10 @@ fn validate_plan_for_task_contract(
     root_read_only: bool,
     contract: &TaskContract,
     resolver: &InstructionResolver,
+    messages: &[serde_json::Value],
 ) -> Result<()> {
     validate_plan(plan)?;
-    validate_plan_against_task_contract(plan, contract)?;
+    plan_revision::validate_alignment(plan, messages, contract)?;
     if root_read_only {
         validate_plan_against_instruction_resolver(plan, resolver)?;
     }
@@ -7361,8 +7373,14 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         );
     }
     let mut active_plan = plan_resume::latest_valid(&messages, |plan| {
-        validate_plan_for_task_contract(plan, root_read_only, &task_contract, &instruction_resolver)
-            .is_ok()
+        validate_plan_for_task_contract(
+            plan,
+            root_read_only,
+            &task_contract,
+            &instruction_resolver,
+            &messages,
+        )
+        .is_ok()
     });
     if let Some(plan) = active_plan.as_ref() {
         if let Some(level) = verification_level_from_plan(plan) {
@@ -7797,6 +7815,9 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
             shared_remaining,
             &pending_checks,
             &requirement_proof::project(&messages, test_cmd.as_deref()),
+        )
+        .with_report_closeout(
+            crate::work_budget::current().is_some_and(|c| c.budget.is_report_closeout()),
         )
         .with_diagnostic_read(recovery.focus.required_read());
         if closing {
@@ -8550,6 +8571,7 @@ This is the LAST model call for this run.\n\
                 root_read_only,
                 &task_contract,
                 &instruction_resolver,
+                &messages,
             )
             .is_ok()
         });
@@ -8561,7 +8583,7 @@ This is the LAST model call for this run.\n\
             &observation_evidence,
         ) {
             let call = &tool_calls[0];
-            messages.push(json!({"role":"assistant", "content":assistant_text, "tool_calls":[call.to_json()], "accepted_plan": if report.is_ok() { blocked_plan } else { None }}));
+            messages.push(json!({"role":"assistant", "content":assistant_text, "tool_calls":[call.to_json()], "accepted_plan": plan_revision::snapshot(blocked_plan.as_ref().filter(|_| report.is_ok()), &messages, &task_contract)}));
             match report {
                 Ok(report) => {
                     let text = report.render();
@@ -8932,6 +8954,7 @@ Execute only the new minimal action: {}",
                         root_read_only,
                         &task_contract,
                         &instruction_resolver,
+                        &messages,
                     )
                     .is_ok()
                 })
@@ -8953,6 +8976,7 @@ Execute only the new minimal action: {}",
                         root_read_only,
                         &task_contract,
                         &instruction_resolver,
+                        &messages,
                     )
                     .ok()?;
                     restored_impact_plan = true;
@@ -9581,6 +9605,7 @@ Execute only the new minimal action: {}",
                         root_read_only,
                         &task_contract,
                         &instruction_resolver,
+                        &messages,
                     ) {
                         if matches!(cfg.provider, ProviderKind::Mistral) {
                             if let Some(repaired) = repair_mistral_plan_for_tool_turn(
@@ -9595,6 +9620,7 @@ Execute only the new minimal action: {}",
                                     root_read_only,
                                     &task_contract,
                                     &instruction_resolver,
+                                    &messages,
                                 )
                                 .is_ok()
                                 {
@@ -9747,6 +9773,7 @@ Execute only the new minimal action: {}",
                                 root_read_only,
                                 &task_contract,
                                 &instruction_resolver,
+                                &messages,
                             )
                             .is_ok()
                             {
@@ -9814,6 +9841,7 @@ Execute only the new minimal action: {}",
                                 root_read_only,
                                 &task_contract,
                                 &instruction_resolver,
+                                &messages,
                             )
                             .is_ok()
                             {
@@ -9879,6 +9907,7 @@ Execute only the new minimal action: {}",
                                     root_read_only,
                                     &task_contract,
                                     &instruction_resolver,
+                                    &messages,
                                 )
                                 .is_ok()
                                 {
@@ -10632,7 +10661,7 @@ Execute only the new minimal action: {}",
                 "role": "assistant",
                 "content": assistant_text_clean,
                 "tool_calls": [tc.to_json()],
-                "accepted_plan": validated_plan_for_turn
+                "accepted_plan": plan_revision::snapshot(validated_plan_for_turn.as_ref(), &messages, &task_contract)
             }));
         } else {
             if let Some(hint) = recovery.focus.hint() {
@@ -10661,6 +10690,7 @@ Execute only the new minimal action: {}",
                         root_read_only,
                         &task_contract,
                         &instruction_resolver,
+                        &messages,
                     )
                     .is_ok()
                 }) {
@@ -10831,6 +10861,7 @@ Execute only the new minimal action: {}",
                     root_read_only,
                     &task_contract,
                     &instruction_resolver,
+                    &messages,
                 ) {
                     Ok(()) => {
                         adopt_valid_plan(
@@ -10955,6 +10986,7 @@ Execute only the new minimal action: {}",
                             root_read_only,
                             &task_contract,
                             &instruction_resolver,
+                            &messages,
                         )
                         .is_ok()
                     })
@@ -14619,7 +14651,11 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         } else {
             tool_output.clone()
         };
-        messages.push(recovery.focus.tool_message(&tc, history_tool_output));
+        messages.push(report_counts::capture(
+            recovery.focus.tool_message(&tc, history_tool_output),
+            &stdout,
+            &stderr,
+        ));
         last_exec_step = Some(this_step);
         autosave_best_effort(
             &autosaver,

@@ -81,10 +81,19 @@ fn follows_report_label(before: &str, row: &str) -> bool {
     })
 }
 
-pub(super) fn required_rows(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Vec<String> {
-    if !requested(root) {
-        return vec![];
-    }
+#[derive(Debug, serde::Serialize)]
+pub(super) struct CheckOutcome {
+    pub phase: &'static str,
+    pub command: String,
+    pub status: &'static str,
+    pub call_id: Option<String>,
+}
+
+pub(super) fn selected_checks(
+    root: &str,
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> Vec<CheckOutcome> {
     let evidence = super::evidence_packet::project(messages, test_cmd);
     let context =
         super::exec_verification::ExecVerificationContext::from_messages(test_cmd, messages);
@@ -148,15 +157,29 @@ pub(super) fn required_rows(root: &str, messages: &[Value], test_cmd: Option<&st
             Some(false) => "FAILED",
             None => absent,
         };
-        rows.push(format!(
-            "Before: {} — `{command}`",
-            status(before, "NOT RECORDED")
-        ));
-        rows.push(format!(
-            "After: {} — `{command}`",
-            status(after, "NOT VERIFIED")
-        ));
+        for (phase, action, absent) in [
+            ("Before", before, "NOT RECORDED"),
+            ("After", after, "NOT VERIFIED"),
+        ] {
+            rows.push(CheckOutcome {
+                phase,
+                command: command.clone(),
+                status: status(action, absent),
+                call_id: action.map(|action| action.call_id.clone()),
+            });
+        }
     }
+    rows
+}
+
+pub(super) fn required_rows(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Vec<String> {
+    if !requested(root) {
+        return vec![];
+    }
+    let mut rows: Vec<_> = selected_checks(root, messages, test_cmd)
+        .iter()
+        .map(|row| format!("{}: {} — `{}`", row.phase, row.status, row.command))
+        .collect();
     if rows.is_empty() {
         rows.extend(["Before: NOT RECORDED".into(), "After: NOT VERIFIED".into()]);
     }

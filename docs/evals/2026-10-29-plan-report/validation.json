@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "source_commit": "9077edf69b4ee8b643cc3081eca08da6e7e526a4",
+  "before_change_reproductions": {
+    "plan_list_and_revision": "2 failed",
+    "unrecorded_count_report": "1 failed"
+  },
+  "check_local": {
+    "rust_passed": 988,
+    "rust_ignored": 1,
+    "integration_passed": 1,
+    "python_passed": 91,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "tui_replay_passed": 13,
+    "repo_map_passed": 14,
+    "server_ui_smoke": true
+  },
+  "retained_logs": "/Users/ryospiralarchitect/.cache/spiral-coder/plan-report-20261029-validation",
+  "log_sha256": {
+    "spiral-plan-report-red.log": "a4f69385619e37fef1010d0631d2087818a3195d9e4e928ec79241d1754c3010",
+    "spiral-report-counts-red.log": "d5d94d76e6c7d406521e2bfca25a523b176205aeedd1c233dffa8343fd2224a4",
+    "spiral-plan-report-check-local.log": "af38cf1da8aa62aa7e26c60cf37f25d05a96dfcda0f3ae727137e5f193668e28"
+  },
+  "framing_followup": {
+    "source_commit": "15da20219936bc6cef49f7a50b9bf3bc949f4337",
+    "before_change_native_reproduction": "1 failed",
+    "check_local": {
+      "rust_passed": 989,
+      "rust_ignored": 1,
+      "integration_passed": 1,
+      "python_passed": 91,
+      "web_passed": 80,
+      "npm_passed": 5,
+      "tui_replay_passed": 13,
+      "repo_map_passed": 14,
+      "server_ui_smoke": true
+    },
+    "log_sha256": {
+      "spiral-plan-framing-red.log": "ace82523890f4cf314ca1c3d85711ae8a7cbc603556aa67f82070586e3b76387",
+      "spiral-plan-framing-green.log": "c65bed4e81e26c615a9448824485ba5346ef709cf2aa35935b262414f6243437",
+      "spiral-plan-report-framing-check-local.log": "170dd75043da548900868802692519d39b830e40e23f917ea90804981e405c9d"
+    }
+  },
+  "structured_count_followup": {
+    "source_commit": "d2fe7876e358589c4836ba70d14c17e576127b8b",
+    "before_change_reproduction": "1 failed on the first retained correct report",
+    "check_local": {
+      "rust_passed": 990,
+      "rust_ignored": 1,
+      "integration_passed": 1,
+      "python_passed": 91,
+      "web_passed": 80,
+      "npm_passed": 5,
+      "tui_replay_passed": 13,
+      "repo_map_passed": 14,
+      "server_ui_smoke": true
+    },
+    "log_sha256": {
+      "spiral-structured-count-red.log": "35734a3b68e246775dd1770f7d1bcacd9f95059a31bf2612b7e8ddcc7850ef8f",
+      "spiral-structured-count-green.log": "a39473125c3b32374a69d466333161f739b73af75c0434f4a8a6bc6c5c5b96c3",
+      "spiral-structured-count-check-local.log": "7e5d3fb03db73f07f9b6045c6172436905b0cb6fcaca5702a330fe46d2d472f0"
+    }
+  }
+}

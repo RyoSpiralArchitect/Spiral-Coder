@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "wave": "r5",
+  "manual_review": "Source, documentation, authored summaries, every unexecuted action and native count receipts inspected.",
+  "manifest_entries_verified": 84,
+  "selected_credential_absence_checked_text_files": 128,
+  "assessment_sha256": "16f06e6628ec8bb5d37dae820736d792b6ba8f37503d83a070c81c1a464664c8",
+  "rows": [
+    {
+      "case": "env-bool",
+      "strict_qualified": true,
+      "wire_requests": 18,
+      "request_roles": {
+        "coder": 14,
+        "observer": 4
+      },
+      "patch_sha256": "545119437464a746f3120fca6fdd987d4841cadd391940681f132f8129709990",
+      "patch_replays_exactly": true
+    },
+    {
+      "case": "event-summary",
+      "strict_qualified": true,
+      "wire_requests": 21,
+      "request_roles": {
+        "coder": 16,
+        "observer": 5
+      },
+      "patch_sha256": "f14046a2218bd87eed651c24a95c48fd9617d75943cbc6235ac9ee4b98999f20",
+      "patch_replays_exactly": true
+    }
+  ],
+  "findings": [
+    {
+      "case": "event-summary",
+      "finding": "Two missing opening delimiters before initial admission. A later goal paraphrase no longer exactly matched the admitted goal, so the narrow plan-revision fallback correctly did not apply.",
+      "action": "Delimiter recovery pinned separately for r6; objective paraphrases remain a new-plan validation requirement."
+    },
+    {
+      "case": "event-summary",
+      "finding": "Final counts match native receipts: Before 10 tests, 8 failure events and 5 errors; After 10 tests, zero failure events/errors. Empty-input example is now conditioned.",
+      "action": "Preserve the authored report and native unit distinction."
+    },
+    {
+      "case": "env-bool",
+      "finding": "Two correct structured count reports were falsely refused: tokenization removed underscores and comma boundaries and associated a value with the next field. The accepted report omits those numeric counts.",
+      "action": "Retain both rejected reports as exact regressions, repair field/value parsing, and declare a separate confirmation wave. Do not classify these two refusals as model mistakes."
+    }
+  ],
+  "claim_boundary": "Frozen strict qualification and supplementary human review are separate. This adaptive development wave does not establish a general success rate, improved efficiency or arbitrary prose accuracy."
+}

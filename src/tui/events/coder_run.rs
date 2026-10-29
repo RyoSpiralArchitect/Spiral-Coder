@@ -45,6 +45,7 @@ pub(super) async fn send_coder_input(
     app.coder.scroll = 0; // pin to bottom for new output
     app.ignore_coder_tokens = false;
     app.coder_realize_state = None;
+    app.report_closeout_attempted = input == CoderInput::ReportCloseout;
 
     // Resolve tool_root early (needed for @ref file reads below).
     let tool_root = app.tool_root.clone().or_else(|| {
@@ -64,7 +65,7 @@ pub(super) async fn send_coder_input(
             ));
         }
     }
-    let intent_text = if input == CoderInput::RuntimeContinuation {
+    let intent_text = if input != CoderInput::HumanSteering {
         "Continue."
     } else {
         &text
@@ -173,7 +174,7 @@ pub(super) async fn send_coder_input(
         };
     let test_cmd = app.project_test_cmd.clone();
 
-    let continuing = input == CoderInput::RuntimeContinuation || intent_anchor.last_update_no_op;
+    let continuing = input != CoderInput::HumanSteering || intent_anchor.last_update_no_op;
     if continuing && app.coder_session.is_none() {
         app.coder.push_tool(
             "No native task is available to continue; send the full request.".to_string(),
@@ -236,8 +237,14 @@ pub(super) async fn send_coder_input(
             app.coder_chunk_requests,
         )
     };
-    let max_iters = app.work_budget.paced_coder_allowance(suggested);
-    let request_budget = if app.coder_chunk_reserve > 0 {
+    let max_iters = if app.report_closeout_attempted {
+        1
+    } else {
+        app.work_budget.paced_coder_allowance(suggested)
+    };
+    let request_budget = if app.report_closeout_attempted {
+        app.work_budget.with_report_closeout()
+    } else if app.coder_chunk_reserve > 0 {
         app.work_budget.with_observer_return(max_iters)
     } else {
         app.work_budget.clone()

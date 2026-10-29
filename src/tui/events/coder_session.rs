@@ -7,6 +7,7 @@ use crate::task_origin::{user_message, MessageOrigin};
 pub(super) enum CoderInput {
     HumanSteering,
     RuntimeContinuation,
+    ReportCloseout,
 }
 
 pub(super) fn session_path(app: &App) -> Option<PathBuf> {
@@ -110,6 +111,7 @@ pub(super) fn change_root(app: &mut App) {
     app.coder_intent_anchor = None;
     app.coder_completed = None;
     app.coder_yield_reason = None;
+    app.report_closeout_attempted = false;
     app.active_observer_contract = None;
     app.active_assist_id = None;
     app.project_stack_label = None;

@@ -10,6 +10,11 @@ The [recorded Mistral pair run](../evals/2026-10-29-diagnostic-actions/README.md
 completes both tasks in 14 requests each, with candidate diffs and independent
 checks available for inspection.
 
+The [later plan/report loops](../evals/2026-10-29-plan-report/README.md) retain
+newer runtime results, count-checker corrections and an incomplete Observer
+handoff. Use the individual frozen receipts rather than treating every passing
+artifact as a completed task.
+
 The historical pages below document repeatable Spiral-Coder benchmark runs
 without checking the generated repos into git.
 

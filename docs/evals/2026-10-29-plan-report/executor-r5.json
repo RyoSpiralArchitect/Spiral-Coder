@@ -1,0 +1,11 @@
+{
+  "runtime_commit": "9077edf69b4ee8b643cc3081eca08da6e7e526a4",
+  "driver_commit": "9077edf69b4ee8b643cc3081eca08da6e7e526a4",
+  "binary_sha256": "27727b7ad4e4dd00875490f4fc0016529ba403a50cc15c0a78e83227eddbd000",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "predeclaration_sha256": "f9930da174e24e36855cf5e268796bf24b903d04a79bad7c0f22b6998f76ad60",
+  "preflight_sha256": "c96c4cb7b41c7236917187bf3294b9dca4802576d672f8a4d896826bd8590fbc",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r5-plan-report",
+  "provider_calls_at_pin": 0
+}

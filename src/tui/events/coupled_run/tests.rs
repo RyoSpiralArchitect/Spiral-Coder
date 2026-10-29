@@ -6,6 +6,7 @@ mod blocked_terminal;
 mod budget_rhythm;
 mod cross_family;
 mod provider_failure;
+mod report_closeout;
 mod verification_return;
 
 #[tokio::test]

@@ -151,7 +151,7 @@ fn resumed_action_then_verification_restores_a_validated_impact_plan() {
     .expect("restore missing plan from approved task contract");
     let contract = derive_task_contract(prompt, false, true, VerificationLevel::Build);
     let resolver = InstructionResolver::new(&contract.task_summary, false, true);
-    validate_plan_for_task_contract(&plan, false, &contract, &resolver)
+    validate_plan_for_task_contract(&plan, false, &contract, &resolver, &[])
         .expect("task and instruction contract still apply");
     for reason in [
         "recent mutation has not been evaluated for goal impact",

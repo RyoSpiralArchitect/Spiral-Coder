@@ -122,12 +122,12 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         json!(crate::work_budget::current().and_then(|c| c.budget.preservation_issue()));
     request.packet["artifact_guidance"] =
         json!(agent::evidence_packet::artifact_guidance(&request.messages));
-    request.packet["task_obligations"] = json!(agent::task_obligations::project(
-        &request.messages,
-        request.test_command.as_deref()
-    ));
-    let schemas =
+    let obligations =
+        agent::task_obligations::project(&request.messages, request.test_command.as_deref());
+    let mut schemas =
         suggestion::tool_schemas_for(request.packet["coder_base_url"].as_str().unwrap_or(""));
+    obligations.bind_observer_tools(&mut schemas);
+    request.packet["task_obligations"] = json!(obligations);
     request.packet["available_tools"] = json!(schemas
         .as_array()
         .unwrap()

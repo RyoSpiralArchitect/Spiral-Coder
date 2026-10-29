@@ -23,6 +23,13 @@ pub(super) struct Contract {
 }
 
 impl Contract {
+    pub(super) fn with_report_closeout(mut self, closeout: bool) -> Self {
+        if closeout {
+            self.phase = Phase::Report;
+        }
+        self
+    }
+
     pub(super) fn project(
         remaining: Option<usize>,
         pending: &[String],

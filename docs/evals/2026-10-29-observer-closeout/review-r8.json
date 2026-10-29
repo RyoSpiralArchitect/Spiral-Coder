@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "wave": "r8",
+  "manifest_entries_verified": 80,
+  "selected_credential_absence_checked_text_files": 80,
+  "assessment_sha256": "f831ebb17ed9eb1b9724a0633d6db1cbeee87c8b5a14556fcd1775c6a09d38cd",
+  "rows": [
+    {
+      "case": "env-bool",
+      "strict_qualified": false,
+      "termination": "interrupted",
+      "wire_requests": 10,
+      "request_roles": {
+        "coder": 7,
+        "observer": 3
+      },
+      "patch_sha256": "4fb6e36fb63c2f40ea299289b663cfe92f410cb9cfd2c84207ab7e58d41da1a7",
+      "patch_replays_exactly": true,
+      "reapplied_patch_original_tests_pass": false,
+      "native_count_receipts": {
+        "XMvOAKXYN": {
+          "errors": 0,
+          "failure_events": 14,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "report_closeout_attempted": false,
+      "closeout_wire_receipts": [],
+      "done_attempts": 0,
+      "observer_rejections": [],
+      "manual_report_review": "No done attempt or final report exists. settings.py handles the original behavior tests, but docs/settings.md remains unchanged. Independent replay runs 10 methods with one documentation failure; no native post-edit exact-check receipt exists. The third Observer stream ended without a terminal frame after 28,013 ms, with null usage. Missing docs and pending verification correctly prevent report-only fallback."
+    },
+    {
+      "case": "event-summary",
+      "strict_qualified": true,
+      "termination": "completed",
+      "wire_requests": 14,
+      "request_roles": {
+        "coder": 11,
+        "observer": 3
+      },
+      "patch_sha256": "37f158f2801aac5efad9397c41715e5dccae0432877da9f30c2db694c4b33fd1",
+      "patch_replays_exactly": true,
+      "reapplied_patch_original_tests_pass": true,
+      "native_count_receipts": {
+        "boEUeQI2g": {
+          "errors": 5,
+          "failure_events": 8,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "ZSEz3Dgs1": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "report_closeout_attempted": false,
+      "closeout_wire_receipts": [],
+      "done_attempts": 1,
+      "observer_rejections": [],
+      "manual_report_review": "The first authored done names both changed files and the exact command. Before tests_run=10, errors=5, failure_events=8, skipped=0 and After tests_run=10, errors=0, failure_events=0, skipped=0 match native receipts. Empty-input zeros are explicitly conditional; source/docs implement physical line numbers, blank-line skipping, strict levels, preserved inputs and generator support. All 10 original independent tests pass. No Observer done proposal or output-limit closeout occurred."
+    }
+  ],
+  "claim_boundary": "Frozen strict qualification and supplementary manual review are separate. Adaptive development observations do not establish a general success rate or controlled causal effect.",
+  "manual_review": "Candidate source/docs, all refused native actions, authored final report, count receipts and interrupted Observer output inspected. This is implementation-author review, not an independent fork review.",
+  "findings": [
+    {
+      "case": "env-bool",
+      "kind": "unresolved_provider_interruption",
+      "finding": "Observer emitted partial content then ended without a terminal frame. Docs and verification remained pending, so the task stayed interrupted; this is not an output-limit or pure JSON-schema rejection."
+    },
+    {
+      "case": "event-summary",
+      "kind": "retained_control_refusals",
+      "finding": "Two Plan Gate refusals precede the successful repair; they remain visible in the action history. This run does not prove plan refusals eliminated."
+    }
+  ],
+  "unexercised_live_path": "Neither r8 episode entered the one-wire report_closeout path. Its admission, refusal controls, exact wire cap and TUI/headless behavior are deterministic-test evidence only."
+}

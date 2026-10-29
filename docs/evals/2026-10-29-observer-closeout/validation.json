@@ -1,0 +1,22 @@
+{
+  "runtime_commit": "f14c943ce3c1aae225a58cbef5eba31bf946d52a",
+  "required_check": "scripts/check-local.sh",
+  "result": "passed",
+  "rust_unit_passed": 996,
+  "rust_unit_ignored": 1,
+  "rust_integration_passed": 1,
+  "python_passed": 91,
+  "web_passed": 80,
+  "npm_passed": 5,
+  "tui_replay_passed": 13,
+  "repo_map_passed": 14,
+  "server_ui_smoke": "passed",
+  "local_log": "/private/tmp/spiral-pr43-observer-check-local.log",
+  "log_sha256": "e71a7f9da8a15da7ed9c7482463a9d5f339ba0395953d9ac10c8bbe2f3c2622a",
+  "targeted_regressions": [
+    "PR review same-sentence Before/After counts: red before fix, green after fix",
+    "Retained r6 Observer response stays invalid; native choice schemas agree between TUI and browser",
+    "One report-only attempt through TUI and headless wire consumers; invalid evidence, mutation, stale native state and missing proof remain incomplete",
+    "Transport reclassification cannot reopen the one-wire closeout ceiling"
+  ]
+}

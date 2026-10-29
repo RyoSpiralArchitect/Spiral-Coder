@@ -1,0 +1,11 @@
+{
+  "runtime_commit": "15da20219936bc6cef49f7a50b9bf3bc949f4337",
+  "binary_sha256": "704f9658b193ee201af7710c5adbc7d0ee64787c5e02d12de2f03254bb1a3702",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+  "driver_commit": "15da20219936bc6cef49f7a50b9bf3bc949f4337",
+  "predeclaration_sha256": "653adfe66f6253522a5f35711bef8295602d9eae590907694375b6b3e55fda8d",
+  "preflight_sha256": "0dd6439856dc1ec38f007280a3c03cbc1e210af3f4025f1c48144469fd2b0e58",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261029-r6-plan-framing",
+  "provider_calls_at_pin": 0
+}

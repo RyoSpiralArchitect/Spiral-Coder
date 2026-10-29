@@ -1,0 +1,58 @@
+--- a/docs/settings.md
++++ b/docs/settings.md
+@@ -1,4 +1,31 @@
+ # Boolean settings
+ 
+-`parse_bool(value, default=False)` reads an environment-style setting.
+-The current implementation treats every nonempty string as enabled.
++`parse_bool(value, default=False)` reads an environment-style boolean setting.
++
++## Tokens
++
++- True tokens: `true`, `1`, `yes`, `on`
++- False tokens: `false`, `0`, `no`, `off`
++
++Matching ignores case and surrounding whitespace, so `" \tYeS\n"` is `True` and `" \tOFF\n"` is `False`.
++
++## Defaults
++
++`None`, empty strings, and whitespace-only strings return the supplied `default` (a bool, `False` unless overridden). An explicit token always wins over the default.
++
++## Errors
++
++Any other string raises `ValueError`; a nonempty string is not automatically true.
++
++## Examples
++
++- `parse_bool("OFF") -> False`
++- `parse_bool("", default=True) -> True`
++
++## Verify
++
++Run the exact check:
++
++```
++python3 -B -S -m unittest discover -s tests -v
++```
+--- a/settings.py
++++ b/settings.py
+@@ -1,7 +1,18 @@
+ """Read a boolean setting from an environment-style string."""
++
++
++_TRUE_TOKENS = frozenset({"true", "1", "yes", "on"})
++_FALSE_TOKENS = frozenset({"false", "0", "no", "off"})
+ 
+ 
+ def parse_bool(value, default=False):
+     if value is None:
+         return default
+-    return bool(value)
++    token = value.strip().lower()
++    if not token:
++        return default
++    if token in _TRUE_TOKENS:
++        return True
++    if token in _FALSE_TOKENS:
++        return False
++    raise ValueError(f"invalid boolean setting: {value!r}")

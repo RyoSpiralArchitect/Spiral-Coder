@@ -1,0 +1,54 @@
+--- a/docs/settings.md
++++ b/docs/settings.md
+@@ -1,4 +1,34 @@
+ # Boolean settings
+ 
+-`parse_bool(value, default=False)` reads an environment-style setting.
+-The current implementation treats every nonempty string as enabled.
++`parse_bool(value, default=False)` reads an environment-style setting and
++returns a bool. `value` is a string or `None`; `default` is a bool.
++
++## Tokens
++
++Surrounding whitespace is ignored and matching is case-insensitive.
++
++- True tokens: `true`, `1`, `yes`, `on`
++- False tokens: `false`, `0`, `no`, `off`
++
++## Defaults
++
++`None`, empty strings, and whitespace-only strings return the supplied
++`default` (which itself defaults to `False`).
++
++## Errors
++
++Any other string raises `ValueError`; a nonempty string is not automatically
++true.
++
++## Examples
++
++- `parse_bool("OFF") -> False`
++- `parse_bool("", default=True) -> True`
++
++## Verify
++
++Run the tests with:
++
++```
++python3 -B -S -m unittest discover -s tests -v
++```
+--- a/settings.py
++++ b/settings.py
+@@ -4,4 +4,11 @@
+ def parse_bool(value, default=False):
+     if value is None:
+         return default
+-    return bool(value)
++    token = value.strip().lower()
++    if not token:
++        return default
++    if token in ("true", "1", "yes", "on"):
++        return True
++    if token in ("false", "0", "no", "off"):
++        return False
++    raise ValueError(f"unrecognized boolean value: {value!r}")
