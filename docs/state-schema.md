@@ -983,7 +983,13 @@ fresh rather than reading an unrelated workspace's generated state.
 The output must be fresh and outside the canonical workspace, including symlink
 ancestors. Existing receipts cannot be replaced. Child commands receive
 `PYTHONPYCACHEPREFIX=<out-dir>/cache/python` without changing the authored command
-string or Python user-site settings. Other caches and arbitrary command writes
+string or Python user-site settings. They also receive
+`SPIRAL_CODER_REPLAY_OUTPUT_ROOT=<out-dir>/replays`. A child `tui-replay`
+without an explicit destination reserves a separate directory there for each
+invocation. The report lists this root in `runtime_storage.child_tui_replays`.
+An explicit `--out-dir` takes precedence. A standalone replay uses its ordinary
+workspace default. Inherited roots must be absolute and resolve outside the
+replay workspace. Other caches and arbitrary command writes
 are not redirected or authorized by this mapping. Strict inventory still counts
 every actual workspace change, including untracked and ignored files.
 

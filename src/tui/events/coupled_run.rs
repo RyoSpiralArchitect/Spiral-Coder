@@ -290,7 +290,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             "coder":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "coder").count(),
             "observer":app.work_budget.snapshot().requests.iter().filter(|r| r.role == "observer").count(),
         },
-        "runtime_storage":{"state":"state","python_bytecode":"cache/python","relative_to":"out_dir"},
+        "runtime_storage":{"state":"state","python_bytecode":"cache/python","child_tui_replays":"replays","relative_to":"out_dir"},
         "error":outcome.as_ref().err().map(ToString::to_string), "wall_elapsed_ms":started.elapsed().as_millis(),
         "work":app.work_budget.snapshot(),
         "execution":app.coder_session.as_ref().map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref())),

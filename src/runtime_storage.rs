@@ -3,6 +3,8 @@
 use anyhow::{ensure, Context, Result};
 use std::path::{Component, Path, PathBuf};
 
+const REPLAY_OUTPUT_ROOT: &str = "SPIRAL_CODER_REPLAY_OUTPUT_ROOT";
+
 #[derive(Clone, Debug)]
 pub(crate) struct RuntimeStorage {
     workspace: PathBuf,
@@ -111,9 +113,41 @@ pub(crate) fn state_path(root: &str, name: &str) -> PathBuf {
     }
 }
 
+/// A replay launched by a coupled child writes its own durable report tree.
+/// Reserve a new directory even when two checks start in the same second.
+pub(crate) fn child_replay_dir(workspace: &Path) -> Result<Option<PathBuf>> {
+    let Some(root) = std::env::var_os(REPLAY_OUTPUT_ROOT).map(PathBuf::from) else {
+        return Ok(None);
+    };
+    ensure!(
+        root.is_absolute(),
+        "child replay output root must be absolute"
+    );
+    let workspace = workspace
+        .canonicalize()
+        .context("resolve replay workspace")?;
+    let root = prospective_path(&root)?;
+    ensure!(
+        !root.starts_with(&workspace),
+        "child replay output must be outside the workspace"
+    );
+    std::fs::create_dir_all(&root).context("create child replay output root")?;
+    let root = root.canonicalize()?;
+    ensure!(
+        !root.starts_with(&workspace),
+        "child replay output resolved inside workspace"
+    );
+    let directory = tempfile::Builder::new()
+        .prefix("tui_replay_")
+        .tempdir_in(root)
+        .context("reserve child replay report directory")?;
+    Ok(Some(directory.keep()))
+}
+
 pub(crate) fn configure_child(command: &mut tokio::process::Command) {
     if let Some(storage) = current() {
         command.env("PYTHONPYCACHEPREFIX", storage.output.join("cache/python"));
+        command.env(REPLAY_OUTPUT_ROOT, storage.output.join("replays"));
         for name in [
             "SPIRAL_CODER_API_KEY",
             "OPENAI_API_KEY",

@@ -152,15 +152,18 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
     let spec_path = resolve_path(&base_root_path, args.spec);
     let spec = load_spec(&spec_path)?;
 
-    let out_dir = args.out_dir.unwrap_or_else(|| {
-        base_root_path.join(format!(
-            ".tmp/tui_replay_{}",
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs()
-        ))
-    });
+    let out_dir = match args.out_dir {
+        Some(explicit) => explicit,
+        None => crate::runtime_storage::child_replay_dir(&base_root_path)?.unwrap_or_else(|| {
+            base_root_path.join(format!(
+                ".tmp/tui_replay_{}",
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs()
+            ))
+        }),
+    };
     std::fs::create_dir_all(&out_dir)
         .with_context(|| format!("failed to create tui replay out dir: {}", out_dir.display()))?;
 
