@@ -288,6 +288,14 @@ Unresolved edit attempts:
   restore Diagnose when the target has not been read since the failure, or Fix
   after that successful read, preserving benchmark repair ownership. A later
   failure's existing recovery stage takes precedence over the older diagnosis.
+  `EditDiagnosis` reconstructs `None`, `AwaitingTargetRead`, `TargetRead` or
+  `Superseded` from correlated native results. Only a current `TargetRead` may
+  advance a generic restored Diagnose phase. A later actual failed check or
+  unrelated failed read supersedes it; governor/user refusals do not. A failed
+  reread of the same target requires a fresh read and cannot revive a diagnosis
+  already superseded by another failure. Focus restoration still preserves all
+  pending exact checks and can require their own diagnosis. No new persistent
+  fields, accepted edits or verification receipts are synthesized.
 - The failed edit's target receives one successful diagnostic reread before the
   progress gate asks for a repair, including JSON/config/docs outside `src/`.
   Unrelated commands and refused reads do not consume that allowance. The read

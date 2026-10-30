@@ -396,8 +396,8 @@ fn restoring_an_edit_diagnosis_does_not_clear_a_later_failure_or_invent_proof() 
     g.restore_pending_edits(&edits);
     assert_eq!(
         g.stage,
-        Some(RecoveryStage::Diagnose),
-        "an existing recovery cause must not be overwritten"
+        Some(RecoveryStage::Fix),
+        "the same failed target read was diagnosed by its later successful read"
     );
     g.stage = None;
     g.restore_pending_edits(&edits);

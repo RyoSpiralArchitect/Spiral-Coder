@@ -46,8 +46,8 @@ impl RecoveryGovernor {
     /// Keep both the failed edit and completed diagnosis across a role handoff.
     /// A later failure's active recovery stage still takes precedence.
     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
-        if self.stage.is_none() && edits.count() > 0 {
-            self.stage = Some(if edits.target_was_read() {
+        if edits.count() > 0 && (self.stage.is_none() || edits.diagnosis_survives()) {
+            self.stage = Some(if edits.diagnosis_survives() {
                 RecoveryStage::Fix
             } else {
                 RecoveryStage::Diagnose
@@ -322,3 +322,7 @@ mod refusal_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "recovery_resume_tests.rs"]
+mod resume_tests;
