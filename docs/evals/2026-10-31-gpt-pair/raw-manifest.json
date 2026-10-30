@@ -1,0 +1,401 @@
+{
+  "local_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna",
+  "assessment_sha256": "fa92263a1e4851f96c6095bb9c4e2935ae9553bb1dceb150c8e0a59cf58ecc99",
+  "files": {
+    "assessment-001.json": {
+      "sha256": "fa92263a1e4851f96c6095bb9c4e2935ae9553bb1dceb150c8e0a59cf58ecc99",
+      "bytes": 73351,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/__init__.py": {
+      "sha256": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+      "bytes": 66,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/common.py": {
+      "sha256": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+      "bytes": 6709,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/evidence.py": {
+      "sha256": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+      "bytes": 5568,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/oracles.py": {
+      "sha256": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+      "bytes": 5613,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/reporting.py": {
+      "sha256": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+      "bytes": 1709,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/roles.py": {
+      "sha256": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+      "bytes": 4781,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/coupled_bench/runner.py": {
+      "sha256": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+      "bytes": 14108,
+      "mode": 420
+    },
+    "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263/run_coupled_bench.py": {
+      "sha256": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b",
+      "bytes": 2105,
+      "mode": 420
+    },
+    "driver/coupled_bench/__init__.py": {
+      "sha256": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+      "bytes": 66,
+      "mode": 420
+    },
+    "driver/coupled_bench/common.py": {
+      "sha256": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+      "bytes": 6709,
+      "mode": 420
+    },
+    "driver/coupled_bench/evidence.py": {
+      "sha256": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+      "bytes": 5568,
+      "mode": 420
+    },
+    "driver/coupled_bench/oracles.py": {
+      "sha256": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+      "bytes": 5613,
+      "mode": 420
+    },
+    "driver/coupled_bench/reporting.py": {
+      "sha256": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+      "bytes": 1709,
+      "mode": 420
+    },
+    "driver/coupled_bench/roles.py": {
+      "sha256": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+      "bytes": 4781,
+      "mode": 420
+    },
+    "driver/coupled_bench/runner.py": {
+      "sha256": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+      "bytes": 14108,
+      "mode": 420
+    },
+    "driver/run_coupled_bench.py": {
+      "sha256": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b",
+      "bytes": 2105,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/console.log": {
+      "sha256": "a0697c849193e121387312569c3e216723f1c8b2bda522abc90c07c5512790cd",
+      "bytes": 200,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/process.json": {
+      "sha256": "0cb56e639013591af03faeb64e5fb8b48829da80f56ac9d46f7711a2b9042e54",
+      "bytes": 225,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/run/report.json": {
+      "sha256": "7c27c2bff5161d90b18346de358bf4938efd099786a6f4d07a88de7ba282e846",
+      "bytes": 65540,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/run/session.json": {
+      "sha256": "4a103d6d130ed0dbb444b28473bf448ddd299d2ffb717a1d69985bfac1a294ac",
+      "bytes": 56135,
+      "mode": 384
+    },
+    "episodes/luna-luna/env-bool/run/state/progress.json": {
+      "sha256": "78824242a60c6289ccf3b0a16f43a1a8dad71a2ccc37eb05623f5e930bd77e04",
+      "bytes": 1222,
+      "mode": 384
+    },
+    "episodes/luna-luna/env-bool/run/state/reflection_ledger.json": {
+      "sha256": "5e0e8ed75de40a5ceea70e56e9fc0b9eff082be6ccb8c3f507bc5dc9f4468350",
+      "bytes": 1089,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/run/state/tui-session.json": {
+      "sha256": "c498165ec80ac97d6cdd10b2ae891b62bf0a590344d1605e842e83f9ce53f2aa",
+      "bytes": 56135,
+      "mode": 384
+    },
+    "episodes/luna-luna/env-bool/run/state/tui-work.json": {
+      "sha256": "a88d7b8a092bc4e682abc8c71932b321064ca27288bee5eb168fd8a7e603a467",
+      "bytes": 9943,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/run/trace.jsonl": {
+      "sha256": "7f1b5cdf7527c48755a22e22491dfd56cbbbba9c1a458b58603d9518e0b9054a",
+      "bytes": 25153,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/started.json": {
+      "sha256": "d1d279ae28bbf59a851ad0987dcf58528f38e039de8e2b52d3be59f352957503",
+      "bytes": 1325,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/task.txt": {
+      "sha256": "03b1172d3f88bca939d0ba14325af4da01d36b2ac759892a89f8cebaff4ce4f4",
+      "bytes": 2370,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/workspace/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/workspace/docs/settings.md": {
+      "sha256": "18342bd05aaee9d730f48dd0a710de9f665d55a14228ddb99e69112226b17d48",
+      "bytes": 732,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/workspace/settings.py": {
+      "sha256": "301ed94aeb6db024f1efbcf07a607342e5e88ec743dea104972af0dd39741a67",
+      "bytes": 439,
+      "mode": 420
+    },
+    "episodes/luna-luna/env-bool/workspace/tests/test_settings.py": {
+      "sha256": "9f4cff8f82936525d3da0f9139523248bbba2a806492b432c6326026ba907c5b",
+      "bytes": 1940,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/console.log": {
+      "sha256": "85414ca9db63d4bb819f1c2e9b4f85e62fe29f922c2144b0bcabea4239bffbc2",
+      "bytes": 206,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/process.json": {
+      "sha256": "ea74657ca58f79831426304b1e275f13f2e1e122b136554e5898c14b179ecfce",
+      "bytes": 231,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/run/report.json": {
+      "sha256": "ed87d5d22087c72ea4e9dc82c84036f2fb4dbf3b451208d9a4b927bc493e1adf",
+      "bytes": 101397,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/run/session.json": {
+      "sha256": "8d614ef7c3cc0e3aeaf77fda6fee397b5e68b66f9425d4bbcc7a8b2f20a00d8b",
+      "bytes": 77874,
+      "mode": 384
+    },
+    "episodes/luna-luna/event-summary/run/state/progress.json": {
+      "sha256": "194aa217700d49e1e047c05c612f377e73f645cf371432d7c6059eb88d0d8ef0",
+      "bytes": 1394,
+      "mode": 384
+    },
+    "episodes/luna-luna/event-summary/run/state/reflection_ledger.json": {
+      "sha256": "c868145755f30af8594b8ae826e5e478983e1e4f2d46b3e27b9fd66bc01ade24",
+      "bytes": 2669,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/run/state/tui-session.json": {
+      "sha256": "22475ba57c1c4993bb36051c28b097e640e864c0e204cd09aed19cf6f785b2d6",
+      "bytes": 77874,
+      "mode": 384
+    },
+    "episodes/luna-luna/event-summary/run/state/tui-work.json": {
+      "sha256": "15c669263142d462abd7a13ad1adb1467d55373a56b472e61284ebc32bb2f814",
+      "bytes": 13382,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/run/trace.jsonl": {
+      "sha256": "e3b75b6a652ac0af3aef7393ee37de1e53539f41ccacce90685a86ebba139627",
+      "bytes": 37905,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/started.json": {
+      "sha256": "b4002cd13887136784bf24613f7747a82a85bfc5eee6757a4820e6364b3a029a",
+      "bytes": 1340,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/task.txt": {
+      "sha256": "c6dbb4459fb17a6983aed2af3227913251371abf21912a9a33348cdca3b80503",
+      "bytes": 2535,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/workspace/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/workspace/docs/summary.md": {
+      "sha256": "7c9754652d8e1596384401b84610d5ce4e7985f183573bbd8fbed8e0615b1c53",
+      "bytes": 854,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/workspace/summary.py": {
+      "sha256": "98db3d4347bad5ce149a28b8da71cd541f9eb337958736302eac85d073966207",
+      "bytes": 743,
+      "mode": 420
+    },
+    "episodes/luna-luna/event-summary/workspace/tests/test_summary.py": {
+      "sha256": "b80c06eed33e3dcbed930ba82d01d8fb39eb4fd05509af87b8df7b47b718345a",
+      "bytes": 2225,
+      "mode": 420
+    },
+    "inputs/README.md": {
+      "sha256": "e922f99b73b21a88b6fdc14ee4181ea00d19c6c18f56732d8032031dcf06f0cc",
+      "bytes": 7006,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/reference/docs/settings.md": {
+      "sha256": "fa9d03ca9dd9cf83cd26a6d5d498c4cd1e4c652fd6dfc2de5edff9d1acdc66f9",
+      "bytes": 408,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/reference/settings.py": {
+      "sha256": "d67111f137c21d97b987fad8629291eaa699226d661a0179a7a52026ce572573",
+      "bytes": 408,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/task.txt": {
+      "sha256": "03b1172d3f88bca939d0ba14325af4da01d36b2ac759892a89f8cebaff4ce4f4",
+      "bytes": 2370,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/workspace/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/workspace/docs/settings.md": {
+      "sha256": "1ae00725cfd3bf6c53b2d3157cef1815fa93570ef9f145d8ae96c53657ff8da6",
+      "bytes": 159,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/workspace/settings.py": {
+      "sha256": "7add5301d5fa2c94d66ffd11e4866a57ae5cec117a65593ff55e21f0100f8f00",
+      "bytes": 171,
+      "mode": 420
+    },
+    "inputs/cases/env-bool/workspace/tests/test_settings.py": {
+      "sha256": "9f4cff8f82936525d3da0f9139523248bbba2a806492b432c6326026ba907c5b",
+      "bytes": 1940,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/reference/docs/summary.md": {
+      "sha256": "15cebd948174e694ab6fd410cb0232c7e3361eaf22e1fd13c702014c690548f7",
+      "bytes": 592,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/reference/summary.py": {
+      "sha256": "2ed2ca5a60dc5d4b43213cafdd5e25a04131f95bc07112976b37aa93f8825c86",
+      "bytes": 641,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/task.txt": {
+      "sha256": "c6dbb4459fb17a6983aed2af3227913251371abf21912a9a33348cdca3b80503",
+      "bytes": 2535,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/workspace/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/workspace/docs/summary.md": {
+      "sha256": "4934770921987efc97eb4879b51d5d9f1c013cc76c32185fc3add8b8d7517f3f",
+      "bytes": 134,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/workspace/summary.py": {
+      "sha256": "f5dd1992e1e559bd89468c3294226b2c0cfd4e143c840573869badfe5c0ace38",
+      "bytes": 246,
+      "mode": 420
+    },
+    "inputs/cases/event-summary/workspace/tests/test_summary.py": {
+      "sha256": "b80c06eed33e3dcbed930ba82d01d8fb39eb4fd05509af87b8df7b47b718345a",
+      "bytes": 2225,
+      "mode": 420
+    },
+    "inputs/matrix-mistral.json": {
+      "sha256": "f7e6a10033d6bd1d7bc08f70f5d012d5dd5b4a8b484500ec176756c6f096cadb",
+      "bytes": 603,
+      "mode": 420
+    },
+    "inputs/matrix-openai.json": {
+      "sha256": "34cab5708a4633d520b2121b1d1b6b795e6025831587819144fd14743e3490bd",
+      "bytes": 574,
+      "mode": 420
+    },
+    "inputs/matrix.json": {
+      "sha256": "da0a2f8783072e0fb32ef66cf2c94038f993b49416ea20e783636a1a3d199247",
+      "bytes": 791,
+      "mode": 420
+    },
+    "inputs/suite.json": {
+      "sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+      "bytes": 1576,
+      "mode": 420
+    },
+    "matrix.json": {
+      "sha256": "34cab5708a4633d520b2121b1d1b6b795e6025831587819144fd14743e3490bd",
+      "bytes": 574,
+      "mode": 420
+    },
+    "predeclared.json": {
+      "sha256": "5de7883fa1ec38d699fd0048b855bef85db83ae863d04e047a8708bc9953a5ad",
+      "bytes": 8371,
+      "mode": 420
+    },
+    "preflight.json": {
+      "sha256": "3a5a12ee93d58b57d8419e3db89d04fcf82c287fc44a0e113a101d0641caffdb",
+      "bytes": 27470,
+      "mode": 420
+    },
+    "references/env-bool/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "references/env-bool/docs/settings.md": {
+      "sha256": "fa9d03ca9dd9cf83cd26a6d5d498c4cd1e4c652fd6dfc2de5edff9d1acdc66f9",
+      "bytes": 408,
+      "mode": 420
+    },
+    "references/env-bool/settings.py": {
+      "sha256": "d67111f137c21d97b987fad8629291eaa699226d661a0179a7a52026ce572573",
+      "bytes": 408,
+      "mode": 420
+    },
+    "references/env-bool/tests/test_settings.py": {
+      "sha256": "9f4cff8f82936525d3da0f9139523248bbba2a806492b432c6326026ba907c5b",
+      "bytes": 1940,
+      "mode": 420
+    },
+    "references/event-summary/.spiral-coder.md": {
+      "sha256": "55b66c168d29e38c89348c70ee03b5e89bc75f29d9f7388d5bb7f7260b60d859",
+      "bytes": 135,
+      "mode": 420
+    },
+    "references/event-summary/docs/summary.md": {
+      "sha256": "15cebd948174e694ab6fd410cb0232c7e3361eaf22e1fd13c702014c690548f7",
+      "bytes": 592,
+      "mode": 420
+    },
+    "references/event-summary/summary.py": {
+      "sha256": "2ed2ca5a60dc5d4b43213cafdd5e25a04131f95bc07112976b37aa93f8825c86",
+      "bytes": 641,
+      "mode": 420
+    },
+    "references/event-summary/tests/test_summary.py": {
+      "sha256": "b80c06eed33e3dcbed930ba82d01d8fb39eb4fd05509af87b8df7b47b718345a",
+      "bytes": 2225,
+      "mode": 420
+    },
+    "runtime/spiral-coder": {
+      "sha256": "1f14a8ed81b700ba8d460a45712d918b91eeb59a3a2cd51a2ea12f8a0987e9cc",
+      "bytes": 53986192,
+      "mode": 493
+    },
+    "suite.json": {
+      "sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+      "bytes": 1576,
+      "mode": 420
+    }
+  }
+}

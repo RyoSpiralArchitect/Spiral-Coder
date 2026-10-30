@@ -1,0 +1,342 @@
+{
+  "wave": "r10",
+  "runtime_commit": "a037e14161f5e8f055856b4b0d8a58ce5e0ea1b4",
+  "declaration_commit": "816d78472199b26db8539a1dd09572f7450aef5f",
+  "assessment_sha256": "fa92263a1e4851f96c6095bb9c4e2935ae9553bb1dceb150c8e0a59cf58ecc99",
+  "manifest_entries_verified": 79,
+  "selected_credentials_absent_from_scanned_files": true,
+  "rows": [
+    {
+      "case": "env-bool",
+      "state": "finished",
+      "termination": "completed",
+      "strict_qualified": true,
+      "changed_files": [
+        "docs/settings.md",
+        "settings.py"
+      ],
+      "independent_original_tests_pass": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "role_requests": {
+        "coder": 12,
+        "observer": 4
+      },
+      "wire_requests": 16,
+      "request_status_counts": {
+        "completed": 16
+      },
+      "request_purpose_counts": {},
+      "usage_reported_for": 0,
+      "report_closeout_attempted": false,
+      "native_test_count_receipts": {
+        "call_JWmSoj17A93qnSGbIbqI0qiU": {
+          "errors": 0,
+          "failure_events": 14,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "call_slmKpEE2jGbbRTwGP8XyJpOJ": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "done_attempts": [
+        {
+          "call_id": "call_d1rp6077V4laSEnW7ip0uNVB",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "patch_file(path=docs/settings.md, replace=# Boolean settings `parse_bool(value, default=False)` reads an environment-style boolean setting. The case-insensitive tokens `true`, `1`, `yes`, and `on` retur…, search=# Boolean settings `parse_bool(value, default=False)` reads an environment-style setting. The current implementation treats every nonempty string as enabled.)",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "None; both requested artifacts are updated and the unchanged original test suite passes.",
+            "remaining_acceptance": [],
+            "summary": "Updated `settings.py` to normalize case and surrounding whitespace, honor default handling for None/empty inputs, recognize explicit true/false tokens, and raise ValueError for unknown strings. Updated `docs/settings.md` with the token rules, defaults, whitespace/case behavior, ValueError behavior, required examples, and exact test command. No remaining work.\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result": "OK: done"
+        }
+      ],
+      "gate_refusals": [
+        {
+          "call_id": "call_MRUlLocG2YfvG77HCoDogEAf",
+          "tool": "read_file",
+          "reason": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_vRhJGPozlTw6nIbitVmw1QrU",
+          "tool": "read_file",
+          "reason": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_T5bJAXD10iq2t59HPx9GdBu1",
+          "tool": "apply_diff",
+          "reason": "GOVERNOR BLOCKED\n\n[Evidence Gate] Invalid <evidence>: evidence missing target_files\n\n[Evidence Gate]\nYou are about to mutate an existing file via apply_diff.\nTarget path: settings.py\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(end_line=200, path=tests/test_settings.py, start_line=1) -> tests/test_settings.py\n- read_file(end_line=200, path=settings.py, start_line=1) -> settings.py\n[Refuted assumptions]\n- Source and tests were not ye"
+        },
+        {
+          "call_id": "call_YF9FxsPxxf37Hht7FpidcxIK",
+          "tool": "write_file",
+          "reason": "GOVERNOR BLOCKED: write_file refused because 'docs/settings.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        }
+      ],
+      "pending_exact_checks": [],
+      "patch_replay": {
+        "patch": "env-bool.patch",
+        "sha256": "cc4ce63d769b4eac79b44f429c27c177a01ccf639567aad297ffb659f615cdc1",
+        "matches_candidate_inventory": true,
+        "original_tests_pass": true,
+        "original_check_exit_codes": [
+          0
+        ]
+      },
+      "observed_read_paths": [
+        "docs/settings.md",
+        "settings.py",
+        "tests/test_settings.py"
+      ],
+      "observer_continuations": [
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matching_call_ids": [
+            "call_YGcOiQR6fjNVZmljEQOHTmh0"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "patch_file",
+          "matching_call_ids": [
+            "call_ia4ExWLDUD8T5d4ScHLQ0ddI"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matching_call_ids": [
+            "call_qmzwQgEYRh7NwvPWZXxRZWGh"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matching_call_ids": [
+            "call_slmKpEE2jGbbRTwGP8XyJpOJ"
+          ],
+          "executed": true
+        }
+      ],
+      "failed_diff_calls": [],
+      "authored_report_review": "The first done names both requested files and states the actual before/after statuses for the exact command. Its description agrees with the accepted token, whitespace, default and ValueError behavior. Counts are present in native receipts. The documentation places the requested arrow examples in a Python-labelled fence, where the arrows are display notation."
+    },
+    {
+      "case": "event-summary",
+      "state": "finished",
+      "termination": "completed",
+      "strict_qualified": true,
+      "changed_files": [
+        "docs/summary.md",
+        "summary.py"
+      ],
+      "independent_original_tests_pass": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "role_requests": {
+        "coder": 17,
+        "observer": 5
+      },
+      "wire_requests": 22,
+      "request_status_counts": {
+        "completed": 22
+      },
+      "request_purpose_counts": {},
+      "usage_reported_for": 0,
+      "report_closeout_attempted": false,
+      "native_test_count_receipts": {
+        "call_XvNRtjPGxeC48NTQsYHVI1jI": {
+          "errors": 5,
+          "failure_events": 8,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        },
+        "call_Aofse5zldArRn8S0ooQhq5Ur": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 10
+        }
+      },
+      "done_attempts": [
+        {
+          "call_id": "call_xIbGFoq1GGNUWUk4TjDqtHQJ",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "No remaining work.",
+            "remaining_acceptance": [],
+            "summary": "Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/summary.py to skip blank lines, count only exact accepted levels, preserve iterable input handling, and raise line-numbered ValueError for invalid records. Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/docs/summary.md with the contract, blank-line behavior, line 3 example, exact empty result, and test command. Native required check passed after edits; tests and .spiral-coder.md were preserved. No dependencies were installed and no commits or pushes were made.\n\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`"
+          },
+          "executed": true,
+          "succeeded": null,
+          "result": "OK: done"
+        }
+      ],
+      "gate_refusals": [
+        {
+          "call_id": "call_ZEPwEedDSraQcKMPnUPU01pH",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool."
+        },
+        {
+          "call_id": "call_cCQD1I6EQyUNjKgcrGAUoWvA",
+          "tool": "write_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        },
+        {
+          "call_id": "call_SGFWC04PuJtupjuajVrlqBda",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\n\n[Evidence Gate]\nYou are about to mutate an existing file via patch_file.\nTarget path: docs/summary.md\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(end_line=200, path=summary.py, start_line=1) -> summary.py\n- read_file(end_line=200, path=summary.py, start_line=1) -> summary.py\n- read_file(end_line=200, path=tests/test_summary.py, start_line=1) -> tests/test_summary.py\n[Refuted assumptions]\n- The patch context omitte"
+        },
+        {
+          "call_id": "call_H1vDFnXRvZnPejon9Kg5utde",
+          "tool": "write_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        },
+        {
+          "call_id": "call_ji9gSvXDSeYyMuGm9KbxQ7iQ",
+          "tool": "write_file",
+          "reason": "GOVERNOR BLOCKED: write_file refused because 'docs/summary.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        }
+      ],
+      "pending_exact_checks": [],
+      "patch_replay": {
+        "patch": "event-summary.patch",
+        "sha256": "d625eacff8c4b92107e91e58ec907bff4a116a9f5ef0a6e7057f8b52ac90750f",
+        "matches_candidate_inventory": true,
+        "original_tests_pass": true,
+        "original_check_exit_codes": [
+          0
+        ]
+      },
+      "observed_read_paths": [
+        "docs/summary.md",
+        "summary.py",
+        "tests/test_summary.py"
+      ],
+      "observer_continuations": [
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matching_call_ids": [
+            "call_bYy7BfdHOkvwKJmBasLx6nZz"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "patch_file",
+          "matching_call_ids": [
+            "call_ZEPwEedDSraQcKMPnUPU01pH"
+          ],
+          "executed": false
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matching_call_ids": [
+            "call_sryl0f1s5mfqM97M9XtHdDB5"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "write_file",
+          "matching_call_ids": [],
+          "executed": false
+        },
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matching_call_ids": [
+            "call_Aofse5zldArRn8S0ooQhq5Ur"
+          ],
+          "executed": true
+        }
+      ],
+      "failed_diff_calls": [
+        "call_H2zsG10JfjWDLvk49apCSVXW",
+        "call_cDHDEibDKFXWLWtjFx8TPRCJ"
+      ],
+      "authored_report_review": "The first done names the source and docs and records both outcomes for the exact command. Source and docs preserve input strings, generators, strict string levels, blank lines and physical error line numbers. The all-zero example is explicitly scoped to empty input. Counts are present in native receipts."
+    }
+  ],
+  "patch_format_diagnostic": {
+    "case": "event-summary",
+    "call_id": "call_cDHDEibDKFXWLWtjFx8TPRCJ",
+    "source_commit": "a037e14161f5e8f055856b4b0d8a58ce5e0ea1b4",
+    "parser": "src/file_tools.rs::parse_diff_hunks",
+    "source_sha256": "f5dd1992e1e559bd89468c3294226b2c0cfd4e143c840573869badfe5c0ace38",
+    "retained_diff_sha256": "21bb26ffe9dcb5335b6b9f2fe441b1b54429f6f43d721f6b830abde2df3ba11c",
+    "method": "Offline diagnostic using the pinned Rust hunk parser and the exact old-block match used by edit_preview::diff. Count matches in the original source for the retained response and a copy with only its final marker removed.",
+    "old_block_matches_with_terminal_marker": [
+      0
+    ],
+    "old_block_matches_without_terminal_marker": [
+      1
+    ],
+    "meaning": "The parser included the unprefixed *** End Patch line in the old block. The original proposal failed in the live run. The offline check only counted matching anchors."
+  }
+}

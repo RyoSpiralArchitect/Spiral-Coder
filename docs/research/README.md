@@ -22,6 +22,11 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [GPT-pair pre-dogfooding readout](../evals/2026-10-31-gpt-pair/README.md)
+uses the same binary, tasks and assessor as the preceding Mistral pair. GPT
+completed both source-and-documentation repairs in 38 requests. The JSONL pair
+reached its final check after two failed patches and a Plan Gate refusal.
+
 The [Observer reconnect readout](../evals/2026-10-30-observer-reconnect/README.md)
 implements one native EOF/body-read recovery within the existing task budget.
 Both same-pair candidates pass original independent tests, but only settings

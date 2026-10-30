@@ -1,0 +1,51 @@
+diff --git a/docs/summary.md b/docs/summary.md
+index a6db6ee..00e732e 100644
+--- a/docs/summary.md
++++ b/docs/summary.md
+@@ -1,4 +1,19 @@
+ # Event summary
+ 
+-`summarize(lines)` counts levels in a JSON Lines export.
+-Each line currently needs a JSON object with a known level.
++`summarize(lines)` accepts an iterable of JSON Lines strings and counts the
++exact lowercase levels `info`, `warning`, and `error`. Extra fields on event
++objects are ignored, and the returned mapping always contains all three integer
++counts. For empty input, the exact result is `{"info": 0, "warning": 0, "error": 0}`.
++
++Empty or whitespace-only lines are skipped. Every other record must be a JSON
++object whose `level` is a string equal to one of the three accepted levels.
++Malformed JSON, non-object records, and missing, unknown, or non-string levels
++raise `ValueError`; the message includes the physical one-based line number,
++including skipped blank lines. For example, an invalid record on the third
++physical line raises an error mentioning `line 3`.
++
++Run the tests with:
++
++```text
++python3 -B -S -m unittest discover -s tests -v
++```
+diff --git a/summary.py b/summary.py
+index 4a90dee..544bbba 100644
+--- a/summary.py
++++ b/summary.py
+@@ -4,7 +4,17 @@ import json
+ 
+ def summarize(lines):
+     counts = {"info": 0, "warning": 0, "error": 0}
+-    for line in lines:
+-        event = json.loads(line)
+-        counts[event["level"]] += 1
++    for line_number, line in enumerate(lines, 1):
++        if not line.strip():
++            continue
++        try:
++            event = json.loads(line)
++        except (json.JSONDecodeError, TypeError) as exc:
++            raise ValueError(f"invalid record at line {line_number}") from exc
++        if not isinstance(event, dict):
++            raise ValueError(f"invalid record at line {line_number}")
++        level = event.get("level")
++        if not isinstance(level, str) or level not in counts:
++            raise ValueError(f"invalid level at line {line_number}")
++        counts[level] += 1
+     return counts

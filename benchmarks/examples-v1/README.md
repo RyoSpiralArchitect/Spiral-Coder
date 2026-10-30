@@ -100,6 +100,12 @@ completion receipt. Never mix manual edits into a declared automated episode.
 
 ## Recorded runs
 
+The [GPT-pair readout](../../docs/evals/2026-10-31-gpt-pair/README.md) records
+strict qualification on both tasks using `gpt-5.6-luna` in both roles. Settings
+used 16 requests and JSONL used 22. Both candidate patches passed the original tests
+in fresh workspaces. Each episode reached native verification and an accepted
+report. The JSONL receipt also preserves two failed diff attempts.
+
 The [Observer reconnect follow-up](../../docs/evals/2026-10-30-observer-reconnect/README.md)
 adds one bounded native stream retry. Its same-pair wave spends 40 requests:
 both artifacts pass original tests, settings reaches native completion, and
