@@ -1,0 +1,64 @@
+{
+  "wave": "r11",
+  "suite_id": "repo-maintenance-v1",
+  "question": "Can the same GPT Coder and Observer complete two repository-derived maintenance tasks, preserve old behavior and structure, and author verified outcomes within the practical-pair budget?",
+  "runtime_commit": "53b1e99b1803a5e745b2c1b2c8714fd443cb99dd",
+  "fixture_origin_commit": "8533870ce583ea95c302be6541178cb88a80e442",
+  "r10_comparison_commit": "836098baffbf712c08becdf58c5c13d3c440994e",
+  "declared_at": "2026-10-30T21:01:09.829463+00:00",
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna",
+  "predeclaration_sha256": "cea2229da27a263f75a7a8d2b95fa7b88260397a00bf72b3862d064225d26a6d",
+  "suite_sha256": "25c64b1d60d187dc218639d2e6234da784d81a95fa9e288098d7dbc6a4e567e2",
+  "matrix_sha256": "34cab5708a4633d520b2121b1d1b6b795e6025831587819144fd14743e3490bd",
+  "binary_sha256": "8c5cc1352ad2dd79762eee52e1a8d1dedc7743c25ab7cb352114990ddca7f2c0",
+  "driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "controls_sha256": "847e43a642b73f20237150cfc2e3572d1788610d015895383e0abba86b26abe9",
+  "preflight_sha256": "32066013ea690e002cb481c6630b2b17731afc27d23d6c172fe0985990953872",
+  "comparison": "The model pair, matrix, role allocation and limits match r10. These tasks use the original coding-v1 prompts, fixtures, exact commands and controls. Child replay receipt storage and the JSON preservation comparator were repaired before this freeze.",
+  "profile": {
+    "id": "luna-luna",
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "episodes": [
+    {
+      "case": "pilot-cli",
+      "prompt_sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc"
+    },
+    {
+      "case": "replay-json",
+      "prompt_sha256": "47207496497598fcb62b35e9fca1850ca3315cd8e1648d134010054228da964f"
+    }
+  ],
+  "budget_per_episode": {
+    "task": 24,
+    "observer_reserved": 6,
+    "transport_repairs": 4,
+    "coder_slice": 8,
+    "wall_seconds": 600,
+    "request_timeout_seconds": 90
+  },
+  "maximum_wire_requests": 56,
+  "provider_calls_at_pin": 0,
+  "procedure": "Run each episode once in suite order. Preserve task failures and guard refusals. Stop before the second episode only for a confirmed account, authentication or model-access block.",
+  "qualification": "Use the frozen assessor and every changed path. Report independent artifacts, ordered native baseline and exact checks after the last edit, an accepted authored report and role/budget receipts.",
+  "supplementary_review": [
+    "Inspect actual role calls and matched suggestions, successful edits and scope.",
+    "Independently replay each retained patch on its original fixture and check the requested CLI and replay behavior.",
+    "For replay-json, inspect preservation of all four old cases and extensions, the new bounded-read case, both native final checks and external replay artifacts.",
+    "Compare final report wording and any plan, recovery or edit refusals to native results. Retain every incomplete episode."
+  ]
+}
