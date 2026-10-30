@@ -25,6 +25,38 @@ never used as the independent oracle: original tests are copied into a fresh
 directory with only the requested candidate artifacts. Documentation checks
 cover explicitly requested tokens, not general prose correctness.
 
+## Repository maintenance with the practical-pair budget
+
+After the two small practical repairs, use `suite-maintenance.json` to run the
+repository-derived `pilot-cli` and `replay-json` tasks. They reuse the historical
+workspaces, references, prompts and exact commands. The CLI case exercises
+selection over a real 166-line runner. The replay case requires retaining four
+existing cases and unknown metadata in a 1,101-line JSON file, adding exactly one
+case, and running the frozen Spiral-Coder binary to verify all five.
+
+```sh
+cargo build --locked --bin spiral-coder
+python3 -B -S scripts/run_coupled_bench.py prepare \
+  --suite benchmarks/coding-v1/suite-maintenance.json \
+  --matrix benchmarks/examples-v1/matrix-openai.json \
+  --binary target/debug/spiral-coder --runtime-commit "$(git rev-parse HEAD)" \
+  --out /tmp/spiral-maintenance-r1
+python3 -B -S /tmp/spiral-maintenance-r1/driver/run_coupled_bench.py run \
+  --out /tmp/spiral-maintenance-r1 --profile luna-luna
+python3 -B -S /tmp/spiral-maintenance-r1/driver/run_coupled_bench.py summarize \
+  --out /tmp/spiral-maintenance-r1
+```
+
+Start with a fresh output directory and provide `OPENAI_API_KEY` through the
+environment for the live run. Coder and Observer each use `gpt-5.6-luna`.
+Per episode, 24 task requests include six reserved for Observer. The four
+transport repair slots bring the maximum to 28 wire requests per episode.
+The Coder slice cap is eight. The two episodes together allow 56 wire requests.
+The original-test, post-edit proof, report and file-scope gates all apply.
+Replay preservation distinguishes JSON booleans from numbers throughout old
+cases and unknown extensions. Native child replay reports are retained under
+`run/replays` in the episode output.
+
 ## Prepare without provider calls
 
 Build a runtime containing PR #31's bounded reads and task proof first. The

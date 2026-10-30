@@ -88,10 +88,15 @@ class IndependentOracles(unittest.TestCase):
         before = common.read_json(SUITE_ROOT / case["workspace"] / ".spiral-coder/tui_replay.json")
         after = common.read_json(SUITE_ROOT / case["reference"] / ".spiral-coder/tui_replay.json")
         self.assertTrue(oracles.preserved_json(before, after))
-        variants = [copy.deepcopy(after) for _ in range(3)]
+        equivalent = copy.deepcopy(after)
+        equivalent["extension"]["notes"][0]["counter"] = 0.0
+        self.assertTrue(oracles.preserved_json(before, equivalent))
+        variants = [copy.deepcopy(after) for _ in range(5)]
         variants[0]["cases"][0].pop("plugin_data")
         variants[1]["cases"][:2] = reversed(variants[1]["cases"][:2])
         variants[2]["cases"][-1]["id"] = variants[2]["cases"][0]["id"]
+        variants[3]["extension"]["notes"][0]["enabled"] = 0
+        variants[4]["cases"][0]["plugin_data"]["keep"][1]["untouched"] = 1
         for variant in variants:
             self.assertFalse(oracles.preserved_json(before, variant))
 

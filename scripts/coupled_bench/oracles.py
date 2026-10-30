@@ -21,6 +21,17 @@ def pilot_documentation(doc):
             and any(text in normalized for text in ["unknown", "invalid", "does not match a known"]))
 
 
+def same_json_value(left, right):
+    """Compare JSON values without Python's true == 1 and false == 0 coercion."""
+    if isinstance(left, dict):
+        return (isinstance(right, dict) and left.keys() == right.keys()
+                and all(same_json_value(v, right[k]) for k, v in left.items()))
+    if isinstance(left, list):
+        return (isinstance(right, list) and len(left) == len(right)
+                and all(same_json_value(a, b) for a, b in zip(left, right)))
+    return isinstance(left, bool) == isinstance(right, bool) and left == right
+
+
 def preserved_json(before, after):
     if not isinstance(after, dict) or set(after) != set(before):
         return False
@@ -28,9 +39,9 @@ def preserved_json(before, after):
     if not isinstance(new, list) or len(new) != len(old) + 1:
         return False
     ids = [row.get("id") for row in new if isinstance(row, dict)]
-    return (len(ids) == len(new) == len(set(ids)) and new[:-1] == old
+    return (len(ids) == len(new) == len(set(ids)) and same_json_value(old, new[:-1])
             and ids[-1] == "observer-range-tail"
-            and all(after[k] == v for k, v in before.items() if k != "cases"))
+            and all(same_json_value(v, after[k]) for k, v in before.items() if k != "cases"))
 
 
 def score(case, suite_root, workspace, binary):
