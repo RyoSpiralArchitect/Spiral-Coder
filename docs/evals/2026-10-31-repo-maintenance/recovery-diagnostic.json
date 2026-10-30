@@ -1,0 +1,39 @@
+{
+  "source_commit": "53b1e99b1803a5e745b2c1b2c8714fd443cb99dd",
+  "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--bin",
+    "spiral-coder",
+    "probe::",
+    "--",
+    "--nocapture"
+  ],
+  "exit_code": 101,
+  "session_sha256": "276a76d6552ba5c3dd02f82c94f6b8675fccd052ac6e5c60744cc6421aa5172f",
+  "external_historical_probe_sha256": "568e3272447f7b94644b9ecf6fe0b92a9ca4eef13ed7fdba02495885804996e8",
+  "native_probe_sha256": "fcf5dd58d86290aca3af04c00a9155ea8aa8f9d0d2da03890e34cd1f94f2500b",
+  "instrumented_source_sha256": "3a1acc87a5bccea8764548d84e66301d8b74b594887eee660bab80d172eb7865",
+  "cache_reset_log_sha256": "35ebd60b1d6bbf6001c0b438413ab0ebeb2a836f49898a55cda352d802be1a83",
+  "log_sha256": "370d7f4b5340e945b40d23f0fb918b5c2dd0e8131baa6cf4d21fe5eec372e00e",
+  "probe_harness_compile_error_log_sha256": "f0c6177aa58caf552c2992bfa7d30ca48bb059a357a8e4b8ad436fee07a6e5a3",
+  "provider_calls": 0,
+  "local_diagnostic_root": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-diagnostics",
+  "historical_probe_result": {
+    "passed": 4,
+    "failed": 2,
+    "diagnosis_continuity_failure": true,
+    "unrelated_failure_control_stopped_at_obsolete_active_focus_assertion": true
+  },
+  "native_session_probe_result": {
+    "passed": 0,
+    "failed": 1,
+    "diagnosed_native_reads": 3,
+    "all_restored_stages": "diagnose",
+    "expected_stage": "fix",
+    "pending_check_preserved": true
+  },
+  "production_recovery_source_changed": false
+}

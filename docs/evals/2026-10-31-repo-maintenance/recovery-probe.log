@@ -1,0 +1,38 @@
+   Compiling spiral-coder v0.2.0 (/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-diagnostics/workspace)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 27.95s
+     Running unittests src/main.rs (/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/deps/spiral_coder-f00ebae6a92fe6dd)
+
+running 7 tests
+
+thread 'tui::agent::recovery::self_dogfood_recovery_resume_probe::completed_source_diagnosis_survives_handoff_without_clearing_verification' (146909) panicked at src/tui/agent/recovery.rs:517:13:
+assertion `left == right` failed: a successful exact source read after the failed patch must survive handoff
+  left: Some(Diagnose)
+ right: Some(Fix)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+call="call_tbsQEus6nL6MkWq6gQTWYkv8" edits=1 target_read=true focus_observed=true pending_check=true restored=diagnose
+
+thread 'tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_unrelated_check_failure_keeps_its_diagnosis_pending' (146907) panicked at src/tui/agent/recovery.rs:580:9:
+the old focused test remains observed
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_failed_read_does_not_inherit_an_older_edit_diagnosis ... ok
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_unrelated_check_failure_keeps_its_diagnosis_pending ... FAILED
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_failed_edit_requires_its_own_target_read ... ok
+call="call_bTsalwxB8uiU1YhDGRzhmIsv" edits=1 target_read=true focus_observed=true pending_check=true restored=diagnose
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::completed_source_diagnosis_survives_handoff_without_clearing_verification ... FAILED
+call="call_rO0f6iWvOg2tvcwq2qQgJY5q" edits=1 target_read=true focus_observed=true pending_check=true restored=diagnose
+
+thread 'tui::agent::recovery::r11_recovery_probe::native_source_diagnosis_survives_a_restored_continuation' (146903) panicked at src/tui/agent/recovery.rs:668:9:
+completed source diagnosis must survive without clearing the pending failed check
+test tui::agent::recovery::r11_recovery_probe::native_source_diagnosis_survives_a_restored_continuation ... FAILED
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_required_check_failure_is_not_cleared_by_old_source_diagnosis ... ok
+test tui::agent::recovery::self_dogfood_recovery_resume_probe::absent_unrelated_or_stale_reads_do_not_discharge_the_failed_edit ... ok
+
+failures:
+
+failures:
+    tui::agent::recovery::r11_recovery_probe::native_source_diagnosis_survives_a_restored_continuation
+    tui::agent::recovery::self_dogfood_recovery_resume_probe::a_newer_unrelated_check_failure_keeps_its_diagnosis_pending
+    tui::agent::recovery::self_dogfood_recovery_resume_probe::completed_source_diagnosis_survives_handoff_without_clearing_verification
+
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 1010 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--bin spiral-coder`

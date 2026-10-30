@@ -1,0 +1,370 @@
+{
+  "wave": "r11",
+  "runtime_commit": "53b1e99b1803a5e745b2c1b2c8714fd443cb99dd",
+  "declaration_commit": "f20f1fe851f5ddab9a84eaca028c0f1c0144bbae",
+  "assessment_sha256": "9bb31c920dcc749353749e43aea2be5a47bdeaaddcd591a632fecca205a379a4",
+  "manifest_entries_verified": 290,
+  "selected_credentials_absent_from_scanned_files": true,
+  "rows": [
+    {
+      "case": "pilot-cli",
+      "state": "finished",
+      "termination": "blocked",
+      "strict_qualified": false,
+      "changed_files": [],
+      "independent_original_tests_pass": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "role_requests": {
+        "coder": 18,
+        "observer": 6
+      },
+      "wire_requests": 24,
+      "request_status_counts": {
+        "completed": 24
+      },
+      "request_purpose_counts": {},
+      "usage_reported_for": 0,
+      "report_closeout_attempted": false,
+      "native_test_count_receipts": {
+        "call_UBpgcaaGt35VneuHiPxjEAF7": {
+          "errors": 0,
+          "failure_events": 1,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 7
+        }
+      },
+      "done_attempts": [
+        {
+          "call_id": "call_wrVLwBdL9pGW6bohJknraCvy",
+          "arguments": {
+            "acceptance_evidence": [],
+            "completed_acceptance": [],
+            "next_steps": "Patch scripts/run_coupled_pilot.py at the observed `selected = cases` line to filter validated requested IDs while preserving suite order, add the documentation section to docs/pilot.md, then execute `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v` as a separate exact check.",
+            "remaining_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "summary": "Blocked: the required source and documentation repairs were not successfully applied. The only recorded verification is the unchanged baseline failure, so the requested completed report cannot claim a passing After result.\nChanged files: none recorded (scripts/run_coupled_pilot.py and docs/pilot.md remain pending).\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: NOT VERIFIED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nRemaining work: apply the one-line selection filter in scripts/run_coupled_pilot.py, update docs/pilot.md with the requested case-selection example and semantics, then run the exact command above and confirm PASSED."
+          },
+          "executed": true,
+          "succeeded": null,
+          "result": "OK: blocked"
+        }
+      ],
+      "gate_refusals": [
+        {
+          "call_id": "call_vmOzYSx5OpxUSlLPnfkNsi3h",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Think Gate] Missing <think>.\nRequired now: emit a valid <think> with goal/step/tool/risk/doubt/next/verify immediately before your tool call."
+        },
+        {
+          "call_id": "call_M3iDfw2oKQOKCk6EuTifkJtE",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start."
+        },
+        {
+          "call_id": "call_b9khUo53vqALNSLDBxUzJbZB",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Think Gate] Missing <think>.\nRequired now: emit a valid <think> with goal/step/tool/risk/doubt/next/verify immediately before your tool call."
+        },
+        {
+          "call_id": "call_YgKIoyxwkASVaUi3v6r1lTpS",
+          "tool": "apply_diff",
+          "reason": "GOVERNOR BLOCKED\n\n[Evidence Gate] Invalid <evidence>: evidence missing target_files\n\n[Evidence Gate]\nYou are about to mutate an existing file via apply_diff.\nTarget path: scripts/run_coupled_pilot.py\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(end_line=95, path=tests/test_coupled_pilot.py, start_line=50) -> tests/test_coupled_pilot.py\n[Refuted assumptions]\n- The baseline exposed a source bug but required diagnostic read was still m"
+        },
+        {
+          "call_id": "call_eGULgzYLroi5jaOTbNTuVSw5",
+          "tool": "read_file",
+          "reason": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_Plw6nffxxqxMJ79MxP6CpRv5",
+          "tool": "read_file",
+          "reason": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_Cm9YcF0RwaNRCk4g109nhRMf",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        },
+        {
+          "call_id": "call_b3OFlBxRjL63UWGJrN0vt6FS",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        },
+        {
+          "call_id": "call_lCuYMSiHDmxl03BiRjZAMmCe",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        },
+        {
+          "call_id": "call_1P9WD66yfDQcdAa2U86Ex2Ch",
+          "tool": "patch_file",
+          "reason": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated."
+        }
+      ],
+      "pending_exact_checks": [
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+      ],
+      "patch_replay": {
+        "patch": null,
+        "sha256": null,
+        "matches_candidate_inventory": true,
+        "original_tests_pass": false,
+        "original_check_exit_codes": [
+          1
+        ]
+      },
+      "native_baselines": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "native_final_checks": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "oracle_checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": false,
+        "original_test_count": true,
+        "requested_documentation": false
+      },
+      "out_of_scope_files": [],
+      "observed_read_paths": [
+        "scripts/run_coupled_pilot.py",
+        "tests/test_coupled_pilot.py"
+      ],
+      "observer_handoffs": [
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matched_call_ids": [
+            "call_UBpgcaaGt35VneuHiPxjEAF7"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matched_call_ids": [
+            "call_JB3ZhXosoF2LQWOzw2Q2sKRC"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matched_call_ids": [
+            "call_cUOW23qq5CREy35dNBngMW0O"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "patch_file",
+          "matched_call_ids": [
+            "call_b3OFlBxRjL63UWGJrN0vt6FS",
+            "call_lCuYMSiHDmxl03BiRjZAMmCe"
+          ],
+          "executed": false
+        },
+        {
+          "decision": "accept",
+          "tool": "patch_file",
+          "matched_call_ids": [
+            "call_1P9WD66yfDQcdAa2U86Ex2Ch"
+          ],
+          "executed": false
+        }
+      ],
+      "replay_reports": [],
+      "failed_edits": [
+        {
+          "call_id": "call_oyzxkwUuwh2VFBS273vGtUkS",
+          "tool": "apply_diff",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    selected = cases\\\\n*** Update File: docs/pilot.md\"); hunk 2: old block not found (starts: \"*** End Patch\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 71-76):\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     selected = cases\n74 |     out.mkdir(parents=True)\n75 |     (out / \"spec.json\").write_bytes(spec_bytes)\n76 |     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\nCurrent file tail (lines 161-166):\n161 |         (out / \"summary.json"
+        }
+      ]
+    },
+    {
+      "case": "replay-json",
+      "state": "finished",
+      "termination": "completed",
+      "strict_qualified": false,
+      "changed_files": [
+        ".spiral-coder/tui_replay.json",
+        "docs/replay.md"
+      ],
+      "independent_original_tests_pass": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "role_requests": {
+        "coder": 12,
+        "observer": 3
+      },
+      "wire_requests": 15,
+      "request_status_counts": {
+        "completed": 15
+      },
+      "request_purpose_counts": {},
+      "usage_reported_for": 0,
+      "report_closeout_attempted": false,
+      "native_test_count_receipts": {
+        "call_m1Qbb0kx6tUpNEfbQXg3cabg": {
+          "errors": 0,
+          "failure_events": 1,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 1
+        },
+        "call_yHqjsg3ZQslQMNy2NzHdD1xI": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 1
+        }
+      },
+      "done_attempts": [
+        {
+          "call_id": "call_0pCxFsTto08uVu5WnVt9Mc18",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "None.",
+            "remaining_acceptance": [],
+            "summary": "Added exactly one replay case, `observer-range-tail`, to `.spiral-coder/tui_replay.json`. It asserts Observer `read_file` advice for `src/tui/agent.rs` with `kind` `read`, `suggested_tool` `read_file`, and exact `start_line=1200` / `end_line=1240` arguments, plus `suggestion_parsed`, `hint_queued`, and coder-system assertions. Updated `docs/replay.md` with the case name, path, bounds, and advice-only explanation.\n\nChanged files:\n- `.spiral-coder/tui_replay.json`\n- `docs/replay.md`\n\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 1 failure event, 0 errors).\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 0 failure events, 0 errors).\nTUI replay: PASSED — `spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json`.\nRemaining work: none."
+          },
+          "executed": true,
+          "succeeded": null,
+          "result": "OK: done"
+        }
+      ],
+      "gate_refusals": [
+        {
+          "call_id": "call_ENg1C1Xb9USCVVZCRXlmNQqa",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Think Gate] Invalid <think>: think missing goal\nRepair all listed fields together. Use one field per line inside <think>:\ngoal: the immediate action's purpose\nstep: an integer from 1 to 5 in the current plan\ntool: list_dir\nrisk: a short risk assessment\ndoubt: what remains uncertain\nnext: the intended action (for exec, include its command prefix)\nverify: how to check this action's result\nThen issue the actual tool call. Keep the current plan unless the task changed.\nRequired now: emit a valid <think> whose step exists in the current <plan> and whose tool matches the actual tool call."
+        },
+        {
+          "call_id": "call_0HanF44W2ktwrRrmx3goXCtp",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start."
+        }
+      ],
+      "pending_exact_checks": [],
+      "patch_replay": {
+        "patch": "replay-json.patch",
+        "sha256": "c11eb42218f76b4f4c33783b1f8fff0c970beb8bba41e7742a89cb1781fe58d7",
+        "matches_candidate_inventory": true,
+        "original_tests_pass": true,
+        "original_check_exit_codes": [
+          0,
+          0
+        ]
+      },
+      "native_baselines": {
+        "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v": true,
+        "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json": true
+      },
+      "native_final_checks": {
+        "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v": true,
+        "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json": true
+      },
+      "oracle_checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": true,
+        "original_test_count": true,
+        "independent_check_1": true,
+        "preserved_existing_json": true,
+        "requested_documentation": true
+      },
+      "out_of_scope_files": [],
+      "observed_read_paths": [
+        ".spiral-coder/tui_replay.json",
+        "docs/replay.md",
+        "tests/test_replay_contract.py"
+      ],
+      "observer_handoffs": [
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matched_call_ids": [
+            "call_nJGYnfZgR5IZ0ZQvRZiOFVOe"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matched_call_ids": [
+            "call_rsesG8QM8BBah8Rueq2cUV8x"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matched_call_ids": [
+            "call_yHqjsg3ZQslQMNy2NzHdD1xI"
+          ],
+          "executed": true
+        }
+      ],
+      "replay_reports": [
+        {
+          "file": "run/replays/tui_replay_Vab5xr/report.json",
+          "sha256": "2d969c71886e112cdb1cd10a171434d56c21ae8914c6bb7b6930a2404a7ede90",
+          "summary": {
+            "total": 5,
+            "passed": 5,
+            "failed": 0,
+            "passed_ids": [
+              "pane-prefs-observer-suggestion",
+              "repo-map-fallback-observer-suggestion",
+              "pane-prefs-observer-contract",
+              "observer-bounded-file-range",
+              "observer-range-tail"
+            ],
+            "failed_ids": []
+          },
+          "native_calls_naming_report": []
+        }
+      ],
+      "failed_edits": []
+    }
+  ]
+}

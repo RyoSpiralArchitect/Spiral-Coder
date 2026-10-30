@@ -57,6 +57,11 @@ Replay preservation distinguishes JSON booleans from numbers throughout old
 cases and unknown extensions. Native child replay reports are retained under
 `run/replays` in the episode output.
 
+The [first GPT maintenance readout](../../docs/evals/2026-10-31-repo-maintenance/README.md)
+retains both attempts, a correct replay extension, the blocked CLI repair and a
+separate correction to the report assessor. It includes a receipt-based
+reproducer for the remaining continuation defect.
+
 ## Prepare without provider calls
 
 Build a runtime containing PR #31's bounded reads and task proof first. The

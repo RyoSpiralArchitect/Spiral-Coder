@@ -27,6 +27,8 @@ def states_outcome(summary, label, status):
 
     Native proof and exact-command checks remain separate mandatory gates.
     This deliberately does not grade arbitrary natural-language equivalence.
+    A bounded count suffix recognizes the runtime's report form; numerical
+    truth remains owned by native report-count validation, not this parser.
     """
     pattern = rf"\b{re.escape(label)}[ \t]*:[ \t]*{re.escape(status)}\b"
     for match in re.finditer(pattern, summary, re.I):
@@ -39,6 +41,10 @@ def states_outcome(summary, label, status):
                 continue
             _, tail = tail[1:].split("`", 1)
             tail = tail.lstrip(" \t")
+            counts = re.match(
+                r"\([0-9]+ tests? run, [0-9]+ failure events?, [0-9]+ errors?\)", tail)
+            if counts:
+                tail = tail[counts.end():].lstrip(" \t")
         if _ends_field(tail):
             return True
     return False
