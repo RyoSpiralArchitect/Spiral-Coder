@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "wave": "r9",
+  "intervention": "One native next-action Observer EOF/read reconnect per assist, with typed receipt correlation, preserved partial/error records, one wire ceiling and unchanged action/evidence/completion gates.",
+  "baseline_commit": "9c4ec371ab014f53f05d055b3f5c2b74da4231fe",
+  "runtime_commit": "a1988d881cdbb31423ff66bd2aaa0dda0e7180e8",
+  "episodes": [
+    "large-large/env-bool",
+    "large-large/event-summary"
+  ],
+  "attempts": 2,
+  "maximum_wire_requests": 56,
+  "task_requests_per_episode": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "episode_wall_seconds": 600,
+  "coder": "mistral-large-4",
+  "observer": "mistral-large-4",
+  "prompt_revision": 2,
+  "task_prompt_test_oracle_and_assessor_changed": false,
+  "no_retry_in_place": true,
+  "qualification": "Unchanged strict task qualification: independent original tests, native baseline/final check, source+docs edits, authored outcome rows, exact roles/budgets and scope.",
+  "supplementary_review": [
+    "Any stream interruption and reconnect: typed native cause, partial content excluded, retry_of, request ceiling and charge",
+    "Coder continuation and native authored done after any recovered Observer advice",
+    "Final report numbers and behavioral conditions against native receipts, source and original tests"
+  ],
+  "claim_boundary": "Adaptive development evidence, not a controlled causal comparison or general success rate. A successful live task without a reconnect receipt is not live evidence of reconnection. Preserve every failure and incomplete attempt; further waves need separate frozen declarations.",
+  "previous_wave": "r8",
+  "adaptive_change_reason": "r8 env-bool left docs and exact verification pending when the third Observer response ended before its terminal frame."
+}

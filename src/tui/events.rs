@@ -1110,6 +1110,7 @@ pub async fn run_event_loop(
             AppEvent::TaskPlanError(e) => handle_task_plan_error(e, app),
             AppEvent::Tick => {
                 app.tick_count = app.tick_count.wrapping_add(1);
+                observer_request::reconnect::maybe_start(app, &observer_tx).await;
                 maybe_observer_action_repair(app, &observer_tx).await;
                 observer_request::maybe_report_closeout(app, &coder_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
@@ -1992,7 +1993,9 @@ fn handle_observer_token(token: StreamToken, app: &mut App) {
             }
         }
         StreamToken::Error(e) => {
-            observer_request::discard_pending_assist(app);
+            if !observer_request::reconnect::on_error(app) {
+                observer_request::discard_pending_assist(app);
+            }
             app.observer_meta_mode = false;
             app.observer_next_action_mode = false;
             app.observer.push_tool(format!("ERROR: {e}"));
@@ -2893,6 +2896,7 @@ mod tests {
     include!("model_picker_tests.rs");
     include!("observer_assist_tests.rs");
     include!("observer_repair_tests.rs");
+    include!("observer_reconnect_tests.rs");
     include!("coupled_loop_tests.rs");
     include!("closeout_loop_tests.rs");
     include!("report_closeout_tests.rs");
@@ -3978,7 +3982,7 @@ async fn dispatch_selected_task(
 }
 
 async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
-    if app.report_closeout_attempted {
+    if app.report_closeout_attempted || observer_request::reconnect::blocks_automatic(app) {
         return;
     }
     let required_requests =
@@ -4007,7 +4011,7 @@ async fn maybe_auto_next_action_assist(app: &mut App, observer_tx: &mpsc::Sender
 }
 
 async fn maybe_auto_observe(app: &mut App, observer_tx: &mpsc::Sender<RequestEvent>) {
-    if app.report_closeout_attempted {
+    if app.report_closeout_attempted || observer_request::reconnect::blocks_automatic(app) {
         return;
     }
     if app.work_budget.remaining() < 2 {

@@ -37,6 +37,18 @@ TUI autosaves `.spiral-coder/tui-session.json`; the companion `.spiral-coder/tui
 
 Each pane has a request generation. `request_stream.rs` publishes the native snapshot before Done/Error and rejects delayed events from canceled requests. Observer repair remains bounded to one attempt, tied to the source task revision.
 
+A native next-action Observer delivery that ends at EOF before a terminal frame,
+or fails while reading the body, can reconnect once while the same Coder context
+and routes remain current. Partial output and the first error stay in the record;
+the fresh request contains no partial advice, and its result passes all normal
+gates. The interruption is not refunded. Recovery takes one additional wire
+attempt from the existing task cap, only when a Coder continuation remains
+possible. Repeated interruption stops the task; authentication/quota/provider
+errors and blocked-terminal diagnosis are excluded. See
+[bounded reconnection state](state-schema.md#bounded-observer-stream-reconnection)
+for receipt fields, action-repair interaction and cancellation rules.
+
+
 New human tasks clear the prior rollback checkpoint before startup and capture
 the current workspace as their own checkpoint. Runtime continuations retain the
 same checkpoint. Changing workspace also clears the UI rollback handle, so a

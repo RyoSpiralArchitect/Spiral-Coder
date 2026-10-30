@@ -5,6 +5,7 @@ use httpmock::prelude::*;
 mod blocked_terminal;
 mod budget_rhythm;
 mod cross_family;
+mod observer_stream_recovery;
 mod provider_failure;
 mod report_closeout;
 mod verification_return;

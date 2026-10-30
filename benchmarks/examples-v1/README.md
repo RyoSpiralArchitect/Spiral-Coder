@@ -96,6 +96,12 @@ completion receipt. Never mix manual edits into a declared automated episode.
 
 ## Recorded runs
 
+The [Observer reconnect follow-up](../../docs/evals/2026-10-30-observer-reconnect/README.md)
+adds one bounded native stream retry. Its same-pair wave spends 40 requests:
+both artifacts pass original tests, settings reaches native completion, and
+JSONL remains truthfully blocked after three Plan Gate verification refusals.
+No live stream interrupted, so reconnect behavior is deterministic-test evidence.
+
 The [plan and report follow-up](../../docs/evals/2026-10-29-plan-report/README.md)
 retains admitted objectives during replanning and preserves native test counts
 for both roles. Its live loops include corrected report-checker false refusals

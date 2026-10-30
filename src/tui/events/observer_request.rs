@@ -2,6 +2,8 @@
 use super::*;
 use std::hash::{Hash, Hasher};
 
+pub(super) mod reconnect;
+
 #[derive(Debug)]
 pub(crate) struct ObserverAssistRequest {
     source_stamp: u64,
@@ -13,6 +15,7 @@ pub(crate) struct ObserverAssistRequest {
     request_cursor: usize,
     terminal_diagnosis: bool,
     pub(super) pending_repair: Option<String>,
+    reconnect: reconnect::State,
 }
 
 impl ObserverAssistRequest {
@@ -27,6 +30,7 @@ impl ObserverAssistRequest {
             request_cursor: app.work_budget.snapshot().requests.len(),
             terminal_diagnosis: false,
             pending_repair: None,
+            reconnect: reconnect::State::default(),
         }
     }
 
@@ -56,6 +60,20 @@ impl ObserverAssistRequest {
 fn source_stamp(app: &App) -> u64 {
     let mut stamp = std::collections::hash_map::DefaultHasher::new();
     app.tool_root.hash(&mut stamp);
+    // In-memory only: a queued request must never follow an edited route or
+    // credential. Hash credentials; never serialize them into a receipt/prompt.
+    for cfg in [&app.coder_cfg, &app.observer_cfg] {
+        cfg.provider.key().hash(&mut stamp);
+        cfg.model.hash(&mut stamp);
+        cfg.base_url.hash(&mut stamp);
+        cfg.api_key.hash(&mut stamp);
+        cfg.max_tokens.hash(&mut stamp);
+        cfg.temperature.to_bits().hash(&mut stamp);
+        cfg.timeout_seconds.hash(&mut stamp);
+    }
+    app.observer_assist_max_tokens.hash(&mut stamp);
+    app.lang.hash(&mut stamp);
+    app.project_test_cmd.hash(&mut stamp);
     app.coder_intent_anchor
         .as_ref()
         .map(|a| a.revision)
@@ -131,11 +149,13 @@ pub(super) async fn maybe_observer_action_repair(app: &mut App, tx: &mpsc::Sende
     if let Some(request) = &mut app.observer_assist_request {
         request.repair_started = true;
     }
+    let budget = app.work_budget.clone();
     start_request(
         app,
         tx,
         prompt,
         "[NEXT-ACTION REPAIR] attempt=1/1".to_string(),
+        budget,
     )
     .await;
 }
@@ -295,7 +315,8 @@ pub(super) async fn send_next_action_assist(
 
     app.observer_assist_request =
         Some(ObserverAssistRequest::new(app, prompt.clone()).for_reason(reason_hint));
-    start_request(app, tx, prompt, label).await;
+    let budget = app.work_budget.clone();
+    start_request(app, tx, prompt, label, budget).await;
 }
 
 async fn start_request(
@@ -303,9 +324,11 @@ async fn start_request(
     tx: &mpsc::Sender<RequestEvent>,
     prompt: String,
     label: String,
+    budget: crate::work_budget::WorkBudget,
 ) {
     if let Some(request) = app.observer_assist_request.as_mut() {
         request.request_cursor = app.work_budget.snapshot().requests.len();
+        request.reconnect.started(&prompt);
     }
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
@@ -329,7 +352,7 @@ async fn start_request(
         tx,
         &mut app.observer_generation,
         Some(crate::work_budget::Context {
-            budget: app.work_budget.clone(),
+            budget,
             role: "observer",
         }),
         move |tx| async move {

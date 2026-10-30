@@ -71,13 +71,17 @@ where
     })
 }
 
-pub(super) fn dispatch(event: RequestEvent, app: &mut App, pane: PaneId) {
+pub(super) fn is_current(event: &RequestEvent, app: &App, pane: PaneId) -> bool {
     let current = match pane {
         PaneId::Coder => app.coder_generation,
         PaneId::Observer => app.observer_generation,
         PaneId::Chat => app.chat_generation,
     };
-    if event.generation != current {
+    event.generation == current
+}
+
+pub(super) fn dispatch(event: RequestEvent, app: &mut App, pane: PaneId) {
+    if !is_current(&event, app, pane) {
         return;
     }
     match (pane, event.payload) {

@@ -22,6 +22,13 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [Observer reconnect readout](../evals/2026-10-30-observer-reconnect/README.md)
+implements one native EOF/body-read recovery within the existing task budget.
+Both same-pair candidates pass original independent tests, but only settings
+qualifies; JSONL retains three Plan Gate refusals and an unverified blocked report.
+The live wave did not exercise reconnection. Native TUI/headless transport tests
+cover that path, while the retained plans identify a separate continuity issue.
+
 The [plan and report follow-up](../evals/2026-10-29-plan-report/README.md)
 adds admitted-plan anchors and native test-count facts shared by both roles.
 The adaptive runs retain a checker false positive and its correction, plus an

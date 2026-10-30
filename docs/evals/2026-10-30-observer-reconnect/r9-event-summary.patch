@@ -1,0 +1,69 @@
+diff --git a/docs/summary.md b/docs/summary.md
+index a6db6ee..bd80a2d 100644
+--- a/docs/summary.md
++++ b/docs/summary.md
+@@ -1,4 +1,27 @@
+ # Event summary
+ 
+-`summarize(lines)` counts levels in a JSON Lines export.
+-Each line currently needs a JSON object with a known level.
++`summarize(lines)` counts levels in a JSON Lines export. `lines` is an
++iterable of strings (a list or a generator); the input strings are never
++modified.
++
++## Contract
++
++- Always returns exactly the integer counts for the three levels, including
++  zeros. For empty input the result is exactly `{"info": 0, "warning": 0, "error": 0}`.
++- Empty or whitespace-only (blank) lines are skipped.
++- Every other line must be a JSON object whose `"level"` is exactly one of
++  the lowercase strings `"info"`, `"warning"` or `"error"`. Other object
++  fields are ignored.
++
++## Errors
++
++Malformed JSON, non-object records, and missing/unknown/non-string levels
++raise `ValueError` mentioning the physical 1-based line number, counting
++skipped blank lines. For example, `summarize(["\n", '{"level":"info"}', "{"])`
++raises `ValueError: line 3: ...`. Invalid records are never silently skipped.
++
++## Verify
++
++Run the exact check:
++
++    python3 -B -S -m unittest discover -s tests -v
+diff --git a/summary.py b/summary.py
+index 4a90dee..8aee216 100644
+--- a/summary.py
++++ b/summary.py
+@@ -3,8 +3,27 @@ import json
+ 
+ 
+ def summarize(lines):
++    """Count info/warning/error events in an iterable of JSON Lines strings.
++
++    Empty or whitespace-only lines are skipped. Every other line must be a
++    JSON object whose "level" is exactly "info", "warning" or "error"; other
++    object fields are ignored. Malformed JSON, non-object records and
++    missing/unknown/non-string levels raise ValueError naming the physical
++    1-based line number (blank lines included). Input strings are not
++    modified and generators are supported.
++    """
+     counts = {"info": 0, "warning": 0, "error": 0}
+-    for line in lines:
+-        event = json.loads(line)
+-        counts[event["level"]] += 1
++    for line_number, line in enumerate(lines, start=1):
++        if line.strip() == "":
++            continue
++        try:
++            event = json.loads(line)
++        except json.JSONDecodeError as exc:
++            raise ValueError(f"line {line_number}: malformed JSON ({exc})") from exc
++        if not isinstance(event, dict):
++            raise ValueError(f"line {line_number}: record is not a JSON object")
++        level = event.get("level")
++        if not isinstance(level, str) or level not in counts:
++            raise ValueError(f"line {line_number}: missing, unknown or non-string level")
++        counts[level] += 1
+     return counts

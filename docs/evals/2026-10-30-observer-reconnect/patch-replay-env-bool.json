@@ -1,0 +1,13 @@
+{
+  "case": "env-bool",
+  "patch_sha256": "f4a5e65605cc30b7247c3f7b1eecfb03d9a63932e5f90ed54ea7b641802771bc",
+  "patch_applied": true,
+  "candidate_inventory_matches": true,
+  "checks": [
+    {
+      "command": "python3 -B -S -m unittest discover -s tests -v",
+      "exit_code": 0,
+      "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... ok\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... ok\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... ok\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... ok\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... ok\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... ok\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+    }
+  ]
+}

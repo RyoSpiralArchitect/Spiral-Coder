@@ -1,0 +1,30 @@
+{
+  "runtime_commit": "a1988d881cdbb31423ff66bd2aaa0dda0e7180e8",
+  "required_check": "scripts/check-local.sh",
+  "result": "passed",
+  "rust_unit_passed": 1009,
+  "rust_unit_ignored": 1,
+  "rust_integration_passed": 1,
+  "python_passed": 91,
+  "web_passed": 80,
+  "npm_passed": 5,
+  "tui_replay_passed": 13,
+  "repo_map_passed": 14,
+  "server_ui_smoke": "passed",
+  "local_log": "/private/tmp/spiral-pr45-check-local.log",
+  "log_sha256": "ec292b68dcdb5c3cee1ca1c80e014ad09d93cfed20160490d71aaf21356de2c9",
+  "targeted_regressions": [
+    "Retained r8 partial Observer content: red before implementation, green with one fresh request excluding that content",
+    "Native TUI Observer reconnect followed by Coder continuation and validated done with preserved original evidence",
+    "Repeated EOF, HTTP/auth/quota/provider/protocol failures, compatibility retry, action-repair ordering, exhausted allowance, blocked diagnosis, context/route changes and cancellation",
+    "Typed HTTP body-read failure and Anthropic EOF classification; original interruption cannot become transport credit; one wire ceiling survives completed schema rejection"
+  ],
+  "post_freeze_test_portability": {
+    "change": "Drain the entire mock HTTP request before closing its deliberately short response, avoiding an OS-specific unread-socket reset; production runtime unchanged.",
+    "check": "cargo test --locked --bin spiral-coder broken_http_body_records_read_failure",
+    "result": "passed",
+    "local_log": "/private/tmp/spiral-pr45-read-failure-portability.log",
+    "log_sha256": "1465e4cd25cc2a14f72fe09719be014840da4f38c304218bb64ccb3abd2705be",
+    "test_commit": "ff6e4e4255063bfe5e0d9b15d207d35a94b71f46"
+  }
+}

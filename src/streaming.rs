@@ -593,7 +593,12 @@ pub async fn stream_openai_compat_json(
     let mut last_finish_reason = String::new();
 
     let mut buf: Vec<u8> = Vec::new();
-    while let Some(chunk) = resp.chunk().await? {
+    while let Some(chunk) = resp.chunk().await.map_err(|error| {
+        if let Some(meter) = request_meter.as_mut() {
+            meter.interrupted(crate::work_budget::StreamInterruption::ReadFailed);
+        }
+        error
+    })? {
         buf.extend_from_slice(&chunk);
         while let Some(frame) = take_next_sse_frame(&mut buf) {
             let frame_str = String::from_utf8_lossy(&frame);
@@ -674,10 +679,12 @@ pub async fn stream_openai_compat_json(
         }
     }
 
-    anyhow::ensure!(
-        !last_finish_reason.is_empty() && String::from_utf8_lossy(&buf).trim().is_empty(),
-        "stream ended before a terminal frame"
-    );
+    if last_finish_reason.is_empty() || !String::from_utf8_lossy(&buf).trim().is_empty() {
+        if let Some(meter) = request_meter.as_mut() {
+            meter.interrupted(crate::work_budget::StreamInterruption::MissingTerminalFrame);
+        }
+        anyhow::bail!("stream ended before a terminal frame");
+    }
     if let Some(note) = completion::empty_finish_note(&last_finish_reason, saw_output) {
         let _ = tx.send(StreamToken::Delta(note)).await;
     }
@@ -761,6 +768,9 @@ pub async fn stream_anthropic(
         };
 
         let status = r.status();
+        if let Some(meter) = request_meter.as_mut() {
+            meter.status(&format!("http_{}", status.as_u16()));
+        }
         if status.is_success() {
             break r;
         }
@@ -780,7 +790,12 @@ pub async fn stream_anthropic(
 
     let mut resp = resp;
     let mut buf: Vec<u8> = Vec::new();
-    while let Some(chunk) = resp.chunk().await? {
+    while let Some(chunk) = resp.chunk().await.map_err(|error| {
+        if let Some(meter) = request_meter.as_mut() {
+            meter.interrupted(crate::work_budget::StreamInterruption::ReadFailed);
+        }
+        error
+    })? {
         buf.extend_from_slice(&chunk);
         while let Some(frame) = take_next_sse_frame(&mut buf) {
             let frame_str = String::from_utf8_lossy(&frame);
@@ -849,6 +864,9 @@ pub async fn stream_anthropic(
         }
     }
 
+    if let Some(meter) = request_meter.as_mut() {
+        meter.interrupted(crate::work_budget::StreamInterruption::MissingTerminalFrame);
+    }
     Err(anyhow!("Anthropic stream ended before message_stop"))
 }
 

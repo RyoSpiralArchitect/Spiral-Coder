@@ -51,6 +51,9 @@ async fn drain(
             .recv()
             .await
             .context("request ended without a terminal event")?;
+        if !request_stream::is_current(&event, app, pane) {
+            continue;
+        }
         let terminal = matches!(
             &event.payload,
             request_stream::Payload::Token(StreamToken::Done | StreamToken::Error(_))
@@ -81,6 +84,30 @@ async fn drain(
         }
     }
     Ok(())
+}
+
+/// The UI and headless driver consume the same pending reconnect and schema
+/// repair. Every retry remains explicit and a failed reconnect is still fatal.
+async fn drain_observer_assist(
+    app: &mut App,
+    tx: &mpsc::Sender<RequestEvent>,
+    rx: &mut mpsc::Receiver<RequestEvent>,
+    trace: &crate::trace_writer::TraceWriter,
+) -> Result<()> {
+    loop {
+        if app.observer.streaming {
+            if let Err(error) = drain(app, rx, PaneId::Observer, trace).await {
+                if observer_request::reconnect::maybe_start(app, tx).await {
+                    continue;
+                }
+                return Err(error);
+            }
+        }
+        maybe_observer_action_repair(app, tx).await;
+        if !app.observer.streaming {
+            return Ok(());
+        }
+    }
 }
 
 pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()> {
@@ -224,13 +251,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
                 },
             )
             .await;
-            if app.observer.streaming {
-                drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
-            }
-            maybe_observer_action_repair(&mut app, &observer_tx).await;
-            if app.observer.streaming {
-                drain(&mut app, &mut observer_rx, PaneId::Observer, &trace).await?;
-            }
+            drain_observer_assist(&mut app, &observer_tx, &mut observer_rx, &trace).await?;
             if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
                 continue;
             }
