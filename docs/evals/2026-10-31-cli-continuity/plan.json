@@ -1,0 +1,23 @@
+{
+  "wave": "r12",
+  "declared_at": "2026-10-30T22:11:20.442388+00:00",
+  "runtime_commit": "b4cd6c93921bae2d45fe927b9f5eba84c78e0505",
+  "parent_pr": 47,
+  "baseline_wave": "r11",
+  "raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/cli-continuity-20261031-r12-luna-luna",
+  "predeclaration_sha256": "8da49a862be0c14af9bd2260a821357a8fd22d3bf1f9a350807ecdfaac44e9f4",
+  "case": "pilot-cli",
+  "profile": "luna-luna",
+  "coder_model": "gpt-5.6-luna",
+  "observer_model": "gpt-5.6-luna",
+  "same_task_reference_and_budget_as_r11": true,
+  "maximum_wire_requests": 28,
+  "task_requests": 24,
+  "observer_reserved_requests": 6,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "provider_calls_at_pin": 0,
+  "procedure": "One live attempt with the frozen driver. Preserve unsuccessful outcomes. No retry in place and no prompt, scope, check or budget changes.",
+  "qualification": "Frozen v3 assessor, original tests, native before/after exact checks, both required artifacts, authored report and every changed path.",
+  "comparison_limit": "A development attempt, not a controlled causal performance estimate. The report assessor includes the r11 correction; runtime recovery is the only new production behavior."
+}
