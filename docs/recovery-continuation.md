@@ -83,3 +83,18 @@ The original workspace is necessary for native `cwd` and location validation.
 No provider requests or candidate edits are made by this regression. The frozen
 0/2 and corrected 1/2 r11 outcomes remain historical measurements; this repair
 does not retroactively change them or claim a new live maintenance result.
+
+## Integration of the parallel CLI follow-up
+
+PR #48 retains the r12 live CLI repair evidence and nine additional regressions
+in `recovery_cli_continuity_tests.rs`. Its parallel latest-edit provenance state
+is superseded by the per-target ledger described above, so there is one final
+restoration owner. Both regression suites remain executable. Their distinct
+names avoid the original add/add test-file conflict.
+
+On 2026-11-01, the original retained r11 session was available locally. Its
+published SHA-256 was verified and the explicit ignored native-session test
+passed on the combined source. This closes the previously unexecuted replay
+check without changing either historical live result. The
+[integration receipt](evals/2026-11-01-pr-integration/validation.json) records
+the exact tested source hashes and local check logs.

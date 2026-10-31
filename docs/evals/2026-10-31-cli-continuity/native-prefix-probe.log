@@ -1,0 +1,12 @@
+   Compiling spiral-coder v0.2.0 (/Users/ryospiralarchitect/.cache/spiral-coder/self-dogfood-20261025)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.98s
+     Running unittests src/main.rs (/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/deps/spiral_coder-f00ebae6a92fe6dd)
+
+running 1 test
+call="call_tbsQEus6nL6MkWq6gQTWYkv8" edits=1 target_read=true focus_observed=true pending_check=true restored=fix
+call="call_bTsalwxB8uiU1YhDGRzhmIsv" edits=1 target_read=true focus_observed=true pending_check=true restored=fix
+call="call_rO0f6iWvOg2tvcwq2qQgJY5q" edits=1 target_read=true focus_observed=true pending_check=true restored=fix
+test tui::agent::recovery::r11_recovery_probe::native_source_diagnosis_survives_a_restored_continuation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1019 filtered out; finished in 0.02s
+

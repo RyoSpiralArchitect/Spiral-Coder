@@ -1,0 +1,29 @@
+{
+  "source_commit": "b4cd6c93921bae2d45fe927b9f5eba84c78e0505",
+  "check_local_exit": 0,
+  "passed": {
+    "rust_unit": 1018,
+    "integration": 4,
+    "python": 93,
+    "web": 80,
+    "npm": 5,
+    "tui_replay": 13,
+    "repo_map": 14,
+    "server_ui_smoke": true
+  },
+  "ignored_rust_unit": 1,
+  "check_local_log_sha256": "9f348721d6eae30c2bc140ebc53c3c2ce076ed785e37db7f84403aad0b358360",
+  "native_r11_prefixes": {
+    "reads": 3,
+    "before": "diagnose",
+    "after": "fix",
+    "pending_check_preserved": true,
+    "probe_source_sha256": "fcf5dd58d86290aca3af04c00a9155ea8aa8f9d0d2da03890e34cd1f94f2500b",
+    "session_sha256": "276a76d6552ba5c3dd02f82c94f6b8675fccd052ac6e5c60744cc6421aa5172f",
+    "log_sha256": "9f2ead15ad1778e42dd9d48428ce3f454c6cd0eae1b711962afae051ad6ff36a"
+  },
+  "regression_tests": 9,
+  "red_log_sha256": "0314972c1e513217ea419e84abf46e2d957a608e5ab5a39a21af304f41131c20",
+  "red_control_adapter_note": "The initial imported historical helper also assumed the original failed check remained active. Current tests assert it is either active or deferred, and explicitly require a newer unrelated check to be active.",
+  "implementation_origin": "Operator repair based on the existing recovery-edit-truth reference, extended for failed rereads of the same target and standalone later failures. Not a model-generated self-repair."
+}

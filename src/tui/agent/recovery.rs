@@ -328,3 +328,7 @@ mod refusal_tests {
 #[cfg(test)]
 #[path = "recovery_resume_tests.rs"]
 mod resume_tests;
+
+#[cfg(test)]
+#[path = "recovery_cli_continuity_tests.rs"]
+mod cli_continuity_tests;
