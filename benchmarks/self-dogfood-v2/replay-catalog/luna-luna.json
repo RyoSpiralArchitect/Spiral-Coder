@@ -42,10 +42,10 @@
   "observer_max_tokens": 8192,
   "temperature": 0,
   "native_checks": [
-    "python3 -S scripts/catalog_visible.py",
+    "python3 -S -m unittest -v scripts.catalog_visible",
     "cargo test --locked --bin spiral-coder -q"
   ],
-  "reproducer_command": "python3 -S scripts/catalog_visible.py",
+  "reproducer_command": "python3 -S -m unittest -v scripts.catalog_visible",
   "visible_check_id": "catalog-visible",
   "checks": [
     {
@@ -68,7 +68,10 @@
       "argv": [
         "python3",
         "-S",
-        "scripts/catalog_visible.py"
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
       ],
       "expected_test_count": 1,
       "expected_baseline_failures": 1,

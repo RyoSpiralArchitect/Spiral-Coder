@@ -1,7 +1,7 @@
 Add a useful read-only subcommand to Spiral-Coder itself: spiral tui-replay-list. This is a full repository copy. Implement, verify, and report the result here.
 
 Before editing, reproduce the missing command with the protected visible check:
-python3 -S scripts/catalog_visible.py
+python3 -S -m unittest -v scripts.catalog_visible
 This checks the actual candidate CLI. The command should be absent from its help on the original tree. A build error, a timeout, or a test edited to pass is not the reproduction.
 
 Implement a separate CLI subcommand. It lists replay cases without executing them. Accept --tool-root/-C (default current directory), --spec (default .spiral-coder/tui_replay.json; resolve relative to the tool root), --filter and --max-cases. Share the existing spec loading, validation and selection semantics with tui-replay: ASCII case-insensitive id/tag substring, spec order, truncate after filtering and treat a zero cap as one. Preserve tag order. Empty selections and invalid inputs (including unselected cases with empty checks) produce a nonzero status and a diagnostic on stderr.
@@ -24,6 +24,41 @@ Acceptance:
 2. Ordinary replay retains its current selection, case validation and output behavior.
 3. The evaluation guide documents the new command and selection rules.
 4. After the last source, supplementary test and documentation edit, BOTH exact native checks must succeed:
-python3 -S scripts/catalog_visible.py
+python3 -S -m unittest -v scripts.catalog_visible
 cargo test --locked --bin spiral-coder -q
 Format Rust source before final verification. Use the native done report. Name every file actually changed, explain the behavior and list both exact commands with their observed results. Include the standalone outcome fields "Before: FAILED" and "After: PASSED" only when each is supported by the commands. Give only measured counts; distinguish your native tests from independent checks. If blocked, preserve remaining criteria and identify the next concrete action.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "catalog",
+      "description": "Expose the read-only replay catalog through the native and installed CLI and document its selection rules.",
+      "artifacts": [
+        {
+          "path": "src/main.rs",
+          "kind": "source"
+        },
+        {
+          "path": "docs/evaluation.md",
+          "kind": "documentation"
+        },
+        {
+          "path": "npm/spiral-coder/lib/launcher.cjs",
+          "kind": "source"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "baseline_failure": true
+        },
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>
