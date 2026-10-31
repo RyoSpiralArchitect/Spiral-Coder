@@ -101,3 +101,15 @@ with `--case pilot-cli` at preparation. Preserve the run's original outcomes.
 The malformed single-file diff boundary and noisy structural JSON edits from
 r11 remain separate follow-ups. Initial plan/think formatting also still consumed
 two requests in this successful episode.
+
+## Integration on 2026-11-01
+
+PR #47 subsequently acquired a broader per-target recovery ledger while this
+branch was open. Integration keeps that ledger as the single production
+restoration owner. The nine r12 regressions remain in
+`src/tui/agent/recovery_cli_continuity_tests.rs`, alongside PR #47's independent
+suite. The standalone-failure regression now runs the complete restoration path,
+including `restore_focus`, where reconciliation is owned. The r12 runtime commit,
+live result, raw receipts and original qualification above remain unchanged.
+They describe the historical executor, not a new live run on the integrated tree.
+See [the integration receipt](../2026-11-01-pr-integration/validation.json).

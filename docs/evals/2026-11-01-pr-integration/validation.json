@@ -1,0 +1,37 @@
+{
+  "tested_commit": "fa2bd7daf40e063d54356cc6cb3e432997620e61",
+  "merged_prs": {
+    "46": "68ca96c4ea5363fa3f886c5247d02e7712680888",
+    "47": "7ad3f5fdefc18bd836fde9c67246d75dd78af193"
+  },
+  "integration": "Use PR47 per-target reconciliation, preserve both regression suites, and retain historical r11/r12 outcomes without relabeling.",
+  "source_sha256": {
+    "src/tui/agent/recovery.rs": "de46b7d1932d35f90afc81d4d1a67dc9fc9abdf9ead0c4c89bb80a2365c29134",
+    "src/tui/agent/recovery_edit_diagnosis.rs": "b8d2719934df5f22f461ac2f7b95c28cec189a833a1b447d4b4e375603a36bfb",
+    "src/tui/agent/edit_failure.rs": "35c1fb8b5b69ba08643c26ad047730956f64494a42061ec88b650bf0f8c8c3a9",
+    "src/tui/agent/recovery_resume_tests.rs": "be49879bd802ad778d306f527c70bd7c5d555d6ec92e32fa95dd4cd93ccbc164",
+    "src/tui/agent/recovery_cli_continuity_tests.rs": "2ab274160ae649a65285ca1e1acb5cfc706f05243410d35781bf5fd60b4e7059"
+  },
+  "full_local_check": {
+    "exit_code": 0,
+    "rust_unit_passed": 1030,
+    "rust_unit_ignored": 2,
+    "integration_passed": 4,
+    "python_passed": 93,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "tui_replays": 13,
+    "repo_map_cases": 14,
+    "server_ui_smoke": "passed",
+    "log_sha256": "9bec677b43be63a8fc5a74cc785028d89f9868790f28658ca18e03d0181857a1"
+  },
+  "native_r11_session": {
+    "session_sha256": "276a76d6552ba5c3dd02f82c94f6b8675fccd052ac6e5c60744cc6421aa5172f",
+    "test": "tui::agent::recovery::resume_tests::native_source_diagnosis_survives_a_restored_continuation",
+    "passed": 1,
+    "failed": 0,
+    "log_sha256": "1761431a8482dad4269cf64fa62ad736926c1ae05ece5b558081dc63dc919a47"
+  },
+  "historical_receipt_bytes_unchanged": true,
+  "new_provider_calls": 0
+}
