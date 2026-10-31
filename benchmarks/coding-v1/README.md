@@ -61,6 +61,9 @@ The [first GPT maintenance readout](../../docs/evals/2026-10-31-repo-maintenance
 retains both attempts, a correct replay extension, the blocked CLI repair and a
 separate correction to the report assessor. It includes a receipt-based
 reproducer for the remaining continuation defect.
+The [CLI continuity follow-up](../../docs/evals/2026-10-31-cli-continuity/README.md)
+repairs that defect in deterministic replay and records one strictly qualified
+CLI repair with the same GPT pair, task and request budget.
 
 ## Prepare without provider calls
 

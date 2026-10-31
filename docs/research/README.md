@@ -23,6 +23,13 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [CLI continuity follow-up](../evals/2026-10-31-cli-continuity/README.md)
+retains edit-diagnosis provenance across continuation, with newer-failure controls
+and replay of the three previously blocked native prefixes. The same GPT pair
+then strictly qualifies on CLI source and documentation repair in 17 requests.
+That live episode avoids actual edit failures, so completion evidence and direct
+recovery-fix evidence remain separate.
+
 The [repository-maintenance readout](../evals/2026-10-31-repo-maintenance/README.md)
 raises task complexity with the same GPT pair and budget. The replay extension
 passes both exact checks and preserves the existing JSON, while the CLI repair

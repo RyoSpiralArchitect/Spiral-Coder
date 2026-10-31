@@ -1,0 +1,181 @@
+{
+  "wave": "r12",
+  "runtime_commit": "b4cd6c93921bae2d45fe927b9f5eba84c78e0505",
+  "declaration_commit": "9770e675e7ed0ea795f14530b8f52cdd83edb42a",
+  "assessment_sha256": "0f8ad6c2f70db7b71bc99672af3143c6255725d09de73a55b17f706d6fb35a1d",
+  "manifest_entries_verified": 180,
+  "selected_credentials_absent_from_scanned_files": true,
+  "rows": [
+    {
+      "case": "pilot-cli",
+      "state": "finished",
+      "termination": "completed",
+      "strict_qualified": true,
+      "changed_files": [
+        "docs/pilot.md",
+        "scripts/run_coupled_pilot.py"
+      ],
+      "independent_original_tests_pass": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "role_requests": {
+        "coder": 13,
+        "observer": 4
+      },
+      "wire_requests": 17,
+      "request_status_counts": {
+        "completed": 17
+      },
+      "request_purpose_counts": {},
+      "usage_reported_for": 0,
+      "report_closeout_attempted": false,
+      "native_test_count_receipts": {
+        "call_fTCfxBprQ37iY1pbmLnITNdt": {
+          "errors": 0,
+          "failure_events": 1,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 7
+        },
+        "call_aUSYbw80d70FIepMBiruJcaO": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 7
+        },
+        "call_yM92qjmT6DSBqEsKfwHocBPM": {
+          "errors": 0,
+          "failure_events": 0,
+          "runner": "unittest",
+          "skipped": 0,
+          "tests_run": 7
+        }
+      },
+      "done_attempts": [
+        {
+          "call_id": "call_mzAeo6YuXWB358KDaIKA1jkJ",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "patch_file(path=docs/pilot.md, replace=# Coupled pilot Run the pilot using `scripts/run_coupled_pilot.py`. To select specific cases, repeat `--case`; for example: ```sh scripts/run_coupled_pilot.py --case alpha --case gamma\n```\n\nRepeated IDs are deduplicated. Selected cases still run in their original suite\norder, not the order of the flags. Unknown IDs are rejected before the output\ndirectory is created or any case executes. With no `--case` flags, the pilot\nruns every case in the suite.\n, search=# Coupled pilot\n\nRun the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.)",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "None; both requested files are repaired and the exact required check passed.",
+            "remaining_acceptance": [],
+            "summary": "Changed `scripts/run_coupled_pilot.py` to restore repeated `--case` selection with deduplication and original suite-order preservation while retaining unknown-ID validation, the no-filter default, the no-overwrite guard, and independent oracles. Changed `docs/pilot.md` to document the `--case alpha --case gamma` example, duplicate handling, original suite order, unknown IDs, and the no-filter default.\n\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\n\nRemaining work: none."
+          },
+          "executed": true,
+          "succeeded": null,
+          "result": "OK: done"
+        }
+      ],
+      "gate_refusals": [
+        {
+          "call_id": "call_Z5LPJn80BosTkCwJJxX2XicK",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Think Gate] Invalid <think>: think missing goal\nRepair all listed fields together. Use one field per line inside <think>:\ngoal: the immediate action's purpose\nstep: an integer from 1 to 5 in the current plan\ntool: list_dir\nrisk: a short risk assessment\ndoubt: what remains uncertain\nnext: the intended action (for exec, include its command prefix)\nverify: how to check this action's result\nThen issue the actual tool call. Keep the current plan unless the task changed.\nRequired now: emit a valid <think> whose step exists in the current <plan> and whose tool matches the actual tool call."
+        },
+        {
+          "call_id": "call_RhQL5EAozKB5ExAD34bB77lN",
+          "tool": "list_dir",
+          "reason": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start."
+        },
+        {
+          "call_id": "call_AIiPBmPfZ78DXUNVoebCw5MD",
+          "tool": "apply_diff",
+          "reason": "GOVERNOR BLOCKED\n\n[Evidence Gate]\nYou are about to mutate an existing file via apply_diff.\nTarget path: scripts/run_coupled_pilot.py\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(path=tests/test_coupled_pilot.py) -> tests/test_coupled_pilot.py\n[Refuted assumptions]\n- Source behavior was not yet inspected.\n"
+        }
+      ],
+      "pending_exact_checks": [],
+      "patch_replay": {
+        "patch": "pilot-cli.patch",
+        "sha256": "349bce755a542be7fe5a2eac4d0dacbc0c0b2a90d30cbe6f6fdc90c4eaf44a90",
+        "matches_candidate_inventory": true,
+        "original_tests_pass": true,
+        "original_check_exit_codes": [
+          0
+        ]
+      },
+      "native_baselines": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "native_final_checks": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": true
+      },
+      "oracle_checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": true,
+        "original_test_count": true,
+        "requested_documentation": true
+      },
+      "out_of_scope_files": [],
+      "observed_read_paths": [
+        "docs/pilot.md",
+        "scripts/run_coupled_pilot.py",
+        "tests/test_coupled_pilot.py"
+      ],
+      "observer_handoffs": [
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matched_call_ids": [
+            "call_fTCfxBprQ37iY1pbmLnITNdt"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "read_file",
+          "matched_call_ids": [
+            "call_V0wJOAQRMrJtFmru8cYNzWoE"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "exec",
+          "matched_call_ids": [
+            "call_aUSYbw80d70FIepMBiruJcaO",
+            "call_yM92qjmT6DSBqEsKfwHocBPM"
+          ],
+          "executed": true
+        },
+        {
+          "decision": "accept",
+          "tool": "done",
+          "matched_call_ids": [],
+          "executed": false
+        }
+      ],
+      "replay_reports": [],
+      "failed_edits": []
+    }
+  ]
+}
