@@ -68,10 +68,11 @@ impl RecoveryFocus {
                 }
             }
 
-            let file_failed = tc.name != "exec"
-                && output.trim_start().lines().next().is_some_and(|line| {
-                    line.starts_with("ERROR:") || line.starts_with("ERROR ")
-                });
+            let file_failed =
+                tc.name != "exec"
+                    && output.trim_start().lines().next().is_some_and(|line| {
+                        line.starts_with("ERROR:") || line.starts_with("ERROR ")
+                    });
             if tc.name == "read_file" {
                 if file_failed {
                     if let Some(path) = path.as_ref() {

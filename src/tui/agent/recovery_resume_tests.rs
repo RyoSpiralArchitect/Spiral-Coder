@@ -86,8 +86,7 @@ impl Session {
     }
 
     fn read(&mut self, path: &str) {
-        let (output, failed) =
-            crate::file_tools::tool_read_file(path, self.root.path().to_str());
+        let (output, failed) = crate::file_tools::tool_read_file(path, self.root.path().to_str());
         assert!(!failed, "{output}");
         self.record("read_file", json!({"path":path}), &output);
     }
@@ -350,7 +349,11 @@ fn edit_only_recovery_also_preserves_a_later_failed_read() {
     session.fail_edit("source.rs");
     session.read("source.rs");
     session.assert_stage(RecoveryStage::Fix);
-    session.record("read_file", json!({"path":"other.rs"}), "ERROR: access denied");
+    session.record(
+        "read_file",
+        json!({"path":"other.rs"}),
+        "ERROR: access denied",
+    );
     session.assert_stage(RecoveryStage::Diagnose);
     session.read("other.rs");
     session.assert_stage(RecoveryStage::Fix);
