@@ -81,7 +81,7 @@ def assess(case, before, workspace, report, process, oracle, *, configuration=No
             "completion_field_presence": {"remaining_acceptance": "remaining_acceptance" in args},
             "baseline_commands": baselines, "verified_commands": verified,
             "report_fields": report_fields, "authored_summary": summary,
-            "report_contract_revision": "asserted-outcomes-v2",
+            "report_contract_revision": "asserted-outcomes-v3",
             "changed_files": changed, "out_of_scope_files": other,
             "requests": len(requests) if isinstance(recorded_requests, list) else None,
             "request_roles": dict(Counter(r.get("role") for r in requests)),

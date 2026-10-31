@@ -70,6 +70,13 @@ authored report naming ...", expose canonical native receipt rows to both roles:
 The authored `done.summary` must include those fields, either on separate lines
 or as sentences in a paragraph. Punctuation and line breaks do not change the
 receipt; the label, recorded status and exact command still must match.
+The benchmark's `asserted-outcomes-v3` report parser also accepts a trailing
+`(1 test run, 0 failure events, 0 errors)` count row after the quoted command,
+with singular/plural forms and integer counts. This recognizes the runtime's
+authored report form. Native count validation owns numerical truth, and all
+native verification, independent behavior and file-scope gates still apply.
+Arbitrary parentheticals, examples and negated outcome claims remain invalid.
+Frozen assessments retain their original report-contract revision.
 The positive report label `Verified with existing tests before and after:` is
 also recognized when followed by the complete exact rows. Negated, example and
 arbitrary labels remain invalid. Refusals request each exact row on its own line

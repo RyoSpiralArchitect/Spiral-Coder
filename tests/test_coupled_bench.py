@@ -88,10 +88,15 @@ class IndependentOracles(unittest.TestCase):
         before = common.read_json(SUITE_ROOT / case["workspace"] / ".spiral-coder/tui_replay.json")
         after = common.read_json(SUITE_ROOT / case["reference"] / ".spiral-coder/tui_replay.json")
         self.assertTrue(oracles.preserved_json(before, after))
-        variants = [copy.deepcopy(after) for _ in range(3)]
+        equivalent = copy.deepcopy(after)
+        equivalent["extension"]["notes"][0]["counter"] = 0.0
+        self.assertTrue(oracles.preserved_json(before, equivalent))
+        variants = [copy.deepcopy(after) for _ in range(5)]
         variants[0]["cases"][0].pop("plugin_data")
         variants[1]["cases"][:2] = reversed(variants[1]["cases"][:2])
         variants[2]["cases"][-1]["id"] = variants[2]["cases"][0]["id"]
+        variants[3]["extension"]["notes"][0]["enabled"] = 0
+        variants[4]["cases"][0]["plugin_data"]["keep"][1]["untouched"] = 1
         for variant in variants:
             self.assertFalse(oracles.preserved_json(before, variant))
 
@@ -157,6 +162,36 @@ class NativeEvidence(unittest.TestCase):
                 self.assertTrue(all(result["native"].values()))
                 self.assertFalse(result["report_fields"]["after_passed"])
                 self.assertFalse(result["behavior_and_handoff_qualified"])
+
+    def test_outcome_rows_allow_bounded_count_receipts_after_the_command(self):
+        command = self.case["checks"][0]["command"]
+        for counts in ["1 test run, 1 failure event, 0 errors",
+                       "10 tests run, 14 failure events, 5 errors"]:
+            with self.subTest(counts=counts):
+                self.report["execution"]["actions"][-1]["arguments"]["summary"] = (
+                    f"Changed greet.py. Before: FAILED — `{command}` ({counts}).\n"
+                    f"After: PASSED — `{command}` (1 test run, 0 failure events, 0 errors).")
+                self.assertTrue(self.assess()["strict_all_files_qualified"])
+        # Prose recognition cannot discharge a missing native exact check.
+        self.report["execution"]["actions"][2]["succeeded"] = False
+        self.assertFalse(self.assess()["strict_all_files_qualified"])
+
+    def test_count_suffix_does_not_admit_negation_or_arbitrary_parentheticals(self):
+        command = self.case["checks"][0]["command"]
+        for prefix, suffix in [
+            ("", "(not verified)"),
+            ("", "(1 test run, 0 failure events, 0 errors, unverified)"),
+            ("", "(1 test run, 0 failure events, 0 errors) was not recorded"),
+            ("", "(1 test run, 0 failure events, 0 errors) is NOT claimed"),
+            ("Example: ", "(1 test run, 0 failure events, 0 errors)"),
+        ]:
+            with self.subTest(suffix=suffix):
+                self.report["execution"]["actions"][-1]["arguments"]["summary"] = (
+                    f"Changed greet.py. Before: FAILED — `{command}`.\n"
+                    f"{prefix}After: PASSED — `{command}` {suffix}.")
+                result = self.assess()
+                self.assertFalse(result["report_fields"]["after_passed"])
+                self.assertFalse(result["strict_all_files_qualified"])
 
     def test_parenthetical_labels_remain_invalid_in_the_frozen_report_contract(self):
         command = self.case["checks"][0]["command"]

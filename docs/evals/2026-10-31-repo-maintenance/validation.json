@@ -1,0 +1,32 @@
+{
+  "runtime_source_commit": "53b1e99b1803a5e745b2c1b2c8714fd443cb99dd",
+  "command": "bash scripts/check-local.sh",
+  "exit_code": 0,
+  "cache_isolation": "Package artifacts cleaned under the shared cache lock after the disposable diagnostic, before testing the main checkout.",
+  "passed": {
+    "rust_unit": 1009,
+    "integration": 4,
+    "python": 93,
+    "web": 80,
+    "npm": 5,
+    "standard_tui_replays": 13,
+    "repo_map": 14,
+    "server_ui_smoke": true
+  },
+  "rust_unit_ignored": 1,
+  "log_sha256": "95d8f6f7414a978d677885fb2c8b2f057361c4ed8c1d0598eb94b722b0ac1633",
+  "local_log": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-diagnostics/check-local.log",
+  "main_cache_reset_log_sha256": "69339b3591d04cbd2aa84caf9073761e51f199253f08c362a2b5ffad555d87fb",
+  "final_report_parser_tests": {
+    "passed": 24,
+    "log_sha256": "9c27cdcbdd3d1c11fc971e649118f3fa817f7146cc1e8d32fee1c1a133c47611"
+  },
+  "report_parser_red_log_sha256": "dfe38c28a8beb59de3e4f1c79d1059c8c0927adb9b0caf49e67e670de1fb57c1",
+  "current_assessor_hashes": {
+    "scripts/coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "scripts/coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038",
+    "scripts/coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "tests/test_coupled_bench.py": "c6da31007c15b2819fe1814f76b2477ca0d30039fc8e1a29731bb6a73ba42049"
+  },
+  "diagnostic_expected_failure_is_separate": true
+}

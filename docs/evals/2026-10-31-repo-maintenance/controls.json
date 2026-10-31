@@ -1,0 +1,117 @@
+{
+  "replay_receipt_scope": [
+    {
+      "runtime": "r10",
+      "binary_sha256": "1f14a8ed81b700ba8d460a45712d918b91eeb59a3a2cd51a2ea12f8a0987e9cc",
+      "replay_summary": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "passed_ids": [
+          "pane-prefs-observer-suggestion",
+          "repo-map-fallback-observer-suggestion",
+          "pane-prefs-observer-contract",
+          "observer-bounded-file-range",
+          "observer-range-tail"
+        ],
+        "failed_ids": []
+      },
+      "workspace_changes": [
+        ".tmp/tui_replay_1793394099/001-pane-prefs-observer-suggestion/case_report.json",
+        ".tmp/tui_replay_1793394099/001-pane-prefs-observer-suggestion/coder_preview_messages.json",
+        ".tmp/tui_replay_1793394099/001-pane-prefs-observer-suggestion/observer_prompt.txt",
+        ".tmp/tui_replay_1793394099/001-pane-prefs-observer-suggestion/observer_response.txt",
+        ".tmp/tui_replay_1793394099/001-pane-prefs-observer-suggestion/packet.json",
+        ".tmp/tui_replay_1793394099/002-repo-map-fallback-observer-suggestion/case_report.json",
+        ".tmp/tui_replay_1793394099/002-repo-map-fallback-observer-suggestion/coder_preview_messages.json",
+        ".tmp/tui_replay_1793394099/002-repo-map-fallback-observer-suggestion/observer_prompt.txt",
+        ".tmp/tui_replay_1793394099/002-repo-map-fallback-observer-suggestion/observer_response.txt",
+        ".tmp/tui_replay_1793394099/002-repo-map-fallback-observer-suggestion/packet.json",
+        ".tmp/tui_replay_1793394099/003-pane-prefs-observer-contract/case_report.json",
+        ".tmp/tui_replay_1793394099/003-pane-prefs-observer-contract/coder_preview_messages.json",
+        ".tmp/tui_replay_1793394099/003-pane-prefs-observer-contract/observer_prompt.txt",
+        ".tmp/tui_replay_1793394099/003-pane-prefs-observer-contract/observer_response.txt",
+        ".tmp/tui_replay_1793394099/003-pane-prefs-observer-contract/packet.json",
+        ".tmp/tui_replay_1793394099/004-observer-bounded-file-range/case_report.json",
+        ".tmp/tui_replay_1793394099/004-observer-bounded-file-range/coder_preview_messages.json",
+        ".tmp/tui_replay_1793394099/004-observer-bounded-file-range/observer_prompt.txt",
+        ".tmp/tui_replay_1793394099/004-observer-bounded-file-range/observer_response.txt",
+        ".tmp/tui_replay_1793394099/004-observer-bounded-file-range/packet.json",
+        ".tmp/tui_replay_1793394099/005-observer-range-tail/case_report.json",
+        ".tmp/tui_replay_1793394099/005-observer-range-tail/coder_preview_messages.json",
+        ".tmp/tui_replay_1793394099/005-observer-range-tail/observer_prompt.txt",
+        ".tmp/tui_replay_1793394099/005-observer-range-tail/observer_response.txt",
+        ".tmp/tui_replay_1793394099/005-observer-range-tail/packet.json",
+        ".tmp/tui_replay_1793394099/report.json"
+      ],
+      "external_reports": 0,
+      "internal_reports": 1
+    },
+    {
+      "runtime": "r11",
+      "binary_sha256": "8c5cc1352ad2dd79762eee52e1a8d1dedc7743c25ab7cb352114990ddca7f2c0",
+      "replay_summary": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "passed_ids": [
+          "pane-prefs-observer-suggestion",
+          "repo-map-fallback-observer-suggestion",
+          "pane-prefs-observer-contract",
+          "observer-bounded-file-range",
+          "observer-range-tail"
+        ],
+        "failed_ids": []
+      },
+      "workspace_changes": [],
+      "external_reports": 1,
+      "internal_reports": 0
+    }
+  ],
+  "json_type_preservation": [
+    {
+      "field": "extension.notes[0].enabled",
+      "mutation": "false to 0",
+      "previous_assessor": true,
+      "current_assessor": false,
+      "current_checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": true,
+        "original_test_count": true,
+        "independent_check_1": true,
+        "preserved_existing_json": false,
+        "requested_documentation": true
+      }
+    },
+    {
+      "field": "cases[0].plugin_data.keep[1].untouched",
+      "mutation": "true to 1",
+      "previous_assessor": true,
+      "current_assessor": false,
+      "current_checks": {
+        "supplied_files_preserved": true,
+        "candidate_artifacts_present": true,
+        "independent_check_0": true,
+        "original_test_count": true,
+        "independent_check_1": true,
+        "preserved_existing_json": false,
+        "requested_documentation": true
+      }
+    }
+  ],
+  "local_check": {
+    "result": "passed",
+    "rust_unit_passed": 1009,
+    "rust_unit_ignored": 1,
+    "integration_passed": 4,
+    "python_passed": 91,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "standard_tui_replays": 13,
+    "repo_map_cases": 14,
+    "server_ui_smoke": "passed",
+    "check_log_sha256": "baef6c5d48a1fa340caf930508ca80992c8a4ec36b9411beb434b1883713f748"
+  },
+  "provider_calls": 0
+}

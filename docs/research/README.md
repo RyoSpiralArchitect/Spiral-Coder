@@ -18,9 +18,18 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 | Run bounded cross-family self-dogfood | [Runner and frozen contracts](../self-dogfood.md), [task catalog](../../benchmarks/self-dogfood-v1/README.md) |
 | Reproduce ordinary runtime examples | [Benchmark examples](../examples/README.md) |
 | Practice a small complete coding loop | [Boolean settings and JSONL examples](../../benchmarks/examples-v1/README.md) |
+| Try larger repository maintenance tasks | [CLI selection and JSON replay extension](../../benchmarks/coding-v1/README.md#repository-maintenance-with-the-practical-pair-budget) |
 | Contribute a change | [Build and checks](../usage.md#build-and-contribute), [contributor rules](../../AGENTS.md) |
 
 ## Experiments and open questions
+
+The [repository-maintenance readout](../evals/2026-10-31-repo-maintenance/README.md)
+raises task complexity with the same GPT pair and budget. The replay extension
+passes both exact checks and preserves the existing JSON, while the CLI repair
+stops without an edit. Frozen qualification is 0/2; correcting a report-parser
+false negative yields 1/2 on the unchanged receipts. Offline replay of the CLI
+session reproduces a lost edit diagnosis across continuation. Noisy JSON diffs
+and the single-file patch boundary are further self-repair targets.
 
 The [GPT-pair pre-dogfooding readout](../evals/2026-10-31-gpt-pair/README.md)
 uses the same binary, tasks and assessor as the preceding Mistral pair. GPT

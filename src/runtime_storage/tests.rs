@@ -59,6 +59,14 @@ async fn parallel_scopes_keep_generated_state_owned_and_restore_default() {
         let other = other.clone();
         tokio::spawn(scope(Some(s.clone()), async move {
             tokio::task::yield_now().await;
+            let mut child = tokio::process::Command::new("unused");
+            configure_child(&mut child);
+            let replay_root = s.output.join("replays");
+            assert!(child
+                .as_std()
+                .get_envs()
+                .any(|(name, value)| name == REPLAY_OUTPUT_ROOT
+                    && value == Some(replay_root.as_os_str())));
             assert_eq!(
                 crate::progress_state::path_for_root(root.to_str().unwrap()),
                 s.output.join("state/progress.json")

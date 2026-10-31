@@ -1,0 +1,88 @@
+{
+  "wave": "r11",
+  "kind": "post_hoc_assessor_correction_without_new_provider_calls",
+  "frozen_assessment_sha256": "9bb31c920dcc749353749e43aea2be5a47bdeaaddcd591a632fecca205a379a4",
+  "reason": "Recognize the bounded native count suffix after the exact outcome command. The frozen v2 parser rejected both true outcome rows solely because the suffix began with a parenthesis.",
+  "frozen_report_contract": "asserted-outcomes-v2",
+  "corrected_report_contract": "asserted-outcomes-v3",
+  "changed_assessor_hashes": {
+    "scripts/coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "scripts/coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038"
+  },
+  "unchanged_other_gate_results": true,
+  "raw_manifest_entries_verified": 290,
+  "frozen_strict_qualified": 0,
+  "corrected_strict_qualified": 1,
+  "declared": 2,
+  "new_provider_calls": 0,
+  "rows": [
+    {
+      "case": "pilot-cli",
+      "changes": {
+        "report_contract_revision": {
+          "frozen": "asserted-outcomes-v2",
+          "corrected": "asserted-outcomes-v3"
+        }
+      },
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "configuration_valid": true,
+      "out_of_scope_files": [],
+      "strict_qualified": false,
+      "native_report_sha256": "4adc5d21f9bb7e8f3c5e8364a375a7613faf091ad2e968f44aafbf97abe36c8a"
+    },
+    {
+      "case": "replay-json",
+      "changes": {
+        "behavior_and_handoff_qualified": {
+          "frozen": false,
+          "corrected": true
+        },
+        "strict_all_files_qualified": {
+          "frozen": false,
+          "corrected": true
+        },
+        "report_fields": {
+          "frozen": {
+            "all_artifacts_named": true,
+            "before_failed": false,
+            "after_passed": false,
+            "baseline_commands_named": true
+          },
+          "corrected": {
+            "all_artifacts_named": true,
+            "before_failed": true,
+            "after_passed": true,
+            "baseline_commands_named": true
+          }
+        },
+        "report_contract_revision": {
+          "frozen": "asserted-outcomes-v2",
+          "corrected": "asserted-outcomes-v3"
+        }
+      },
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "configuration_valid": true,
+      "out_of_scope_files": [],
+      "strict_qualified": true,
+      "native_report_sha256": "bb90413ca6cebfaf3207446f983fcb91e57dbaa389ba34b8ddbe4796b1a60588"
+    }
+  ]
+}

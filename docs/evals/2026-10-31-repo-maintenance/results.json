@@ -1,0 +1,1460 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-30T21:43:09.841462+00:00",
+  "predeclaration_sha256": "cea2229da27a263f75a7a8d2b95fa7b88260397a00bf72b3862d064225d26a6d",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/cc78f298326e6fb295aa3d202464c7d1ea0dea97078014e1eaa717eee16d9194",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "luna-luna",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "pilot-cli",
+      "state": "finished",
+      "process": {
+        "profile": "luna-luna",
+        "model": "gpt-5.6-luna",
+        "case": "pilot-cli",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 125.456,
+        "finished_at": "2026-10-30T21:03:48.686221+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [
+        {
+          "assistant_chars": 1382,
+          "gate": "single_tool",
+          "has_impact": false,
+          "has_plan": true,
+          "has_reflection": false,
+          "reason": "Multiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.",
+          "tool_count": 2,
+          "tool_names": [
+            "read_file",
+            "read_file"
+          ]
+        }
+      ],
+      "runtime_completed": false,
+      "independent_artifacts_passed": false,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 24,
+        "transport_requests": 0,
+        "wire_requests": 24,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 8192,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": false,
+        "baseline_before_edit": false,
+        "fresh_exact_checks": false,
+        "no_pending_checks": false,
+        "accepted_done": false,
+        "no_remaining_acceptance": false
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v": false
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": false,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Blocked: the required source and documentation repairs were not successfully applied. The only recorded verification is the unchanged baseline failure, so the requested completed report cannot claim a passing After result.\nChanged files: none recorded (scripts/run_coupled_pilot.py and docs/pilot.md remain pending).\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: NOT VERIFIED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nRemaining work: apply the one-line selection filter in scripts/run_coupled_pilot.py, update docs/pilot.md with the requested case-selection example and semantics, then run the exact command above and confirm PASSED.",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [],
+      "out_of_scope_files": [],
+      "requests": 24,
+      "request_roles": {
+        "coder": 18,
+        "observer": 6
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 6378,
+          "estimated_input_tokens": 8992,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2678,
+          "estimated_input_tokens": 9221,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4182,
+          "estimated_input_tokens": 9503,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6216,
+          "estimated_input_tokens": 8919,
+          "id": 3,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5798,
+          "estimated_input_tokens": 10852,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5964,
+          "estimated_input_tokens": 9918,
+          "id": 5,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5425,
+          "estimated_input_tokens": 11087,
+          "id": 6,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6555,
+          "estimated_input_tokens": 13322,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5618,
+          "estimated_input_tokens": 15104,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3887,
+          "estimated_input_tokens": 14480,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6432,
+          "estimated_input_tokens": 10884,
+          "id": 10,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5081,
+          "estimated_input_tokens": 14812,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4471,
+          "estimated_input_tokens": 16331,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3192,
+          "estimated_input_tokens": 17800,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2718,
+          "estimated_input_tokens": 17741,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7094,
+          "estimated_input_tokens": 12275,
+          "id": 15,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6137,
+          "estimated_input_tokens": 18417,
+          "id": 16,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4176,
+          "estimated_input_tokens": 16027,
+          "id": 17,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3639,
+          "estimated_input_tokens": 16245,
+          "id": 18,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6000,
+          "estimated_input_tokens": 11900,
+          "id": 19,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5923,
+          "estimated_input_tokens": 16986,
+          "id": 20,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4276,
+          "estimated_input_tokens": 16940,
+          "id": 21,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4663,
+          "estimated_input_tokens": 15362,
+          "id": 22,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7284,
+          "estimated_input_tokens": 12267,
+          "id": 23,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_UBpgcaaGt35VneuHiPxjEAF7"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": false,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_UBpgcaaGt35VneuHiPxjEAF7"
+            ],
+            "succeeded": false,
+            "tool": "exec"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "call_JB3ZhXosoF2LQWOzw2Q2sKRC",
+            "call_YgKIoyxwkASVaUi3v6r1lTpS",
+            "call_eGULgzYLroi5jaOTbNTuVSw5",
+            "call_Plw6nffxxqxMJ79MxP6CpRv5",
+            "call_RRWqLXbJueVCbNtam61zeDew"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 95,
+              "path": "tests/test_coupled_pilot.py",
+              "start_line": 50
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_JB3ZhXosoF2LQWOzw2Q2sKRC"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "call_cUOW23qq5CREy35dNBngMW0O",
+            "call_oyzxkwUuwh2VFBS273vGtUkS",
+            "call_Cm9YcF0RwaNRCk4g109nhRMf",
+            "call_tbsQEus6nL6MkWq6gQTWYkv8"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "scripts/run_coupled_pilot.py",
+              "start_line": 1
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_cUOW23qq5CREy35dNBngMW0O"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "call_b3OFlBxRjL63UWGJrN0vt6FS",
+            "call_lCuYMSiHDmxl03BiRjZAMmCe",
+            "call_bTsalwxB8uiU1YhDGRzhmIsv"
+          ],
+          "completed": false,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "scripts/run_coupled_pilot.py",
+              "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+              "search": "    selected = cases"
+            },
+            "executed": false,
+            "matching_call_ids": [
+              "call_b3OFlBxRjL63UWGJrN0vt6FS",
+              "call_lCuYMSiHDmxl03BiRjZAMmCe"
+            ],
+            "succeeded": false,
+            "tool": "patch_file"
+          }
+        },
+        {
+          "assist_id": 5,
+          "call_ids": [
+            "call_1P9WD66yfDQcdAa2U86Ex2Ch",
+            "call_rO0f6iWvOg2tvcwq2qQgJY5q",
+            "call_wrVLwBdL9pGW6bohJknraCvy"
+          ],
+          "completed": false,
+          "continuation_id": 6,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "scripts/run_coupled_pilot.py",
+              "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+              "search": "    selected = cases"
+            },
+            "executed": false,
+            "matching_call_ids": [
+              "call_1P9WD66yfDQcdAa2U86Ex2Ch"
+            ],
+            "succeeded": false,
+            "tool": "patch_file"
+          }
+        }
+      ],
+      "blocks": {
+        "Think Gate": 2,
+        "Plan Gate": 1,
+        "Evidence Gate": 2,
+        "unspecified governor": 2,
+        "Recovery Gate": 4
+      },
+      "actions": [
+        {
+          "call_id": "call_vmOzYSx5OpxUSlLPnfkNsi3h",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Think Gate] Missing <think>.\nRequired now: emit a valid <think> with goal/step/tool/risk/doubt/next/verify immediately before your tool call.\n\ntool:\nlist_dir\narguments:\n{\"dir\":\"\",\"include_hidden\":true,\"max_entries\":100}"
+        },
+        {
+          "call_id": "call_M3iDfw2oKQOKCk6EuTifkJtE",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nlist_dir\narguments:\n{\"dir\":\"\",\"include_hidden\":true,\"max_entries\":100}"
+        },
+        {
+          "call_id": "call_b9khUo53vqALNSLDBxUzJbZB",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 100
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Think Gate] Missing <think>.\nRequired now: emit a valid <think> with goal/step/tool/risk/doubt/next/verify immediately before your tool call.\n\ntool:\nlist_dir\narguments:\n{\"dir\":\"\",\"include_hidden\":true,\"max_entries\":100}"
+        },
+        {
+          "call_id": "call_UBpgcaaGt35VneuHiPxjEAF7",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "current",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\nFile \"/Users/ryospiralarchitect/.cache/"
+        },
+        {
+          "call_id": "call_JB3ZhXosoF2LQWOzw2Q2sKRC",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 95,
+            "path": "tests/test_coupled_pilot.py",
+            "start_line": 50
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "current",
+          "result_excerpt": "[tests/test_coupled_pilot.py] (116 lines, 5794 bytes) [range: lines 50-95; partial file] [pruned 47L]"
+        },
+        {
+          "call_id": "call_YgKIoyxwkASVaUi3v6r1lTpS",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@\n-    selected_cases = cases if not args.case else [case for case in cases if case[\"id\"] in args.case]\n+    selected_ids = set(args.case)\n+    selected_cases = cases if not args.case else [case for case in cases if case[\"id\"] in selected_ids]\n*** Update File: docs/pilot.md\n@@\n+### Selecting cases\n+\n+Pass `--case` more than once to run named cases, for example:\n+\n+```sh\n+python3 scripts/run_coupled_pilot.py --case alpha --case gamma\n+```\n+\n+Repeated case IDs are treated as one selection, and selected cases always run\n+in their original suite order rather than the order of the flags. Unknown IDs\n+are rejected before output is created or any case executes. If no `--case`\n+flags are supplied, all cases run (the no-filter default).\n*** End Patch",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evidence Gate] Invalid <evidence>: evidence missing target_files\n\n[Evidence Gate]\nYou are about to mutate an existing file via apply_diff.\nTarget path: scripts/run_coupled_pilot.py\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- r"
+        },
+        {
+          "call_id": "call_eGULgzYLroi5jaOTbNTuVSw5",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 240,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_Plw6nffxxqxMJ79MxP6CpRv5",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 240,
+            "path": "docs/pilot.md",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_RRWqLXbJueVCbNtam61zeDew",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 260,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "current",
+          "result_excerpt": "ERROR reading 'scripts/run_coupled_pilot.py': read at most 200 lines per call; narrow start_line/end_line"
+        },
+        {
+          "call_id": "call_cUOW23qq5CREy35dNBngMW0O",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 1-166; partial file] [pruned 150L]"
+        },
+        {
+          "call_id": "call_oyzxkwUuwh2VFBS273vGtUkS",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@\n-    selected = cases\n+    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]\n*** Update File: docs/pilot.md\n@@\n+### Selecting cases\n+\n+For example, select two cases with repeated flags:\n+\n+```sh\n+python3 scripts/run_coupled_pilot.py --case alpha --case gamma\n+```\n+\n+Duplicate IDs are run only once. Selected cases retain their original suite\n+order, regardless of flag order. Unknown IDs fail before output is created or\n+any case executes. With no `--case` filter, all cases run by default.\n*** End Patch",
+            "path": "scripts/run_coupled_pilot.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": "failed",
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"    selected = cases\\\\n*** Update File: docs/pilot.md\"); hunk 2: old block not found (starts: \"*** End Patch\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 71-76):\n71 |     if unknown:\n72 |         parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n73 |     selected = cases\n74 |     out.mkdir(parents=True)\n75 |     (out / \"spec.json\").write_bytes(spec_bytes)\n76 |     metadata = {\"binary_sha256\": hashlib.sha256(binary.read_bytes()).hexdigest(),\nCurrent file tail (lines 161-166):\n161 |         (out / \"summary.json\").write_text(json.dumps({**metadata, \"cases\": results}, indent=2))\n162 |         print(json.dumps(result, ensure_ascii=False), flush=True)\n163 | \n164"
+        },
+        {
+          "call_id": "call_Cm9YcF0RwaNRCk4g109nhRMf",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+            "search": "    selected = cases"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\npatch_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"search\":\"    selected = cases\",\"replace\":\"    selected = cases if not args.case else [case for case in cases if case[\\\"id\\\"] in requested]\"}"
+        },
+        {
+          "call_id": "call_tbsQEus6nL6MkWq6gQTWYkv8",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 82,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 65
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 13,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 65-82; partial file] [pruned 19L]"
+        },
+        {
+          "call_id": "call_b3OFlBxRjL63UWGJrN0vt6FS",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+            "search": "    selected = cases"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 14,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\npatch_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"search\":\"    selected = cases\",\"replace\":\"    selected = cases if not args.case else [case for case in cases if case[\\\"id\\\"] in requested]\"}"
+        },
+        {
+          "call_id": "call_lCuYMSiHDmxl03BiRjZAMmCe",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+            "search": "    selected = cases"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 15,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\npatch_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"search\":\"    selected = cases\",\"replace\":\"    selected = cases if not args.case else [case for case in cases if case[\\\"id\\\"] in requested]\"}"
+        },
+        {
+          "call_id": "call_bTsalwxB8uiU1YhDGRzhmIsv",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 75,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 71
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 16,
+          "freshness": "superseded",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 71-75; partial file]\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases\n    out.mkdir(parents=True)\n    (out / \"spec.json\").write_bytes(spec_bytes)\n"
+        },
+        {
+          "call_id": "call_1P9WD66yfDQcdAa2U86Ex2Ch",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "scripts/run_coupled_pilot.py",
+            "replace": "    selected = cases if not args.case else [case for case in cases if case[\"id\"] in requested]",
+            "search": "    selected = cases"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 17,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/pilot-cli/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\npatch_file\narguments:\n{\"path\":\"scripts/run_coupled_pilot.py\",\"search\":\"    selected = cases\",\"replace\":\"    selected = cases if not args.case else [case for case in cases if case[\\\"id\\\"] in requested]\"}"
+        },
+        {
+          "call_id": "call_rO0f6iWvOg2tvcwq2qQgJY5q",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 75,
+            "path": "scripts/run_coupled_pilot.py",
+            "start_line": 71
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 18,
+          "freshness": "current",
+          "result_excerpt": "[scripts/run_coupled_pilot.py] (166 lines, 9156 bytes) [range: lines 71-75; partial file]\n    if unknown:\n        parser.error(\"Unknown case ID(s): \" + \", \".join(sorted(unknown)))\n    selected = cases\n    out.mkdir(parents=True)\n    (out / \"spec.json\").write_bytes(spec_bytes)\n"
+        },
+        {
+          "call_id": "call_wrVLwBdL9pGW6bohJknraCvy",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [],
+            "completed_acceptance": [],
+            "next_steps": "Patch scripts/run_coupled_pilot.py at the observed `selected = cases` line to filter validated requested IDs while preserving suite order, add the documentation section to docs/pilot.md, then execute `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v` as a separate exact check.",
+            "remaining_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "summary": "Blocked: the required source and documentation repairs were not successfully applied. The only recorded verification is the unchanged baseline failure, so the requested completed report cannot claim a passing After result.\nChanged files: none recorded (scripts/run_coupled_pilot.py and docs/pilot.md remain pending).\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: NOT VERIFIED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nRemaining work: apply the one-line selection filter in scripts/run_coupled_pilot.py, update docs/pilot.md with the requested case-selection example and semantics, then run the exact command above and confirm PASSED."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 19,
+          "freshness": "current",
+          "result_excerpt": "OK: blocked"
+        }
+      ],
+      "oracle": {
+        "passed": false,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": false,
+          "original_test_count": true,
+          "requested_documentation": false
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "exit_code": 1,
+            "timed_out": false,
+            "output": "test_default_runs_every_case_and_records_selection (test_coupled_pilot.PilotCaseSelection.test_default_runs_every_case_and_records_selection) ... ok\ntest_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order) ... FAIL\ntest_selection_cannot_overwrite_existing_receipts (test_coupled_pilot.PilotCaseSelection.test_selection_cannot_overwrite_existing_receipts) ... ok\ntest_unknown_case_fails_before_output_or_execution_without_a_key (test_coupled_pilot.PilotCaseSelection.test_unknown_case_fails_before_output_or_execution_without_a_key) ... ok\ntest_failed_oracle_retains_output (test_coupled_pilot.PilotOracles.test_failed_oracle_retains_output) ... ok\ntest_preservation_keeps_nested_extensions_and_rejects_duplicate_ids (test_coupled_pilot.PilotOracles.test_preservation_keeps_nested_extensions_and_rejects_duplicate_ids) ... ok\ntest_timeout_retains_output_and_failure (test_coupled_pilot.PilotOracles.test_timeout_retains_output_and_failure) ... ok\n\n======================================================================\nFAIL: test_repeated_reverse_selection_runs_once_in_suite_order (test_coupled_pilot.PilotCaseSelection.test_repeated_reverse_selection_runs_once_in_suite_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-oj6ernkq/workspace/tests/test_coupled_pilot.py\", line 92, in test_repeated_reverse_selection_runs_once_in_suite_order\n    self.assert_selection([\"alpha\", \"gamma\"])\n  File \"/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-oj6ernkq/workspace/tests/test_coupled_pilot.py\", line 76, in assert_selection\n    self.assertEqual([case[\"id\"] for case in self.invoked], expected)\nAssertionError: Lists differ: ['alpha', 'beta', 'gamma'] != ['alpha', 'gamma']\n\nFirst differing element 1:\n'beta'\n'gamma'\n\nFirst list contains 1 additional elements.\nFirst extra element 2:\n'gamma'\n\n- ['alpha', 'beta', 'gamma']\n?           --------\n\n+ ['alpha', 'gamma']\n\n----------------------------------------------------------------------\nRan 7 tests in 0.337s\n\nFAILED (failures=1)\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "luna-luna",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "replay-json",
+      "state": "finished",
+      "process": {
+        "profile": "luna-luna",
+        "model": "gpt-5.6-luna",
+        "case": "replay-json",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 72.986,
+        "finished_at": "2026-10-30T21:05:08.312603+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 15,
+        "transport_requests": 0,
+        "wire_requests": 15,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 8192,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": false,
+      "strict_all_files_qualified": false,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v": true,
+        "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json": true
+      },
+      "verified_commands": {
+        "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v": true,
+        "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": false,
+        "after_passed": false,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Added exactly one replay case, `observer-range-tail`, to `.spiral-coder/tui_replay.json`. It asserts Observer `read_file` advice for `src/tui/agent.rs` with `kind` `read`, `suggested_tool` `read_file`, and exact `start_line=1200` / `end_line=1240` arguments, plus `suggestion_parsed`, `hint_queued`, and coder-system assertions. Updated `docs/replay.md` with the case name, path, bounds, and advice-only explanation.\n\nChanged files:\n- `.spiral-coder/tui_replay.json`\n- `docs/replay.md`\n\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 1 failure event, 0 errors).\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 0 failure events, 0 errors).\nTUI replay: PASSED — `spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json`.\nRemaining work: none.",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        ".spiral-coder/tui_replay.json",
+        "docs/replay.md"
+      ],
+      "out_of_scope_files": [],
+      "requests": 15,
+      "request_roles": {
+        "coder": 12,
+        "observer": 3
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 4942,
+          "estimated_input_tokens": 9172,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2685,
+          "estimated_input_tokens": 9707,
+          "id": 1,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5456,
+          "estimated_input_tokens": 9769,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6181,
+          "estimated_input_tokens": 8975,
+          "id": 3,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5171,
+          "estimated_input_tokens": 11031,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2425,
+          "estimated_input_tokens": 13260,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5840,
+          "estimated_input_tokens": 9851,
+          "id": 6,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4444,
+          "estimated_input_tokens": 13794,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6275,
+          "estimated_input_tokens": 16183,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2733,
+          "estimated_input_tokens": 15840,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3839,
+          "estimated_input_tokens": 13211,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6525,
+          "estimated_input_tokens": 9350,
+          "id": 11,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4556,
+          "estimated_input_tokens": 14718,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4960,
+          "estimated_input_tokens": 13136,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5884,
+          "estimated_input_tokens": 13455,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_nJGYnfZgR5IZ0ZQvRZiOFVOe",
+            "call_m1Qbb0kx6tUpNEfbQXg3cabg"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+            "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": ".spiral-coder/tui_replay.json"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_nJGYnfZgR5IZ0ZQvRZiOFVOe"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "call_rsesG8QM8BBah8Rueq2cUV8x",
+            "call_9DRtnkVXFVbd2Arb3EdluGuv",
+            "call_QwovDTEzgPOQIGgV84aa3jIq",
+            "call_oc0NofIl75TH5COLhbEIwEAu"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+            "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "tests/test_replay_contract.py"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_rsesG8QM8BBah8Rueq2cUV8x"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "call_yHqjsg3ZQslQMNy2NzHdD1xI",
+            "call_iM812wO5tLmYOENhbz7lC3Tj",
+            "call_0pCxFsTto08uVu5WnVt9Mc18"
+          ],
+          "completed": true,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_yHqjsg3ZQslQMNy2NzHdD1xI"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "Think Gate": 1,
+        "Plan Gate": 1
+      },
+      "actions": [
+        {
+          "call_id": "call_ENg1C1Xb9USCVVZCRXlmNQqa",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 200
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Think Gate] Invalid <think>: think missing goal\nRepair all listed fields together. Use one field per line inside <think>:\ngoal: the immediate action's purpose\nstep: an integer from 1 to 5 in the current plan\ntool: list_dir\nrisk: a short risk assessment\ndoubt: what remains uncertain\nnext: the intended action (for exec, include its command prefix)\nverify: how to check this action's result\nThen issue the actual tool call. Keep the current plan unless the task changed.\nRequired now: emit a valid <think> whose step exists in the current <plan> and whose tool matches the actual tool call.\n\ntool:\nlist_dir\narguments:\n{\"dir\":\"\",\"include_hidden\":true,\"max_entries\":200}"
+        },
+        {
+          "call_id": "call_0HanF44W2ktwrRrmx3goXCtp",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 200
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>.\nRequired now: in your next assistant message, include a valid <plan> (goal/steps/acceptance/risks/assumptions), then emit <think>, then call ONE diagnostic tool (list_dir/search_files/glob/read_file) to start.\n\ntool:\nlist_dir\narguments:\n{\"dir\":\"\",\"include_hidden\":true,\"max_entries\":200}"
+        },
+        {
+          "call_id": "call_AXBpt1qQvA5NwsPADrJu0iSw",
+          "tool": "list_dir",
+          "arguments": {
+            "dir": "",
+            "include_hidden": true,
+            "max_entries": 200
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "[list_dir: '.' ・ 5 item(s)] [pruned 6L]"
+        },
+        {
+          "call_id": "call_nJGYnfZgR5IZ0ZQvRZiOFVOe",
+          "tool": "read_file",
+          "arguments": {
+            "path": ".spiral-coder/tui_replay.json"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "before_mutation",
+          "result_excerpt": "[.spiral-coder/tui_replay.json] (1101 lines, 33010 bytes) [pruned 231L]"
+        },
+        {
+          "call_id": "call_m1Qbb0kx6tUpNEfbQXg3cabg",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_new_range_case (test_replay_contract.ReplayContract.test_new_range_case)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/re"
+        },
+        {
+          "call_id": "call_rsesG8QM8BBah8Rueq2cUV8x",
+          "tool": "read_file",
+          "arguments": {
+            "path": "tests/test_replay_contract.py"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_replay_contract.py] (21 lines, 1067 bytes) [pruned 22L]"
+        },
+        {
+          "call_id": "call_9DRtnkVXFVbd2Arb3EdluGuv",
+          "tool": "patch_file",
+          "arguments": {
+            "json_pointer": "/cases/-",
+            "json_value": "{\"id\":\"observer-range-tail\",\"prompt\":\"Inspect the tail range of src/tui/agent.rs from lines 1200 through 1240. Do not edit anything.\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"range\"],\"coder_messages\":[{\"role\":\"user\",\"content\":\"Inspect the tail range of src/tui/agent.rs from lines 1200 through 1240. Do not edit anything.\"},{\"role\":\"assistant\",\"content\":\"[GOVERNOR BLOCK]\\nNeed one concrete next step before broadening search.\"}],\"observer_response\":{\"summary\":\"The focused range read is the smallest next step for inspecting the requested tail of the TUI agent.\",\"primary_blocker\":\"missing_concrete_next_step\",\"suggestions\":[{\"kind\":\"read\",\"reason\":\"Read the requested tail range directly without widening the search.\",\"confidence\":0.95,\"suggested_tool\":\"read_file\",\"suggested_args\":{\"path\":\"src/tui/agent.rs\",\"start_line\":1200,\"end_line\":1240},\"based_on\":[\"intent_anchor\",\"failure_kind\"]}],\"quickest_check\":\"read_file(path=src/tui/agent.rs, start_line=1200, end_line=1240)\",\"why_this_first\":\"It tests the requested bounded read directly.\",\"fallback\":\"If the range does not answer the question, reassess narrowly.\"},\"checks\":[{\"kind\":\"suggestion_parsed\"},{\"kind\":\"hint_queued\"},{\"kind\":\"coder_system_contains\",\"value\":\"start_line=1200\"},{\"kind\":\"coder_system_contains\",\"value\":\"end_line=1240\"}]}",
+            "path": ".spiral-coder/tui_replay.json"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched '.spiral-coder/tui_replay.json' (+60 lines, 1161 total) [pruned 11L]\n[auto-test] ✓ PASSED (exit 0)"
+        },
+        {
+          "call_id": "call_QwovDTEzgPOQIGgV84aa3jIq",
+          "tool": "read_file",
+          "arguments": {
+            "path": "docs/replay.md"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/replay.md] (3 lines, 83 bytes)\n# Replay fixture\n\nThe existing cases cover pane preferences and file-range advice.\n"
+        },
+        {
+          "call_id": "call_oc0NofIl75TH5COLhbEIwEAu",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/replay.md",
+            "replace": "# Replay fixture\n\nThe existing cases cover pane preferences and file-range advice.\n\nThe `observer-range-tail` case exercises Observer `read_file` advice for\n`src/tui/agent.rs`, bounded to lines 1200 through 1240. The replay tests the\nadvice and queued hint; it does not execute a filesystem read.\n",
+            "search": "# Replay fixture\n\nThe existing cases cover pane preferences and file-range advice.\n"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 9,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/replay.md' (+4 lines, 7 total)\n[history digest — kept 10/24 lines, 813 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=411fd229c531d10d after=6083c2d4a16ea57c\n✓ auto-verify: patch confirmed in file\n[diff @line 2]\n[docs/replay.md] (3 lines, 83 bytes)\n- # Replay fixture\n-\n- The existing cases cover pane preferences and file-range advice.\n+ # Replay fixture"
+        },
+        {
+          "call_id": "call_yHqjsg3ZQslQMNy2NzHdD1xI",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace"
+        },
+        {
+          "call_id": "call_iM812wO5tLmYOENhbz7lC3Tj",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-2",
+            "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/repo-maintenance-20261031-r11-luna-luna/episodes/luna-luna/replay-json/workspace"
+        },
+        {
+          "call_id": "call_0pCxFsTto08uVu5WnVt9Mc18",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "None.",
+            "remaining_acceptance": [],
+            "summary": "Added exactly one replay case, `observer-range-tail`, to `.spiral-coder/tui_replay.json`. It asserts Observer `read_file` advice for `src/tui/agent.rs` with `kind` `read`, `suggested_tool` `read_file`, and exact `start_line=1200` / `end_line=1240` arguments, plus `suggestion_parsed`, `hint_queued`, and coder-system assertions. Updated `docs/replay.md` with the case name, path, bounds, and advice-only explanation.\n\nChanged files:\n- `.spiral-coder/tui_replay.json`\n- `docs/replay.md`\n\nBefore: FAILED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 1 failure event, 0 errors).\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_replay_contract.py -v` (1 test run, 0 failure events, 0 errors).\nTUI replay: PASSED — `spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json`.\nRemaining work: none."
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true,
+          "independent_check_1": true,
+          "preserved_existing_json": true,
+          "requested_documentation": true
+        },
+        "logs": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_replay_contract.py -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_new_range_case (test_replay_contract.ReplayContract.test_new_range_case) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+          },
+          {
+            "command": "spiral-coder --provider openai tui-replay --spec .spiral-coder/tui_replay.json",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "[tui-replay] spec=/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-tdtlswx9/workspace/.spiral-coder/tui_replay.json cases=5 out=/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-tdtlswx9/workspace/.tmp/tui_replay_1793396589\n[tui-replay] case 1/5: pane-prefs-observer-suggestion\n[tui-replay] PASS pane-prefs-observer-suggestion\n[tui-replay] case 2/5: repo-map-fallback-observer-suggestion\n[tui-replay] PASS repo-map-fallback-observer-suggestion\n[tui-replay] case 3/5: pane-prefs-observer-contract\n[tui-replay] PASS pane-prefs-observer-contract\n[tui-replay] case 4/5: observer-bounded-file-range\n[tui-replay] PASS observer-bounded-file-range\n[tui-replay] case 5/5: observer-range-tail\n[tui-replay] PASS observer-range-tail\n[tui-replay] summary: 5/5 passed, report=/private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-independent-tdtlswx9/workspace/.tmp/tui_replay_1793396589/report.json\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": null
+      }
+    }
+  ],
+  "counts": {
+    "declared": 2,
+    "finished": 2,
+    "runtime_completed": 1,
+    "independent_artifacts_passed": 1,
+    "behavior_and_handoff_qualified": 0,
+    "strict_all_files_qualified": 0,
+    "wire_requests": 39,
+    "episodes_with_unknown_request_count": 0
+  }
+}
