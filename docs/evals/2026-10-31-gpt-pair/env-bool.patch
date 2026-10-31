@@ -1,0 +1,49 @@
+diff --git a/docs/settings.md b/docs/settings.md
+index c6d3d99..eaa1224 100644
+--- a/docs/settings.md
++++ b/docs/settings.md
+@@ -1,4 +1,25 @@
+ # Boolean settings
+ 
+-`parse_bool(value, default=False)` reads an environment-style setting.
+-The current implementation treats every nonempty string as enabled.
++`parse_bool(value, default=False)` reads an environment-style boolean setting.
++
++The case-insensitive tokens `true`, `1`, `yes`, and `on` return `True`.
++The tokens `false`, `0`, `no`, and `off` return `False`. Surrounding
++whitespace is ignored, so case and whitespace do not affect recognized tokens.
++
++`None`, an empty string, or a whitespace-only string returns the supplied
++`default` value. The default is `False` unless another boolean is supplied.
++Any other nonempty string raises `ValueError`; it is not automatically treated
++as `True`.
++
++Examples:
++
++```python
++parse_bool("OFF") -> False
++parse_bool("", default=True) -> True
++```
++
++Run the tests with:
++
++```text
++python3 -B -S -m unittest discover -s tests -v
++```
+diff --git a/settings.py b/settings.py
+index b3c7c3f..59233f7 100644
+--- a/settings.py
++++ b/settings.py
+@@ -4,4 +4,11 @@
+ def parse_bool(value, default=False):
+     if value is None:
+         return default
+-    return bool(value)
++    normalized = value.strip().lower()
++    if not normalized:
++        return default
++    if normalized in ("true", "1", "yes", "on"):
++        return True
++    if normalized in ("false", "0", "no", "off"):
++        return False
++    raise ValueError("invalid boolean value: {!r}".format(value))

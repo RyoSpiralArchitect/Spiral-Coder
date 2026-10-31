@@ -1,0 +1,1462 @@
+{
+  "version": 1,
+  "evaluated_at": "2026-10-30T20:40:12.872424+00:00",
+  "predeclaration_sha256": "5de7883fa1ec38d699fd0048b855bef85db83ae863d04e047a8708bc9953a5ad",
+  "assessor_driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "assessor_snapshot": "assessors/32b59f23759c61f4349d3b8a03a6a28914ab6538c3412bce4d0a455ebc96a263",
+  "matches_declared_driver": true,
+  "rows": [
+    {
+      "profile": {
+        "id": "luna-luna",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "env-bool",
+      "state": "finished",
+      "process": {
+        "profile": "luna-luna",
+        "model": "gpt-5.6-luna",
+        "case": "env-bool",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 91.967,
+        "finished_at": "2026-10-30T20:37:56.802807+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [
+        {
+          "assistant_chars": 1465,
+          "gate": "single_tool",
+          "has_impact": true,
+          "has_plan": true,
+          "has_reflection": false,
+          "reason": "Multiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.",
+          "tool_count": 2,
+          "tool_names": [
+            "read_file",
+            "read_file"
+          ]
+        }
+      ],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 16,
+        "transport_requests": 0,
+        "wire_requests": 16,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 8192,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Updated `settings.py` to normalize case and surrounding whitespace, honor default handling for None/empty inputs, recognize explicit true/false tokens, and raise ValueError for unknown strings. Updated `docs/settings.md` with the token rules, defaults, whitespace/case behavior, ValueError behavior, required examples, and exact test command. No remaining work.\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        "docs/settings.md",
+        "settings.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 16,
+      "request_roles": {
+        "coder": 12,
+        "observer": 4
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 6924,
+          "estimated_input_tokens": 9236,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6227,
+          "estimated_input_tokens": 10079,
+          "id": 1,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4225,
+          "estimated_input_tokens": 10714,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5207,
+          "estimated_input_tokens": 12640,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 2718,
+          "estimated_input_tokens": 13163,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5951,
+          "estimated_input_tokens": 13249,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7397,
+          "estimated_input_tokens": 11885,
+          "id": 6,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8240,
+          "estimated_input_tokens": 15412,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6102,
+          "estimated_input_tokens": 10277,
+          "id": 8,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4150,
+          "estimated_input_tokens": 14457,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6037,
+          "estimated_input_tokens": 15411,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3090,
+          "estimated_input_tokens": 16425,
+          "id": 11,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5756,
+          "estimated_input_tokens": 16125,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4539,
+          "estimated_input_tokens": 9631,
+          "id": 13,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4870,
+          "estimated_input_tokens": 16472,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5569,
+          "estimated_input_tokens": 14653,
+          "id": 15,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_YGcOiQR6fjNVZmljEQOHTmh0",
+            "call_MRUlLocG2YfvG77HCoDogEAf",
+            "call_vRhJGPozlTw6nIbitVmw1QrU",
+            "call_JEtrbEA6OvPtPN4yert7TUj1",
+            "call_T5bJAXD10iq2t59HPx9GdBu1"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "tests/test_settings.py",
+              "start_line": 1
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_YGcOiQR6fjNVZmljEQOHTmh0"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "call_ia4ExWLDUD8T5d4ScHLQ0ddI"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": true,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "settings.py",
+              "replace": "    if value is None:\n        return default\n    normalized = value.strip().lower()\n    if not normalized:\n        return default\n    if normalized in (\"true\", \"1\", \"yes\", \"on\"):\n        return True\n    if normalized in (\"false\", \"0\", \"no\", \"off\"):\n        return False\n    raise ValueError(\"invalid boolean value: {!r}\".format(value))",
+              "search": "    if value is None:\n        return default\n    return bool(value)"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_ia4ExWLDUD8T5d4ScHLQ0ddI"
+            ],
+            "succeeded": true,
+            "tool": "patch_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "call_qmzwQgEYRh7NwvPWZXxRZWGh",
+            "call_YF9FxsPxxf37Hht7FpidcxIK",
+            "call_Hp4UUouNqTI3eCwqXqSzOIgL",
+            "call_pC5Z2STYVvjSlUJhMq5zazOw"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "tests/test_settings.py",
+              "start_line": 1
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_qmzwQgEYRh7NwvPWZXxRZWGh"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "call_slmKpEE2jGbbRTwGP8XyJpOJ",
+            "call_d1rp6077V4laSEnW7ip0uNVB"
+          ],
+          "completed": true,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_slmKpEE2jGbbRTwGP8XyJpOJ"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "unspecified governor": 3,
+        "Evidence Gate": 2
+      },
+      "actions": [
+        {
+          "call_id": "call_JWmSoj17A93qnSGbIbqI0qiU",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/env-bool/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nFAIL: test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-l"
+        },
+        {
+          "call_id": "call_YGcOiQR6fjNVZmljEQOHTmh0",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_settings.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "call_MRUlLocG2YfvG77HCoDogEAf",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "settings.py",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 3,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_vRhJGPozlTw6nIbitVmw1QrU",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/settings.md",
+            "start_line": 1
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (2). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+        },
+        {
+          "call_id": "call_JEtrbEA6OvPtPN4yert7TUj1",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "settings.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "[settings.py] (7 lines, 171 bytes) [pruned 8L]"
+        },
+        {
+          "call_id": "call_T5bJAXD10iq2t59HPx9GdBu1",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -1,7 +1,17 @@\n \"\"\"Read a boolean setting from an environment-style string.\"\"\"\n \n \n def parse_bool(value, default=False):\n     if value is None:\n         return default\n-    return bool(value)\n+    normalized = value.strip().lower()\n+    if not normalized:\n+        return default\n+    if normalized in (\"true\", \"1\", \"yes\", \"on\"):\n+        return True\n+    if normalized in (\"false\", \"0\", \"no\", \"off\"):\n+        return False\n+    raise ValueError(\"invalid boolean value: {!r}\".format(value))\n",
+            "path": "settings.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evidence Gate] Invalid <evidence>: evidence missing target_files\n\n[Evidence Gate]\nYou are about to mutate an existing file via apply_diff.\nTarget path: settings.py\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(end_line"
+        },
+        {
+          "call_id": "call_ia4ExWLDUD8T5d4ScHLQ0ddI",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "settings.py",
+            "replace": "    if value is None:\n        return default\n    normalized = value.strip().lower()\n    if not normalized:\n        return default\n    if normalized in (\"true\", \"1\", \"yes\", \"on\"):\n        return True\n    if normalized in (\"false\", \"0\", \"no\", \"off\"):\n        return False\n    raise ValueError(\"invalid boolean value: {!r}\".format(value))",
+            "search": "    if value is None:\n        return default\n    return bool(value)"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 7,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: patched 'settings.py' (+7 lines, 14 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check)\nFile \"tests/test_settings.py\", line 51, in test_documented_examples_and_check\nAssertionError: 'parse_bool(\"OFF\") -> False' not found in '# Boolean settings\\n\\n`parse_bool(value, default=False)` reads an environment-style setting.\\nThe current implementation treats every nonempty string as enabled.…"
+        },
+        {
+          "call_id": "call_qmzwQgEYRh7NwvPWZXxRZWGh",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_settings.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_settings.py] (55 lines, 1940 bytes) [pruned 56L]"
+        },
+        {
+          "call_id": "call_YF9FxsPxxf37Hht7FpidcxIK",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style boolean setting.\n\nThe case-insensitive tokens `true`, `1`, `yes`, and `on` return `True`.\nThe tokens `false`, `0`, `no`, and `off` return `False`. Surrounding\nwhitespace is ignored, so case and whitespace do not affect recognized tokens.\n\n`None`, an empty string, or a whitespace-only string returns the supplied\n`default` value. The default is `False` unless another boolean is supplied.\nAny other nonempty string raises `ValueError`; it is not automatically treated\nas `True`.\n\nExamples:\n\n```python\nparse_bool(\"OFF\") -> False\nparse_bool(\"\", default=True) -> True\n```\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "path": "docs/settings.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 9,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED: write_file refused because 'docs/settings.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        },
+        {
+          "call_id": "call_Hp4UUouNqTI3eCwqXqSzOIgL",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/settings.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/settings.md] (4 lines, 159 bytes)\n# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled.\n"
+        },
+        {
+          "call_id": "call_pC5Z2STYVvjSlUJhMq5zazOw",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/settings.md",
+            "replace": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style boolean setting.\n\nThe case-insensitive tokens `true`, `1`, `yes`, and `on` return `True`.\nThe tokens `false`, `0`, `no`, and `off` return `False`. Surrounding\nwhitespace is ignored, so case and whitespace do not affect recognized tokens.\n\n`None`, an empty string, or a whitespace-only string returns the supplied\n`default` value. The default is `False` unless another boolean is supplied.\nAny other nonempty string raises `ValueError`; it is not automatically treated\nas `True`.\n\nExamples:\n\n```python\nparse_bool(\"OFF\") -> False\nparse_bool(\"\", default=True) -> True\n```\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "search": "# Boolean settings\n\n`parse_bool(value, default=False)` reads an environment-style setting.\nThe current implementation treats every nonempty string as enabled.\n"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 11,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/settings.md' (+21 lines, 25 total)\n[history digest — kept 10/52 lines, 2222 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=10acb930c9c2df31 after=dfa99c57c84defda\n✓ auto-verify: patch confirmed in file\n[diff @line 2]\n[docs/settings.md] (4 lines, 159 bytes)\n- # Boolean settings\n-\n- `parse_bool(value, default=False)` reads an environment-style setting.\n- The current implementation treats every nonempty string as enabled."
+        },
+        {
+          "call_id": "call_slmKpEE2jGbbRTwGP8XyJpOJ",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/env-bool/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/env-bool/workspace"
+        },
+        {
+          "call_id": "call_d1rp6077V4laSEnW7ip0uNVB",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "patch_file(path=docs/settings.md, replace=# Boolean settings `parse_bool(value, default=False)` reads an environment-style boolean setting. The case-insensitive tokens `true`, `1`, `yes`, and `on` retur…, search=# Boolean settings `parse_bool(value, default=False)` reads an environment-style setting. The current implementation treats every nonempty string as enabled.)",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "None; both requested artifacts are updated and the unchanged original test suite passes.",
+            "remaining_acceptance": [],
+            "summary": "Updated `settings.py` to normalize case and surrounding whitespace, honor default handling for None/empty inputs, recognize explicit true/false tokens, and raise ValueError for unknown strings. Updated `docs/settings.md` with the token rules, defaults, whitespace/case behavior, ValueError behavior, required examples, and exact test command. No remaining work.\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 13,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_case_and_whitespace (test_settings.BooleanSettings.test_case_and_whitespace) ... ok\ntest_documented_examples_and_check (test_settings.BooleanSettings.test_documented_examples_and_check) ... ok\ntest_empty_uses_default (test_settings.BooleanSettings.test_empty_uses_default) ... ok\ntest_explicit_false_overrides_default (test_settings.BooleanSettings.test_explicit_false_overrides_default) ... ok\ntest_false_tokens (test_settings.BooleanSettings.test_false_tokens) ... ok\ntest_missing_uses_default (test_settings.BooleanSettings.test_missing_uses_default) ... ok\ntest_original_string_is_unchanged (test_settings.BooleanSettings.test_original_string_is_unchanged) ... ok\ntest_true_tokens (test_settings.BooleanSettings.test_true_tokens) ... ok\ntest_unknown_strings_raise (test_settings.BooleanSettings.test_unknown_strings_raise) ... ok\ntest_whitespace_uses_default (test_settings.BooleanSettings.test_whitespace_uses_default) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    },
+    {
+      "profile": {
+        "id": "luna-luna",
+        "provider": "openai",
+        "model": "gpt-5.6-luna",
+        "observer": {
+          "provider": "openai",
+          "model": "gpt-5.6-luna"
+        }
+      },
+      "case": "event-summary",
+      "state": "finished",
+      "process": {
+        "profile": "luna-luna",
+        "model": "gpt-5.6-luna",
+        "case": "event-summary",
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 122.732,
+        "finished_at": "2026-10-30T20:40:06.840663+00:00",
+        "redacted_raw_files": []
+      },
+      "receipt_source": "native_report",
+      "trace_errors": [],
+      "pre_tool_rejections": [],
+      "runtime_completed": true,
+      "independent_artifacts_passed": true,
+      "configuration": {
+        "valid": true,
+        "checks": {
+          "roles_match": true,
+          "same_model_flag": true,
+          "both_roles_called": true,
+          "role_counts_match": true,
+          "known_roles_and_charges": true,
+          "native_policy_match": true,
+          "coder_chunk_match": true,
+          "bounded_requests": true,
+          "observer_reservation": true,
+          "transport_eligibility": true
+        },
+        "task_requests": 22,
+        "transport_requests": 0,
+        "wire_requests": 22,
+        "expected_roles": {
+          "coder": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0,
+            "max_tokens": 32768,
+            "timeout_seconds": 90
+          },
+          "observer": {
+            "provider": "openai",
+            "model": "gpt-5.6-luna",
+            "transport": "openai-compatible",
+            "endpoint_origin": "https://api.openai.com",
+            "temperature": 0.2,
+            "max_tokens": 8192,
+            "timeout_seconds": 90
+          }
+        },
+        "native_roles": {
+          "coder": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 32768,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.0,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          },
+          "observer": {
+            "endpoint_origin": "https://api.openai.com",
+            "max_tokens": 8192,
+            "model": "gpt-5.6-luna",
+            "provider": "openai",
+            "temperature": 0.2,
+            "timeout_seconds": 90,
+            "transport": "openai-compatible"
+          }
+        }
+      },
+      "behavior_and_handoff_qualified": true,
+      "strict_all_files_qualified": true,
+      "native": {
+        "native_edit": true,
+        "baseline_before_edit": true,
+        "fresh_exact_checks": true,
+        "no_pending_checks": true,
+        "accepted_done": true,
+        "no_remaining_acceptance": true
+      },
+      "native_contract_revision": "edit-outcome-v2",
+      "completion_field_presence": {
+        "remaining_acceptance": true
+      },
+      "baseline_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "verified_commands": {
+        "python3 -B -S -m unittest discover -s tests -v": true
+      },
+      "report_fields": {
+        "all_artifacts_named": true,
+        "before_failed": true,
+        "after_passed": true,
+        "baseline_commands_named": true
+      },
+      "authored_summary": "Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/summary.py to skip blank lines, count only exact accepted levels, preserve iterable input handling, and raise line-numbered ValueError for invalid records. Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/docs/summary.md with the contract, blank-line behavior, line 3 example, exact empty result, and test command. Native required check passed after edits; tests and .spiral-coder.md were preserved. No dependencies were installed and no commits or pushes were made.\n\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`",
+      "report_contract_revision": "asserted-outcomes-v2",
+      "changed_files": [
+        "docs/summary.md",
+        "summary.py"
+      ],
+      "out_of_scope_files": [],
+      "requests": 22,
+      "request_roles": {
+        "coder": 17,
+        "observer": 5
+      },
+      "wire_requests": [
+        {
+          "charge": "task",
+          "duration_ms": 4799,
+          "estimated_input_tokens": 9344,
+          "id": 0,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5704,
+          "estimated_input_tokens": 10179,
+          "id": 1,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4676,
+          "estimated_input_tokens": 10723,
+          "id": 2,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7408,
+          "estimated_input_tokens": 12752,
+          "id": 3,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3115,
+          "estimated_input_tokens": 15002,
+          "id": 4,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4699,
+          "estimated_input_tokens": 14571,
+          "id": 5,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8554,
+          "estimated_input_tokens": 13568,
+          "id": 6,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6848,
+          "estimated_input_tokens": 17146,
+          "id": 7,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5535,
+          "estimated_input_tokens": 16519,
+          "id": 8,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4764,
+          "estimated_input_tokens": 17469,
+          "id": 9,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4471,
+          "estimated_input_tokens": 17820,
+          "id": 10,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6307,
+          "estimated_input_tokens": 10460,
+          "id": 11,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4105,
+          "estimated_input_tokens": 17064,
+          "id": 12,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 5689,
+          "estimated_input_tokens": 17537,
+          "id": 13,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4004,
+          "estimated_input_tokens": 19468,
+          "id": 14,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 8023,
+          "estimated_input_tokens": 11790,
+          "id": 15,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 7581,
+          "estimated_input_tokens": 21257,
+          "id": 16,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 3417,
+          "estimated_input_tokens": 20788,
+          "id": 17,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6194,
+          "estimated_input_tokens": 19732,
+          "id": 18,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4371,
+          "estimated_input_tokens": 9962,
+          "id": 19,
+          "provider_usage": null,
+          "role": "observer",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 4663,
+          "estimated_input_tokens": 19657,
+          "id": 20,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        },
+        {
+          "charge": "task",
+          "duration_ms": 6070,
+          "estimated_input_tokens": 16629,
+          "id": 21,
+          "provider_usage": null,
+          "role": "coder",
+          "status": "completed",
+          "transport_rejection": null
+        }
+      ],
+      "assists": [
+        {
+          "assist_id": 1,
+          "call_ids": [
+            "call_bYy7BfdHOkvwKJmBasLx6nZz",
+            "call_H2zsG10JfjWDLvk49apCSVXW",
+            "call_blyW7dDUY1HEwIpE3DvHrjJW",
+            "call_cDHDEibDKFXWLWtjFx8TPRCJ"
+          ],
+          "completed": false,
+          "continuation_id": 2,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "tests/test_summary.py",
+              "start_line": 1
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_bYy7BfdHOkvwKJmBasLx6nZz"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 2,
+          "call_ids": [
+            "call_ZEPwEedDSraQcKMPnUPU01pH",
+            "call_cCQD1I6EQyUNjKgcrGAUoWvA",
+            "call_PUH8yeEWntzOd5A3V7D2Bqen",
+            "call_9cHxXlwMVtsq0RrubhQupEDh"
+          ],
+          "completed": false,
+          "continuation_id": 3,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "path": "summary.py",
+              "replace": "    for line_number, line in enumerate(lines, 1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except (json.JSONDecodeError, TypeError) as exc:\n            raise ValueError(f\"invalid record at line {line_number}\") from exc\n        if not isinstance(event, dict):\n            raise ValueError(f\"invalid record at line {line_number}\")\n        level = event.get(\"level\")\n        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"invalid level at line {line_number}\")\n        counts[level] += 1\n",
+              "search": "    for line in lines:\n        event = json.loads(line)\n        counts[event[\"level\"]] += 1\n"
+            },
+            "executed": false,
+            "matching_call_ids": [
+              "call_ZEPwEedDSraQcKMPnUPU01pH"
+            ],
+            "succeeded": false,
+            "tool": "patch_file"
+          }
+        },
+        {
+          "assist_id": 3,
+          "call_ids": [
+            "call_sryl0f1s5mfqM97M9XtHdDB5",
+            "call_SGFWC04PuJtupjuajVrlqBda",
+            "call_H1vDFnXRvZnPejon9Kg5utde"
+          ],
+          "completed": false,
+          "continuation_id": 4,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "end_line": 200,
+              "path": "tests/test_summary.py",
+              "start_line": 1
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_sryl0f1s5mfqM97M9XtHdDB5"
+            ],
+            "succeeded": null,
+            "tool": "read_file"
+          }
+        },
+        {
+          "assist_id": 4,
+          "call_ids": [
+            "call_ji9gSvXDSeYyMuGm9KbxQ7iQ",
+            "call_PThuO31FhmeyjVAfcUO8o28r",
+            "call_U1kQZFUPhmAmFqtGtiKMin5e"
+          ],
+          "completed": false,
+          "continuation_id": 5,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [
+            "python3 -B -S -m unittest discover -s tests -v"
+          ],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "content": "# Event summary\n\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the exact lowercase levels `info`, `warning`, and `error`. Extra fields on event objects are ignored, and the returned mapping always contains all three integer counts. For empty input, the exact result is `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n\nEmpty or whitespace-only lines are skipped. Every other record must be a JSON object whose `level` is a string equal to one of the three accepted levels. Malformed JSON, non-object records, and missing, unknown, or non-string levels raise `ValueError`; the message includes the physical one-based line number, including skipped blank lines. For example, an invalid record on the third physical line raises an error mentioning `line 3`.\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+              "path": "docs/summary.md"
+            },
+            "executed": false,
+            "matching_call_ids": [],
+            "succeeded": null,
+            "tool": "write_file"
+          }
+        },
+        {
+          "assist_id": 5,
+          "call_ids": [
+            "call_Aofse5zldArRn8S0ooQhq5Ur",
+            "call_xIbGFoq1GGNUWUk4TjDqtHQJ"
+          ],
+          "completed": true,
+          "continuation_id": 6,
+          "decision": "accept",
+          "executed": true,
+          "pending_exact_checks": [],
+          "succeeded": null,
+          "suggestion_execution": {
+            "arguments": {
+              "check_id": "required-1"
+            },
+            "executed": true,
+            "matching_call_ids": [
+              "call_Aofse5zldArRn8S0ooQhq5Ur"
+            ],
+            "succeeded": true,
+            "tool": "exec"
+          }
+        }
+      ],
+      "blocks": {
+        "Plan Gate": 1,
+        "Recovery Gate": 2,
+        "Evidence Gate": 1,
+        "unspecified governor": 1
+      },
+      "actions": [
+        {
+          "call_id": "call_XvNRtjPGxeC48NTQsYHVI1jI",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 1,
+          "freshness": "superseded",
+          "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 20 line(s)]\nERROR: test_blank_lines (test_summary.EventSummary.test_blank_lines)\nFile \"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py\", line 355, in raw_decode\njson.deco"
+        },
+        {
+          "call_id": "call_bYy7BfdHOkvwKJmBasLx6nZz",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 2,
+          "freshness": "superseded",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "call_H2zsG10JfjWDLvk49apCSVXW",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -1,13 +1,25 @@\n-import json\n+import json\n \n \n def summarize(lines):\n     counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n-    for line in lines:\n+    for line_number, line in enumerate(lines, 1):\n+        if not line.strip():\n+            continue\n         try:\n-            event = json.loads(line)\n-        except json.JSONDecodeError:\n-            raise\n-        level = event[\"level\"]\n-        counts[level] += 1\n+            event = json.loads(line)\n+        except (json.JSONDecodeError, TypeError) as exc:\n+            raise ValueError(f\"invalid record at line {line_number}\") from exc\n+        if not isinstance(event, dict):\n+            raise ValueError(f\"invalid record at line {line_number}\")\n+        level = event.get(\"level\")\n+        if not isinstance(level, str) or level not in counts:\n+            raise ValueError(f\"invalid level at line {line_number}\")\n+        counts[level] += 1\n     return counts\n*** Update File: docs/summary.md\n@@\n-# Event summary\n-\n-`summarize(lines)` counts levels in a JSON Lines export.\n-Each line currently needs a JSON object with a known level.\n+# Event summary\n+\n+`summarize(lines)` accepts an iterable of JSON Lines strings and returns counts\n+for the exact lowercase levels `info`, `warning`, and `error`. Extra object\n+fields are ignored, and the result always has all three integer keys. For empty\n+input, the result is exactly `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n+\n+Empty or whitespace-only lines are skipped. Every other line must be a JSON\n+object with a string `level` equal to one of those three levels. Malformed JSON,\n+non-object records, and missing, unknown, or non-string levels raise\n+`ValueError` mentioning the physical one-based line number, including blank\n+lines. For example, an invalid record after two earlier physical lines raises\n+an error mentioning `line 3`.\n+\n+Run the tests with:\n+\n+```text\n+python3 -B -S -m unittest discover -s tests -v\n+```\n*** End Patch",
+            "path": "summary.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": "failed",
+          "result_step": 3,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"import json\\\\n\\\\n\"); hunk 2: old block not found (starts: \"# Event summary\\\\n\\\\n`summarize(lines)` counts levels in a JSON Lines export.\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 4-9):\n4 | \n5 | def summarize(lines):\n6 |     counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n7 |     for line in lines:\n8 |         event = json.loads(line)\n9 |         counts[event[\"level\"]] += 1\nCurrent file tail (lines 10-10):\n10 |     return counts\nLine numbers and truncation markers are display-only; do not copy them into search text.\n\nHunk 2 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 1-6):\n1 | \"\"\"Count event levels in a JSON Lines export.\"\"\""
+        },
+        {
+          "call_id": "call_blyW7dDUY1HEwIpE3DvHrjJW",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 4,
+          "freshness": "superseded",
+          "result_excerpt": "[summary.py] (10 lines, 246 bytes) [pruned 11L]"
+        },
+        {
+          "call_id": "call_cDHDEibDKFXWLWtjFx8TPRCJ",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -1,10 +1,23 @@\n \"\"\"Count event levels in a JSON Lines export.\"\"\"\n import json\n \n \n def summarize(lines):\n     counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n-    for line in lines:\n-        event = json.loads(line)\n-        counts[event[\"level\"]] += 1\n+    for line_number, line in enumerate(lines, 1):\n+        if not line.strip():\n+            continue\n+        try:\n+            event = json.loads(line)\n+        except (json.JSONDecodeError, TypeError) as exc:\n+            raise ValueError(f\"invalid record at line {line_number}\") from exc\n+        if not isinstance(event, dict):\n+            raise ValueError(f\"invalid record at line {line_number}\")\n+        level = event.get(\"level\")\n+        if not isinstance(level, str) or level not in counts:\n+            raise ValueError(f\"invalid level at line {line_number}\")\n+        counts[level] += 1\n     return counts\n*** End Patch",
+            "path": "summary.py"
+          },
+          "executed": true,
+          "succeeded": false,
+          "edit_outcome": "failed",
+          "result_step": 5,
+          "freshness": "before_mutation",
+          "result_excerpt": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"\\\"\\\"\\\"Count event levels in a JSON Lines export.\\\"\\\"\\\"\\\\nimport json\\\\n\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 1-6):\n1 | \"\"\"Count event levels in a JSON Lines export.\"\"\"\n2 | import json\n3 | \n4 | \n5 | def summarize(lines):\n6 |     counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\nCurrent file tail (lines 7-10):\n7 |     for line in lines:\n8 |         event = json.loads(line)\n9 |         counts[event[\"level\"]] += 1\n10 |     return counts\nLine numbers and truncation markers are display-only; do not copy them into search text.\n\nTip: call read_file to inspect exact content."
+        },
+        {
+          "call_id": "call_ZEPwEedDSraQcKMPnUPU01pH",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "summary.py",
+            "replace": "    for line_number, line in enumerate(lines, 1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except (json.JSONDecodeError, TypeError) as exc:\n            raise ValueError(f\"invalid record at line {line_number}\") from exc\n        if not isinstance(event, dict):\n            raise ValueError(f\"invalid record at line {line_number}\")\n        level = event.get(\"level\")\n        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"invalid level at line {line_number}\")\n        counts[level] += 1\n",
+            "search": "    for line in lines:\n        event = json.loads(line)\n        counts[event[\"level\"]] += 1\n"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 6,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\n\ntool:\npatch_file\narguments:\n{\"path\":\"summary.py\",\"search\":\"    for line in lines:\\n        event = json.loads(line)\\n        counts[event[\\\"level\\\"]] += 1\\n\",\"replace\":\"    for line_number, line in enumerate(lines, 1):\\n        if not line.strip():\\n            continue\\n        try:\\n            event = json.loads(line)\\n        except (json.JSONDecodeError, TypeError) as exc:\\n            raise ValueError(f\\\"invalid record at line {line_number}\\\") from exc\\n        if not isinstance(event, dict):\\n            raise ValueError(f\\\"invalid record at"
+        },
+        {
+          "call_id": "call_cCQD1I6EQyUNjKgcrGAUoWvA",
+          "tool": "write_file",
+          "arguments": {
+            "content": "\"\"\"Count event levels in a JSON Lines export.\"\"\"\nimport json\n\n\ndef summarize(lines):\n    counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n    for line_number, line in enumerate(lines, 1):\n        if not line.strip():\n            continue\n        try:\n            event = json.loads(line)\n        except (json.JSONDecodeError, TypeError) as exc:\n            raise ValueError(f\"invalid record at line {line_number}\") from exc\n        if not isinstance(event, dict):\n            raise ValueError(f\"invalid record at line {line_number}\")\n        level = event.get(\"level\")\n        if not isinstance(level, str) or level not in counts:\n            raise ValueError(f\"invalid level at line {line_number}\")\n        counts[level] += 1\n    return counts\n",
+            "path": "summary.py"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 7,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nwrite_file\narguments:\n{\"path\":\"summary.py\",\"content\":\"\\\"\\\"\\\"Count event levels in a JSON Lines export.\\\"\\\"\\\"\\nimport json\\n\\n\\ndef summarize(lines):\\n    counts = {\\\"info\\\": 0, \\\"warning\\\": 0, \\\"error\\\": 0}\\n    for line_number, line in enumerate(lines, 1):\\n        if not line.strip():\\n    "
+        },
+        {
+          "call_id": "call_PUH8yeEWntzOd5A3V7D2Bqen",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 8,
+          "freshness": "before_mutation",
+          "result_excerpt": "[summary.py] (10 lines, 246 bytes) [pruned 11L]"
+        },
+        {
+          "call_id": "call_9cHxXlwMVtsq0RrubhQupEDh",
+          "tool": "apply_diff",
+          "arguments": {
+            "diff": "@@ -4,7 +4,19 @@\n def summarize(lines):\n     counts = {\"info\": 0, \"warning\": 0, \"error\": 0}\n-    for line in lines:\n-        event = json.loads(line)\n-        counts[event[\"level\"]] += 1\n+    for line_number, line in enumerate(lines, 1):\n+        if not line.strip():\n+            continue\n+        try:\n+            event = json.loads(line)\n+        except (json.JSONDecodeError, TypeError) as exc:\n+            raise ValueError(f\"invalid record at line {line_number}\") from exc\n+        if not isinstance(event, dict):\n+            raise ValueError(f\"invalid record at line {line_number}\")\n+        level = event.get(\"level\")\n+        if not isinstance(level, str) or level not in counts:\n+            raise ValueError(f\"invalid level at line {line_number}\")\n+        counts[level] += 1\n     return counts\n",
+            "path": "summary.py"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 9,
+          "freshness": "before_mutation",
+          "result_excerpt": "OK: applied 1/1 hunk(s) to 'summary.py' [pruned 11L]\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_documentation (test_summary.EventSummary.test_documentation)\nFile \"tests/test_summary.py\", line 52, in test_documentation\nAssertionError: '{\"info\": 0, \"warning\": 0, \"error\": 0}' not found in '# Event summary\\n\\n`summarize(lines)` counts levels in a JSON Lines export.\\nEach line currently needs a JSON object with a known level.\\n'"
+        },
+        {
+          "call_id": "call_sryl0f1s5mfqM97M9XtHdDB5",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "tests/test_summary.py",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 10,
+          "freshness": "before_mutation",
+          "result_excerpt": "[tests/test_summary.py] (56 lines, 2225 bytes) [pruned 57L]"
+        },
+        {
+          "call_id": "call_SGFWC04PuJtupjuajVrlqBda",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/summary.md",
+            "replace": "# Event summary\n\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the\nexact lowercase levels `info`, `warning`, and `error`. Extra fields on event\nobjects are ignored, and the returned mapping always contains all three integer\ncounts. For empty input, the exact result is `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n\nEmpty or whitespace-only lines are skipped. Every other record must be a JSON\nobject whose `level` is a string equal to one of the three accepted levels.\nMalformed JSON, non-object records, and missing, unknown, or non-string levels\nraise `ValueError`; the message includes the physical one-based line number,\nincluding skipped blank lines. For example, an invalid record on the third\nphysical line raises an error mentioning `line 3`.\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "search": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level.\n"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 11,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\n\n[Evidence Gate]\nYou are about to mutate an existing file via patch_file.\nTarget path: docs/summary.md\n\nBefore this mutation, emit exactly:\n<evidence>\ntarget_files: 1) <exact target path>\ntarget_symbols: 1) <symbol or area>\nevidence: <what previous read/search proved>\nopen_questions: <what is still uncertain or `none`>\nnext_probe: <exact next action or edit target>\n</evidence>\n\nRules:\n- `target_files` must include the actual file you are about to change.\n- Base the block on real prior read/search evidence from this session.\n- If the target is not yet supported by evidence, do NOT mutate; call one diagnostic tool instead.\n- After the <evidence> block, call exactly one tool.\n\n[Observed reads]\n- read_file(end_line=200, path=summary.py, start_line=1) -> summary.py\n- read_file("
+        },
+        {
+          "call_id": "call_H1vDFnXRvZnPejon9Kg5utde",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Event summary\n\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the\nexact lowercase levels `info`, `warning`, and `error`. Extra fields on event\nobjects are ignored, and the returned mapping always contains all three integer\ncounts. For empty input, the exact result is `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n\nEmpty or whitespace-only lines are skipped. Every other record must be a JSON\nobject whose `level` is a string equal to one of the three accepted levels.\nMalformed JSON, non-object records, and missing, unknown, or non-string levels\nraise `ValueError`; the message includes the physical one-based line number,\nincluding skipped blank lines. For example, an invalid record on the third\nphysical line raises an error mentioning `line 3`.\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "path": "docs/summary.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 12,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nwrite_file\narguments:\n{\"path\":\"docs/summary.md\",\"content\":\"# Event summary\\n\\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the\\nexact lowercase levels `info`, `warning`, and `error`. Extra fields on event\\nobjects are ignored, and the returned mapping always contain"
+        },
+        {
+          "call_id": "call_ji9gSvXDSeYyMuGm9KbxQ7iQ",
+          "tool": "write_file",
+          "arguments": {
+            "content": "# Event summary\n\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the\nexact lowercase levels `info`, `warning`, and `error`. Extra fields on event\nobjects are ignored, and the returned mapping always contains all three integer\ncounts. For empty input, the exact result is `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n\nEmpty or whitespace-only lines are skipped. Every other record must be a JSON\nobject whose `level` is a string equal to one of the three accepted levels.\nMalformed JSON, non-object records, and missing, unknown, or non-string levels\nraise `ValueError`; the message includes the physical one-based line number,\nincluding skipped blank lines. For example, an invalid record on the third\nphysical line raises an error mentioning `line 3`.\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```\n",
+            "path": "docs/summary.md"
+          },
+          "executed": false,
+          "succeeded": false,
+          "edit_outcome": null,
+          "result_step": 13,
+          "freshness": "unexecuted",
+          "result_excerpt": "GOVERNOR BLOCKED: write_file refused because 'docs/summary.md' already exists.\nAction required: obtain a complete read of current contents before write_file. For a range or truncated read, use patch_file/apply_diff to preserve unseen content."
+        },
+        {
+          "call_id": "call_PThuO31FhmeyjVAfcUO8o28r",
+          "tool": "read_file",
+          "arguments": {
+            "end_line": 200,
+            "path": "docs/summary.md",
+            "start_line": 1
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 14,
+          "freshness": "before_mutation",
+          "result_excerpt": "[docs/summary.md] (4 lines, 134 bytes)\n# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level.\n"
+        },
+        {
+          "call_id": "call_U1kQZFUPhmAmFqtGtiKMin5e",
+          "tool": "patch_file",
+          "arguments": {
+            "path": "docs/summary.md",
+            "replace": "# Event summary\n\n`summarize(lines)` accepts an iterable of JSON Lines strings and counts the\nexact lowercase levels `info`, `warning`, and `error`. Extra fields on event\nobjects are ignored, and the returned mapping always contains all three integer\ncounts. For empty input, the exact result is `{\"info\": 0, \"warning\": 0, \"error\": 0}`.\n\nEmpty or whitespace-only lines are skipped. Every other record must be a JSON\nobject whose `level` is a string equal to one of the three accepted levels.\nMalformed JSON, non-object records, and missing, unknown, or non-string levels\nraise `ValueError`; the message includes the physical one-based line number,\nincluding skipped blank lines. For example, an invalid record on the third\nphysical line raises an error mentioning `line 3`.\n\nRun the tests with:\n\n```text\npython3 -B -S -m unittest discover -s tests -v\n```",
+            "search": "# Event summary\n\n`summarize(lines)` counts levels in a JSON Lines export.\nEach line currently needs a JSON object with a known level."
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": "changed",
+          "result_step": 15,
+          "freshness": "current",
+          "result_excerpt": "OK: patched 'docs/summary.md' (+15 lines, 19 total)\n[history digest — kept 10/46 lines, 2139 chars]\n[auto-test] ✓ PASSED (exit 0)\n[hash] before=405a18cf331bf201 after=f4ef718864719299\n✓ auto-verify: patch confirmed in file\n[diff @line 2]\n[docs/summary.md] (4 lines, 134 bytes)\n- # Event summary\n-\n- `summarize(lines)` counts levels in a JSON Lines export.\n- Each line currently needs a JSON object with a known level."
+        },
+        {
+          "call_id": "call_Aofse5zldArRn8S0ooQhq5Ur",
+          "tool": "exec",
+          "arguments": {
+            "check_id": "required-1",
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "cwd": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace"
+          },
+          "executed": true,
+          "succeeded": true,
+          "edit_outcome": null,
+          "result_step": 16,
+          "freshness": "current",
+          "result_excerpt": "OK (exit_code: 0)\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace"
+        },
+        {
+          "call_id": "call_xIbGFoq1GGNUWUk4TjDqtHQJ",
+          "tool": "done",
+          "arguments": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -B -S -m unittest discover -s tests -v",
+                "criterion": "acceptance 3"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3"
+            ],
+            "next_steps": "No remaining work.",
+            "remaining_acceptance": [],
+            "summary": "Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/summary.py to skip blank lines, count only exact accepted levels, preserve iterable input handling, and raise line-numbered ValueError for invalid records. Updated /Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna/episodes/luna-luna/event-summary/workspace/docs/summary.md with the contract, blank-line behavior, line 3 example, exact empty result, and test command. Native required check passed after edits; tests and .spiral-coder.md were preserved. No dependencies were installed and no commits or pushes were made.\n\nBefore: FAILED — `python3 -B -S -m unittest discover -s tests -v`\nAfter: PASSED — `python3 -B -S -m unittest discover -s tests -v`"
+          },
+          "executed": true,
+          "succeeded": null,
+          "edit_outcome": null,
+          "result_step": 17,
+          "freshness": "current",
+          "result_excerpt": "OK: done"
+        }
+      ],
+      "oracle": {
+        "passed": true,
+        "checks": {
+          "supplied_files_preserved": true,
+          "candidate_artifacts_present": true,
+          "independent_check_0": true,
+          "original_test_count": true
+        },
+        "logs": [
+          {
+            "command": "python3 -B -S -m unittest discover -s tests -v",
+            "exit_code": 0,
+            "timed_out": false,
+            "output": "test_all_levels (test_summary.EventSummary.test_all_levels) ... ok\ntest_blank_lines (test_summary.EventSummary.test_blank_lines) ... ok\ntest_counts_and_extra_fields (test_summary.EventSummary.test_counts_and_extra_fields) ... ok\ntest_documentation (test_summary.EventSummary.test_documentation) ... ok\ntest_empty (test_summary.EventSummary.test_empty) ... ok\ntest_input_unchanged (test_summary.EventSummary.test_input_unchanged) ... ok\ntest_invalid_json_has_physical_line (test_summary.EventSummary.test_invalid_json_has_physical_line) ... ok\ntest_iterator (test_summary.EventSummary.test_iterator) ... ok\ntest_missing_or_invalid_level (test_summary.EventSummary.test_missing_or_invalid_level) ... ok\ntest_non_objects (test_summary.EventSummary.test_non_objects) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.000s\n\nOK\n"
+          }
+        ],
+        "documentation_proxy_revision": "selection-paraphrases-v4",
+        "source_matches_reference": false
+      }
+    }
+  ],
+  "counts": {
+    "declared": 2,
+    "finished": 2,
+    "runtime_completed": 2,
+    "independent_artifacts_passed": 2,
+    "behavior_and_handoff_qualified": 2,
+    "strict_all_files_qualified": 2,
+    "wire_requests": 38,
+    "episodes_with_unknown_request_count": 0
+  }
+}

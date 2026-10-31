@@ -47,14 +47,18 @@ python3 -B -S /tmp/spiral-examples-r1/driver/run_coupled_bench.py summarize \
 ```
 
 The quick-start matrix uses `mistral-large-4` for both Coder and Observer, in
-separate role contexts. For cross-family comparison, prepare a separate output
+separate role contexts. To use GPT in both roles, prepare a fresh output directory
+with `--matrix benchmarks/examples-v1/matrix-openai.json`, set `OPENAI_API_KEY`
+in the environment and run the frozen driver with `--profile luna-luna`. Both
+roles use `gpt-5.6-luna` with `reasoning_effort=none`.
+For cross-family comparison, prepare a separate output
 with `matrix.json`, which pairs `gpt-5.6-luna` Coder with `mistral-large-4` Observer
 (`luna-large`), then reverses them (`large-luna`). That matrix needs both
 `OPENAI_API_KEY` and `MISTRAL_API_KEY`. Both roles form one research unit. Each episode allows
 24 task requests (6 reserved for Observer), at most 4 transport repairs, an
 8-request Coder slice ceiling, 90 seconds per request and 600 seconds per episode.
-The Mistral pair has a two-episode maximum of **56 wire requests**; the four-episode
-cross-family maximum is **112**. Coder output cap is 32,768,
+Each same-model pair has a two-episode maximum of **56 wire requests**. The four
+cross-family episodes allow up to **112**. Coder output cap is 32,768,
 Observer 8,192. Existing compatible-mode provider settings apply; missing usage
 remains unknown and equal request ceilings do not mean equal compute or cost.
 
@@ -95,6 +99,12 @@ sessions are useful practice but do not manufacture the headless runner's native
 completion receipt. Never mix manual edits into a declared automated episode.
 
 ## Recorded runs
+
+The [GPT-pair readout](../../docs/evals/2026-10-31-gpt-pair/README.md) records
+strict qualification on both tasks using `gpt-5.6-luna` in both roles. Settings
+used 16 requests and JSONL used 22. Both candidate patches passed the original tests
+in fresh workspaces. Each episode reached native verification and an accepted
+report. The JSONL receipt also preserves two failed diff attempts.
 
 The [Observer reconnect follow-up](../../docs/evals/2026-10-30-observer-reconnect/README.md)
 adds one bounded native stream retry. Its same-pair wave spends 40 requests:

@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "temperature": 0,
+  "max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "timeout_seconds": 90,
+  "wall_seconds": 600,
+  "same_model_both_roles": true,
+  "reasoning": "Both roles use the Luna compatible-mode payload with reasoning_effort=none. The adapter omits temperature on the wire. Native receipts record each role's configured settings.",
+  "profiles": [
+    {
+      "id": "luna-luna",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "observer": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    }
+  ]
+}

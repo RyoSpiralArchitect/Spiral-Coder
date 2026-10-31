@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "wave": "r10",
+  "question": "How far does the same GPT in separate Coder and Observer contexts take the two pre-dogfooding repairs on merged PR 45?",
+  "declared_at": "2026-10-30T20:36:04.538527+00:00",
+  "runtime_commit": "a037e14161f5e8f055856b4b0d8a58ce5e0ea1b4",
+  "binary_sha256": "1f14a8ed81b700ba8d460a45712d918b91eeb59a3a2cd51a2ea12f8a0987e9cc",
+  "suite_sha256": "dcccb9e5c58335dbd3895f63ce273cf361b712e06db5ac4a2696e2a7808dbc3b",
+  "matrix_sha256": "34cab5708a4633d520b2121b1d1b6b795e6025831587819144fd14743e3490bd",
+  "driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "44e6069a7ef37a68fb8c5453b5de2b41cc834c27e2937c8cb59c13583bd9690f",
+    "coupled_bench/evidence.py": "fe4905dca74648db08e0858b128290ba4826ab7e7770f8f4d9a2c589da18f506",
+    "coupled_bench/oracles.py": "6ad81b112cd2ddcd2b9b1cf07eb9b442b2e79aa844d7d198c5ac5144e539def9",
+    "coupled_bench/reporting.py": "52adfac1a4175457877915908a6a117c65f99d2fa1e10fd93709ab73ea038234",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_coupled_bench.py": "4ed58598ec212cf7009693dc4a6577fda959e7eba66fdb8260d010e2f80c856b"
+  },
+  "local_raw_root": "/Users/ryospiralarchitect/.cache/spiral-coder/practical-examples-20261031-r10-luna-luna",
+  "predeclaration_sha256": "5de7883fa1ec38d699fd0048b855bef85db83ae863d04e047a8708bc9953a5ad",
+  "preflight_sha256": "3a5a12ee93d58b57d8419e3db89d04fcf82c287fc44a0e113a101d0641caffdb",
+  "provider_calls_at_pin": 0,
+  "profile": {
+    "id": "luna-luna",
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "wire_settings": {
+    "reasoning_effort": "none",
+    "temperature_omitted": true,
+    "coder_output_limit": 32768,
+    "observer_output_limit": 8192,
+    "timeout_seconds": 90,
+    "wall_seconds": 600
+  },
+  "budget_per_episode": {
+    "task_requests": 24,
+    "reserved_for_observer": 6,
+    "transport_repair_requests": 4,
+    "coder_slice_limit": 8,
+    "max_wire_requests": 28
+  },
+  "wave_maximum_wire_requests": 56,
+  "episodes": [
+    {
+      "case": "env-bool",
+      "profile": "luna-luna",
+      "prompt_sha256": "03b1172d3f88bca939d0ba14325af4da01d36b2ac759892a89f8cebaff4ce4f4"
+    },
+    {
+      "case": "event-summary",
+      "profile": "luna-luna",
+      "prompt_sha256": "c6dbb4459fb17a6983aed2af3227913251371abf21912a9a33348cdca3b80503"
+    }
+  ],
+  "comparison": {
+    "prior_wave": "r9",
+    "profile": "large-large",
+    "prior_assessment_sha256": "83f2780b2fd1990066f1b5e6615a9676b533a3437616b37d2a29b05d9f51e4bd",
+    "identical_binary_suite_cases_prompts_workspace_reference_tests_and_driver": true,
+    "frozen_case_input_files": 14
+  },
+  "procedure": "Run env-bool and event-summary once each in prepared workspaces. Preserve the first result of each. If the first run proves an account, authentication or model-access block, retain its receipt and mark the unstarted case separately. A task or harness failure proceeds to the second case.",
+  "qualification": "Apply the frozen examples-v1 assessor. Report role participation, baseline, actual source/docs changes, independent original tests, fresh native checks, authored completion and scope separately.",
+  "supplementary_review": [
+    "Locate the last verified stage for each case.",
+    "Compare any Plan Gate refusals, Observer diagnoses, report-closeout attempts and stream reconnects against their correlated native results.",
+    "Review stated before/after numbers and behavior against retained source and native receipts."
+  ],
+  "validation_before_live": {
+    "locked_binary_build": "passed",
+    "python_tests_passed": 91,
+    "python_log_sha256": "a52edeefe56cf11119001c3719090340ae7c4df56d5a13b9c3666532e5bf9a22"
+  }
+}

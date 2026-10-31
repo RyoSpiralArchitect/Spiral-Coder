@@ -66,6 +66,7 @@ class RoleContracts(unittest.TestCase):
     def test_new_and_old_matrices_validate_without_changing_old_role_defaults(self):
         common.validate(SUITE, MATRIX)
         common.validate(SUITE, common.read_json(FIXTURES / "matrix-mistral.json"))
+        common.validate(SUITE, common.read_json(FIXTURES / "matrix-openai.json"))
         old_suite = common.read_json(ROOT / "benchmarks/coding-v1/suite.json")
         old_matrix = common.read_json(ROOT / "benchmarks/coding-v1/matrix.json")
         common.validate(old_suite, old_matrix)
