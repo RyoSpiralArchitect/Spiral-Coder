@@ -1,9 +1,11 @@
-# Cross-family self-dogfood
+# Real-repository self-dogfood
 
-`scripts/run_self_dogfood.py` runs one real repository repair with a Coder and an
-Observer from different provider families. The execution unit is the pair. A
-Coder-only success cannot qualify this lane. The existing same-model
-`run_coupled_bench.py` lane and its fixtures remain separate.
+`scripts/run_self_dogfood.py` runs one frozen real-repository task with a Coder
+and an Observer. Version 1 requires different provider families. The
+[version 2 replay catalog](../benchmarks/self-dogfood-v2/replay-catalog/README.md)
+requires the same provider and model with two distinct roles. Both versions
+check native calls and independently verify the resulting candidate. Small
+fixture tasks use `run_coupled_bench.py`.
 
 The first task catalog is [self-dogfood-v1](../benchmarks/self-dogfood-v1/README.md).
 It targets a real recovery-handoff defect from a pinned baseline. New task contracts

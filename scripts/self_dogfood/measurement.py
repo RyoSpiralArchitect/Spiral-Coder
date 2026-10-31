@@ -52,6 +52,8 @@ def development_progress(spec, report, independent, baseline, gates):
         a.get("tool") == "exec" and a.get("executed") is True and a.get("succeeded") is False
         and (a.get("arguments") or {}).get("command") == command
         and (not edits or (a.get("result_step") or 0) < min(edits)) and observed_failure(a) for a in actions)
+    if "native_reproduction" in gates:
+        reproduced = gates["native_reproduction"]
     originals = {c["id"]: c for c in baseline}
     improvements = [c for c in independent if c["kind"] == "improvement"]
     behavior = None

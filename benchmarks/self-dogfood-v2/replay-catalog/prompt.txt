@@ -1,0 +1,29 @@
+Add a useful read-only subcommand to Spiral-Coder itself: spiral tui-replay-list. This is a full repository copy. Implement, verify, and report the result here.
+
+Before editing, reproduce the missing command with the protected visible check:
+python3 -S scripts/catalog_visible.py
+This checks the actual candidate CLI. The command should be absent from its help on the original tree. A build error, a timeout, or a test edited to pass is not the reproduction.
+
+Implement a separate CLI subcommand. It lists replay cases without executing them. Accept --tool-root/-C (default current directory), --spec (default .spiral-coder/tui_replay.json; resolve relative to the tool root), --filter and --max-cases. Share the existing spec loading, validation and selection semantics with tui-replay: ASCII case-insensitive id/tag substring, spec order, truncate after filtering and treat a zero cap as one. Preserve tag order. Empty selections and invalid inputs (including unselected cases with empty checks) produce a nonzero status and a diagnostic on stderr.
+
+On success stdout contains exactly one JSON object: {"version":1,"total":N,"cases":[{"id":"...","tags":["..."]}]}. Return only these fields and the number of selected rows. On success and failure, listing must work without API credentials and must not run a replay, call a provider, or create a file or directory. Keep the existing tui-replay CLI and its reporting behavior intact.
+
+Allowed paths only:
+- src/main.rs
+- src/tui_replay.rs
+- src/tui_replay/catalog.rs
+- docs/evaluation.md
+- npm/spiral-coder/lib/launcher.cjs
+- tests/tui_replay_catalog.rs
+The installed spiral entry point must forward tui-replay-list and its arguments to the native CLI. Add it to the command routing in npm/spiral-coder/lib/launcher.cjs. Keep the default TUI and existing arguments working. Wire the subcommand in src/main.rs and put its behavior in a focused replay module. A new test in the listed tests/ path is optional. All existing tests, fixtures, manifests, CI, the visible smoke check and the execution environment are protected. Edit docs/evaluation.md to show a spiral tui-replay-list example, JSON output, --filter and --max-cases semantics and how listing differs from running a replay.
+
+Work only in this candidate. Do not inspect external probes, reference repairs or other checkouts. Avoid generating artifacts in the workspace. Do not run the repository-wide scripts/check-local.sh here; the independent verifier runs it on a disposable copy.
+
+Acceptance:
+1. The new CLI returns the specified filtered JSON without running cases, writing artifacts or requiring keys.
+2. Ordinary replay retains its current selection, case validation and output behavior.
+3. The evaluation guide documents the new command and selection rules.
+4. After the last source, supplementary test and documentation edit, BOTH exact native checks must succeed:
+python3 -S scripts/catalog_visible.py
+cargo test --locked --bin spiral-coder -q
+Format Rust source before final verification. Use the native done report. Name every file actually changed, explain the behavior and list both exact commands with their observed results. Include the standalone outcome fields "Before: FAILED" and "After: PASSED" only when each is supported by the commands. Give only measured counts; distinguish your native tests from independent checks. If blocked, preserve remaining criteria and identify the next concrete action.

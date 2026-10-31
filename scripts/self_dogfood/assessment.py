@@ -14,6 +14,7 @@ from .build_cache import reset_package_cache
 from .process import run_process
 from .evidence import bound_run, native_evidence
 from .measurement import budget_accounting, development_progress
+from .paired import paired_gates, python_summary
 
 
 def checks(out, spec, label, overlays=(), candidate=None):
@@ -47,7 +48,7 @@ def checks(out, spec, label, overlays=(), candidate=None):
             argv = [arg.format_map(replacements) for arg in check["argv"]]
             remaining = deadline - time.monotonic()
             log = out / "checks" / label / (check["id"] + ".log")
-            requires_binary = check["argv"][0] == "{target_dir}/debug/spiral-coder"
+            requires_binary = "{target_dir}/debug/spiral-coder" in check["argv"]
             if remaining <= 0 or (requires_binary and built_binary is None):
                 result = {"exit_code": None, "timed_out": True, "output_limit": False, "wall_seconds": 0}
             else:
@@ -61,6 +62,8 @@ def checks(out, spec, label, overlays=(), candidate=None):
             pass_summary = ("ok", str(expected_count), "0", "0")
             fail_summary = ("FAILED", str(expected_count - expected_failures), str(expected_failures), "0") if expected_count else None
             final_summary = summaries[-1] if summaries else None
+            if spec["version"] == 2 and check["argv"][0] == "python3" and expected_count is not None:
+                final_summary = python_summary(content)
             count_matches = expected_count is None or pass_summary == final_summary
             baseline_count_matches = expected_count is None or fail_summary == final_summary
             minimum = check.get("minimum_passed_tests")
@@ -70,6 +73,7 @@ def checks(out, spec, label, overlays=(), candidate=None):
             passed = result["exit_code"] == 0 and not result["timed_out"] and not result["output_limit"] and count_matches
             if check["kind"] == "build":
                 built_binary = sha(binary) if passed and binary.is_file() else None
+                passed = passed and built_binary is not None
             result.update({"expected_test_count_matches": count_matches, "baseline_test_count_matches": baseline_count_matches, "baseline_failure_matches": failure_matches,
                            "id": check["id"], "kind": check["kind"], "argv": argv,
                            "test_summary": dict(zip(("passed", "failed", "ignored"), map(int, final_summary[1:]))) if final_summary else None,
@@ -107,7 +111,7 @@ def assess(args):
     with (out / "assessment-started.json").open("x") as handle:
         json.dump({"started_at": now(), "predeclaration_sha256": args.declaration_sha256}, handle)
     candidate = out / "episode/workspace"
-    before, after = declaration["baseline_inventory"], inventory(candidate)
+    before, after = declaration["baseline_inventory"], inventory(candidate, include_nested_git=spec["version"] == 2)
     changed = sorted(p for p in set(before) | set(after) if before.get(p) != after.get(p))
     forbidden = [p for p in changed if p not in spec["editable"]]
     report, durable, process, receipt_evidence = native_evidence(out)
@@ -134,22 +138,31 @@ def assess(args):
                           and (a.get("result_step") or 0) > last_mutation for a in actions) for command in spec["native_checks"]}
     done = [a for a in actions if a.get("tool") == "done" and a.get("executed") is True and a.get("result") == "OK: done"]
     acceptance = bool(done) and (done[-1].get("arguments") or {}).get("remaining_acceptance", []) == []
-    independent = checks(out, spec, "candidate", candidate=candidate)
+    safe_to_copy = all("sha256" in after.get(p, {"sha256": None})
+                       and not any((candidate / parent).is_symlink() for parent in Path(p).parents)
+                       for p in spec["editable"])
+    independent = checks(out, spec, "candidate", candidate=candidate) if safe_to_copy else []
     # Checks are outside candidate, and may not rewrite frozen authority either.
     load_frozen(out, args.declaration_sha256)
     bound_run(out, args.declaration_sha256, args.run_sha256)
-    candidate_unchanged = inventory(candidate) == after
+    candidate_unchanged = inventory(candidate, include_nested_git=spec["version"] == 2) == after
     gates = {"native_receipts_valid": not receipt_evidence["errors"], "required_paths_changed": set(spec.get("required_changed_paths", [])).issubset(changed), "pinned_run_receipt": bound, "native_ledger_binding": ledger_match and work_match, "native_completed": report.get("completed") is True, "accepted_done": bool(done),
              "no_remaining_acceptance": acceptance, "native_edit": bool(edits), "actual_edit": bool(changed),
              "fresh_native_checks": all(fresh.values()), "no_pending_checks": (report.get("execution") or {}).get("pending_exact_checks") == [],
              "strict_scope": not forbidden, "original_protected_files_preserved": all(before.get(p) == after.get(p) for p in declaration["protected_paths"]),
              "both_roles_called": all(roles.get(r, 0) > 0 for r in ("coder", "observer")),
-             "exact_role_configuration": role_match and report.get("same_model_both_roles") is False and report.get("coder_chunk_requests") == spec["coder_chunk_requests"],
+             "exact_role_configuration": role_match and report.get("same_model_both_roles") is (spec["version"] == 2) and report.get("coder_chunk_requests") == spec["coder_chunk_requests"],
              "role_accounting_consistent": report.get("role_requests") == roles and (report.get("work") or {}).get("request_limit") == spec["max_requests"],
              "bounded_requests": budget["valid"],
              "process_ok": process.get("exit_code") == 0 and not process.get("timed_out") and not process.get("output_limit"),
-             "independent_checks_passed": all(c["passed"] for c in independent), "candidate_unchanged_by_assessor": candidate_unchanged,
+             "independent_checks_passed": bool(independent) and all(c["passed"] for c in independent), "candidate_unchanged_by_assessor": candidate_unchanged,
              "no_secret_redactions": process.get("redacted_files") == [] and process.get("log_redactions") == 0, "patch_retained": process.get("patch_exit_code") == 0}
+    paired_evidence = {}
+    if spec["version"] == 2:
+        extra, paired_evidence = paired_gates(out, spec, report, before, after, changed)
+        gates.update(extra)
+        recorded = out / "episode/candidate-inventory.json"
+        gates["sealed_candidate_matches"] = bound and recorded.is_file() and read_json(recorded) == after
     target = out / "assessment-001.json"
     result = {"version": 1, "assessed_at": now(), "predeclaration_sha256": args.declaration_sha256, "run_receipt_sha256": args.run_sha256,
               "baseline_commit": declaration["baseline_commit"], "runtime_commit": declaration["runtime_commit"],
@@ -159,7 +172,7 @@ def assess(args):
               "requests": len(requests) if isinstance(requests, list) else None, "request_roles": roles,
               "process": process, "native_evidence_source": receipt_evidence["source"], "receipt_errors": receipt_evidence["errors"], "independent_checks": independent,
               "candidate_inventory": after, "roles": spec["roles"], "native_roles": report.get("roles"),
-              "budget_accounting": budget,
+              "budget_accounting": budget, **paired_evidence,
               "development_progress": development_progress(spec, report, independent, read_json(out / "preflight.json")["baseline"], gates)}
     write_json(target, result)
     write_json(out / "raw-manifest-001.json", manifest(out, target))
