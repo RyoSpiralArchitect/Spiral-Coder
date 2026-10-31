@@ -2,6 +2,9 @@
 //! when the last actual failure belongs to that same localized obligation.
 use super::*;
 
+#[path = "recovery_edit_diagnosis.rs"]
+mod edit_diagnosis;
+
 pub(super) fn survives(
     focus: &RecoveryFocus,
     messages: &[Value],
