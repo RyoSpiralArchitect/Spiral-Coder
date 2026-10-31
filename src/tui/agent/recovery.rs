@@ -35,7 +35,9 @@ impl RecoveryGovernor {
         check: Option<&str>,
     ) {
         self.focus = super::recovery_focus::RecoveryFocus::from_messages(messages, root, check);
-        if self.focus.is_pending()
+        if let Some(stage) = self.focus.restored_edit_stage(messages, root, check) {
+            self.stage = Some(stage);
+        } else if self.focus.is_pending()
             && (self.stage != Some(RecoveryStage::Diagnose)
                 || self.focus.progress_survives(messages, root, check))
         {
@@ -43,11 +45,11 @@ impl RecoveryGovernor {
         }
     }
 
-    /// Keep both the failed edit and completed diagnosis across a role handoff.
-    /// A later failure's active recovery stage still takes precedence.
+    /// Seed edit recovery across a role handoff. restore_focus then reconciles
+    /// diagnosis against correlated failures before advancing a generic stage.
     pub(super) fn restore_pending_edits(&mut self, edits: &EditFailureMemory) {
-        if edits.count() > 0 && (self.stage.is_none() || edits.diagnosis_survives()) {
-            self.stage = Some(if edits.diagnosis_survives() {
+        if self.stage.is_none() && edits.count() > 0 {
+            self.stage = Some(if edits.target_was_read() {
                 RecoveryStage::Fix
             } else {
                 RecoveryStage::Diagnose
@@ -326,3 +328,7 @@ mod refusal_tests {
 #[cfg(test)]
 #[path = "recovery_resume_tests.rs"]
 mod resume_tests;
+
+#[cfg(test)]
+#[path = "recovery_cli_continuity_tests.rs"]
+mod cli_continuity_tests;

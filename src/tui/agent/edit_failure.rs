@@ -59,24 +59,12 @@ pub(super) fn protected_reset_call_id(
     latest
 }
 
-/// Diagnosis provenance for the latest failed edit, reconstructed from native
-/// correlated results. Reading an old edit cannot diagnose a newer failure.
-#[derive(Debug, Default, PartialEq)]
-enum EditDiagnosis {
-    #[default]
-    None,
-    AwaitingTargetRead,
-    TargetRead,
-    Superseded,
-}
-
 #[derive(Debug, Default, PartialEq)]
 pub(super) struct EditFailureMemory {
     failures: usize,
     last_attempt: Option<(String, Value)>,
     repeated_attempts: usize,
     read_since_failure: bool,
-    diagnosis: EditDiagnosis,
 }
 
 impl EditFailureMemory {
@@ -135,35 +123,11 @@ impl EditFailureMemory {
         output: &str,
         context: &ExecVerificationContext<'_>,
     ) {
-        let header = output.trim_start().lines().next().unwrap_or("");
-        if !crate::execution_evidence::exec_may_have_run(output)
-            || header.starts_with("Awaiting approval")
-        {
-            return;
-        }
         if successful_reset(name, arguments, output, context) {
             // A failed automatic test still follows an actual edit. Verification
             // recovery is owned by RecoveryGovernor, separately from edit retry.
             *self = Self::default();
             return;
-        }
-        if self.failures > 0
-            && ((name == "exec" && !ExecProofResult::from_history(output).succeeded)
-                || header.starts_with("ERROR"))
-        {
-            // A failed edit below starts its own fresh diagnosis. Other actual
-            // failures supersede this progress without erasing edit history.
-            if name == "read_file"
-                && self.diagnosis != EditDiagnosis::Superseded
-                && self.target_path_matches(arguments)
-            {
-                // A failed reread of this same target needs a fresh successful
-                // read. It cannot revive progress superseded by another failure.
-                self.read_since_failure = false;
-                self.diagnosis = EditDiagnosis::AwaitingTargetRead;
-            } else {
-                self.diagnosis = EditDiagnosis::Superseded;
-            }
         }
         if name == "read_file"
             && self.needs_target_read(name, arguments)
@@ -172,13 +136,11 @@ impl EditFailureMemory {
             })
         {
             self.read_since_failure = true;
-            if self.diagnosis == EditDiagnosis::AwaitingTargetRead {
-                self.diagnosis = EditDiagnosis::TargetRead;
-            }
         }
         if !matches!(name, "patch_file" | "apply_diff" | "write_file") {
             return;
         }
+        let header = output.trim_start().lines().next().unwrap_or("");
         if !header.starts_with("ERROR:") && !header.starts_with("ERROR ") {
             // User refusals, governor blocks and uncorrelated/malformed output
             // are not evidence that an edit was attempted and failed.
@@ -186,7 +148,6 @@ impl EditFailureMemory {
         }
         self.failures = self.failures.saturating_add(1);
         self.read_since_failure = false;
-        self.diagnosis = EditDiagnosis::AwaitingTargetRead;
         let args = serde_json::from_str(arguments)
             .unwrap_or_else(|_| Value::String(arguments.to_string()));
         let attempt = (name.to_string(), args);
@@ -206,22 +167,12 @@ impl EditFailureMemory {
         self.read_since_failure
     }
 
-    /// A read is recoverable diagnosis only while no newer actual failure has
-    /// superseded it. This never asserts that an edit or verification passed.
-    pub(super) fn diagnosis_survives(&self) -> bool {
-        self.target_was_read() && self.diagnosis == EditDiagnosis::TargetRead
-    }
-
     /// One successful target read after each failed edit is diagnosis, including
     /// JSON/config/docs outside src/. Unrelated diagnostics do not consume it.
     pub(super) fn needs_target_read(&self, name: &str, arguments: &str) -> bool {
         if name != "read_file" || self.read_since_failure {
             return false;
         }
-        self.target_path_matches(arguments)
-    }
-
-    fn target_path_matches(&self, arguments: &str) -> bool {
         let Some((_, failed)) = self.last_attempt.as_ref() else {
             return false;
         };
