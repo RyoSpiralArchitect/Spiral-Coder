@@ -1,0 +1,7 @@
+# Declared-task routing, third episode
+
+The second episode registered three heuristic tool rewrites: two instances of `cargo test 2>&1` becoming a guide read, one of which subsequently became a read of a Rust module unrelated to the verification. The new executor derives follow-up edits for typed tasks from a current, failed, declared check with an identifiable source and writable target. Its module-discovery rule preserves recognized verification and inspection of declared artifacts. Native proof, safety and qualification gates still apply.
+
+Run one episode from the same candidate source with the exact r2 shared prompt, probes, reference, driver, pair and budgets. Change only the executor source/binary. Verify fresh baseline/reference results, commit the declaration digest before the first request, and retain the candidate regardless of outcome.
+
+Use the same [measurement procedure](../order-r2/protocol.md). Additionally, count the recorded `required_followup_edit` and `focus_fix_existing` rewrites, identify their inputs/targets, and inspect native results to distinguish rerouting from a proposal that actually executes. Zero observed rewrites alone does not prove that the pair encountered the same opportunity. Use deterministic regression/replay separately to establish dispatch behavior. Independent build, new and stock checks, scope, exact native verification and the authored report all remain mandatory. No automatic adoption.
