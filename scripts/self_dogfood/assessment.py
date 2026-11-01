@@ -49,11 +49,17 @@ def checks(out, spec, label, overlays=(), candidate=None):
             remaining = deadline - time.monotonic()
             log = out / "checks" / label / (check["id"] + ".log")
             requires_binary = "{target_dir}/debug/spiral-coder" in check["argv"]
-            if remaining <= 0 or (requires_binary and built_binary is None):
-                result = {"exit_code": None, "timed_out": True, "output_limit": False, "wall_seconds": 0}
+            skip_reason = None
+            if remaining <= 0:
+                skip_reason = "evaluation_deadline_elapsed"
+            elif requires_binary and built_binary is None:
+                skip_reason = "candidate_binary_unavailable"
+            if skip_reason:
+                result = {"exit_code": None, "timed_out": False, "output_limit": False, "wall_seconds": 0}
             else:
                 result = run_process(argv, workspace, execution_env(out, target_dir),
                                      min(remaining, check["timeout_seconds"]), log)
+            result.update(executed=skip_reason is None, skip_reason=skip_reason)
             binary = target_dir / "debug" / ("spiral-coder.exe" if __import__("os").name == "nt" else "spiral-coder")
             content = log.read_text(errors="replace") if log.exists() else ""
             expected_count = check.get("expected_test_count")
