@@ -1,0 +1,31 @@
+{
+  "type": "post-run file tool diagnosis",
+  "runtime_commit": "1f691ebaba9768ea66c23159a8d3929d6f3b63c3",
+  "pre_edit_source_sha256": "6ad245d0704919d7b17a95116666c10bea68bad34640fd80dfae252d5f2d5683",
+  "prior_edit": "OK: applied 3/5 hunk(s) to 'src/tui_replay.rs'",
+  "provider_calls": 0,
+  "results": [
+    {
+      "call_id": "call_JWcBJWIqfiXNrFPoWt1iBmlG",
+      "original_diff_sha256": "440114e22090ad5328539e628101dd689576ac0d639ff7f1c0fdb00e4548322e",
+      "original_status": 400,
+      "original_result": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"pub struct TuiReplayReport {\\\\n    pub version: u32,\\\\n    pub spec_path: PathBuf,\")).",
+      "without_trailer_status": 200,
+      "without_trailer_result": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'",
+      "file_changed": true,
+      "trimmed_result_sha256": "729eace6fea3513fd6bb5282cf2dfb9d0eddf3546c2f58f51c07849cc9e5fbe6",
+      "resolve_path_definitions_after": 2
+    },
+    {
+      "call_id": "call_N8mIZIjbwk4J14pfBVSbZ13o",
+      "original_diff_sha256": "fffaa3d176a2b0f9a1287a8f5570a7ec509be2cf7bb14da32831cc799045de08",
+      "original_status": 400,
+      "original_result": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"pub struct TuiReplayReport {\\\\n    pub version: u32,\\\\n    pub spec_path: PathBuf,\")).",
+      "without_trailer_status": 200,
+      "without_trailer_result": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'",
+      "file_changed": true,
+      "trimmed_result_sha256": "95f5bdc7bc0bdcdea631bef7ab33f9877facc844c87db477dd00846a69e212bf",
+      "resolve_path_definitions_after": 2
+    }
+  ]
+}

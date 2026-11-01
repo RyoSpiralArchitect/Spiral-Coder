@@ -35,3 +35,5 @@ After sealing the episode, an operator replayed the **reference** in four stages
 The next question is whether the pair can add the listing implementation and share selection code before exposing a CLI command that refers to it. A separately declared comparison can keep task, model pair, budget, protected inputs and qualification checks fixed, and change the order of work supplied to the pair. The current episode remains the first observation.
 
 The [second episode](order-r2/README.md) ran that comparison. Its first changed edit added the catalog module and it reported a blocked outcome with the remaining work. The independent build still failed.
+
+The [third episode and retained-session replay](order-r3-routing/README.md) use a corrected executor. Both saved verification proposals kept their requested command. The live candidate remained blocked on a missing CLI type, with a separately reproduced patch-format failure.
