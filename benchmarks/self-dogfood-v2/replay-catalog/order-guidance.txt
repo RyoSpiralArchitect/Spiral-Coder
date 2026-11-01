@@ -1,0 +1,3 @@
+After reproducing the baseline failure, work in dependency order. First implement the listing behavior in src/tui_replay/catalog.rs. Next connect that module in src/tui_replay.rs and share validation and selection with ordinary replay. When the callable implementation exists, register the subcommand and its dispatch in src/main.rs. Then forward it in npm/spiral-coder/lib/launcher.cjs and update docs/evaluation.md.
+
+At each handoff, the Observer should identify the first unfinished stage from actual edits and checks, and propose one concrete next action for that stage. If a source detail is missing, identify it and the local read that would resolve it. Once the needed detail is known, propose the edit. Follow any pending diagnosis first.

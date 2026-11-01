@@ -14,7 +14,7 @@ from coupled_bench.common import inventory, read_json
 from self_dogfood.contracts import git_snapshot
 
 
-def materialize(out):
+def materialize(out, *, order_guidance=False):
     if out.exists() or out.is_relative_to(REPO):
         raise ValueError("Use a fresh input directory outside the repository")
     spec_path = HERE / "luna-luna.json"
@@ -32,6 +32,13 @@ def materialize(out):
         out.mkdir(parents=True)
         for name in [spec_path.name, spec["prompt"], *(r["source"] for k in ("visible_fixtures", "probes") for r in spec[k])]:
             shutil.copy2(HERE / name, out / name)
+        if order_guidance:
+            prompt = out / spec["prompt"]
+            intro, separator, rest = prompt.read_bytes().partition(b"\n\n")
+            if not separator:
+                raise ValueError("Expected the original task introduction as the first paragraph")
+            guidance = (HERE / "order-guidance.txt").read_bytes().rstrip(b"\n")
+            prompt.write_bytes(intro + separator + guidance + separator + rest)
         for item in spec["reference"]:
             dst = out / item["source"]
             dst.parent.mkdir(parents=True, exist_ok=True)
@@ -41,4 +48,7 @@ def materialize(out):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("out", type=Path)
-    materialize(parser.parse_args().out.resolve())
+    parser.add_argument("--order-guidance", action="store_true",
+                        help="Include the second episode's shared edit order in the task prompt")
+    args = parser.parse_args()
+    materialize(args.out.resolve(), order_guidance=args.order_guidance)

@@ -12,3 +12,5 @@ The stock CLI must lack the command and fail one visible and eleven held-out cat
 Version 2 additionally requires a native failure of the visible command before the first changed edit, a truthful authored before/after report naming changed files and commands, regular source changes and exact patch replay onto the assembled baseline. Read-only probes inventory the caller, project and designated replay storage including empty directories. All roles, checks, scope, budgets and input bytes are frozen in one declaration. A run can qualify only for this task with this pair and budget. Human review checks the behavioral explanation, numerical claims and tool trace before adoption.
 
 The [first episode](../../../docs/evals/2026-11-01-replay-catalog/README.md) exhausted its declared budget. The retained partial patch reproduces the missing-function build failure.
+
+For the [second condition](../../../docs/evals/2026-11-01-replay-catalog/order-r2/protocol.md), pass `--order-guidance` to `materialize.py`. This inserts two paragraphs into the shared prompt. Prepare with the first episode's frozen driver and executor to keep the original scoring and execution conditions.
