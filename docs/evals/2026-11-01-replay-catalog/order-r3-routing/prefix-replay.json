@@ -1,0 +1,54 @@
+{
+  "session_sha256": "9ce1690f9b562c59d09bf1afc212155bee96dbdb2ba008903efcfc7f2c0bca29",
+  "trace_sha256": "6d84b5b38e663d9b931a9fe39643bc1b57d2420e2e0c5dc0de4cdce0ddeb9692",
+  "probe_sha256": "01550b177c2eb0fb5f0844e8f291558011a77315a13954fcb420f9ac853fd0b4",
+  "calls": [
+    "call_I0oWeIVBJ2RZ83I9dwyrJdKC",
+    "call_5JH7luaplYfFGs9NYEiTdrzE"
+  ],
+  "provider_calls": 0,
+  "revisions": [
+    {
+      "revision": "55351155d73675605e478e0518cc09279ae02b80",
+      "label": "original",
+      "routes": [
+        {
+          "after_focus": "read_file(path=docs/evaluation.md)",
+          "after_followup": "read_file(path=docs/evaluation.md)",
+          "call_id": "call_I0oWeIVBJ2RZ83I9dwyrJdKC",
+          "prefix_messages": 20,
+          "proposed": "cargo test 2>&1"
+        },
+        {
+          "after_focus": "read_file(path=docs/evaluation.md)",
+          "after_followup": "read_file(path=docs/evaluation.md)",
+          "call_id": "call_5JH7luaplYfFGs9NYEiTdrzE",
+          "prefix_messages": 22,
+          "proposed": "cargo test 2>&1"
+        }
+      ],
+      "log_sha256": "139c2f7d2aef15dbdb01c927c2b4fc53fe37ea5e0e8e17d6fded01998dd34152"
+    },
+    {
+      "revision": "1f691ebaba9768ea66c23159a8d3929d6f3b63c3",
+      "label": "fixed",
+      "routes": [
+        {
+          "after_focus": "cargo test 2>&1",
+          "after_followup": "cargo test 2>&1",
+          "call_id": "call_I0oWeIVBJ2RZ83I9dwyrJdKC",
+          "prefix_messages": 20,
+          "proposed": "cargo test 2>&1"
+        },
+        {
+          "after_focus": "cargo test 2>&1",
+          "after_followup": "cargo test 2>&1",
+          "call_id": "call_5JH7luaplYfFGs9NYEiTdrzE",
+          "prefix_messages": 22,
+          "proposed": "cargo test 2>&1"
+        }
+      ],
+      "log_sha256": "1aa38ded3852a5db728ea9da1e78160ab479b320f8e0a11e31b40cfa2a9e7151"
+    }
+  ]
+}
