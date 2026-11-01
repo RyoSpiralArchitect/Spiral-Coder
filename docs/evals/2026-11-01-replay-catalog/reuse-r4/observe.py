@@ -1,6 +1,5 @@
 """Extract descriptive edit and Observer evidence for manual review of a sealed episode."""
 import argparse
-import difflib
 import hashlib
 import json
 from pathlib import Path
@@ -60,18 +59,16 @@ def observe(root, declaration, receipt):
                       "native_first_line": (message.splitlines() or [None])[0]})
 
     sites = []
-    for name in spec["editable"]:
-        if not name.endswith(".rs"):
-            continue
-        original = root / "baseline" / name
-        final = episode / "workspace" / name
-        if (sha(original) if original.is_file() else None) != declared["baseline_inventory"].get(name, {}).get("sha256"):
-            raise ValueError(f"Original source differs from declaration: {name}")
-        delta = difflib.unified_diff(original.read_text().splitlines() if original.is_file() else [],
-                                     final.read_text().splitlines() if final.is_file() else [], n=0)
-        for line in delta:
-            if not line.startswith(("+", "-")) or line.startswith(("+++", "---")):
-                continue
+    headers = {f"diff --git a/{p} b/{p}": p for p in spec["editable"] if p.endswith(".rs")}
+    name = None
+    in_hunk = False
+    for line in (episode / "candidate.patch").read_text().splitlines():
+        if line.startswith("diff --git "):
+            name = headers.get(line)
+            in_hunk = False
+        elif line.startswith("@@ "):
+            in_hunk = True
+        elif name and in_hunk and line.startswith(("+", "-")):
             symbols = [h for h in HELPERS if re.search(r"\b" + h + r"\b", line)]
             if symbols:
                 sites.append({"path": name, "line": line, "symbols": symbols})
