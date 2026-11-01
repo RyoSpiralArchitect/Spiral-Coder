@@ -1,0 +1,1 @@
+Before adding a helper, look for an existing definition and its callers. Prefer using it if its behavior fits. When it does not fit, adapt it, replace it, or introduce a new helper as the task needs. At handoff, the Observer can point to a definition or caller it has actually seen and explain which behavior matters for the next edit.

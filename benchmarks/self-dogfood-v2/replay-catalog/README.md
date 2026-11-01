@@ -14,3 +14,5 @@ Version 2 additionally requires a native failure of the visible command before t
 The [first episode](../../../docs/evals/2026-11-01-replay-catalog/README.md) exhausted its declared budget. The retained partial patch reproduces the missing-function build failure.
 
 For the [second condition](../../../docs/evals/2026-11-01-replay-catalog/order-r2/protocol.md), pass `--order-guidance` to `materialize.py`. This inserts two paragraphs into the shared prompt. Prepare with the first episode's frozen driver and executor to keep the original scoring and execution conditions.
+
+For the [helper reuse condition](../../../docs/evals/2026-11-01-replay-catalog/reuse-r4/protocol.md), select both `--order-guidance` and `--reuse-guidance`. The extra paragraph asks Coder and Observer to consider existing definitions and leaves implementation choices open.

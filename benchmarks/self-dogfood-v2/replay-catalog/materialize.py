@@ -14,7 +14,7 @@ from coupled_bench.common import inventory, read_json
 from self_dogfood.contracts import git_snapshot
 
 
-def materialize(out, *, order_guidance=False):
+def materialize(out, *, order_guidance=False, reuse_guidance=False):
     if out.exists() or out.is_relative_to(REPO):
         raise ValueError("Use a fresh input directory outside the repository")
     spec_path = HERE / "luna-luna.json"
@@ -32,13 +32,14 @@ def materialize(out, *, order_guidance=False):
         out.mkdir(parents=True)
         for name in [spec_path.name, spec["prompt"], *(r["source"] for k in ("visible_fixtures", "probes") for r in spec[k])]:
             shutil.copy2(HERE / name, out / name)
-        if order_guidance:
+        if order_guidance or reuse_guidance:
             prompt = out / spec["prompt"]
             intro, separator, rest = prompt.read_bytes().partition(b"\n\n")
             if not separator:
                 raise ValueError("Expected the original task introduction as the first paragraph")
-            guidance = (HERE / "order-guidance.txt").read_bytes().rstrip(b"\n")
-            prompt.write_bytes(intro + separator + guidance + separator + rest)
+            guidance = [(HERE / name).read_bytes().rstrip(b"\n") for name, enabled in
+                        (("order-guidance.txt", order_guidance), ("reuse-guidance.txt", reuse_guidance)) if enabled]
+            prompt.write_bytes(separator.join([intro, *guidance, rest]))
         for item in spec["reference"]:
             dst = out / item["source"]
             dst.parent.mkdir(parents=True, exist_ok=True)
@@ -50,5 +51,7 @@ if __name__ == "__main__":
     parser.add_argument("out", type=Path)
     parser.add_argument("--order-guidance", action="store_true",
                         help="Include the second episode's shared edit order in the task prompt")
+    parser.add_argument("--reuse-guidance", action="store_true",
+                        help="Encourage both roles to consider existing helpers when they fit")
     args = parser.parse_args()
-    materialize(args.out.resolve(), order_guidance=args.order_guidance)
+    materialize(args.out.resolve(), order_guidance=args.order_guidance, reuse_guidance=args.reuse_guidance)
