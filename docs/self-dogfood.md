@@ -15,6 +15,20 @@ The first live runs also exposed a runtime coercion conflict; the
 [follow-up edit safety contract](followup-edit-safety.md) preserves diagnostic
 reads and authored local edits while retaining completion and verification gates.
 
+## Asking the pair to consider existing code
+
+Put the preference in the task you give the Coder. The Observer's work packet
+includes the original task. For example:
+
+> Look for the existing helper and one of its callers. Use it if its behavior
+> fits. If the contract needs to change, adapt it or write a new helper.
+> When proposing the next edit, point to the behavior you actually observed.
+
+For the replay-catalog benchmark, `materialize.py --reuse-guidance` adds this
+kind of instruction for one episode. It can be combined with
+`--order-guidance`. Existing helpers, new implementations and replacements are
+all assessed by the same behavioral checks.
+
 ## Prepare, run, assess
 
 Prepare an execution binary from a known source commit first. The executor's

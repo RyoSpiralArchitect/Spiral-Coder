@@ -39,3 +39,5 @@ The [second episode](order-r2/README.md) ran that comparison. Its first changed 
 The [third episode and retained-session replay](order-r3-routing/README.md) use a corrected executor. Both saved verification proposals kept their requested command. The live candidate remained blocked on a missing CLI type, with a separately reproduced patch-format failure.
 
 The [fourth episode](reuse-r4/README.md) added an optional helper reuse paragraph to the shared task. Its new module called three existing functions, but its one-line registration failed on the old file tool. Both the proposed edit and its replay on the corrected tool are retained.
+
+The [fifth episode](format-r5/README.md) kept that task and used the corrected file tool. A real one-line module registration succeeded with a format-repair receipt. The Observer's next connection failed through four retries. The candidate ended before the module was created.

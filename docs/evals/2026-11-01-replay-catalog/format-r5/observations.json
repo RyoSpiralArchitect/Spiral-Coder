@@ -1,0 +1,33 @@
+{
+  "declaration_sha256": "a1ca83e4711915c72e1c91cd9bde3bede8e1d1399cb7042aa360e66efe2f3326",
+  "run_receipt_sha256": "fdb4d3c476a291b0ac531e47ab3c2b7c3ca0f7c1a0e3869088038836bd58512b",
+  "diff_calls": [
+    {
+      "call_id": "call_a7ZzdNg5MOs4qdl9NMk5diwT",
+      "path": "src/tui_replay.rs",
+      "executed": true,
+      "bare_trailer": true,
+      "edit_outcome": "changed",
+      "repair_receipt": true,
+      "native_first_line": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'"
+    }
+  ],
+  "definitions_in_proposed_replacement_text": [],
+  "changed_lines_mentioning_r3_helpers": [],
+  "observer_replies": [
+    {
+      "raw_sha256": "141f3434fb1d2a1ffaf07e0f2fc1d09d65477b7130e643bafcbe830e3ea6eaa2",
+      "summary": "The first unfinished stage is diagnosis of the required visible-check failure; no source edit is yet supported by observed implementation details.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Required recovery diagnostic: observe the exact failing assertion and invocation before editing or rerunning."
+      }
+    },
+    {
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": null,
+      "primary": null
+    }
+  ]
+}
