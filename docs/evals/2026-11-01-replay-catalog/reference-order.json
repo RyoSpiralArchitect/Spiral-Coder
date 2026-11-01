@@ -1,0 +1,150 @@
+{
+  "type": "post-run operator reference sequencing",
+  "predeclaration_sha256": "41388f94fa8a431a8c81a65f358f40f0ef6e525481b36e8b294783a130bc8e41",
+  "provider_calls": 0,
+  "all_passed": true,
+  "records": [
+    {
+      "stage": "add-leaf",
+      "added_reference_paths": [
+        "src/tui_replay/catalog.rs"
+      ],
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 14.885,
+      "log_sha256": "b8ac4c3c7973920289aa18d5eec15750a914f8cff29ddceb11b6969e71f66c4e",
+      "binary_sha256": "03c092200164b666d2e4c42a6c4d46a853df0ac58262bb8fdad92bb3075096c1"
+    },
+    {
+      "stage": "register-module-and-share-selection",
+      "added_reference_paths": [
+        "src/tui_replay.rs"
+      ],
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 15.205,
+      "log_sha256": "856eb7e9de4a73281ce4cc7c26c180418646c5fc9895bf24a275593b7affbeb7",
+      "binary_sha256": "c757e19a2b167ddafd671e74308af49efc507a9a785a27fe189b5467f2be9341"
+    },
+    {
+      "stage": "register-module-and-share-selection",
+      "added_reference_paths": [
+        "src/tui_replay.rs"
+      ],
+      "argv": [
+        "python3",
+        "-S",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/inputs/regular_replay.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-order-r1-20261101-v2"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.402,
+      "log_sha256": "f0aa3a0b2583e2207c75d2f4080bd9ccd95df6d787ea2fe8fead3069169fac39",
+      "binary_sha256": "c757e19a2b167ddafd671e74308af49efc507a9a785a27fe189b5467f2be9341"
+    },
+    {
+      "stage": "dispatch-cli",
+      "added_reference_paths": [
+        "src/main.rs"
+      ],
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 15.075,
+      "log_sha256": "3dab97e7844d72aeee9dc12d30cfe825a4c8c221f5919ec049020327a553a83d",
+      "binary_sha256": "8de6221f8fcbe7f26749782eb52f7dd17035c2940153f684b75af768d81887a8"
+    },
+    {
+      "stage": "dispatch-cli",
+      "added_reference_paths": [
+        "src/main.rs"
+      ],
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.311,
+      "log_sha256": "603882a2a1bb736ff2cceef8c6ca910cb9c5fb936fd0713e1683071e9a4b590a",
+      "binary_sha256": "8de6221f8fcbe7f26749782eb52f7dd17035c2940153f684b75af768d81887a8"
+    },
+    {
+      "stage": "expose-spiral-and-document",
+      "added_reference_paths": [
+        "npm/spiral-coder/lib/launcher.cjs",
+        "docs/evaluation.md"
+      ],
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.131,
+      "log_sha256": "a11a1de8037a032bda7e33f88e31dc898d0129cfe94956add639cd289d2ce985",
+      "binary_sha256": "8de6221f8fcbe7f26749782eb52f7dd17035c2940153f684b75af768d81887a8"
+    },
+    {
+      "stage": "expose-spiral-and-document",
+      "added_reference_paths": [
+        "npm/spiral-coder/lib/launcher.cjs",
+        "docs/evaluation.md"
+      ],
+      "argv": [
+        "python3",
+        "-S",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/inputs/packaged_spiral.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.996,
+      "log_sha256": "22bb0419dec5ec58f60e7ac0fe5fd706ab4ac1d2626bce79ece2f63aa5d6d8d1",
+      "binary_sha256": "8de6221f8fcbe7f26749782eb52f7dd17035c2940153f684b75af768d81887a8"
+    }
+  ]
+}

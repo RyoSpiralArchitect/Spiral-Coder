@@ -140,6 +140,13 @@ The startup banner `running N tests` does not count as completion.
 many passed and zero failed tests; it permits existing ignored tests. This guards
 against silently disconnecting a preserved test module.
 
+Version 2 also accepts an exact, completed standard-library `unittest` summary
+for counted Python probes. Errors, skips and incomplete output cannot satisfy a
+counted pass or expected assertion failure. The visible check's argv must match
+the native reproducer, and the task declares its required changed paths.
+When a failed build leaves no candidate binary, dependent checks record
+`executed: false` with the reason `candidate_binary_unavailable`.
+
 Checks run as explicit argument arrays, with no evaluator shell. Allowed
 executables are `cargo`, `python3`, `node`, and
 `{target_dir}/debug/spiral-coder`. A `build` check must invoke `cargo build`.

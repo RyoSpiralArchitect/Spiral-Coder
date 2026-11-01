@@ -1,0 +1,1085 @@
+{
+  "version": 1,
+  "assessed_at": "2026-11-01T00:02:44.728455+00:00",
+  "predeclaration_sha256": "41388f94fa8a431a8c81a65f358f40f0ef6e525481b36e8b294783a130bc8e41",
+  "run_receipt_sha256": "83d761564d06b0dd43025f6645ac9189b624a02b9e1073b0f4de9345dbfb4b52",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "visible_fixture_paths": [
+    "scripts/catalog_visible.py"
+  ],
+  "qualified_candidate": false,
+  "promotion_authorized": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/main.rs"
+  ],
+  "out_of_scope_files": [],
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "requests": 32,
+  "request_roles": {
+    "coder": 23,
+    "observer": 9
+  },
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 302.419,
+    "finished_at": "2026-11-01T00:01:51.648092+00:00",
+    "redacted_files": [],
+    "patch_exit_code": 0
+  },
+  "native_evidence_source": "report",
+  "receipt_errors": [],
+  "independent_checks": [
+    {
+      "exit_code": 101,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 13.725,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "candidate-build",
+      "kind": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": "86ff76f62be97fc384bf0119bf8eac224f1e7fc8041fd37a9a567748209c1605",
+      "log": "checks/candidate/candidate-build.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 15.197,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "catalog-visible",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": "ed2c4784943bfb5288510c94eec37b6c154797788c195adc7826d36c6792ac14",
+      "log": "checks/candidate/catalog-visible.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    },
+    {
+      "exit_code": null,
+      "timed_out": true,
+      "output_limit": false,
+      "wall_seconds": 0,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "held-out-catalog",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/catalog_oracle.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": null,
+      "log": "checks/candidate/held-out-catalog.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    },
+    {
+      "exit_code": null,
+      "timed_out": true,
+      "output_limit": false,
+      "wall_seconds": 0,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "packaged-spiral",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/packaged_spiral.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": null,
+      "log": "checks/candidate/packaged-spiral.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    },
+    {
+      "exit_code": null,
+      "timed_out": true,
+      "output_limit": false,
+      "wall_seconds": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "regular-replay",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/regular_replay.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/checks/candidate/artifacts"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": null,
+      "log": "checks/candidate/regular-replay.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    },
+    {
+      "exit_code": 101,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 18.579,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "stock-regressions",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/stock_checks.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/checks/candidate/artifacts"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": "5bb5aef744c5a4d6bfd9bc9e652a5c5af689fa7d373330ca35c5e9282cf1c6ae",
+      "log": "checks/candidate/stock-regressions.log",
+      "package_cache_reset_sha256": "a4cdb495894b156f9ad5e96ff649bfa4b9fb5720054fa86e2af3b3a9bd57b19d",
+      "candidate_binary_sha256": null
+    }
+  ],
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "native_roles": {
+    "coder": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 32768,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.0,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    },
+    "observer": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 8192,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.2,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    }
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 32,
+    "task_requests": 32,
+    "transport_requests": 0,
+    "coder_task_requests": 23,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "report_fields": {
+    "changed_paths_named": false,
+    "commands_named": false,
+    "before_failed": false,
+    "after_passed": false
+  },
+  "authored_summary": "",
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "not_evaluated",
+      "visible_passed": "not_observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 1,
+    "first_unmet_stage": "behavior_changed",
+    "termination": "budget_exhausted"
+  },
+  "termination": "budget_exhausted",
+  "native_completed": false,
+  "report_closeout_attempted": false,
+  "error": null,
+  "native_action_sequence": [
+    {
+      "result_step": 1,
+      "call_id": "call_oUvTgJJDH5favJyCE9BuRfVQ",
+      "tool": "exec",
+      "executed": true,
+      "succeeded": false,
+      "edit_outcome": null,
+      "command": "python3 -S -m unittest -v scripts.catalog_visible",
+      "result_excerpt": "⚠ LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/episode/workspace\n\nFAILED (exit_code: 1)\n\n⚠ STOP — diagnosis required before your next action:\n1. Quote the exact line causing the error.\n2. Identify the root cause in one sentence.\n3. Fix the underlying cause with the smallest targeted edit or command. Keep required verification commands unchanged.\nDo NOT continue the original plan until the fix succeeds.\n\n[ERROR DIGEST — 3 line(s)]\nFAIL: test_catalog_lists_one_filtered_case (scripts.catalog_visible.CatalogVisible.test_catalog_lists_one_filtered_case)\nFile \"/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/episode/workspace/scripts/catalog_visible.py\", line 15, in test_catalog_lists_one_filtered_case\nAssertionError: None is"
+    },
+    {
+      "result_step": 2,
+      "call_id": "call_5gCaBHQXIFYmTduRoKcY47L1",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "scripts/catalog_visible.py",
+      "result_excerpt": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+    },
+    {
+      "result_step": 3,
+      "call_id": "call_u8lYrE29Xf6LmOZWaDGP6zAZ",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "ERROR reading 'src/main.rs': read at most 200 lines per call; narrow start_line/end_line"
+    },
+    {
+      "result_step": 4,
+      "call_id": "call_oMYEUVC43n3QCGp8BAPFZLdt",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3839 lines, 135572 bytes) [range: lines 1-200; partial file] [pruned 201L]"
+    },
+    {
+      "result_step": 5,
+      "call_id": "call_yq49S5njhDeFDY6ifgk60hHM",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/agent_session.rs",
+      "result_excerpt": "[src/agent_session.rs] (1336 lines, 48134 bytes) [range: lines 1-200; partial file] [pruned 201L]"
+    },
+    {
+      "result_step": 6,
+      "call_id": "call_vbwdMouBcule4mV3S72sKkYz",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3839 lines, 135572 bytes) [range: lines 180-379; partial file] [pruned 201L]"
+    },
+    {
+      "result_step": 7,
+      "call_id": "call_wYtaz9MNHFQqnAZtRLz33leB",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: patched 'src/main.rs' (+3 lines, 3842 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 101)\nerror[E0425]: cannot find type `TuiReplayListArgs` in this scope\n--> src/main.rs:96:19\nerror[E0004]: non-exhaustive patterns: `Some(Command::TuiReplayList(_))` not covered\n--> src/main.rs:615:11"
+    },
+    {
+      "result_step": 8,
+      "call_id": "call_dSnsLE8MhpLQg71sNYU0jycM",
+      "tool": "search_files",
+      "executed": false,
+      "succeeded": false,
+      "edit_outcome": null,
+      "dir": "src",
+      "pattern": "TuiReplay",
+      "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (4). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+    },
+    {
+      "result_step": 9,
+      "call_id": "call_s7fwsy3yRDlpLQhB73atV2rq",
+      "tool": "read_file",
+      "executed": false,
+      "succeeded": false,
+      "edit_outcome": null,
+      "path": "src/tui_replay.rs",
+      "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (4). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+    },
+    {
+      "result_step": 10,
+      "call_id": "call_lnVYJaJG4ULzfkpnpwexeLTl",
+      "tool": "read_file",
+      "executed": false,
+      "succeeded": false,
+      "edit_outcome": null,
+      "path": "npm/spiral-coder/lib/launcher.cjs",
+      "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (4). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+    },
+    {
+      "result_step": 11,
+      "call_id": "call_TWIQdlRe8Vw1cJG2WNCaupkH",
+      "tool": "search_files",
+      "executed": false,
+      "succeeded": false,
+      "edit_outcome": null,
+      "dir": "docs",
+      "pattern": "tui-replay",
+      "result_excerpt": "GOVERNOR BLOCKED\n\nMultiple tool calls detected (4). Only ONE tool call per turn is supported.\nFix: call exactly one tool in your next assistant message.\nNo tool in this response was executed. Submit exactly one native function call next."
+    },
+    {
+      "result_step": 12,
+      "call_id": "call_uNTCVJkv1keAh4VjHCsx1k4o",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3842 lines, 135678 bytes) [range: lines 60-130; partial file] [pruned 72L]"
+    },
+    {
+      "result_step": 13,
+      "call_id": "call_Lje4cO1ptDF06jqb7QSkdlo2",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "docs/evaluation.md",
+      "result_excerpt": "[docs/evaluation.md] (315 lines, 19994 bytes) [pruned 133L]"
+    },
+    {
+      "result_step": 14,
+      "call_id": "call_ZrudtwXEHhSJ5ZhFIjejYmzI",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: patched 'src/main.rs' (+19 lines, 3861 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 101)\nerror: cannot find attribute `command` in this scope\n--> src/main.rs:90:7\nerror: cannot find attribute `arg` in this scope\n--> src/main.rs:87:7"
+    },
+    {
+      "result_step": 15,
+      "call_id": "call_dNPqn0fFqjAIyRcBSnAJkuUa",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3861 lines, 136285 bytes) [range: lines 1-200; partial file] [pruned 201L]"
+    },
+    {
+      "result_step": 16,
+      "call_id": "call_BYhdqtrs7Oi8P2fmZ7OeTTbf",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: patched 'src/main.rs' (-1 lines, 3860 total) [pruned 11L]\n[auto-test] ✗ FAILED (exit 101)\nerror[E0428]: the name `Cli` is defined multiple times\n--> src/main.rs:78:1\nerror: cannot find attribute `command` in this scope\n--> src/main.rs:89:7"
+    },
+    {
+      "result_step": 17,
+      "call_id": "call_ZHoxqOnvH3n5qm2gpmGhI0oB",
+      "tool": "apply_diff",
+      "executed": false,
+      "succeeded": false,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "GOVERNOR BLOCKED\ncwd: /Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r1-20261101/episode/workspace\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\napply_diff\narguments:\n{\"path\":\"src/main.rs\",\"diff\":\"@@ -48,45 +48,29 @@\\n use crate::server::ServeArgs;\\n use crate::tui::TuiArgs;\\n \\n+#[derive(Args, Debug, Clone)]\\n+struct TuiReplayListArgs {\\n+    /// Project root used to resolve the replay specification.\\n+    #[arg(short = 'C', long = \\\"tool-root\\\", default_value = \\\".\\\")]\\n+    tool_root: PathBuf,\\n+\\n+    /// Replay specification path, relative to tool-root unless "
+    },
+    {
+      "result_step": 18,
+      "call_id": "call_dEgONE8ENGHuHtwV2qygH7GV",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3860 lines, 136241 bytes) [range: lines 40-130; partial file] [pruned 92L]"
+    },
+    {
+      "result_step": 19,
+      "call_id": "call_mipF3dOlGi6EiOAU7TnxlDnn",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/work_budget.rs",
+      "result_excerpt": "[src/work_budget.rs] (616 lines, 24009 bytes) [range: lines 1-200; partial file] [pruned 201L]"
+    },
+    {
+      "result_step": 20,
+      "call_id": "call_hUXdgkvPo5wsuFr7NoHLfbIT",
+      "tool": "apply_diff",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: applied 1/2 hunk(s) to 'src/main.rs' [pruned 11L]\n[auto-test] ✗ FAILED (exit 101)\nerror: cannot find attribute `command` in this scope\n--> src/main.rs:84:7\nerror: cannot find attribute `arg` in this scope\n--> src/main.rs:81:7"
+    },
+    {
+      "result_step": 21,
+      "call_id": "call_rZtnyAil92q1i0eNgQKJt06l",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3855 lines, 136128 bytes) [range: lines 1-130; partial file] [pruned 131L]"
+    },
+    {
+      "result_step": 22,
+      "call_id": "call_HvorVLo40MGOmRvNkaaE5u0I",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": false,
+      "edit_outcome": "failed",
+      "path": "src/main.rs",
+      "result_excerpt": "ERROR: search string not found in 'src/main.rs'.\nClosest anchor context (diagnostic only) (lines 62-67):\n62 |     spec: PathBuf,\n63 | \n64 |     /// ASCII case-insensitive substring matched against case ids and tags.\n65 |     #[arg(long)]\n66 |     filter: Option<String>,\n67 | \nCurrent file tail (lines 3850-3855):\n3850 |         assert_eq!(\n3851 |             partial.base_url.as_deref(),\n3852 |             Some(\"https://generativelanguage.googleapis.com/v1beta/openai\")\n3853 |         );\n3854 |     }\n3855 | }\nLine numbers and truncation markers are display-only; do not copy them into search text.\n\nTip: call read_file first to inspect exact content, then retry with the exact text."
+    },
+    {
+      "result_step": 23,
+      "call_id": "call_7bC7UmsZ9ORRxd4YTtMDmyZC",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3855 lines, 136128 bytes) [range: lines 45-100; partial file]\nuse std::path::{Path, PathBuf};\nuse std::time::SystemTime;\nuse tokio::sync::mpsc;\n\nuse crate::chatbot::ChatBot;\nuse crate::config::{PartialConfig, ProviderPreset};\nuse crate::server::ServeArgs;\nuse crate::tui::TuiArgs;\n\n#[derive(Args, Debug, Clone)]\nstruct TuiReplayListArgs {\n    /// Project root used to resolve the replay specification.\n    #[arg(short = 'C', long = \"tool-root\", default_value = \".\")]\n    tool_root: PathBuf,\n\n    /// Replay specification path, relative to tool-root unless absolute.\n    #[arg(long, default_value = \".spiral-coder/tui_replay.json\")]\n    spec: PathBuf,\n\n    /// ASCII case-insensitive substring matched against case ids and tags.\n    #[arg(long)]\n    filter: Option<String>,\n\n    /// Maximum number of selected cases; zero selects one case.\n    #[arg(long)]\n    max_cases: Option<usize>,"
+    },
+    {
+      "result_step": 24,
+      "call_id": "call_laU8OhAke0KtsnyDVnP0rR4T",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: patched 'src/main.rs' (+6 lines, 3861 total)\n[history digest — kept 10/61 lines, 2370 chars]\n[auto-test] ✗ FAILED (exit 101)\nerror[E0004]: non-exhaustive patterns: `Some(Command::TuiReplayList(_))` not covered\n--> src/main.rs:634:11\n--> /Users/ryospiralarchitect/.rustup/toolchains/stable-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/option.rs:597:1\nerror: could not compile `spiral-coder` (bin \"spiral-coder\") due to 1 previous error\n[hash] before=2749cd21798e9646 after=6fc84c48c2783290\n✓ auto-verify: patch confirmed in file\n[diff @line 71]\n/// Maximum number of selected cases; zero selects one case."
+    },
+    {
+      "result_step": 25,
+      "call_id": "call_IOETmAtblhfyOpH5py5lhHoF",
+      "tool": "read_file",
+      "executed": true,
+      "succeeded": null,
+      "edit_outcome": null,
+      "path": "src/main.rs",
+      "result_excerpt": "[src/main.rs] (3861 lines, 136285 bytes) [range: lines 610-670; partial file]\n            model: self.model.clone(),\n            chat_model: self.chat_model.clone(),\n            code_model: self.code_model.clone(),\n            api_key: self.api_key.clone(),\n            base_url: self.base_url.clone(),\n            mode: self.mode.clone(),\n            persona: self.persona.clone(),\n            temperature: Some(self.temperature),\n            max_tokens: Some(self.max_tokens),\n            timeout_seconds: Some(self.timeout_seconds),\n            hf_device: self.device.clone(),\n            hf_local_only: if self.hf_local_only { Some(true) } else { None },\n        };\n        if let Some(preset) = self.provider.clone() {\n            crate::config::apply_provider_preset(&mut partial, preset.into());\n        }\n        partial\n    }\n}\n\n#[tokio::main]\nasync fn main() -> Result<()> {\n    let cli = C"
+    },
+    {
+      "result_step": 26,
+      "call_id": "call_Sj38RQYKtCr2QlvZ18gAlhUK",
+      "tool": "patch_file",
+      "executed": true,
+      "succeeded": true,
+      "edit_outcome": "changed",
+      "path": "src/main.rs",
+      "result_excerpt": "OK: patched 'src/main.rs' (+1 lines, 3862 total)\n[history digest — kept 10/34 lines, 2004 chars]\n[auto-test] ✗ FAILED (exit 101)\nerror[E0425]: cannot find function `list` in module `tui_replay`\n--> src/main.rs:641:59\nerror: could not compile `spiral-coder` (bin \"spiral-coder\") due to 1 previous error\nerror: could not compile `spiral-coder` (bin \"spiral-coder\" test) due to 1 previous error\n[hash] before=6fc84c48c2783290 after=60d6a4320b467406\n✓ auto-verify: patch confirmed in file\n[diff @line 640]\nSome(Command::Eval(args)) => run_eval(args, cli.common).await,"
+    }
+  ],
+  "assists": [
+    {
+      "assist_id": 1,
+      "call_ids": [
+        "call_5gCaBHQXIFYmTduRoKcY47L1",
+        "call_u8lYrE29Xf6LmOZWaDGP6zAZ",
+        "call_oMYEUVC43n3QCGp8BAPFZLdt",
+        "call_yq49S5njhDeFDY6ifgk60hHM"
+      ],
+      "completed": false,
+      "continuation_id": 2,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "path": "scripts/catalog_visible.py"
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_5gCaBHQXIFYmTduRoKcY47L1"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 3,
+      "call_ids": [
+        "call_vbwdMouBcule4mV3S72sKkYz",
+        "call_wYtaz9MNHFQqnAZtRLz33leB"
+      ],
+      "completed": false,
+      "continuation_id": 3,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 379,
+          "path": "src/main.rs",
+          "start_line": 180
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_vbwdMouBcule4mV3S72sKkYz"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 4,
+      "call_ids": [
+        "call_dSnsLE8MhpLQg71sNYU0jycM",
+        "call_s7fwsy3yRDlpLQhB73atV2rq",
+        "call_lnVYJaJG4ULzfkpnpwexeLTl",
+        "call_TWIQdlRe8Vw1cJG2WNCaupkH",
+        "call_uNTCVJkv1keAh4VjHCsx1k4o",
+        "call_Lje4cO1ptDF06jqb7QSkdlo2",
+        "call_ZrudtwXEHhSJ5ZhFIjejYmzI"
+      ],
+      "completed": false,
+      "continuation_id": 4,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 130,
+          "path": "src/main.rs",
+          "start_line": 60
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_uNTCVJkv1keAh4VjHCsx1k4o"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 5,
+      "call_ids": [
+        "call_dNPqn0fFqjAIyRcBSnAJkuUa",
+        "call_BYhdqtrs7Oi8P2fmZ7OeTTbf"
+      ],
+      "completed": false,
+      "continuation_id": 5,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "src/main.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_dNPqn0fFqjAIyRcBSnAJkuUa"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 6,
+      "call_ids": [
+        "call_ZHoxqOnvH3n5qm2gpmGhI0oB",
+        "call_dEgONE8ENGHuHtwV2qygH7GV",
+        "call_mipF3dOlGi6EiOAU7TnxlDnn",
+        "call_hUXdgkvPo5wsuFr7NoHLfbIT"
+      ],
+      "completed": false,
+      "continuation_id": 6,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 130,
+          "path": "src/main.rs",
+          "start_line": 1
+        },
+        "executed": false,
+        "matching_call_ids": [],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 7,
+      "call_ids": [
+        "call_rZtnyAil92q1i0eNgQKJt06l",
+        "call_HvorVLo40MGOmRvNkaaE5u0I",
+        "call_7bC7UmsZ9ORRxd4YTtMDmyZC",
+        "call_laU8OhAke0KtsnyDVnP0rR4T"
+      ],
+      "completed": false,
+      "continuation_id": 7,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 130,
+          "path": "src/main.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_rZtnyAil92q1i0eNgQKJt06l"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "assist_id": 8,
+      "call_ids": [
+        "call_IOETmAtblhfyOpH5py5lhHoF",
+        "call_Sj38RQYKtCr2QlvZ18gAlhUK"
+      ],
+      "completed": false,
+      "continuation_id": 8,
+      "decision": "accept",
+      "executed": true,
+      "pending_exact_checks": [
+        "python3 -S -m unittest -v scripts.catalog_visible",
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "succeeded": null,
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 670,
+          "path": "src/main.rs",
+          "start_line": 610
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_IOETmAtblhfyOpH5py5lhHoF"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    }
+  ],
+  "wire_receipts": [
+    {
+      "charge": "task",
+      "duration_ms": 7322,
+      "estimated_input_tokens": 11071,
+      "id": 0,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5996,
+      "estimated_input_tokens": 10378,
+      "id": 1,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4195,
+      "estimated_input_tokens": 12072,
+      "id": 2,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 3832,
+      "estimated_input_tokens": 13799,
+      "id": 3,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 2773,
+      "estimated_input_tokens": 14473,
+      "id": 4,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 3739,
+      "estimated_input_tokens": 16057,
+      "id": 5,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 6787,
+      "estimated_input_tokens": 12777,
+      "id": 6,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5132,
+      "estimated_input_tokens": 13387,
+      "id": 7,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5520,
+      "estimated_input_tokens": 18823,
+      "id": 8,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4152,
+      "estimated_input_tokens": 20816,
+      "id": 9,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 8762,
+      "estimated_input_tokens": 10428,
+      "id": 10,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5752,
+      "estimated_input_tokens": 21243,
+      "id": 11,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 3624,
+      "estimated_input_tokens": 16268,
+      "id": 12,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4471,
+      "estimated_input_tokens": 16640,
+      "id": 13,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5414,
+      "estimated_input_tokens": 18520,
+      "id": 14,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 6452,
+      "estimated_input_tokens": 10503,
+      "id": 15,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5170,
+      "estimated_input_tokens": 18447,
+      "id": 16,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4040,
+      "estimated_input_tokens": 20645,
+      "id": 17,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 6814,
+      "estimated_input_tokens": 10367,
+      "id": 18,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 8160,
+      "estimated_input_tokens": 20991,
+      "id": 19,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 2753,
+      "estimated_input_tokens": 20187,
+      "id": 20,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5401,
+      "estimated_input_tokens": 20159,
+      "id": 21,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5225,
+      "estimated_input_tokens": 20805,
+      "id": 22,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 7245,
+      "estimated_input_tokens": 10448,
+      "id": 23,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4183,
+      "estimated_input_tokens": 20829,
+      "id": 24,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5682,
+      "estimated_input_tokens": 22084,
+      "id": 25,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 3089,
+      "estimated_input_tokens": 22372,
+      "id": 26,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4671,
+      "estimated_input_tokens": 20771,
+      "id": 27,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 6154,
+      "estimated_input_tokens": 10411,
+      "id": 28,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 4639,
+      "estimated_input_tokens": 21937,
+      "id": 29,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5245,
+      "estimated_input_tokens": 20769,
+      "id": 30,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 5600,
+      "estimated_input_tokens": 10412,
+      "id": 31,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    }
+  ],
+  "done_attempts": [],
+  "native_pending_exact_checks": [
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ]
+}
