@@ -67,13 +67,17 @@ def measure(root, declaration, receipt):
                         if isinstance(primary.get("suggested_args"), dict) else None})
     checks = [{**fields(c, "id", "passed", "exit_code", "test_summary", "log_sha256"),
                "has_process_result": c["exit_code"] is not None} for c in assessment["independent_checks"]]
+    trace = (root / "episode/run/trace.jsonl").read_text().splitlines()
+    rewrites = [row["data"] for row in map(json.loads, trace) if row["event"] == "task_harness_tool_coercion"]
     return {"predeclaration_sha256": declaration, "run_receipt_sha256": receipt,
             "assessment_sha256": sha(root / "assessment-001.json"),
             **fields(native, "completed", "termination", "role_requests", "report_closeout_attempted"),
             **fields(assessment, "qualified_candidate", "gates", "changed_files", "out_of_scope_files",
                      "authored_summary", "native_checks", "budget_accounting", "development_progress"),
             "first_changed_step_by_path": first, "changed_edits": edits, "observer_handoffs": handoffs,
-            "observer_replies": replies, "independent_checks": checks,
+            "observer_replies": replies, "independent_checks": checks, "tool_rewrites": rewrites,
+            "terminal_calls": [fields(a, "result_step", "executed", "result", "arguments")
+                               for a in actions if a["tool"] == "done"],
             "process": fields(assessment["process"], "exit_code", "timed_out", "wall_seconds")}
 
 
