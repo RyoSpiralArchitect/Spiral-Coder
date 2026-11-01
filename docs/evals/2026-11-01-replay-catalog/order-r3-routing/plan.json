@@ -1,0 +1,66 @@
+{
+  "issue": 49,
+  "condition": "r3 declared-task routing with r2 shared edit order",
+  "raw_root": "replay-catalog-native-r3-routing-20261101",
+  "provider_calls_at_pin": 0,
+  "r2_declaration_sha256": "0b5611f6a1b5597cb44c2037c50bbd956993340b4f6f7111928fed6b0fec2392",
+  "declaration_sha256": "07056c8cb6f319c4d1bf4a1523713cfe3f5b0ac088920dc2a4c6720ca0e993ed",
+  "preflight_sha256": "528884de5a688da43380f0c53266e2715d8fb1f2f76f13c426b66191792c3127",
+  "task_commit": "9a820d5f8a54ff4e336bc164098994dfd7e6c801",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "1f691ebaba9768ea66c23159a8d3929d6f3b63c3",
+  "executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "r2_executor_sha256": "ef7879a8f033f0be6d4c7177c3af01c753057cc42fdeaabcb39db684723f5d8d",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths",
+    "prompt_sha256",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized"
+  ],
+  "changed_inputs": [],
+  "prompt_sha256": "38c012535b24a147802358d4e2b2ff8d20a3634aeaca17f936597f05dba66e80",
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "protocol_sha256": "fb962d1a6810221df52b04db30f321b1cd6dda7e6efa28b05713929cf0a6bd56",
+  "preflight_verdicts_match_r2": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "maximum_wire_requests": 36,
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "runtime_validation": {
+    "three_regressions_failed_on_baseline": true,
+    "baseline_log_sha256": "8dac134338d06bae6fd39258511c0b5408915dca692d42ebc4fbdc404e547411",
+    "full_fixed_run_sha256": "ff7a985b5c43a66554aa32d51f21d3e72bf5b9952a500b88f292653c46d8c145",
+    "unit_passed": 1033,
+    "unit_ignored": 2,
+    "integration_passed": 4,
+    "stock_tui_replays": 13
+  }
+}
