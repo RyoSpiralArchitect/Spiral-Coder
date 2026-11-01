@@ -3,6 +3,19 @@
 Required documentation and replay work remain task obligations. Follow-up
 coercion must not replace the work needed to diagnose an actual failure.
 
+When the human supplies a `<task_requirements>` contract, its artifacts
+and exact checks own proof. Mentioning a Rust path, an input replay spec
+and a guide in the task does not require inserting the Rust path into
+either file. A current failed native check can identify a missing literal
+for a declared source and a single declared Markdown or replay/eval spec
+output in the requirements that own that check. A file excerpt, an
+unrelated check, or superseded failure cannot supply that instruction.
+
+The Rust module discovery heuristic preserves a read of a declared
+artifact and recognized verification commands on these tasks. Execution
+still passes through normal recovery, scope and approval checks. Only a
+fresh result for the exact declared command earns the required proof.
+
 During `Diagnose`, the original native call reaches the existing recovery gate.
 The gate still blocks premature mutations and verification, while diagnostic
 reads can run. Native range reads keep their bounds in every phase. A model's

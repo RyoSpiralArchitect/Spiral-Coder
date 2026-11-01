@@ -307,3 +307,107 @@ fn absolute_read_then_relative_cache_preserves_followup_provenance() {
     );
     assert!(!failed, "{result}");
 }
+
+fn catalog_contract() -> String {
+    let contract = json!({"version":1,"requirements":[{
+        "id":"catalog","description":"Add a command and explain how to use it",
+        "artifacts":[{"path":SOURCE,"kind":"source"},{"path":DOCS,"kind":"documentation"}],
+        "checks":[{"command":CHECK}]
+    }]});
+    format!("Add a feature to {SOURCE}. Input spec: .spiral-coder/tui_replay.json . Document usage in {DOCS}.\n<task_requirements>\n{contract}\n</task_requirements>")
+}
+
+#[test]
+fn declared_order_does_not_invent_a_source_literal_after_an_edit() {
+    let (_dir, mut messages) = setup("# Guide\n");
+    let root = catalog_contract();
+    messages[0]["content"] = json!(root);
+    for action in [
+        call(
+            "patch_file",
+            json!({"path":SOURCE,"search":"true","replace":"ready"}),
+        ),
+        call("exec", json!({"command":"cargo test 2>&1"})),
+    ] {
+        assert!(
+            coerce_existing_followup_tool_call(&messages, &action, &root, None).is_none(),
+            "replaced authored {} with a speculative follow-up",
+            action.name
+        );
+    }
+    assert!(required_existing_followup_no_tool_hint(&messages, &root).is_none());
+    let status = super::super::requirement_proof::project(&messages, Some(CHECK));
+    assert!(status.pending_artifact_paths.contains(&DOCS.into()));
+    assert!(status.pending.iter().any(|p| p.contains(CHECK)));
+}
+
+#[test]
+fn declared_order_keeps_current_checks_and_requested_document_reads() {
+    let (dir, mut messages) = setup("# Guide\n");
+    let root = catalog_contract();
+    messages[0]["content"] = json!(root);
+    std::fs::write(dir.path().join("src/main.rs"), "mod unrelated;\n").unwrap();
+    std::fs::write(dir.path().join("src/unrelated.rs"), "// unrelated\n").unwrap();
+    read(dir.path(), &mut messages, json!({"path":"src/main.rs"}));
+    let harness = TaskHarness::infer("Fix an existing Rust project", false);
+    for action in [
+        call("exec", json!({"command":"cargo test 2>&1"})),
+        call("read_file", json!({"path":DOCS})),
+    ] {
+        let redirected = super::super::coerce_fix_existing_tool_call(
+            harness,
+            &messages,
+            &action,
+            Some(CHECK),
+            dir.path().to_str(),
+        );
+        assert!(
+            redirected.is_none(),
+            "redirected {} to {:?}",
+            action.name,
+            redirected.map(|r| r.2)
+        );
+    }
+}
+
+#[test]
+fn declared_order_diagnostics_distinguish_required_outputs_from_input_specs() {
+    let (_dir, mut messages) = setup("# Guide\n");
+    let root = catalog_contract();
+    messages[0]["content"] = json!(root);
+    append(
+        &mut messages,
+        &call("read_file", json!({"path":DOCS})),
+        format!("[{DOCS}] (1 lines, 120 bytes)\nmissing docs follow-up for {SOURCE}"),
+    );
+    assert!(
+        required_existing_followup_no_tool_hint(&messages, &root).is_none(),
+        "file contents cannot supply a failed verification"
+    );
+    append(
+        &mut messages,
+        &call("exec", json!({"command":CHECK})),
+        format!("FAILED (exit_code: 1)\nmissing tui replay follow-up for {SOURCE}"),
+    );
+    assert!(
+        required_existing_followup_no_tool_hint(&messages, &root).is_none(),
+        "an input spec is not a declared output"
+    );
+    append(
+        &mut messages,
+        &call("exec", json!({"command":CHECK})),
+        format!("FAILED (exit_code: 1)\nmissing docs follow-up for {SOURCE}"),
+    );
+    let hint = required_existing_followup_no_tool_hint(&messages, &root)
+        .expect("failed check for declared docs");
+    assert!(hint.contains(DOCS) && hint.contains(SOURCE));
+    append(
+        &mut messages,
+        &call("exec", json!({"command":CHECK})),
+        "OK (exit_code: 0)".into(),
+    );
+    assert!(
+        required_existing_followup_no_tool_hint(&messages, &root).is_none(),
+        "a later successful exact command supersedes its own diagnostic"
+    );
+}
