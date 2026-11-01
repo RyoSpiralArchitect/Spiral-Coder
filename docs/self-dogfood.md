@@ -17,8 +17,8 @@ reads and authored local edits while retaining completion and verification gates
 
 ## Asking the pair to consider existing code
 
-Put the preference in the task you give the Coder. The Observer's work packet
-includes the original task. For example:
+Put the preference near the start of the task you give the Coder. The Observer
+receives the first 8,192 characters of the original task in its work packet.
 
 > Look for the existing helper and one of its callers. Use it if its behavior
 > fits. If the contract needs to change, adapt it or write a new helper.
