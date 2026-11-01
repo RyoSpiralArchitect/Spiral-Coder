@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -26,12 +27,17 @@ def measure(root, declaration, receipt):
         raise ValueError("Assessment belongs to a different run")
     actions = native["execution"]["actions"]
     by_call = {a["call_id"]: a for a in actions if a.get("call_id")}
-    editable = set(read_json(root / "inputs/spec.json")["editable"])
+    spec = root / "inputs/spec.json"
+    if sha(spec) != read_json(root / "predeclared.json")["inputs_inventory"]["spec.json"]["sha256"]:
+        raise ValueError("Editable paths differ from the sealed contract")
+    workspace = Path(native["work"]["tool_root"])
+    editable = {workspace / name for name in read_json(spec)["editable"]}
     outside = []
     edits = []
     for action in actions:
         path = (action.get("arguments") or {}).get("path")
-        if action["tool"] in ("write_file", "patch_file", "apply_diff") and path and path not in editable:
+        if (action["tool"] in ("write_file", "patch_file", "apply_diff") and path
+                and Path(os.path.normpath(workspace / path)) not in editable):
             outside.append(dict(fields(action, "result_step", "call_id", "tool", "executed", "edit_outcome"),
                                 path=path))
         if native_file_edit_changed(action):
