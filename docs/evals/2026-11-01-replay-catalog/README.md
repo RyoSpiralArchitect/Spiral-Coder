@@ -37,3 +37,5 @@ The next question is whether the pair can add the listing implementation and sha
 The [second episode](order-r2/README.md) ran that comparison. Its first changed edit added the catalog module and it reported a blocked outcome with the remaining work. The independent build still failed.
 
 The [third episode and retained-session replay](order-r3-routing/README.md) use a corrected executor. Both saved verification proposals kept their requested command. The live candidate remained blocked on a missing CLI type, with a separately reproduced patch-format failure.
+
+The [fourth episode](reuse-r4/README.md) added an optional helper reuse paragraph to the shared task. Its new module called three existing functions, but its one-line registration failed on the old file tool. Both the proposed edit and its replay on the corrected tool are retained.
