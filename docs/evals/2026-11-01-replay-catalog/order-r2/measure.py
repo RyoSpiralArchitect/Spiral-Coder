@@ -26,8 +26,14 @@ def measure(root, declaration, receipt):
         raise ValueError("Assessment belongs to a different run")
     actions = native["execution"]["actions"]
     by_call = {a["call_id"]: a for a in actions if a.get("call_id")}
+    editable = set(read_json(root / "inputs/spec.json")["editable"])
+    outside = []
     edits = []
     for action in actions:
+        path = (action.get("arguments") or {}).get("path")
+        if action["tool"] in ("write_file", "patch_file", "apply_diff") and path and path not in editable:
+            outside.append(dict(fields(action, "result_step", "call_id", "tool", "executed", "edit_outcome"),
+                                path=path))
         if native_file_edit_changed(action):
             statuses = re.findall(r"\[auto-test\]\s*[✓✗]?\s*(PASSED|FAILED)\b", action.get("result") or "")
             edits.append(dict(fields(action, "result_step", "tool", "call_id"),
@@ -74,7 +80,8 @@ def measure(root, declaration, receipt):
             **fields(native, "completed", "termination", "role_requests", "report_closeout_attempted"),
             **fields(assessment, "qualified_candidate", "gates", "changed_files", "out_of_scope_files",
                      "authored_summary", "native_checks", "budget_accounting", "development_progress"),
-            "first_changed_step_by_path": first, "changed_edits": edits, "observer_handoffs": handoffs,
+            "first_changed_step_by_path": first, "changed_edits": edits,
+            "outside_scope_edit_attempts": outside, "observer_handoffs": handoffs,
             "observer_replies": replies, "independent_checks": checks, "tool_rewrites": rewrites,
             "terminal_calls": [fields(a, "result_step", "executed", "result", "arguments")
                                for a in actions if a["tool"] == "done"],

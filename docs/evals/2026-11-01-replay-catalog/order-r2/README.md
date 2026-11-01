@@ -20,4 +20,6 @@ The first catalog write returned a passing automatic check, but the module was n
 
 The trace records two attempts to verify with `cargo test 2>&1` rewritten to a documentation read. In one case a second heuristic changed that read to `src/agent_session.rs`. In r1 the same follow-up heuristic had redirected a source repair to the documentation. These rewrites occurred inside the executor. They are distinct from the Observer's proposed actions. Another remaining issue is that a failed attempt to create a new file with `apply_diff` had to be recovered with `write_file`.
 
+After the unrelated read, the Coder also attempted a diff on `src/agent_session.rs`, outside the editable paths. The call executed, but no hunk matched and the file remained unchanged. The strict scope verdict measures the resulting inventory. It does not certify that every proposed edit was in scope.
+
 Run `measure.py EPISODE --declaration DIGEST --receipt DIGEST` to reproduce the measurements from either sealed episode. Reply counts use the raw display when present. Only a native call with matching arguments and a changed-file receipt counts as an Observer-linked edit.

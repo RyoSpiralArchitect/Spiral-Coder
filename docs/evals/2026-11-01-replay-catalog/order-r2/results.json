@@ -103,6 +103,16 @@
       "auto_test": "FAILED"
     }
   ],
+  "outside_scope_edit_attempts": [
+    {
+      "result_step": 12,
+      "call_id": "call_5e51rmITTnmyS1NxlGSyh27t",
+      "tool": "apply_diff",
+      "executed": true,
+      "edit_outcome": "failed",
+      "path": "src/agent_session.rs"
+    }
+  ],
   "observer_handoffs": [
     {
       "assist_id": 1,

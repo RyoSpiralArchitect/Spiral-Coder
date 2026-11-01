@@ -117,6 +117,7 @@
       "auto_test": "FAILED"
     }
   ],
+  "outside_scope_edit_attempts": [],
   "observer_handoffs": [
     {
       "assist_id": 1,
