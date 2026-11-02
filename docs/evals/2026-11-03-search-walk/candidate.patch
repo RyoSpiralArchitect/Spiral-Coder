@@ -1,0 +1,14 @@
+diff --git a/src/file_tools.rs b/src/file_tools.rs
+index 388d3af..ad3aed5 100644
+--- a/src/file_tools.rs
++++ b/src/file_tools.rs
+@@ -653,6 +653,9 @@ pub fn tool_search_files(
+ 
+         for entry in rd.flatten() {
+             let path = entry.path();
++            if entry.file_type().map(|kind| kind.is_symlink()).unwrap_or(true) {
++                continue;
++            }
+             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+             if name.starts_with('.') && name != ".spiral-coder.md" {
+                 continue; // skip hidden

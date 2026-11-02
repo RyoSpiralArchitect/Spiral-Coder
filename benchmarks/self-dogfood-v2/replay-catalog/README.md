@@ -22,3 +22,7 @@ The [R8 benchmark example](../../../docs/examples/replay-catalog-r8.md) rebuilds
 R9 uses the same task and request budget. Its record separates a scripted recovery of R8's launcher edit, the fresh pair's blocked run, and a native replay of the out-of-scope edit discovered in R9. [Ninth run and follow-up](../../../docs/evals/2026-11-03-deferred-edit/README.md)
 
 R10 records a scoped symbol search, serialized Coder calls and an unresolved catalog import. The record lists the remaining feature, verification and harness-change tasks for a reviewable self-authored patch. [Tenth run and remaining work](../../../docs/evals/2026-11-03-scoped-lookup/README.md)
+
+[R11 diagnostic handoffs](../../../docs/evals/2026-11-03-diagnostic-read/README.md)
+link three authored Observer responses to native reads and distinguish the
+working catalog command from the unqualified full candidate.

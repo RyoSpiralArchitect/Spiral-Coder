@@ -21,3 +21,8 @@ Use the [frozen prepare/run/assess procedure](../../../docs/self-dogfood.md#prep
 with the emitted spec. H1 uses the same Luna pair and budgets as R11. Keep its
 first run even if the task does not qualify. Review any passing patch before
 integrating it separately; a transfer pass would not finish the catalog task.
+
+[H1 results](../../../docs/evals/2026-11-03-search-walk/README.md) separate
+independent behavioral success from the failed stock formatting and report
+requirements. To materialize the H2 task with an explicit formatting check,
+add `--explicit-format` to the materialization command above.
