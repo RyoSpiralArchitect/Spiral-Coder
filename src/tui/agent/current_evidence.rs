@@ -114,12 +114,27 @@ pub(crate) fn observer_prompt_packet(packet: &Value) -> Value {
     let Some(actions) = packet["execution_evidence"]["actions"].as_array() else {
         return packet;
     };
+    let input_call = packet["execution_evidence"]["cargo_input_handoff"]["tool_call_id"].as_str();
     let current = actions
         .iter()
         .filter(|a| a["freshness"] == "current")
-        .cloned()
+        .map(|action| {
+            let mut action = action.clone();
+            if action["call_id"].as_str() != input_call {
+                if let Some(obj) = action.as_object_mut() {
+                    obj.remove("cargo_inputs");
+                }
+            }
+            action
+        })
         .collect::<Vec<_>>();
     let historical = actions.len() - current.len();
+    if input_call.is_some() {
+        // The current native action already carries this receipt.
+        if let Some(obj) = packet["execution_evidence"].as_object_mut() {
+            obj.remove("cargo_input_handoff");
+        }
+    }
     packet["execution_evidence"]["historical_action_count"] = serde_json::json!(historical);
     packet["execution_evidence"]["actions"] = serde_json::json!(current);
     packet["recent_tool_calls"] = Value::Null;

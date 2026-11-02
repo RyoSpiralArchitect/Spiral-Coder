@@ -1,0 +1,35 @@
+{
+  "type": "offline replay of r4 leaf bytes on original baseline with scripted local roles",
+  "external_provider_requests": 0,
+  "local_requests": [
+    "coder",
+    "coder",
+    "coder",
+    "coder",
+    "observer",
+    "coder",
+    "coder",
+    "coder",
+    "coder",
+    "observer"
+  ],
+  "process_exit": 0,
+  "original_run_sha256": "a47299b5a707a6a316771cb97ba212f4821dd2f8fad681927dd6acde9b646252",
+  "original_call": "call_p7O6Zy68wKdqlv77zu6ifP0Z",
+  "leaf_sha256": "1c93eb14a3a70c6320269e0f6a5c7ab4c44018fcd6dd60e968676d42e8eefb50",
+  "executor_sha256": "573adba58e1b6a15dc2d2f411eee27d44f9b18a2a0415f9fb0d84f40ef657a99",
+  "coder_wire": {
+    "target": "unit tests src/main.rs",
+    "files": {
+      "src/tui_replay/catalog.rs": "not_listed"
+    }
+  },
+  "observer_wire": {
+    "target": "unit tests src/main.rs",
+    "files": {
+      "src/tui_replay/catalog.rs": "not_listed"
+    }
+  },
+  "report_sha256": "84a2daec1e3d4140b5fd58432b2b5573978091335fb0682d97f3d6f032b21495",
+  "session_sha256": "ed7f070b81b7dce2aef7c672b716fd5db2ba3ba94b08be224e21550478cf6717"
+}

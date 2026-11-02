@@ -1,0 +1,99 @@
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..accc40e 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -9,6 +9,7 @@ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
+ pub(crate) mod diagnostics;
++pub(crate) mod catalog;
+ 
+ fn default_spec_version() -> u32 {
+     1
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..7223515
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,81 @@
++use anyhow::{Context, Result};
++use serde::Serialize;
++use std::path::{Path, PathBuf};
++
++use super::{load_spec, resolve_path, TuiReplayCase, TuiReplaySpec};
++
++#[derive(Debug, Clone, Serialize)]
++pub(crate) struct CatalogCase {
++    pub id: String,
++    pub tags: Vec<String>,
++}
++
++#[derive(Debug, Clone, Serialize)]
++pub(crate) struct Catalog {
++    pub version: u32,
++    pub total: usize,
++    pub cases: Vec<CatalogCase>,
++}
++
++pub(crate) fn select_cases<'a>(
++    spec: &'a TuiReplaySpec,
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Vec<&'a TuiReplayCase> {
++    let filter = filter.map(str::to_ascii_lowercase);
++    let mut selected: Vec<_> = spec
++        .cases
++        .iter()
++        .filter(|case| {
++            filter.as_deref().is_none_or(|needle| {
++                case.id.to_ascii_lowercase().contains(needle)
++                    || case
++                        .tags
++                        .iter()
++                        .any(|tag| tag.to_ascii_lowercase().contains(needle))
++            })
++        })
++        .collect();
++    if let Some(limit) = max_cases {
++        selected.truncate(limit.max(1));
++    }
++    selected
++}
++
++pub(crate) fn list(
++    tool_root: Option<String>,
++    spec_arg: Option<String>,
++    filter: Option<String>,
++    max_cases: Option<usize>,
++) -> Result<Catalog> {
++    let cwd = std::env::current_dir().context("failed to get current directory")?;
++    let root = PathBuf::from(tool_root.unwrap_or_else(|| cwd.to_string_lossy().into_owned()));
++    let spec_path = resolve_path(
++        &root,
++        spec_arg
++            .unwrap_or_else(|| ".spiral-coder/tui_replay.json".to_string())
++            .into(),
++    );
++    let spec = load_spec(&spec_path)?;
++    let cases = select_cases(&spec, filter.as_deref(), max_cases);
++    if cases.is_empty() {
++        anyhow::bail!("no replay cases selected from {}", spec_path.display());
++    }
++    let rows = cases
++        .into_iter()
++        .map(|case| CatalogCase {
++            id: case.id.clone(),
++            tags: case.tags.clone(),
++        })
++        .collect::<Vec<_>>();
++    Ok(Catalog {
++        version: 1,
++        total: rows.len(),
++        cases: rows,
++    })
++}
++
++#[allow(dead_code)]
++fn _root_is_absolute(root: &Path) -> bool {
++    root.is_absolute()
++}

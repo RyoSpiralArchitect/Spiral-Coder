@@ -13,7 +13,7 @@ pub fn user_message(content: impl Into<String>, origin: MessageOrigin) -> Value 
     json!({"role": "user", "content": content.into(), "origin": origin})
 }
 
-fn is_human_request(message: &Value) -> bool {
+pub(crate) fn is_human_request(message: &Value) -> bool {
     // Legacy sessions have no origin. Preserve their user messages, including
     // text that happens to look like a runtime marker. Never infer authority
     // from the prose itself or silently discard an unknown future origin.
@@ -47,6 +47,7 @@ pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
         .iter()
         .cloned()
         .map(|mut message| {
+            crate::cargo_inputs::render_for_coder(&mut message);
             if let Some(object) = message.as_object_mut() {
                 object.remove("origin");
                 object.remove("recovery_focus");

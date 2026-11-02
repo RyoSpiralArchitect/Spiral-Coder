@@ -1,6 +1,17 @@
 /// Run the project's test command after a file edit. Returns a formatted result string.
 /// Capped at 120 seconds; preserve bounded diagnostics before shortening output.
+#[cfg(test)]
 pub(super) async fn run(cmd: &str, cwd: &str) -> String {
+    observed(cmd, cwd, &[], &mut None).await
+}
+
+pub(super) async fn observed(
+    cmd: &str,
+    cwd: &str,
+    messages: &[serde_json::Value],
+    receipt: &mut Option<crate::cargo_inputs::Receipt>,
+) -> String {
+    let probe = crate::cargo_inputs::Probe::start(messages, cmd, cwd, cwd);
     let mut command = tokio::process::Command::new(if cfg!(target_os = "windows") {
         "powershell"
     } else {
@@ -23,20 +34,17 @@ pub(super) async fn run(cmd: &str, cwd: &str) -> String {
             let stdout = String::from_utf8_lossy(&out.stdout);
             let stderr = String::from_utf8_lossy(&out.stderr);
             let exit = out.status.code().unwrap_or(-1);
+            *receipt = probe.map(|p| p.finish(exit == 0, &stdout, &stderr));
             super::failure_diagnostics::automatic_test_output(&stdout, &stderr, exit, cwd)
         }
-        Ok(Err(e)) => super::failure_diagnostics::automatic_test_output(
-            "",
-            &format!("error running test: {e}"),
-            -1,
-            cwd,
-        ),
-        Err(_) => super::failure_diagnostics::automatic_test_output(
-            "",
-            "test timed out after 120s",
-            -1,
-            cwd,
-        ),
+        failure => {
+            *receipt = probe.map(|p| p.finish(false, "", ""));
+            let diagnostic = match failure {
+                Ok(Err(e)) => format!("error running test: {e}"),
+                _ => "test timed out after 120s".to_string(),
+            };
+            super::failure_diagnostics::automatic_test_output("", &diagnostic, -1, cwd)
+        }
     }
 }
 

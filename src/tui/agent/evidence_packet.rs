@@ -9,6 +9,8 @@ pub(crate) struct ActionEvidence {
     pub tool: String,
     pub arguments: serde_json::Value,
     pub result: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cargo_inputs: Option<crate::cargo_inputs::Receipt>,
     pub executed: Option<bool>,
     /// None when execution returned no recognized runtime status. Parsed from
     /// the full correlated result, independently of the bounded display text.
@@ -20,8 +22,16 @@ pub(crate) struct ActionEvidence {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct CargoInputHandoff {
+    tool_call_id: Option<String>,
+    inputs: crate::cargo_inputs::Receipt,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ExecutionPacket {
     pub actions: Vec<ActionEvidence>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cargo_input_handoff: Option<CargoInputHandoff>,
     pub mutation_step: Option<usize>,
     pub verification_step: Option<usize>,
     pub pending_exact_checks: Vec<String>,
@@ -52,8 +62,25 @@ impl ExecutionPacket {
 pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) -> ExecutionPacket {
     let messages = crate::task_origin::current_task_messages(messages);
     let mut actions = Vec::<ActionEvidence>::new();
+    let mut cargo_input_handoff = None;
     let mut result_step = 0;
     for message in messages {
+        if message["role"] == "user"
+            && message["origin"] == "runtime"
+            && message["content"].as_str().is_some_and(|text| {
+                text.starts_with("[implied_exec]\n") || text.starts_with("[implied_write_file]\n")
+            })
+        {
+            // An implied action has no native call ID. It can supersede a previous
+            // observation, but it never becomes an action or verification receipt.
+            cargo_input_handoff =
+                crate::cargo_inputs::Receipt::from_message(message).map(|inputs| {
+                    CargoInputHandoff {
+                        tool_call_id: None,
+                        inputs,
+                    }
+                });
+        }
         if let Some(calls) = message["tool_calls"].as_array() {
             for call in calls {
                 if let (Some(id), Some(name)) =
@@ -67,6 +94,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                             .and_then(|s| serde_json::from_str(s).ok())
                             .unwrap_or(serde_json::Value::Null),
                         result: None,
+                        cargo_inputs: None,
                         executed: None,
                         succeeded: None,
                         edit_outcome: None,
@@ -112,6 +140,17 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 }
             };
             action.result = Some(result.chars().take(2400).collect());
+            action.cargo_inputs = crate::cargo_inputs::Receipt::from_message(message);
+            if action.executed == Some(true)
+                && (action.tool == "exec"
+                    || action.edit_outcome
+                        == Some(crate::execution_evidence::FileEditOutcome::Changed))
+            {
+                cargo_input_handoff = action.cargo_inputs.clone().map(|inputs| CargoInputHandoff {
+                    tool_call_id: Some(action.call_id.clone()),
+                    inputs,
+                });
+            }
             action.result_step = Some(result_step);
         }
     }
@@ -120,6 +159,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
     super::current_evidence::mark(&mut actions, messages, test_cmd, mutation_step);
     ExecutionPacket {
         actions,
+        cargo_input_handoff,
         mutation_step,
         verification_step: build.max(behavioral),
         available_checks: super::check_catalog::Catalog::from_root(

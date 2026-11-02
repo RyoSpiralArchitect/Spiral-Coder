@@ -1,0 +1,311 @@
+{
+  "predeclaration_sha256": "3aad53cf75b165761e7add1ef7cb4b10b502226f6ba9ec0a900f4baa3cd2c4d4",
+  "run_receipt_sha256": "09f554c533ff52aacef350718109c3c0119c04152eccb3ce6d054a3a91b06514",
+  "assessment_sha256": "042681aa0639d92e19fbaebfb0b8b881d5c54803fc3378ce6f387726713fd058",
+  "completed": false,
+  "termination": "observer_unavailable",
+  "role_requests": {
+    "coder": 21,
+    "observer": 8
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 29,
+    "task_requests": 27,
+    "transport_requests": 2,
+    "coder_task_requests": 21,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "not_observed",
+      "visible_passed": "not_observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 1,
+    "first_unmet_stage": "behavior_changed",
+    "termination": "observer_unavailable"
+  },
+  "first_changed_step_by_path": {
+    "src/tui_replay.rs": 11,
+    "src/tui_replay/catalog.rs": 13
+  },
+  "changed_edits": [
+    {
+      "result_step": 11,
+      "tool": "apply_diff",
+      "call_id": "call_9Fe5LbLfzQgFCixNgRK6c33U",
+      "path": "src/tui_replay.rs",
+      "auto_test": "FAILED"
+    },
+    {
+      "result_step": 13,
+      "tool": "write_file",
+      "call_id": "call_LOvNEj5oik5iCDBBeEhu4ChT",
+      "path": "src/tui_replay/catalog.rs",
+      "auto_test": "FAILED"
+    },
+    {
+      "result_step": 17,
+      "tool": "patch_file",
+      "call_id": "call_SlKMHIFsZxCJCy1oPFLuBEw9",
+      "path": "src/tui_replay/catalog.rs",
+      "auto_test": "FAILED"
+    },
+    {
+      "result_step": 24,
+      "tool": "patch_file",
+      "call_id": "call_8XHCUqVVHx6lzCd8QzqhMbcQ",
+      "path": "src/tui_replay/catalog.rs",
+      "auto_test": "PASSED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_b3TKWXDmdcaMA9YsW2yfsEib"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_qDz7qSJ5dRPZpPXt0fZE2aoF"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_O26YR9z0k1lesYBciOHCGvo9"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_VBUgpqSiYGDGiuSN9xPy0Ukm"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay/catalog.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_cbM3TRuRvQuC0AQDbnX3ku9y"
+      ],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "6819e79633a1bb63a0e2ab2eb6228a330c6909d4f1b264918a4e6ba2232bf11b",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_visible.py"
+    },
+    {
+      "text_sha256": "b87f3211773a2634e7f277f0b0c5a4dbf5ad8d82ffa2fe1614f66a5a3dcda64b",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "a9b035c768569dd53105dc397af1fe8b209e9cd6bdac16caeb132113fb342cce",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "d81e3f9b72369b6ebd322aab934a549a15a55e01b53c4e5fa7057d65e12090a6",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "5fb6f404987d123c0694a42d180510b2ceb4fcec6d26ab38c4a0c5617eb32fc7",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "28bf266bf6f460340eaefdb83fca45d48f62d40a6e8c72c44e377a95676bc984",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay/catalog.rs"
+    },
+    {
+      "text_sha256": "f1666e664334f71f9d1ba34c94960c0f1ea537baadcf4c374f961826b10bb49a",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "6dc282624f18112e46717c5418699c5389361e138f88ed2d01ceb651cf894716",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "95932243e1b437dcbaebbeb9dc2b6c1409e7dc41584d2b62e7fb06f274186cfc",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "243251f73bb88b72aa033957997f4b78aa43168608747df5907536e062e68e0d",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 11,
+        "ignored": 0
+      },
+      "log_sha256": "ce4a395a9168754c7cbd03aa2a5ab1c751d8096802bd36fda6c15093d519bcfe",
+      "has_process_result": true
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "4287d579fbc57ba21fdf5ab74e495eb9e7dc91011aaa85b89c28457cf906efaf",
+      "has_process_result": true
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "79a5f5056cfea585c6a5eae3a9ab4d02441ad62ef5b95999e86da2580c8d4859",
+      "has_process_result": true
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "f1c29742e3097f5417033e655914dd17cdc5c9d5f45c069346400ef4ce2a63e2",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 335.465
+  }
+}

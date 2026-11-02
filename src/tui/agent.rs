@@ -49,6 +49,8 @@ mod assumption_gate;
 mod auto_test_recovery_tests;
 mod automatic_test;
 mod blocked_report;
+#[cfg(test)]
+mod cargo_input_runtime_tests;
 mod check_catalog;
 #[cfg(test)]
 mod check_catalog_tests;
@@ -118,6 +120,8 @@ mod report_counts;
 mod report_counts_tests;
 mod report_outcomes;
 mod report_repair;
+use crate::cargo_inputs::{Probe as CargoInputProbe, Receipt as CargoInputReceipt};
+#[cfg(test)]
 use automatic_test::run as run_test_cmd;
 mod observer_handoff;
 mod report_surface;
@@ -11150,6 +11154,12 @@ Next assistant turn: emit a <think> block and call ONE real tool."
                             break;
                         }
 
+                        let cargo_input_probe = cwd_used
+                            .as_deref()
+                            .zip(tool_root_abs.as_deref())
+                            .and_then(|(cwd, root)| {
+                                CargoInputProbe::start(&messages, &command, cwd, root)
+                            });
                         let exec_cmd = wrap_exec_with_pwd(&command);
                         let exec_result = exec::run_command(&exec_cmd, cwd_used.as_deref()).await;
                         let (stdout, stderr, exit_code) = match exec_result {
@@ -11228,14 +11238,19 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
                         let _ = tx.send(StreamToken::Delta(result_label)).await;
 
                         // NOTE: do not fabricate tool_call_id. Feed the result back as user text.
-                        messages.push(json!({
-                            "role": "user",
-                            "origin": crate::task_origin::MessageOrigin::Runtime,
-                            "content": format!(
-                                "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
-                                im.lang_hint, command, tool_output
-                            ),
-                        }));
+                        let cargo_inputs = cargo_input_probe
+                            .map(|p| p.finish(effective_exit_code == 0, &stdout, &stderr));
+                        messages.push(CargoInputReceipt::attach(
+                            cargo_inputs,
+                            json!({
+                                "role": "user",
+                                "origin": crate::task_origin::MessageOrigin::Runtime,
+                                "content": format!(
+                                    "[implied_exec]\nlang_hint: {}\ncommand:\n{}\n\n{}",
+                                    im.lang_hint, command, tool_output
+                                ),
+                            }),
+                        ));
                         autosave_best_effort(
                             &autosaver,
                             &tx,
@@ -11396,8 +11411,13 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                             }
 
                             state = AgentState::Executing;
-                            let (mut r_text, r_err) =
-                                crate::file_tools::tool_write_file(&path, &imf.content, base);
+                            let mut cargo_inputs = None;
+                            let (mut r_text, r_err) = crate::cargo_inputs::write_file(
+                                &path,
+                                &imf.content,
+                                base,
+                                &mut messages,
+                            );
                             if !r_err
                                 && crate::execution_evidence::file_edit_succeeded(
                                     "write_file",
@@ -11414,7 +11434,15 @@ Action required: call read_file(path), then use patch_file/apply_diff to modify 
                                 ));
                                 if let Some(ref cmd) = test_cmd {
                                     if let Some(ref root) = tool_root_abs {
-                                        r_text.push_str(&run_test_cmd(cmd, root).await);
+                                        r_text.push_str(
+                                            &automatic_test::observed(
+                                                cmd,
+                                                root,
+                                                &messages,
+                                                &mut cargo_inputs,
+                                            )
+                                            .await,
+                                        );
                                     }
                                 }
                             }
@@ -11454,14 +11482,17 @@ Fix the path/permissions, or switch to explicit tools (write_file/read_file/patc
                             let _ = tx
                                 .send(StreamToken::Delta(format!("[RESULT_FILE] {first_line}\n")))
                                 .await;
-                            messages.push(json!({
-                                "role": "user",
-                                "origin": crate::task_origin::MessageOrigin::Runtime,
-                                "content": format!(
-                                    "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
-                                    path, imf.lang_hint, r_text
-                                ),
-                            }));
+                            messages.push(CargoInputReceipt::attach(
+                                cargo_inputs,
+                                json!({
+                                    "role": "user",
+                                    "origin": crate::task_origin::MessageOrigin::Runtime,
+                                    "content": format!(
+                                        "[implied_write_file]\npath: {}\nlang_hint: {}\n\n{}",
+                                        path, imf.lang_hint, r_text
+                                    ),
+                                }),
+                            ));
                             autosave_best_effort(
                                 &autosaver,
                                 &tx,
@@ -12912,6 +12943,7 @@ Required now: run `{command}`.\n{verification_status}"
                     preview,
                 })
                 .await?;
+            let mut cargo_inputs = None;
             let (mut result, is_error) = if approval == ApprovalOutcome::Approved {
                 crate::file_tools::tool_apply_diff(&path, &diff, base)
             } else {
@@ -12953,7 +12985,8 @@ Required now: run `{command}`.\n{verification_status}"
                 // A — auto-run tests
                 if let Some(ref cmd) = test_cmd {
                     if let Some(ref root) = tool_root_abs {
-                        let test_out = run_test_cmd(cmd, root).await;
+                        let test_out =
+                            automatic_test::observed(cmd, root, &messages, &mut cargo_inputs).await;
                         result.push_str(&test_out);
                     }
                 }
@@ -13092,7 +13125,10 @@ Required now: run `{command}`.\n{verification_status}"
             } else {
                 compact_success_tool_result_for_history("apply_diff", &result)
             };
-            messages.push(recovery.focus.tool_message(&tc, history_result));
+            messages.push(CargoInputReceipt::attach(
+                cargo_inputs,
+                recovery.focus.tool_message(&tc, history_result),
+            ));
             if changed && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -13734,6 +13770,7 @@ Required now: run `{command}`.\n{verification_status}"
                 .unwrap_or_else(|| format!("{}|{}", path, base.unwrap_or("")));
             let mut rejected_by_user = false;
 
+            let mut cargo_inputs = None;
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
                     let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
@@ -13856,8 +13893,12 @@ Action required: obtain a complete read of current contents before write_file. F
                             true,
                         )
                         } else {
-                            let (mut r_text, r_err) =
-                                crate::file_tools::tool_write_file(&path, &content, base);
+                            let (mut r_text, r_err) = crate::cargo_inputs::write_file(
+                                &path,
+                                &content,
+                                base,
+                                &mut messages,
+                            );
                             if !r_err
                                 && crate::execution_evidence::file_edit_succeeded(
                                     "write_file",
@@ -13873,7 +13914,15 @@ Action required: obtain a complete read of current contents before write_file. F
                                 // A — auto-test after write
                                 if let Some(ref cmd) = test_cmd {
                                     if let Some(ref root) = tool_root_abs {
-                                        r_text.push_str(&run_test_cmd(cmd, root).await);
+                                        r_text.push_str(
+                                            &automatic_test::observed(
+                                                cmd,
+                                                root,
+                                                &messages,
+                                                &mut cargo_inputs,
+                                            )
+                                            .await,
+                                        );
                                     }
                                 }
                             }
@@ -13983,7 +14032,15 @@ Action required: obtain a complete read of current contents before write_file. F
                                     // A — auto-test after successful patch
                                     if let Some(ref cmd) = test_cmd {
                                         if let Some(ref root) = tool_root_abs {
-                                            patch_result.push_str(&run_test_cmd(cmd, root).await);
+                                            patch_result.push_str(
+                                                &automatic_test::observed(
+                                                    cmd,
+                                                    root,
+                                                    &messages,
+                                                    &mut cargo_inputs,
+                                                )
+                                                .await,
+                                            );
                                         }
                                     }
                                 }
@@ -14175,7 +14232,10 @@ Action required: obtain a complete read of current contents before write_file. F
             } else {
                 compact_success_tool_result_for_history(tc.name.as_str(), &result)
             };
-            messages.push(recovery.focus.tool_message(&tc, history_result));
+            messages.push(CargoInputReceipt::attach(
+                cargo_inputs,
+                recovery.focus.tool_message(&tc, history_result),
+            ));
             if !is_error && (tc.name == "read_file" || changed) && !root_read_only {
                 if let Some(hint) = build_fix_stage_progress_hint(
                     task_harness,
@@ -14548,6 +14608,10 @@ Do NOT run the exact same command again without a material change.",
             continue;
         }
 
+        let cargo_input_probe = cwd_used
+            .as_deref()
+            .zip(tool_root_abs.as_deref())
+            .and_then(|(cwd, root)| CargoInputProbe::start(&messages, &command, cwd, root));
         let exec_cmd = wrap_exec_with_pwd(&command);
         let exec_result = exec::run_command(&exec_cmd, cwd_used.as_deref()).await;
 
@@ -14651,8 +14715,13 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         } else {
             tool_output.clone()
         };
+        let cargo_inputs =
+            cargo_input_probe.map(|p| p.finish(effective_exit_code == 0, &stdout, &stderr));
         messages.push(report_counts::capture(
-            recovery.focus.tool_message(&tc, history_tool_output),
+            CargoInputReceipt::attach(
+                cargo_inputs,
+                recovery.focus.tool_message(&tc, history_tool_output),
+            ),
             &stdout,
             &stderr,
         ));
