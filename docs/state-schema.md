@@ -960,10 +960,14 @@ the fresh-failure yield detector does not skip those results. Thus a blocked
 retry preserves reflection on another continuation without repeatedly yielding
 the old failure.
 
-`tui/suggestion/framing.rs` owns the optional `opening_brace` or
-`opening_brace_and_quote` recovery classification. `observer_action::Response`
+`tui/suggestion/framing.rs` owns the optional `opening_brace`,
+`opening_brace_and_quote`, or `repeated_identical_summary` recovery classification.
+The last records exactly one redundant top-level display string; both original
+occurrences remain in the raw answer. `observer_action::Response`
 exposes it as `format_recovery` for the shared Web evaluator; TUI records a
-diagnostic and keeps the unmodified original in `Message.raw_content`. The
+diagnostic even if the action is subsequently rejected. Accepted envelopes keep
+the unmodified original in `Message.raw_content`; rejected ones retain their
+original display text. The
 classification only describes JSON framing. Existing suggestion and evidence
 validation still decide whether advice can be forwarded; no new tool authority,
 confidence or native proof is stored.

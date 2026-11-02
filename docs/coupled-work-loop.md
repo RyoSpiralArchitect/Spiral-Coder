@@ -272,11 +272,15 @@ the handoff. `observer_verification_handoff` records the failure and the outcome
 stays incomplete; it neither marks a repair nor clears a check. Standalone CLI
 and `--without-observer` executions retain their existing continuation behavior.
 
-Observer suggestion parsing can recover only a missing initial `{`, or `{"`,
+Observer suggestion parsing can recover a missing initial `{`, or `{"`,
 when the first field is an exact known envelope key and all remaining bytes form
 one complete JSON object. It never appends a closing delimiter or supplies a
-value, tool, argument or confidence. The 64 KiB bound and recursive duplicate-key
-checks still apply; ambiguous, truncated and trailing content remains invalid.
+value, tool, argument or confidence. Separately, a complete, unwrapped Observer
+object may repeat its top-level `summary` string once. Both JSON string literals
+must match byte for byte, including escapes. The fallback accepts only literal
+top-level keys and cannot combine with another framing repair. Different
+summaries, a third copy, duplicates in any other field or at any depth, and
+inputs above 64 KiB still fail. Recovery changes neither the proposal nor its priority.
 TUI retains the original response in `raw_content` and records the recovery;
 the shared Web evaluator exposes `format_recovery`. Tool schema, confidence,
 pending-diagnosis, scope and native-completion gates remain unchanged. An
@@ -440,7 +444,8 @@ field stays field content. Existing count, enum, task alignment, tool matching a
 proof validation remain authoritative. Native tool arguments are never rewritten
 by this protocol adapter.
 
-Observer uses the same bounded (64 KiB), duplicate-rejecting object extractor.
+Observer first uses the same bounded (64 KiB), duplicate-rejecting object extractor;
+only its display-summary fallback described above accepts a repeated key.
 An explicitly authored `suggested_args` JSON string can be decoded once into an
 object; its tool name, argument schema and current evidence still must validate.
 Missing actions, tool names, confidence or proof are not invented. Neither format

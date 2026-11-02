@@ -1,0 +1,42 @@
+{
+  "red": [
+    {
+      "case": "observer-r6-duplicate-conflicting-display",
+      "raw_sha256": "f1666e664334f71f9d1ba34c94960c0f1ea537baadcf4c374f961826b10bb49a",
+      "passed": true,
+      "parsed": false,
+      "hint": false,
+      "contract": false,
+      "repair_prompt": true
+    },
+    {
+      "case": "observer-r6-duplicate-identical-summary",
+      "raw_sha256": "6dc282624f18112e46717c5418699c5389361e138f88ed2d01ceb651cf894716",
+      "passed": false,
+      "parsed": false,
+      "hint": false,
+      "contract": false,
+      "repair_prompt": true
+    }
+  ],
+  "green": [
+    {
+      "case": "observer-r6-duplicate-conflicting-display",
+      "raw_sha256": "f1666e664334f71f9d1ba34c94960c0f1ea537baadcf4c374f961826b10bb49a",
+      "passed": true,
+      "parsed": false,
+      "hint": false,
+      "contract": false,
+      "repair_prompt": true
+    },
+    {
+      "case": "observer-r6-duplicate-identical-summary",
+      "raw_sha256": "6dc282624f18112e46717c5418699c5389361e138f88ed2d01ceb651cf894716",
+      "passed": true,
+      "parsed": true,
+      "hint": true,
+      "contract": true,
+      "repair_prompt": false
+    }
+  ]
+}

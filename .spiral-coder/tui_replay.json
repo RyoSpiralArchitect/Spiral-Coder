@@ -658,6 +658,69 @@
           "value": "recovery.rs"
         }
       ]
+    },
+    {
+      "id": "observer-r6-duplicate-conflicting-display",
+      "prompt": "Run the visible catalog check and the Rust unit tests after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"python3 -S -m unittest -v scripts.catalog_visible\"},{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>",
+      "tags": [
+        "tui",
+        "observer",
+        "r6-duplicate"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Run the visible catalog check and the Rust unit tests after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"python3 -S -m unittest -v scripts.catalog_visible\"},{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Post-edit checks remain pending."
+        }
+      ],
+      "observer_response": "{\"summary\":\"The implementation patch is present and the first unfinished stage is exact verification. Both mandated checks remain unverified after the repair; do not report completion yet.\",\"primary_blocker\":\"Current proof is incomplete: python3 -S -m unittest -v scripts.catalog_visible and cargo test --locked --bin spiral-coder -q have not been run successfully after the latest edit. The native artifact requirements for src/main.rs, docs/evaluation.md, and npm/spiral-coder/lib/launcher.cjs are also still recorded as pending.\",\"quickest_check\":\"Run the mandated visible check first, then the exact cargo check from the workspace root.\",\"why_this_first\":\"The latest edit addressed the recorded Rust type mismatch, and the pending recovery explicitly requires rerunning the failed cargo check while the visible check remains unresolved.\",\"suggestions\":[{\"kind\":\"verify\",\"reason\":\"Run the first pending exact check against the current candidate and capture its native result before proceeding.\",\"confidence\":0.99,\"suggested_tool\":\"exec\",\"suggested_args\":{\"check_id\":\"required-1\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"recovery_stage\"]},{\"kind\":\"verify\",\"reason\":\"After the visible check, run the mandated cargo test to verify the repaired catalog path and record exact counts.\",\"confidence\":0.98,\"suggested_tool\":\"exec\",\"suggested_args\":{\"check_id\":\"required-2\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"pending_recovery\"]}],\"response_contract\":{\"required\":true,\"focus_axes\":[\"correctness\"],\"note\":\"Accept this verification sequence; override only if the coder has newer native evidence for either exact command.\"},\"scores\":{\"correctness\":0.84,\"security\":0.9,\"efficiency\":0.95,\"readability\":0.8},\"fallback\":\"If either exact check fails, preserve the failure output and repair only the directly implicated current source region; do not report done.\",\"primary_blocker\":\"Exact post-repair verification is still pending.\",\"quickest_check\":\"python3 -S -m unittest -v scripts.catalog_visible\"}\n",
+      "checks": [
+        {
+          "kind": "suggestion_not_parsed"
+        },
+        {
+          "kind": "hint_not_queued"
+        }
+      ]
+    },
+    {
+      "id": "observer-r6-duplicate-identical-summary",
+      "prompt": "Run the visible catalog check and the Rust unit tests after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"python3 -S -m unittest -v scripts.catalog_visible\"},{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>",
+      "tags": [
+        "tui",
+        "observer",
+        "r6-duplicate"
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Run the visible catalog check and the Rust unit tests after the repair.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"verify\",\"description\":\"Verify the repair\",\"checks\":[{\"command\":\"python3 -S -m unittest -v scripts.catalog_visible\"},{\"command\":\"cargo test --locked --bin spiral-coder -q\"}]}]}\n</task_requirements>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] Post-edit checks remain pending."
+        }
+      ],
+      "observer_response": "{\"summary\":\"The implementation patch is present, but the first unfinished stage is post-repair verification. Both mandated exact checks remain pending, and required artifact edits are still recorded as incomplete.\",\"primary_blocker\":\"Exact post-repair verification has not succeeded, while src/main.rs, docs/evaluation.md, and npm/spiral-coder/lib/launcher.cjs remain recorded as pending artifact obligations.\",\"quickest_check\":\"Run python3 -S -m unittest -v scripts.catalog_visible from the workspace root.\",\"why_this_first\":\"The pending recovery explicitly requires rerunning the failed cargo check after the repair, but the visible check is also unresolved; run the first declared exact check now and capture its result before any report.\",\"suggestions\":[{\"kind\":\"verify\",\"reason\":\"Run the first pending exact check against the current candidate and capture its native result.\",\"confidence\":0.99,\"suggested_tool\":\"exec\",\"suggested_args\":{\"check_id\":\"required-1\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"recovery_stage\"]},{\"kind\":\"verify\",\"reason\":\"After the visible check, run the mandated cargo test to verify the repaired catalog path and record exact counts.\",\"confidence\":0.98,\"suggested_tool\":\"exec\",\"suggested_args\":{\"check_id\":\"required-2\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"pending_recovery\"]}],\"response_contract\":{\"required\":true,\"focus_axes\":[\"correctness\"],\"note\":\"Accept this verification sequence; override only if newer native evidence already records either exact command after the latest edit.\"},\"scores\":{\"correctness\":0.84,\"security\":0.9,\"efficiency\":0.95,\"readability\":0.8},\"fallback\":\"If either exact check fails, preserve its diagnostic and repair only the directly implicated current source region; do not report completion.\",\"summary\":\"The implementation patch is present, but the first unfinished stage is post-repair verification. Both mandated exact checks remain pending, and required artifact edits are still recorded as incomplete.\"}",
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "contract_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "check_id=required-1"
+        }
+      ]
     }
   ]
 }
