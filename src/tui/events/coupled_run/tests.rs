@@ -6,6 +6,7 @@ mod blocked_terminal;
 mod budget_rhythm;
 mod cross_family;
 mod observer_stream_recovery;
+mod observer_summary;
 mod provider_failure;
 mod report_closeout;
 mod verification_return;
