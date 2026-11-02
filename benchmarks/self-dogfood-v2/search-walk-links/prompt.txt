@@ -1,0 +1,17 @@
+Fix Spiral-Coder's own native search_files directory walk. During a recursive search a discovered symbolic link must not contribute file contents or be descended into, whether its target is inside or outside the tool root. Keep ordinary nested regular files, matching lines and paths, case sensitivity, exclusions and explicit regular-file search working. The scope is entries discovered during directory traversal. Do not change other tools, explicit root resolution, or the public output format.
+
+Allowed paths only:
+- src/file_tools.rs
+
+First reproduce the failure on the original candidate:
+python3 -S -m unittest -v scripts.search_walk_visible
+
+Read the relevant directory-walk implementation and make the repair in the candidate with a native file edit. Leave supplied tests, fixtures, harness and environment unchanged. Work only in this repository. Do not inspect independent checks, other checkouts or reference patches. Format source. After the last edit, run both exact commands separately:
+python3 -S -m unittest -v scripts.search_walk_visible
+cargo test --locked --bin spiral-coder -q
+
+Use native done. Name the changed path and both exact commands with their observed outcomes. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated; report only measured counts. If incomplete, preserve the pending criteria.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"search","description":"Fix discovered symbolic links in the native recursive search, retaining ordinary search behavior.","artifacts":[{"path":"src/file_tools.rs","kind":"source"}],"checks":[{"command":"python3 -S -m unittest -v scripts.search_walk_visible","baseline_failure":true},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>
