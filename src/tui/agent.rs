@@ -1527,8 +1527,7 @@ pub fn search_files_tool_def() -> serde_json::Value {
                     },
                     "dir": {
                         "type": "string",
-                        "description": "Subdirectory to search in (relative to tool_root). \
-                                        Omit or leave empty to search all files under tool_root."
+                        "description": "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. A scoped Rust search can suggest lines containing the corresponding identifier. Leave empty to search the whole tree."
                     },
                     "case_insensitive": {
                         "type": "boolean",

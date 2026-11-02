@@ -22,6 +22,9 @@ mod no_change_tests;
 mod overwrite_guard;
 pub(crate) mod read_cache;
 pub(crate) mod read_range;
+mod rust_navigation;
+#[cfg(test)]
+mod rust_navigation_tests;
 
 // ── Path safety ───────────────────────────────────────────────────────────────
 
@@ -565,25 +568,27 @@ fn search_single_file(
         }
     }
 
-    if results.is_empty() {
-        return (
-            format!(
-                "[search_files] No matches for '{}' in file '{}'\n[note] dir resolved to a file, so the search was scoped to that file",
-                pattern, display_path
-            ),
-            false,
-        );
-    }
-
-    (
+    let mut output = if results.is_empty() {
+        format!(
+            "[search_files] No matches for '{}' in file '{}'\n[note] dir resolved to a file, so the search was scoped to that file",
+            pattern, display_path
+        )
+    } else {
         finalize_search_output(
             pattern,
             &results,
             truncated,
             Some("dir resolved to a file, so the search was scoped to that file"),
-        ),
-        false,
-    )
+        )
+    };
+    if let Some(note) = rust_navigation::note(file_path, pattern, &content) {
+        // Keep the ordinary header first and the note ahead of lengthy literal
+        // results so the Observer's bounded action excerpt can carry it too.
+        if let Some(end) = output.find('\n') {
+            output.insert_str(end + 1, &note);
+        }
+    }
+    (output, false)
 }
 
 /// Recursive file search (literal, no regex dependency).

@@ -24,6 +24,8 @@ without checking the generated repos into git.
 
 Current examples:
 
+- [An additive native CLI and the remaining npm handoff (replay-catalog R8)](replay-catalog-r8.md)
+
 - [Small practical repairs with Mistral Coder + Observer — PR #42 archive](coupled-practical-repairs-mistral.md)
 
 - [Existing Repo Bugfix (Rust)](existing-repo-bugfix-rust.md)

@@ -16,3 +16,5 @@ The [first episode](../../../docs/evals/2026-11-01-replay-catalog/README.md) exh
 For the [second condition](../../../docs/evals/2026-11-01-replay-catalog/order-r2/protocol.md), pass `--order-guidance` to `materialize.py`. This inserts two paragraphs into the shared prompt. Prepare with the first episode's frozen driver and executor to keep the original scoring and execution conditions.
 
 For the [helper reuse condition](../../../docs/evals/2026-11-01-replay-catalog/reuse-r4/protocol.md), select both `--order-guidance` and `--reuse-guidance`. The extra paragraph asks Coder and Observer to consider existing definitions and leaves implementation choices open.
+
+The [R8 benchmark example](../../../docs/examples/replay-catalog-r8.md) rebuilds the first passing native listing and reproduces the remaining npm and documentation failures without model credentials.

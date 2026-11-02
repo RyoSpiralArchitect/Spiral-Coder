@@ -1,0 +1,43 @@
+{
+  "experiment": "post-run native file-tool replay on a disposable copy",
+  "run_receipt_sha256": "29eaad8358435a9cc1f05a4c2715106ba7a228cf7045771b831796a98ea42499",
+  "candidate_patch_sha256": "36bc3337b39012db34a589af45eb736959d7362f2e7b25f224442a5e36ea47d8",
+  "executor_sha256": "0c5e2bc8f1bd0f72100e4abf48db2e3f13140a32c00f6aafc3fa5bd06efb31a3",
+  "candidate_binary_sha256": "d4a5d10bae92901a2d9e0c3baa16e7a23f3247ce74e910a1d34d7bd94d9ca46e",
+  "external_provider_requests": 0,
+  "native_filtered_stdout": {
+    "version": 1,
+    "total": 1,
+    "cases": [
+      {
+        "id": "pane-prefs-observer-suggestion",
+        "tags": [
+          "tui",
+          "observer",
+          "suggestion",
+          "prefs"
+        ]
+      }
+    ]
+  },
+  "package_before": {
+    "exit_code": 1,
+    "routed_to_tui": true
+  },
+  "mixed_step": 23,
+  "mixed_http_status": 400,
+  "mixed_changed_paths": [],
+  "single_step": 21,
+  "single_http_status": 200,
+  "authored_diff_sha256": {
+    "21": "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33",
+    "23": "67dab17b5442f2fa6a04045b409e93f0489e706311de1f7068f71db46e4971f2"
+  },
+  "single_changed_paths": [
+    "npm/spiral-coder/lib/launcher.cjs"
+  ],
+  "package_after_single": {
+    "exit_code": 0,
+    "routed_to_tui": false
+  }
+}
