@@ -34,7 +34,8 @@ pub(crate) fn patch(path: &str, content: &str, search: &str, replace: &str) -> R
 
 pub(crate) fn diff(path: &str, content: &str, diff: &str) -> Result<(String, String)> {
     anyhow::ensure!(!diff.trim().is_empty(), "diff cannot be empty");
-    let hunks = parse_diff_hunks(diff);
+    let repaired = without_patch_trailer(diff, content)?;
+    let hunks = parse_diff_hunks(repaired.unwrap_or(diff));
     if hunks.is_empty() {
         anyhow::bail!("ERROR: no valid @@ hunks found in diff — make sure to include @@ markers");
     }
@@ -103,12 +104,23 @@ pub(crate) fn diff(path: &str, content: &str, diff: &str) -> Result<(String, Str
                     diagnostics::ambiguous_anchor(&new_content, &old_block)
                 ));
             }
+        } else if repaired.is_some() && !whole_line_anchor(&new_content, &old_block) {
+            errors.push(format!(
+                "hunk {}: expected a unique, nonblank, complete line anchor",
+                i + 1
+            ));
         } else {
             new_content = new_content.replacen(&old_block, &new_block, 1);
             applied += 1;
         }
     }
 
+    if repaired.is_some() && !errors.is_empty() {
+        anyhow::bail!(
+            "ERROR: could not safely ignore trailing `*** End Patch`; no hunks applied. {}\n{}\nSend only the intended @@ hunks with unique, complete context lines.",
+            errors.join("; "), diagnostic_contexts.join("\n")
+        );
+    }
     if applied == 0 {
         return Err(anyhow!(
             "ERROR: no hunks applied ({}).\n{}\nTip: call read_file to inspect exact content.",
@@ -117,7 +129,9 @@ pub(crate) fn diff(path: &str, content: &str, diff: &str) -> Result<(String, Str
         ));
     }
 
-    let warn = if errors.is_empty() {
+    let warn = if repaired.is_some() {
+        "\nFormat repair: ignored trailing `*** End Patch`.".to_string()
+    } else if errors.is_empty() {
         String::new()
     } else {
         format!(
@@ -136,4 +150,62 @@ pub(crate) fn diff(path: &str, content: &str, diff: &str) -> Result<(String, Str
             hunks.len()
         ),
     ))
+}
+
+/// Recognize only a bare footer on single-file, explicitly prefixed hunks.
+/// A marker with a diff prefix is file content and never enters this repair.
+fn without_patch_trailer<'a>(diff: &'a str, content: &str) -> Result<Option<&'a str>> {
+    const END: &str = "*** End Patch";
+    let directive = |line: &str| {
+        matches!(
+            line,
+            "*** Begin Patch" | "*** End Patch" | "*** End of File"
+        ) || [
+            "*** Update File:",
+            "*** Add File:",
+            "*** Delete File:",
+            "*** Move to:",
+        ]
+        .iter()
+        .any(|prefix| line.starts_with(prefix))
+    };
+    if !diff.lines().any(directive) {
+        return Ok(None);
+    }
+
+    let diff = diff
+        .strip_suffix("\r\n")
+        .or_else(|| diff.strip_suffix('\n'))
+        .unwrap_or(diff);
+    let hunk_header = |line: &str| line == "@@" || line.starts_with("@@ ");
+    if let Some(body) = diff.strip_suffix(END).filter(|body| body.ends_with('\n')) {
+        if body.lines().next().is_some_and(hunk_header)
+            && body.lines().all(|line| {
+                hunk_header(line)
+                    || (line.starts_with([' ', '+', '-'])
+                        && !line.starts_with("---")
+                        && !line.starts_with("+++"))
+            })
+        {
+            anyhow::ensure!(!content.lines().any(|line| line == END),
+                "ERROR: ambiguous bare `*** End Patch`. Prefix literal context with a space, or remove the trailer and send only the intended @@ hunks.");
+            return Ok(Some(body));
+        }
+    }
+    anyhow::bail!(
+        "ERROR: unsupported *** patch framing. Send one path in `path` and only its @@ hunks in `diff`. Prefix literal context with a space."
+    )
+}
+
+fn whole_line_anchor(content: &str, block: &str) -> bool {
+    let Some((before, after)) = content.split_once(block) else {
+        return false;
+    };
+    // The ordinary match count skips overlapping occurrences (e.g. two rows in three identical rows).
+    let mut from_match = content[before.len()..].chars();
+    from_match.next();
+    !block.trim().is_empty()
+        && (before.is_empty() || before.ends_with('\n'))
+        && (after.is_empty() || after.starts_with('\n') || after.starts_with("\r\n"))
+        && !from_match.as_str().contains(block)
 }

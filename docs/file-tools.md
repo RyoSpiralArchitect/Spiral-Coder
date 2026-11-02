@@ -21,3 +21,20 @@ windows. `apply_diff` includes these contexts for at most two rejected hunks.
 Truncated lines are marked. The diagnostic explicitly tells callers that line
 numbers and truncation markers are display-only and must not be copied into search
 text. Read the actual file before constructing a replacement anchor.
+
+## A trailing patch marker
+
+Some model replies append a bare `*** End Patch` to an otherwise complete
+`apply_diff` call. The native tool and approval preview can discard this one
+terminal line for a single file. The body must start with `@@` and contain only
+hunk headers and explicitly prefixed lines. Every hunk must match unique,
+nonblank, whole-line context in sequence. If one fails, the tool reports the
+reason and discards the entire preview. A changed edit records the format
+repair in its receipt. Approval still checks that the file matches its preview.
+
+A path-bearing patch envelope, multiple trailers, a file header inside the
+repaired body, or a bare trailer that could be a literal line in the target
+requires an explicit retry. Pass the target in `path` and its hunks in `diff`.
+A space, `+`, or `-` before `*** End Patch` marks ordinary file content.
+The repair interprets only framing. The caller chooses the implementation and
+verifies the resulting code.

@@ -7,6 +7,9 @@ use std::collections::BTreeMap;
 mod edit_safety;
 use edit_safety::{successful_read_contents, ReadObservation};
 
+#[path = "declared_followup.rs"]
+mod declared_followup;
+
 #[cfg(test)]
 #[path = "followup_edit_safety_tests.rs"]
 mod edit_safety_tests;
@@ -16,6 +19,25 @@ enum FollowupKind {
     Docs,
     TuiReplay,
     RuntimeEval,
+}
+
+impl FollowupKind {
+    fn diagnostic(line: &str) -> Option<(FollowupKind, &str)> {
+        let line = line.trim();
+        for (prefix, kind) in [
+            ("missing docs follow-up for ", FollowupKind::Docs),
+            ("missing tui replay follow-up for ", FollowupKind::TuiReplay),
+            (
+                "missing runtime eval follow-up for ",
+                FollowupKind::RuntimeEval,
+            ),
+        ] {
+            if let Some(source) = line.strip_prefix(prefix) {
+                return Some((kind, source.trim()));
+            }
+        }
+        None
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,6 +59,7 @@ pub(super) fn coerce_existing_followup_tool_call(
         return None;
     }
 
+    let messages = crate::task_origin::current_task_messages(messages);
     let reads = successful_read_contents(messages);
     let mutations = successful_literal_mutations(messages);
     let requirement = next_followup_requirement(messages, root_user_text, &reads, &mutations)?;
@@ -84,6 +107,7 @@ pub(super) fn matches_required_existing_followup(
     tc: &ToolCallData,
     root_user_text: &str,
 ) -> bool {
+    let messages = crate::task_origin::current_task_messages(messages);
     let reads = successful_read_contents(messages);
     let mutations = successful_literal_mutations(messages);
     let Some(requirement) = next_followup_requirement(messages, root_user_text, &reads, &mutations)
@@ -107,6 +131,7 @@ pub(super) fn required_existing_followup_no_tool_hint(
     messages: &[Value],
     root_user_text: &str,
 ) -> Option<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
     let reads = successful_read_contents(messages);
     let mutations = successful_literal_mutations(messages);
     let requirement = next_followup_requirement(messages, root_user_text, &reads, &mutations)?;
@@ -129,6 +154,9 @@ fn next_followup_requirement(
     reads: &BTreeMap<String, ReadObservation>,
     mutations: &BTreeMap<String, String>,
 ) -> Option<FollowupRequirement> {
+    if let Some(contract) = super::requirement_proof::parse(root_user_text).ok()? {
+        return declared_followup::pending(messages, &contract);
+    }
     let docs_path = docs_followup_path(root_user_text);
     let tui_replay_path = tui_replay_followup_path(root_user_text);
     let runtime_eval_path = runtime_eval_followup_path(root_user_text);
@@ -335,36 +363,18 @@ fn missing_followup_requirements(
             continue;
         }
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        for line in content.lines() {
-            let trimmed = line.trim();
-            if let Some(missing_literal) = trimmed.strip_prefix("missing docs follow-up for ") {
-                if let Some(file_path) = docs_path.as_ref() {
-                    pending.push(FollowupRequirement {
-                        file_path: file_path.clone(),
-                        missing_literal: missing_literal.trim().to_string(),
-                        kind: FollowupKind::Docs,
-                    });
-                }
-            } else if let Some(missing_literal) =
-                trimmed.strip_prefix("missing tui replay follow-up for ")
-            {
-                if let Some(file_path) = tui_replay_path.as_ref() {
-                    pending.push(FollowupRequirement {
-                        file_path: file_path.clone(),
-                        missing_literal: missing_literal.trim().to_string(),
-                        kind: FollowupKind::TuiReplay,
-                    });
-                }
-            } else if let Some(missing_literal) =
-                trimmed.strip_prefix("missing runtime eval follow-up for ")
-            {
-                if let Some(file_path) = runtime_eval_path.as_ref() {
-                    pending.push(FollowupRequirement {
-                        file_path: file_path.clone(),
-                        missing_literal: missing_literal.trim().to_string(),
-                        kind: FollowupKind::RuntimeEval,
-                    });
-                }
+        for (kind, literal) in content.lines().filter_map(FollowupKind::diagnostic) {
+            let path = match kind {
+                FollowupKind::Docs => &docs_path,
+                FollowupKind::TuiReplay => &tui_replay_path,
+                FollowupKind::RuntimeEval => &runtime_eval_path,
+            };
+            if let Some(path) = path {
+                pending.push(FollowupRequirement {
+                    file_path: path.clone(),
+                    missing_literal: literal.to_owned(),
+                    kind,
+                });
             }
         }
     }

@@ -12,6 +12,8 @@ use std::path::{Component, Path, PathBuf};
 mod diagnostics;
 #[cfg(test)]
 mod diagnostics_tests;
+#[cfg(test)]
+mod diff_framing_tests;
 pub(crate) mod edit_preview;
 pub(crate) mod json_patch;
 mod json_repair;

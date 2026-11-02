@@ -411,6 +411,25 @@ pub(super) fn coerce_fix_existing_tool_call(
         return None;
     }
 
+    let wants_verify_exec = tc.name == "exec"
+        && parse_exec_command_from_args(tc.arguments.as_str())
+            .and_then(|command| classify_verify_level(command.as_str(), test_cmd))
+            .is_some();
+    if !wants_verify_exec && !is_observation_tool(tc.name.as_str()) {
+        return None;
+    }
+    // A module guessed from a previous read is a discovery hint. Keep a
+    // declared artifact read or a verification call intact. Its ordinary
+    // governor and exact-proof checks still decide execution and completion.
+    if let Some(contract) =
+        super::requirement_proof::parse(crate::task_origin::root_user_text(messages)).ok()?
+    {
+        let reads_artifact = tc.name == "read_file"
+            && tool_call_path(tc).is_some_and(|path| contract.names_artifact(&path));
+        if wants_verify_exec || reads_artifact {
+            return None;
+        }
+    }
     let mut path = match explicit_existing_rust_path_from_tool_call(tc, tool_root) {
         Some(path) => path,
         None => match direct_impl_from_attempted_subdir_listing(tc, tool_root) {
@@ -428,13 +447,6 @@ pub(super) fn coerce_fix_existing_tool_call(
         if path == "src/lib.rs" || path.ends_with("/mod.rs") {
             path = concrete_impl;
         }
-    }
-    let wants_verify_exec = tc.name == "exec"
-        && parse_exec_command_from_args(tc.arguments.as_str())
-            .and_then(|command| classify_verify_level(command.as_str(), test_cmd))
-            .is_some();
-    if !wants_verify_exec && !is_observation_tool(tc.name.as_str()) {
-        return None;
     }
     if tc.name == "read_file"
         && serde_json::from_str::<Value>(tc.arguments.as_str())

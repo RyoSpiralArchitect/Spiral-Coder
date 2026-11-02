@@ -37,6 +37,36 @@ enum ArtifactKind {
     Spec,
 }
 
+impl Contract {
+    pub(super) fn names_artifact(&self, path: &str) -> bool {
+        self.requirements
+            .iter()
+            .flat_map(|r| &r.artifacts)
+            .any(|a| a.path == path.trim_start_matches("./"))
+    }
+}
+
+impl Artifact {
+    pub(super) fn is_markdown_document(&self) -> bool {
+        matches!(self.kind, ArtifactKind::Documentation) && self.path.ends_with(".md")
+    }
+
+    pub(super) fn is_spec_named(&self, name: &str) -> bool {
+        matches!(self.kind, ArtifactKind::Spec)
+            && std::path::Path::new(&self.path)
+                .file_name()
+                .is_some_and(|file| file == name)
+    }
+}
+
+impl Requirement {
+    pub(super) fn has_source(&self, path: &str) -> bool {
+        self.artifacts
+            .iter()
+            .any(|a| a.path == path && matches!(a.kind, ArtifactKind::Source))
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Check {
