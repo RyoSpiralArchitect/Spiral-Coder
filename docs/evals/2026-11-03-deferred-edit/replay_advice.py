@@ -46,7 +46,7 @@ def prefixes(episode):
 
 
 @contextmanager
-def evaluator(binary):
+def native_evaluator(binary):
     with tempfile.TemporaryDirectory() as tmp:
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
@@ -71,10 +71,9 @@ def evaluator(binary):
             else:
                 raise RuntimeError("local server not ready")
 
-            def proposal(messages, command):
+            def evaluate(body):
                 conn = http.client.HTTPConnection("127.0.0.1", port, timeout=20)
                 try:
-                    body = {"packet": {}, "test_command": command, "messages": messages}
                     conn.request(
                         "POST",
                         "/api/observer_action",
@@ -84,16 +83,27 @@ def evaluator(binary):
                     res = conn.getresponse()
                     if res.status != 200:
                         raise ValueError(f"native evaluator returned {res.status}")
-                    return json.load(res)["packet"]["task_obligations"].get(
-                        "deferred_edit"
-                    )
+                    return json.load(res)
                 finally:
                     conn.close()
 
-            yield proposal
+            yield evaluate
         finally:
             server.terminate()
             server.wait(timeout=5)
+
+
+@contextmanager
+def evaluator(binary):
+    with native_evaluator(binary) as evaluate:
+
+        def proposal(messages, command):
+            result = evaluate(
+                {"packet": {}, "test_command": command, "messages": messages}
+            )
+            return result["packet"]["task_obligations"].get("deferred_edit")
+
+        yield proposal
 
 
 def replay(binary, episode):

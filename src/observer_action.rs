@@ -61,6 +61,14 @@ pub(crate) fn validation_issue(
     test_command: Option<&str>,
 ) -> Option<String> {
     if let Some(issue) = suggestion::validation_issue_for_raw(raw) {
+        if issue.starts_with("suggested_args for read_file:") {
+            if let Some(required) =
+                agent::task_obligations::project(messages, test_command).required_diagnostic_read
+            {
+                let args = json!({"path": required.path});
+                return Some(format!("{issue}. The current native diagnosis requires reading the reported file first. If proposing a tool, return one read_file suggestion. Its complete arguments can be {args}. Omit optional line bounds or narrow the range."));
+            }
+        }
         return Some(issue);
     }
     let envelope = suggestion::parse_observer_suggestion_envelope(raw)?;
@@ -206,6 +214,40 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn invalid_read_feedback_carries_the_current_native_target_without_forwarding() {
+        let messages = vec![
+            json!({"role":"user","content":"Repair the catalog."}),
+            json!({"role":"assistant","tool_calls":[{"id":"edit","function":{"name":"write_file","arguments":r#"{"path":"src/catalog.rs","content":"bad"}"#}}]}),
+            json!({"role":"tool","tool_call_id":"edit","content":"OK: wrote 'src/catalog.rs' (1 lines, 3 bytes)",
+                "recovery_focus":{"version":2,"state":{"pending":{"path":"src/catalog.rs","check":"cargo test","diagnostic":"unresolved import","location":"current","observation":"awaiting_read"}}}}),
+        ];
+        let advice = |args: Value| {
+            json!({"suggestions":[{"kind":"read","reason":"inspect the compiler failure","confidence":0.9,"suggested_tool":"read_file","suggested_args":args}]}).to_string()
+        };
+        let wrong = advice(json!({"path":"src/lib.rs","start_line":1,"end_line":220}));
+        let issue = validation_issue(&wrong, &messages, Some("cargo test")).unwrap();
+        assert!(
+            issue.contains("200 lines") && issue.contains(r#"{"path":"src/catalog.rs"}"#),
+            "{issue}"
+        );
+        assert!(validation_issue(
+            &advice(json!({"path":"src/lib.rs"})),
+            &messages,
+            Some("cargo test")
+        )
+        .is_some());
+        assert!(validation_issue(
+            &advice(json!({"path":"src/catalog.rs"})),
+            &messages,
+            Some("cargo test")
+        )
+        .is_none());
+        assert!(!validation_issue(&wrong, &[], None)
+            .unwrap()
+            .contains("src/catalog.rs"));
+    }
 
     fn verified_task() -> Vec<Value> {
         vec![

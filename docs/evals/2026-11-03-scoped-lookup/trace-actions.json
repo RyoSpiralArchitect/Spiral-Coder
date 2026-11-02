@@ -1,0 +1,28 @@
+{
+  "declaration_sha256": "059c08b298cfacc58537e475da6906881c84dd011a82e61476ba2f3aaf4be0e7",
+  "run_receipt_sha256": "0ee788a5b94ba11a994ea88f6abe32f76952d648a915b0c40846096cf0239b66",
+  "role_requests": {
+    "coder": 13,
+    "observer": 7
+  },
+  "wire_starts_in_trace": 20,
+  "wire_starts_with_parallel_tool_calls_false": 13,
+  "multi_call_responses_rejected": [],
+  "searches": [
+    {
+      "result_step": 3,
+      "call_id": "call_hPKbN88EEEaWtKqLYYXej02H",
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui_replay"
+      },
+      "executed": true,
+      "result_header": "[search_files: 'tui_replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+    }
+  ],
+  "forced_edit_targets": [
+    "src/tui_replay.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay.rs"
+  ]
+}

@@ -1,0 +1,77 @@
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..accc40e 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -9,6 +9,7 @@ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
+ pub(crate) mod diagnostics;
++pub(crate) mod catalog;
+ 
+ fn default_spec_version() -> u32 {
+     1
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..361b0c1
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,59 @@
++use anyhow::{bail, Context, Result};
++use serde::Serialize;
++use std::path::Path;
++
++use super::{select_cases, TuiReplayCase, TuiReplaySpec};
++
++#[derive(Debug, Serialize)]
++struct CatalogOutput {
++    version: u32,
++    total: usize,
++    cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase {
++    id: String,
++    tags: Vec<String>,
++}
++
++pub(crate) fn list(
++    spec_path: &Path,
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Result<String> {
++    let contents = std::fs::read_to_string(spec_path)
++        .with_context(|| format!("read replay spec {}", spec_path.display()))?;
++    let spec: TuiReplaySpec = serde_json::from_str(&contents)
++        .with_context(|| format!("parse replay spec {}", spec_path.display()))?;
++    validate(&spec)?;
++    let selected = select_cases(&spec.cases, filter, max_cases);
++    if selected.is_empty() {
++        bail!("no replay cases matched the selection")
++    }
++    let output = CatalogOutput {
++        version: 1,
++        total: selected.len(),
++        cases: selected.into_iter().map(to_catalog_case).collect(),
++    };
++    Ok(serde_json::to_string(&output)?)
++}
++
++fn to_catalog_case(case: TuiReplayCase) -> CatalogCase {
++    CatalogCase { id: case.id, tags: case.tags }
++}
++
++fn validate(spec: &TuiReplaySpec) -> Result<()> {
++    if spec.version != 1 {
++        bail!("unsupported replay spec version {}", spec.version);
++    }
++    for case in &spec.cases {
++        if case.id.trim().is_empty() {
++            bail!("replay case id must not be empty");
++        }
++        if case.checks.is_empty() {
++            bail!("replay case '{}' has no checks", case.id);
++        }
++    }
++    Ok(())
++}

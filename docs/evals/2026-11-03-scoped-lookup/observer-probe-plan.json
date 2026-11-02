@@ -1,0 +1,16 @@
+{
+  "source_episode_receipt_sha256": "0ee788a5b94ba11a994ea88f6abe32f76952d648a915b0c40846096cf0239b66",
+  "executor_sha256": "daf89b8cdf28e243d2c4868bb79311bedf7724d6e6e8fe3685e6f47455063bb3",
+  "request_sha256": "9d02c0158139156f78d3fbfced2fbbeb9b3f139828e07e5728973b7b92d75746",
+  "external_provider_requests_at_pin": 0,
+  "max_wire_requests": 1,
+  "roles": {
+    "observer": "gpt-5.6-luna"
+  },
+  "mode": "isolated nonstreamed Chat Completions repair on a rebuilt native packet",
+  "timeout_seconds": 90,
+  "max_completion_tokens": 8192,
+  "expected_tool": "read_file",
+  "expected_path": "src/tui_replay/catalog.rs",
+  "criterion": "Exactly one suggestion, correct required path, schema and evidence accepted by the native evaluator, forwardable hint. Retain the first response or failure. No Coder continuation or candidate change."
+}
