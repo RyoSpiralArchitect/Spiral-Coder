@@ -18,3 +18,5 @@ For the [second condition](../../../docs/evals/2026-11-01-replay-catalog/order-r
 For the [helper reuse condition](../../../docs/evals/2026-11-01-replay-catalog/reuse-r4/protocol.md), select both `--order-guidance` and `--reuse-guidance`. The extra paragraph asks Coder and Observer to consider existing definitions and leaves implementation choices open.
 
 The [R8 benchmark example](../../../docs/examples/replay-catalog-r8.md) rebuilds the first passing native listing and reproduces the remaining npm and documentation failures without model credentials.
+
+R9 uses the same task and request budget. Its record separates a scripted recovery of R8's launcher edit, the fresh pair's blocked run, and a native replay of the out-of-scope edit discovered in R9. [Ninth run and follow-up](../../../docs/evals/2026-11-03-deferred-edit/README.md)

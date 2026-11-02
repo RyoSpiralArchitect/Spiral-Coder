@@ -1,0 +1,20 @@
+{
+  "executor_sha256": "0b983ae9e6483a6990dd94664c2b504a2f36989c4eda6653c88f0781a2b73bfd",
+  "run_receipt_sha256": "7ca84731b68394df12fa667df8e94c86762a9da453320fdd848c69ec0c83c3db",
+  "original_call_id": "call_selgWGjyG6ZhdYUinEzcT4dm",
+  "original_step": 14,
+  "path": "src/task_scope.rs",
+  "file_before_sha256": "0f8aaca3139ba0cc1bf429c1e7dc226f62476d3adc0fef18070d4ab59d1851ff",
+  "file_after_sha256": "0f8aaca3139ba0cc1bf429c1e7dc226f62476d3adc0fef18070d4ab59d1851ff",
+  "changed": false,
+  "executed": false,
+  "same_arguments": true,
+  "result_header": "GOVERNOR BLOCKED",
+  "scope_feedback": "[Edit Scope] The original task limits file edits to [\"src/main.rs\",\"src/tui_replay.rs\",\"src/tui_replay/catalog.rs\",\"docs/evaluation.md\",\"npm/spiral-coder/lib/launcher.cjs\",\"tests/tui_replay_catalog.rs\"]. Use a listed workspace-relative target. Proposed path: \"src/task_scope.rs\".",
+  "forced_edit_targets": [],
+  "local_requests": {
+    "coder": 2,
+    "observer": 0
+  },
+  "external_provider_requests": 0
+}

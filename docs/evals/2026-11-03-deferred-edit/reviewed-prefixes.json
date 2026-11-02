@@ -1,0 +1,31 @@
+{
+  "executor_sha256": "0b983ae9e6483a6990dd94664c2b504a2f36989c4eda6653c88f0781a2b73bfd",
+  "external_provider_requests": 0,
+  "edits_executed": 0,
+  "prefixes": [
+    {
+      "through_step": 21,
+      "available": false,
+      "path": null,
+      "authored_diff_sha256": null,
+      "proposal_call_id": null,
+      "verification_call_id": null
+    },
+    {
+      "through_step": 22,
+      "available": true,
+      "path": "npm/spiral-coder/lib/launcher.cjs",
+      "authored_diff_sha256": "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33",
+      "proposal_call_id": "call_BW7Cy4c0IfN6nyNL3daOwcnr",
+      "verification_call_id": "call_zvUa0bGO1ZChhdhsSaNTGuwC"
+    },
+    {
+      "through_step": 23,
+      "available": false,
+      "path": null,
+      "authored_diff_sha256": null,
+      "proposal_call_id": null,
+      "verification_call_id": null
+    }
+  ]
+}
