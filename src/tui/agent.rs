@@ -9349,8 +9349,8 @@ Execute only the new minimal action: {}",
                                     repaired
                                 } else {
                                     state = AgentState::Recovery;
-                                    recovery.stage = Some(RecoveryStage::Diagnose);
                                     let block = plan_revision::rejection(
+                                        &mut recovery.stage,
                                         &e.to_string(),
                                         active_plan.as_ref(),
                                         &messages,
@@ -9395,8 +9395,8 @@ Execute only the new minimal action: {}",
                                 }
                             } else {
                                 state = AgentState::Recovery;
-                                recovery.stage = Some(RecoveryStage::Diagnose);
                                 let block = plan_revision::rejection(
+                                    &mut recovery.stage,
                                     &e.to_string(),
                                     active_plan.as_ref(),
                                     &messages,
@@ -9441,8 +9441,8 @@ Execute only the new minimal action: {}",
                             }
                         } else {
                             state = AgentState::Recovery;
-                            recovery.stage = Some(RecoveryStage::Diagnose);
                             let block = plan_revision::rejection(
+                                &mut recovery.stage,
                                 &e.to_string(),
                                 active_plan.as_ref(),
                                 &messages,
@@ -10611,8 +10611,8 @@ Execute only the new minimal action: {}",
                     }
                     Err(e) => {
                         state = AgentState::Recovery;
-                        recovery.stage = Some(RecoveryStage::Diagnose);
                         let mut block = plan_revision::rejection(
+                            &mut recovery.stage,
                             &e.to_string(),
                             active_plan.as_ref(),
                             &messages,

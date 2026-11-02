@@ -146,8 +146,30 @@ fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
         json!({"role":"assistant","accepted_plan":accepted}),
     ];
     let error = plan_revision::validate_alignment(&proposed, &messages, &contract).unwrap_err();
-    let feedback =
-        plan_revision::rejection(&error.to_string(), Some(&accepted), &messages, &contract);
+    let mut stage = None;
+    let feedback = plan_revision::rejection(
+        &mut stage,
+        &error.to_string(),
+        Some(&accepted),
+        &messages,
+        &contract,
+    );
+    assert_eq!(stage, None, "the refused check did not execute");
+    for previous in [
+        RecoveryStage::Diagnose,
+        RecoveryStage::Fix,
+        RecoveryStage::Verify,
+    ] {
+        stage = Some(previous);
+        let _ = plan_revision::rejection(
+            &mut stage,
+            &error.to_string(),
+            Some(&accepted),
+            &messages,
+            &contract,
+        );
+        assert_eq!(stage, Some(previous), "keep outstanding, genuine recovery");
+    }
     let fields: serde_json::Value = serde_json::from_str(feedback.lines().last().unwrap()).unwrap();
     assert_eq!(
         fields,
@@ -161,17 +183,31 @@ fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
     validate_plan_for_task_contract(&proposed, false, &contract, &resolver, &messages).unwrap();
     let mut new_task = messages.clone();
     new_task.push(json!({"role":"user","content":"Another task."}));
+    stage = None;
     let ordinary = governor_contract::invalid_plan_message(&error.to_string());
     assert_eq!(
-        plan_revision::rejection(&error.to_string(), Some(&accepted), &new_task, &contract),
+        plan_revision::rejection(
+            &mut stage,
+            &error.to_string(),
+            Some(&accepted),
+            &new_task,
+            &contract
+        ),
         ordinary
     );
     assert_eq!(
-        plan_revision::rejection(&error.to_string(), None, &messages, &contract),
+        plan_revision::rejection(&mut stage, &error.to_string(), None, &messages, &contract),
         ordinary
     );
     assert_eq!(
-        plan_revision::rejection("wrong shape", Some(&accepted), &messages, &contract),
+        plan_revision::rejection(
+            &mut stage,
+            "wrong shape",
+            Some(&accepted),
+            &messages,
+            &contract
+        ),
         governor_contract::invalid_plan_message("wrong shape")
     );
+    assert_eq!(stage, Some(RecoveryStage::Diagnose));
 }
