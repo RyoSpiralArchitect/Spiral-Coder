@@ -1,0 +1,68 @@
+{
+  "executor_sha256": "1d65d5f1625a96661f4ad221c3a4e368c7406ce2647574973d66624076b04308",
+  "source_session_sha256": "5ed6c8ea92f7103790a673cd73f05aff8c319ef0c3c85358b77a0658c81d56fa",
+  "external_requests": 0,
+  "file_actions_executed": 0,
+  "cases": [
+    {
+      "case": "original malformed",
+      "reply_sha256": "3f62777f8d521ffc499a4850730dacfb8add32e6738146864bfb8048c868bc29",
+      "issue": "expected `:` at line 1 column 859",
+      "forwardable": false
+    },
+    {
+      "case": "original identical contracts",
+      "reply_sha256": "df71c7f0cb424750025f726ec3b1a97635d482edae4a0b581c9060f9728df701",
+      "issue": "duplicate JSON field: response_contract at line 1 column 1435",
+      "forwardable": false
+    },
+    {
+      "case": "conflicting contracts",
+      "reply_sha256": "3c2b6abc49b17c997aa86b29b829a32b8f5fe26348b7e2873c1582d6444134f1",
+      "issue": "duplicate JSON field: response_contract at line 1 column 328",
+      "forwardable": false
+    },
+    {
+      "case": "duplicate contract member",
+      "reply_sha256": "69f88ef53acaaeac25ab595359396ab9fe54e20b259dbddb495ac53b8d889dc1",
+      "issue": "duplicate JSON field: required at line 1 column 81",
+      "forwardable": false
+    },
+    {
+      "case": "duplicate typed action",
+      "reply_sha256": "bb8f3087f2bd10a674d0a94e2e175752a9c6b210934e89f9197d5e02ffb4ed72",
+      "issue": "duplicate JSON field: suggested_tool at line 1 column 237",
+      "forwardable": false
+    },
+    {
+      "case": "duplicate argument",
+      "reply_sha256": "280bd5aca692a4e968bc838dfdd4f4154c38784f7d7a6a6444493b513592c615",
+      "issue": "duplicate JSON field: path at line 1 column 267",
+      "forwardable": false
+    },
+    {
+      "case": "one eligible read",
+      "reply_sha256": "699846a662d1a1a93b045a188bea39d538781c460dd573dd94448eda507f8fde",
+      "issue": null,
+      "forwardable": true
+    },
+    {
+      "case": "wrong diagnostic path",
+      "reply_sha256": "e5a39751b4e8c86007de7dd7f556ccbd46c8e4182d7d64a97e60bc222854860e",
+      "issue": "Pending diagnosis requires read_file(path=src/tui_replay/catalog.rs). Read the failure location before suggesting an edit, verification or another file; it is not necessarily the repair target.",
+      "forwardable": false
+    },
+    {
+      "case": "low confidence",
+      "reply_sha256": "5b62fb2ddca3d0279e56a5094e1abd7eb8441634a21804e6c1249040ef606bef",
+      "issue": null,
+      "forwardable": false
+    },
+    {
+      "case": "uncertain no-tool clarification",
+      "reply_sha256": "8fad9753a65803ef697f46e20312004188feacd15e0206d1174aa5934906f0a1",
+      "issue": null,
+      "forwardable": false
+    }
+  ]
+}

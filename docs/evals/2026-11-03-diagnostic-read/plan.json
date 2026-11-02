@@ -1,0 +1,55 @@
+{
+  "issue": 49,
+  "condition": "R11 native diagnostic read and scoped Rust helper navigation",
+  "raw_root": "replay-catalog-native-r11-grounded-20261103",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "d78b4a24f57fae7414db0fee76c91e3f323b5370",
+  "executor_sha256": "1d65d5f1625a96661f4ad221c3a4e368c7406ce2647574973d66624076b04308",
+  "declaration_sha256": "cf0b8f3751b17916dbd25cb6e6ea83ddb9380d585a71d81ca5a1b48fb7eaccf9",
+  "prior_declaration_sha256": "059c08b298cfacc58537e475da6906881c84dd011a82e61476ba2f3aaf4be0e7",
+  "preflight_sha256": "43d2061ce203dff6178b4cfc1eefffabb16f6200382e1359adbb795c56a1c438",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "protocol_sha256": "cd81609fd3106c7c098c7dcee020a609b1031a7bced7cfcb4d1eb6025b42d71f",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36
+}
