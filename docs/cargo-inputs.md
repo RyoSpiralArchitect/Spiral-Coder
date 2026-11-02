@@ -9,7 +9,9 @@ Coder tool message and the Observer's correlated action can include this
 {"target":"unit tests src/main.rs","files":{"src/catalog.rs":"not_listed"}}
 ```
 
-`listed` means the named target's dependency rule contained the file.
+`listed` means the named target's dependency rule contained the file. Cargo
+can also list data used by `include_str!` or `include_bytes!`, so a listing
+alone cannot establish that a Rust function was compiled or called.
 `not_listed` means the tool read a complete rule for that target and the file
 was absent. `unknown` means the tool could not establish membership, including
 when the check failed. A test harness and a normal binary have distinct labels.

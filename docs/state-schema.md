@@ -1357,6 +1357,7 @@ uses the terminal outcome for `report.error`; `completed` still requires a valid
 Coder `done`. Failed/exhausted reconnects end interrupted, with unknown usage left
 unknown. Pending reconnect state is transient and is not rearmed from a saved
 receipt; resume remains an explicit continuation within the spent ledger.
+
 ## Cargo source observations
 
 The current human task message can carry `new_rust_sources`, a bounded list of
@@ -1366,4 +1367,7 @@ human request starts its own list. The producing tool result can carry
 older session mean no observation. Provider serialization removes the local
 fields and renders the advisory receipt in the Coder's message. The Observer
 reads it from the correlated native action with the usual freshness filter.
+An implied write or shell action has no native call ID. Its latest observation
+can instead appear in `execution_evidence.cargo_input_handoff` with a null
+`tool_call_id`. A later executed edit or shell action supersedes that observation.
 Neither field participates in verification proof. [File and target semantics](cargo-inputs.md)

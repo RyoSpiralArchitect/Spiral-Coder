@@ -1,5 +1,33 @@
 use super::*;
 
+#[test]
+fn review_implied_check_is_shared_without_becoming_a_native_tool_or_proof() {
+    let row = json!({"target":"unit tests src/main.rs","files":{"src/leaf.rs":"not_listed"}});
+    let mut messages = vec![json!({"role":"user","content":"Add the helper"})];
+    let project = |msgs: &[serde_json::Value]| {
+        current_evidence::observer_prompt_packet(
+            &json!({"execution_evidence": evidence_packet::project(msgs,None)}),
+        )["execution_evidence"]
+            .clone()
+    };
+    for kind in ["implied_write_file", "implied_exec"] {
+        messages.push(
+            json!({"role":"user","origin":"runtime","content":format!("[{kind}]\noutput"),
+                             "cargo_inputs":row}),
+        );
+        let result = project(&messages);
+        assert_eq!(result["cargo_input_handoff"]["inputs"], row);
+        assert!(result["actions"].as_array().unwrap().is_empty());
+        assert!(result["verification_step"].is_null());
+    }
+    messages.push(json!({"role":"assistant","tool_calls":[{"id":"change","function":{"name":"patch_file","arguments":"{\"path\":\"src/main.rs\"}"}}]}));
+    messages
+        .push(json!({"role":"tool","tool_call_id":"change","content":"OK: patched 'src/main.rs'"}));
+    assert!(project(&messages)["cargo_input_handoff"].is_null());
+    messages.push(json!({"role":"user","content":"new task"}));
+    assert!(project(&messages)["cargo_input_handoff"].is_null());
+}
+
 // Exercise the same native write -> automatic test -> Coder / Observer handoff as r4.
 #[tokio::test]
 async fn unregistered_rust_source_is_not_listed_even_when_the_native_auto_test_passes() {

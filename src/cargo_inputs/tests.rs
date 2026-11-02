@@ -2,6 +2,40 @@ use super::*;
 use serde_json::json;
 
 #[test]
+fn review_release_check_observes_the_launched_unit_test() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let cwd = root.to_str().unwrap();
+    fs::create_dir(root.join("src")).unwrap();
+    fs::write(
+        root.join("Cargo.toml"),
+        "[package]\nname='release-probe'\nversion='0.1.0'\nedition='2021'\n",
+    )
+    .unwrap();
+    fs::write(root.join("src/main.rs"), "mod leaf; fn main(){}\n").unwrap();
+    let mut msgs = vec![json!({"role":"user","content":"Add a Rust source"})];
+    assert!(!write_file("src/leaf.rs", "", Some(cwd), &mut msgs).1);
+    let argv = ["test", "--release", "--offline", "--target-dir", "isolated"];
+    let probe = Probe::start(&msgs, &format!("cargo {}", argv.join(" ")), cwd, cwd).unwrap();
+    let out = std::process::Command::new("cargo")
+        .args(argv)
+        .current_dir(root)
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    assert_eq!(
+        probe
+            .finish(
+                true,
+                &String::from_utf8_lossy(&out.stdout),
+                &String::from_utf8_lossy(&out.stderr)
+            )
+            .files["src/leaf.rs"],
+        Status::Listed
+    );
+}
+
+#[test]
 fn fresh_product_inputs_follow_registration_and_do_not_turn_a_cached_or_failed_build_into_evidence()
 {
     let dir = tempfile::tempdir().unwrap();
@@ -121,6 +155,7 @@ fn stale_runner_and_unrelated_depfile_rules_cannot_supply_membership() {
         bin: None,
         merged: true,
         started: future,
+        finished_banner: "Finished `test` profile ",
     };
     assert!(t.inputs(&root, &banner, "").is_none());
     let t = Target::UnitTest {
@@ -128,6 +163,7 @@ fn stale_runner_and_unrelated_depfile_rules_cannot_supply_membership() {
         bin: None,
         merged: false,
         started: SystemTime::UNIX_EPOCH,
+        finished_banner: "Finished `test` profile ",
     };
     assert!(t.inputs(&root, &banner, "").is_none());
     fs::write(

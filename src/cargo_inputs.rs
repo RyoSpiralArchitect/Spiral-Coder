@@ -151,6 +151,7 @@ enum Target {
         bin: Option<String>,
         merged: bool,
         started: SystemTime,
+        finished_banner: &'static str,
     },
     Binary {
         profile: PathBuf,
@@ -257,6 +258,11 @@ fn target(verb: &str, mut args: Vec<&str>, cwd: &Path) -> Option<Target> {
             bin,
             merged,
             started: SystemTime::now(),
+            finished_banner: if profile == "release" {
+                "Finished `release` profile "
+            } else {
+                "Finished `test` profile "
+            },
         }),
         "build" => {
             let before = product_depfiles(&profile_dir, bin.as_deref())?;
@@ -334,10 +340,11 @@ impl Target {
                 bin,
                 merged,
                 started,
+                finished_banner,
             } => {
                 let output = if merged { stdout } else { stderr };
                 let mut lines = output.lines().map(str::trim);
-                lines.find(|l| l.starts_with("Finished `test` profile "))?;
+                lines.find(|l| l.starts_with(finished_banner))?;
                 // Select only Cargo's first runner announcement, before that runner's output.
                 let line = lines
                     .find(|l| !l.is_empty())?
