@@ -9,6 +9,8 @@ pub(crate) struct ActionEvidence {
     pub tool: String,
     pub arguments: serde_json::Value,
     pub result: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cargo_inputs: Option<crate::cargo_inputs::Receipt>,
     pub executed: Option<bool>,
     /// None when execution returned no recognized runtime status. Parsed from
     /// the full correlated result, independently of the bounded display text.
@@ -67,6 +69,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                             .and_then(|s| serde_json::from_str(s).ok())
                             .unwrap_or(serde_json::Value::Null),
                         result: None,
+                        cargo_inputs: None,
                         executed: None,
                         succeeded: None,
                         edit_outcome: None,
@@ -112,6 +115,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 }
             };
             action.result = Some(result.chars().take(2400).collect());
+            action.cargo_inputs = crate::cargo_inputs::Receipt::from_message(message);
             action.result_step = Some(result_step);
         }
     }

@@ -115,6 +115,7 @@ mod tests {
             tool: tool.into(),
             arguments,
             result: None,
+            cargo_inputs: None,
             executed,
             succeeded,
             result_step: None,

@@ -498,6 +498,13 @@ benchmark's strict scope inventory. Normal interactive TUI storage is unchanged.
 
 ## Shared progress and action-level assistance
 
+When a native Coder write creates a Rust source, the next Cargo checks can
+report whether a particular target's compiler inputs listed it. Both roles
+receive the same per-file observation, including after a role handoff or session
+resume. A successful test can still omit an unregistered module. A listed
+module can still have an unreachable command. Use the ordinary public entry
+point to verify behavior. [Cargo compiler input observations](cargo-inputs.md)
+
 The [work-progress projection](observer-work-progress.md) exposes the original
 human task separately from declared proof requirements, native edit activity,
 repeated observations and authored acceptance claims to both roles. A docs/check

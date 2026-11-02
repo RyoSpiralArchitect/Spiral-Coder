@@ -1,6 +1,7 @@
 mod agent_session;
 mod approvals;
 mod artifact_preservation;
+mod cargo_inputs;
 mod chatbot;
 mod config;
 mod eval_merge_gate;

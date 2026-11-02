@@ -1357,3 +1357,13 @@ uses the terminal outcome for `report.error`; `completed` still requires a valid
 Coder `done`. Failed/exhausted reconnects end interrupted, with unknown usage left
 unknown. Pending reconnect state is transient and is not rearmed from a saved
 receipt; resume remains an explicit continuation within the spent ledger.
+## Cargo source observations
+
+The current human task message can carry `new_rust_sources`, a bounded list of
+workspace-relative source paths created by successful native writes. A new
+human request starts its own list. The producing tool result can carry
+`cargo_inputs` with a target label and per-file status. Missing fields in an
+older session mean no observation. Provider serialization removes the local
+fields and renders the advisory receipt in the Coder's message. The Observer
+reads it from the correlated native action with the usual freshness filter.
+Neither field participates in verification proof. [File and target semantics](cargo-inputs.md)
