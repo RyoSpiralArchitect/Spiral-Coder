@@ -1,0 +1,228 @@
+{
+  "declaration_sha256": "0dfc025a9def9e347afbd714cca23c6d850f2d5eeecf5a2e5de33e7ff089e62e",
+  "run_receipt_sha256": "381e715ca6a4da7e4d566f116c46a32c3d91a72217975f48729ac3d08377f2d8",
+  "native_completed": false,
+  "termination": "budget_exhausted",
+  "wall_elapsed_ms": 315519,
+  "role_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "wire_charges": {
+    "task": 32
+  },
+  "identical_summary_recoveries": [],
+  "rejected_advice": [
+    {
+      "raw_sha256": "b2aecd982bf7b1530bf29aca93ec3f632723aa03638c8d02f7c07a3817eee17c",
+      "issue": "suggested_args for patch_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields",
+      "first_authored_suggestion": {
+        "tool": "patch_file",
+        "argument_keys": [
+          "path"
+        ]
+      }
+    }
+  ],
+  "native_blocks": [
+    {
+      "step": 1,
+      "tool": "exec",
+      "path": null,
+      "command": "python3 -S -m unittest -v scripts.catalog_visible",
+      "gate": "[Plan Gate] Missing valid <plan>."
+    },
+    {
+      "step": 2,
+      "tool": "list_dir",
+      "path": null,
+      "command": null,
+      "gate": "[Think Gate] Invalid <think>: think missing goal"
+    },
+    {
+      "step": 3,
+      "tool": "list_dir",
+      "path": null,
+      "command": null,
+      "gate": "[Plan Gate] Missing valid <plan>."
+    },
+    {
+      "step": 11,
+      "tool": "search_files",
+      "path": null,
+      "command": null,
+      "gate": "[Progress Gate]"
+    },
+    {
+      "step": 17,
+      "tool": "exec",
+      "path": null,
+      "command": "cargo test 2>&1",
+      "gate": "[Recovery Gate] stage=verify"
+    },
+    {
+      "step": 19,
+      "tool": "exec",
+      "path": null,
+      "command": "python3 -S -m unittest -v scripts.catalog_visible",
+      "gate": "[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request"
+    },
+    {
+      "step": 22,
+      "tool": "apply_diff",
+      "path": "src/main.rs",
+      "command": null,
+      "gate": "[Evidence Gate] Invalid <evidence>: evidence missing target_files"
+    },
+    {
+      "step": 24,
+      "tool": "done",
+      "path": null,
+      "command": null,
+      "gate": "[Blocked report] done.acceptance_evidence must cover every completed acceptance criterion exactly once. Preserve every remaining criterion; cite native evidence for any claimed completed item."
+    }
+  ],
+  "cargo_inputs": [
+    {
+      "step": 16,
+      "observation": {
+        "files": {
+          "src/tui_replay/catalog.rs": "listed"
+        },
+        "target": "unit tests src/main.rs"
+      }
+    },
+    {
+      "step": 18,
+      "observation": {
+        "files": {
+          "src/tui_replay/catalog.rs": "unknown"
+        },
+        "target": null
+      }
+    }
+  ],
+  "observer_assists": [
+    {
+      "id": 1,
+      "continuation": 2,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "src/main.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_7punZNm32MyTdkZrWu6hXsAC"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "id": 2,
+      "continuation": 3,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "scripts/catalog_visible.py",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_PH081aL2CqpkFNci30ewqveb"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "id": 3,
+      "continuation": 4,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "src/main.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_y4XwdotOWdBHqf1LQbWHIiWe"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "id": 4,
+      "continuation": 5,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "src/tui_replay.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_vzFHAaC78wIf5WGLcFDj8u4H"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "id": 5,
+      "continuation": 6,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "end_line": 200,
+          "path": "src/tui_replay.rs",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_H0ui9zFNjINbF7hHqaxip5E3"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      }
+    },
+    {
+      "id": 6,
+      "continuation": 7,
+      "decision": "accept",
+      "suggestion_execution": {
+        "arguments": {
+          "check_id": "required-1"
+        },
+        "executed": false,
+        "matching_call_ids": [
+          "call_fIFnygCBfM6MuEY09wvphQsZ"
+        ],
+        "succeeded": false,
+        "tool": "exec"
+      }
+    },
+    {
+      "id": 7,
+      "continuation": 8,
+      "decision": "override",
+      "suggestion_execution": {
+        "arguments": {
+          "check_id": "required-1"
+        },
+        "executed": false,
+        "matching_call_ids": [],
+        "succeeded": null,
+        "tool": "exec"
+      }
+    }
+  ],
+  "qualified_candidate": false
+}

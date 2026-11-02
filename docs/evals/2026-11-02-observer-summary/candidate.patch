@@ -1,0 +1,77 @@
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..409151a 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,6 +8,7 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
+ fn default_spec_version() -> u32 {
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..592418b
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,59 @@
++use anyhow::{anyhow, bail, Context, Result};
++use serde::Serialize;
++use std::path::{Path, PathBuf};
++
++use super::{TuiReplayCase, TuiReplaySpec};
++
++#[derive(Debug, Clone, Serialize)]
++pub(crate) struct CatalogOutput {
++    pub version: u32,
++    pub total: usize,
++    pub cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Clone, Serialize)]
++pub(crate) struct CatalogCase {
++    pub id: String,
++    pub tags: Vec<String>,
++}
++
++pub(crate) fn resolve_path(root: &Path, path: Option<String>) -> PathBuf {
++    let path = path.unwrap_or_else(|| ".spiral-coder/tui_replay.json".to_string());
++    let path = PathBuf::from(path);
++    if path.is_absolute() { path } else { root.join(path) }
++}
++
++pub(crate) fn load_spec(path: &Path) -> Result<TuiReplaySpec> {
++    let text = std::fs::read_to_string(path)
++        .with_context(|| format!("failed to read tui replay spec: {}", path.display()))?;
++    let spec: TuiReplaySpec = serde_json::from_str(&text)
++        .with_context(|| format!("failed to parse tui replay spec: {}", path.display()))?;
++    validate_spec(&spec)?;
++    Ok(spec)
++}
++
++pub(crate) fn validate_spec(spec: &TuiReplaySpec) -> Result<()> {
++    if spec.version != 1 { bail!("unsupported tui replay spec version: {}", spec.version); }
++    for case in &spec.cases {
++        if case.id.trim().is_empty() { bail!("replay case id must not be empty"); }
++        if case.checks.is_empty() { bail!("replay case '{}' has empty checks", case.id); }
++    }
++    Ok(())
++}
++
++pub(crate) fn select_cases<'a>(spec: &'a TuiReplaySpec, filter: Option<&str>, max_cases: Option<usize>) -> Vec<&'a TuiReplayCase> {
++    let filter = filter.map(|s| s.to_ascii_lowercase());
++    let mut selected: Vec<_> = spec.cases.iter().filter(|case| filter.as_deref().map_or(true, |needle| {
++        case.id.to_ascii_lowercase().contains(needle) || case.tags.iter().any(|tag| tag.to_ascii_lowercase().contains(needle))
++    })).collect();
++    if let Some(limit) = max_cases { selected.truncate(limit.max(1)); }
++    selected
++}
++
++pub(crate) fn list(root: &Path, spec_path: Option<String>, filter: Option<String>, max_cases: Option<usize>) -> Result<CatalogOutput> {
++    let path = resolve_path(root, spec_path);
++    let spec = load_spec(&path)?;
++    let selected = select_cases(&spec, filter.as_deref(), max_cases);
++    if selected.is_empty() { return Err(anyhow!("no replay cases matched selection in {}", path.display())); }
++    Ok(CatalogOutput { version: 1, total: selected.len(), cases: selected.into_iter().map(|case| CatalogCase { id: case.id.clone(), tags: case.tags.clone() }).collect() })
++}
