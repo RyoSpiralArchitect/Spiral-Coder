@@ -52,8 +52,16 @@ fn both_role_contexts_offer_the_original_bytes_only_after_the_native_pass() {
     assert_eq!(view["deferred_edit"]["proposal_call_id"], "prior");
     assert_eq!(view["deferred_edit"]["verification_call_id"], "pass");
     let clear = m.last().unwrap()["recovery_focus"].clone();
-    m.extend(read("old\n", "recheck", clear));
+    let [pending, observed] = read("old\n", "recheck", clear);
+    m.push(pending.clone());
+    assert!(confirming_read(&m, "recheck", PATH));
+    assert!(!confirming_read(&m, "other", PATH));
+    assert!(!confirming_read(&m, "recheck", "other.rs"));
+    m.push(observed);
     assert_eq!(project(&m).unwrap().suggested_args.diff, DIFF);
+    let mut twice = m.clone();
+    twice.push(pending);
+    assert!(!confirming_read(&twice, "recheck", PATH));
     m.last_mut().unwrap()["content"] = json!(format!("[{PATH}] (1 lines, 4 bytes)\nBAD\n"));
     assert!(project(&m).is_none());
 }

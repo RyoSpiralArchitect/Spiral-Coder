@@ -11019,6 +11019,34 @@ Next assistant turn: emit a <think> block and call ONE real tool."
             if goal_wants_actions && iter + 1 < max_iters {
                 let implied_scripts = extract_implied_exec_scripts(&assistant_text_clean);
                 let implied_files = extract_implied_write_files(&assistant_text_clean);
+                if let Some(block) = explicit_edit_scope::implied_write_issue(
+                    &root_user_text,
+                    &implied_files,
+                    tool_root_abs.as_deref(),
+                ) {
+                    let feedback = format!("[implied_write_file]\nGOVERNOR BLOCKED\n\n{block}");
+                    messages.push(crate::task_origin::user_message(
+                        &feedback,
+                        crate::task_origin::MessageOrigin::Runtime,
+                    ));
+                    state = AgentState::Recovery;
+                    let _ = tx
+                        .send(StreamToken::Delta(format!(
+                            "[RESULT][Recovery] {feedback}\n"
+                        )))
+                        .await;
+                    pending_system_hint = Some(block);
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+                    continue;
+                }
                 if !implied_scripts.is_empty() || !implied_files.is_empty() {
                     let _ = tx
                         .send(StreamToken::Delta(
@@ -13759,7 +13787,11 @@ Required now: run `{command}`.\n{verification_status}"
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
                     let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
-                    if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
+                    if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path)
+                        || (!ranged
+                            && file_cache.contains_key(&cache_key)
+                            && deferred_edit::confirming_read(&messages, &tc.id, &path))
+                    {
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────

@@ -93,10 +93,24 @@ impl Scope {
         if !matches!(tool, "patch_file" | "write_file" | "apply_diff") {
             return None;
         }
-        let path = args["path"].as_str()?;
+        self.path_issue(args["path"].as_str()?, workspace)
+    }
+
+    fn path_issue(&self, path: &str, workspace: Option<&str>) -> Option<String> {
         (!self.allows(path, workspace)).then(|| format!("[Edit Scope] The original task limits file edits to {}. Use a listed workspace-relative target. Proposed path: {}.",
             serde_json::json!(self.0), serde_json::json!(path)))
     }
+}
+
+pub(super) fn implied_write_issue(
+    task: &str,
+    files: &[super::ImpliedWriteFile],
+    workspace: Option<&str>,
+) -> Option<String> {
+    let scope = Scope::parse(task)?;
+    files
+        .iter()
+        .find_map(|file| scope.path_issue(&file.path, workspace))
 }
 
 /// A literal identifier lookup in a listed file or its immediate directory.
@@ -157,6 +171,18 @@ mod tests {
     use serde_json::json;
 
     const TASK: &str = "Fix the existing command in src/main.rs.\n\nAllowed paths only:\n- src/main.rs\n- src/tui_replay/catalog.rs\nKeep the protected tests unchanged.";
+
+    #[test]
+    fn a_mixed_text_only_file_batch_is_checked_before_writing() {
+        let allowed = "File: src/tui_replay/catalog.rs\n```rust\nfn ok() {}\n```";
+        let invalid = format!("{allowed}\nFile: scratch.rs\n```rust\nfn stray() {{}}\n```");
+        let files = crate::tui::agent::extract_implied_write_files(&invalid);
+        assert_eq!(files.len(), 2);
+        let issue = implied_write_issue(TASK, &files, None).unwrap();
+        assert!(issue.contains("[Edit Scope]") && issue.contains("scratch.rs"));
+        assert!(implied_write_issue(TASK, &files[..1], None).is_none());
+        assert!(implied_write_issue("Create files.", &files, None).is_none());
+    }
 
     #[test]
     fn explicit_scope_filters_native_writes_and_observer_advice_but_permits_reads_and_new_listed_files(

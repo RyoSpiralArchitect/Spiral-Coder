@@ -106,10 +106,29 @@ fn full_read<'a>(read: &Exchange<'a>, path: &str) -> Option<&'a str> {
 }
 
 pub(super) fn project(messages: &[Value]) -> Option<Proposal> {
+    proposal(messages, true)
+}
+
+/// The executing read is already in history as an assistant call without a result.
+/// Confirm the file on disk before allowing a cache hit to stand for that read.
+pub(super) fn confirming_read(messages: &[Value], id: &str, path: &str) -> bool {
+    let Some((pending, before)) = messages.split_last() else {
+        return false;
+    };
+    let Some([call]) = pending["tool_calls"].as_array().map(Vec::as_slice) else {
+        return false;
+    };
+    pending["role"] == "assistant"
+        && call["id"] == id
+        && call["function"]["name"] == "read_file"
+        && proposal(before, false).is_some_and(|edit| edit.suggested_args.path == path)
+}
+
+fn proposal(messages: &[Value], allow_reread: bool) -> Option<Proposal> {
     let mut history = crate::task_origin::current_task_messages(messages);
     let last = take_exchange(&mut history)?;
     // One fresh reread of the unchanged target may occur before resubmission.
-    let (check, reread) = if last.name == "read_file" {
+    let (check, reread) = if allow_reread && last.name == "read_file" {
         (take_exchange(&mut history)?, Some(last))
     } else {
         (last, None)
@@ -179,7 +198,9 @@ pub(super) fn project(messages: &[Value]) -> Option<Proposal> {
     }
     let original = full_read(&read, &edit.path)?;
     if let Some(reread) = reread {
-        if full_read(&reread, &edit.path)? != original {
+        if [read.id, blocked.id, check.id].contains(&reread.id)
+            || full_read(&reread, &edit.path)? != original
+        {
             return None;
         }
     }

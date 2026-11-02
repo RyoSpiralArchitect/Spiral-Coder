@@ -1416,3 +1416,9 @@ replacement action and it goes through the ordinary validation again.
 Native next-action Observer requests to hosted OpenAI ask for a JSON object.
 The response-format request shapes provider output. Only the existing native
 validator can accept an action or make a hint eligible for forwarding.
+
+In a bounded Web task each buffered provider send reserves its own ledger
+entry, including a compatibility retry or a switch to the completions endpoint.
+Text-only named file blocks use the same explicit edit list before their batch
+can execute. The first full reread to confirm a deferred proposal bypasses the
+in-process file cache and compares the returned bytes with the original read.
