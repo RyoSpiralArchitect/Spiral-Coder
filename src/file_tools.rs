@@ -652,6 +652,13 @@ pub fn tool_search_files(
         let mut files: Vec<PathBuf> = Vec::new();
 
         for entry in rd.flatten() {
+            if entry
+                .file_type()
+                .map(|kind| kind.is_symlink())
+                .unwrap_or(false)
+            {
+                continue;
+            }
             let path = entry.path();
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             if name.starts_with('.') && name != ".spiral-coder.md" {
