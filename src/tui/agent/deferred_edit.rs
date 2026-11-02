@@ -105,32 +105,6 @@ fn full_read<'a>(read: &Exchange<'a>, path: &str) -> Option<&'a str> {
     .then_some(body)
 }
 
-// The editor supports other shapes, including multi-hunk partial success. Only
-// one bounded, anchored hunk is offered again. A prefixed marker is file content.
-fn single_hunk(diff: &str) -> bool {
-    let mut lines = diff.lines().peekable();
-    if !lines
-        .next()
-        .is_some_and(|header| header == "@@" || header.starts_with("@@ "))
-    {
-        return false;
-    }
-    let mut anchor = false;
-    let mut changed = false;
-    while let Some(line) = lines.next() {
-        if line == "*** End Patch" && lines.peek().is_none() {
-            break;
-        }
-        if !line.starts_with([' ', '+', '-']) || line.starts_with("+++") || line.starts_with("---")
-        {
-            return false;
-        }
-        anchor |= !line.starts_with('+') && !line[1..].trim().is_empty();
-        changed |= line.starts_with(['+', '-']);
-    }
-    anchor && changed
-}
-
 pub(super) fn project(messages: &[Value]) -> Option<Proposal> {
     let mut history = crate::task_origin::current_task_messages(messages);
     let last = take_exchange(&mut history)?;
@@ -185,15 +159,19 @@ pub(super) fn project(messages: &[Value]) -> Option<Proposal> {
         || edit.path.chars().any(char::is_control)
         || edit.path.split('/').any(|s| matches!(s, "" | "." | ".."))
         || edit.diff.len() > 4096
-        || !single_hunk(&edit.diff)
     {
         return None;
     }
     let task = crate::task_origin::root_user_text(messages);
-    if task.is_empty()
-        || requirement_proof::parse(task)
+    let eligible_path = if let Some(scope) = super::explicit_edit_scope::Scope::parse(task) {
+        scope.allows(&edit.path, None)
+    } else {
+        requirement_proof::parse(task)
             .ok()?
-            .is_some_and(|c| !c.names_artifact(&edit.path))
+            .is_none_or(|c| c.names_artifact(&edit.path))
+    };
+    if task.is_empty()
+        || !eligible_path
         || crate::task_scope::artifact_scope(task)
             .is_some_and(|scope| !scope.target_files.contains(&edit.path))
     {
@@ -207,9 +185,7 @@ pub(super) fn project(messages: &[Value]) -> Option<Proposal> {
     }
     // Preview the bytes the model actually saw. The live tool rechecks its
     // target and its normal approval policy when a new call is submitted.
-    let (after, _) =
-        crate::file_tools::edit_preview::diff(&edit.path, original, &edit.diff).ok()?;
-    if after == original {
+    if !crate::file_tools::edit_preview::resumable(&edit.path, original, &edit.diff) {
         return None;
     }
     Some(Proposal {

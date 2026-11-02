@@ -2,7 +2,7 @@
 //! Snapshots are local session metadata; only correlated tool results restore them.
 use std::collections::BTreeMap;
 use std::io::Read;
-use std::path::{Component, Path};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -12,6 +12,7 @@ use super::exec_verification::ExecVerificationContext;
 use super::ExecKind;
 use crate::execution_evidence::{auto_test_outcome, file_edit_succeeded, AutoTestOutcome};
 use crate::streaming::ToolCallData;
+use crate::task_scope::relative_path;
 
 #[path = "baseline_failure.rs"]
 mod baseline_failure;

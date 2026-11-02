@@ -127,3 +127,10 @@ fn superseded_ambiguous_out_of_scope_and_mixed_proposals_are_withheld_whole() {
     m[0]["content"]=json!("Repair the declared file.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"repair\",\"description\":\"Edit the source\",\"artifacts\":[{\"path\":\"other.rs\",\"kind\":\"source\"}]}]}\n</task_requirements>");
     assert!(project(&m).is_none());
 }
+
+#[test]
+fn a_unique_substring_inside_a_different_line_is_not_a_retry_anchor() {
+    let mut m = history("@@\n-old\n+new");
+    m[2]["content"] = json!(format!("[{PATH}] (1 lines, 5 bytes)\ncold\n"));
+    assert!(project(&m).is_none());
+}

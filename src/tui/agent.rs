@@ -67,6 +67,7 @@ mod exec_location_tests;
 mod exec_proof;
 mod exec_verification;
 mod explicit_checks;
+mod explicit_edit_scope;
 mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
@@ -12862,6 +12863,9 @@ Required now: run `{command}`.\n{verification_status}"
                         &messages,
                         test_cmd.as_deref(),
                     )
+            })
+            .or_else(|| {
+                explicit_edit_scope::native_issue(&root_user_text, &tc, tool_root_abs.as_deref())
             })
         {
             state = AgentState::Recovery;

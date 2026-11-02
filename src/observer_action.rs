@@ -69,6 +69,15 @@ pub(crate) fn validation_issue(
         return None;
     }
     let obligations = agent::task_obligations::project(messages, test_command);
+    if let Some(problem) = obligations.explicit_edit_paths.as_ref().and_then(|scope| {
+        scope.issue(
+            action.suggested_tool.as_deref()?,
+            &action.suggested_args,
+            None,
+        )
+    }) {
+        return Some(problem);
+    }
     if let Some(required) = obligations.required_diagnostic_read {
         let supplied = action.suggested_args["path"]
             .as_str()

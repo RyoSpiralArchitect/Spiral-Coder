@@ -76,6 +76,16 @@ impl MetaHarness {
         test_cmd: Option<&str>,
         tool_root: Option<&str>,
     ) -> Self {
+        let task_messages = crate::task_origin::current_task_messages(messages);
+        let messages = if super::explicit_edit_scope::Scope::parse(
+            crate::task_origin::root_user_text(task_messages),
+        )
+        .is_some()
+        {
+            task_messages
+        } else {
+            messages
+        };
         if let Some(policy) =
             detect_repo_scaffold_drift(task_harness, messages, test_cmd, tool_root)
         {
@@ -281,15 +291,26 @@ fn detect_repeated_observation_loop(
         ArtifactMode::ObserveOnly => return None,
     };
 
+    let next_target = if task_harness.artifact_mode == ArtifactMode::ExistingFiles {
+        let target = fix_existing_target_hint(messages);
+        if target.is_none()
+            && super::explicit_edit_scope::Scope::parse(crate::task_origin::root_user_text(
+                messages,
+            ))
+            .is_some()
+        {
+            return None;
+        }
+        target
+    } else {
+        None
+    };
     Some(PolicyDelta {
         pattern: FailurePattern::RepeatedObservationLoop,
         action,
         evidence_count: window.total_successes_since_mutation,
         attempted_command: window.last_command,
-        next_target: match task_harness.artifact_mode {
-            ArtifactMode::ExistingFiles => fix_existing_target_hint(messages),
-            _ => None,
-        },
+        next_target,
     })
 }
 

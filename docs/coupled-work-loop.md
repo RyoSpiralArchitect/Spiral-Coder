@@ -640,4 +640,12 @@ specific verification gate, and the successful check which cleared the native
 recovery state. It previews the proposal against the recorded read. A new
 submission uses the regular file tool, current anchors and edit approval.
 Another native action retires the proposal, except for one complete reread of
-the same unchanged target. Other file edits require separate calls.
+the same unchanged target. Each nonempty search region must match whole lines
+at a unique position in the recorded file. Other file edits require separate calls.
+
+When a human task includes a standalone `Allowed paths only:` list, both roles
+receive the listed files as edit targets. Reading a module declaration can
+still help explain the code. It can only lead to a forced edit suggestion for
+a file on that list, grounded in observations from the current task.
+The native file tools also check the proposed path before executing a write.
+Required deliverables can be a subset of the allowed files.

@@ -1385,3 +1385,13 @@ missing or partial source, user refusal, mixed diff or stale target withhold it.
 The preview is bounded to a 4 KiB one-hunk diff and a complete recorded read of
 at most 32 KiB. Both the normal governor and the ordinary file tool judge any
 fresh submission. The field creates no persistent queue, receipt or edit.
+
+`task_obligations.explicit_edit_paths` carries the current human task's literal
+file list when a standalone `Allowed paths only:` line is followed by Markdown
+dash bullets. Entries are bounded to 64 workspace-relative file names of up to
+240 bytes each. Quoted examples, fenced code, glob patterns and an ambiguous
+list do not establish this field. A new human task supplies its own scope.
+The native `write_file`, `patch_file` and `apply_diff` tools check the target,
+and the Observer validates suggestions for those tools against the same list.
+Read operations can inspect files outside the list. Shell commands and the
+independent post-run scope check retain their own policies.

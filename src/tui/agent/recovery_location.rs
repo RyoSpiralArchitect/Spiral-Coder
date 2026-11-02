@@ -7,27 +7,6 @@ pub(super) fn argument_path(tc: &ToolCallData) -> Option<String> {
         .map(str::to_string)
 }
 
-pub(super) fn relative_path(path: &str, root: Option<&str>) -> Option<String> {
-    if path.is_empty() || path.len() > 1024 || path.contains(['\n', '\r', '\0', '…']) {
-        return None;
-    }
-    let path = Path::new(path);
-    let path = if path.is_absolute() {
-        path.strip_prefix(Path::new(root?)).ok()?
-    } else {
-        path
-    };
-    let mut parts = Vec::new();
-    for component in path.components() {
-        match component {
-            Component::Normal(part) => parts.push(part.to_str()?),
-            Component::CurDir => {}
-            _ => return None,
-        }
-    }
-    (!parts.is_empty()).then(|| parts.join("/"))
-}
-
 pub(super) fn localize(
     tc: &ToolCallData,
     output: &str,
