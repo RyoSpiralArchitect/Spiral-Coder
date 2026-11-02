@@ -1,0 +1,37 @@
+[
+  {
+    "executor_sha256": "9e900aa410252db0ab7079fd7cdb860082e0f55750f31a73faf09ef9053b7c1c",
+    "source_run_receipt_sha256": "8e5ae78301fc919fdf17b5b5db8dcaa54972ccac45ff3f24a85f98196344a468",
+    "input": "full retained prefix through step 17",
+    "recovery_stage": "diagnose",
+    "menu": {
+      "phase": "work",
+      "contract_recheck": null,
+      "command_enum": null,
+      "id_enum": [
+        "required-1",
+        "required-2"
+      ]
+    },
+    "external_requests": 0,
+    "file_actions_executed": 0
+  },
+  {
+    "executor_sha256": "9e900aa410252db0ab7079fd7cdb860082e0f55750f31a73faf09ef9053b7c1c",
+    "source_run_receipt_sha256": "8e5ae78301fc919fdf17b5b5db8dcaa54972ccac45ff3f24a85f98196344a468",
+    "input": "isolated retained tool steps 1,2,17",
+    "recovery_stage": "verify",
+    "menu": {
+      "phase": "work",
+      "contract_recheck": "python3 -S -m unittest -v scripts.catalog_visible",
+      "command_enum": [
+        "python3 -S -m unittest -v scripts.catalog_visible"
+      ],
+      "id_enum": [
+        "required-1"
+      ]
+    },
+    "external_requests": 0,
+    "file_actions_executed": 0
+  }
+]
