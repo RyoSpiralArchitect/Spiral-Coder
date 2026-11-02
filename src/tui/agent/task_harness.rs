@@ -1369,6 +1369,15 @@ pub(super) fn build_fix_stage_progress_hint(
         return None;
     }
 
+    let task = crate::task_origin::current_task_messages(messages);
+    if harness.lane == TaskLane::FixExisting
+        && super::explicit_edit_scope::Scope::parse(crate::task_origin::root_user_text(task))
+            .is_some()
+        && !super::meta_harness::observation_window_since_last_mutation(task, test_cmd).searched
+    {
+        return Some("[Task Harness]\nIf the edit is clear, apply it to a listed file. If you still need the implementation or a caller, search for one literal identifier in a listed file or its immediate directory. Use the returned locations for the next action.".into());
+    }
+
     let recent = history
         .last_successful_command
         .as_deref()
@@ -1440,8 +1449,17 @@ enum FixExistingFocus {
 }
 
 fn infer_fix_existing_focus(messages: &[Value]) -> Option<FixExistingFocus> {
+    let scope =
+        super::explicit_edit_scope::Scope::parse(crate::task_origin::root_user_text(messages));
+    let messages = if scope.is_some() {
+        crate::task_origin::current_task_messages(messages)
+    } else {
+        messages
+    };
+    let eligible = |candidate: &String| scope.as_ref().is_none_or(|s| s.allows(candidate, None));
     let reads = successful_read_contents(messages);
     let target = search_derived_fix_existing_path(messages)
+        .filter(eligible)
         .or_else(|| {
             ["src/lib.rs", "src/main.rs", "lib.rs", "main.rs"]
                 .iter()
@@ -1449,10 +1467,10 @@ fn infer_fix_existing_focus(messages: &[Value]) -> Option<FixExistingFocus> {
                     let body = reads.get(*entry)?;
                     rust_module_file_candidates(entry, body)
                         .into_iter()
-                        .find(|candidate| !candidate.trim().is_empty())
+                        .find(|candidate| !candidate.trim().is_empty() && eligible(candidate))
                 })
         })
-        .or_else(|| latest_successful_source_read_path(messages, &reads))?;
+        .or_else(|| latest_successful_source_read_path(messages, &reads).filter(eligible))?;
 
     if reads.contains_key(target.as_str()) {
         Some(FixExistingFocus::PatchImplementation(target))

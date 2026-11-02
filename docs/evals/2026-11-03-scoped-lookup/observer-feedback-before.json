@@ -1,0 +1,11 @@
+{
+  "executor_sha256": "f6c922b097acff0ec2bea17babc17e1cdf6a92228385c15b67252908e8dc6226",
+  "run_receipt_sha256": "0ee788a5b94ba11a994ea88f6abe32f76952d648a915b0c40846096cf0239b66",
+  "original_response_sha256": "154f49e3b8e9f4f7a42b56b40a561dbbed8d50f2238806d86edcad81d56ef89d",
+  "original_issue": "suggested_args for read_file: read at most 200 lines per call; narrow start_line/end_line",
+  "retry_response_sha256": "ea08132b441eae1840a3b668ba046abfe8820839c3633619ac5b1b842cd07b5d",
+  "retry_issue": "expected `:` at line 1 column 1003",
+  "required_path": "src/tui_replay/catalog.rs",
+  "request_sha256": "9506affc06cc918998d60a696e31430e170b4271c6d93cf808f0640d62c082b8",
+  "file_actions_executed": 0
+}

@@ -152,6 +152,33 @@ pub(crate) fn diff(path: &str, content: &str, diff: &str) -> Result<(String, Str
     ))
 }
 
+/// Offer only an unambiguous single hunk that changes the recorded full-file read.
+pub(crate) fn resumable(path: &str, source: &str, proposal: &str) -> bool {
+    let Ok(repaired) = without_patch_trailer(proposal, source) else {
+        return false;
+    };
+    let mut lines = repaired.unwrap_or(proposal).lines();
+    if !lines
+        .next()
+        .is_some_and(|header| header == "@@" || header.starts_with("@@ "))
+    {
+        return false;
+    }
+    let mut original = Vec::new();
+    for line in lines {
+        if line.starts_with("---") || line.starts_with("+++") {
+            return false;
+        }
+        if let Some(text) = line.strip_prefix([' ', '-']) {
+            original.push(text);
+        } else if !line.starts_with('+') {
+            return false;
+        }
+    }
+    whole_line_anchor(source, &original.join("\n"))
+        && diff(path, source, proposal).is_ok_and(|(after, _)| after != source)
+}
+
 /// Recognize only a bare footer on single-file, explicitly prefixed hunks.
 /// A marker with a diff prefix is file content and never enters this repair.
 fn without_patch_trailer<'a>(diff: &'a str, content: &str) -> Result<Option<&'a str>> {

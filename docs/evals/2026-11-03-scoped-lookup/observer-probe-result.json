@@ -1,0 +1,17 @@
+{
+  "executor_sha256": "daf89b8cdf28e243d2c4868bb79311bedf7724d6e6e8fe3685e6f47455063bb3",
+  "run_receipt_sha256": "0ee788a5b94ba11a994ea88f6abe32f76952d648a915b0c40846096cf0239b66",
+  "original_response_sha256": "154f49e3b8e9f4f7a42b56b40a561dbbed8d50f2238806d86edcad81d56ef89d",
+  "original_issue": "suggested_args for read_file: read at most 200 lines per call; narrow start_line/end_line. The current native diagnosis requires reading the reported file first. If proposing a tool, return one read_file suggestion. Its complete arguments can be {\"path\":\"src/tui_replay/catalog.rs\"}. Omit optional line bounds or narrow the range.",
+  "retry_response_sha256": "ea08132b441eae1840a3b668ba046abfe8820839c3633619ac5b1b842cd07b5d",
+  "retry_issue": "expected `:` at line 1 column 1003",
+  "required_path": "src/tui_replay/catalog.rs",
+  "request_sha256": "9d02c0158139156f78d3fbfced2fbbeb9b3f139828e07e5728973b7b92d75746",
+  "file_actions_executed": 0,
+  "reply_sha256": "3f62777f8d521ffc499a4850730dacfb8add32e6738146864bfb8048c868bc29",
+  "issue": "expected `:` at line 1 column 859",
+  "hint_forwardable": false,
+  "suggested_tool": null,
+  "suggested_args": null,
+  "passed": false
+}

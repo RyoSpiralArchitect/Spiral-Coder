@@ -1375,3 +1375,54 @@ An implied write or shell action has no native call ID. Its latest observation
 can instead appear in `execution_evidence.cargo_input_handoff` with a null
 `tool_call_id`. A later executed edit or shell action supersedes that observation.
 Neither field participates in verification proof. [File and target semantics](cargo-inputs.md)
+
+`task_obligations.deferred_edit` is an optional advisory derived from correlated
+calls in the current human task. It carries the original proposal call ID, the
+verification call ID and command, and the original single-file arguments.
+System context, assistant prose and explicit runtime continuations preserve the
+native sequence. A new human request, an implied action, another operation,
+missing or partial source, user refusal, mixed diff or stale target withhold it.
+The preview is bounded to a 4 KiB one-hunk diff and a complete recorded read of
+at most 32 KiB. Both the normal governor and the ordinary file tool judge any
+fresh submission. The field creates no persistent queue, receipt or edit.
+
+`task_obligations.explicit_edit_paths` carries the current human task's literal
+file list when a standalone `Allowed paths only:` line is followed by Markdown
+dash bullets. Entries are bounded to 64 workspace-relative file names of up to
+240 bytes each. Quoted examples, fenced code, glob patterns and an ambiguous
+list do not establish this field. A new human task supplies its own scope.
+The native `write_file`, `patch_file` and `apply_diff` tools check the target,
+and the Observer validates suggestions for those tools against the same list.
+Read operations can inspect files outside the list. Shell commands and the
+independent post-run scope check retain their own policies.
+
+During a fix, one scoped native symbol lookup can pass the observation limit.
+It needs a literal identifier and a listed file or its immediate directory. A
+correlated search result (including no match or a search error) spends the
+opportunity in the current mutation window. A pre-execution refusal does not.
+The result supplies locations for inspection. Acceptance still requires the
+original native checks and independent assessment.
+
+For hosted OpenAI Chat Completions, native and Web tool requests set
+`parallel_tool_calls` to false. Native `request_started` telemetry records
+the boolean when sent. A named unsupported tool option can be removed once
+per request option and endpoint. The runtime checks the actual number of
+returned tool calls before execution.
+
+When the Observer proposes invalid `read_file` arguments during a required
+diagnostic read, its one repair prompt carries both the validation error and
+the current path from the native recovery state. The Observer supplies the
+replacement action and it goes through the ordinary validation again.
+Native next-action Observer requests to hosted OpenAI ask for a JSON object.
+The response-format request shapes provider output. Only the existing native
+validator can accept an action or make a hint eligible for forwarding.
+
+In a bounded Web task each buffered provider send reserves its own ledger
+entry, including a compatibility retry or a switch to the completions endpoint.
+Text-only named file blocks use the same explicit edit list before their batch
+can execute. The first full reread to confirm a deferred proposal bypasses the
+in-process file cache and compares the returned bytes with the original read.
+The bounded Web tool client reports upstream redirects directly, so a 307 or
+308 cannot trigger another provider POST inside a single ledger entry. Named
+Markdown fences supply file contents even when their language is a shell.
+Scope validation checks every named target before the six-file write limit.

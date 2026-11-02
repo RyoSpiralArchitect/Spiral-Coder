@@ -18,10 +18,14 @@ impl RequestMeter {
     ) -> Result<Self> {
         let guard = crate::work_budget::begin(payload)?;
         let estimated_input_tokens = payload.to_string().chars().count().div_ceil(4);
+        let mut data = json!({"estimated_input_tokens":estimated_input_tokens});
+        if let Some(parallel) = payload["parallel_tool_calls"].as_bool() {
+            data["parallel_tool_calls"] = json!(parallel);
+        }
         let _ = tx
             .send(StreamToken::Telemetry(TelemetryEvent {
                 event: "request_started".into(),
-                data: json!({"estimated_input_tokens":estimated_input_tokens}),
+                data,
             }))
             .await;
         Ok(Self {

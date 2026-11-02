@@ -1,0 +1,35 @@
+{
+  "declaration_sha256": "7a4e889c742f41dde91ec7aa20d14bd4991de2c3e9dcd2dc6265b2ba39b14464",
+  "run_receipt_sha256": "7ca84731b68394df12fa667df8e94c86762a9da453320fdd848c69ec0c83c3db",
+  "retained_verification_holds": [],
+  "successful_exec_prefixes": [
+    {
+      "step": 27,
+      "command": "cargo test --locked --bin spiral-coder -q",
+      "eligible": false
+    }
+  ],
+  "retained_post_check_offers": [],
+  "forced_edit_targets": [
+    {
+      "t_ms": 67956,
+      "target": "src/task_scope.rs"
+    },
+    {
+      "t_ms": 71394,
+      "target": "src/task_scope.rs"
+    },
+    {
+      "t_ms": 78429,
+      "target": "src/task_scope.rs"
+    }
+  ],
+  "role_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "termination": "blocked",
+  "completed": false,
+  "qualified_candidate": false,
+  "post_run_provider_requests": 0
+}

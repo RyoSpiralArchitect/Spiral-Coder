@@ -1,0 +1,96 @@
+diff --git a/src/task_scope.rs b/src/task_scope.rs
+index 231b2fa..4eb6daf 100644
+--- a/src/task_scope.rs
++++ b/src/task_scope.rs
+@@ -1,4 +1,5 @@
+ //! Explicit artifact scope from the original human-approved benchmark plan.
++//! Parsing remains deliberately independent of replay catalog behavior.
+ //! Path mentions in an objective are subjects, not implicit edit targets.
+ use serde::Serialize;
+ 
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..409151a 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,6 +8,7 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
+ fn default_spec_version() -> u32 {
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..5960934
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,68 @@
++use anyhow::{Context, Result};
++use serde::Serialize;
++use std::path::{Path, PathBuf};
++
++use super::{load_spec, resolve_path, validate_case, TuiReplayCase, TuiReplaySpec};
++
++#[derive(Debug, Serialize)]
++struct Catalog {
++    version: u32,
++    total: usize,
++    cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase {
++    id: String,
++    tags: Vec<String>,
++}
++
++pub fn select_cases<'a>(spec: &'a TuiReplaySpec, filter: Option<&str>, max_cases: Option<usize>) -> Vec<&'a TuiReplayCase> {
++    let filter = filter.map(str::to_ascii_lowercase);
++    let mut selected: Vec<_> = spec.cases.iter().filter(|case| {
++        filter.as_deref().is_none_or(|needle| {
++            case.id.to_ascii_lowercase().contains(needle)
++                || case.tags.iter().any(|tag| tag.to_ascii_lowercase().contains(needle))
++        })
++    }).collect();
++    if let Some(limit) = max_cases {
++        selected.truncate(limit.max(1));
++    }
++    selected
++}
++
++pub fn list(
++    tool_root: Option<String>,
++    spec: String,
++    filter: Option<String>,
++    max_cases: Option<usize>,
++) -> Result<()> {
++    let cwd = std::env::current_dir().context("failed to get current directory")?;
++    let root = PathBuf::from(tool_root.unwrap_or_else(|| cwd.to_string_lossy().into_owned()));
++    let spec_path = resolve_path(&root, PathBuf::from(spec));
++    let loaded = load_spec(&spec_path)?;
++    let selected = select_cases(&loaded, filter.as_deref(), max_cases);
++    if selected.is_empty() {
++        anyhow::bail!("no replay cases selected from {}", spec_path.display());
++    }
++    for case in &loaded.cases {
++        if case.checks.is_empty() {
++            anyhow::bail!("replay case '{}' has empty checks", case.id);
++        }
++    }
++    let output = Catalog {
++        version: 1,
++        total: selected.len(),
++        cases: selected.into_iter().map(|case| CatalogCase { id: case.id.clone(), tags: case.tags.clone() }).collect(),
++    };
++    println!("{}", serde_json::to_string(&output)?);
++    Ok(())
++}
++
++#[allow(dead_code)]
++fn validate_selected(spec_path: &Path, cases: &[&TuiReplayCase]) -> Result<()> {
++    for case in cases {
++        validate_case(case).with_context(|| format!("invalid case '{}' in {}", case.id, spec_path.display()))?;
++    }
++    Ok(())
++}

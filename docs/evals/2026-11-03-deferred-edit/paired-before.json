@@ -1,0 +1,21 @@
+{
+  "executor_sha256": "0c5e2bc8f1bd0f72100e4abf48db2e3f13140a32c00f6aafc3fa5bd06efb31a3",
+  "original_step": 21,
+  "seed_ends_at_step": 22,
+  "authored_diff_sha256": "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33",
+  "external_provider_requests": 0,
+  "local_roles": [
+    "coder",
+    "observer"
+  ],
+  "offer_digests_received": {
+    "coder": [],
+    "observer": []
+  },
+  "changed_paths": [],
+  "authored_retry": false,
+  "retry_results": [],
+  "matching_assists": [],
+  "packaged_oracle_exit": 1,
+  "report_sha256": "ae0c2b3d2e71f111d4ee0e7c7dcd7d98171f3156b20d17b4af75c622002db38e"
+}

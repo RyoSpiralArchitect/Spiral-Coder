@@ -8,6 +8,8 @@ use serde_json::Value;
 pub(crate) struct TaskObligations {
     pub work_progress: super::work_progress::WorkProgress,
     pub artifact_scope: Option<crate::task_scope::ArtifactScope>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explicit_edit_paths: Option<super::explicit_edit_scope::Scope>,
     pub required_exact_checks: Vec<String>,
     pub pending_exact_checks: Vec<String>,
     pub final_answer: Value,
@@ -19,6 +21,8 @@ pub(crate) struct TaskObligations {
     pub task_requirements: super::requirement_proof::Status,
     pub repair_brief: Option<super::repair_brief::RepairBrief>,
     pub report_repair: Option<super::report_repair::ReportRepair>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deferred_edit: Option<super::deferred_edit::Proposal>,
 }
 
 impl TaskObligations {
@@ -42,6 +46,11 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         .chain(edits.diagnostic_hint())
         .collect();
     TaskObligations {
+        deferred_edit: if pending_recovery.is_empty() {
+            super::deferred_edit::project(messages)
+        } else {
+            None
+        },
         work_progress: super::work_progress::project(root, &evidence),
         report_repair: super::report_repair::project(
             messages,
@@ -51,6 +60,7 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         ),
         repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
         artifact_scope: crate::task_scope::artifact_scope(root),
+        explicit_edit_paths: super::explicit_edit_scope::Scope::parse(root),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
         final_answer: final_handoff::report_context(root, messages, test_cmd),
@@ -79,8 +89,10 @@ pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<Strin
             == task_harness::TaskLane::FixExisting
         && obligations.work_progress.has_repeated_observations();
     if obligations.artifact_scope.is_none()
+        && obligations.explicit_edit_paths.is_none()
         && !obligations.task_requirements.declared
         && obligations.pending_recovery.is_empty()
+        && obligations.deferred_edit.is_none()
         && obligations.final_answer["clauses"]
             .as_array()
             .is_none_or(Vec::is_empty)

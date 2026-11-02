@@ -1,0 +1,22 @@
+{
+  "executor_sha256": "af1577f6a551161815153d2af0a991a4d3a9e85b54ff62fe20d374851e0f5b3a",
+  "run_receipt_sha256": "7ca84731b68394df12fa667df8e94c86762a9da453320fdd848c69ec0c83c3db",
+  "original_call_id": "call_selgWGjyG6ZhdYUinEzcT4dm",
+  "original_step": 14,
+  "path": "src/task_scope.rs",
+  "file_before_sha256": "0f8aaca3139ba0cc1bf429c1e7dc226f62476d3adc0fef18070d4ab59d1851ff",
+  "file_after_sha256": "7b811d5d9aa3e3f8aac5e361f548cdc7e2d7ce34212edb7454c8e4541e43ef17",
+  "changed": true,
+  "executed": true,
+  "same_arguments": true,
+  "result_header": "OK: patched 'src/task_scope.rs' (+1 lines, 86 total)",
+  "scope_feedback": null,
+  "forced_edit_targets": [
+    "src/task_scope.rs"
+  ],
+  "local_requests": {
+    "coder": 2,
+    "observer": 0
+  },
+  "external_provider_requests": 0
+}

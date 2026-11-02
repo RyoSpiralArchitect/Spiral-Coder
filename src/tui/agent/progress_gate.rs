@@ -42,8 +42,9 @@ pub(in super::super) fn build_progress_gate_block(
         return None;
     }
 
+    let task = crate::task_origin::current_task_messages(messages);
     let history =
-        super::super::meta_harness::observation_window_since_last_mutation(messages, test_cmd);
+        super::super::meta_harness::observation_window_since_last_mutation(task, test_cmd);
     if file_tool_consec_failures > 0 {
         let context = super::super::exec_verification::ExecVerificationContext::from_messages(
             test_cmd, messages,
@@ -78,6 +79,15 @@ pub(in super::super) fn build_progress_gate_block(
             )
         });
     if !verify_without_mutation {
+        if harness.lane == TaskLane::FixExisting
+            && !history.searched
+            && super::super::explicit_edit_scope::symbol_lookup(
+                crate::task_origin::root_user_text(task),
+                tc,
+            )
+        {
+            return None;
+        }
         let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
         let allow_first_target_read = harness.artifact_mode == ArtifactMode::ExistingFiles
             && tc.name == "read_file"
@@ -393,6 +403,46 @@ mod tests {
                 "successful diagnosis must not allow endless rereads"
             );
         }
+    }
+
+    #[test]
+    fn scoped_repair_can_locate_one_symbol_after_orientation() {
+        let task = "Repair the CLI.\nAllowed paths only:\n- src/main.rs\n- docs/usage.md";
+        let mut history = vec![json!({"role":"user","content":task})];
+        history.extend(observed_project("Cargo.toml"));
+        let lookup = json!({"dir":"src","pattern":"TuiReplay"});
+        let search = |h: &[Value], q: Value| blocked(h, "search_files", q);
+        for q in [
+            json!({"dir":".","pattern":"TuiReplay"}),
+            json!({"dir":"tests","pattern":"TuiReplay"}),
+            json!({"dir":"src","pattern":"*"}),
+            json!({"dir":"src","pattern":"a b"}),
+        ] {
+            assert!(search(&history, q).is_some());
+        }
+        assert!(
+            search(&history, lookup.clone()).is_none(),
+            "first scoped symbol lookup was rejected"
+        );
+        tool(
+            &mut history,
+            "search_files",
+            lookup.clone(),
+            "GOVERNOR BLOCKED",
+        );
+        assert!(search(&history, lookup.clone()).is_none());
+        tool(
+            &mut history,
+            "search_files",
+            lookup.clone(),
+            "[search_files] No matches for 'TuiReplay'",
+        );
+        assert!(search(&history, lookup).is_some());
+        assert!(search(
+            &history,
+            json!({"dir":"src/main.rs","pattern":"AnotherSymbol"})
+        )
+        .is_some());
     }
 
     #[test]

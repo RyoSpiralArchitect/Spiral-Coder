@@ -1,0 +1,24 @@
+{
+  "executor_sha256": "f6c922b097acff0ec2bea17babc17e1cdf6a92228385c15b67252908e8dc6226",
+  "run_receipt_sha256": "7ca84731b68394df12fa667df8e94c86762a9da453320fdd848c69ec0c83c3db",
+  "original_call_id": "call_pu4rywpp2NN4jKnoIo6h1l4L",
+  "original_step": 13,
+  "arguments": {
+    "dir": "src",
+    "pattern": "TuiReplay"
+  },
+  "executed": true,
+  "same_tool": true,
+  "result_header": "[search_files: 'TuiReplay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)]",
+  "source_locations": [
+    "src/tui_replay.rs:18",
+    "src/tui_replay.rs:22",
+    "src/tui_replay.rs:24",
+    "src/tui_replay.rs:28",
+    "src/tui_replay.rs:36",
+    "src/tui_replay.rs:50"
+  ],
+  "main_hits": [],
+  "changed_paths": [],
+  "external_provider_requests": 0
+}

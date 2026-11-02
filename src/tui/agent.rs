@@ -55,6 +55,7 @@ mod check_catalog;
 #[cfg(test)]
 mod check_catalog_tests;
 pub(crate) mod current_evidence;
+mod deferred_edit;
 mod done_gate;
 mod edit_failure;
 mod evaluator_loop;
@@ -66,6 +67,7 @@ mod exec_location_tests;
 mod exec_proof;
 mod exec_verification;
 mod explicit_checks;
+mod explicit_edit_scope;
 mod failure_diagnostics;
 mod failure_localization;
 mod failure_memory;
@@ -74,6 +76,7 @@ mod final_instructions;
 mod followup_requirements;
 mod harness_evolution;
 mod impact_recovery;
+mod implied_actions;
 mod json_fields;
 mod memory;
 mod message_window;
@@ -6579,283 +6582,6 @@ struct ImpliedWriteFile {
     content: String,
 }
 
-fn is_shell_fence_lang(lang_hint: &str) -> bool {
-    matches!(
-        lang_hint,
-        "bash" | "sh" | "shell" | "zsh" | "powershell" | "pwsh" | "ps1" | "ps" | "console"
-    )
-}
-
-fn looks_like_shell_command(script: &str) -> bool {
-    let low = script.to_ascii_lowercase();
-    let pats = [
-        // PowerShell
-        "new-item",
-        "set-content",
-        "add-content",
-        "remove-item",
-        "copy-item",
-        "move-item",
-        "get-content",
-        "test-path",
-        // Common CLIs
-        "\ngit ",
-        "git ",
-        "\ncargo ",
-        "cargo ",
-        "\npython",
-        "python ",
-        "\nnode ",
-        "node ",
-        "\nnpm ",
-        "npm ",
-        "\npnpm ",
-        "pnpm ",
-        "\nyarn ",
-        "yarn ",
-        // Shell-ish
-        "\ncd ",
-        "\nmkdir",
-        "mkdir ",
-    ];
-    pats.iter().any(|p| low.contains(p))
-}
-
-fn extract_implied_exec_scripts(text: &str) -> Vec<ImpliedExecScript> {
-    let raw = text.replace("\r\n", "\n");
-    let mut out: Vec<ImpliedExecScript> = Vec::new();
-
-    let mut in_fence = false;
-    let mut fence_lang = String::new();
-    let mut buf: Vec<String> = Vec::new();
-
-    for line0 in raw.lines() {
-        let line = line0.trim_end_matches('\r');
-        let t = line.trim_start();
-        if !in_fence {
-            if let Some(rest) = t.strip_prefix("```") {
-                in_fence = true;
-                fence_lang = rest.trim().to_ascii_lowercase();
-                buf.clear();
-            }
-            continue;
-        }
-
-        // in_fence
-        if t.starts_with("```") {
-            let body = buf.join("\n");
-            let script = body.trim().to_string();
-            if !script.is_empty() {
-                let lang = fence_lang.trim().to_string();
-                if is_shell_fence_lang(lang.as_str()) || looks_like_shell_command(&script) {
-                    out.push(ImpliedExecScript {
-                        lang_hint: lang,
-                        script,
-                    });
-                    if out.len() >= 3 {
-                        return out;
-                    }
-                }
-            }
-            in_fence = false;
-            fence_lang.clear();
-            buf.clear();
-            continue;
-        }
-
-        buf.push(line.to_string());
-    }
-
-    // Fallback: some models omit code fences but still paste PS prompt lines.
-    if out.is_empty() {
-        let mut lines: Vec<String> = Vec::new();
-        for line0 in raw.lines() {
-            let t = line0.trim_start();
-            if t.starts_with("PS>") || t.starts_with("$ ") || t.starts_with("> ") {
-                lines.push(t.to_string());
-                if lines.len() >= 24 {
-                    break;
-                }
-            }
-        }
-        let joined = lines.join("\n").trim().to_string();
-        if !joined.is_empty() && looks_like_shell_command(&joined) {
-            out.push(ImpliedExecScript {
-                lang_hint: "powershell".to_string(),
-                script: joined,
-            });
-        }
-    }
-
-    out
-}
-
-fn sanitize_implied_path_candidate(raw: &str) -> Option<String> {
-    let mut p = raw.trim().to_string();
-    if p.is_empty() {
-        return None;
-    }
-
-    // Strip common wrappers.
-    if (p.starts_with('"') && p.ends_with('"')) || (p.starts_with('\'') && p.ends_with('\'')) {
-        p = p[1..p.len().saturating_sub(1)].to_string();
-    }
-    if p.starts_with('`') && p.ends_with('`') && p.len() >= 2 {
-        p = p[1..p.len().saturating_sub(1)].to_string();
-    }
-    p = p.trim().to_string();
-    if p.is_empty() {
-        return None;
-    }
-    if let Some(rest) = p.strip_prefix("./") {
-        p = rest.to_string();
-    }
-    if p.ends_with(':') {
-        p.pop();
-        p = p.trim().to_string();
-    }
-
-    // Avoid obvious false positives and dangerous strings.
-    if p.len() > 240 {
-        return None;
-    }
-    let low = p.to_ascii_lowercase();
-    if low.starts_with("http://") || low.starts_with("https://") {
-        return None;
-    }
-    if p.contains("```") || p.contains("<plan>") || p.contains("</plan>") {
-        return None;
-    }
-    // Avoid Windows-forbidden characters and other obvious junk.
-    if p.chars()
-        .any(|c| matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
-    {
-        return None;
-    }
-    // Keep it simple: paths with spaces are too ambiguous in free-form text.
-    if p.chars().any(|c| c.is_whitespace()) {
-        return None;
-    }
-
-    // Must look like a file path, not a version number / heading.
-    let has_sep = p.contains('/') || p.contains('\\');
-    let has_dot = p.contains('.');
-    if !has_sep && !has_dot {
-        // Common "no extension" files.
-        let low2 = p.to_ascii_lowercase();
-        let ok = matches!(
-            low2.as_str(),
-            "license" | "makefile" | "dockerfile" | "readme"
-        );
-        if !ok {
-            return None;
-        }
-    } else if has_dot && !has_sep {
-        // Reject things like "v0.2.0" (last segment has no alphabetic chars).
-        if let Some((_, ext)) = p.rsplit_once('.') {
-            let ext = ext.trim();
-            if ext.is_empty() {
-                return None;
-            }
-            let has_alpha = ext.chars().any(|c| c.is_ascii_alphabetic());
-            if !has_alpha {
-                return None;
-            }
-        }
-    }
-    Some(p)
-}
-
-fn parse_implied_path_line(line: &str) -> Option<String> {
-    let s = line.trim();
-    if s.is_empty() {
-        return None;
-    }
-
-    // Examples:
-    // - File: src/main.rs
-    // - Path: README.md
-    // - ### src/main.rs
-    // - src/main.rs
-    let s = s.strip_prefix("- ").unwrap_or(s);
-    let s = s.strip_prefix("* ").unwrap_or(s);
-
-    // "File: ..."
-    let low = s.to_ascii_lowercase();
-    for key in ["file:", "path:", "filepath:", "filename:"] {
-        if let Some(rest) = low.strip_prefix(key) {
-            // Use the original string slice to preserve case.
-            let orig_rest = s[s.len().saturating_sub(rest.len())..].trim();
-            return sanitize_implied_path_candidate(orig_rest);
-        }
-    }
-
-    // Markdown headers: ### path
-    if s.starts_with('#') {
-        let rest = s.trim_start_matches('#').trim();
-        return sanitize_implied_path_candidate(rest);
-    }
-
-    None
-}
-
-fn extract_implied_write_files(text: &str) -> Vec<ImpliedWriteFile> {
-    let raw = text.replace("\r\n", "\n");
-    let mut out: Vec<ImpliedWriteFile> = Vec::new();
-
-    let mut pending_path: Option<String> = None;
-    let mut in_fence = false;
-    let mut fence_lang = String::new();
-    let mut buf: Vec<String> = Vec::new();
-
-    for line0 in raw.lines() {
-        let line = line0.trim_end_matches('\r');
-        let t = line.trim();
-
-        if !in_fence {
-            if let Some(rest) = t.strip_prefix("```") {
-                in_fence = true;
-                fence_lang = rest.trim().to_ascii_lowercase();
-                buf.clear();
-                continue;
-            }
-            if let Some(p) = parse_implied_path_line(t) {
-                pending_path = Some(p);
-            }
-            continue;
-        }
-
-        // in_fence
-        if t.starts_with("```") {
-            let body = buf.join("\n");
-            let content = body.trim_end().to_string();
-            if !content.trim().is_empty() {
-                if let Some(path) = pending_path.take() {
-                    let lang = fence_lang.trim().to_string();
-                    if !matches!(lang.as_str(), "diff" | "patch") {
-                        out.push(ImpliedWriteFile {
-                            path,
-                            lang_hint: lang,
-                            content,
-                        });
-                        if out.len() >= 6 {
-                            return out;
-                        }
-                    }
-                }
-            }
-            in_fence = false;
-            fence_lang.clear();
-            buf.clear();
-            continue;
-        }
-
-        buf.push(line.to_string());
-    }
-
-    out
-}
-
 fn parse_exec_command_from_args(args: &str) -> Option<String> {
     // Standard tool schema uses JSON arguments: {"command":"...","cwd":"..."}.
     if let Ok(v) = serde_json::from_str::<serde_json::Value>(args) {
@@ -9137,11 +8863,16 @@ Execute only the new minimal action: {}",
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
+        // Preserve the authored lookup through target-selection heuristics.
+        // The ordinary progress and recovery gates still judge the actual call.
+        let scoped_lookup = task_harness.lane == task_harness::TaskLane::FixExisting
+            && recovery.stage == Some(RecoveryStage::Fix)
+            && tool_call
+                .as_ref()
+                .is_some_and(|tc| explicit_edit_scope::symbol_lookup(&root_user_text, tc));
+        let can_coerce = |tc: &&ToolCallData| !scoped_lookup && check_catalog::allows_coercion(tc);
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, canonical)) =
                 rewrite_tool_call_with_resolution(tc, &observation_evidence)
             {
@@ -9162,10 +8893,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_observation_tool_call(
                 &messages,
                 tc,
@@ -9193,10 +8921,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_followup_read_tool_call(
                 &messages,
                 tc,
@@ -9226,10 +8951,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_benchmark_plan_tool_call(
                 task_harness,
                 &messages,
@@ -9261,10 +8983,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 repair_fix_existing_mutation_tool_call(task_harness, &messages, tc, &root_user_text)
             {
@@ -9290,10 +9009,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 coerce_fix_existing_blocked_mutation_tool_call(
                     task_harness,
@@ -9325,10 +9041,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 coerce_existing_followup_tool_call(&messages, tc, &root_user_text, recovery.stage)
             {
@@ -9359,10 +9072,7 @@ Execute only the new minimal action: {}",
             .is_some_and(|tc| matches_required_existing_followup(&messages, tc, &root_user_text));
 
         if !preserves_required_followup {
-            if let Some(tc) = tool_call
-                .as_ref()
-                .filter(|tc| check_catalog::allows_coercion(tc))
-            {
+            if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
                 if let Some((rewritten, original, coerced)) =
                     coerce_fix_existing_literal_mutation_tool_call(
                         task_harness,
@@ -9395,10 +9105,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_fix_existing_tool_call(
                 task_harness,
                 &messages,
@@ -11034,8 +10741,36 @@ Next assistant turn: emit a <think> block and call ONE real tool."
             // Model didn't call tools. If the user asked for local actions, try implied scripts
             // (PowerShell/bash code fences) as a fallback so non-tool-calling models can still act.
             if goal_wants_actions && iter + 1 < max_iters {
-                let implied_scripts = extract_implied_exec_scripts(&assistant_text_clean);
-                let implied_files = extract_implied_write_files(&assistant_text_clean);
+                let (implied_scripts, implied_files) =
+                    implied_actions::extract(&assistant_text_clean);
+                if let Some(block) = explicit_edit_scope::implied_write_issue(
+                    &root_user_text,
+                    &implied_files,
+                    tool_root_abs.as_deref(),
+                ) {
+                    let feedback = format!("[implied_write_file]\nGOVERNOR BLOCKED\n\n{block}");
+                    messages.push(crate::task_origin::user_message(
+                        &feedback,
+                        crate::task_origin::MessageOrigin::Runtime,
+                    ));
+                    state = AgentState::Recovery;
+                    let _ = tx
+                        .send(StreamToken::Delta(format!(
+                            "[RESULT][Recovery] {feedback}\n"
+                        )))
+                        .await;
+                    pending_system_hint = Some(block);
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+                    continue;
+                }
                 if !implied_scripts.is_empty() || !implied_files.is_empty() {
                     let _ = tx
                         .send(StreamToken::Delta(
@@ -11284,7 +11019,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
 
                     // 2) write NEW files from markdown blocks (no overwrites)
                     if !implied_had_error && !implied_files.is_empty() {
-                        for imf in implied_files {
+                        for imf in implied_files.into_iter().take(6) {
                             let path = imf.path.trim().to_string();
                             if path.is_empty() {
                                 continue;
@@ -12862,6 +12597,9 @@ Required now: run `{command}`.\n{verification_status}"
                         test_cmd.as_deref(),
                     )
             })
+            .or_else(|| {
+                explicit_edit_scope::native_issue(&root_user_text, &tc, tool_root_abs.as_deref())
+            })
         {
             state = AgentState::Recovery;
             let _ = tx
@@ -13773,7 +13511,11 @@ Required now: run `{command}`.\n{verification_status}"
             let (result, is_error) = match tc.name.as_str() {
                 "read_file" => {
                     let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
-                    if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path) {
+                    if assumption_gate::needs_fresh_file_read(&assumption_ledger, &path)
+                        || (!ranged
+                            && file_cache.contains_key(&cache_key)
+                            && deferred_edit::confirming_read(&messages, &tc.id, &path))
+                    {
                         file_cache.remove(&cache_key);
                     }
                     // ── Gap 6: serve from cache if file hasn't changed ──────
@@ -14980,7 +14722,7 @@ fn main() {}
 +b
 ```
 "#;
-        let files = extract_implied_write_files(text);
+        let (_, files) = implied_actions::extract(text);
         assert_eq!(files.len(), 2);
         assert_eq!(files[0].path, "README.md");
         assert!(files[0].content.contains("# Hello"));

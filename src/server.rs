@@ -1,3 +1,4 @@
+mod buffered_chat;
 mod work_context;
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
@@ -279,10 +280,28 @@ pub struct ServeArgs {
 #[derive(Clone)]
 struct AppState {
     client: reqwest::Client,
+    bounded_client: reqwest::Client,
     defaults: PartialConfig,
     pending_edits: crate::pending_edits::PendingEditStore,
     pending_commands: crate::pending_commands::PendingCommandStore,
     workspace_root: PathBuf,
+}
+
+fn bounded_provider_client() -> reqwest::Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .retry(reqwest::retry::never())
+        .build()
+}
+
+impl AppState {
+    fn tool_provider_client(&self) -> &reqwest::Client {
+        if crate::work_budget::current().is_some() {
+            &self.bounded_client
+        } else {
+            &self.client
+        }
+    }
 }
 
 pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
@@ -297,6 +316,7 @@ pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
     let workspace_root = std::env::current_dir().unwrap_or_default();
     let state = AppState {
         client: reqwest::Client::new(),
+        bounded_client: bounded_provider_client()?,
         defaults,
         pending_edits: crate::pending_edits::PendingEditStore::new(),
         pending_commands: crate::pending_commands::PendingCommandStore::new(),
@@ -633,291 +653,51 @@ async fn api_chat_tools(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
     if let Some(tools) = &req.tools {
         if !tools.is_empty() {
             payload["tools"] = json!(tools);
-            payload["tool_choice"] =
-                json!(crate::streaming::provider_metadata::tool_choice(&base_url));
+            crate::streaming::provider_metadata::set_tool_policy(&mut payload, &base_url);
         }
     }
 
     let timeout = Duration::from_secs(req.timeout_seconds.unwrap_or(120));
-    let mut last_err: Option<String> = None;
-    let mut want_completions = false;
-
-    let payload_cur = payload.clone();
-    let mut ok_json: Option<serde_json::Value> = None;
-
-    for url in openai_compat_chat_urls(&base_url) {
-        let mut http_req = state
-            .client
-            .post(&url)
-            .header("Content-Type", "application/json")
-            .timeout(timeout)
-            .json(&payload_cur);
-
-        if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
-            http_req = http_req.bearer_auth(key);
-        }
-
-        let resp = match http_req.send().await {
-            Ok(r) => r,
-            Err(e) => {
-                #[derive(Serialize)]
-                struct E {
-                    error: String,
-                }
-                return write_json(
-                    stream,
-                    502,
-                    "Bad Gateway",
-                    &E {
-                        error: e.to_string(),
-                    },
-                )
-                .await;
-            }
-        };
-
-        let status = resp.status();
-        let resp_text = resp.text().await.unwrap_or_default();
-
-        if status.is_success() {
-            match serde_json::from_str(&resp_text) {
-                Ok(v) => {
-                    ok_json = Some(v);
-                    break;
-                }
-                Err(e) => {
-                    #[derive(Serialize)]
-                    struct E {
-                        error: String,
-                    }
-                    return write_json(
-                        stream,
-                        502,
-                        "Bad Gateway",
-                        &E {
-                            error: format!("invalid JSON from API: {e}"),
-                        },
-                    )
-                    .await;
-                }
-            }
-        }
-
-        // Retry once with max_completion_tokens if suggested.
-        if should_swap_to_max_completion_tokens(status, &resp_text)
-            && payload_cur.get("max_tokens").is_some()
-        {
-            let mut payload2 = payload_cur.clone();
-            swap_max_tokens_to_max_completion_tokens(&mut payload2);
-
-            let mut http_req2 = state
-                .client
-                .post(&url)
-                .header("Content-Type", "application/json")
-                .timeout(timeout)
-                .json(&payload2);
-            if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
-                http_req2 = http_req2.bearer_auth(key);
-            }
-
-            let resp2 = match http_req2.send().await {
-                Ok(r) => r,
-                Err(e) => {
-                    #[derive(Serialize)]
-                    struct E {
-                        error: String,
-                    }
-                    return write_json(
-                        stream,
-                        502,
-                        "Bad Gateway",
-                        &E {
-                            error: e.to_string(),
-                        },
-                    )
-                    .await;
-                }
-            };
-            let status2 = resp2.status();
-            let resp_text2 = resp2.text().await.unwrap_or_default();
-            if status2.is_success() {
-                match serde_json::from_str(&resp_text2) {
-                    Ok(v) => {
-                        ok_json = Some(v);
-                        break;
-                    }
-                    Err(e) => {
-                        #[derive(Serialize)]
-                        struct E {
-                            error: String,
-                        }
-                        return write_json(
-                            stream,
-                            502,
-                            "Bad Gateway",
-                            &E {
-                                error: format!("invalid JSON from API: {e}"),
-                            },
-                        )
-                        .await;
-                    }
-                }
-            }
-            last_err = Some(format!("API error (HTTP {status2}): {resp_text2}"));
-            continue;
-        }
-
-        if should_use_v1_completions(status, &resp_text) {
-            want_completions = true;
-            last_err = Some(format!("API error (HTTP {status}): {resp_text}"));
-            break;
-        }
-
-        if status == reqwest::StatusCode::NOT_FOUND {
-            last_err = Some(format!("API error (HTTP {status}): {resp_text}"));
-            continue;
-        }
-
-        #[derive(Serialize)]
-        struct E {
-            error: String,
-        }
-        return write_json(
-            stream,
-            502,
-            "Bad Gateway",
-            &E {
-                error: format!("API error (HTTP {status}): {resp_text}"),
-            },
-        )
-        .await;
-    }
-
-    if ok_json.is_none() && want_completions {
-        let url = format!("{}/completions", base_url);
-        let mut comp_payload = json!({
-            "model": req.model,
-            "prompt": prompt_from_chat_messages(&messages_for_prompt),
-            "temperature": req.temperature.unwrap_or(0.7),
-            "max_tokens": req.max_tokens.unwrap_or(4096),
-        });
-        apply_openai_temperature_compat(&mut comp_payload, &base_url, &req.model);
-        let mut http_req = state
-            .client
-            .post(&url)
-            .header("Content-Type", "application/json")
-            .timeout(timeout)
-            .json(&comp_payload);
-        if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
-            http_req = http_req.bearer_auth(key);
-        }
-        let resp = match http_req.send().await {
-            Ok(r) => r,
-            Err(e) => {
-                #[derive(Serialize)]
-                struct E {
-                    error: String,
-                }
-                return write_json(
-                    stream,
-                    502,
-                    "Bad Gateway",
-                    &E {
-                        error: e.to_string(),
-                    },
-                )
-                .await;
-            }
-        };
-        let status = resp.status();
-        let resp_text = resp.text().await.unwrap_or_default();
-        if !status.is_success() {
-            if should_swap_to_max_completion_tokens(status, &resp_text)
-                && comp_payload.get("max_tokens").is_some()
-            {
-                swap_max_tokens_to_max_completion_tokens(&mut comp_payload);
-                let mut http_req2 = state
-                    .client
-                    .post(&url)
-                    .header("Content-Type", "application/json")
-                    .timeout(timeout)
-                    .json(&comp_payload);
-                if let Some(key) = req.api_key.as_deref().filter(|k| !k.is_empty()) {
-                    http_req2 = http_req2.bearer_auth(key);
-                }
-                let resp2 = match http_req2.send().await {
-                    Ok(r) => r,
-                    Err(e) => {
-                        #[derive(Serialize)]
-                        struct E {
-                            error: String,
-                        }
-                        return write_json(
-                            stream,
-                            502,
-                            "Bad Gateway",
-                            &E {
-                                error: e.to_string(),
-                            },
-                        )
-                        .await;
-                    }
-                };
-                let status2 = resp2.status();
-                let resp_text2 = resp2.text().await.unwrap_or_default();
-                if !status2.is_success() {
-                    #[derive(Serialize)]
-                    struct E {
-                        error: String,
-                    }
-                    return write_json(
-                        stream,
-                        502,
-                        "Bad Gateway",
-                        &E {
-                            error: format!("API error (HTTP {status2}): {resp_text2}"),
-                        },
-                    )
-                    .await;
-                }
-                ok_json = Some(serde_json::from_str(&resp_text2).context("invalid JSON from API")?);
-            } else {
-                #[derive(Serialize)]
-                struct E {
-                    error: String,
-                }
-                return write_json(
-                    stream,
-                    502,
-                    "Bad Gateway",
-                    &E {
-                        error: format!("API error (HTTP {status}): {resp_text}"),
-                    },
-                )
-                .await;
-            }
-        } else {
-            ok_json = Some(serde_json::from_str(&resp_text).context("invalid JSON from API")?);
-        }
-    }
-
-    if let Some(v) = ok_json {
-        write_json(stream, 200, "OK", &v).await
-    } else {
-        #[derive(Serialize)]
-        struct E {
-            error: String,
-        }
-        write_json(
-            stream,
-            502,
-            "Bad Gateway",
-            &E {
-                error: last_err.unwrap_or_else(|| "API request failed".to_string()),
-            },
+    let mut urls = openai_compat_chat_urls(&base_url).into_iter();
+    let mut completions = false;
+    let mut error = "API request failed".to_string();
+    while let Some(url) = urls.next() {
+        match buffered_chat::send(
+            state.tool_provider_client(),
+            &url,
+            req.api_key.as_deref(),
+            timeout,
+            payload.clone(),
         )
         .await
+        {
+            buffered_chat::Reply::Json(value) => {
+                return write_json(stream, 200, "OK", &value).await
+            }
+            buffered_chat::Reply::Budget(error) => {
+                return write_json(stream, 409, "Conflict", &ApiError { error }).await
+            }
+            buffered_chat::Reply::Failed(message) => {
+                error = message;
+                break;
+            }
+            buffered_chat::Reply::Rejected(status, body) => {
+                error = format!("API error (HTTP {status}): {body}");
+                if !completions && should_use_v1_completions(status, &body) {
+                    completions = true;
+                    urls = vec![format!("{base_url}/completions")].into_iter();
+                    payload = json!({
+                        "model": req.model, "prompt": prompt_from_chat_messages(&messages_for_prompt),
+                        "temperature": req.temperature.unwrap_or(0.7), "max_tokens": req.max_tokens.unwrap_or(4096),
+                    });
+                    apply_openai_temperature_compat(&mut payload, &base_url, &req.model);
+                } else if completions || status != reqwest::StatusCode::NOT_FOUND {
+                    break;
+                }
+            }
+        }
     }
+    write_json(stream, 502, "Bad Gateway", &ApiError { error }).await
 }
 
 async fn api_observer_engine(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
@@ -1105,8 +885,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
     if let Some(tools) = &req.tools {
         if !tools.is_empty() {
             payload["tools"] = json!(tools);
-            payload["tool_choice"] =
-                json!(crate::streaming::provider_metadata::tool_choice(&base_url));
+            crate::streaming::provider_metadata::set_tool_policy(&mut payload, &base_url);
         }
     }
 
@@ -1124,7 +903,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
 
         loop {
             let mut http_req = state
-                .client
+                .tool_provider_client()
                 .post(&url)
                 .header("Content-Type", "application/json")
                 .timeout(timeout)
@@ -1191,16 +970,11 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 continue;
             }
 
-            // Some providers reject tool_choice. Retry once without it.
-            if status == reqwest::StatusCode::BAD_REQUEST
-                && payload_try.get("tool_choice").is_some()
-                && body_text.to_ascii_lowercase().contains("tool_choice")
-                && (body_text.to_ascii_lowercase().contains("unsupported")
-                    || body_text.to_ascii_lowercase().contains("unknown"))
-            {
-                if let Some(obj) = payload_try.as_object_mut() {
-                    obj.remove("tool_choice");
-                }
+            if crate::streaming::provider_metadata::drop_unsupported_chat_option(
+                status,
+                &body_text,
+                &mut payload_try,
+            ) {
                 continue;
             }
 
@@ -1255,7 +1029,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
         apply_openai_temperature_compat(&mut comp_payload, &base_url, &req.model);
 
         let mut http_req = state
-            .client
+            .tool_provider_client()
             .post(&url)
             .header("Content-Type", "application/json")
             .timeout(timeout)
@@ -1306,7 +1080,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
             {
                 swap_max_tokens_to_max_completion_tokens(&mut comp_payload);
                 let mut http_req2 = state
-                    .client
+                    .tool_provider_client()
                     .post(&url)
                     .header("Content-Type", "application/json")
                     .timeout(timeout)

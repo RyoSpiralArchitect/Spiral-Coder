@@ -6,10 +6,22 @@ use serde_json::{json, Value};
 
 #[tokio::test]
 async fn exhausted_retry_returns_budget_error_without_another_wire_request() {
+    check_one_wire_attempt(true, false).await;
+    check_one_wire_attempt(false, false).await;
+    check_one_wire_attempt(false, true).await;
+}
+
+async fn check_one_wire_attempt(streamed: bool, completion_fallback: bool) {
     let provider = MockServer::start();
     let mock = provider.mock(|when, then| {
         when.method(POST).path("/chat/completions");
-        then.status(400).body("unsupported tool_choice");
+        then.status(400).body(if completion_fallback {
+            "This is not a chat model and thus not supported in the v1/chat/completions endpoint. Did you mean to use v1/completions?"
+        } else { "unsupported tool_choice" });
+    });
+    let completions = provider.mock(|when, then| {
+        when.method(POST).path("/completions");
+        then.status(200).body("{}");
     });
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
@@ -26,14 +38,19 @@ async fn exhausted_retry_returns_budget_error_without_another_wire_request() {
             let (mut socket, _) = listener.accept().await.unwrap();
             let state = AppState {
                 client: reqwest::Client::new(),
+                bounded_client: bounded_provider_client().unwrap(),
                 defaults: PartialConfig::default(),
                 pending_edits: crate::pending_edits::PendingEditStore::new(),
                 pending_commands: crate::pending_commands::PendingCommandStore::new(),
                 workspace_root: PathBuf::new(),
             };
-            api_chat_tools_stream(&mut socket, state, &body)
-                .await
-                .unwrap();
+            if streamed {
+                api_chat_tools_stream(&mut socket, state, &body)
+                    .await
+                    .unwrap();
+            } else {
+                api_chat_tools(&mut socket, state, &body).await.unwrap();
+            }
         },
     ));
     let mut client = TcpStream::connect(address).await.unwrap();
@@ -50,6 +67,110 @@ async fn exhausted_retry_returns_budget_error_without_another_wire_request() {
     );
     assert_eq!(budget.snapshot().requests.len(), 1);
     mock.assert_hits(1);
+    completions.assert_hits(0);
+    if !streamed {
+        let row = &budget.snapshot().requests[0];
+        assert_eq!(row.status, "http_400");
+        assert!(row.duration_ms.is_some());
+    }
+}
+
+#[tokio::test]
+async fn a_bounded_web_post_cannot_follow_an_unmetered_redirect() {
+    let provider = MockServer::start();
+    let target = provider.mock(|when, then| {
+        when.method(POST).path("/other");
+        then.status(200).json_body(json!({}));
+    });
+    let redirect = provider.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(307).header("Location", provider.url("/other"));
+    });
+    let state = AppState {
+        client: reqwest::Client::new(),
+        bounded_client: bounded_provider_client().unwrap(),
+        defaults: PartialConfig::default(),
+        pending_edits: crate::pending_edits::PendingEditStore::new(),
+        pending_commands: crate::pending_commands::PendingCommandStore::new(),
+        workspace_root: PathBuf::new(),
+    };
+    let url = provider.url("/chat/completions");
+    let budget = crate::work_budget::WorkBudget::new("redirect", 1, None);
+    let reply = crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: budget.clone(),
+            role: "coder",
+        }),
+        async {
+            buffered_chat::send(
+                state.tool_provider_client(),
+                &url,
+                None,
+                Duration::from_secs(3),
+                json!({}),
+            )
+            .await
+        },
+    )
+    .await;
+    assert!(matches!(
+        reply,
+        buffered_chat::Reply::Rejected(reqwest::StatusCode::TEMPORARY_REDIRECT, _)
+    ));
+    assert_eq!(budget.snapshot().requests[0].status, "http_307");
+    redirect.assert_hits(1);
+    target.assert_hits(0);
+    let reply = buffered_chat::send(
+        state.tool_provider_client(),
+        &url,
+        None,
+        Duration::from_secs(3),
+        json!({}),
+    )
+    .await;
+    assert!(matches!(reply, buffered_chat::Reply::Json(_)));
+    target.assert_hits(1);
+}
+
+#[tokio::test]
+async fn buffered_compatibility_retry_records_both_outcomes_and_final_usage() {
+    let server = MockServer::start();
+    let first = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .json_body(json!({"tool_choice":"required"}));
+        then.status(400).body("unsupported tool_choice");
+    });
+    let second = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .json_body(json!({}));
+        then.status(200)
+            .json_body(json!({"choices":[],"usage":{"total_tokens":5}}));
+    });
+    let b = crate::work_budget::WorkBudget::new("task", 2, None);
+    let reply = crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: b.clone(),
+            role: "coder",
+        }),
+        buffered_chat::send(
+            &reqwest::Client::new(),
+            &server.url("/chat/completions"),
+            None,
+            Duration::from_secs(3),
+            json!({"tool_choice":"required"}),
+        ),
+    )
+    .await;
+    assert!(matches!(reply, buffered_chat::Reply::Json(_)));
+    let rows = b.snapshot().requests;
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0].status, "http_400");
+    assert_eq!(rows[1].status, "completed");
+    assert_eq!(rows[1].provider_usage.as_ref().unwrap()["total_tokens"], 5);
+    first.assert_hits(1);
+    second.assert_hits(1);
 }
 
 #[tokio::test]
@@ -115,6 +236,7 @@ async fn native_and_web_streams_keep_late_signature_on_original_call() {
         let (mut socket, _) = listener.accept().await.unwrap();
         let state = AppState {
             client: reqwest::Client::new(),
+            bounded_client: bounded_provider_client().unwrap(),
             defaults: PartialConfig::default(),
             pending_edits: crate::pending_edits::PendingEditStore::new(),
             pending_commands: crate::pending_commands::PendingCommandStore::new(),
