@@ -19,6 +19,8 @@ pub(super) struct Contract {
     max_native_tool_calls: usize,
     pending_exact_checks: Vec<String>,
     pending_artifact_paths: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    required_recheck: Option<String>,
     required_diagnostic_read: Option<super::recovery_focus::DiagnosticRead>,
 }
 
@@ -49,6 +51,7 @@ impl Contract {
             max_native_tool_calls: 1,
             pending_exact_checks: pending.to_vec(),
             pending_artifact_paths: requirements.pending_artifact_paths.clone(),
+            required_recheck: None,
             required_diagnostic_read: None,
         }
     }
@@ -62,6 +65,17 @@ impl Contract {
         }
         self.required_diagnostic_read = read;
         self
+    }
+
+    pub(super) fn with_recheck(mut self, command: Option<String>) -> Self {
+        if self.phase == Phase::Work {
+            self.required_recheck = command;
+        }
+        self
+    }
+
+    pub(super) fn recheck(&self) -> Option<&str> {
+        self.required_recheck.as_deref()
     }
 
     pub(super) fn tools(&self, all: &Value) -> Value {
@@ -96,6 +110,8 @@ impl Contract {
             "Only done is available now. Author the requested report from retained native evidence. If anything remains unverified, list it in remaining_acceptance, explain the blocker in summary, and supply the concrete next action in next_steps. This produces a BLOCKED terminal report and one Observer diagnosis, not a successful done. This restriction does not certify completion or bypass any gate. Do not claim unexecuted checks passed."
         } else if self.phase == Phase::Diagnose {
             "The current failed check requires a fresh read_file of required_diagnostic_read.path before any repair. Only that read and done are offered now. A read before this failure, another path, and Observer advice cannot discharge it. Read the exact path; it locates the failing assertion and is not permission to edit a supplied test. A successful native read reopens the work tools, while the failed check and pending artifacts remain unresolved. If the read fails, ordinary diagnosis tools reopen. If blocked, author done with remaining_acceptance, a blocker summary and concrete next_steps. No check is certified by reading."
+        } else if self.required_recheck.is_some() {
+            "A repair has landed. Before proposing more edits, execute required_recheck at tool_root, using the matching check_id alone when offered. Keep the admitted goal and acceptance criteria. If no replan is required, continue under the existing plan; put the next step in think. A configured automatic test cannot clear this different failure. Read or report a real blocker when needed. Only the native result can clear the failure; finish the remaining artifacts and repeat final checks after the last change."
         } else {
             "Choose exactly one native function call. Keep required plan/think/reflect/impact blocks in assistant text alongside that call; text or XML is not tool execution. pending_artifact_paths are required artifacts without a successful native edit, not a claim that all other behavior is correct. After diagnosis, address the remaining task artifacts before the final exact checks; preserve the user's edit restrictions. After the final mutation, execute each pending exact verification command before a successful done; automatic checks are not a substitute. Leave one Coder request for your authored done report. If blocked, use done with nonempty remaining_acceptance, a blocker summary, and concrete next_steps; this terminates incomplete without clearing obligations."
         };

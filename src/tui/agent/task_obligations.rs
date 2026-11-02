@@ -15,6 +15,8 @@ pub(crate) struct TaskObligations {
     pub final_answer: Value,
     pub latest_action_feedback: Option<evidence_packet::ActionEvidence>,
     pub pending_recovery: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub required_recheck: Option<String>,
     pub required_diagnostic_read: Option<super::recovery_focus::DiagnosticRead>,
     pub acceptance_criteria: Vec<Value>,
     pub current_commands: Vec<String>,
@@ -61,6 +63,7 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
         artifact_scope: crate::task_scope::artifact_scope(root),
         explicit_edit_paths: super::explicit_edit_scope::Scope::parse(root),
+        required_recheck: focus.declared_recheck(&evidence.pending_exact_checks),
         required_exact_checks: task_harness::benchmark_proof::required_commands(root),
         pending_exact_checks: evidence.pending_exact_checks,
         final_answer: final_handoff::report_context(root, messages, test_cmd),

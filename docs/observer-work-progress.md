@@ -63,3 +63,11 @@ owner and inspect a caller. A file-scoped Rust identifier search can show
 same-line lexical declaration and call locations separately from literal match
 counts. These leads do not resolve symbols: inline or generated implementations
 can still be valid, and code should be read before an edit.
+
+After an edit addresses a diagnosed failure, the next request exposes the
+original failed command as `required_recheck` only when it is still a declared,
+pending exact check. During verification the Coder's exec menu offers that
+command (or its own check ID on compatible routes). Read tools and truthful
+blocked reports remain available. This is a request-time hint and schema:
+the original approval, working-directory, validation and proof checks still
+decide what can actually execute and what counts as passing.

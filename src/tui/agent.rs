@@ -7548,7 +7548,12 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
         .with_report_closeout(
             crate::work_budget::current().is_some_and(|c| c.budget.is_report_closeout()),
         )
-        .with_diagnostic_read(recovery.focus.required_read());
+        .with_diagnostic_read(recovery.focus.required_read())
+        .with_recheck(
+            (recovery.stage == Some(RecoveryStage::Verify))
+                .then(|| recovery.focus.declared_recheck(&pending_checks))
+                .flatten(),
+        );
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
@@ -8091,7 +8096,9 @@ This is the LAST model call for this run.\n\
         let cfg_clone = cfg.clone();
         let mut tools_clone = next_action.tools(&tools);
         let check_catalog = check_catalog::Catalog::from_root(&root_user_text);
-        if let Some(prompt) = check_catalog.bind(&mut tools_clone, &cfg.base_url) {
+        if let Some(prompt) =
+            check_catalog.bind_for(&mut tools_clone, &cfg.base_url, next_action.recheck())
+        {
             msgs_for_call.push(json!({"role":"system", "content":prompt}));
         }
         acceptance_schema::bind(

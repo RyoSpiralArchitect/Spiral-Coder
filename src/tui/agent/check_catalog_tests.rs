@@ -304,3 +304,35 @@ fn selected_check_then_failed_direct_or_alias_check_revokes_current_evidence_rev
         assert_eq!(packet.pending_exact_checks, ["cargo test --locked -q"]);
     }
 }
+
+#[test]
+fn next_recheck_offers_one_declared_command_without_changing_its_authority() {
+    let catalog = check_catalog::Catalog::from_root(&root());
+    let exact = "cargo test --locked -q";
+    for (url, selector) in [
+        ("https://api.openai.com/v1", true),
+        (
+            "https://generativelanguage.googleapis.com/v1beta/openai",
+            false,
+        ),
+    ] {
+        let mut menu = json!([exec_tool_def(), read_file_tool_def()]);
+        let unaffected = menu[1].clone();
+        let prompt = catalog.bind_for(&mut menu, url, Some(exact));
+        let params = &menu[0]["function"]["parameters"];
+        assert_eq!(params["properties"]["command"]["enum"], json!([exact]));
+        if selector {
+            assert_eq!(
+                params["properties"]["check_id"]["enum"],
+                json!(["required-1"])
+            );
+            assert!(!prompt.unwrap().contains("cargo test --locked Repro"));
+        } else {
+            assert!(params["properties"].get("check_id").is_none());
+            assert_eq!(params["required"], json!(["command"]));
+        }
+        assert_eq!(menu[1], unaffected);
+    }
+    // Filtering a provider's menu does not rewrite the catalog or execute anything.
+    assert_eq!(catalog.checks.len(), 2);
+}

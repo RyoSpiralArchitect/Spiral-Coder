@@ -146,6 +146,13 @@ impl RecoveryFocus {
             .is_some_and(|focus| focus.observation == Observation::Observed)
     }
 
+    /// Narrow only a human-declared check still pending after an observed repair.
+    pub(super) fn declared_recheck(&self, pending: &[String]) -> Option<String> {
+        let focus = self.pending.as_ref()?;
+        (focus.observation == Observation::RepairAttempted && pending.contains(&focus.check))
+            .then(|| focus.check.clone())
+    }
+
     pub(super) fn check_matches(&self, command: &str) -> bool {
         self.pending
             .as_ref()
