@@ -43,7 +43,8 @@ pub(crate) fn object(raw: &str) -> Result<Object<'_>, String> {
     })
 }
 
-struct UniqueValue(Value);
+/// Strict recursive value reader, also used for fields inside Observer envelopes.
+pub(crate) struct UniqueValue(pub(crate) Value);
 impl<'de> Deserialize<'de> for UniqueValue {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct UniqueVisitor;

@@ -1,0 +1,61 @@
+{
+  "issue": 49,
+  "condition": "r7 identical Observer summary",
+  "raw_root": "replay-catalog-native-r7-summary-20261102",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "1e952a7adb47943f75c862013bda8afe688341fa",
+  "executor_sha256": "387e84ecbbaee6d0ddf4b0dd441307b58d491d3d8e10560b333c792d4e12dd0e",
+  "declaration_sha256": "0dfc025a9def9e347afbd714cca23c6d850f2d5eeecf5a2e5de33e7ff089e62e",
+  "prior_declaration_sha256": "3aad53cf75b165761e7add1ef7cb4b10b502226f6ba9ec0a900f4baa3cd2c4d4",
+  "prior_executor_sha256": "340b8fd69a079c0967e1df295e8a1172ee856481e8835db1cff933e1ffd9f409",
+  "preflight_sha256": "f52f5f3e0662c670dd75029ecb9efa8c4dc515429e6e60d9c65254beea5c85ec",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "protocol_sha256": "117fe8df176d08e8b090a953ab54f5231ad4e05f23f3c654efbda6d1eab914d1",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "local_regression": {
+    "baseline_expected_failure_log_sha256": "159340930f380902c9457959cb2333705e7ca1ec4e7427e94062a2d14de89048",
+    "green_log_sha256": "04f4e50f64e58b56be56a960d4c381683c16c2b4581588d1fbd42f3cebe0b365",
+    "model_free_suite_log_sha256": "83e46375a8dfd577403a1b6f829c23625f7de6c985846be8b23cf787955a34f5"
+  }
+}

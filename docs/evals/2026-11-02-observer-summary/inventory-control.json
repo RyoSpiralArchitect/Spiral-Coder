@@ -1,0 +1,30 @@
+{
+  "experiment": "operator post-run control; only the authored inventory row was added in a disposable copy",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "candidate_patch_sha256": "19b63c32b78e4bb8159aedd5f768462db14972ca30bb33ce0bd6475bcaba7e05",
+  "blocked_step": 22,
+  "authored_diff_sha256": "a62a852394c7d5b6b498a2855e9934999ffd25d1455f418141c54282bd1602f7",
+  "external_provider_requests": 0,
+  "conditions": [
+    {
+      "condition": "sealed_candidate",
+      "main_sha256": "74c1870207f3fd083085c298dd56451f66cba54ce424089e411c88dd99f44efe",
+      "binary_sha256": "b654e25f4f3698530bc4de26f39024ddfa407aedcb00e08d1de4a1da29db33d6",
+      "build_exit": 0,
+      "listed_in_inventory": false,
+      "listed_in_help": false,
+      "direct_help_exit": 0,
+      "command_unrecognized": false
+    },
+    {
+      "condition": "candidate_plus_inventory_row",
+      "main_sha256": "b27ca51bec8285c317dfe1e3f4bfc589e0284097f6c1d3677ca91daae7afd7b0",
+      "binary_sha256": "651d7fd5e5d09d3296adf80450b5e81cfb65e4e85ef6ee34dc5760c2a71eb35e",
+      "build_exit": 0,
+      "listed_in_inventory": true,
+      "listed_in_help": false,
+      "direct_help_exit": 0,
+      "command_unrecognized": false
+    }
+  ]
+}

@@ -191,6 +191,9 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
     );
     app.pending_observer_hint = None;
     app.pending_observer_contract = None;
+    if let Some(recovery) = suggestion::framing_recovery(&raw) {
+        app.observer.push_tool(format!("(next-action) JSON envelope framing recovered: {recovery:?}; authored values and raw response retained; normal action and evidence gates apply."));
+    }
     if let Some(issue) = issue {
         if suggestion::transport_issue_for_raw(&raw).is_some() {
             if let Some(request) = &app.observer_assist_request {
@@ -237,9 +240,6 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             app.observer.push_tool("(next-action) done repair reached the output limit. Native checks are current; reserving one Coder report-only wire attempt within the existing task budget. Observer advice remains rejected and completion still requires a validated authored done.".into());
         }
     } else if let Some(parsed) = parsed.as_ref() {
-        if let Some(recovery) = suggestion::framing_recovery(&raw) {
-            app.observer.push_tool(format!("(next-action) JSON envelope framing recovered: {recovery:?}; authored values and raw response retained; normal action and evidence gates apply."));
-        }
         app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);

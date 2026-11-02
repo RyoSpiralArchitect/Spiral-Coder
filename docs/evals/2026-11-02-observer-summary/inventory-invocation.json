@@ -1,0 +1,24 @@
+{
+  "binary_sha256": "651d7fd5e5d09d3296adf80450b5e81cfb65e4e85ef6ee34dc5760c2a71eb35e",
+  "parent_help_exit": 0,
+  "subcommand_help_exit": 0,
+  "help_output_byte_identical": true,
+  "parent_help_sha256": "ce7a21bbb623775784a4c3c421841d60a443a10c7c3090c163171a495c0c0ba4",
+  "subcommand_help_sha256": "ce7a21bbb623775784a4c3c421841d60a443a10c7c3090c163171a495c0c0ba4",
+  "listing_argv": [
+    "--provider",
+    "openai-compatible",
+    "--base-url",
+    "http://127.0.0.1:9/v1",
+    "tui-replay-list",
+    "--filter",
+    "PREFS",
+    "--max-cases",
+    "1"
+  ],
+  "listing_exit": 2,
+  "listing_stdout_bytes": 0,
+  "listing_first_error": [
+    "error: unexpected argument '--filter' found"
+  ]
+}

@@ -1,12 +1,15 @@
-//! Recover only a missing envelope opener; never edit values or tool arguments.
+//! Recover one recognized framing defect; never edit values or tool arguments.
 use serde::Serialize;
 use serde_json::Value;
+
+mod repeated_summary;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum Recovery {
     OpeningBrace,
     OpeningBraceAndQuote,
+    RepeatedIdenticalSummary,
 }
 
 pub(super) fn object(raw: &str) -> Result<(Value, Option<Recovery>), String> {
@@ -20,6 +23,14 @@ pub(super) fn object(raw: &str) -> Result<(Value, Option<Recovery>), String> {
     // The first field must be an exact known envelope key, at the start of the
     // response. No prose, fences, arrays, inner-object extraction or suffix repair.
     let text = raw.trim();
+    // A complete object may repeat its display summary exactly once. Do not
+    // combine this exception with a missing opener, a fence or surrounding prose.
+    if text.starts_with('{') {
+        if let Ok(value) = repeated_summary::object(raw) {
+            return Ok((value, Some(Recovery::RepeatedIdenticalSummary)));
+        }
+        return Err(original_error);
+    }
     for key in [
         "summary",
         "primary_blocker",
