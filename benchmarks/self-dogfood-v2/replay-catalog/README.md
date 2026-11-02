@@ -24,5 +24,6 @@ R9 uses the same task and request budget. Its record separates a scripted recove
 R10 records a scoped symbol search, serialized Coder calls and an unresolved catalog import. The record lists the remaining feature, verification and harness-change tasks for a reviewable self-authored patch. [Tenth run and remaining work](../../../docs/evals/2026-11-03-scoped-lookup/README.md)
 
 [R11 diagnostic handoffs](../../../docs/evals/2026-11-03-diagnostic-read/README.md)
-link three authored Observer responses to native reads and distinguish the
+record three authored Observer responses, two exact native reads, and distinguish the
 working catalog command from the unqualified full candidate.
+[R12](../../../docs/evals/2026-11-03-diagnostic-read/r12/README.md) ran the original failed command after two edits and retained its final compile failure.

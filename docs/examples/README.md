@@ -24,6 +24,8 @@ without checking the generated repos into git.
 
 Current examples:
 
+- [A Coder and an Observer repair native recursive search](../evals/2026-11-03-search-walk/README.md) — real public-tool probes, an ordinary-search control and the separate adoption verdict.
+
 - [An additive native CLI and the remaining npm handoff (replay-catalog R8)](replay-catalog-r8.md)
 
 - [Small practical repairs with Mistral Coder + Observer — PR #42 archive](coupled-practical-repairs-mistral.md)

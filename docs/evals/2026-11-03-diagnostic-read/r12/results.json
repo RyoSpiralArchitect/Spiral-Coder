@@ -1,0 +1,341 @@
+{
+  "predeclaration_sha256": "5919899f204787d5ff548da4dcdf48fae870aa57d8605cf25e69313910c710b7",
+  "run_receipt_sha256": "98defa1c38e981b61ca3d14fd4fcb8df3561a95991ffab87d8944d9d0d305d3f",
+  "assessment_sha256": "f7dde581a3f01857ca64fc74ed14c0006e114fc1a54ed082f764009c203a805d",
+  "completed": false,
+  "termination": "budget_exhausted",
+  "role_requests": {
+    "coder": 23,
+    "observer": 9
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 32,
+    "task_requests": 32,
+    "transport_requests": 0,
+    "coder_task_requests": 23,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "not_evaluated",
+      "visible_passed": "not_observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 1,
+    "first_unmet_stage": "behavior_changed",
+    "termination": "budget_exhausted"
+  },
+  "first_changed_step_by_path": {
+    "src/tui_replay.rs": 5,
+    "src/tui_replay/catalog.rs": 11,
+    "src/main.rs": 22
+  },
+  "changed_edits": [
+    {
+      "result_step": 5,
+      "tool": "patch_file",
+      "call_id": "call_dsEsFsa9jYqNHqgacljvAhZW",
+      "path": "src/tui_replay.rs",
+      "auto_test": "FAILED"
+    },
+    {
+      "result_step": 11,
+      "tool": "write_file",
+      "call_id": "call_R8t97kEiDp2usrGAcAzQoLmv",
+      "path": "src/tui_replay/catalog.rs",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 18,
+      "tool": "patch_file",
+      "call_id": "call_b6Kge16ZueeKgXbo2t8TzBYr",
+      "path": "src/tui_replay/catalog.rs",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 22,
+      "tool": "patch_file",
+      "call_id": "call_bwab4IUA0OsHO3N36nXuvdDe",
+      "path": "src/main.rs",
+      "auto_test": "FAILED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_3aJsOZ5PP7hBUNSQuPsZUgBX"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_akzBa7ouquED2NGpMBAX4V5Z"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_95JXsamJBziZw2tb9d0Qy04b"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_9ksT9XSPplwG5QmisQaSbBBb"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 7,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_XoPRkvB9jAMyojYN9Izklfsx"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 8,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 9,
+      "decision": "defer",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "a6e2303b3b8c1a1b54743a273e304bc5837373dc3e26a661195d387d5557100d",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_visible.py"
+    },
+    {
+      "text_sha256": "83e442713d16e4f3774c8cbbd310d16c2159492966f383f1025c013ad7eac354",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "de0e42fc7913f84c14281fe9fddfde131563dca00c9ee4a1a167ff523b01a4b4",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "00788a4bf8a5fcf887c31372c162990972112c0e3e3b66c285661cb2b615e6ae",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "81feb203767b64c4ce0aa5e10a1bd377170651eee6ff2e0be89931ed792c7118",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "c6e65e644764ff808044c9e9da8ce5e029046191eb2524925828aeb7c950994f",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "36aebfe4c38d6a9e4762f0fc4737d62c39dbfba84912b64c6492646b65c4a782",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "1059b3dcbfc999dda1e48441f428f7119088f8388fd438057a1a877278cd0316",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "c80a3865306057a22ece547c114fc9889ede1d24bdef1b61e4c5129d2fff6c67",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": false,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "70ccf0a21e714f55e8586de5c9b90cd32783a081af101d274db682b8adb61fb1",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "d109beaf6f3f7aea41b1857468de899dedeb063f20d72f3de163014f4e3946f3",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "regular-replay",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "4d556e5037a1a3782c8fb10523d981a860bf3048a0e9783eb667f0e5502f5691",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [
+    {
+      "result_step": 23,
+      "executed": false,
+      "result": "GOVERNOR BLOCKED\n[Blocked report] done.acceptance_evidence must cover every completed acceptance criterion exactly once. Preserve every remaining criterion; cite native evidence for any claimed completed item.",
+      "arguments": {
+        "acceptance_evidence": [
+          {
+            "command": "patch_file(path=src/main.rs, replace=TuiReplay(TuiReplayArgs), /// List deterministic TUI replay cases without executing them TuiReplayList(TuiReplayListArgs), /// Run one bounded Coder/Observer ta\u2026, search=TuiReplay(TuiReplayArgs), /// Run one bounded Coder/Observer task through the native TUI execution loop)",
+            "criterion": "acceptance 1"
+          }
+        ],
+        "completed_acceptance": [],
+        "next_steps": "In src/main.rs add TuiReplayListArgs and its dispatch arm using catalog::list; then edit npm/spiral-coder/lib/launcher.cjs and docs/evaluation.md. Run separately: python3 -S -m unittest -v scripts.catalog_visible and cargo test --locked --bin spiral-coder -q, after cargo fmt.",
+        "remaining_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3",
+          "acceptance 4"
+        ],
+        "summary": "[BLOCKED] Before: FAILED (python3 -S -m unittest -v scripts.catalog_visible: 1 test run, 1 failure). Added the catalog module and registered the TuiReplayList enum variant in src/main.rs. The implementation and dispatch remain incomplete: TuiReplayListArgs and its match arm are missing, and npm/spiral-coder/lib/launcher.cjs plus docs/evaluation.md were not edited. After: NOT VERIFIED. Observer diagnosis: define TuiReplayListArgs and dispatch it to catalog::list, then update the launcher/docs and run both exact checks. Files actually changed: src/main.rs, src/tui_replay.rs, src/tui_replay/catalog.rs."
+      }
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 338.569
+  }
+}

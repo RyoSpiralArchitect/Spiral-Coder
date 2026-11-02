@@ -1,0 +1,70 @@
+{
+  "condition": "H3 original-check selection and anchored plan refusal",
+  "baseline_commit": "527413cc114e0f621ccbfeb9eba6bd25d2531c15",
+  "runtime_commit": "aaf900327cc0bce56b8e9e1ebf050eabab948812",
+  "executor_sha256": "f86f101fd60f7d99d42317169893d9a018a9d8250b9dcdcae8e6e6c04ac4ae1c",
+  "raw_root": "search-walk-native-h3-admitted-plan-20261103",
+  "declaration_sha256": "5ceaebe132388dba656da6281b68c9253601d9ca0e10659822b95ca6bfdc2feb",
+  "protocol_sha256": "a2ce4756d0e3a6a3ccda317fc8eb15184fab53deb3b290d775e6419be443e056",
+  "spec_sha256": "4aa09888d4dac2277a4b9fe1833dc3004122f7bdc8328476bd0044e7797bc775",
+  "prompt_sha256": "ddf8161e94f4bb425834fa491e9c2e85438aed072fd40793e201f0d42d8ae25d",
+  "preflight_sha256": "40212e449d23449d2a6e58a66d3de0711d3dea73dceda62fb0e4d15b599fa14b",
+  "provider_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "editable": [
+    "src/file_tools.rs"
+  ],
+  "visible_fixtures": [
+    "scripts/search_walk_fixture.py",
+    "scripts/search_walk_visible.py"
+  ],
+  "hidden_and_reference_absent_from_candidate": true,
+  "prior_declaration_sha256": "bd797b61241e5271e4d5da2a0c2f581e20d4e737c41df3f312261ebcbe1d4a55",
+  "changed_inputs": [],
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "boundary",
+    "driver_sha256",
+    "executor_reloads_candidate",
+    "inputs_inventory",
+    "layout_sha256",
+    "max_requests",
+    "promotion_authorized",
+    "prompt_sha256",
+    "protected_paths",
+    "roles",
+    "same_model_both_roles",
+    "spec_version",
+    "version",
+    "visible_fixture_paths",
+    "wall_seconds"
+  ],
+  "candidate_fixture_git_tree": "0f3dee28ec516f41e91406454b526c0b3f7c0ae3",
+  "preflight_verdicts_match_prior": true,
+  "controlled_plan_refusal": {
+    "before": "af8f7407ebfdc25c31eda2b96b3e6222301592a2cb2890d50bac938d62de5696",
+    "after": "b024429fe1063eeb39a51908041fe61c5d920df91d3361e08286828f4f3b7b5b"
+  },
+  "local_suite_sha256": "497a4bb11e10457fc55628d0944afde9bcabc1e0e3a9390357d2b4c7665561b6"
+}

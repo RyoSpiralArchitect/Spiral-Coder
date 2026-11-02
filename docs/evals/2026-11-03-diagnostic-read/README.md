@@ -35,4 +35,4 @@ configured Cargo command twice while the recovery gate still required the
 original visible Python command. Two launcher edits were also refused. Finally
 the pair selected the right check but attached a replacement plan that did not
 pass alignment. No refused command or edit counts. [R11 predeclaration](plan.json)
-· [Follow-up protocol](r12/protocol.md).
+· [R12: exact rechecks and the remaining compile failure](r12/README.md).

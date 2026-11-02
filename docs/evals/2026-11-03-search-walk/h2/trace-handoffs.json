@@ -1,0 +1,46 @@
+{
+  "declaration_sha256": "bd797b61241e5271e4d5da2a0c2f581e20d4e737c41df3f312261ebcbe1d4a55",
+  "run_receipt_sha256": "a6dd9fa586d5eda5297f2eca451801c3e7acd2c22ef4e9f6fd9e003836953c63",
+  "wire_starts": 32,
+  "response_formats": {
+    "json_schema": 1,
+    "json_object": 7
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "a3789b899eec534a3280a6d5cfca574c95178772276df1c8bdc6abde7fb7c0ed",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/search_walk_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_bcKqvGPoFj5j8vgu0WHEeaiw",
+          "step": 2,
+          "header": "[scripts/search_walk_visible.py] (19 lines, 845 bytes) [pruned 20L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src/file_tools.rs",
+        "pattern": "WalkDir"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files] No matches for 'WalkDir' in file 'src/file_tools.rs'",
+        "[note] dir resolved to a file, so the search was scoped to that file"
+      ]
+    }
+  ]
+}

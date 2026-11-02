@@ -24,5 +24,5 @@ The first **preparation**, before any models ran, also caught rustfmt in the
 operator's independent reference. It made zero provider requests. Only reference
 layout was corrected for the fresh passing preflight; the gate was unchanged.
 [First preflight](first-preflight.json) · [Frozen passing preflight](preflight.json).
-[H2 protocol](h2/protocol.md) tests whether making the missing formatting and
-report instructions explicit helps a fresh pair finish the same repair.
+[H2 results](h2/README.md) show what happened when formatting became an explicit
+native check. It was selected eleven times without execution.
