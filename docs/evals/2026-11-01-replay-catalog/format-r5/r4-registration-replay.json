@@ -1,0 +1,22 @@
+{
+  "provider_calls": 0,
+  "call_id": "call_n0DppViT8DzGk3TVcL35WvNQ",
+  "run_receipt_sha256": "a47299b5a707a6a316771cb97ba212f4821dd2f8fad681927dd6acde9b646252",
+  "old_executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "new_executor_sha256": "9d26ac3b967eec8fc68221893b39cb912268e0ab51112030530dbaa3dbe1d5e5",
+  "request": {
+    "diff": "@@\n pub(crate) mod diagnostics;\n+pub(crate) mod catalog;\n*** End Patch",
+    "path": "src/tui_replay.rs"
+  },
+  "old": {
+    "status": 400,
+    "message": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"pub(crate) mod diagnostics;\\\\n*** End Patch\")).\nHunk 1 input (before this hunk; diagnostic only):\nClosest anchor context (diagnostic only) (lines 9-14):\n9 | use crate::tui::{events, intent};\n10 | \n11 | pub(crate) mod diagnostics;\n12 | \n13 | fn default_spec_version() -> u32 {\n14 |     1\nCurrent file tail (lines 666-671):\n666 |     match role {\n667 |         TuiReplayMessageRole::User => Role::User,\n668 |         TuiReplayMessageRole::Assistant => Role::Assistant,\n669 |         TuiReplayMessageRole::Tool => Role::Tool,\n670 |     }\n671 | }\nLine numbers and truncation markers are display-only; do not copy them into search text.\n\nTip: call read_file to inspect exact content.",
+    "output_sha256": "64bbb13bef5b38db6abc7edd635b191ca83c0adef040f6341343bb7333838f3e"
+  },
+  "fixed": {
+    "status": 200,
+    "message": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'\nFormat repair: ignored trailing `*** End Patch`.",
+    "output_sha256": "53cfe764312091433ee926ca76c5759ec4261c7c8619f9dd155a0a542d55b054"
+  },
+  "only_change": "inserted pub(crate) mod catalog;"
+}

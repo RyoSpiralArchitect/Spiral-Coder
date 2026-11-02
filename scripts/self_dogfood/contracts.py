@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import re
+import shlex
 import shutil
 import subprocess
 
@@ -21,8 +22,8 @@ def validate(spec):
     allowed = {"version", "id", "prompt", "editable", "protected", "required_changed_paths", "native_checks", "checks", "probes", "reference", "visible_fixtures", "roles", "max_requests", "coder_chunk_requests", "wall_seconds", "evaluation_wall_seconds", "timeout_seconds", "max_tokens", "observer_max_tokens", "temperature", "transport_repair_requests", "observer_reserved_requests", "reproducer_command", "visible_check_id"}
     if set(spec) - allowed:
         raise ValueError("Unknown task contract fields")
-    if spec.get("version") != 1:
-        raise ValueError("Only self-dogfood spec version 1 is supported")
+    if type(spec.get("version")) is not int or spec["version"] not in (1, 2):
+        raise ValueError("Unsupported self-dogfood spec version")
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", spec.get("id", "")):
         raise ValueError("Invalid task id")
     for key in ["editable", "native_checks", "checks", "probes", "reference"]:
@@ -64,8 +65,11 @@ def validate(spec):
             raise ValueError("Use the provider's standard credential environment name")
         if set(role) - {"provider", "model", "key_env"}:
             raise ValueError("Role overrides only accept provider/model/key_env; endpoints use fixed provider origins")
-    if spec["roles"]["coder"]["provider"] == spec["roles"]["observer"]["provider"]:
+    coder, observer = (spec["roles"][role] for role in ("coder", "observer"))
+    if spec["version"] == 1 and coder["provider"] == observer["provider"]:
         raise ValueError("This lane requires different provider families")
+    if spec["version"] == 2 and any(coder[k] != observer[k] for k in ("provider", "model")):
+        raise ValueError("Version 2 requires the same provider and model in both roles")
     ids = set()
     built = False
     for check in spec["checks"]:
@@ -83,7 +87,7 @@ def validate(spec):
             raise ValueError("Checks must use cargo, python3, node or the candidate debug binary")
         if check["kind"] == "build" and check["argv"][:2] != ["cargo", "build"]:
             raise ValueError("Build checks must invoke cargo build")
-        if check["argv"][0] == "{target_dir}/debug/spiral-coder" and not built:
+        if "{target_dir}/debug/spiral-coder" in check["argv"] and not built:
             raise ValueError("Candidate runtime checks must follow a build check")
         built = built or check["kind"] == "build"
         if "minimum_passed_tests" in check:
@@ -99,6 +103,14 @@ def validate(spec):
         bounded_int(check["timeout_seconds"], 1, spec["evaluation_wall_seconds"], "check timeout")
     if "visible_check_id" in spec and spec["visible_check_id"] not in ids:
         raise ValueError("visible_check_id must identify a declared check")
+    if spec["version"] == 2:
+        visible = next((c for c in spec["checks"] if c["id"] == spec.get("visible_check_id")), {})
+        if (visible.get("kind") != "improvement" or visible.get("baseline") != "fail"
+                or not visible.get("expected_test_count")
+                or spec.get("reproducer_command") not in spec["native_checks"]
+                or shlex.split(spec["reproducer_command"]) != visible["argv"]
+                or not required):
+            raise ValueError("Version 2 requires a counted failing visible check, a native reproducer and required changes")
     if len(ids) > 8 or not {"build", "regression", "improvement"}.issubset(c["kind"] for c in spec["checks"]):
         raise ValueError("Declare build, regression and improvement checks (up to 8)")
     if not any(c["kind"] == "improvement" and c["baseline"] == "fail" for c in spec["checks"]):

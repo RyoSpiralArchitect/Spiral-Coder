@@ -1,0 +1,12 @@
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..409151a 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,6 +8,7 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
+ fn default_spec_version() -> u32 {

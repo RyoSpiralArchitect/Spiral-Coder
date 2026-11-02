@@ -1,0 +1,63 @@
+{
+  "issue": 49,
+  "condition": "r2 shared dependency-order guidance",
+  "raw_root": "replay-catalog-native-r2-order-20261101",
+  "comparison_commit": "4c02f28a6a55dab4997edba93e08d50fa9fb4d5f",
+  "task_commit": "d8b46c28a61464efb018437bf47d6cbf68f28cc6",
+  "provider_calls_at_pin": 0,
+  "r1_declaration_sha256": "41388f94fa8a431a8c81a65f358f40f0ef6e525481b36e8b294783a130bc8e41",
+  "declaration_sha256": "0b5611f6a1b5597cb44c2037c50bbd956993340b4f6f7111928fed6b0fec2392",
+  "preflight_sha256": "e0d9c24f668fb24d6da2d5673f3e344903e2047d8427257f5778e5dfe2471831",
+  "r1_prompt_sha256": "d8f05ef51a94f2c5d9b249538e1cf55ac21eeac4263eaf01a3682b29fe834c20",
+  "prompt_sha256": "38c012535b24a147802358d4e2b2ff8d20a3634aeaca17f936597f05dba66e80",
+  "guidance_sha256": "0c31403be0e6661410122990bd50a3ab82e973e236e4351dff4d980c37effe9e",
+  "protocol_sha256": "956d1be6bcf43e17bf54f9b7583375a0a75b26f4ff30f158001bf2534fedf616",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "runtime_commit",
+    "binary_sha256",
+    "roles",
+    "spec_version",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "layout_sha256"
+  ],
+  "changed_inputs": [
+    "prompt.txt"
+  ],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "executor_sha256": "ef7879a8f033f0be6d4c7177c3af01c753057cc42fdeaabcb39db684723f5d8d",
+  "same_frozen_driver_as_r1": true,
+  "old_and_new_preflight_verdicts_match": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "candidate_baseline_note": "Independent Git init commit and absolute episode path can differ; assembled file inventories match exactly."
+}

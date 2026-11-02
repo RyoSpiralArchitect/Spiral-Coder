@@ -1,0 +1,57 @@
+{
+  "issue": 49,
+  "condition": "r5 narrow diff trailer repair",
+  "raw_root": "replay-catalog-native-r5-format-20261101",
+  "provider_calls_at_pin": 0,
+  "prior_declaration_sha256": "cd7f77d44bf4970d5e58d569d350e0981fc930c926bbe3269b36ef7c8637fe73",
+  "declaration_sha256": "a1ca83e4711915c72e1c91cd9bde3bede8e1d1399cb7042aa360e66efe2f3326",
+  "preflight_sha256": "6d10da14cd9a417129d05b8c39e585350b1ce5e606d82e6718fc2bac9d2eac73",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "e6b2a92dbead0b9e5f98059f560cc1c80ce8bffe",
+  "executor_sha256": "9d26ac3b967eec8fc68221893b39cb912268e0ab51112030530dbaa3dbe1d5e5",
+  "prior_executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "protocol_sha256": "cb6f4b57e7d8885eda37272e74a3bd5b0e672dd1bcd7e0506894362fd80acca0",
+  "task_commit": "5a9488d3d377d9a2b0fd760cf72ba9924d381957",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "maximum_wire_requests": 36,
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  }
+}

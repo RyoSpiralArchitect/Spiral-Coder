@@ -1,0 +1,122 @@
+{
+  "declaration_sha256": "cd7f77d44bf4970d5e58d569d350e0981fc930c926bbe3269b36ef7c8637fe73",
+  "run_receipt_sha256": "a47299b5a707a6a316771cb97ba212f4821dd2f8fad681927dd6acde9b646252",
+  "diff_calls": [
+    {
+      "call_id": "call_n0DppViT8DzGk3TVcL35WvNQ",
+      "path": "src/tui_replay.rs",
+      "executed": true,
+      "bare_trailer": true,
+      "edit_outcome": "failed",
+      "repair_receipt": false,
+      "native_first_line": "ERROR: no hunks applied (hunk 1: old block not found (starts: \"pub(crate) mod diagnostics;\\\\n*** End Patch\"))."
+    }
+  ],
+  "definitions_in_proposed_replacement_text": [],
+  "changed_lines_mentioning_r3_helpers": [
+    {
+      "path": "src/tui_replay/catalog.rs",
+      "line": "+use super::{load_spec, resolve_path, validate_case, TuiReplayCase, TuiReplaySpec};",
+      "symbols": [
+        "resolve_path",
+        "load_spec",
+        "validate_case"
+      ]
+    },
+    {
+      "path": "src/tui_replay/catalog.rs",
+      "line": "+    let spec_path = resolve_path(&base_root, args.spec.clone());",
+      "symbols": [
+        "resolve_path"
+      ]
+    },
+    {
+      "path": "src/tui_replay/catalog.rs",
+      "line": "+    let spec = load_spec(&spec_path)?;",
+      "symbols": [
+        "load_spec"
+      ]
+    },
+    {
+      "path": "src/tui_replay/catalog.rs",
+      "line": "+        validate_case(case).with_context(|| {",
+      "symbols": [
+        "validate_case"
+      ]
+    }
+  ],
+  "observer_replies": [
+    {
+      "raw_sha256": "497fdf91b0aa33c173c34b78e351ce52cc4aa96864676497b7dde78e0f145051",
+      "summary": "The first unfinished stage is diagnosis of the current visible-check failure; no source repair or successful edit is recorded.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Required recovery diagnosis: inspect the exact failing test and command invocation before tracing or editing the implementation."
+      }
+    },
+    {
+      "raw_sha256": "ed3c4001d34a7df496687ec50ac2e9ec3967143909ba554051a7ce19eb33cb1f",
+      "summary": "The first unfinished stage is the native CLI implementation: the visible check confirms --help lacks tui-replay-list, and no successful source edit is recorded.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Inspect the exact native CLI command declaration and dispatch in src/main.rs, which is the next dependency-order stage and a required artifact."
+      }
+    },
+    {
+      "raw_sha256": "7f430dd616d24d71899e0faa199f96d778f916482537efee4ccb365d5e771d8a",
+      "summary": "Verification is the first unfinished stage, but the required source, launcher, and documentation edits are also still unrecorded. Do not report completion yet.",
+      "primary": {
+        "kind": "verify",
+        "suggested_tool": "exec",
+        "reason": "The exact visible check is pending, previously failed before the latest edit, and must be rerun from the workspace root before diagnosis or final reporting."
+      }
+    },
+    {
+      "raw_sha256": "2091db3ddb0b5476898847d7b305c3519cdf908a427180abec092e76c96b0519",
+      "summary": "The catalog implementation was written, but the task remains incomplete: required CLI wiring, launcher forwarding, documentation, and both exact post-edit checks are still unverified.",
+      "primary": {
+        "kind": "verify",
+        "suggested_tool": "exec",
+        "reason": "Run the required visible check after the latest catalog edit; this is the first pending exact check and the prior attempt did not execute."
+      }
+    },
+    {
+      "raw_sha256": "c7eb353b5efdde6fc22c64d91da32c84dd4e6d5faabd6e6af293c5d7c51ecc2b",
+      "summary": "The implementation is incomplete: the catalog module was written, but the native command wiring, launcher forwarding, documentation, and required checks remain unresolved.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Inspect the actual current command enum and dispatch branches in src/main.rs so the catalog module can be registered without inventing symbols or disturbing existing tui-replay behavior."
+      }
+    },
+    {
+      "raw_sha256": "4702a8914f4af086a549bb2c92f46ab0ba391a8b40c83155ff95489e2112040a",
+      "summary": "The first unfinished stage is repairing the current Rust command wiring: src/main.rs now references TuiReplayListArgs and lacks a dispatch arm, so the build cannot proceed. After that, remaining source, launcher, documentation, and exact verification obligations still need completion.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Inspect the current src/main.rs command enum and dispatch match containing the reported missing TuiReplayListArgs type and non-exhaustive TuiReplayList arm; this is the exact missing fact needed for a local repair."
+      }
+    },
+    {
+      "raw_sha256": "25a8dec44d482a0a455c7662f43083401936f602f9c0412d92fbf63445979f89",
+      "summary": "The current blocker is an incomplete native CLI registration: src/main.rs references TuiReplayListArgs and lacks a dispatch arm, so the next step is to inspect the nearby command definition and dispatch context before editing.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Observe the exact Command enum and dispatch match locations implicated by the current compiler diagnostics before applying the local registration fix."
+      }
+    },
+    {
+      "raw_sha256": "57f5d37bc88185dca9243787fdafd02ac042252d480ee90401185cb88fcb0de9",
+      "summary": "The first unfinished stage is fixing the current compile error from the partial CLI registration, then completing the remaining allowed-path integration and verification.",
+      "primary": {
+        "kind": "read",
+        "suggested_tool": "read_file",
+        "reason": "Inspect the current command dispatch and tui_replay module boundary needed to define TuiReplayListArgs and call the catalog runner without inventing signatures."
+      }
+    }
+  ]
+}

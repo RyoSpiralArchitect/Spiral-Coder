@@ -39,12 +39,13 @@ def relative_path(value):
     return path
 
 
-def inventory(root):
+def inventory(root, *, include_nested_git=False):
     """Include untracked, ignored, deleted, mode and symlink changes; exclude Git internals."""
     root = Path(root)
     rows = {}
     for path in sorted(root.rglob("*")):
-        if ".git" in path.relative_to(root).parts:
+        parts = path.relative_to(root).parts
+        if parts[0] == ".git" or (not include_nested_git and ".git" in parts):
             continue
         name = path.relative_to(root).as_posix()
         if path.is_symlink():
@@ -52,6 +53,8 @@ def inventory(root):
         elif path.is_file():
             rows[name] = {"sha256": sha(path), "bytes": path.stat().st_size,
                           "mode": path.stat().st_mode & 0o777}
+        elif include_nested_git and not path.is_dir():
+            rows[name] = {"special_mode": path.lstat().st_mode}
     return rows
 
 

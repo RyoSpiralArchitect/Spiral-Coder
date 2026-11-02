@@ -1,0 +1,59 @@
+{
+  "issue": 49,
+  "condition": "r4 optional helper reuse instruction",
+  "raw_root": "replay-catalog-native-r4-reuse-20261101",
+  "provider_calls_at_pin": 0,
+  "prior_declaration_sha256": "07056c8cb6f319c4d1bf4a1523713cfe3f5b0ac088920dc2a4c6720ca0e993ed",
+  "declaration_sha256": "cd7f77d44bf4970d5e58d569d350e0981fc930c926bbe3269b36ef7c8637fe73",
+  "preflight_sha256": "4b5494607c8fa4be5d346273b793f8ae18d9ed6ab1a94d837cda71755c50717a",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "1f691ebaba9768ea66c23159a8d3929d6f3b63c3",
+  "executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "prior_executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "runtime_commit",
+    "binary_sha256"
+  ],
+  "changed_inputs": [
+    "prompt.txt"
+  ],
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "protocol_sha256": "98a287dc3467869bc67d3fde0b99c8519e00d4c3363717c82ccd3a809a19e19f",
+  "task_commit": "c97887bf8e4cb12c575132410c4d1ebad0f861db",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "maximum_wire_requests": 36,
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  }
+}

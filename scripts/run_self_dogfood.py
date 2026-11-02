@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Frozen cross-family self-dogfood: prepare, one bounded run, independent assessment."""
+"""Frozen real-repository Coder/Observer tasks: prepare, run once, assess independently."""
 import argparse
 import json
 from pathlib import Path

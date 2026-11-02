@@ -1,0 +1,72 @@
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..0dd777a 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -91,6 +91,7 @@ enum Command {
+ 
+     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
+     TuiReplay(TuiReplayArgs),
++    TuiReplayList(TuiReplayListArgs),
+ 
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+@@ -423,6 +424,7 @@ const INVENTORY_CLI_COMMANDS: &[(&str, &str)] = &[
+         "inspect runtime eval merge readiness and rollback preview",
+     ),
+     ("tui-replay", "deterministic TUI stuck-case replay"),
++    ("tui-replay-list", "list deterministic TUI replay cases"),
+     ("inventory", "repo/runtime manifest and parity surfaces"),
+     (
+         "promote-harness",
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..e776ceb
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,46 @@
++//! Read-only replay catalog selection and rendering.
++
++use super::{select_cases, TuiReplaySpec};
++use anyhow::{bail, Result};
++use serde::Serialize;
++use std::path::Path;
++
++#[derive(Debug, Serialize)]
++struct Catalog {
++    version: u8,
++    total: usize,
++    cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase {
++    id: String,
++    tags: Vec<String>,
++}
++
++pub(crate) fn list(
++    spec: &TuiReplaySpec,
++    spec_path: &Path,
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Result<String> {
++    let selected = select_cases(spec, filter, max_cases);
++    if selected.is_empty() {
++        bail!("no replay cases matched selection in {}", spec_path.display());
++    }
++    for case in &selected {
++        super::validate_case(case)
++            .map_err(|error| anyhow::anyhow!("invalid replay case '{}': {}", case.id, error))?;
++    }
++    Ok(serde_json::to_string(&Catalog {
++        version: 1,
++        total: selected.len(),
++        cases: selected
++            .into_iter()
++            .map(|case| CatalogCase {
++                id: case.id,
++                tags: case.tags,
++            })
++            .collect(),
++    })?)
++}

@@ -1,0 +1,177 @@
+{
+  "predeclaration_sha256": "a1ca83e4711915c72e1c91cd9bde3bede8e1d1399cb7042aa360e66efe2f3326",
+  "run_receipt_sha256": "fdb4d3c476a291b0ac531e47ab3c2b7c3ca0f7c1a0e3869088038836bd58512b",
+  "assessment_sha256": "80d6d2a2bab5e6f373e6fef43ac547c410b7e3453ac04ed5dc6f4f4f59fb45b7",
+  "completed": false,
+  "termination": "interrupted",
+  "role_requests": {
+    "coder": 5,
+    "observer": 6
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": false,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/tui_replay.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 11,
+    "task_requests": 11,
+    "transport_requests": 0,
+    "coder_task_requests": 5,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "not_evaluated",
+      "visible_passed": "not_observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 1,
+    "first_unmet_stage": "behavior_changed",
+    "termination": "interrupted"
+  },
+  "first_changed_step_by_path": {
+    "src/tui_replay.rs": 5
+  },
+  "changed_edits": [
+    {
+      "result_step": 5,
+      "tool": "apply_diff",
+      "call_id": "call_a7ZzdNg5MOs4qdl9NMk5diwT",
+      "path": "src/tui_replay.rs",
+      "auto_test": "FAILED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_tnSF62KCFEUoAWTngprUzIe9"
+      ],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "141f3434fb1d2a1ffaf07e0f2fc1d09d65477b7130e643bafcbe830e3ea6eaa2",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_visible.py"
+    },
+    {
+      "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "first_listed_kind": null,
+      "first_listed_tool": null,
+      "first_listed_path": null
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": false,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "b4677bbdff9b69fed3aa03f886c5347860f3439fd4c90b23dd4279dfa4fdd1cd",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "663e8a90ae1792922a920601a5ce3b989fcd1cfeb768a40f6c231c5128051c89",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "regular-replay",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "87cd4c1e98e95c802bb0ed16cc2b6b03a2fa3b10f860c1350e73fdcd63e6663f",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [],
+  "process": {
+    "exit_code": 1,
+    "timed_out": false,
+    "wall_seconds": 349.23
+  }
+}

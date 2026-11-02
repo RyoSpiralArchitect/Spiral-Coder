@@ -81,7 +81,7 @@ def prepare(args):
     write_json(out / "layout.json", {"target_dir": str(target_dir), "source_repository": str(repo)})
     declaration = {"version": 1, "prepared_at": now(), "baseline_commit": baseline_commit,
                    "runtime_commit": runtime_commit, "candidate_base_commit": candidate_base, "binary_sha256": sha(out / "runtime/spiral-coder"),
-                   "roles": spec["roles"], "same_model_both_roles": False,
+                   "spec_version": spec["version"], "roles": spec["roles"], "same_model_both_roles": spec["version"] == 2,
                    "max_requests": spec["max_requests"], "wall_seconds": spec["wall_seconds"],
                    "baseline_inventory": baseline, "inputs_inventory": inventory(out / "inputs"),
                    "driver_sha256": freeze_driver(out), "protected_paths": protected,
@@ -177,7 +177,7 @@ def run(args):
     (episode / "candidate.patch").write_bytes(patch.stdout)
     result["patch_exit_code"] = patch.returncode
     write_json(episode / "process.json", result)
-    write_json(episode / "candidate-inventory.json", inventory(episode / "workspace"))
+    write_json(episode / "candidate-inventory.json", inventory(episode / "workspace", include_nested_git=spec["version"] == 2))
     load_frozen(out, args.declaration_sha256)
     receipt_digest = seal_run(out, args.declaration_sha256)
     return {"finished": str(out), "run_receipt_sha256": receipt_digest, **result}

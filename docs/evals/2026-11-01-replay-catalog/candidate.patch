@@ -1,0 +1,48 @@
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..045ab37 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -51,6 +51,25 @@ use crate::config::{PartialConfig, ProviderPreset};
+ use crate::server::ServeArgs;
+ use crate::tui::TuiArgs;
+ 
++#[derive(Args, Debug, Clone)]
++struct TuiReplayListArgs {
++    /// Project root used to resolve the replay specification.
++    #[arg(short = 'C', long = "tool-root", default_value = ".")]
++    tool_root: PathBuf,
++
++    /// Replay specification path, relative to tool-root unless absolute.
++    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
++    spec: PathBuf,
++
++    /// ASCII case-insensitive substring matched against case ids and tags.
++    #[arg(long)]
++    filter: Option<String>,
++
++    /// Maximum number of selected cases; zero selects one case.
++    #[arg(long)]
++    max_cases: Option<usize>,
++}
++
+ #[derive(Parser, Debug)]
+ #[command(
+     name = "spiral-coder",
+@@ -92,6 +111,9 @@ enum Command {
+     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
+     TuiReplay(TuiReplayArgs),
+ 
++    /// List deterministic TUI replay cases without executing them
++    TuiReplayList(TuiReplayListArgs),
++
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
+@@ -616,6 +638,7 @@ async fn main() -> Result<()> {
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
++        Some(Command::TuiReplayList(args)) => tui_replay::list(args).await,
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
+         Some(Command::Review(args)) => run_review(args, cli.common).await,

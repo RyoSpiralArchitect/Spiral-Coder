@@ -1,0 +1,140 @@
+{
+  "issue": 49,
+  "case": "replay-catalog",
+  "spec_version": 2,
+  "condition": "one same-model native Coder and Observer episode",
+  "raw_root": "replay-catalog-native-r1-20261101",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "executor_binary_sha256": "ef7879a8f033f0be6d4c7177c3af01c753057cc42fdeaabcb39db684723f5d8d",
+  "contract_commit": "98109f581f168bed58c5c4f6accd4e1c75c301ff",
+  "predeclaration_sha256": "41388f94fa8a431a8c81a65f358f40f0ef6e525481b36e8b294783a130bc8e41",
+  "preflight_sha256": "1920a1e049886c4c6f1e3a02d92c1570c1c5260d4ab29320b5f114892f516480",
+  "baseline_inventory_sha256": "97e942d1d7776b74dc54207ca733d413c57d812e4309b672c7d08b0692e329ec",
+  "input_sha256": {
+    "catalog_oracle.py": "08e66e69cbadfd0ca2c2589e898058f516a34fb65bf1a787e10df23845cb9273",
+    "catalog_visible.py": "78a9bbeaed843eda9c547116eed0f9a4bb03062b522274b07b6fa5e9af1eaeb8",
+    "packaged_spiral.py": "88d25328e35c6efee01d07d11807f5b4a46140f22b761202b12abcb38c09fc12",
+    "prompt.txt": "d8f05ef51a94f2c5d9b249538e1cf55ac21eeac4263eaf01a3682b29fe834c20",
+    "reference/docs/evaluation.md": "ad0436af110cb4a5785b8c8c4217519be635f18ac2a2eafdc25ca4be936c41a5",
+    "reference/npm/spiral-coder/lib/launcher.cjs": "2c04d6346e0bcc85b89570ed165b7da9bbd61ac723a1831d06ac1b43440f2d7e",
+    "reference/src/main.rs": "f1171d1dc8ca8f50f58e99fd27f7c7890d74012a474e74ed0af145f271704a44",
+    "reference/src/tui_replay/catalog.rs": "3c352e23d17ef2bc534a727d56a33f9226ffe2ad4e9edd4a0091d719bd21a5ce",
+    "reference/src/tui_replay.rs": "591cf9b0c06e16eae64221b4d30d658013628af150d7b17039759095caa9d571",
+    "regular_replay.py": "3198ef16fd4fc3312d0fd521f1620415cd2e35480efc181747488738aca33f3e",
+    "spec.json": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+    "stock_checks.py": "8453c0504563940bea0c195413ec3f86cb65b8f61615959c2cce0dab37a0e112"
+  },
+  "driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "f4b2080263c47cfba27f39de53831ad16ba43e73b31b8d71954a7f726fe9026d",
+    "coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_self_dogfood.py": "40705efbc4e81e0f129919d8720d9768ec57ab06a0a6ba6ea87bb023e6ca3f01",
+    "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+    "self_dogfood/assessment.py": "c6483f56ff2167a645e9a84719766ec0b1c15257f52f62274928d9c3ccf89eac",
+    "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+    "self_dogfood/contracts.py": "c06556ba7e121aa94363c8024e54226a069c19b6f4386a9915d65fc80707341d",
+    "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+    "self_dogfood/measurement.py": "4bf2b08dad2338f6d61d8ea22b1d14b1a16fd5331eeb7be35c60bc40680954b5",
+    "self_dogfood/paired.py": "7a2c2a208c101bb07b300127ab8f6bae09ca6fbe79cf04d21bdcaba1510c6a19",
+    "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+    "self_dogfood/runner.py": "be04b79e710260c62e9d8bbafb97ca93423286fc9a98f54c1f78e50dfdbcbcf0"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "editable": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs",
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "tests/tui_replay_catalog.rs"
+  ],
+  "required_changed_paths": [
+    "src/main.rs",
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs"
+  ],
+  "native_checks": [
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "visible_fixture_paths": [
+    "scripts/catalog_visible.py"
+  ],
+  "independent_checks": [
+    [
+      "candidate-build",
+      "pass",
+      null
+    ],
+    [
+      "catalog-visible",
+      "fail",
+      1
+    ],
+    [
+      "held-out-catalog",
+      "fail",
+      11
+    ],
+    [
+      "packaged-spiral",
+      "fail",
+      1
+    ],
+    [
+      "regular-replay",
+      "pass",
+      null
+    ],
+    [
+      "stock-regressions",
+      "pass",
+      null
+    ]
+  ],
+  "prior_offline_design_checks": [
+    {
+      "purpose": "native CLI design before adding npm routing",
+      "raw_root": "replay-catalog-r1-20261101",
+      "predeclaration_sha256": "2080f6ba1cfb3ed1778240104a311b8f87329a7e521b1edb44f13698de2486ad",
+      "preflight_sha256": "6744fd37bc664f3a895066eed178acce87abf38ab0e89cd96ef0dd898b6ac7d4",
+      "reference_passed": true,
+      "provider_calls": 0
+    },
+    {
+      "purpose": "package design before native task requirements",
+      "raw_root": "replay-catalog-package-r1-20261101",
+      "predeclaration_sha256": "43dcddeaf353d67c2f5ed1b21bca6fd4ae04e438947a1e63b30776b98d98b0c2",
+      "preflight_sha256": "418c9df3937747477df80af3225c6f7b3244613c485f39826801712679933670",
+      "reference_passed": true,
+      "provider_calls": 0
+    }
+  ],
+  "decision_rule": "Preserve the first episode even if incomplete. Require every frozen machine gate and review the native report, scope and trace. Reapply the patch to plain merged source before adoption in a separate reviewed PR. No automatic promotion or in-place retry."
+}

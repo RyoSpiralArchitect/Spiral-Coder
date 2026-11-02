@@ -1,0 +1,215 @@
+diff --git a/docs/evaluation.md b/docs/evaluation.md
+index e2a7898..0232ace 100644
+--- a/docs/evaluation.md
++++ b/docs/evaluation.md
+@@ -313,3 +313,15 @@ synthetic calls; remaining task failures keep the branch unqualified.
+ The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.
+ 
+ The [2026-10-21 coupled task proof / JSON / Web readout](evals/2026-10-21-task-proof-json-web/README.md) records two adaptive three-model rounds, their unchanged oracles and remaining failure modes.
++
++To inspect the stock replay cases before choosing which one to run:
++
++```sh
++spiral tui-replay-list --filter prefs --max-cases 1
++```
++
++This read-only command prints JSON with the selected count, case IDs and tags.
++It accepts the same spec path relative to `--tool-root` (`-C`) as `tui-replay`.
++A case matches when its ID or any tag contains the filter, ignoring ASCII case.
++The cap is applied in spec order after filtering; zero selects at most one.
++Listing never executes the cases or writes replay artifacts. Use `tui-replay` to run them.
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index a0038b5..cb34b47 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..8194e8f 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -92,6 +92,9 @@ enum Command {
+     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
+     TuiReplay(TuiReplayArgs),
+ 
++    /// List matching TUI replay cases as JSON without executing them
++    TuiReplayList(tui_replay::catalog::Args),
++
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
+@@ -615,6 +618,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..82d5b1c 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,6 +8,7 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
+ fn default_spec_version() -> u32 {
+@@ -167,34 +168,13 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
+     std::fs::create_dir_all(&out_dir)
+         .with_context(|| format!("failed to create tui replay out dir: {}", out_dir.display()))?;
+ 
+-    let filter_lc = args.filter.as_ref().map(|s| s.to_ascii_lowercase());
+-    let mut selected: Vec<TuiReplayCase> = spec
+-        .cases
+-        .iter()
+-        .filter(|case| {
+-            if let Some(filter) = filter_lc.as_deref() {
+-                case.id.to_ascii_lowercase().contains(filter)
+-                    || case
+-                        .tags
+-                        .iter()
+-                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
+-            } else {
+-                true
+-            }
+-        })
+-        .cloned()
+-        .collect();
+-    if let Some(limit) = args.max_cases.map(|n| n.max(1)) {
+-        selected.truncate(limit);
+-    }
+-    if selected.is_empty() {
+-        return Err(diagnostics::empty_selection(
+-            &spec_path,
+-            &base_root_path,
+-            args.filter.as_deref(),
+-            &spec.cases,
+-        ));
+-    }
++    let selected = selected_cases(
++        &spec.cases,
++        args.filter.as_deref(),
++        args.max_cases,
++        &spec_path,
++        &base_root_path,
++    )?;
+ 
+     eprintln!(
+         "[tui-replay] spec={} cases={} out={}",
+@@ -243,6 +223,38 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
+     Ok(())
+ }
+ 
++fn selected_cases<'a>(
++    cases: &'a [TuiReplayCase],
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++    spec_path: &Path,
++    root: &Path,
++) -> Result<Vec<&'a TuiReplayCase>> {
++    let filter_lc = filter.map(|s| s.to_ascii_lowercase());
++    let mut selected: Vec<&TuiReplayCase> = cases
++        .iter()
++        .filter(|case| {
++            if let Some(filter) = filter_lc.as_deref() {
++                case.id.to_ascii_lowercase().contains(filter)
++                    || case
++                        .tags
++                        .iter()
++                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
++            } else {
++                true
++            }
++        })
++        .collect();
++    if let Some(limit) = max_cases.map(|n| n.max(1)) {
++        selected.truncate(limit);
++    }
++    if selected.is_empty() {
++        return Err(diagnostics::empty_selection(spec_path, root, filter, cases));
++    }
++
++    Ok(selected)
++}
++
+ fn run_case(
+     idx: usize,
+     common: &crate::CommonArgs,
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..feb88d6
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,61 @@
++use super::{load_spec, resolve_path, selected_cases};
++use anyhow::{Context, Result};
++use serde::Serialize;
++use std::path::PathBuf;
++
++#[derive(clap::Args, Debug, Clone)]
++pub(crate) struct Args {
++    #[arg(long, short = 'C', alias = "root")]
++    tool_root: Option<PathBuf>,
++
++    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
++    spec: PathBuf,
++
++    #[arg(long)]
++    filter: Option<String>,
++
++    #[arg(long)]
++    max_cases: Option<usize>,
++}
++
++#[derive(Serialize)]
++struct Entry<'a> {
++    id: &'a str,
++    tags: &'a [String],
++}
++
++#[derive(Serialize)]
++struct Catalog<'a> {
++    version: u32,
++    total: usize,
++    cases: Vec<Entry<'a>>,
++}
++
++pub(crate) fn run(args: Args) -> Result<()> {
++    let root = match args.tool_root {
++        Some(root) => root,
++        None => std::env::current_dir().context("get working directory")?,
++    };
++    let path = resolve_path(&root, args.spec);
++    let spec = load_spec(&path)?;
++    let cases: Vec<_> = selected_cases(
++        &spec.cases,
++        args.filter.as_deref(),
++        args.max_cases,
++        &path,
++        &root,
++    )?
++    .into_iter()
++    .map(|c| Entry {
++        id: &c.id,
++        tags: &c.tags,
++    })
++    .collect();
++    let catalog = Catalog {
++        version: spec.version,
++        total: cases.len(),
++        cases,
++    };
++    println!("{}", serde_json::to_string(&catalog)?);
++    Ok(())
++}

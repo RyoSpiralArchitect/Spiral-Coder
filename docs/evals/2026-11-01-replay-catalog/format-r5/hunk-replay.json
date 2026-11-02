@@ -1,0 +1,35 @@
+{
+  "provider_calls": 0,
+  "old_executor_sha256": "738a93eaada354d354cd2ba7beb3d9660e2fce8f98dec514cebb3c11c2db3a45",
+  "new_executor_sha256": "9d26ac3b967eec8fc68221893b39cb912268e0ab51112030530dbaa3dbe1d5e5",
+  "prior_source_sha256": "6ad245d0704919d7b17a95116666c10bea68bad34640fd80dfae252d5f2d5683",
+  "initial_multi_hunk_edit": {
+    "call_id": "call_tjAfUs94OVBaf6M58rBXC0mj",
+    "old_result": "OK: applied 3/5 hunk(s) to 'src/tui_replay.rs'",
+    "fixed_status": 400,
+    "fixed_result": "ERROR: could not safely ignore trailing `*** End Patch`; no hunks applied. hunk 3: old block not unique (134 matches) \u2014 add more context lines",
+    "unchanged": true
+  },
+  "rejected_retries_on_historical_input": [
+    {
+      "call_id": "call_JWcBJWIqfiXNrFPoWt1iBmlG",
+      "request_diff_sha256": "440114e22090ad5328539e628101dd689576ac0d639ff7f1c0fdb00e4548322e",
+      "old_status": 400,
+      "fixed_status": 200,
+      "fixed_result": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'\nFormat repair: ignored trailing `*** End Patch`.",
+      "output_sha256": "729eace6fea3513fd6bb5282cf2dfb9d0eddf3546c2f58f51c07849cc9e5fbe6",
+      "matches_explicit_footer_removal": true,
+      "resolve_path_definitions_after": 2
+    },
+    {
+      "call_id": "call_N8mIZIjbwk4J14pfBVSbZ13o",
+      "request_diff_sha256": "fffaa3d176a2b0f9a1287a8f5570a7ec509be2cf7bb14da32831cc799045de08",
+      "old_status": 400,
+      "fixed_status": 200,
+      "fixed_result": "OK: applied 1/1 hunk(s) to 'src/tui_replay.rs'\nFormat repair: ignored trailing `*** End Patch`.",
+      "output_sha256": "95f5bdc7bc0bdcdea631bef7ab33f9877facc844c87db477dd00846a69e212bf",
+      "matches_explicit_footer_removal": true,
+      "resolve_path_definitions_after": 2
+    }
+  ]
+}

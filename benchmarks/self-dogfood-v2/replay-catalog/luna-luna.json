@@ -1,0 +1,188 @@
+{
+  "version": 2,
+  "id": "replay-catalog",
+  "prompt": "prompt.txt",
+  "editable": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs",
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "tests/tui_replay_catalog.rs"
+  ],
+  "required_changed_paths": [
+    "src/main.rs",
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs"
+  ],
+  "protected": [
+    "Cargo.toml",
+    "Cargo.lock",
+    ".spiral-coder/tui_replay.json",
+    "scripts/check-local.sh"
+  ],
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "max_requests": 32,
+  "observer_reserved_requests": 8,
+  "transport_repair_requests": 4,
+  "coder_chunk_requests": 8,
+  "wall_seconds": 1200,
+  "evaluation_wall_seconds": 900,
+  "timeout_seconds": 90,
+  "max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "temperature": 0,
+  "native_checks": [
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "reproducer_command": "python3 -S -m unittest -v scripts.catalog_visible",
+  "visible_check_id": "catalog-visible",
+  "checks": [
+    {
+      "id": "candidate-build",
+      "kind": "build",
+      "baseline": "pass",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "timeout_seconds": 180
+    },
+    {
+      "id": "catalog-visible",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
+      ],
+      "expected_test_count": 1,
+      "expected_baseline_failures": 1,
+      "baseline_failure_contains": [
+        "catalog command missing from --help"
+      ],
+      "timeout_seconds": 160
+    },
+    {
+      "id": "held-out-catalog",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/catalog_oracle.py",
+        "{target_dir}/debug/spiral-coder"
+      ],
+      "expected_test_count": 11,
+      "expected_baseline_failures": 11,
+      "baseline_failure_contains": [
+        "catalog command missing from --help"
+      ],
+      "timeout_seconds": 160
+    },
+    {
+      "id": "packaged-spiral",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/packaged_spiral.py",
+        "{target_dir}/debug/spiral-coder"
+      ],
+      "timeout_seconds": 90,
+      "expected_test_count": 1,
+      "baseline_failure_contains": [
+        "AssertionError: spiral routed replay listing to tui"
+      ]
+    },
+    {
+      "id": "regular-replay",
+      "kind": "regression",
+      "baseline": "pass",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/regular_replay.py",
+        "{target_dir}/debug/spiral-coder",
+        "{receipts}"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "stock-regressions",
+      "kind": "regression",
+      "baseline": "pass",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/stock_checks.py",
+        "{receipts}"
+      ],
+      "timeout_seconds": 420
+    }
+  ],
+  "visible_fixtures": [
+    {
+      "source": "catalog_visible.py",
+      "target": "scripts/catalog_visible.py"
+    }
+  ],
+  "probes": [
+    {
+      "source": "catalog_oracle.py",
+      "target": ".catalog-checks/catalog_oracle.py"
+    },
+    {
+      "source": "regular_replay.py",
+      "target": ".catalog-checks/regular_replay.py"
+    },
+    {
+      "source": "stock_checks.py",
+      "target": ".catalog-checks/stock_checks.py"
+    },
+    {
+      "source": "packaged_spiral.py",
+      "target": ".catalog-checks/packaged_spiral.py"
+    }
+  ],
+  "reference": [
+    {
+      "source": "reference/src/main.rs",
+      "target": "src/main.rs"
+    },
+    {
+      "source": "reference/src/tui_replay.rs",
+      "target": "src/tui_replay.rs"
+    },
+    {
+      "source": "reference/src/tui_replay/catalog.rs",
+      "target": "src/tui_replay/catalog.rs"
+    },
+    {
+      "source": "reference/docs/evaluation.md",
+      "target": "docs/evaluation.md"
+    },
+    {
+      "source": "reference/npm/spiral-coder/lib/launcher.cjs",
+      "target": "npm/spiral-coder/lib/launcher.cjs"
+    }
+  ]
+}

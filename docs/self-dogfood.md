@@ -1,9 +1,11 @@
-# Cross-family self-dogfood
+# Real-repository self-dogfood
 
-`scripts/run_self_dogfood.py` runs one real repository repair with a Coder and an
-Observer from different provider families. The execution unit is the pair. A
-Coder-only success cannot qualify this lane. The existing same-model
-`run_coupled_bench.py` lane and its fixtures remain separate.
+`scripts/run_self_dogfood.py` runs one frozen real-repository task with a Coder
+and an Observer. Version 1 requires different provider families. The
+[version 2 replay catalog](../benchmarks/self-dogfood-v2/replay-catalog/README.md)
+requires the same provider and model with two distinct roles. Both versions
+check native calls and independently verify the resulting candidate. Small
+fixture tasks use `run_coupled_bench.py`.
 
 The first task catalog is [self-dogfood-v1](../benchmarks/self-dogfood-v1/README.md).
 It targets a real recovery-handoff defect from a pinned baseline. New task contracts
@@ -12,6 +14,20 @@ acceptance changes, automatic retries and automatic promotion are not supported.
 The first live runs also exposed a runtime coercion conflict; the
 [follow-up edit safety contract](followup-edit-safety.md) preserves diagnostic
 reads and authored local edits while retaining completion and verification gates.
+
+## Asking the pair to consider existing code
+
+Put the preference near the start of the task you give the Coder. The Observer
+receives the first 8,192 characters of the original task in its work packet.
+
+> Look for the existing helper and one of its callers. Use it if its behavior
+> fits. If the contract needs to change, adapt it or write a new helper.
+> When proposing the next edit, point to the behavior you actually observed.
+
+For the replay-catalog benchmark, `materialize.py --reuse-guidance` adds this
+kind of instruction for one episode. It can be combined with
+`--order-guidance`. Existing helpers, new implementations and replacements are
+all assessed by the same behavioral checks.
 
 ## Prepare, run, assess
 
@@ -137,6 +153,13 @@ The startup banner `running N tests` does not count as completion.
 `minimum_passed_tests` requires a completed successful summary with at least that
 many passed and zero failed tests; it permits existing ignored tests. This guards
 against silently disconnecting a preserved test module.
+
+Version 2 also accepts an exact, completed standard-library `unittest` summary
+for counted Python probes. Errors, skips and incomplete output cannot satisfy a
+counted pass or expected assertion failure. The visible check's argv must match
+the native reproducer, and the task declares its required changed paths.
+When a failed build leaves no candidate binary, dependent checks record
+`executed: false` with the reason `candidate_binary_unavailable`.
 
 Checks run as explicit argument arrays, with no evaluator shell. Allowed
 executables are `cargo`, `python3`, `node`, and

@@ -1,0 +1,89 @@
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..409151a 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,6 +8,7 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
+ fn default_spec_version() -> u32 {
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..2da9a40
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,71 @@
++use anyhow::{Context, Result};
++use serde::Serialize;
++use std::path::PathBuf;
++
++use super::{load_spec, resolve_path, TuiReplayCase};
++
++fn select_cases(
++    cases: &[TuiReplayCase],
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Vec<TuiReplayCase> {
++    let needle = filter.map(str::to_ascii_lowercase);
++    let mut selected: Vec<_> = cases.iter().filter(|case| {
++        needle.as_deref().is_none_or(|needle| {
++            case.id.to_ascii_lowercase().contains(needle)
++                || case.tags.iter().any(|tag| tag.to_ascii_lowercase().contains(needle))
++        })
++    }).cloned().collect();
++    if let Some(limit) = max_cases.map(|limit| limit.max(1)) { selected.truncate(limit); }
++    selected
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogOutput {
++    version: u32,
++    total: usize,
++    cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase {
++    id: String,
++    tags: Vec<String>,
++}
++
++pub(crate) fn run(args: crate::TuiReplayListArgs) -> Result<()> {
++    let cwd = std::env::current_dir().context("failed to get current directory")?;
++    let base_root = args
++        .tool_root
++        .map(PathBuf::from)
++        .unwrap_or(cwd);
++    let spec_path = resolve_path(&base_root, args.spec);
++    let spec = load_spec(&spec_path)?;
++    let selected = select_cases(&spec.cases, args.filter.as_deref(), args.max_cases);
++    if selected.is_empty() {
++        anyhow::bail!(
++            "tui replay catalog selection is empty (spec={}, filter={:?})",
++            spec_path.display(),
++            args.filter
++        );
++    }
++    for case in &selected {
++        if case.checks.is_empty() {
++            anyhow::bail!(
++                "tui replay case '{}' has no checks (spec={})",
++                case.id,
++                spec_path.display()
++            );
++        }
++    }
++    let output = CatalogOutput {
++        version: 1,
++        total: selected.len(),
++        cases: selected
++            .into_iter()
++            .map(|case| CatalogCase { id: case.id, tags: case.tags })
++            .collect(),
++    };
++    println!("{}", serde_json::to_string(&output)?);
++    Ok(())
++}

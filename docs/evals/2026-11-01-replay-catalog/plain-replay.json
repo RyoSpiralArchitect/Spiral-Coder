@@ -1,0 +1,12 @@
+{
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "patch_sha256": "66bc1eadbf61cc40f2a7f6e8d94162a4c89b2254e2bc9b6dc94a053864f0879f",
+  "patch_bytes": 1935,
+  "visible_fixture_paths": [
+    "scripts/catalog_visible.py"
+  ],
+  "applied_to_plain_git_snapshot": true,
+  "diagnostic": null,
+  "different_paths": [],
+  "all_candidate_files_matched": true
+}

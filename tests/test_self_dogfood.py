@@ -398,6 +398,26 @@ class LaneTests(unittest.TestCase):
         self.assertFalse(read_json(self.out / "preflight.json")["baseline_expected"])
         self.assertFalse((self.out / "episode/started.json").exists())
 
+    def test_failed_build_leaves_dependent_checks_unexecuted(self):
+        self.prepare()
+        self.spec["checks"].append({"id": "cli", "argv": ["python3", "probe.py", "{target_dir}/debug/spiral-coder"],
+                                    "kind": "improvement", "baseline": "fail", "timeout_seconds": 10})
+
+        def failing_build(argv, workspace, env, timeout, log):
+            self.assertNotIn("probe.py", argv, "never execute a binary from a previous build")
+            if argv[:2] == ["cargo", "build"]:
+                log.write_text("compilation failed")
+                return {"exit_code": 101, "timed_out": False, "output_limit": False, "wall_seconds": 1}
+            return self.fake_check(argv, workspace, env, timeout, log)
+
+        with patch.object(assessment, "run_process", failing_build):
+            rows = assessment.checks(self.out, self.spec, "no-binary")
+        self.assertTrue(rows[0]["executed"])
+        skipped = rows[-1]
+        self.assertEqual(skipped["skip_reason"], "candidate_binary_unavailable")
+        self.assertFalse(skipped["executed"] or skipped["timed_out"] or skipped["passed"])
+        self.assertIsNone(skipped["exit_code"])
+
     def test_failure_identity_requires_a_nonempty_list_of_nonblank_strings(self):
         for check_index in (0, 2):
             for value in ("restores_fix", "", None, True, 1, {}, [], [""], [" "], [1], ["restore_after_read", None]):
