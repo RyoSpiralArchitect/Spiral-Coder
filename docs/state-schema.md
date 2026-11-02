@@ -1408,3 +1408,11 @@ For hosted OpenAI Chat Completions, native and Web tool requests set
 the boolean when sent. A named unsupported tool option can be removed once
 per request option and endpoint. The runtime checks the actual number of
 returned tool calls before execution.
+
+When the Observer proposes invalid `read_file` arguments during a required
+diagnostic read, its one repair prompt carries both the validation error and
+the current path from the native recovery state. The Observer supplies the
+replacement action and it goes through the ordinary validation again.
+Native next-action Observer requests to hosted OpenAI ask for a JSON object.
+The response-format request shapes provider output. Only the existing native
+validator can accept an action or make a hint eligible for forwarding.

@@ -20,3 +20,5 @@ For the [helper reuse condition](../../../docs/evals/2026-11-01-replay-catalog/r
 The [R8 benchmark example](../../../docs/examples/replay-catalog-r8.md) rebuilds the first passing native listing and reproduces the remaining npm and documentation failures without model credentials.
 
 R9 uses the same task and request budget. Its record separates a scripted recovery of R8's launcher edit, the fresh pair's blocked run, and a native replay of the out-of-scope edit discovered in R9. [Ninth run and follow-up](../../../docs/evals/2026-11-03-deferred-edit/README.md)
+
+R10 records a scoped symbol search, serialized Coder calls and an unresolved catalog import. The record lists the remaining feature, verification and harness-change tasks for a reviewable self-authored patch. [Tenth run and remaining work](../../../docs/evals/2026-11-03-scoped-lookup/README.md)

@@ -15,3 +15,21 @@ On the current feature these gates must pass together on one authored candidate.
 ## R10 comparison
 
 One R9 assistant reply contained six native tool calls. All six received refusal results from the single-action governor. In another turn, the progress gate refused a first search for `TuiReplay` after unrelated reads. The R10 executor asks hosted OpenAI to generate one tool action per turn and retains a single scoped search during repair. It also contains the explicit edit list check introduced after R9. [Frozen protocol](protocol.md)
+
+On the prior scoped executor the original R9 step 13 search was still refused. On the R10 executor the same arguments returned matching locations in `src/tui_replay.rs`. The retained excerpt did not include the CLI dispatch. Both disposable workspaces finished with their original contents. [Before](lookup-before.json) · [After](lookup-after.json)
+
+## First full R10 episode
+
+The two `gpt-5.6-luna` roles made 20 wire requests in 179 seconds. Coder made 13, all with serialization requested. Observer made seven. The ledger charged 19 task requests and one transport repair. There were zero multi-call refusals. The pair ran one literal search for `tui_replay` in `src` and changed two permitted files. No out-of-scope file changed. This search occurred early in the run and does not establish that the late progress-gate exception was needed. [Declaration](plan.json) · [Trace measurements](trace-actions.json)
+
+The candidate did not compile. Its new catalog imported `super::select_cases`, which the parent module did not define. It never registered the CLI command or edited the launcher or the usage guide. Independent build and visible checks failed, the stock suite stopped at formatting, and the held-out, package and ordinary-replay probes had no process result. The pair left both required native checks without a passing final receipt. The independent inventory matched when the retained patch was replayed. Qualification remained false. [First result](results.json) · [Exact patch](candidate.patch) · [Plain replay](plain-replay.json) · [Raw receipt hashes](receipts.json)
+
+The native terminal reason was `observer_unavailable`. Both final Observer HTTP streams completed. The first proposed reading 220 lines of the parent module, beyond the 200-line limit. Its single repair returned malformed JSON and still proposed the parent module. The pending native diagnostic required `src/tui_replay/catalog.rs`. Model availability, a valid action and repair of the import are distinct outcomes.
+
+## Isolated Observer repair
+
+The follow-up supplies the current diagnostic path alongside the validation error when the Observer proposes invalid `read_file` arguments. Both original invalid replies remain rejected. The native evaluator rebuilt the repair request from the sealed session. One fresh non-streamed Observer call was declared in advance, with a separate budget and no Coder continuation. Its success criterion requires exactly one eligible, forwardable read of the actual diagnostic path. [Original feedback](observer-feedback-before.json) · [Corrected feedback](observer-feedback-after.json) · [One-call declaration](observer-probe-plan.json)
+
+That first call returned HTTP 200 and named the correct file in its text. A stray quoted field at the end of `response_contract.note` left the envelope invalid. The validator rejected it and forwarded nothing. [First authored reply](observer-probe-reply.txt) · [Wire receipt](observer-probe-wire.json) · [Native verdict](observer-probe-result.json)
+
+The second condition changes one request property, `response_format={"type":"json_object"}`. It has its own one-call cap and the same acceptance criterion. Its message bytes, model, output limit and sampling options match the first request. The runtime now asks for this format on native next-action Observer requests to the hosted OpenAI endpoint. Every reply still goes through the ordinary schema, confidence and diagnostic checks.

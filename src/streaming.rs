@@ -334,11 +334,23 @@ pub async fn stream_openai_compat(
     tools: Option<&serde_json::Value>,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
-    let msgs_json: Vec<serde_json::Value> = messages
+    stream_openai_compat_json(client, cfg, &chat_messages(messages), tools, tx).await
+}
+
+fn chat_messages(messages: &[ChatMessage]) -> Vec<serde_json::Value> {
+    messages
         .iter()
-        .map(|m| json!({"role": m.role, "content": m.content}))
-        .collect();
-    stream_openai_compat_json(client, cfg, &msgs_json, tools, tx).await
+        .map(|m| json!({"role":m.role,"content":m.content}))
+        .collect()
+}
+
+pub(crate) async fn stream_observer_action(
+    client: &reqwest::Client,
+    cfg: &RunConfig,
+    messages: &[ChatMessage],
+    tx: mpsc::Sender<StreamToken>,
+) -> Result<()> {
+    stream_chat(client, cfg, &chat_messages(messages), None, true, tx).await
 }
 
 /// Agent use: accepts pre-built JSON messages so tool_call_id / tool_calls
@@ -348,6 +360,17 @@ pub async fn stream_openai_compat_json(
     cfg: &RunConfig,
     messages: &[serde_json::Value],
     tools: Option<&serde_json::Value>,
+    tx: mpsc::Sender<StreamToken>,
+) -> Result<()> {
+    stream_chat(client, cfg, messages, tools, false, tx).await
+}
+
+async fn stream_chat(
+    client: &reqwest::Client,
+    cfg: &RunConfig,
+    messages: &[serde_json::Value],
+    tools: Option<&serde_json::Value>,
+    observer_action: bool,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
     let provider_messages = provider_metadata::prepare_messages(messages, &cfg.base_url);
@@ -364,6 +387,9 @@ pub async fn stream_openai_compat_json(
         "stream": true,
     });
     apply_model_compat(&mut payload, cfg);
+    if observer_action {
+        provider_metadata::set_observer_format(&mut payload, &cfg.base_url);
+    }
 
     if let Some(t) = tools {
         payload["tools"] = t.clone();
@@ -452,7 +478,7 @@ pub async fn stream_openai_compat_json(
                 continue;
             }
 
-            if provider_metadata::drop_unsupported_tool_option(status, &body, &mut payload_try) {
+            if provider_metadata::drop_unsupported_chat_option(status, &body, &mut payload_try) {
                 continue;
             }
 

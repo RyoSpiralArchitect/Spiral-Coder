@@ -357,7 +357,7 @@ async fn start_request(
         }),
         move |tx| async move {
             use crate::config::ProviderKind;
-            use crate::streaming::{stream_anthropic, stream_openai_compat};
+            use crate::streaming::{stream_anthropic, stream_observer_action};
             let client = reqwest::Client::new();
             let system = format!(
                 "You are Observer in next-action assist mode.\n\
@@ -396,7 +396,7 @@ Focus only on the next concrete step.\n\n\
                         Err(e) => Err(e),
                     }
                 }
-                _ => stream_openai_compat(&client, &cfg, &messages, None, tx.clone()).await,
+                _ => stream_observer_action(&client, &cfg, &messages, tx.clone()).await,
             };
             if let Err(e) = result {
                 let prefix = match lang.as_str() {

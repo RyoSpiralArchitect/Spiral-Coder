@@ -54,18 +54,19 @@ def probe(args):
             "Focus only on the next concrete step.\n\n[Language]\nLanguage: English. Write the critique in English. "
             "Keep proposals block keys in English (title/to_coder/severity/score/phase/impact/cost)."
         )
-        body = json.dumps(
-            {
-                "model": "gpt-5.6-luna",
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": first["repair_prompt"]},
-                ],
-                "reasoning_effort": "none",
-                "max_completion_tokens": 8192,
-                "stream": False,
-            }
-        ).encode()
+        request = {
+            "model": "gpt-5.6-luna",
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": first["repair_prompt"]},
+            ],
+            "reasoning_effort": "none",
+            "max_completion_tokens": 8192,
+            "stream": False,
+        }
+        if args.json_object:
+            request["response_format"] = {"type": "json_object"}
+        body = json.dumps(request).encode()
         if args.request_out:
             args.request_out.write_bytes(body)
         result = {
@@ -105,4 +106,5 @@ if __name__ == "__main__":
     parser.add_argument("episode", type=Path)
     parser.add_argument("--request-out", type=Path)
     parser.add_argument("--reply", type=Path)
+    parser.add_argument("--json-object", action="store_true")
     print(json.dumps(probe(parser.parse_args()), indent=2))

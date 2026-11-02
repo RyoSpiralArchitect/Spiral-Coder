@@ -708,7 +708,7 @@ async fn api_chat_tools(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
                 swap_max_tokens_to_max_completion_tokens(&mut payload_cur);
                 continue;
             }
-            if crate::streaming::provider_metadata::drop_unsupported_tool_option(
+            if crate::streaming::provider_metadata::drop_unsupported_chat_option(
                 status,
                 &resp_text,
                 &mut payload_cur,
@@ -1140,7 +1140,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
                 continue;
             }
 
-            if crate::streaming::provider_metadata::drop_unsupported_tool_option(
+            if crate::streaming::provider_metadata::drop_unsupported_chat_option(
                 status,
                 &body_text,
                 &mut payload_try,

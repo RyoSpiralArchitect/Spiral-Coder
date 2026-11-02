@@ -65,14 +65,23 @@ pub(crate) fn tool_choice(base_url: &str) -> &'static str {
 /// the hosted endpoint whose Chat Completions API defines this option.
 pub(crate) fn set_tool_policy(payload: &mut Value, base_url: &str) {
     payload["tool_choice"] = json!(tool_choice(base_url));
-    if reqwest::Url::parse(base_url)
-        .is_ok_and(|url| url.scheme() == "https" && url.host_str() == Some("api.openai.com"))
-    {
+    if is_hosted_openai(base_url) {
         payload["parallel_tool_calls"] = json!(false);
     }
 }
 
-pub(crate) fn drop_unsupported_tool_option(
+fn is_hosted_openai(base_url: &str) -> bool {
+    reqwest::Url::parse(base_url)
+        .is_ok_and(|url| url.scheme() == "https" && url.host_str() == Some("api.openai.com"))
+}
+
+pub(crate) fn set_observer_format(payload: &mut Value, base_url: &str) {
+    if is_hosted_openai(base_url) {
+        payload["response_format"] = json!({"type":"json_object"});
+    }
+}
+
+pub(crate) fn drop_unsupported_chat_option(
     status: reqwest::StatusCode,
     body: &str,
     payload: &mut Value,
@@ -95,7 +104,7 @@ pub(crate) fn drop_unsupported_tool_option(
     let Some(fields) = payload.as_object_mut() else {
         return false;
     };
-    ["parallel_tool_calls", "tool_choice"]
+    ["parallel_tool_calls", "tool_choice", "response_format"]
         .into_iter()
         .any(|key| {
             param.map_or_else(|| text.contains(key), |p| p == key) && fields.remove(key).is_some()
@@ -142,6 +151,26 @@ mod tests {
     use super::*;
 
     #[test]
+    fn observer_json_mode_is_an_optional_hosted_request_property() {
+        let mut req = json!({});
+        set_observer_format(&mut req, "https://local.example");
+        assert!(req.get("response_format").is_none());
+        set_observer_format(&mut req, "https://api.openai.com/v1");
+        assert_eq!(req, json!({"response_format":{"type":"json_object"}}));
+        let error = r#"{"error":{"param":"response_format","message":"unsupported parameter"}}"#;
+        assert!(drop_unsupported_chat_option(
+            reqwest::StatusCode::BAD_REQUEST,
+            error,
+            &mut req
+        ));
+        assert!(!drop_unsupported_chat_option(
+            reqwest::StatusCode::BAD_REQUEST,
+            error,
+            &mut req
+        ));
+    }
+
+    #[test]
     fn serial_tool_requests_are_host_specific_and_capability_fallback_is_bounded() {
         let mut options = json!({"tools":[{}]});
         set_tool_policy(&mut options, "https://api.openai.com/v1");
@@ -149,13 +178,13 @@ mod tests {
         let bad = reqwest::StatusCode::BAD_REQUEST;
         let message =
             r#"{"error":{"param":"parallel_tool_calls","message":"unsupported parameter"}}"#;
-        assert!(!drop_unsupported_tool_option(
+        assert!(!drop_unsupported_chat_option(
             reqwest::StatusCode::UNAUTHORIZED,
             message,
             &mut options
         ));
-        assert!(drop_unsupported_tool_option(bad, message, &mut options));
-        assert!(!drop_unsupported_tool_option(bad, message, &mut options));
+        assert!(drop_unsupported_chat_option(bad, message, &mut options));
+        assert!(!drop_unsupported_chat_option(bad, message, &mut options));
         assert_eq!(options, json!({"tools":[{}],"tool_choice":"required"}));
         for url in [
             "http://api.openai.com",
