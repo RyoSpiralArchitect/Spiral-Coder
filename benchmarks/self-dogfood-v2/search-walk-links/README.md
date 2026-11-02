@@ -26,3 +26,4 @@ integrating it separately; a transfer pass would not finish the catalog task.
 independent behavioral success from the failed stock formatting and report
 requirements. To materialize the H2 task with an explicit formatting check,
 add `--explicit-format` to the materialization command above.
+[H3](../../../docs/evals/2026-11-03-search-walk/h3/README.md) used the same explicit-format inputs and retained the first qualifying search candidate, its exact patch, and both earlier failures.

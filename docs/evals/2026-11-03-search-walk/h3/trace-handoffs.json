@@ -1,0 +1,45 @@
+{
+  "declaration_sha256": "5ceaebe132388dba656da6281b68c9253601d9ca0e10659822b95ca6bfdc2feb",
+  "run_receipt_sha256": "ece65a9eb192e02f985b23bfeb4a6f20becc048760bc51e5fa2615973e860714",
+  "wire_starts": 19,
+  "response_formats": {
+    "json_schema": 1,
+    "json_object": 3
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "20f5f817b83f1cb409ffc91e96440e452b7288f292ed7f2e468523062d7911e8",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/search_walk_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_636HmM9zEzUmziU7FwWuiYMf",
+          "step": 2,
+          "header": "[scripts/search_walk_visible.py] (19 lines, 845 bytes) [pruned 20L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src/file_tools.rs",
+        "pattern": "read_dir"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'read_dir' \u2014 3 match(es)] [pruned 6L]"
+      ]
+    }
+  ]
+}

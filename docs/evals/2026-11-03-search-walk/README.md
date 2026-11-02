@@ -1,5 +1,7 @@
 # A self-authored repair to the native search tool
 
+On [H3](h3/README.md), the pair qualified under all 28 frozen gates after correcting its own formatting failure and rechecking the final source. H1 and H2 below retain their first, unqualified outcomes.
+
 On the first previously unseen [search walk task](../../../benchmarks/self-dogfood-v2/search-walk-links),
 the Luna Coder/Observer pair changed only three lines in src/file_tools.rs.
 The code checks the directory entry's file type before walking or reading it,

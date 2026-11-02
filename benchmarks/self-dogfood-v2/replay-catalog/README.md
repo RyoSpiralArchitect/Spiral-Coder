@@ -26,4 +26,5 @@ R10 records a scoped symbol search, serialized Coder calls and an unresolved cat
 [R11 diagnostic handoffs](../../../docs/evals/2026-11-03-diagnostic-read/README.md)
 record three authored Observer responses, two exact native reads, and distinguish the
 working catalog command from the unqualified full candidate.
+
 [R12](../../../docs/evals/2026-11-03-diagnostic-read/r12/README.md) ran the original failed command after two edits and retained its final compile failure.
