@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "episode": "replay-catalog-r8",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "executor_commit": "e70baf88273f8cc3453eae4b36f6a4d9a0261d03",
+  "evidence_commit": "951157f63bd5ae4eb82965d2bc719775d0e4fb6e",
+  "run_receipt_sha256": "29eaad8358435a9cc1f05a4c2715106ba7a228cf7045771b831796a98ea42499",
+  "declaration_sha256": "d3294db640714b14cb9ec55de0b85e085fdb87700cc92dfae4715c4c6e8fdc77",
+  "executor_sha256": "0c5e2bc8f1bd0f72100e4abf48db2e3f13140a32c00f6aafc3fa5bd06efb31a3",
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "wire_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "qualification": {
+    "qualified_candidate": false,
+    "termination": "blocked",
+    "independent_checks": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "exit_code": 0,
+        "test_summary": null
+      },
+      {
+        "id": "catalog-visible",
+        "passed": true,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      {
+        "id": "held-out-catalog",
+        "passed": false,
+        "exit_code": 1,
+        "test_summary": {
+          "passed": 10,
+          "failed": 1,
+          "ignored": 0
+        }
+      },
+      {
+        "id": "packaged-spiral",
+        "passed": false,
+        "exit_code": 1,
+        "test_summary": {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0
+        }
+      },
+      {
+        "id": "regular-replay",
+        "passed": true,
+        "exit_code": 0,
+        "test_summary": null
+      },
+      {
+        "id": "stock-regressions",
+        "passed": false,
+        "exit_code": 1,
+        "test_summary": null
+      }
+    ]
+  },
+  "filtered_output": {
+    "version": 1,
+    "total": 1,
+    "cases": [
+      {
+        "id": "pane-prefs-observer-suggestion",
+        "tags": [
+          "tui",
+          "observer",
+          "suggestion",
+          "prefs"
+        ]
+      }
+    ]
+  },
+  "files": {
+    "docs/evals/2026-11-02-cli-route/candidate.patch": "36bc3337b39012db34a589af45eb736959d7362f2e7b25f224442a5e36ea47d8",
+    "docs/evals/2026-11-02-cli-route/results.json": "6c1360566f66fdc3a51d8bc0dc8aeb3f5e05701ec5c54f52b67da5c71af9e6e5",
+    "docs/evals/2026-11-02-cli-route/receipts.json": "4153a80d4bd624e8ecb714140837548fd99907ca22f5e194b65b159c4016cdf5",
+    "docs/evals/2026-11-02-cli-route/plan.json": "87eabee210b8b9edf22f05476d7c3775fa93ec8a78a89ea87dff31ce2ab98ef3",
+    "docs/evals/2026-11-02-cli-route/plain-replay.json": "2f3580c08613c1061d3dfc956b5b7f778dd6a09e639ff2fbfff229684ff4637a",
+    "docs/evals/2026-11-02-cli-route/launcher-control.json": "dd381580309e2787d22503774f4c65da880b8fea24f803b756190843219ece07",
+    "benchmarks/self-dogfood-v2/replay-catalog/catalog_visible.py": "78a9bbeaed843eda9c547116eed0f9a4bb03062b522274b07b6fa5e9af1eaeb8",
+    "benchmarks/self-dogfood-v2/replay-catalog/catalog_oracle.py": "08e66e69cbadfd0ca2c2589e898058f516a34fb65bf1a787e10df23845cb9273",
+    "benchmarks/self-dogfood-v2/replay-catalog/packaged_spiral.py": "88d25328e35c6efee01d07d11807f5b4a46140f22b761202b12abcb38c09fc12",
+    "benchmarks/self-dogfood-v2/replay-catalog/regular_replay.py": "3198ef16fd4fc3312d0fd521f1620415cd2e35480efc181747488738aca33f3e"
+  }
+}

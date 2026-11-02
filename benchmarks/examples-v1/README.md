@@ -128,3 +128,5 @@ the provider-quota interruption and both Mistral × Mistral tasks. An adaptive
 obligation was made explicit. JSONL remained blocked before its documentation
 update in that earlier wave. These are reproducible development examples, not a
 general model success rate.
+
+For a full-repository example, [replay the archived R8 catalog addition](../../docs/examples/replay-catalog-r8.md) with the original native and packaged checks.
