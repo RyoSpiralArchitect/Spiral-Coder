@@ -1,0 +1,61 @@
+{
+  "issue": 49,
+  "condition": "r8 CLI sibling identifier navigation",
+  "raw_root": "replay-catalog-native-r8-route-20261102",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "e70baf88273f8cc3453eae4b36f6a4d9a0261d03",
+  "executor_sha256": "0c5e2bc8f1bd0f72100e4abf48db2e3f13140a32c00f6aafc3fa5bd06efb31a3",
+  "declaration_sha256": "d3294db640714b14cb9ec55de0b85e085fdb87700cc92dfae4715c4c6e8fdc77",
+  "prior_declaration_sha256": "0dfc025a9def9e347afbd714cca23c6d850f2d5eeecf5a2e5de33e7ff089e62e",
+  "prior_executor_sha256": "387e84ecbbaee6d0ddf4b0dd441307b58d491d3d8e10560b333c792d4e12dd0e",
+  "preflight_sha256": "6fdb8473cd98a6fb28ef2f73ae6c2bfb95c723154089420f4dc85caef7e63cb4",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "protocol_sha256": "f979bbe507cae2d7e411a2e4f523efd319f35a6a18f23c910d1cdce87d488896",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "local_regression": {
+    "baseline_expected_failure_log_sha256": "4331159b4f3fe1ad97c8f097e322dea4491908c2c835beafe7a4445241cf2cff",
+    "paired_wire_sha256": "facf6878c753da1bd6848cb73fb96c7d06146fc09d1398b69754afd9553ab34d",
+    "model_free_suite_log_sha256": "3e2936087ef96092c8652f9217ad139ed983d77281a76bd0b1af3afd50c3b511"
+  }
+}

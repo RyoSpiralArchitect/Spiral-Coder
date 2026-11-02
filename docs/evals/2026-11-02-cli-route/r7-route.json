@@ -1,0 +1,132 @@
+{
+  "declaration_sha256": "0dfc025a9def9e347afbd714cca23c6d850f2d5eeecf5a2e5de33e7ff089e62e",
+  "run_receipt_sha256": "381e715ca6a4da7e4d566f116c46a32c3d91a72217975f48729ac3d08377f2d8",
+  "baseline_locations": {
+    "sibling_variant": 93,
+    "sibling_dispatch": 618
+  },
+  "searches": [
+    {
+      "action": {
+        "step": 11,
+        "tool": "search_files",
+        "executed": false,
+        "dir": "src",
+        "pattern": "load_spec"
+      },
+      "retained_notes": [],
+      "anchors_in_retained_literal_rows": [],
+      "header": "GOVERNOR BLOCKED"
+    },
+    {
+      "action": {
+        "step": 20,
+        "tool": "search_files",
+        "executed": true,
+        "dir": "src",
+        "pattern": "tui-replay"
+      },
+      "retained_notes": [],
+      "anchors_in_retained_literal_rows": [],
+      "header": "[search_files: 'tui-replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)]"
+    },
+    {
+      "action": {
+        "step": 21,
+        "tool": "search_files",
+        "executed": true,
+        "dir": "src/main.rs",
+        "pattern": "tui-replay"
+      },
+      "retained_notes": [],
+      "anchors_in_retained_literal_rows": [],
+      "header": "[search_files: 'tui-replay' \u2014 3 match(es)]"
+    }
+  ],
+  "main_source_reads": [
+    {
+      "action": {
+        "step": 4,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 1,
+        "end_line": 200
+      },
+      "requested_range_covers_baseline_anchors": [
+        "sibling_variant"
+      ],
+      "anchors_in_retained_text": []
+    },
+    {
+      "action": {
+        "step": 10,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 1,
+        "end_line": 200
+      },
+      "requested_range_covers_baseline_anchors": [
+        "sibling_variant"
+      ],
+      "anchors_in_retained_text": []
+    },
+    {
+      "action": {
+        "step": 23,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 380,
+        "end_line": 470
+      },
+      "requested_range_covers_baseline_anchors": [],
+      "anchors_in_retained_text": []
+    }
+  ],
+  "native_visible_checks": [
+    {
+      "action": {
+        "step": 1,
+        "tool": "exec",
+        "executed": false,
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": false,
+      "result_header": "GOVERNOR BLOCKED"
+    },
+    {
+      "action": {
+        "step": 5,
+        "tool": "exec",
+        "executed": true,
+        "check_id": "required-1",
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": false,
+      "result_header": "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+    },
+    {
+      "action": {
+        "step": 19,
+        "tool": "exec",
+        "executed": false,
+        "check_id": "required-1",
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": false,
+      "result_header": "GOVERNOR BLOCKED"
+    }
+  ],
+  "retained_navigation_count": 0,
+  "retained_sibling_variant_and_dispatch": false,
+  "native_completed": false,
+  "termination": "budget_exhausted",
+  "role_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "wall_elapsed_ms": 315519,
+  "qualified_candidate": false
+}
