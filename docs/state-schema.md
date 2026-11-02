@@ -1047,7 +1047,10 @@ a previously admitted complete plan. Pending-step revisions may reuse alignment
 only with the exact same goal and ordered acceptance criteria, and the anchor
 must still pass shape and original-task alignment validation. New steps retain
 all shape, read-only, tool, evidence and completion gates. The self-contained
-anchor survives pruning; assistant prose, changed objectives, a malformed anchor
+anchor survives pruning. A rejected drifted revision can quote the admitted goal
+and ordered acceptance in its feedback; the attempted tool remains unexecuted,
+and a new plan must pass the same validator. Other rejection types do not offer
+that shortcut. Assistant prose, changed objectives, a malformed anchor
 and a new human task cannot authorize this exception. It is not a claim of work
 completed. Multiline numbered lists use line-start ordinals, so an in-step
 `(exit 1) recorded` is data; the seven-step ceiling is unchanged.

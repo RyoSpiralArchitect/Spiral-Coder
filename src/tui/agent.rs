@@ -9350,8 +9350,12 @@ Execute only the new minimal action: {}",
                                 } else {
                                     state = AgentState::Recovery;
                                     recovery.stage = Some(RecoveryStage::Diagnose);
-                                    let block =
-                                        governor_contract::invalid_plan_message(&e.to_string());
+                                    let block = plan_revision::rejection(
+                                        &e.to_string(),
+                                        active_plan.as_ref(),
+                                        &messages,
+                                        &task_contract,
+                                    );
 
                                     let _ = tx
                                         .send(StreamToken::Delta(format!(
@@ -9392,7 +9396,12 @@ Execute only the new minimal action: {}",
                             } else {
                                 state = AgentState::Recovery;
                                 recovery.stage = Some(RecoveryStage::Diagnose);
-                                let block = governor_contract::invalid_plan_message(&e.to_string());
+                                let block = plan_revision::rejection(
+                                    &e.to_string(),
+                                    active_plan.as_ref(),
+                                    &messages,
+                                    &task_contract,
+                                );
 
                                 let _ = tx
                                     .send(StreamToken::Delta(format!(
@@ -9433,7 +9442,12 @@ Execute only the new minimal action: {}",
                         } else {
                             state = AgentState::Recovery;
                             recovery.stage = Some(RecoveryStage::Diagnose);
-                            let block = governor_contract::invalid_plan_message(&e.to_string());
+                            let block = plan_revision::rejection(
+                                &e.to_string(),
+                                active_plan.as_ref(),
+                                &messages,
+                                &task_contract,
+                            );
 
                             let _ = tx
                                 .send(StreamToken::Delta(format!(
@@ -10598,7 +10612,12 @@ Execute only the new minimal action: {}",
                     Err(e) => {
                         state = AgentState::Recovery;
                         recovery.stage = Some(RecoveryStage::Diagnose);
-                        let mut block = governor_contract::invalid_plan_message(&e.to_string());
+                        let mut block = plan_revision::rejection(
+                            &e.to_string(),
+                            active_plan.as_ref(),
+                            &messages,
+                            &task_contract,
+                        );
                         if root_read_only {
                             block.push_str(
                                 "\nFor this task, keep the plan strictly read-only: inspect/search/read only; no build/test/behavioral verification in steps or acceptance.",
