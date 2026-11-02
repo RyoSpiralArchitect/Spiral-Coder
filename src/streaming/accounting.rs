@@ -19,6 +19,9 @@ impl RequestMeter {
         let guard = crate::work_budget::begin(payload)?;
         let estimated_input_tokens = payload.to_string().chars().count().div_ceil(4);
         let mut data = json!({"estimated_input_tokens":estimated_input_tokens});
+        if let Some(kind) = payload["response_format"]["type"].as_str() {
+            data["response_format"] = json!(kind);
+        }
         if let Some(parallel) = payload["parallel_tool_calls"].as_bool() {
             data["parallel_tool_calls"] = json!(parallel);
         }

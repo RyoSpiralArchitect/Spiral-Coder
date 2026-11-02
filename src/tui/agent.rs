@@ -1530,7 +1530,7 @@ pub fn search_files_tool_def() -> serde_json::Value {
                     },
                     "dir": {
                         "type": "string",
-                        "description": "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. A scoped Rust search can suggest lines containing the corresponding identifier. Leave empty to search the whole tree."
+                        "description": "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. In a Rust file, search the exact helper name to see declaration and call-like lines; inspect them before importing. A scoped command search can also suggest the Rust spelling. Leave empty to search the whole tree."
                     },
                     "case_insensitive": {
                         "type": "boolean",

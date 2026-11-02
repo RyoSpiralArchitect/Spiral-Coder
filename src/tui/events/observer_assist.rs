@@ -216,6 +216,10 @@ pub(crate) fn build_tui_next_action_prompt(
         "en" => "English",
         _ => "Japanese",
     };
+    use crate::observer_action::diagnostic::{self, Output};
+    if Output::for_packet(packet, reason_hint) == Output::Diagnostic {
+        return diagnostic::prompt(packet, lang_name);
+    }
     let reason = if packet["task_obligations"]["report_repair"].is_object() {
         "authored_report"
     } else {

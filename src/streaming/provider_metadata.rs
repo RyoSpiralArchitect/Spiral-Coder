@@ -75,9 +75,13 @@ fn is_hosted_openai(base_url: &str) -> bool {
         .is_ok_and(|url| url.scheme() == "https" && url.host_str() == Some("api.openai.com"))
 }
 
-pub(crate) fn set_observer_format(payload: &mut Value, base_url: &str) {
+pub(crate) fn set_observer_format(
+    payload: &mut Value,
+    base_url: &str,
+    output: crate::observer_action::diagnostic::Output,
+) {
     if is_hosted_openai(base_url) {
-        payload["response_format"] = json!({"type":"json_object"});
+        payload["response_format"] = output.hosted_format();
     }
 }
 
@@ -153,9 +157,13 @@ mod tests {
     #[test]
     fn observer_json_mode_is_an_optional_hosted_request_property() {
         let mut req = json!({});
-        set_observer_format(&mut req, "https://local.example");
+        set_observer_format(
+            &mut req,
+            "https://local.example",
+            crate::observer_action::diagnostic::Output::Diagnostic,
+        );
         assert!(req.get("response_format").is_none());
-        set_observer_format(&mut req, "https://api.openai.com/v1");
+        set_observer_format(&mut req, "https://api.openai.com/v1", Default::default());
         assert_eq!(req, json!({"response_format":{"type":"json_object"}}));
         let error = r#"{"error":{"param":"response_format","message":"unsupported parameter"}}"#;
         assert!(drop_unsupported_chat_option(

@@ -48,3 +48,18 @@ This view intentionally does not infer semantic completion from a filename,
 amount of activity, passing old tests, an Observer claim or a `done` receipt.
 Independent behavioral checks and the existing native completion gates retain
 their authority.
+
+When a native failure requires an exact diagnostic read, the next-action prompt
+asks for a single response contract and one read or no-tool clarification. It
+quotes the failed check and its source path. On the hosted OpenAI native route,
+the request uses a strict schema for these two alternatives; the Observer still
+authors the path and confidence. Ordinary assistance, including terminal
+diagnosis, keeps its existing format. Unsupported request options use the
+existing metered compatibility fallback. Malformed or duplicate contracts,
+invalid paths and insufficient confidence do not acquire forwarding authority.
+
+In declared repairs both roles are prompted to check a proposed import in its
+owner and inspect a caller. A file-scoped Rust identifier search can show
+same-line lexical declaration and call locations separately from literal match
+counts. These leads do not resolve symbols: inline or generated implementations
+can still be valid, and code should be read before an edit.

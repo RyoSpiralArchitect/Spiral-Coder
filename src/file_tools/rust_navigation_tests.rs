@@ -79,3 +79,20 @@ fn navigation_is_bounded_even_when_the_literal_search_finds_more() {
     let out = search(&large, "entry.rs", "list-runs", "entry.rs");
     assert!(out.contains("entry.rs:1:") && !out.contains("[navigation]"));
 }
+
+#[test]
+fn helper_search_distinguishes_lexical_evidence_from_a_planned_import() {
+    let source = "fn use_it() { select_many(); select(); }\nfn select<T>() {}\nselect(); select();\n// préselect() selecté()\n";
+    let out = search(source, "host.rs", "select", "host.rs");
+    assert!(
+        out.contains("fn-name lines [2]; call-like lines [1, 3]"),
+        "{out}"
+    );
+    assert!(out.starts_with("[search_files: 'select' — 4 match(es)]"));
+    let absent = search(source, "host.rs", "select_cases", "host.rs");
+    assert!(absent.starts_with("[search_files] No matches"));
+    assert!(
+        absent.contains("No exact identifier spelling `select_cases` was observed in this file")
+    );
+    assert!(!search(source, "host.rs", "select", ".").contains("[navigation]"));
+}

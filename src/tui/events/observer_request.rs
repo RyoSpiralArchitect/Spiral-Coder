@@ -7,6 +7,7 @@ pub(super) mod reconnect;
 #[derive(Debug)]
 pub(crate) struct ObserverAssistRequest {
     source_stamp: u64,
+    output: crate::observer_action::diagnostic::Output,
     original_prompt: String,
     repair_used: bool,
     repair_started: bool,
@@ -23,6 +24,7 @@ impl ObserverAssistRequest {
         Self {
             source_stamp: source_stamp(app),
             original_prompt,
+            output: Default::default(),
             repair_used: false,
             repair_started: false,
             repairing_done: false,
@@ -313,8 +315,9 @@ pub(super) async fn send_next_action_assist(
         handle.abort();
     }
 
-    app.observer_assist_request =
-        Some(ObserverAssistRequest::new(app, prompt.clone()).for_reason(reason_hint));
+    let mut request = ObserverAssistRequest::new(app, prompt.clone()).for_reason(reason_hint);
+    request.output = crate::observer_action::diagnostic::Output::for_packet(&packet, reason_hint);
+    app.observer_assist_request = Some(request);
     let budget = app.work_budget.clone();
     start_request(app, tx, prompt, label, budget).await;
 }
@@ -346,6 +349,11 @@ async fn start_request(
         .messages
         .push(Message::new_streaming(Role::Assistant));
 
+    let output = app
+        .observer_assist_request
+        .as_ref()
+        .map(|r| r.output)
+        .unwrap_or_default();
     let cfg = next_action_config(&app.observer_cfg, app.observer_assist_max_tokens);
     let lang = app.lang.clone();
     let handle = request_stream::spawn(
@@ -396,7 +404,7 @@ Focus only on the next concrete step.\n\n\
                         Err(e) => Err(e),
                     }
                 }
-                _ => stream_observer_action(&client, &cfg, &messages, tx.clone()).await,
+                _ => stream_observer_action(&client, &cfg, &messages, output, tx.clone()).await,
             };
             if let Err(e) = result {
                 let prefix = match lang.as_str() {
