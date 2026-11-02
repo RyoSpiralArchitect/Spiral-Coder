@@ -1422,3 +1422,7 @@ entry, including a compatibility retry or a switch to the completions endpoint.
 Text-only named file blocks use the same explicit edit list before their batch
 can execute. The first full reread to confirm a deferred proposal bypasses the
 in-process file cache and compares the returned bytes with the original read.
+The bounded Web tool client reports upstream redirects directly, so a 307 or
+308 cannot trigger another provider POST inside a single ledger entry. Named
+Markdown fences supply file contents even when their language is a shell.
+Scope validation checks every named target before the six-file write limit.

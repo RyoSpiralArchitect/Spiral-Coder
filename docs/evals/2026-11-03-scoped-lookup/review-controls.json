@@ -1,0 +1,234 @@
+{
+  "reviewed_heads": [
+    "7599bd0c3a0f2149b5197efd66872b7ce6451bd2",
+    "42ba62dc6f65d5c7529b38c724c94928bc5e897a"
+  ],
+  "initial_executor_sha256": "139677397c98ab7f2ad89e15e346fd35fc13398e3a58e24da7e7143195d13d96",
+  "first_corrections_executor_sha256": "0ff038122912e9e6cac18fc2dcdcaf1c8f04517ca29987f3eb4c51168b5f5d54",
+  "final_executor_sha256": "1e57b518d12228627ba050ff2806130866ffdd38a79698b2daebf77f8d7baebd",
+  "external_provider_requests": 0,
+  "before_and_after": {
+    "text_only_file": {
+      "before": [
+        {
+          "path": "scratch.rs",
+          "created": true,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        },
+        {
+          "path": "good.rs",
+          "created": true,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        }
+      ],
+      "after_first_corrections": [
+        {
+          "path": "scratch.rs",
+          "created": false,
+          "runtime_scope_refusal": true,
+          "local_requests": 2
+        },
+        {
+          "path": "good.rs",
+          "created": true,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        }
+      ]
+    },
+    "redirect": {
+      "before_second_corrections": {
+        "upstream_posts": [
+          "/chat/completions",
+          "/forwarded"
+        ],
+        "http_status": 200,
+        "ledger_statuses": [
+          "completed"
+        ]
+      },
+      "after": {
+        "upstream_posts": [
+          "/chat/completions"
+        ],
+        "http_status": 502,
+        "ledger_statuses": [
+          "http_307"
+        ]
+      }
+    },
+    "named_shell": {
+      "before_second_corrections": [
+        {
+          "path": "seventh",
+          "protected_written": true,
+          "named_files_created": 6,
+          "scope_target_created": false,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        },
+        {
+          "path": "allowed",
+          "protected_written": true,
+          "named_files_created": 1,
+          "scope_target_created": false,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        },
+        {
+          "path": "standalone",
+          "protected_written": true,
+          "named_files_created": 0,
+          "scope_target_created": false,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        }
+      ],
+      "after": [
+        {
+          "path": "seventh",
+          "protected_written": false,
+          "named_files_created": 0,
+          "scope_target_created": false,
+          "runtime_scope_refusal": true,
+          "local_requests": 2
+        },
+        {
+          "path": "allowed",
+          "protected_written": false,
+          "named_files_created": 1,
+          "scope_target_created": false,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        },
+        {
+          "path": "standalone",
+          "protected_written": true,
+          "named_files_created": 0,
+          "scope_target_created": false,
+          "runtime_scope_refusal": false,
+          "local_requests": 2
+        }
+      ]
+    },
+    "r8_native_confirmation": {
+      "prior": {
+        "executor_sha256": "139677397c98ab7f2ad89e15e346fd35fc13398e3a58e24da7e7143195d13d96",
+        "external_change": false,
+        "offers": [
+          false,
+          false,
+          false,
+          true,
+          false
+        ],
+        "results": [
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes)"
+          ],
+          [
+            "apply_diff",
+            false,
+            "GOVERNOR BLOCKED"
+          ],
+          [
+            "exec",
+            true,
+            "OK (exit_code: 0)"
+          ],
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes) [\u26a1 cached \u2014 unchanged since last read]"
+          ]
+        ],
+        "external_provider_requests": 0
+      },
+      "unchanged": {
+        "executor_sha256": "1e57b518d12228627ba050ff2806130866ffdd38a79698b2daebf77f8d7baebd",
+        "external_change": false,
+        "offers": [
+          false,
+          false,
+          false,
+          true,
+          true
+        ],
+        "results": [
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes)"
+          ],
+          [
+            "apply_diff",
+            false,
+            "GOVERNOR BLOCKED"
+          ],
+          [
+            "exec",
+            true,
+            "OK (exit_code: 0)"
+          ],
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes)"
+          ]
+        ],
+        "external_provider_requests": 0
+      },
+      "externally_changed": {
+        "executor_sha256": "1e57b518d12228627ba050ff2806130866ffdd38a79698b2daebf77f8d7baebd",
+        "external_change": true,
+        "offers": [
+          false,
+          false,
+          false,
+          true,
+          false
+        ],
+        "results": [
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes)"
+          ],
+          [
+            "apply_diff",
+            false,
+            "GOVERNOR BLOCKED"
+          ],
+          [
+            "exec",
+            true,
+            "OK (exit_code: 0)"
+          ],
+          [
+            "read_file",
+            true,
+            "[npm/spiral-coder/lib/launcher.cjs] (86 lines, 4606 bytes)"
+          ]
+        ],
+        "external_provider_requests": 0
+      }
+    }
+  },
+  "local_suite": {
+    "command": "bash scripts/check-local.sh",
+    "rust_unit_passed": 1066,
+    "rust_unit_ignored": 2,
+    "integration_passed": 4,
+    "tui_replays_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke_passed": true,
+    "log_sha256": "18d5d42c2b62ce5be9db89e310945f4a7686f93b950b6c4fc370a4d1404abd41"
+  }
+}

@@ -280,10 +280,28 @@ pub struct ServeArgs {
 #[derive(Clone)]
 struct AppState {
     client: reqwest::Client,
+    bounded_client: reqwest::Client,
     defaults: PartialConfig,
     pending_edits: crate::pending_edits::PendingEditStore,
     pending_commands: crate::pending_commands::PendingCommandStore,
     workspace_root: PathBuf,
+}
+
+fn bounded_provider_client() -> reqwest::Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .retry(reqwest::retry::never())
+        .build()
+}
+
+impl AppState {
+    fn tool_provider_client(&self) -> &reqwest::Client {
+        if crate::work_budget::current().is_some() {
+            &self.bounded_client
+        } else {
+            &self.client
+        }
+    }
 }
 
 pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
@@ -298,6 +316,7 @@ pub async fn run(args: ServeArgs, defaults: PartialConfig) -> Result<()> {
     let workspace_root = std::env::current_dir().unwrap_or_default();
     let state = AppState {
         client: reqwest::Client::new(),
+        bounded_client: bounded_provider_client()?,
         defaults,
         pending_edits: crate::pending_edits::PendingEditStore::new(),
         pending_commands: crate::pending_commands::PendingCommandStore::new(),
@@ -644,7 +663,7 @@ async fn api_chat_tools(stream: &mut TcpStream, state: AppState, body: &[u8]) ->
     let mut error = "API request failed".to_string();
     while let Some(url) = urls.next() {
         match buffered_chat::send(
-            &state.client,
+            state.tool_provider_client(),
             &url,
             req.api_key.as_deref(),
             timeout,
@@ -884,7 +903,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
 
         loop {
             let mut http_req = state
-                .client
+                .tool_provider_client()
                 .post(&url)
                 .header("Content-Type", "application/json")
                 .timeout(timeout)
@@ -1010,7 +1029,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
         apply_openai_temperature_compat(&mut comp_payload, &base_url, &req.model);
 
         let mut http_req = state
-            .client
+            .tool_provider_client()
             .post(&url)
             .header("Content-Type", "application/json")
             .timeout(timeout)
@@ -1061,7 +1080,7 @@ async fn api_chat_tools_stream(stream: &mut TcpStream, state: AppState, body: &[
             {
                 swap_max_tokens_to_max_completion_tokens(&mut comp_payload);
                 let mut http_req2 = state
-                    .client
+                    .tool_provider_client()
                     .post(&url)
                     .header("Content-Type", "application/json")
                     .timeout(timeout)

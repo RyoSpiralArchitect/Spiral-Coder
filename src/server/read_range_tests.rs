@@ -28,6 +28,7 @@ async fn http_read_ranges_grant_complete_read_only_when_every_byte_is_rendered()
         let address = listener.local_addr().unwrap();
         let state = AppState {
             client: reqwest::Client::new(),
+            bounded_client: bounded_provider_client().unwrap(),
             defaults: PartialConfig::default(),
             pending_edits: crate::pending_edits::PendingEditStore::new(),
             pending_commands: crate::pending_commands::PendingCommandStore::new(),

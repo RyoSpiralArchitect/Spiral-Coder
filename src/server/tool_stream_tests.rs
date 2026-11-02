@@ -38,6 +38,7 @@ async fn check_one_wire_attempt(streamed: bool, completion_fallback: bool) {
             let (mut socket, _) = listener.accept().await.unwrap();
             let state = AppState {
                 client: reqwest::Client::new(),
+                bounded_client: bounded_provider_client().unwrap(),
                 defaults: PartialConfig::default(),
                 pending_edits: crate::pending_edits::PendingEditStore::new(),
                 pending_commands: crate::pending_commands::PendingCommandStore::new(),
@@ -72,6 +73,63 @@ async fn check_one_wire_attempt(streamed: bool, completion_fallback: bool) {
         assert_eq!(row.status, "http_400");
         assert!(row.duration_ms.is_some());
     }
+}
+
+#[tokio::test]
+async fn a_bounded_web_post_cannot_follow_an_unmetered_redirect() {
+    let provider = MockServer::start();
+    let target = provider.mock(|when, then| {
+        when.method(POST).path("/other");
+        then.status(200).json_body(json!({}));
+    });
+    let redirect = provider.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(307).header("Location", provider.url("/other"));
+    });
+    let state = AppState {
+        client: reqwest::Client::new(),
+        bounded_client: bounded_provider_client().unwrap(),
+        defaults: PartialConfig::default(),
+        pending_edits: crate::pending_edits::PendingEditStore::new(),
+        pending_commands: crate::pending_commands::PendingCommandStore::new(),
+        workspace_root: PathBuf::new(),
+    };
+    let url = provider.url("/chat/completions");
+    let budget = crate::work_budget::WorkBudget::new("redirect", 1, None);
+    let reply = crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: budget.clone(),
+            role: "coder",
+        }),
+        async {
+            buffered_chat::send(
+                state.tool_provider_client(),
+                &url,
+                None,
+                Duration::from_secs(3),
+                json!({}),
+            )
+            .await
+        },
+    )
+    .await;
+    assert!(matches!(
+        reply,
+        buffered_chat::Reply::Rejected(reqwest::StatusCode::TEMPORARY_REDIRECT, _)
+    ));
+    assert_eq!(budget.snapshot().requests[0].status, "http_307");
+    redirect.assert_hits(1);
+    target.assert_hits(0);
+    let reply = buffered_chat::send(
+        state.tool_provider_client(),
+        &url,
+        None,
+        Duration::from_secs(3),
+        json!({}),
+    )
+    .await;
+    assert!(matches!(reply, buffered_chat::Reply::Json(_)));
+    target.assert_hits(1);
 }
 
 #[tokio::test]
@@ -178,6 +236,7 @@ async fn native_and_web_streams_keep_late_signature_on_original_call() {
         let (mut socket, _) = listener.accept().await.unwrap();
         let state = AppState {
             client: reqwest::Client::new(),
+            bounded_client: bounded_provider_client().unwrap(),
             defaults: PartialConfig::default(),
             pending_edits: crate::pending_edits::PendingEditStore::new(),
             pending_commands: crate::pending_commands::PendingCommandStore::new(),

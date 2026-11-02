@@ -176,7 +176,7 @@ mod tests {
     fn a_mixed_text_only_file_batch_is_checked_before_writing() {
         let allowed = "File: src/tui_replay/catalog.rs\n```rust\nfn ok() {}\n```";
         let invalid = format!("{allowed}\nFile: scratch.rs\n```rust\nfn stray() {{}}\n```");
-        let files = crate::tui::agent::extract_implied_write_files(&invalid);
+        let (_, files) = super::super::implied_actions::extract(&invalid);
         assert_eq!(files.len(), 2);
         let issue = implied_write_issue(TASK, &files, None).unwrap();
         assert!(issue.contains("[Edit Scope]") && issue.contains("scratch.rs"));
