@@ -38,3 +38,19 @@ requires an explicit retry. Pass the target in `path` and its hunks in `diff`.
 A space, `+`, or `-` before `*** End Patch` marks ordinary file content.
 The repair interprets only framing. The caller chooses the implementation and
 verifies the resulting code.
+
+## Finding the code behind a CLI name
+
+A literal search for a public name such as `list-runs` can find an inventory
+entry while the parser and dispatch mention `ListRuns`. When `search_files`
+targets one Rust file, it can show up to four line numbers where that whole
+identifier occurs in the same source. The `[navigation]` line sits below the
+ordinary search header. Both the Coder's tool result and the Observer's action
+excerpt can carry it. The header and file rows still count only literal matches,
+including when there are zero.
+
+The lookup covers a lowercase ASCII hyphenated name of at most 64 bytes in an
+explicit `.rs` file of at most 512 KiB. It treats text in strings and comments
+like other lexical occurrences. Read the surrounding source to identify the
+argument declaration and handler, then run the public command with the requested
+arguments and inspect its output.
