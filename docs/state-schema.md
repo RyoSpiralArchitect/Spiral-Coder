@@ -1395,3 +1395,16 @@ The native `write_file`, `patch_file` and `apply_diff` tools check the target,
 and the Observer validates suggestions for those tools against the same list.
 Read operations can inspect files outside the list. Shell commands and the
 independent post-run scope check retain their own policies.
+
+During a fix, one scoped native symbol lookup can pass the observation limit.
+It needs a literal identifier and a listed file or its immediate directory. A
+correlated search result (including no match or a search error) spends the
+opportunity in the current mutation window. A pre-execution refusal does not.
+The result supplies locations for inspection. Acceptance still requires the
+original native checks and independent assessment.
+
+For hosted OpenAI Chat Completions, native and Web tool requests set
+`parallel_tool_calls` to false. Native `request_started` telemetry records
+the boolean when sent. A named unsupported tool option can be removed once
+per request option and endpoint. The runtime checks the actual number of
+returned tool calls before execution.

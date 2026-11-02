@@ -99,6 +99,39 @@ impl Scope {
     }
 }
 
+/// A literal identifier lookup in a listed file or its immediate directory.
+pub(super) fn symbol_lookup(task: &str, call: &crate::streaming::ToolCallData) -> bool {
+    if call.name != "search_files" {
+        return false;
+    }
+    let Some(scope) = Scope::parse(task) else {
+        return false;
+    };
+    let Ok(args) = serde_json::from_str::<Value>(&call.arguments) else {
+        return false;
+    };
+    let Some(pattern) = args["pattern"].as_str() else {
+        return false;
+    };
+    let Some(dir) = args["dir"]
+        .as_str()
+        .and_then(|s| crate::task_scope::relative_path(s, None))
+    else {
+        return false;
+    };
+    (2..=96).contains(&pattern.len())
+        && pattern.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_')
+        && pattern
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))
+        && scope.0.iter().any(|path| {
+            path == &dir
+                || path
+                    .rsplit_once('/')
+                    .is_some_and(|(parent, _)| parent == dir)
+        })
+}
+
 pub(super) fn native_issue(
     task: &str,
     call: &crate::streaming::ToolCallData,

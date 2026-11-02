@@ -1369,6 +1369,15 @@ pub(super) fn build_fix_stage_progress_hint(
         return None;
     }
 
+    let task = crate::task_origin::current_task_messages(messages);
+    if harness.lane == TaskLane::FixExisting
+        && super::explicit_edit_scope::Scope::parse(crate::task_origin::root_user_text(task))
+            .is_some()
+        && !super::meta_harness::observation_window_since_last_mutation(task, test_cmd).searched
+    {
+        return Some("[Task Harness]\nIf the edit is clear, apply it to a listed file. If you still need the implementation or a caller, search for one literal identifier in a listed file or its immediate directory. Use the returned locations for the next action.".into());
+    }
+
     let recent = history
         .last_successful_command
         .as_deref()

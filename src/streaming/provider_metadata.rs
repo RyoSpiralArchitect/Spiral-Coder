@@ -61,6 +61,47 @@ pub(crate) fn tool_choice(base_url: &str) -> &'static str {
     }
 }
 
+/// The Coder executes one native tool per turn. Only request serialization from
+/// the hosted endpoint whose Chat Completions API defines this option.
+pub(crate) fn set_tool_policy(payload: &mut Value, base_url: &str) {
+    payload["tool_choice"] = json!(tool_choice(base_url));
+    if reqwest::Url::parse(base_url)
+        .is_ok_and(|url| url.scheme() == "https" && url.host_str() == Some("api.openai.com"))
+    {
+        payload["parallel_tool_calls"] = json!(false);
+    }
+}
+
+pub(crate) fn drop_unsupported_tool_option(
+    status: reqwest::StatusCode,
+    body: &str,
+    payload: &mut Value,
+) -> bool {
+    if status != reqwest::StatusCode::BAD_REQUEST {
+        return false;
+    }
+    let text = body.to_ascii_lowercase();
+    if !["unsupported", "not supported", "unknown", "unrecognized"]
+        .iter()
+        .any(|word| text.contains(word))
+    {
+        return false;
+    }
+    let error = serde_json::from_str::<Value>(body).ok();
+    let param = error
+        .as_ref()
+        .and_then(|v| v.pointer("/error/param"))
+        .and_then(Value::as_str);
+    let Some(fields) = payload.as_object_mut() else {
+        return false;
+    };
+    ["parallel_tool_calls", "tool_choice"]
+        .into_iter()
+        .any(|key| {
+            param.map_or_else(|| text.contains(key), |p| p == key) && fields.remove(key).is_some()
+        })
+}
+
 /// Preserve session data locally, but send Google continuation data only to Google.
 pub(crate) fn prepare_messages(messages: &[Value], base_url: &str) -> Vec<Value> {
     let mut messages = crate::task_origin::provider_messages(messages);
@@ -99,6 +140,34 @@ pub(crate) fn has_signed_call(message: &Value) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn serial_tool_requests_are_host_specific_and_capability_fallback_is_bounded() {
+        let mut options = json!({"tools":[{}]});
+        set_tool_policy(&mut options, "https://api.openai.com/v1");
+        assert_eq!(options["parallel_tool_calls"], false);
+        let bad = reqwest::StatusCode::BAD_REQUEST;
+        let message =
+            r#"{"error":{"param":"parallel_tool_calls","message":"unsupported parameter"}}"#;
+        assert!(!drop_unsupported_tool_option(
+            reqwest::StatusCode::UNAUTHORIZED,
+            message,
+            &mut options
+        ));
+        assert!(drop_unsupported_tool_option(bad, message, &mut options));
+        assert!(!drop_unsupported_tool_option(bad, message, &mut options));
+        assert_eq!(options, json!({"tools":[{}],"tool_choice":"required"}));
+        for url in [
+            "http://api.openai.com",
+            "https://api.openai.com.example.org",
+            "https://api.mistral.ai/v1",
+            "http://localhost:4000",
+        ] {
+            let mut payload = json!({});
+            set_tool_policy(&mut payload, url);
+            assert!(payload.get("parallel_tool_calls").is_none());
+        }
+    }
 
     #[test]
     fn provider_switch_does_not_forward_signature_or_mutate_saved_history() {

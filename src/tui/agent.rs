@@ -9139,11 +9139,16 @@ Execute only the new minimal action: {}",
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
+        // Preserve the authored lookup through target-selection heuristics.
+        // The ordinary progress and recovery gates still judge the actual call.
+        let scoped_lookup = task_harness.lane == task_harness::TaskLane::FixExisting
+            && recovery.stage == Some(RecoveryStage::Fix)
+            && tool_call
+                .as_ref()
+                .is_some_and(|tc| explicit_edit_scope::symbol_lookup(&root_user_text, tc));
+        let can_coerce = |tc: &&ToolCallData| !scoped_lookup && check_catalog::allows_coercion(tc);
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, canonical)) =
                 rewrite_tool_call_with_resolution(tc, &observation_evidence)
             {
@@ -9164,10 +9169,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_observation_tool_call(
                 &messages,
                 tc,
@@ -9195,10 +9197,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_read_only_followup_read_tool_call(
                 &messages,
                 tc,
@@ -9228,10 +9227,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_benchmark_plan_tool_call(
                 task_harness,
                 &messages,
@@ -9263,10 +9259,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 repair_fix_existing_mutation_tool_call(task_harness, &messages, tc, &root_user_text)
             {
@@ -9292,10 +9285,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 coerce_fix_existing_blocked_mutation_tool_call(
                     task_harness,
@@ -9327,10 +9317,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) =
                 coerce_existing_followup_tool_call(&messages, tc, &root_user_text, recovery.stage)
             {
@@ -9361,10 +9348,7 @@ Execute only the new minimal action: {}",
             .is_some_and(|tc| matches_required_existing_followup(&messages, tc, &root_user_text));
 
         if !preserves_required_followup {
-            if let Some(tc) = tool_call
-                .as_ref()
-                .filter(|tc| check_catalog::allows_coercion(tc))
-            {
+            if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
                 if let Some((rewritten, original, coerced)) =
                     coerce_fix_existing_literal_mutation_tool_call(
                         task_harness,
@@ -9397,10 +9381,7 @@ Execute only the new minimal action: {}",
             }
         }
 
-        if let Some(tc) = tool_call
-            .as_ref()
-            .filter(|tc| check_catalog::allows_coercion(tc))
-        {
+        if let Some(tc) = tool_call.as_ref().filter(can_coerce) {
             if let Some((rewritten, original, coerced)) = coerce_fix_existing_tool_call(
                 task_harness,
                 &messages,

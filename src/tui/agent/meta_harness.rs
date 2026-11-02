@@ -243,6 +243,7 @@ struct PendingToolIntent {
 #[derive(Debug, Default)]
 pub(super) struct ObservationWindow {
     pub(super) total_successes_since_mutation: usize,
+    pub(super) searched: bool,
     pub(super) by_command: BTreeMap<String, usize>,
     repeated_last_command: usize,
     last_command: Option<String>,
@@ -293,7 +294,7 @@ fn detect_repeated_observation_loop(
 
     let next_target = if task_harness.artifact_mode == ArtifactMode::ExistingFiles {
         let target = fix_existing_target_hint(messages);
-        if target.is_none()
+        if (target.is_none() || (recovery_stage == Some(RecoveryStage::Fix) && !window.searched))
             && super::explicit_edit_scope::Scope::parse(crate::task_origin::root_user_text(
                 messages,
             ))
@@ -428,6 +429,11 @@ pub(super) fn observation_window_since_last_mutation(
                     continue;
                 }
 
+                if intent.name == "search_files"
+                    && (content.starts_with("[search_files") || content.starts_with("ERROR"))
+                {
+                    out.searched = true;
+                }
                 if !successful_observation(&intent, content) {
                     continue;
                 }

@@ -367,7 +367,7 @@ pub async fn stream_openai_compat_json(
 
     if let Some(t) = tools {
         payload["tools"] = t.clone();
-        payload["tool_choice"] = json!(provider_metadata::tool_choice(&cfg.base_url));
+        provider_metadata::set_tool_policy(&mut payload, &cfg.base_url);
     }
 
     let label = match cfg.provider {
@@ -452,15 +452,7 @@ pub async fn stream_openai_compat_json(
                 continue;
             }
 
-            // Some providers don't support tool_choice. Retry once without it.
-            if status == reqwest::StatusCode::BAD_REQUEST
-                && body.to_ascii_lowercase().contains("tool_choice")
-                && (body.to_ascii_lowercase().contains("unsupported")
-                    || body.to_ascii_lowercase().contains("unknown"))
-            {
-                if let Some(obj) = payload_try.as_object_mut() {
-                    obj.remove("tool_choice");
-                }
+            if provider_metadata::drop_unsupported_tool_option(status, &body, &mut payload_try) {
                 continue;
             }
 
