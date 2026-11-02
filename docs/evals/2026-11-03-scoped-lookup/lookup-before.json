@@ -1,0 +1,17 @@
+{
+  "executor_sha256": "0b983ae9e6483a6990dd94664c2b504a2f36989c4eda6653c88f0781a2b73bfd",
+  "run_receipt_sha256": "7ca84731b68394df12fa667df8e94c86762a9da453320fdd848c69ec0c83c3db",
+  "original_call_id": "call_pu4rywpp2NN4jKnoIo6h1l4L",
+  "original_step": 13,
+  "arguments": {
+    "dir": "src",
+    "pattern": "TuiReplay"
+  },
+  "executed": false,
+  "same_tool": true,
+  "result_header": "GOVERNOR BLOCKED",
+  "source_locations": [],
+  "main_hits": [],
+  "changed_paths": [],
+  "external_provider_requests": 0
+}

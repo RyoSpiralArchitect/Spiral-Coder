@@ -4,6 +4,7 @@ import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -188,6 +189,11 @@ def run(repo, episode, executor, target, out, *, lookup=False):
             "executed": attempt["executed"],
             "same_tool": attempt["tool"] == action["tool"],
             "result_header": output.splitlines()[0],
+            "source_locations": [
+                m.group(0).rstrip(":")
+                for line in output.splitlines()
+                if (m := re.match(r"^[^:\s]+:[1-9][0-9]*:", line))
+            ][:6],
             "main_hits": [
                 line[:200]
                 for line in output.splitlines()
