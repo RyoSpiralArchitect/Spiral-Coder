@@ -7342,7 +7342,7 @@
             type: "object",
             properties: {
               pattern: { type: "string", description: "Literal text to search for" },
-              dir: { type: "string", description: "Subdirectory to search in (default: tool_root)" },
+              dir: { type: "string", description: "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. A scoped Rust search can suggest lines containing the corresponding identifier. Leave empty to search the whole tree." },
               case_insensitive: { type: "boolean", description: "Case-insensitive search (default: false)" },
             },
             required: ["pattern"],
