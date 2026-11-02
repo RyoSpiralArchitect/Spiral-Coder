@@ -1,0 +1,110 @@
+{
+  "declaration_sha256": "d3294db640714b14cb9ec55de0b85e085fdb87700cc92dfae4715c4c6e8fdc77",
+  "run_receipt_sha256": "29eaad8358435a9cc1f05a4c2715106ba7a228cf7045771b831796a98ea42499",
+  "baseline_locations": {
+    "sibling_variant": 93,
+    "sibling_dispatch": 618
+  },
+  "searches": [
+    {
+      "action": {
+        "step": 10,
+        "tool": "search_files",
+        "executed": false,
+        "dir": "src",
+        "pattern": "TuiReplayArgs"
+      },
+      "retained_notes": [],
+      "anchors_in_retained_literal_rows": [],
+      "header": "GOVERNOR BLOCKED"
+    }
+  ],
+  "main_source_reads": [
+    {
+      "action": {
+        "step": 13,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 1,
+        "end_line": 200
+      },
+      "requested_range_covers_baseline_anchors": [
+        "sibling_variant"
+      ],
+      "anchors_in_retained_text": []
+    },
+    {
+      "action": {
+        "step": 16,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 65,
+        "end_line": 125
+      },
+      "requested_range_covers_baseline_anchors": [
+        "sibling_variant"
+      ],
+      "anchors_in_retained_text": []
+    },
+    {
+      "action": {
+        "step": 18,
+        "tool": "read_file",
+        "executed": true,
+        "path": "src/main.rs",
+        "start_line": 590,
+        "end_line": 635
+      },
+      "requested_range_covers_baseline_anchors": [
+        "sibling_dispatch"
+      ],
+      "anchors_in_retained_text": []
+    }
+  ],
+  "native_visible_checks": [
+    {
+      "action": {
+        "step": 1,
+        "tool": "exec",
+        "executed": true,
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": false,
+      "result_header": "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+    },
+    {
+      "action": {
+        "step": 11,
+        "tool": "exec",
+        "executed": true,
+        "check_id": "required-1",
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": false,
+      "result_header": "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running."
+    },
+    {
+      "action": {
+        "step": 22,
+        "tool": "exec",
+        "executed": true,
+        "check_id": "required-1",
+        "command": "python3 -S -m unittest -v scripts.catalog_visible"
+      },
+      "succeeded": true,
+      "result_header": "OK (exit_code: 0)"
+    }
+  ],
+  "retained_navigation_count": 0,
+  "retained_sibling_variant_and_dispatch": false,
+  "native_completed": false,
+  "termination": "blocked",
+  "role_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "wall_elapsed_ms": 428705,
+  "qualified_candidate": false
+}
