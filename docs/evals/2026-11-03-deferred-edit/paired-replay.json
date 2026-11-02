@@ -1,0 +1,45 @@
+{
+  "executor_sha256": "af1577f6a551161815153d2af0a991a4d3a9e85b54ff62fe20d374851e0f5b3a",
+  "original_step": 21,
+  "seed_ends_at_step": 22,
+  "authored_diff_sha256": "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33",
+  "external_provider_requests": 0,
+  "local_roles": [
+    "coder",
+    "observer",
+    "coder",
+    "coder",
+    "coder",
+    "coder",
+    "observer"
+  ],
+  "offer_digests_received": {
+    "coder": [
+      "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33",
+      "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33"
+    ],
+    "observer": [
+      "9d1fc967661e8034535b878022c0ac14e27f444dfa91a1054183935689405c33"
+    ]
+  },
+  "changed_paths": [
+    "npm/spiral-coder/lib/launcher.cjs"
+  ],
+  "authored_retry": true,
+  "retry_results": [
+    {
+      "executed": true,
+      "outcome": "changed",
+      "same_arguments": true,
+      "result_header": "OK: applied 1/1 hunk(s) to 'npm/spiral-coder/lib/launcher.cjs'"
+    }
+  ],
+  "matching_assists": [
+    {
+      "id": 1,
+      "decision": "accept"
+    }
+  ],
+  "packaged_oracle_exit": 0,
+  "report_sha256": "e1245362bde589453f426cd60af3a6b84a9343ca9373d9aedd0d845f39b04ab4"
+}

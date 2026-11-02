@@ -1,0 +1,62 @@
+{
+  "issue": 49,
+  "condition": "r9 verification-deferred single-file proposal",
+  "raw_root": "replay-catalog-native-r9-deferred-20261103",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "06126aae378cbb89d9ec928108368396ed1f6968",
+  "executor_sha256": "af1577f6a551161815153d2af0a991a4d3a9e85b54ff62fe20d374851e0f5b3a",
+  "declaration_sha256": "7a4e889c742f41dde91ec7aa20d14bd4991de2c3e9dcd2dc6265b2ba39b14464",
+  "prior_declaration_sha256": "d3294db640714b14cb9ec55de0b85e085fdb87700cc92dfae4715c4c6e8fdc77",
+  "prior_executor_sha256": "0c5e2bc8f1bd0f72100e4abf48db2e3f13140a32c00f6aafc3fa5bd06efb31a3",
+  "preflight_sha256": "1c73786e6226ce0753dfaef496910424c6d6d8866bfd97a57db5cfff85859bf5",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "protocol_sha256": "ae3b6fffc3d604a2e4188777a1bdd7c66c1786c90331f66ee8ce2186bad27512",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "local_regression": {
+    "previous_executor_prefixes_sha256": "45132523c88797618cfdeff736646c85edc49f3f9d19aa37ca75029515083408",
+    "paired_wire_sha256": "1d139315804f783c72eb95ee1a8d78adca8cd3e42ee0b37f3c4b6d85e8cad1a5",
+    "new_executor_prefixes_sha256": "e10ceb95b0784eb1823484fa8d7a83f559a9934c17c6a50377a456948cca5b4f",
+    "model_free_suite_log_sha256": "08e461ef461653f79d4a574b1bb1d676924b8c74d504ec1771558521d08655c5"
+  }
+}
