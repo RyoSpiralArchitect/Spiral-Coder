@@ -27,6 +27,7 @@ mod recovery_snapshot;
 use recovery_location::*;
 use recovery_snapshot::correlated_results;
 pub(super) use recovery_snapshot::protected_call_ids;
+pub(super) use recovery_snapshot::validated_snapshot as native_snapshot;
 
 pub(super) const METADATA_KEY: &str = "recovery_focus";
 const MAX_JSON_BYTES: usize = 256 * 1024;

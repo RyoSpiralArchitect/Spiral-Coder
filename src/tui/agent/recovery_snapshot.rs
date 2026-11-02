@@ -104,7 +104,7 @@ pub(in crate::tui::agent) fn protected_call_ids(messages: &[Value]) -> Vec<Strin
     protected.into_iter().collect()
 }
 
-pub(super) fn validated_snapshot(message: &Value) -> Option<RecoveryFocus> {
+pub(in crate::tui::agent) fn validated_snapshot(message: &Value) -> Option<RecoveryFocus> {
     let snapshot = &message[METADATA_KEY];
     if snapshot["version"] != 1 && snapshot["version"] != 2 {
         return None;

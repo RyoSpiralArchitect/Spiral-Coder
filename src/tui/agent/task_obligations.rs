@@ -19,6 +19,8 @@ pub(crate) struct TaskObligations {
     pub task_requirements: super::requirement_proof::Status,
     pub repair_brief: Option<super::repair_brief::RepairBrief>,
     pub report_repair: Option<super::report_repair::ReportRepair>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deferred_edit: Option<super::deferred_edit::Proposal>,
 }
 
 impl TaskObligations {
@@ -42,6 +44,11 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         .chain(edits.diagnostic_hint())
         .collect();
     TaskObligations {
+        deferred_edit: if pending_recovery.is_empty() {
+            super::deferred_edit::project(messages)
+        } else {
+            None
+        },
         work_progress: super::work_progress::project(root, &evidence),
         report_repair: super::report_repair::project(
             messages,
@@ -81,6 +88,7 @@ pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<Strin
     if obligations.artifact_scope.is_none()
         && !obligations.task_requirements.declared
         && obligations.pending_recovery.is_empty()
+        && obligations.deferred_edit.is_none()
         && obligations.final_answer["clauses"]
             .as_array()
             .is_none_or(Vec::is_empty)

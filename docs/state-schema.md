@@ -1375,3 +1375,13 @@ An implied write or shell action has no native call ID. Its latest observation
 can instead appear in `execution_evidence.cargo_input_handoff` with a null
 `tool_call_id`. A later executed edit or shell action supersedes that observation.
 Neither field participates in verification proof. [File and target semantics](cargo-inputs.md)
+
+`task_obligations.deferred_edit` is an optional advisory derived from correlated
+calls in the current human task. It carries the original proposal call ID, the
+verification call ID and command, and the original single-file arguments.
+System context, assistant prose and explicit runtime continuations preserve the
+native sequence. A new human request, an implied action, another operation,
+missing or partial source, user refusal, mixed diff or stale target withhold it.
+The preview is bounded to a 4 KiB one-hunk diff and a complete recorded read of
+at most 32 KiB. Both the normal governor and the ordinary file tool judge any
+fresh submission. The field creates no persistent queue, receipt or edit.

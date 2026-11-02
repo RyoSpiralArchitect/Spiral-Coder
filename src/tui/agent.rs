@@ -55,6 +55,7 @@ mod check_catalog;
 #[cfg(test)]
 mod check_catalog_tests;
 pub(crate) mod current_evidence;
+mod deferred_edit;
 mod done_gate;
 mod edit_failure;
 mod evaluator_loop;
