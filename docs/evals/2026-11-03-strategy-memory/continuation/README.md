@@ -23,3 +23,11 @@ Nine of eleven hidden cases passed. Empty-selection wording, the guide and
 npm forwarding remained unfinished.
 [Byte comparison](compare-to-r16-control.json) ·
 [Incremental model patch](incremental.patch) · [Frozen seeded protocol](protocol.md).
+
+S1's premature retry exposed a second resumption boundary. The live executor
+could use the read and edit within one Coder slice. If the session was saved
+and reopened again immediately after that read, it lost the proposal. A
+matched local replay of the *two* real refusals reproduced the loss. The
+final executor keeps their common proposal ID. It applied the exact patch
+in a new process and left the independent missing dispatch to be repaired.
+[Repeated refusal and restart control](repeated-hold.json).
