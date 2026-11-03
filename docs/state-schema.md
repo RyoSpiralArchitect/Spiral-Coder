@@ -1545,3 +1545,11 @@ When an older session has an empty version-2 recovery snapshot beside that
 failed check, the runtime can reconstruct the formatting diagnosis from its
 correlated native output and subsequent recorded actions. Later checks
 and nonempty recovery snapshots retain their normal precedence.
+
+A single terminal Observer clarification with a reason, explicit null tool,
+empty arguments and `response_contract.required=false` may supply its one
+`based_on` reference as a string of up to 800 characters. The native parser
+preserves that text as the sole list member and records the wire recovery.
+The original response remains available. Evidence maps, multiple suggestions,
+required acknowledgements and executable suggestions retain their normal
+type checks.
