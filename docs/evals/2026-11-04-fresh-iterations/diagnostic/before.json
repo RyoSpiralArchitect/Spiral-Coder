@@ -1,0 +1,17 @@
+{
+  "filter": "spiral-catalog-no-public-match-8547",
+  "commands": {
+    "tui-replay-list": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: no replay cases selected\n"
+    },
+    "tui-replay": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"spiral-catalog-no-public-match-8547\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n"
+    }
+  },
+  "listing_preserved_all_files_and_directories": true,
+  "matches": false
+}
