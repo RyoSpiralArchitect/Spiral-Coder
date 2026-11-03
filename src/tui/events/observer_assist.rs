@@ -95,7 +95,11 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
     let mut available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
     let obligations = app.coder_session.as_ref().map(|session| {
-        agent::task_obligations::project(&session.messages, app.project_test_cmd.as_deref())
+        agent::task_obligations::project_at(
+            &session.messages,
+            app.project_test_cmd.as_deref(),
+            app.tool_root.as_deref(),
+        )
     });
     if let Some(obligations) = &obligations {
         obligations.bind_observer_tools(&mut available_tools);
@@ -134,7 +138,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "task_obligations": obligations,
         "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
         "previous_assist_outcome": app.last_observer_contract_outcome,
-        "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining()},
+        "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining(),"coder_remaining":app.work_budget.remaining_for("coder")},
         "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
         "last_error_digest": meta_first_line(&target_msg.content, 240),
@@ -256,7 +260,7 @@ pub(crate) fn build_tui_next_action_prompt(
     format!(
         "This is intervention mode, not critique.\n\
 Tool calls, code changes, and diff application are forbidden.\n\
-Your task is to help the Coder take the next concrete step only.\n\
+Use the task horizon to weigh the original objective, unfinished deliverables, pending checks and remaining Coder turns. In summary or why_this_first, connect one immediate action to what it unlocks. Where the next step depends on a result, name that decision in the reason.\n\
 Write all free-text explanations in {lang_name}. Keep enum values, tool names, and file paths in English.\n\
 Return JSON only. No markdown. No backticks. No prose outside JSON.\n\n\
 Output JSON Schema (return an instance, not this schema):\n\
@@ -268,6 +272,7 @@ Rules:\n\
 - task_obligations.work_progress preserves the original human task separately from declared proof requirements. Compare the original task and acceptance_criteria with native_file_edits, pending checks and last_done_claims before saying that only documentation or verification remains. A documentation-only requirement does not erase a source repair. A zero edit count is no recorded native file write, not proof the workspace is unchanged; exec can mutate files. Successful writes and old tests do not prove semantic repair.\n\
 - Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
 - When work_progress shows repeated observations without an edit or exec, name the concrete missing fact before proposing another read. Use the current exact region if it supports a small repair; otherwise obtain only the missing region or use no-tool clarification. A returned read is not necessarily successful diagnosis and does not authorize an invented patch.\n\
+- If task_obligations.diagnostic_patch is present, weigh the saved proposal against the current goal. A suggested read is for diagnosis. A suggested patch requires a new Coder call and fresh checks.\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
 - If task_obligations.required_recheck is present, the repair already landed: propose exec of that exact command in the workspace root before more edits or a different check. A passing automatic test for another command does not resolve it. If unable to recommend the recheck, explain the blocker.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
@@ -301,7 +306,7 @@ stuck packet:\n\
 {}\n\
 </packet>",
         serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(&agent::current_evidence::observer_prompt_packet(packet)).unwrap_or_else(|_| "{}".to_string())
+        serde_json::to_string_pretty(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view }).unwrap_or_else(|_| "{}".to_string())
     )
 }
 

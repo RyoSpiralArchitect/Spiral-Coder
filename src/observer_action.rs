@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 pub(crate) mod diagnostic;
+pub(crate) mod strategy;
 
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]

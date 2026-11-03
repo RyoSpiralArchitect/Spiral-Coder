@@ -215,7 +215,7 @@ fn both_roles_keep_unedited_source_work_visible_beside_documentation_proof() {
         messages:messages.clone(), test_command:None, lang:"en".into(), reason:"stalled".into(),
         response:None, final_summary:None, repair_native:false,
     });
-    let coder_prompt = agent::task_obligations::prompt(&messages, None).unwrap();
+    let coder_prompt = agent::task_obligations::prompt(&messages, None, None).unwrap();
     let coder: serde_json::Value = serde_json::from_str(coder_prompt.lines().last().unwrap()).unwrap();
     let expected = &coder["work_progress"];
     assert_eq!(expected["original_human_task"]["text"], root);

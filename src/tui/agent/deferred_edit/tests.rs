@@ -42,7 +42,7 @@ fn both_role_contexts_offer_the_original_bytes_only_after_the_native_pass() {
     let mut m = history(DIFF);
     assert!(project(&m[..5]).is_none());
     let view = serde_json::to_value(super::super::task_obligations::project(&m, None)).unwrap();
-    let prompt = super::super::task_obligations::prompt(&m, None).unwrap();
+    let prompt = super::super::task_obligations::prompt(&m, None, None).unwrap();
     let coder: Value = serde_json::from_str(prompt.lines().last().unwrap()).unwrap();
     assert_eq!(coder["deferred_edit"], view["deferred_edit"]);
     assert_eq!(

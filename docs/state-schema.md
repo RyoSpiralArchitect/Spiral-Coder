@@ -1447,3 +1447,21 @@ bounded case when the opening imperative names a file present in both the
 human allowlist and the structured requirements. An explicit read-only
 instruction elsewhere keeps its authority. The classification changes neither
 the file allowlist nor the native edit and verification evidence required.
+
+
+### Task-local strategy recall
+
+Before compacting assistant turns, the native loop can store a version-1
+`strategy_recall` object on the current human request in the saved message
+array. It retains at most one earlier reflected approach, its matched native
+action and one repeated dead end. Each text field is bounded to 160
+characters. The local field is stripped from provider messages. The
+deliberately projected `strategy_memory` combines these historical cues
+with the current task's admitted plan. A new human message starts its own
+scope, even when the task text repeats. Older sessions rebuild cues from
+retained messages. These fields carry no edit, check or approval authority.
+
+An outstanding literal patch remains in its original correlated tool exchange.
+The newest barrier and a bounded confirming read are protected during
+compaction. The native runtime derives the current advice from that history
+and the actual workspace each time it is needed.

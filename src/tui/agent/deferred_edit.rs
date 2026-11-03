@@ -4,6 +4,8 @@ use super::{exec_proof::ExecProofResult, recovery_focus, requirement_proof};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub(super) mod diagnosis;
+
 #[derive(Debug, Serialize)]
 pub(crate) struct Proposal {
     proposal_call_id: String,
@@ -172,27 +174,8 @@ fn proposal(messages: &[Value], allow_reread: bool) -> Option<Proposal> {
         return None;
     }
     let edit: Edit = serde_json::from_str(blocked.args).ok()?;
-    if edit.path.is_empty()
-        || edit.path.len() > 240
-        || edit.path.contains(['\\', ':'])
-        || edit.path.chars().any(char::is_control)
-        || edit.path.split('/').any(|s| matches!(s, "" | "." | ".."))
+    if !eligible_target(crate::task_origin::root_user_text(messages), &edit.path)
         || edit.diff.len() > 4096
-    {
-        return None;
-    }
-    let task = crate::task_origin::root_user_text(messages);
-    let eligible_path = if let Some(scope) = super::explicit_edit_scope::Scope::parse(task) {
-        scope.allows(&edit.path, None)
-    } else {
-        requirement_proof::parse(task)
-            .ok()?
-            .is_none_or(|c| c.names_artifact(&edit.path))
-    };
-    if task.is_empty()
-        || !eligible_path
-        || crate::task_scope::artifact_scope(task)
-            .is_some_and(|scope| !scope.target_files.contains(&edit.path))
     {
         return None;
     }
@@ -217,6 +200,26 @@ fn proposal(messages: &[Value], allow_reread: bool) -> Option<Proposal> {
         suggested_args: edit,
         instruction: INSTRUCTION,
     })
+}
+
+fn eligible_target(task: &str, path: &str) -> bool {
+    if task.is_empty()
+        || path.is_empty()
+        || path.len() > 240
+        || path.contains(['\\', ':'])
+        || path.chars().any(char::is_control)
+        || path.split('/').any(|s| matches!(s, "" | "." | ".."))
+    {
+        return false;
+    }
+    let allowed = if let Some(scope) = super::explicit_edit_scope::Scope::parse(task) {
+        scope.allows(path, None)
+    } else {
+        requirement_proof::parse(task).is_ok_and(|c| c.is_none_or(|c| c.names_artifact(path)))
+    };
+    allowed
+        && crate::task_scope::artifact_scope(task)
+            .is_none_or(|s| s.target_files.iter().any(|p| p == path))
 }
 
 #[cfg(test)]

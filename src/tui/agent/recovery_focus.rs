@@ -153,6 +153,10 @@ impl RecoveryFocus {
             .then(|| focus.check.clone())
     }
 
+    pub(super) fn pending_check(&self) -> Option<&str> {
+        self.pending.as_ref().map(|focus| focus.check.as_str())
+    }
+
     pub(super) fn check_matches(&self, command: &str) -> bool {
         self.pending
             .as_ref()

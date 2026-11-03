@@ -111,7 +111,7 @@ pub fn resolve_safe_path(rel: &str, base: Option<&str>) -> Result<PathBuf> {
 
 /// Maximum characters returned from a single read_file call.
 /// ~8000 chars ≈ 2000 tokens; enough for most source files.
-const MAX_READ_CHARS: usize = 8000;
+pub(crate) const MAX_READ_CHARS: usize = 8000;
 
 /// Read a file's content. Returns `(result_text, is_error)`.
 ///
