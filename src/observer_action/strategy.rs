@@ -31,45 +31,6 @@ pub(crate) fn project_budget(
     Some(next)
 }
 
-/// A semantic range rejection cannot become an executable read. Avoid buying
-/// another Observer response when its task charge displaces a needed Coder turn.
-pub(crate) fn return_for_overlong_read(
-    reply: Option<&crate::tui::suggestion::ObserverSuggestionEnvelope>,
-    app: &crate::tui::app::App,
-) -> bool {
-    let Some(primary) = reply.and_then(|r| r.suggestions.first()) else {
-        return false;
-    };
-    if primary.suggested_tool.as_deref() != Some("read_file")
-        || !serde_json::from_value::<crate::file_tools::read_range::ReadRequest>(
-            primary.suggested_args.clone(),
-        )
-        .is_ok_and(|r| r.overlong())
-    {
-        return false;
-    }
-    let allocation = app.work_budget.snapshot();
-    let coder = allocation.coder_remaining();
-    if coder == 0
-        || allocation
-            .request_limit
-            .saturating_sub(allocation.task_requests())
-            != coder
-    {
-        return false;
-    }
-    app.coder_session
-        .as_ref()
-        .and_then(|s| {
-            crate::tui::agent::task_obligations::project(
-                &s.messages,
-                app.project_test_cmd.as_deref(),
-            )
-            .minimum_delivery
-        })
-        .is_some_and(|floor| floor.minimum_coder_requests >= coder)
-}
-
 fn sample(list: &Value, earlier_omissions: u64) -> Value {
     let Some(entries) = list.as_array() else {
         return Value::Null;
@@ -96,6 +57,7 @@ pub(crate) fn horizon(packet: &Value) -> Value {
         "human_objective_excerpt":objective,
         "strategy_memory": provenance,
         "previous_iteration_observer":obligations["iteration_handoff"],
+        "previous_blocked_report":obligations["previous_blocked_report"],
         "minimum_delivery":obligations["minimum_delivery"],
         "delivery_fits_known_slots":obligations["minimum_delivery"]["minimum_coder_requests"].as_u64().zip(packet["work_budget"]["next_coder_requests"].as_u64()).map(|(floor, slots)| floor <= slots),
         "paths_with_recorded_edits":sample(&work["native_file_edits"]["successful_paths"],work["native_file_edits"]["omitted_successful_paths"].as_u64().unwrap_or(0)),

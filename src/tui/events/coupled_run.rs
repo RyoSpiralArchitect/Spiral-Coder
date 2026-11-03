@@ -311,23 +311,14 @@ async fn run_iteration(
             if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
                 continue;
             }
-            let return_for_delivery = app.observer_assist_request.as_mut().is_some_and(|r| std::mem::take(&mut r.return_for_delivery));
-            if return_for_delivery {
-                trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder")}))?;
+            let window = observer_request::take_delivery_window(&mut app);
+            if let Some(args) = &window {
+                trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;
             }
-            if blocked
-                || (app.pending_observer_hint.is_none() && !return_for_delivery)
-                || app.work_budget.remaining_for("coder") == 0
-            {
+            if blocked || (app.pending_observer_hint.is_none() && window.is_none()) || app.work_budget.remaining_for("coder") == 0 {
                 break;
             }
-            send_coder_input(
-                &mut app,
-                &coder_tx,
-                "Continue.".into(),
-                CoderInput::RuntimeContinuation,
-            )
-            .await;
+            super::coder_run::send_coder_input_with_window(&mut app, &coder_tx,"Continue.".into(),CoderInput::RuntimeContinuation,window).await;
         }
         Ok(())
     }

@@ -47,7 +47,12 @@ pub(super) fn progress(
     use crate::execution_evidence::FileEditOutcome;
     let mut out = Progress::default();
     let Some(evidence) = evidence else { return out };
-    out.user_refusal = !evidence.approval_rejections().is_empty();
+    out.user_refusal = !evidence.approval_rejections().is_empty()
+        || evidence.actions.iter().any(|a| {
+            a.result
+                .as_deref()
+                .is_some_and(|s| s.starts_with("Awaiting approval"))
+        });
     for a in evidence
         .actions
         .iter()
@@ -121,12 +126,16 @@ pub(super) async fn run(mut args: Args, roles: roles::ResolvedRoles) -> Result<(
         "max_task_requests":args.iterations as usize * args.max_requests,
         "max_wire_requests":args.iterations as usize * (args.max_requests + args.transport_repair_requests),
         "completed":false,"stop_reason":null,"iterations":[],"task_requests":0,"wire_requests":0});
+    // The task an operator authorizes at launch stays fixed across every round.
     let original = std::fs::read(&args.prompt_file)?;
+    args.prompt_file = directory.join("task.txt");
+    std::fs::write(&args.prompt_file, &original)?;
     for number in 1..=args.iterations {
-        anyhow::ensure!(
-            std::fs::read(&args.prompt_file)? == original,
-            "original prompt changed between iterations"
-        );
+        if std::fs::read(&args.prompt_file)? != original {
+            record["stop_reason"] = json!("original_prompt_changed");
+            save(&manifest, &record)?;
+            anyhow::bail!("original prompt changed between iterations");
+        }
         let name = format!("iteration-{number:02}");
         let output = directory.join(&name);
         let storage = crate::runtime_storage::RuntimeStorage::create(&args.tool_root, &output)?
@@ -143,6 +152,18 @@ pub(super) async fn run(mut args: Args, roles: roles::ResolvedRoles) -> Result<(
         let receipt = match std::fs::read(output.join("report.json")) {
             Ok(data) => serde_json::from_slice::<Receipt>(&data)?,
             Err(error) => {
+                // Finished-round totals do not claim zero usage for an incomplete ledger.
+                let durable = std::fs::read(output.join("state/tui-work.json"))
+                    .ok()
+                    .and_then(|data| serde_json::from_slice::<WorkState>(&data).ok());
+                record["interrupted_iteration"] = json!({"directory":name,
+                    "task_requests":durable.as_ref().map(WorkState::task_requests),
+                    "wire_requests":durable.as_ref().map(|w| w.requests.len())});
+                record["task_requests"] =
+                    json!(durable.as_ref().map(|w| task_used + w.task_requests()));
+                record["wire_requests"] =
+                    json!(durable.as_ref().map(|w| wire_used + w.requests.len()));
+                record["active_iteration"] = Value::Null;
                 record["stop_reason"] = json!("interrupted");
                 save(&manifest, &record)?;
                 outcome?;

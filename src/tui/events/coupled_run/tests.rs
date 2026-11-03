@@ -91,3 +91,5 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
     assert!(trace.contains("streamed tool-call id changed"));
     assert!(trace.contains(r#""ok":false"#));
 }
+
+mod iterations;

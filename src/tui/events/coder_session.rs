@@ -55,6 +55,7 @@ pub(super) fn start_state(
             {
                 let managed = index == 0
                     || message.content.starts_with("[Intent Anchor]")
+                    || message.content.starts_with("[Native read window]")
                     || message.content.starts_with("<observer_advisory")
                     || message.content.starts_with("<observer_response_contract");
                 messages.push(

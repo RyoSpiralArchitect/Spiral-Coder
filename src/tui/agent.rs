@@ -7570,8 +7570,8 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
                         .flatten(),
                 );
         if closing {
-            let delivery = serde_json::to_string(&floor).unwrap_or_default();
-            let hint = format!("[Closeout budget] Minimum delivery cost under the one-call contract: {delivery}. If it exceeds the available turns, make a concrete safe advance and retain the blocker and next action for the next iteration. {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
+            let delivery = floor.as_ref().map(|f| format!("Minimum delivery cost under the one-call contract: {}. If it exceeds the available turns, make a concrete safe advance and retain the blocker and next action for the next iteration. ", serde_json::to_string(f).unwrap_or_default())).unwrap_or_default();
+            let hint = format!("[Closeout budget] {delivery}{remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
                 Some(existing) => {
                     existing.push_str("\n\n");

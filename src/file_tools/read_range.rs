@@ -20,6 +20,11 @@ impl ReadRequest {
                 .is_some_and(|end| end.saturating_sub(start) >= MAX_RANGE_LINES)
     }
 
+    pub(crate) fn first_window(&self) -> Option<Value> {
+        let start = self.start_line.unwrap_or(1);
+        self.overlong().then(|| serde_json::json!({"path":self.path,"start_line":start,"end_line":start.saturating_add(MAX_RANGE_LINES-1)}))
+    }
+
     pub(crate) fn is_range(&self) -> bool {
         self.start_line.is_some() || self.end_line.is_some()
     }

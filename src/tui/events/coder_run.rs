@@ -15,6 +15,21 @@ pub(super) async fn send_coder_input(
     text: String,
     input: CoderInput,
 ) {
+    let window = if input == CoderInput::RuntimeContinuation && !app.coder.streaming {
+        observer_request::take_delivery_window(app)
+    } else {
+        None
+    };
+    send_coder_input_with_window(app, tx, text, input, window).await;
+}
+
+pub(super) async fn send_coder_input_with_window(
+    app: &mut App,
+    tx: &mpsc::Sender<RequestEvent>,
+    text: String,
+    input: CoderInput,
+    window: Option<serde_json::Value>,
+) {
     let text = text.trim().to_string();
     if text.is_empty() || app.coder.streaming {
         return;
@@ -105,6 +120,9 @@ pub(super) async fn send_coder_input(
     // Expand @file references: read files and collect system messages to inject.
     let at_refs = parse_at_refs(&text);
     let mut at_ref_messages: Vec<ChatMessage> = Vec::new();
+    if let Some(args) = window {
+        at_ref_messages.push(ChatMessage { role:"system".into(),content:format!("[Native read window] The prior Observer recommendation was rejected. The native validator derived this optional first read_file window for a pending target: {args}. Only a new ordinary Coder call can read the file. If you already have the necessary observed bytes, advance the outstanding work.") });
+    }
     app.coder.push_user(text.clone());
     for ref_path in &at_refs {
         let (content, is_err) = crate::file_tools::tool_read_file(ref_path, tool_root.as_deref());
