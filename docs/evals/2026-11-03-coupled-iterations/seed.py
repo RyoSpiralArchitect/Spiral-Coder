@@ -26,9 +26,14 @@ def prepare(parent, out):
     root = out / "workspace"
     subprocess.run(["git", "clone", "--quiet", "--no-local", str(old), root], check=True)
     subprocess.run(["git", "remote", "remove", "origin"], cwd=root, check=True)
-    base = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
-    assert base == read_json(parent/"predeclared.json")["candidate_base_commit"]
+    base = read_json(parent/"predeclared.json")["candidate_base_commit"]
+    # The native pre-session checkpoint is an empty commit on the assembled tree.
+    def rev(ref):
+        return subprocess.check_output(["git", "rev-parse", ref], cwd=root, text=True).strip()
+    assert rev("HEAD") == read_json(parent/"episode/run/session.json")["checkpoint"]
+    assert rev("HEAD^{tree}") == rev(base + "^{tree}") == plan["matched_candidate_tree"]
     subprocess.run(["git", "apply", "--binary", parent / "episode/candidate.patch"], cwd=root, check=True)
+    subprocess.run(["git", "add", "-N", "."], cwd=root, check=True)
     before = inventory(root, include_nested_git=True)
     assert before == read_json(parent / "episode/candidate-inventory.json")
     write_json(out / "initial-inventory.json", before)
