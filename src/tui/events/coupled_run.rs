@@ -30,6 +30,9 @@ pub(crate) struct Args {
     pub observer_reserved_requests: usize,
     #[arg(long)]
     pub seed_session: Option<PathBuf>,
+    /// Submit the prompt as a new human task on a saved native conversation in the same workspace.
+    #[arg(long, conflicts_with = "seed_session")]
+    pub follow_up_session: Option<PathBuf>,
     #[arg(long)]
     pub without_observer: bool,
     #[command(flatten)]
@@ -218,7 +221,25 @@ async fn run_iteration(
     let (observer_tx, mut observer_rx) = mpsc::channel(256);
     let mut prior_calls = std::collections::BTreeSet::new();
     let mut prior_current_checks = std::collections::BTreeSet::new();
-    if let Some(seed) = &args.seed_session {
+    if let Some(follow_up) = &args.follow_up_session {
+        anyhow::ensure!(
+            args.seed_session.is_none() && parent.is_none(),
+            "follow-up and same-task seed are mutually exclusive"
+        );
+        let mut session = crate::agent_session::AgentSession::load(follow_up)?;
+        anyhow::ensure!(
+            session
+                .tool_root
+                .as_deref()
+                .and_then(|s| std::path::Path::new(s).canonicalize().ok())
+                .as_deref()
+                == Some(std::path::Path::new(&root)),
+            "follow-up must use the saved workspace"
+        );
+        session.repair_for_resume();
+        app.coder_session = Some(session);
+        send_coder_input(&mut app, &coder_tx, prompt, CoderInput::NewHumanTask).await;
+    } else if let Some(seed) = &args.seed_session {
         let mut session = crate::agent_session::AgentSession::load(&seed)?;
         anyhow::ensure!(
             crate::task_origin::root_user_text(&session.messages) == prompt.trim_end(),

@@ -54,6 +54,7 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
             observer_reserved_requests: 0,
             iterations: 1,
             seed_session: None,
+            follow_up_session: None,
             without_observer: false,
             observer: roles::ObserverArgs::default(),
             coder_chunk_requests: None,

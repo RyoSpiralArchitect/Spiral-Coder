@@ -255,7 +255,12 @@ provider failure or an exhausted round without this progress ends the run.
 An accepted incomplete report remains incomplete in its original record.
 An explicit `--seed-session FILE` still starts a newly budgeted invocation
 from an operator-selected native session. Supply the corresponding workspace
-snapshot when using a seed file.
+snapshot when using a seed file. To submit a new operator acceptance task
+on the same conversation and workspace, pass `--follow-up-session FILE`
+instead. Its prompt becomes a new human request. Retained conversation
+helps explain the implementation, while its old task's checks, decisions
+and completion do not satisfy the new request. Later automatic iterations
+resume that new request.
 
 Both roles receive an optimistic delivery estimate for declared tasks. It
 counts one native edit per pending artifact, the separate checks due after

@@ -60,6 +60,7 @@ pub(super) async fn episode(
                 transport_repair_requests: repair,
                 iterations: 1,
                 seed_session: None,
+                follow_up_session: None,
                 without_observer: false,
                 observer: roles::ObserverArgs::default(),
                 coder_chunk_requests: (cap >= 6).then_some(4),

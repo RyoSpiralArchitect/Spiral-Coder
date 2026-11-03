@@ -80,7 +80,10 @@ pub(super) async fn send_coder_input_with_window(
             ));
         }
     }
-    let intent_text = if input != CoderInput::HumanSteering {
+    let intent_text = if matches!(
+        input,
+        CoderInput::RuntimeContinuation | CoderInput::ReportCloseout
+    ) {
         "Continue."
     } else {
         &text
@@ -192,7 +195,11 @@ pub(super) async fn send_coder_input_with_window(
         };
     let test_cmd = app.project_test_cmd.clone();
 
-    let continuing = input != CoderInput::HumanSteering || intent_anchor.last_update_no_op;
+    let continuing = match input {
+        CoderInput::HumanSteering => intent_anchor.last_update_no_op,
+        CoderInput::NewHumanTask => false,
+        CoderInput::RuntimeContinuation | CoderInput::ReportCloseout => true,
+    };
     if continuing && app.coder_session.is_none() {
         app.coder.push_tool(
             "No native task is available to continue; send the full request.".to_string(),

@@ -94,6 +94,7 @@ async fn headless_case(valid: bool) {
                 transport_repair_requests: 4,
                 iterations: 1,
                 seed_session: Some(seed),
+                follow_up_session: None,
                 without_observer: false,
                 observer: roles::ObserverArgs::default(),
                 coder_chunk_requests: Some(1),

@@ -194,6 +194,7 @@ pub(super) async fn run(mut args: Args, roles: roles::ResolvedRoles) -> Result<(
             outcome?;
             break;
         }
+        args.follow_up_session = None;
         args.seed_session = Some(output.join("session.json"));
         parent = Some(receipt.work);
     }

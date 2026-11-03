@@ -173,6 +173,7 @@ async fn later_verification_failure_returns_to_observer_before_another_coder_req
         observer_reserved_requests: 0,
         iterations: 1,
         seed_session: Some(seed),
+        follow_up_session: None,
         without_observer: false,
         observer: roles::ObserverArgs::default(),
         coder_chunk_requests: Some(4),

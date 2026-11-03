@@ -6,6 +6,7 @@ use crate::task_origin::{user_message, MessageOrigin};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum CoderInput {
     HumanSteering,
+    NewHumanTask,
     RuntimeContinuation,
     ReportCloseout,
 }
