@@ -1,0 +1,81 @@
+{
+  "declaration_sha256": "c28dcb2e9f808c25aeecf4cd0f2b8f47156d0c9aad7f863435179a41f459b60f",
+  "run_receipt_sha256": "d6c2d8ff84a408ffa4a2eb9ecc63c7bb8d847d654e3f1e5c2bac38cbf16ff086",
+  "wire_starts": 21,
+  "response_formats": {
+    "json_schema": 2,
+    "json_object": 4
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "7d24488423dd2ca188475f698bf9d378afb31a9b88a93b3749e8597c4e763f09",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_THHyXOco674ACMuRUl7yZ3oc",
+          "step": 2,
+          "header": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "0f3b5ccfbfc50a2773e7cd317ff921db2e12866dd72eccf8edc706bfdfbdf255",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "src/main.rs"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": []
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui-replay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'tui-replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src/main.rs",
+        "pattern": "TuiReplayArgs"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'TuiReplayArgs' \u2014 2 match(es)] [pruned 4L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src/tui_replay.rs",
+        "pattern": "select"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'select' \u2014 14 match(es)]",
+        "[history digest \u2014 kept 10/17 lines, 1287 chars]"
+      ]
+    }
+  ]
+}
