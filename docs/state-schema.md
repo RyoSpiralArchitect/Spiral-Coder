@@ -1493,3 +1493,30 @@ When a confirming range covers an entire JSON file, the native read may
 append an array-edit recipe. A deferred proposal compares the declared
 source bytes with the current file and accepts only the canonical diagnostic
 appendix for those bytes. Unexpected trailing text leaves the reread due.
+
+### Bounded coupled iterations
+
+Each chain owns its top-level `iterations.json` and task copy. Each child
+output owns its session, work ledger and report. The manifest attributes
+task and transport usage to the original child task ID. The child's
+`iteration_progress` uses fresh correlated native call IDs. Previously
+recorded edits and checks do not count as new progress on a resumed budget.
+A run with positive progress can still fail its acceptance checks.
+
+A version-1 `iteration_handoff` on the original human message stores the
+source task ID, up to 600 characters of an accepted terminal Observer
+summary, and up to 800 characters of its clarification reason. It requires
+one no-tool clarification with empty arguments and no acknowledgement.
+It is stripped from provider messages and projected as historical context
+for the same task. The latest accepted Coder blocked report may also expose
+its next steps. File writes, approvals and check receipts retain their native
+authority.
+
+After an unaffordable or already-spent Observer repair, a rejected oversized
+primary read can yield to the Coder. The runtime can describe the first
+legal window at the same starting line only for a declared missing artifact
+or mandatory diagnostic target and only after validating the bounded
+action against current obligations. Secondary suggestions and response
+contracts are discarded. The original Observer reply stays rejected. A
+`observer_return_for_delivery` trace names the derived window, and only a
+new Coder tool call can execute it.

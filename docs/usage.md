@@ -108,3 +108,5 @@ checks and the end-to-end smoke. Live evaluations are separate and require
 explicit provider configuration. Read [AGENTS.md](../AGENTS.md), then use the
 [R&D hub](research/README.md) for architecture, state ownership and experiment
 contracts.
+
+For a feature that spans several bounded passes in one workspace, see [running the Coder and Observer across iterations](coupled-work-loop.md#continue-a-task-across-budgeted-iterations).

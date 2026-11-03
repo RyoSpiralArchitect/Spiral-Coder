@@ -223,6 +223,47 @@ its reason to say what that read would unlock for the wider task. Historical
 strategy cues guide the choice of action. Completion still requires native
 receipts for the current task.
 
+## Continue a task across budgeted iterations
+
+Use one native invocation when a feature may need another pass through the
+same workspace. For example, this authorizes up to two iterations, each with
+32 shared task requests, eight reserved for Observer and up to four separate
+framing repairs. The total ceiling is 64 task requests and 72 wire attempts.
+
+```sh
+spiral --provider openai --model gpt-5.6-luna coupled-run \
+  --tool-root . --prompt-file ../feature-task.md \
+  --out-dir ../spiral-runs/feature-01 --iterations 2 \
+  --max-requests 32 --observer-reserved-requests 8 \
+  --coder-chunk-requests 8 --transport-repair-requests 4
+```
+
+The default is one iteration. Values from two through four opt into a
+chain. Start with a fresh output directory outside the workspace. The
+chain freezes the task text at launch and uses the same working files,
+native Coder session, validated historical Observer clarification and
+original replay protection baseline. Each iteration has a fresh, explicit
+allowance. Its `iteration-01/`, `iteration-02/` and subsequent directories
+retain separate reports, sessions, traces and ledgers. `iterations.json`
+lists the parent task IDs, per-iteration spend, totals and stop reason.
+While an iteration is running, its own ledger includes in-flight requests.
+
+A validated successful report stops the chain immediately. An exhausted
+iteration can advance when it recorded a new changed file or a newly
+verified declared command. A user refusal, pending approval, early blocker,
+provider failure or an exhausted round without this progress ends the run.
+An accepted incomplete report remains incomplete in its original record.
+An explicit `--seed-session FILE` still starts a newly budgeted invocation
+from an operator-selected native session. Supply the corresponding workspace
+snapshot when using a seed file.
+
+Both roles receive an optimistic delivery estimate for declared tasks. It
+counts one native edit per pending artifact, the separate checks due after
+the edits and one authored report. Diagnosis or additional source changes
+can require more turns. At the last shared opportunity the coupled driver
+can send the Coder to report if the Observer's reserved share has already
+been served. A blocked report must still retain the unfinished criteria.
+
 ## Receipts and budget
 
 `coupled-run` defaults to the same resolved provider, actual model, endpoint and

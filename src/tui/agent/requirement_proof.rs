@@ -585,3 +585,37 @@ mod tests {
         assert!(!project(&messages, None).declared);
     }
 }
+
+#[cfg(test)]
+mod delivery_tests {
+    use super::*;
+
+    #[test]
+    fn pending_artifacts_require_rechecking_even_previously_passing_commands() {
+        let mut status = Status {
+            declared: true,
+            pending_artifact_paths: vec!["guide.md".into()],
+            ..Default::default()
+        };
+        let checks = vec!["visible".into(), "stock".into(), "stock".into()];
+        let pending = vec!["stock".into()];
+        assert_eq!(
+            status
+                .delivery_floor(&checks, &pending)
+                .unwrap()
+                .minimum_coder_requests,
+            4
+        );
+        status.pending_artifact_paths.clear();
+        assert_eq!(
+            status
+                .delivery_floor(&checks, &pending)
+                .unwrap()
+                .minimum_coder_requests,
+            2
+        );
+        assert!(Status::default()
+            .delivery_floor(&checks, &pending)
+            .is_none());
+    }
+}

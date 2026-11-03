@@ -58,3 +58,32 @@ impl Note {
             .then_some(note)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_a_terminal_clarification_survives_same_task_reload_as_advice() {
+        let mut m = vec![json!({"role":"user","content":"Fix it."})];
+        let mut reply: ObserverSuggestionEnvelope = serde_json::from_value(json!({"summary":"Still blocked.","suggestions":[{"kind":"clarify","reason":"Read the recorded failure.","suggested_tool":null,"suggested_args":{}}]})).unwrap();
+        assert!(Note::record(&mut m, "round-one", &reply));
+        let mut restored: Vec<Value> =
+            serde_json::from_str(&serde_json::to_string(&m).unwrap()).unwrap();
+        restored.push(crate::task_origin::user_message(
+            "Continue.",
+            crate::task_origin::MessageOrigin::Runtime,
+        ));
+        assert_eq!(
+            Note::from_task(&restored).unwrap().source_task_id,
+            "round-one"
+        );
+        assert!(crate::task_origin::provider_messages(&restored)[0]
+            .get("iteration_handoff")
+            .is_none());
+        restored.push(json!({"role":"user","content":"Fix it."}));
+        assert!(Note::from_task(&restored).is_none());
+        reply.response_contract.required = true;
+        assert!(!Note::record(&mut restored, "other", &reply));
+    }
+}
