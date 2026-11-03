@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "read_only_intent.rs"]
+mod task_intent;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) enum ReadOnlyDiagnoseRescueAction {
     Search { pattern: String, dir: String },
@@ -7,6 +10,9 @@ pub(super) enum ReadOnlyDiagnoseRescueAction {
 }
 
 pub(super) fn is_root_read_only_observation_task(root_user_text: &str) -> bool {
+    if task_intent::directs_scoped_edit(root_user_text) {
+        return false;
+    }
     let low = root_user_text.to_ascii_lowercase();
     let observe_terms = [
         "locate",

@@ -1440,3 +1440,10 @@ The bounded Web tool client reports upstream redirects directly, so a 307 or
 308 cannot trigger another provider POST inside a single ledger entry. Named
 Markdown fences supply file contents even when their language is a shell.
 Scope validation checks every named target before the six-file write limit.
+
+A direct repair or revision can describe a read-only subject while requesting
+a change to a named artifact. The native task classifier recognizes that
+bounded case when the opening imperative names a file present in both the
+human allowlist and the structured requirements. An explicit read-only
+instruction elsewhere keeps its authority. The classification changes neither
+the file allowlist nor the native edit and verification evidence required.
