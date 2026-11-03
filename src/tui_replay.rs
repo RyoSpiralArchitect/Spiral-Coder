@@ -9,6 +9,33 @@ use crate::tui::app::{App, Message, Role};
 use crate::tui::{events, intent};
 
 pub(crate) mod diagnostics;
+pub(crate) mod catalog;
+
+pub(crate) fn select_cases(
+    spec: &TuiReplaySpec,
+    filter: Option<&str>,
+    max_cases: Option<usize>,
+) -> Vec<TuiReplayCase> {
+    let filter_lc = filter.map(str::to_ascii_lowercase);
+    let mut selected: Vec<TuiReplayCase> = spec
+        .cases
+        .iter()
+        .filter(|case| {
+            filter_lc.as_deref().is_none_or(|needle| {
+                case.id.to_ascii_lowercase().contains(needle)
+                    || case
+                        .tags
+                        .iter()
+                        .any(|tag| tag.to_ascii_lowercase().contains(needle))
+            })
+        })
+        .cloned()
+        .collect();
+    if let Some(limit) = max_cases.map(|n| n.max(1)) {
+        selected.truncate(limit);
+    }
+    selected
+}
 
 fn default_spec_version() -> u32 {
     1

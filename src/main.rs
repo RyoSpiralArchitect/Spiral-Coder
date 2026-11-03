@@ -93,6 +93,9 @@ enum Command {
     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
     TuiReplay(TuiReplayArgs),
 
+    /// List deterministic TUI replay cases without executing them
+    TuiReplayList(TuiReplayListArgs),
+
     /// Run one bounded Coder/Observer task through the native TUI execution loop
     CoupledRun(tui::events::coupled_run::Args),
 
@@ -345,6 +348,25 @@ struct TuiReplayArgs {
     filter: Option<String>,
 
     /// Cap the number of selected cases
+    #[arg(long)]
+    max_cases: Option<usize>,
+}
+
+#[derive(Args, Debug, Clone)]
+struct TuiReplayListArgs {
+    /// Directory containing the replay spec (defaults to current directory)
+    #[arg(long, short = 'C', alias = "root")]
+    tool_root: Option<String>,
+
+    /// TUI replay spec JSON file
+    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
+    spec: PathBuf,
+
+    /// Only list cases whose id or tags contain this substring
+    #[arg(long)]
+    filter: Option<String>,
+
+    /// Cap the number of selected cases; zero selects one
     #[arg(long)]
     max_cases: Option<usize>,
 }
@@ -617,6 +639,7 @@ async fn main() -> Result<()> {
         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+        Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
         Some(Command::Inventory(args)) => run_inventory(args).await,
         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
         Some(Command::Review(args)) => run_review(args, cli.common).await,
