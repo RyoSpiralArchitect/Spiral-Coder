@@ -1,0 +1,100 @@
+{
+  "old": {
+    "original_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+    "binary_sha256": "c4dff7b983adf0636d29e4dfa9744c1579b1c09c9edbd391f83caf9df4acd8bd",
+    "prefix_matched": true,
+    "matched_original_final_workspace": true,
+    "replayed_prefix_count": 16,
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer"
+    ],
+    "report_only_boundary": [],
+    "live_upstream_calls": 0,
+    "errors": [],
+    "stop": "observer_unavailable",
+    "local_result_sha256": "da16126b149b0640e0e0c11d35e2928f14a236fe5eb026ac6211e02e265ab276"
+  },
+  "transport_only": {
+    "original_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+    "binary_sha256": "18e4fe656f4539fccc41bd516fe0b13cad722112ffcc3784d6f5f2b82bbd0f2b",
+    "prefix_matched": true,
+    "matched_original_final_workspace": true,
+    "replayed_prefix_count": 16,
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer"
+    ],
+    "report_only_boundary": [],
+    "live_upstream_calls": 0,
+    "errors": [],
+    "stop": "observer_unavailable",
+    "local_result_sha256": "0390edb97c09639d92d1c4ed42e8fe49f3084a8bca645678cafb87a44c4665e2"
+  },
+  "fixed": {
+    "original_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+    "binary_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+    "prefix_matched": true,
+    "matched_original_final_workspace": true,
+    "replayed_prefix_count": 16,
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer",
+      "coder"
+    ],
+    "report_only_boundary": [
+      {
+        "tools": [
+          "done"
+        ],
+        "sha256": "c4461701fd0c990d20fe156afe67be2ff1ee2b8249a70fcef0f25f0b505067d4"
+      }
+    ],
+    "live_upstream_calls": 0,
+    "errors": [],
+    "stop": "interrupted",
+    "local_result_sha256": "d0a858d9a9f2aa330f86c5a507f80ffc2308bf0cc5f00e43624cfa03db82c154"
+  }
+}

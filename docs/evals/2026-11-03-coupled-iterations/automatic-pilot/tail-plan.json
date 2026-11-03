@@ -1,0 +1,22 @@
+{
+  "condition": "One new live report after replaying all sixteen retained role responses in the original two-iteration invocation. The original live run and its result stay sealed. Only the single Coder done-only request may go upstream. No changes to the candidate or human task, no retries.",
+  "model": "gpt-5.6-luna",
+  "runtime_commit": "948a03c2f2702d01c76724531dadf0b42d4e017a",
+  "fixed_executor_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+  "replay_driver_sha256": "0f6d05dba982c96a97266e3daffebe24db5dc3e78c88bf3542b87d90fb0b239a",
+  "controls_sha256": "8ededc0c4876edf4595fa645586b93d93a10fe0a5408953af818be6869bb46dd",
+  "original_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+  "prior_external_calls": 16,
+  "maximum_additional_live_requests": 1,
+  "external_requests_at_pin": 0,
+  "ceiling_for_all_paid_conditions": {
+    "task": 54,
+    "wire": 56
+  },
+  "pass_conditions": [
+    "Both original iterations execute with their own parent-linked budgets and the same retained replies through the first 16 sends.",
+    "At the added wire the workspace matches the original final inventory and the only advertised tool is done.",
+    "An actual Luna Coder authors the final report and the native gate accepts it on the second iteration.",
+    "The stock independent pilot oracle passes and nothing outside the two allowed files is changed."
+  ]
+}
