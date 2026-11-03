@@ -76,6 +76,23 @@ The existing independent final-answer checks remain authoritative. Prompts witho
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.
 
+## Read-only replay catalog
+
+Use `spiral tui-replay-list` to inspect replay cases without executing them. For
+example:
+
+```console
+$ spiral tui-replay-list --filter prefs --max-cases 2
+{"cases":[{"id":"tui-prefs","tags":["prefs","tui"]},{"id":"prefs-empty","tags":["prefs"]}]}
+```
+
+The JSON output preserves catalog order, IDs, and tags; when no cases match, the
+`cases` array is empty. Filtering by case ID or tag is ASCII case-insensitive.
+Filtering happens before `--max-cases`, and a zero cap selects one case. Listing
+only selects and prints metadata: it does not execute replay steps, run checks,
+or mutate the workspace. Use `spiral tui-replay` when you want to execute a
+replay and receive its execution output.
+
 `done.acceptance_evidence` has two accepted row representations. The canonical
 contract is an array of objects, `{"criterion": ..., "command": ...}`, and is
 what the advertised tool schema declares for most providers. For the Gemini
