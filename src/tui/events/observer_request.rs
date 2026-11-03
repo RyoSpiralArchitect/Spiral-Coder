@@ -175,9 +175,9 @@ fn return_for_overlong_read(
         return None;
     }
     let original = reply?;
-    let [primary] = original.suggestions.as_slice() else {
-        return None;
-    };
+    // Only the primary action can supply a window. Secondary proposals and
+    // the model's response contract never become part of the native handoff.
+    let primary = original.suggestions.first()?;
     if primary.suggested_tool.as_deref() != Some("read_file")
         || primary.confidence < 0.75
         || primary
@@ -221,6 +221,8 @@ fn return_for_overlong_read(
         return None;
     }
     let mut bounded = original.clone();
+    bounded.suggestions.truncate(1);
+    bounded.response_contract = Default::default();
     bounded.suggestions[0].suggested_args = window.clone();
     let text = serde_json::to_string(&bounded).ok()?;
     crate::observer_action::validation_issue_with_capacity(
