@@ -1,0 +1,307 @@
+diff --git a/docs/evaluation.md b/docs/evaluation.md
+index e2a7898..5d22f0b 100644
+--- a/docs/evaluation.md
++++ b/docs/evaluation.md
+@@ -11,6 +11,27 @@ The [small-model repair follow-up](evals/2026-10-24-small-model-repair/README.md
+ records 132 additional requests, authored-report and plan-format support, two
+ qualified weak-model episodes, and the remaining Mistral Small failure.
+ 
++## Read-only replay catalog
++
++Use `spiral tui-replay-list` to inspect the replay cases selected by a TUI
++replay spec without executing any case:
++
++```console
++$ spiral tui-replay-list --tool-root . --filter observer --max-cases 1
++{"version":1,"total":1,"cases":[{"id":"pane-prefs-observer-suggestion","tags":["tui","observer","suggestion","prefs"]}]}
++```
++
++The default spec is `.spiral-coder/tui_replay.json`; `--spec` may name another
++spec and relative paths are resolved under `--tool-root` (also available as
++`-C`). Selection preserves spec order. `--filter` performs an ASCII
++case-insensitive substring match against each case id and tag, while
++`--max-cases` truncates after filtering; a zero cap is treated as one. Tags
++are returned in their original order. Empty selections and invalid cases are
++errors. Listing only reads and validates the spec: it does not run replay
++cases, invoke a provider, require credentials, or create artifacts. Use
++`spiral tui-replay` when you want to execute the selected cases and receive
++the normal replay report instead.
++
+ ## Copied-workspace build isolation
+ 
+ Each copied fixture must use its own Cargo build output. Sharing an absolute
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index a0038b5..cb34b47 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..eeb3913 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -92,6 +92,9 @@ enum Command {
+     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
+     TuiReplay(TuiReplayArgs),
+ 
++    /// List deterministic TUI replay cases without executing them
++    TuiReplayList(TuiReplayListArgs),
++
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
+@@ -348,6 +351,25 @@ struct TuiReplayArgs {
+     max_cases: Option<usize>,
+ }
+ 
++#[derive(Args, Debug, Clone)]
++struct TuiReplayListArgs {
++    /// Directory containing the replay spec (defaults to current directory)
++    #[arg(long, short = 'C', alias = "root")]
++    tool_root: Option<String>,
++
++    /// TUI replay spec JSON file
++    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
++    spec: PathBuf,
++
++    /// Only list cases whose id or tags contain this substring
++    #[arg(long)]
++    filter: Option<String>,
++
++    /// Cap the number of selected cases
++    #[arg(long)]
++    max_cases: Option<usize>,
++}
++
+ #[derive(Args, Debug, Clone)]
+ struct InventoryArgs {
+     /// Directory to inspect (defaults to current directory)
+@@ -616,6 +638,7 @@ async fn main() -> Result<()> {
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
++        Some(Command::TuiReplayList(args)) => tui_replay::run_catalog(args).await,
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
+         Some(Command::Review(args)) => run_review(args, cli.common).await,
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..fe108ba 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -1,3 +1,5 @@
++pub mod catalog;
++
+ use anyhow::{Context, Result};
+ use serde::{Deserialize, Serialize};
+ use serde_json::Value;
+@@ -141,6 +143,36 @@ pub struct TuiReplayReport {
+     pub cases: Vec<TuiReplayCaseReport>,
+ }
+ 
++pub(crate) fn select_cases(
++    spec: &TuiReplaySpec,
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Vec<TuiReplayCase> {
++    let filter_lc = filter.map(|s| s.to_ascii_lowercase());
++    let mut selected: Vec<TuiReplayCase> = spec
++        .cases
++        .iter()
++        .filter(|case| {
++            filter_lc.as_deref().map_or(true, |filter| {
++                case.id.to_ascii_lowercase().contains(filter)
++                    || case
++                        .tags
++                        .iter()
++                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
++            })
++        })
++        .cloned()
++        .collect();
++    if let Some(limit) = max_cases.map(|n| n.max(1)) {
++        selected.truncate(limit);
++    }
++    selected
++}
++
++pub async fn run_catalog(args: crate::TuiReplayListArgs) -> Result<()> {
++    catalog::list(args.tool_root, args.spec, args.filter, args.max_cases)
++}
++
+ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Result<()> {
+     let cwd = std::env::current_dir().context("failed to get current directory")?;
+     let base_root = args
+@@ -167,26 +199,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
+     std::fs::create_dir_all(&out_dir)
+         .with_context(|| format!("failed to create tui replay out dir: {}", out_dir.display()))?;
+ 
+-    let filter_lc = args.filter.as_ref().map(|s| s.to_ascii_lowercase());
+-    let mut selected: Vec<TuiReplayCase> = spec
+-        .cases
+-        .iter()
+-        .filter(|case| {
+-            if let Some(filter) = filter_lc.as_deref() {
+-                case.id.to_ascii_lowercase().contains(filter)
+-                    || case
+-                        .tags
+-                        .iter()
+-                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
+-            } else {
+-                true
+-            }
+-        })
+-        .cloned()
+-        .collect();
+-    if let Some(limit) = args.max_cases.map(|n| n.max(1)) {
+-        selected.truncate(limit);
+-    }
++    let selected = select_cases(&spec, args.filter.as_deref(), args.max_cases);
+     if selected.is_empty() {
+         return Err(diagnostics::empty_selection(
+             &spec_path,
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..6fbbf68
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,57 @@
++use anyhow::{bail, Result};
++use serde::Serialize;
++use std::path::{Path, PathBuf};
++
++use super::{diagnostics, load_spec, select_cases, TuiReplayCase};
++
++#[derive(Debug, Serialize)]
++struct Catalog<'a> {
++    version: u32,
++    total: usize,
++    cases: Vec<CatalogCase<'a>>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase<'a> {
++    id: &'a str,
++    tags: &'a [String],
++}
++
++pub fn list(
++    tool_root: Option<String>,
++    spec: PathBuf,
++    filter: Option<String>,
++    max_cases: Option<usize>,
++) -> Result<()> {
++    let root = PathBuf::from(tool_root.unwrap_or_else(|| ".".to_string()));
++    let spec_path = if spec.is_absolute() {
++        spec
++    } else {
++        root.join(spec)
++    };
++    let spec = load_spec(&spec_path)?;
++    let cases = select_cases(&spec, filter.as_deref(), max_cases);
++    if cases.is_empty() {
++        return Err(diagnostics::empty_selection(
++            &spec_path,
++            &root,
++            filter.as_deref(),
++            &spec.cases,
++        ));
++    }
++    let output = Catalog {
++        version: 1,
++        total: cases.len(),
++        cases: cases
++            .iter()
++            .map(|case: &TuiReplayCase| CatalogCase {
++                id: &case.id,
++                tags: &case.tags,
++            })
++            .collect(),
++    };
++    println!("{}", serde_json::to_string(&output)?);
++    Ok(())
++}
++
++
+diff --git a/tests/tui_replay_catalog.rs b/tests/tui_replay_catalog.rs
+new file mode 100644
+index 0000000..8b22e75
+--- /dev/null
++++ b/tests/tui_replay_catalog.rs
+@@ -0,0 +1,70 @@
++use std::fs;
++use std::path::Path;
++use std::process::Command;
++
++fn binary() -> &'static str {
++    env!("CARGO_BIN_EXE_spiral-coder")
++}
++
++fn snapshot(root: &Path) -> Vec<(String, Vec<u8>)> {
++    fn visit(root: &Path, dir: &Path, out: &mut Vec<(String, Vec<u8>)>) {
++        for entry in fs::read_dir(dir).unwrap() {
++            let path = entry.unwrap().path();
++            let rel = path.strip_prefix(root).unwrap().to_string_lossy().into_owned();
++            if path.is_dir() {
++                visit(root, &path, out);
++            } else {
++                out.push((rel, fs::read(path).unwrap()));
++            }
++        }
++    }
++    let mut out = Vec::new();
++    visit(root, root, &mut out);
++    out.sort_by(|a, b| a.0.cmp(&b.0));
++    out
++}
++
++#[test]
++fn no_match_listing_matches_replay_and_is_read_only() {
++    let temp = tempfile::tempdir().unwrap();
++    let root = temp.path();
++    fs::create_dir(root.join(".spiral-coder")).unwrap();
++    fs::copy(
++        ".spiral-coder/tui_replay.json",
++        root.join(".spiral-coder/tui_replay.json"),
++    )
++    .unwrap();
++    let output_dir = tempfile::tempdir().unwrap();
++    let filter = "definitely-no-replay-case-matches";
++    let replay = Command::new(binary())
++        .args([
++            "tui-replay",
++            "--tool-root",
++            root.to_str().unwrap(),
++            "--spec",
++            ".spiral-coder/tui_replay.json",
++            "--filter",
++            filter,
++            "--out-dir",
++            output_dir.path().to_str().unwrap(),
++        ])
++        .output()
++        .unwrap();
++    let before = snapshot(root);
++    let listing = Command::new(binary())
++        .args([
++            "tui-replay-list",
++            "--tool-root",
++            root.to_str().unwrap(),
++            "--spec",
++            ".spiral-coder/tui_replay.json",
++            "--filter",
++            filter,
++        ])
++        .output()
++        .unwrap();
++    assert!(!replay.status.success());
++    assert!(!listing.status.success());
++    assert_eq!(listing.stderr, replay.stderr);
++    assert_eq!(snapshot(root), before);
++}

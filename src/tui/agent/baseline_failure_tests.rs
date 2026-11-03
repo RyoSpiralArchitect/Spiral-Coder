@@ -313,3 +313,78 @@ fn baseline_diagnostics_cannot_follow_a_symlink_outside_the_workspace() {
     )
     .is_none());
 }
+
+#[test]
+fn rustfmt_diff_restores_the_first_read_and_only_the_exact_recheck_clears_it() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().canonicalize().unwrap();
+    let location = dir.to_str();
+    let src = dir.join("src");
+    std::fs::create_dir(&src).unwrap();
+    std::fs::write(
+        dir.join("Cargo.toml"),
+        "[package]\nname='fmtprobe'\nversion='0.1.0'\nedition='2021'\n",
+    )
+    .unwrap();
+    std::fs::write(src.join("lib.rs"), "mod other;\npub fn answer()->i32{2}\n").unwrap();
+    std::fs::write(src.join("other.rs"), "fn second( )->i32{3}\n").unwrap();
+    let fmt = |args: &[&str]| {
+        std::process::Command::new("cargo")
+            .args(args)
+            .current_dir(&dir)
+            .output()
+            .unwrap()
+    };
+    let failed = fmt(&["fmt", "--all", "--", "--check"]);
+    assert!(!failed.status.success());
+    let body = format!(
+        "FAILED (exit_code: 1)\ncwd: {}\nstdout (tail):\n{}",
+        dir.display(),
+        String::from_utf8_lossy(&failed.stdout)
+    );
+    let check = "cargo fmt --all -- --check";
+    let context = ExecVerificationContext::from_root(Some(check), "Format Rust and verify.");
+    let (path, _) = super::diagnostic(check, &body, location).unwrap().unwrap();
+    assert!(matches!(path.as_str(), "src/lib.rs" | "src/other.rs"));
+    assert!(super::diagnostic("cargo test", &body, location)
+        .unwrap()
+        .is_none());
+    let unsafe_body = format!(
+        "{body}\nDiff in {}/../outside.rs:3:\n-bad\n+good",
+        dir.display()
+    );
+    assert!(super::diagnostic(check, &unsafe_body, location).is_err());
+    let exec = call("fmt-check", "exec", json!({"command":check}));
+    let mut messages = vec![json!({"role":"user","content":"Format Rust and verify."})];
+    append(
+        &mut messages,
+        &exec,
+        RecoveryFocus::default().tool_message(&exec, body),
+    );
+    let awaiting = RecoveryFocus::from_messages(&messages, location, Some(check));
+    assert_eq!(awaiting.required_read().unwrap().path, path);
+    let read = call("read-fmt", "read_file", json!({"path":path}));
+    let (bytes, error) = crate::file_tools::tool_read_file(&path, location);
+    assert!(!error);
+    append(
+        &mut messages,
+        &read,
+        RecoveryFocus::default().tool_message(&read, bytes),
+    );
+    let mut g = RecoveryGovernor {
+        stage: Some(RecoveryStage::Diagnose),
+        ..Default::default()
+    };
+    g.restore_focus(&messages, location, Some(check));
+    assert_eq!(g.stage, Some(RecoveryStage::Fix));
+    assert!(fmt(&["fmt", "--all"]).status.success());
+    let repair = call("format", "exec", json!({"command":"cargo fmt --all"}));
+    let ok = format!("OK (exit_code: 0)\ncwd: {}", dir.display());
+    g.focus
+        .record_result(&repair, &ok, location, Some(check), &context);
+    assert!(g.focus.check_matches(check));
+    assert!(fmt(&["fmt", "--all", "--", "--check"]).status.success());
+    g.focus
+        .record_result(&exec, &ok, location, Some(check), &context);
+    assert!(!g.focus.is_pending());
+}

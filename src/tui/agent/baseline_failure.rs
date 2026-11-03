@@ -12,7 +12,7 @@ pub(super) fn localize(
     if !is_check_failure(command, output, context) {
         return None;
     }
-    let (path, diagnostic) = diagnostic(output, root).ok()??;
+    let (path, diagnostic) = diagnostic(command, output, root).ok()??;
     Some(FailureFocus {
         path,
         diagnostic,
@@ -36,9 +36,18 @@ pub(super) fn is_check_failure(
 
 /// None means no supported location was reported. Err means reported locations
 /// were ambiguous or unsafe; neither the edited nor previous file may override it.
-pub(super) fn diagnostic(output: &str, root: Option<&str>) -> Result<Option<(String, String)>, ()> {
+pub(super) fn diagnostic(
+    command: &str,
+    output: &str,
+    root: Option<&str>,
+) -> Result<Option<(String, String)>, ()> {
     let root_path = Path::new(root.ok_or(())?);
     let root = std::fs::canonicalize(root_path).map_err(|_| ())?;
+    if cargo_fmt_check(command) {
+        if let Some(location) = rustfmt_diff(output, root_path, &root)? {
+            return Ok(Some(location));
+        }
+    }
     // Multiple different reported files are ambiguous. Do not guess that the
     // last edited/read source or a path mentioned in ordinary output is causal.
     let mut candidates = BTreeMap::new();
@@ -67,6 +76,55 @@ pub(super) fn diagnostic(output: &str, root: Option<&str>) -> Result<Option<(Str
         path,
         super::super::failure_diagnostics::recovery_summary(output, Some(diagnostic)),
     )))
+}
+
+pub(super) fn cargo_fmt_check(command: &str) -> bool {
+    matches!(
+        command
+            .split_ascii_whitespace()
+            .collect::<Vec<_>>()
+            .as_slice(),
+        ["cargo", "fmt", "--check"]
+            | ["cargo", "fmt", "--", "--check"]
+            | ["cargo", "fmt", "--all", "--check"]
+            | ["cargo", "fmt", "--all", "--", "--check"]
+    )
+}
+
+// Every rustfmt hunk describes a real formatting difference. Reading the first
+// reported workspace file supplies a diagnosis even when other files also differ.
+fn rustfmt_diff(
+    output: &str,
+    root_path: &Path,
+    root: &Path,
+) -> Result<Option<(String, String)>, ()> {
+    let mut first_changed = None;
+    let mut section = None;
+    let mut saw_header = false;
+    for line in output.lines() {
+        if let Some(header) = line.strip_prefix("Diff in ") {
+            let (path, row) = header
+                .strip_suffix(':')
+                .and_then(|h| h.rsplit_once(':'))
+                .ok_or(())?;
+            if !positive_number(row) || !path.ends_with(".rs") {
+                return Err(());
+            }
+            let path = workspace_file(path, root_path, root).ok_or(())?;
+            section = Some((path, line));
+            saw_header = true;
+        } else if first_changed.is_none() && line.starts_with(['+', '-']) {
+            first_changed = section.take();
+        }
+    }
+    match first_changed {
+        Some((path, line)) => Ok(Some((
+            path,
+            super::super::failure_diagnostics::recovery_summary(output, Some(line)),
+        ))),
+        None if saw_header => Err(()),
+        None => Ok(None),
+    }
 }
 
 fn rust_location(line: &str) -> Option<&str> {

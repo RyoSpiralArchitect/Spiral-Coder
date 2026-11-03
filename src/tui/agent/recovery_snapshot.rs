@@ -14,6 +14,7 @@ impl RecoveryFocus {
     ) -> Self {
         let mut state = Self::default();
         let mut refreshed_legacy = false;
+        let mut recovered_format = false;
         let context = ExecVerificationContext::from_messages(check, messages);
         for (tc, message) in correlated_results(messages) {
             if let Some(snapshot) = validated_snapshot(message) {
@@ -22,6 +23,29 @@ impl RecoveryFocus {
                         .get("location")
                         .is_none();
                 let output = message["content"].as_str().unwrap_or("");
+                // Older sessions stored an empty v2 snapshot for an unrecognized rustfmt
+                // diff. Rebuild only that check and replay its later, still-empty snapshots.
+                if snapshot.pending.is_none()
+                    && snapshot.deferred.is_empty()
+                    && (recovered_format
+                        || (tc.name == "exec"
+                            && super::super::parse_exec_command_from_args(&tc.arguments)
+                                .is_some_and(|cmd| baseline_failure::cargo_fmt_check(&cmd))))
+                {
+                    if !recovered_format {
+                        state = Self::default();
+                    }
+                    state.record_result(&tc, output, root, check, &context);
+                    recovered_format = state
+                        .pending
+                        .as_ref()
+                        .is_some_and(|f| baseline_failure::cargo_fmt_check(&f.check));
+                    if recovered_format {
+                        refreshed_legacy = false;
+                        continue;
+                    }
+                }
+                recovered_format = false;
                 if legacy
                     && refreshed_legacy
                     && snapshot

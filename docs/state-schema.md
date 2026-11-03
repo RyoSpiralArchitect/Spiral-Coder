@@ -1531,3 +1531,17 @@ action against current obligations. Secondary suggestions and response
 contracts are discarded. The original Observer reply stays rejected. An
 `observer_return_for_delivery` trace names the derived window, and only a
 new Coder tool call can execute it.
+
+### Restoring a formatting diagnosis
+
+A failed `cargo fmt --all -- --check` can report several independent
+differences. A valid `Diff in <path>:<line>:` section with added or removed
+lines identifies a Rust file to inspect. Every reported path must resolve to
+a file inside the current workspace. Only the first changed section guides
+the read. A read can advance diagnosis to repair. The exact failed formatting
+check must succeed at the task root to clear that obligation.
+
+When an older session has an empty version-2 recovery snapshot beside that
+failed check, the runtime can reconstruct the formatting diagnosis from its
+correlated native output and subsequent recorded actions. Later checks
+and nonempty recovery snapshots retain their normal precedence.
