@@ -77,8 +77,9 @@ within 600 characters. The corresponding native action also keeps both ends
 within 2,400 characters. This can retain a unittest assertion message printed
 after a long diff. The runtime reads the exit status before shortening output.
 When the latest executed action is the current failure of the exact command
-awaiting diagnosis, the Observer also receives up to 400 characters from the
-end of its result alongside the required read.
+awaiting diagnosis and its recorded cwd matches the tool root, the Observer
+also receives up to 400 characters from the end of its result alongside the
+required read.
 The existing independent final-answer checks remain authoritative. Prompts without
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.
