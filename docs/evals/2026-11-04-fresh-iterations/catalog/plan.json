@@ -1,0 +1,19 @@
+{
+  "condition": "R19, fresh two-iteration production condition on the original assembled #49 baseline. No seed, replay, manual intervention or new task hints. Keep the first result.",
+  "declaration_sha256": "ed9a9c4c8d99a11188416220ac736ff2f72be5afe0e48b317d99387587a14136",
+  "runtime_commit": "948a03c2f2702d01c76724531dadf0b42d4e017a",
+  "binary_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "prompt_sha256": "d3e832ee4f81a4b20dbdeb90d90aa7086f4ed001c82956200fb6bcb411f13990",
+  "original_r18_declaration_sha256": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "iterations": 2,
+  "task_requests_per_iteration": 32,
+  "observer_reserve": 8,
+  "transport_per_iteration": 4,
+  "maximum_task_requests": 64,
+  "maximum_wire_requests": 72,
+  "total_wall_seconds": 1200,
+  "external_calls_at_pin": 0,
+  "decision": "Assess both roles, each child ledger and ancestry, real reproduction before mutation, all five required delivery paths where applicable and no scope violations, fresh original two checks before Coder done, original six independent groups, exact patch replay, measured public guide example and unchanged command behavior. Original single-episode 32-request qualification is separate. No promotion on a failed gate."
+}
