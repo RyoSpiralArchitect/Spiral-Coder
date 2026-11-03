@@ -30,3 +30,8 @@ working catalog command from the unqualified full candidate.
 [R12](../../../docs/evals/2026-11-03-diagnostic-read/r12/README.md) ran the original failed command after two edits and retained its final compile failure.
 
 The [route and handoff experiments](../../../docs/evals/2026-11-03-catalog-route/README.md) retain the original-tree run and the interrupted attempt. The [checkpoint repair](../../../docs/evals/2026-11-03-catalog-route/checkpoint/README.md) composes actual model patches over the original source and runs its original six external checks. The published examples have a separate [executable guide audit](../../../docs/evals/2026-11-03-catalog-route/guide/intent/README.md). [Try the reviewed feature without model credentials](../../../docs/evals/2026-11-03-catalog-route/guide/intent/reviewed/README.md).
+
+[R15's post-edit recheck](../../../docs/evals/2026-11-03-catalog-route/r15/README.md)
+and [R16's two unexecuted edits](../../../docs/evals/2026-11-03-catalog-route/r16/README.md)
+use the same original source, prompt and budget. R16 includes a key-free
+control that builds each intermediate state and exercises the candidate CLI.

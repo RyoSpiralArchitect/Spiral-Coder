@@ -1,0 +1,20 @@
+{
+  "source_run_sha256": "c95f27515b3de38ac2aee6842677d66485625de29e0b58a35e14aa3dbb6250f8",
+  "candidate_main_sha256": "e5e4aec70b7d22dfc39f46466562639f33ed3167f7e704118f6442d49af3279b",
+  "blocked_edit": {
+    "step": 22,
+    "call_id": "call_FOkLM8uOxcObuffyDMvhjs7W",
+    "arguments": {
+      "path": "src/main.rs",
+      "replace": "type TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;\n\n#[derive(Args, Debug, Clone)]\nstruct TuiReplayArgs {",
+      "search": "#[derive(Args, Debug, Clone)]\ntype TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;\n\nstruct TuiReplayArgs {"
+    }
+  },
+  "unapplied_dispatch": {
+    "step": 15,
+    "call_id": "call_yTB3qYBUy9ClOb20NgAhyLCk",
+    "whole_diff_sha256": "7a47b969a933c1bae6ed6afcc666f2d8f9fe803299c201cfac3b1423800a03c2",
+    "added_line": "        Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),"
+  },
+  "visible_fixture_sha256": "78a9bbeaed843eda9c547116eed0f9a4bb03062b522274b07b6fa5e9af1eaeb8"
+}

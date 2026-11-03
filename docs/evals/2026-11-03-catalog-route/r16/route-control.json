@@ -1,0 +1,46 @@
+{
+  "source_run_sha256": "c95f27515b3de38ac2aee6842677d66485625de29e0b58a35e14aa3dbb6250f8",
+  "patch_sha256": "f3b9648d272682fe720f4e4d76d648f27db6aa5860c2c0017703c80e04d1343a",
+  "original_build": {
+    "exit": 101,
+    "rust_error_codes": [
+      "E0004",
+      "E0277",
+      "E0774"
+    ]
+  },
+  "after_recorded_alias_edit": {
+    "exit": 101,
+    "rust_error_codes": [
+      "E0004"
+    ]
+  },
+  "after_placing_recorded_dispatch": {
+    "exit": 0,
+    "rust_error_codes": []
+  },
+  "checks_on_derivative": {
+    "catalog-visible": {
+      "exit": 0,
+      "tests_run": 1,
+      "failed": []
+    },
+    "held-out-catalog": {
+      "exit": 1,
+      "tests_run": 11,
+      "failed": [
+        "test_no_matches",
+        "test_usage_is_documented"
+      ]
+    },
+    "packaged-spiral": {
+      "exit": 1,
+      "tests_run": 1,
+      "failed": [
+        "test_public_entry_lists_cases"
+      ]
+    }
+  },
+  "candidate_qualification_changed": false,
+  "provider_requests": 0
+}

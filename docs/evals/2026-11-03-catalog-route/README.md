@@ -35,3 +35,13 @@ newline passes. Neither replay changed the source or called an external model.
 [Loopback replay](replay_report.py). The earlier H3 result remains sealed.
 
 [The C1 checkpoint](checkpoint/README.md) connected the installed CLI and restored a shared selector. The actual commands also exposed an incorrect guide example.
+
+[R15](r15/README.md) passed the native listing on the original tree.
+Restoring its last handoff exposed a rejected recheck after a successful
+patch retry. Separately, [the C1 output comparison](diagnostic-tail/README.md)
+shows where the failed npm assertion lost its explanation before reaching
+the Coder's action record and the Observer.
+
+[R16 and its executable control](r16/README.md) separate the pair's blocked
+candidate from the native behavior recovered by placing two of its proposed
+edits on a disposable copy.
