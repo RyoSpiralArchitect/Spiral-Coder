@@ -1,0 +1,43 @@
+{
+  "source_run": "c95f27515b3de38ac2aee6842677d66485625de29e0b58a35e14aa3dbb6250f8",
+  "executor_sha256": "35d16729f39424c65b05255a16c960883115b382ea703627d764868cf72f2b2b",
+  "held_call_id": "call_FOkLM8uOxcObuffyDMvhjs7W",
+  "expected_read": {
+    "path": "src/main.rs",
+    "start_line": 331,
+    "end_line": 334
+  },
+  "read_result": "[src/main.rs] (3844 lines, 135744 bytes) [range: lines 331-334; partial file]\n#[derive(Args, Debug, Clone)]\ntype TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;\n\nstruct TuiReplayArgs {\n",
+  "read_executed": true,
+  "retry_changed": false,
+  "retry_result": "GOVERNOR BLOCKED\ncwd: <workspace>\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\npatch_file\narguments:\n{\"path\": \"src/main.rs\", \"replace\": \"type TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;\\n\\n#[derive(Args, Debug, Clone)]\\nstruct TuiReplayArgs {\", \"search\": \"#[derive(Args, Debug, Clone)]\\ntype TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;\\n\\nstruct TuiReplayArgs {\"}",
+  "wire": [
+    {
+      "phase": "read",
+      "role": "coder",
+      "diagnostic_patch": null,
+      "horizon": null
+    },
+    {
+      "phase": "read",
+      "role": "coder",
+      "diagnostic_patch": null,
+      "horizon": null
+    },
+    {
+      "phase": "retry",
+      "role": "coder",
+      "diagnostic_patch": null,
+      "horizon": null
+    },
+    {
+      "phase": "retry",
+      "role": "coder",
+      "diagnostic_patch": null,
+      "horizon": null
+    }
+  ],
+  "changed_paths": [],
+  "exact_result_bytes": false,
+  "external_requests": 0
+}
