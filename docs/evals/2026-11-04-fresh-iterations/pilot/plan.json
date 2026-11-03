@@ -1,0 +1,46 @@
+{
+  "model": "gpt-5.6-luna",
+  "fixture": "benchmarks/coding-v1/cases/pilot-cli",
+  "runner_sha256": "4f013c816cf5caafae92a2fa3204dd4f12970eb7db439eb4eae8432eddeaac9a",
+  "prompt_sha256": "f3485a008d32fa6726aaecb6dd7018572138e887c40c747181e9d1db7d3791dc",
+  "baseline_inventory": {
+    ".spiral-coder.md": {
+      "sha256": "661445a847d350dc75a1d141cd7add68ee4ec7c8283cd13c23eec82cedede74a",
+      "bytes": 157,
+      "mode": 420
+    },
+    "docs/pilot.md": {
+      "sha256": "ef1c8532778fb37c8575080536f50c5f7b568c7638befcc84690b8db3e3e5bdf",
+      "bytes": 101,
+      "mode": 420
+    },
+    "scripts/run_coupled_pilot.py": {
+      "sha256": "db3dfc0e45331ac5c14eeed0ce6dfcecc704a89872b24545efa91089491bfce5",
+      "bytes": 9156,
+      "mode": 420
+    },
+    "tests/test_coupled_pilot.py": {
+      "sha256": "1af43767377879c6751af5d66b48075ee8ccd7e217ce2ff5f95f6b610a9dbe3d",
+      "bytes": 5794,
+      "mode": 420
+    }
+  },
+  "limits": {
+    "requests": 11,
+    "iterations": 2,
+    "observer": 3,
+    "transport": 1,
+    "chunk": 4,
+    "wall_seconds": 1200
+  },
+  "maximum_task_requests": 22,
+  "maximum_wire_requests": 24,
+  "condition": "First fresh prospective replication on the final runtime. All model responses are new. One native invocation, no seed, replay, human messages, edits or retries.",
+  "runtime_commit": "948a03c2f2702d01c76724531dadf0b42d4e017a",
+  "executor_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+  "source_head": "fdc0295d4f874a8e7f536b8b50a7e675275a9720",
+  "previous_trial_plan_sha256": "438c871d64165b6c0f5521487b07e3b4b9d9279ea0d886aaabd1a495db9c1ec8",
+  "wrapper_sha256": "ad746bddf11b847aa0513f3041ab78e45d679a8f89c57e8c24c6613a09cb4dd9",
+  "external_calls_at_pin": 0,
+  "assessment": "The second child must link to its first, retain the failing native baseline, make both required edits, perform a fresh successful check after its last edit, and author an accepted done with accurate counts. Also require exact protected inventory and the original independent pilot_cli oracle. Report first-iteration completion separately. Stop after the first terminal result."
+}
