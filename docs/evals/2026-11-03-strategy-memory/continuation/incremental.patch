@@ -1,0 +1,23 @@
+diff --git a/src/main.rs b/src/main.rs
+index 49ff03f..f1297f7 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -328,9 +328,9 @@ struct MergeGateArgs {
+     ci: bool,
+ }
+ 
+-#[derive(Args, Debug, Clone)]
+ type TuiReplayListArgs = tui_replay::catalog::TuiReplayListArgs;
+ 
++#[derive(Args, Debug, Clone)]
+ struct TuiReplayArgs {
+     /// Directory to replay against (defaults to current directory)
+     #[arg(long, short = 'C', alias = "root")]
+@@ -621,6 +621,7 @@ async fn main() -> Result<()> {
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
++        Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
+         Some(Command::Review(args)) => run_review(args, cli.common).await,
