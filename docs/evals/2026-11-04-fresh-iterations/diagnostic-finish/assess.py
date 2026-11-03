@@ -10,13 +10,13 @@ sys.path.insert(0, str(HERE.parents[3] / "scripts"))
 from coupled_bench.common import inventory, read_json, sha
 
 
-def audit(trial, external, parity_file, guide_file, process_file):
-    plan = read_json(HERE / "plan.json")
+def audit(trial, external, parity_file, guide_file, process_file, plan_path):
+    plan = read_json(plan_path)
     seal = read_json(trial / "receipt.json")
     ext, parity, guide = map(read_json, (external, parity_file, guide_file))
     digest = sha(trial / "receipt.json")
     assert digest == read_json(process_file)["receipt_sha256"] == ext["chain_receipt_sha256"]
-    assert seal["plan_sha256"] == sha(HERE / "plan.json") and not seal["redacted_files"]
+    assert seal["plan_sha256"] == sha(plan_path) and not seal["redacted_files"]
     assert sha(trial / "composite.patch") == seal["patch_sha256"]
     assert inventory(trial / "run") == seal["run_inventory"]
     source = trial / "workspace"
@@ -58,7 +58,7 @@ def audit(trial, external, parity_file, guide_file, process_file):
                  native_report_accepted=bool(manifest["completed"] and done and not done[-1]["arguments"].get("remaining_acceptance")),
                  all_original_independent_groups=ext["independent_all_passed"], public_diagnostic_and_no_writes=parity["matches"],
                  packaged_guide=guide["matches"])
-    return dict(plan_sha256=sha(HERE/"plan.json"), receipt_sha256=digest, candidate_patch_sha256=seal["patch_sha256"],
+    return dict(plan_sha256=sha(plan_path), receipt_sha256=digest, candidate_patch_sha256=seal["patch_sha256"],
                 original_task_during_this_followup=False, gates=gates, assisted_acceptance_passed=all(gates.values()),
                 changed_in_this_followup=delta, composite_changed_paths=ext["changed_files"], source_regression_sha256=sha(source/"tests/tui_replay_catalog.rs"),
                 manifest=manifest, role_wires=dict(roles), last_mutation=last_edit, exact_checks=fresh,
@@ -71,5 +71,6 @@ if __name__ == "__main__":
     p=argparse.ArgumentParser(description=__doc__)
     for k in ("trial","external","parity","guide","process"):
         p.add_argument(k,type=Path)
+    p.add_argument("--plan", type=Path, default=HERE/"plan.json")
     a=p.parse_args()
-    print(json.dumps(audit(*(getattr(a,k).resolve() for k in ("trial","external","parity","guide","process"))),indent=2))
+    print(json.dumps(audit(*(getattr(a,k).resolve() for k in ("trial","external","parity","guide","process","plan"))),indent=2))

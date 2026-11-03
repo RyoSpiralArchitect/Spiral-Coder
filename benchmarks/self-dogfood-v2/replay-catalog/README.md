@@ -47,3 +47,5 @@ preserves the unresolved native dispatch and absent final report.
 [Bounded iterations after R18](../../../docs/evals/2026-11-03-coupled-iterations/README.md)
 track the preserved dispatch repair, the guide-to-report sequence, and a
 separate operator acceptance task on the same working source.
+
+[Fresh catalog iterations](../../../docs/evals/2026-11-04-fresh-iterations/README.md) record R19 on the original task and a separate prospective condition with public diagnostic and guide checks. Both start from the original repository copy. The assisted repair has separate data and a frozen checksum for the model-authored test.

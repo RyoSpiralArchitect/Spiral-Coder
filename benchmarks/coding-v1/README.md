@@ -211,3 +211,5 @@ Flash-Lite and mini reach qualified completion in the second round; Mistral
 Small's default-selection regression and first-round timeout remain recorded.
 
 The [two-iteration pilot](../../docs/evals/2026-11-03-coupled-iterations/automatic-pilot/README.md) retains the live failure, its exact workspace and the one additional Luna report after matched replay.
+
+A [fully fresh Luna pilot](../../docs/evals/2026-11-04-fresh-iterations/README.md#a-second-iteration-completed-the-pilot-without-operator-input) starts from the stock fixture. One invocation carries the failed baseline and source edit into the second iteration, where the Coder edits the guide, verifies the seven tests and reports the result.

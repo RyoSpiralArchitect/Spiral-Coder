@@ -41,3 +41,5 @@ continuation and new human follow-ups. The [separate stock pilot](automatic-pilo
 exercises one invocation across two real model iterations.
 [Model-free runtime checks](runtime-controls.json) exercise the automatic
 second iteration, the last Coder report, and proof separation on a follow-up.
+
+The [prospective fresh runs](../2026-11-04-fresh-iterations/README.md) record the stock pilot and the full catalog task with newly generated Luna responses.

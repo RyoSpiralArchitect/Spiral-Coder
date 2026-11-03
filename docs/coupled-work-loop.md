@@ -277,7 +277,9 @@ one report-only attempt when all native proof is current. After a structurally
 rejected Observer repair, the last request still available to Coder can also
 carry an honest blocked handoff. Requests reserved for Observer stay reserved.
 A blocked report
-must still retain the unfinished criteria.
+must still retain the unfinished criteria. The [fresh two-iteration pilot](evals/2026-11-04-fresh-iterations/README.md)
+includes the actual first-round handoff, second-round verification and
+independent check on the completed change.
 
 ## Receipts and budget
 
