@@ -42,6 +42,9 @@ async fn headless_case(valid: bool, repair_text: &str, finish_reason: &str) {
         when.method(POST).path("/chat/completions").matches(|r| !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains("Observer action repair: attempt"));
         let mut args=closeout_args();
         args["acceptance_evidence"].as_array_mut().unwrap().truncate(2);
+        if finish_reason == "stop" {
+            args["completed_acceptance"] = json!("expected an array");
+        }
         let raw=json!({"summary":"Report retained proof","suggestions":[{"kind":"done","confidence":0.95,"suggested_tool":"done","suggested_args":args}]}).to_string();
         then.status(200).header("content-type", "text/event-stream").body(sse(json!({"choices":[{"delta":{"content":raw},"finish_reason":"stop"}]})));
     });

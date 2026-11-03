@@ -50,10 +50,15 @@ impl ObserverAssistRequest {
             return false;
         }
         self.repair_used = true;
-        self.repairing_done = suggestion::parse_observer_suggestion_envelope(raw)
-            .as_ref()
-            .and_then(suggestion::primary_suggestion)
-            .is_some_and(|s| s.suggested_tool.as_deref() == Some("done"));
+        // Classify the requested repair even when the original done arguments are invalid.
+        // Those arguments never become an executable suggestion or a report.
+        self.repairing_done =
+            suggestion::parse_observer_suggestion_envelope(raw).is_some_and(|env| {
+                env.suggestions.first().is_some_and(|s| {
+                    s.kind == suggestion::ObserverSuggestionKind::Done
+                        && s.suggested_tool.as_deref() == Some("done")
+                })
+            });
         self.pending_repair = Some(crate::observer_action::repair_prompt(
             &self.original_prompt,
             raw,
