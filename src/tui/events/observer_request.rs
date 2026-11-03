@@ -14,7 +14,7 @@ pub(crate) struct ObserverAssistRequest {
     repair_used: bool,
     repair_started: bool,
     repairing_done: bool,
-    pending_report_closeout: bool,
+    pending_report_closeout: Option<super::report_closeout::Reason>,
     pub(super) return_for_delivery: Option<serde_json::Value>,
     request_cursor: usize,
     terminal_diagnosis: bool,
@@ -31,7 +31,7 @@ impl ObserverAssistRequest {
             repair_used: false,
             repair_started: false,
             repairing_done: false,
-            pending_report_closeout: false,
+            pending_report_closeout: None,
             return_for_delivery: None,
             request_cursor: app.work_budget.snapshot().requests.len(),
             terminal_diagnosis: false,
@@ -247,22 +247,36 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             }
             .to_string(),
         );
-        let unusable_done_repair = app.observer_assist_request.as_ref().is_some_and(|r| {
+        let fallback = app.observer_assist_request.as_ref().and_then(|r| {
+            use super::report_closeout::Reason;
+            if scheduled || !r.repair_started || r.terminal_diagnosis {
+                return None;
+            }
             let work = app.work_budget.snapshot();
-            r.repair_started
-                && r.repairing_done
-                && !r.terminal_diagnosis
-                && matches!(&work.requests[r.request_cursor.min(work.requests.len())..], [receipt]
-                    if receipt.role == "observer" && (receipt.status == "output_limited"
-                        || (receipt.status == "completed" && receipt.transport_rejection == Some(
-                            crate::work_budget::TransportRejection::ObserverEnvelope))))
+            let [wire] = work.requests.get(r.request_cursor..)? else {
+                return None;
+            };
+            if wire.role != "observer" {
+                return None;
+            }
+            let malformed = wire.status == "completed"
+                && wire.transport_rejection
+                    == Some(crate::work_budget::TransportRejection::ObserverEnvelope);
+            if r.repairing_done
+                && (malformed || wire.status == "output_limited")
+                && super::report_closeout::ready(app, Reason::Verified)
+            {
+                return Some(Reason::Verified);
+            }
+            (malformed && super::report_closeout::ready(app, Reason::LastCoderRequest))
+                .then_some(Reason::LastCoderRequest)
         });
-        if !scheduled && unusable_done_repair && super::report_closeout::ready(app) {
+        if let Some(reason) = fallback {
             app.observer_assist_request
                 .as_mut()
                 .unwrap()
-                .pending_report_closeout = true;
-            app.observer.push_tool("(next-action) done repair ended without a usable envelope. Native checks are current; reserving one Coder report-only wire attempt within the existing task budget. Observer advice remains rejected and completion still requires a validated authored done.".into());
+                .pending_report_closeout = Some(reason);
+            app.observer.push_tool("(next-action) repair rejected. Returning one report-only request to the Coder within its own allowance. The Coder must account for every unfinished criterion.".into());
         }
     } else if let Some(parsed) = parsed.as_ref() {
         app.observer.messages[idx].raw_content = Some(raw);
@@ -308,14 +322,17 @@ pub(super) async fn maybe_report_closeout(app: &mut App, tx: &mpsc::Sender<Reque
     if app.coder.streaming || app.observer.streaming || !request_is_current(app) {
         return false;
     }
-    let pending = app
+    let Some(reason) = app
         .observer_assist_request
         .as_mut()
-        .is_some_and(|r| std::mem::take(&mut r.pending_report_closeout));
-    if !pending || !super::report_closeout::ready(app) {
+        .and_then(|r| r.pending_report_closeout.take())
+    else {
+        return false;
+    };
+    if !super::report_closeout::ready(app, reason) {
         return false;
     }
-    send_coder_input(app, tx, "The Observer's done repair was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. Do not execute more work or infer missing proof. If anything is unverified, report it as remaining. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
+    send_coder_input(app, tx, "The Observer repair was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. If anything remains unverified, give a blocked report with the outstanding criteria and a concrete next action. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
     app.report_closeout_attempted
 }
 

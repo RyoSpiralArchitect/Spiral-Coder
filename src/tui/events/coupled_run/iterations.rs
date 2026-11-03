@@ -69,12 +69,7 @@ pub(super) fn progress(
         ..Progress::default()
     };
     let Some(evidence) = evidence else { return out };
-    out.user_refusal = !evidence.approval_rejections().is_empty()
-        || evidence.actions.iter().any(|a| {
-            a.result
-                .as_deref()
-                .is_some_and(|s| s.starts_with("Awaiting approval"))
-        });
+    out.user_refusal = evidence.has_approval_barrier();
     for a in evidence
         .actions
         .iter()

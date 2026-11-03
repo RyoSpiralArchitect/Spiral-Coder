@@ -273,7 +273,10 @@ can require more turns. At the last shared opportunity the coupled driver
 can send the Coder to report if the Observer's reserved share has already
 been served. If the Observer's one repair of a rejected `done` is truncated
 or receives a recorded envelope transport rejection, the Coder can also use
-one report-only attempt when all native proof is current. A blocked report
+one report-only attempt when all native proof is current. After a structurally
+rejected Observer repair, the last request still available to Coder can also
+carry an honest blocked handoff. Requests reserved for Observer stay reserved.
+A blocked report
 must still retain the unfinished criteria.
 
 ## Receipts and budget

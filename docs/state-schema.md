@@ -1290,6 +1290,11 @@ transport rejection. `events/report_closeout.rs` then admits **one Coder
 report-only wire attempt** only when the source context is still current, a
 declared task has no pending artifacts/checks/baselines/recovery, accepted plan
 references and current commands exist, and Coder has remaining allowance.
+A second admission applies when the Coder has exactly one remaining request
+and the declared task assigns it a report-only turn. A completed, structurally
+rejected Observer repair may then hand that request back for an authored
+blocked report, even with outstanding proof. An unresolved approval or user
+refusal blocks this route. Each mode is rechecked at consumption.
 The current repair must have exactly one matching Observer receipt. A normal
 semantic rejection, an unclassified response, stale context, blocked terminal
 diagnosis, missing evidence or a provider error ends this path.

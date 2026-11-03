@@ -46,6 +46,14 @@ impl ExecutionPacket {
             .collect()
     }
 
+    pub(crate) fn has_approval_barrier(&self) -> bool {
+        self.actions.iter().any(|a| {
+            a.result.as_deref().is_some_and(|s| {
+                s.starts_with("REJECTED BY USER") || s.starts_with("Awaiting approval")
+            })
+        })
+    }
+
     pub(crate) fn approval_rejections(&self) -> Vec<&ActionEvidence> {
         self.actions
             .iter()
