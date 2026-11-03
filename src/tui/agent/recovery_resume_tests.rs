@@ -320,6 +320,54 @@ fn repair_and_matching_native_verification_are_still_required_after_diagnosis() 
 }
 
 #[test]
+fn resumed_retry_of_a_failed_edit_allows_only_the_pending_recheck() {
+    for (target, output, expected) in [
+        (
+            "source.rs",
+            "OK: applied 2/2 hunk(s) to 'source.rs'",
+            RecoveryStage::Verify,
+        ),
+        (
+            "other.rs",
+            "OK: patched 'other.rs'",
+            RecoveryStage::Diagnose,
+        ),
+        ("source.rs", "OK: unchanged 'source.rs'", RecoveryStage::Fix),
+    ] {
+        let mut session = diagnosed();
+        let tool = if output.starts_with("OK: applied") {
+            "apply_diff"
+        } else {
+            "patch_file"
+        };
+        session.record(tool, json!({"path":target}), output);
+        let governor = session.assert_stage(expected);
+        assert!(governor.focus.check_matches(FIRST));
+        if expected == RecoveryStage::Verify {
+            for (command, blocked) in [(FIRST, false), (SECOND, true)] {
+                let check = call("next", "exec", json!({"command":command}));
+                assert_eq!(
+                    governor
+                        .maybe_block_tool(
+                            &check,
+                            Some(FIRST),
+                            TaskHarness::infer("Repair existing source", false),
+                            false
+                        )
+                        .is_some(),
+                    blocked
+                );
+            }
+            session.fail_check(SECOND, "later.rs");
+            assert!(session
+                .assert_stage(RecoveryStage::Diagnose)
+                .focus
+                .check_matches(SECOND));
+        }
+    }
+}
+
+#[test]
 fn an_unlocalized_or_wrong_root_failure_cannot_borrow_edit_diagnosis() {
     for variant in ["unlocalized", "wrong-root", "diagnostic"] {
         let mut session = diagnosed();
