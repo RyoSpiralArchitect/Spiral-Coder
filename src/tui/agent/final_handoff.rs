@@ -62,6 +62,18 @@ pub(super) fn report_context(root: &str, messages: &[Value], test_cmd: Option<&s
     report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
         root, messages, test_cmd
     ));
+    if super::final_instructions::wants_outcome_lines(root)
+        && crate::task_origin::root_user_text(messages) == root
+        && super::requirement_proof::parse(root)
+            .ok()
+            .flatten()
+            .is_some_and(|c| c.has_baseline_failure())
+        && super::requirement_proof::project(messages, test_cmd)
+            .pending
+            .is_empty()
+    {
+        report["standalone_outcome_lines"] = serde_json::json!(["Before: FAILED", "After: PASSED"]);
+    }
     report["check_facts"] =
         serde_json::json!(super::report_counts::facts(root, messages, test_cmd));
     report["claim_guidance"] = serde_json::json!(
@@ -323,6 +335,14 @@ pub(super) fn validate_authored_done_summary(
     let rendered = super::report_surface::authored(rendered, &report);
     if let Some(issue) = crate::work_budget::current().and_then(|c| c.budget.preservation_issue()) {
         return Err(format!("Artifact preservation failed: {issue}"));
+    }
+
+    if let Some(lines) = report["standalone_outcome_lines"].as_array() {
+        for label in lines.iter().filter_map(Value::as_str) {
+            if !summary.lines().any(|line| line.trim() == label) {
+                return Err(format!("The requested outcome must occupy its own line in done.summary: {label}. Keep the measured explanation on another line. The check receipts are current."));
+            }
+        }
     }
 
     let Some(hint) = authored_final_answer_hint(root) else {

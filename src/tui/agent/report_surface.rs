@@ -32,6 +32,10 @@ pub(super) fn guidance(report: &Value) -> String {
         ("required_literals", "Required exact text"),
         ("path_categories", "Path categories"),
         ("outcome_rows", "Recorded outcomes"),
+        (
+            "standalone_outcome_lines",
+            "Required standalone lines in done.summary",
+        ),
     ] {
         if let Some(items) = report[field].as_array().filter(|items| !items.is_empty()) {
             text.push_str(&format!("{label}:\n"));

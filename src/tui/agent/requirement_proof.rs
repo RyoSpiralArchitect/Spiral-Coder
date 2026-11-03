@@ -38,6 +38,13 @@ enum ArtifactKind {
 }
 
 impl Contract {
+    pub(super) fn has_baseline_failure(&self) -> bool {
+        self.requirements
+            .iter()
+            .flat_map(|r| &r.checks)
+            .any(|check| check.baseline_failure)
+    }
+
     pub(super) fn names_artifact(&self, path: &str) -> bool {
         self.requirements
             .iter()

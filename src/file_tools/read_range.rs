@@ -2,6 +2,8 @@
 use serde::Deserialize;
 use serde_json::Value;
 
+const MAX_RANGE_LINES: usize = 200;
+
 #[derive(Debug, Deserialize)]
 pub(crate) struct ReadRequest {
     pub path: String,
@@ -26,15 +28,19 @@ impl ReadRequest {
 
     pub(crate) fn bounds(&self) -> anyhow::Result<(usize, usize)> {
         let start = self.start_line.unwrap_or(1);
-        let end = self.end_line.unwrap_or_else(|| start.saturating_add(199));
+        let first_end = start.saturating_add(MAX_RANGE_LINES - 1);
+        let end = self.end_line.unwrap_or(first_end);
         anyhow::ensure!(
             start > 0 && end >= start,
             "use one-based lines with end_line >= start_line"
         );
-        anyhow::ensure!(
-            end - start < 200,
-            "read at most 200 lines per call; narrow start_line/end_line"
-        );
+        if end > first_end {
+            anyhow::bail!(
+                "read at most {MAX_RANGE_LINES} lines per call. Requested {start} through {end} inclusive ({} lines). For the first window use start_line={start}, end_line={first_end}. The remaining window begins at {}.",
+                end - start + 1,
+                first_end + 1
+            );
+        }
         Ok((start, end))
     }
 

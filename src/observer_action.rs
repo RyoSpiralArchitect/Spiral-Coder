@@ -218,6 +218,26 @@ mod tests {
     use super::*;
 
     #[test]
+    fn an_overlong_advisory_names_the_two_valid_boundaries_without_forwarding_it() {
+        let advice = |end| {
+            json!({"suggestions":[{"kind":"read","reason":"inspect the existing selection",
+            "confidence":0.9,"suggested_tool":"read_file",
+            "suggested_args":{"path":"src/tui_replay.rs","start_line":150,"end_line":end}}]})
+            .to_string()
+        };
+        let invalid = advice(350);
+        let issue = validation_issue(&invalid, &[], None).unwrap();
+        assert!(
+            issue.contains("201 lines")
+                && issue.contains("start_line=150, end_line=349")
+                && issue.contains("remaining window begins at 350"),
+            "{issue}"
+        );
+        assert!(repair_prompt("Choose a read", &invalid, &issue).contains("end_line=349"));
+        assert!(validation_issue(&advice(349), &[], None).is_none());
+    }
+
+    #[test]
     fn invalid_read_feedback_carries_the_current_native_target_without_forwarding() {
         let messages = vec![
             json!({"role":"user","content":"Repair the catalog."}),
