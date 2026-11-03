@@ -1,0 +1,374 @@
+{
+  "predeclaration_sha256": "ed7c5b72dd65bd50f84452c4e7576c60dee38ca022b7cfab5a6c4a880426dfe4",
+  "run_receipt_sha256": "c14276e6f263ed4cf5f5feb846a667f6fb2ca5b5caf0eb22a433b5ea42a232bc",
+  "assessment_sha256": "957031682ac1050a8d20d1019a76118e36bd2d3043a8b6d390bb57f072c54500",
+  "completed": false,
+  "termination": "blocked",
+  "role_requests": {
+    "coder": 13,
+    "observer": 11
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": false,
+    "actual_edit": false,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": false,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": false,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_guide_visible": false,
+    "python3 -S -m unittest -v scripts.catalog_delivery_visible": false,
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo fmt --all -- --check": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 24,
+    "task_requests": 24,
+    "transport_requests": 0,
+    "coder_task_requests": 13,
+    "policy": {
+      "transport_repair_limit": 2,
+      "observer_reserved_requests": 6
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "not_observed",
+      "behavior_changed": "not_observed",
+      "visible_passed": "not_observed",
+      "control_non_regression": "observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 0,
+    "first_unmet_stage": "reproduced",
+    "termination": "blocked"
+  },
+  "first_changed_step_by_path": {},
+  "changed_edits": [],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 7,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 8,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 9,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 10,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 11,
+      "decision": "defer",
+      "completed": false,
+      "tool": "read_file",
+      "path": "docs/evaluation.md",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "a8ce6fae3b10bca5b03116261f18faad9869211747f22d3c5c4dd653f62a83d5",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "cc75d5428b10fb6eef1d243a1617f5168840d5c9f0740340115c072172792304",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "ec188fc5327db9c4e81d7a59d78dbf8419d92ed1ae7a9d9e97b1b67545a6fc53",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "78b65e5b2af05627c2b521982f9f5bc6125905d9b4472687cf92c0e78da2b0e6",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "4d029a721cdd03ae146f416b63d9adbded634fea2ed1de2f2b5c5f987bf5bcdb",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "787eb086424dcb5af0f381425da4b34dfeb44a6ffb3347775b10b3e597be7a34",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "4b95d71edc66625f5e995c6a8192c0e1c9a4838bc8e4926734b5783b7e47d848",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "a82a3819214abdd4b0ce8f261029f9d75659cc1271c5fb91dd2bd47cd5515329",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "11e56c74cb3dec071de49d4b388cf1114b1f6e18d7119e8c8d05374dc2216073",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "ab54f093e6216be0a657570b91bb94c5d40e9612c6db432307f3ca2f4dcaa679",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    },
+    {
+      "text_sha256": "a966e6128d1c6bf685086943e21001305117b05717243d14f6e05d8436f7088f",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "docs/evaluation.md"
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "61c9d0d6f9dac3e176c32758882c4299fb7d28a6239ea85ce55697c5b249b22d",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-guide-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "70fe527b7bdba67b3ed824d34731f71753cb5b9fd599c75df28c8cbadb7365e1",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "3d3166a627660980ff8beba7a1956cef4ed99351c334fc5f3b0dfe1cc85c9121",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "7269cb51699ff7f760324232310b465619d86b54ad549cd2658ffdffbff891fe",
+      "has_process_result": true
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "9903fb05d11c43d4488ef1383d0f88178b1c5543cf4380db4e825e1c2bb7fcf5",
+      "has_process_result": true
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "5c692525b1a5a3d60a34e8dcc317fc5f8b69b7aa3436ba4ba84085e83fbd017b",
+      "has_process_result": true
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "787bbb00027e48ed4d2cd939d2afae86bb6b477107a7847ab22aaf073bb559d2",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [
+    {
+      "result_step": 3,
+      "executed": true,
+      "result": "OK: blocked",
+      "arguments": {
+        "acceptance_evidence": [],
+        "completed_acceptance": [],
+        "next_steps": "Read docs/evaluation.md, reproduce the baseline with `python3 -S -m unittest -v scripts.catalog_guide_visible`, edit only docs/evaluation.md, then run each of the five exact required commands separately.",
+        "remaining_acceptance": [
+          "acceptance 1",
+          "acceptance 2"
+        ],
+        "summary": "BLOCKED: The requested documentation repair was not performed. Only `src/tui/prefs.rs` was inspected; `docs/evaluation.md` was not confirmed or edited, and no required verification commands were executed. Observer decision: accept the suggestion to read `docs/evaluation.md` next, but the read-only contract and remaining tool budget prevented that action."
+      }
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 103.664
+  }
+}

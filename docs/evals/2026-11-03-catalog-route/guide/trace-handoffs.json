@@ -1,0 +1,23 @@
+{
+  "declaration_sha256": "ed7c5b72dd65bd50f84452c4e7576c60dee38ca022b7cfab5a6c4a880426dfe4",
+  "run_receipt_sha256": "c14276e6f263ed4cf5f5feb846a667f6fb2ca5b5caf0eb22a433b5ea42a232bc",
+  "wire_starts": 24,
+  "response_formats": {
+    "json_object": 11
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src/tui",
+        "pattern": "test"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'test' \u2014 50 match(es) (first 50 shown \u2014 more may exist)]",
+        "[history digest \u2014 kept 10/51 lines, 4175 chars]"
+      ]
+    }
+  ]
+}

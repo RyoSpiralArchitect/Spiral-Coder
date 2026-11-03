@@ -1,0 +1,26 @@
+[
+  {
+    "executor_sha256": "9b52bf87ce988c58192b336f73d21bdd63fdb42a7ca4ff97008ada7a6c1297fe",
+    "d1_receipt": "c14276e6f263ed4cf5f5feb846a667f6fb2ca5b5caf0eb22a433b5ea42a232bc",
+    "input": "original_d1",
+    "native_task_harness": {
+      "artifact_mode": "existing_files",
+      "lane": "fix_existing_files",
+      "read_only": false
+    },
+    "external_requests": 0,
+    "file_actions": 0
+  },
+  {
+    "executor_sha256": "9b52bf87ce988c58192b336f73d21bdd63fdb42a7ca4ff97008ada7a6c1297fe",
+    "d1_receipt": "c14276e6f263ed4cf5f5feb846a667f6fb2ca5b5caf0eb22a433b5ea42a232bc",
+    "input": "explicit_inspection",
+    "native_task_harness": {
+      "artifact_mode": "observe_only",
+      "lane": "read_only_observe",
+      "read_only": true
+    },
+    "external_requests": 0,
+    "file_actions": 0
+  }
+]

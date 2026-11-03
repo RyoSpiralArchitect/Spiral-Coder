@@ -27,7 +27,18 @@ def digest(path):
 def verify(origin, final, out, target, guide=None):
     stages = [(origin, ORIGIN), (final, RECORD / "checkpoint")]
     if guide is not None:
-        stages.append((guide, RECORD / "guide"))
+        choices = [RECORD / "guide", RECORD / "guide/intent"]
+        known = [
+            folder
+            for folder in choices
+            if (folder / "plan.json").is_file()
+            and read(folder / "plan.json")["declaration_sha256"]
+            == digest(guide / "predeclared.json")
+        ]
+        if len(known) != 1:
+            raise ValueError("Unrecognized guide episode declaration")
+        guide_record = known[0]
+        stages.append((guide, guide_record))
     stage_roots = [raw for raw, _ in stages]
 
     if any(
@@ -76,7 +87,7 @@ def verify(origin, final, out, target, guide=None):
     spec = read(origin / "inputs/spec.json")
     guide_audit = None
     with tempfile.TemporaryDirectory() as tmp:
-        root = Path(tmp) / "source"
+        root = Path(tmp).resolve() / "source"
         git_snapshot(REPO, original_plan["baseline_commit"], root)
         before = inventory(root)
 
@@ -117,7 +128,7 @@ def verify(origin, final, out, target, guide=None):
         git("add", "-N", ".")
         (out / "combined.patch").write_bytes(git("diff", "--binary", "HEAD", "--"))
         # Verify the portable cumulative patch itself, including new files and modes.
-        clean = Path(tmp) / "replay"
+        clean = Path(tmp).resolve() / "replay"
         git_snapshot(REPO, original_plan["baseline_commit"], clean)
         subprocess.run(
             [
@@ -198,7 +209,7 @@ def verify(origin, final, out, target, guide=None):
         "external_provider_requests": 0,
     }
     if guide is not None:
-        latest = read(RECORD / "guide/results.json")
+        latest = read(guide_record / "results.json")
         summary.update(
             guide_receipt=latest["run_receipt_sha256"],
             guide_qualified=latest["qualified_candidate"],
