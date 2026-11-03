@@ -28,3 +28,19 @@ with status 1, an empty stdout and a diagnostic on stderr. The added heading
 also absorbed older completion text. [Measured examples and findings](../guide/c1-audit.json).
 These are release blockers for the guide even though the functional command
 passed every original external check.
+
+## Run the archived command locally
+
+From a Git checkout containing this experiment and its original base commit,
+use Python 3, Rust and Node on a POSIX host. The script creates a temporary
+source tree, builds the exact combined patch, packages its binary and runs
+both console commands without model credentials.
+
+```sh
+python3 -BIS benchmarks/self-dogfood-v2/replay-catalog/guide/replay.py --stage delivery
+```
+
+The output includes the real two cases, the empty-selection exit and stderr,
+and the four discrepancies in the delivery-stage guide. Pass `--target-dir`
+with a dedicated external Cargo cache to reuse dependencies. The script
+cleans the root crate before rebuilding in that cache.

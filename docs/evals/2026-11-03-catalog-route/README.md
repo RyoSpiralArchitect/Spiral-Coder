@@ -1,5 +1,7 @@
 # Coordinating a CLI variant, argument type and handler
 
+The [reviewed cumulative feature](guide/intent/reviewed/README.md) runs through the installed npm alias and includes executable usage examples. Its implementation combines three model-authored patches, with one later editorial move.
+
 The R12 patch fails with E0425 for the missing argument type and E0004 for the
 missing match arm when applied to its original Git tree. Restoring just
 `src/main.rs` makes the binary compile and ordinary replay available, but

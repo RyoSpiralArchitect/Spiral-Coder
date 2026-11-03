@@ -24,7 +24,9 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(origin, final, out, target, guide=None):
+def verify(origin, final, out, target, guide=None, review_layout=False):
+    if review_layout and guide is None:
+        raise ValueError("The placement correction needs the sealed final guide")
     stages = [(origin, ORIGIN), (final, RECORD / "checkpoint")]
     if guide is not None:
         choices = [RECORD / "guide", RECORD / "guide/intent"]
@@ -86,6 +88,7 @@ def verify(origin, final, out, target, guide=None):
     out.mkdir(parents=True)
     spec = read(origin / "inputs/spec.json")
     guide_audit = None
+    layout_correction = None
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp).resolve() / "source"
         git_snapshot(REPO, original_plan["baseline_commit"], root)
@@ -121,6 +124,42 @@ def verify(origin, final, out, target, guide=None):
                 raise ValueError(
                     f"composed patch differs from sealed candidate {episode.name}"
                 )
+        if review_layout:
+            import difflib
+
+            sys.path.insert(0, str(HERE))
+            from guide_layout import place_at_end
+
+            guide_path = root / "docs/evaluation.md"
+            authored_bytes = guide_path.read_bytes()
+            reviewed = place_at_end(original_guide, authored_bytes.decode()).encode()
+            guide_path.write_bytes(reviewed)
+            layout_patch = out / "review-layout.patch"
+            layout_patch.write_bytes(
+                b"".join(
+                    difflib.diff_bytes(
+                        difflib.unified_diff,
+                        authored_bytes.splitlines(keepends=True),
+                        reviewed.splitlines(keepends=True),
+                        fromfile=b"a/docs/evaluation.md",
+                        tofile=b"b/docs/evaluation.md",
+                    )
+                )
+            )
+            layout_correction = {
+                "patch_sha256": digest(layout_patch),
+                "model_guide_sha256": hashlib.sha256(authored_bytes).hexdigest(),
+                "reviewed_guide_sha256": digest(guide_path),
+                "original_guide_bytes_preserved_as_prefix": reviewed.startswith(
+                    original_guide.encode()
+                ),
+            }
+            changed_review = inventory(root)
+            assert [k for k in actual if changed_review[k] != actual[k]] == [
+                "docs/evaluation.md"
+            ]
+            assert len(changed_review) == len(actual)
+            expected = actual = changed_review
         touched = sorted(
             p for p in before.keys() | actual.keys() if before.get(p) != actual.get(p)
         )
@@ -208,6 +247,10 @@ def verify(origin, final, out, target, guide=None):
         ],
         "external_provider_requests": 0,
     }
+    if layout_correction is not None:
+        summary["maintainer_layout_correction"] = layout_correction
+        summary["identical_to_unedited_model_candidate"] = False
+        summary["prior_model_inventories_matched_before_correction"] = True
     if guide is not None:
         latest = read(guide_record / "results.json")
         summary.update(
@@ -224,6 +267,11 @@ if __name__ == "__main__":
     for arg in ("origin", "final", "out", "target"):
         parser.add_argument(arg, type=Path)
     parser.add_argument("--guide-episode", type=Path)
+    parser.add_argument(
+        "--review-layout",
+        action="store_true",
+        help="separately apply the bounded maintainer placement correction",
+    )
     args = parser.parse_args()
     print(
         json.dumps(
@@ -233,6 +281,7 @@ if __name__ == "__main__":
                     for k in ("origin", "final", "out", "target")
                 ),
                 guide=args.guide_episode.resolve() if args.guide_episode else None,
+                review_layout=args.review_layout,
             ),
             indent=2,
         )

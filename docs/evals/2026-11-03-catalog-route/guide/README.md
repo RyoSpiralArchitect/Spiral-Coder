@@ -17,4 +17,4 @@ documentation check still failed. [First result](results.json) ·
 D2 keeps all materialized inputs, declared scope, checks, budgets and model
 roles. Only the executor changes. In the two loopback controls, the real
 guide request moves to existing-file repair and the explicit inspection task
-stays read-only. [Next comparison](intent/protocol.md).
+stays read-only. [Qualified comparison and cumulative review](intent/README.md).

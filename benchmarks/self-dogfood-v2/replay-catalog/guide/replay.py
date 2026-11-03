@@ -18,9 +18,19 @@ from self_dogfood.runner import cache_lock
 sys.path.insert(0, str(HERE))
 from guide_visible import discrepancies, measured
 
+sys.path.insert(0, str(HERE.parent))
+from checkpoint.guide_layout import original_lines_preserved
+
 
 def replay(stage, cache):
-    record = EVAL / ("checkpoint" if stage == "delivery" else "guide/intent")
+    record = (
+        EVAL
+        / {
+            "delivery": "checkpoint",
+            "guide": "guide/intent",
+            "reviewed": "guide/intent/reviewed",
+        }[stage]
+    )
     proof = read_json(record / "combined-verification.json")
     patch = record / "combined.patch"
     if sha(patch) != proof["patch_sha256"] or not proof["inventory_matches"]:
@@ -32,6 +42,7 @@ def replay(stage, cache):
         root = scratch / "candidate"
         target = cache or (scratch / "target")
         git_snapshot(REPO, proof["original_baseline_commit"], root)
+        original_guide = (root / "docs/evaluation.md").read_text()
         subprocess.run(
             ["git", "apply", "--binary", "--whitespace=nowarn", str(patch)],
             cwd=root,
@@ -53,7 +64,9 @@ def replay(stage, cache):
                 check=True,
             )
             observed = measured(target / "debug/spiral-coder", root)
-            issues = discrepancies((root / "docs/evaluation.md").read_text(), observed)
+            document = (root / "docs/evaluation.md").read_text()
+            issues = discrepancies(document, observed)
+            preserved = original_lines_preserved(original_guide, document)
     return {
         "stage": stage,
         "patch_sha256": sha(patch),
@@ -62,13 +75,16 @@ def replay(stage, cache):
         "no_match_stdout": observed["empty"]["stdout"],
         "no_match_stderr": observed["empty"]["stderr"].splitlines()[0],
         "guide_discrepancies": issues,
+        "original_nonblank_lines_preserved": preserved,
         "provider_requests": 0,
     }
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--stage", choices=["delivery", "guide"], default="delivery")
+    p.add_argument(
+        "--stage", choices=["delivery", "guide", "reviewed"], default="delivery"
+    )
     p.add_argument(
         "--target-dir",
         type=Path,

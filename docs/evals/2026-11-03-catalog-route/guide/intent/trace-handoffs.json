@@ -1,0 +1,28 @@
+{
+  "declaration_sha256": "298a9e5bdc6e0c9f19725fc80b666339817c14885ed2a82f457fcd9fdb50bcf5",
+  "run_receipt_sha256": "e1da5c6d31c6d655d819ba2698a9de2842a7c1dfdc0d0096c41df035ac45a270",
+  "wire_starts": 19,
+  "response_formats": {
+    "json_schema": 1,
+    "json_object": 3
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "c8c7385435cd79dcb195b4a7bf091686d5a61a0a6b0b1e1e5a1e2f001885ea46",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_guide_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": []
+    }
+  ],
+  "scoped_rust_lookups": []
+}
