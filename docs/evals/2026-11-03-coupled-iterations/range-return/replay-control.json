@@ -1,0 +1,57 @@
+{
+  "before": {
+    "source_receipt": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+    "binary_sha256": "8e41a972039733ab52fe3635599d9d9f79a37ad971790bcb15231a2c4b578931",
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer"
+    ],
+    "authored_reply_digests": [
+      "d895c2896da5c35197dd66fc935c34573f3f3fb57d4960f74c3602caf27225de",
+      "9678d54457803696c80c1545a0779eee2575c625bf976d01571eda18855b526c"
+    ],
+    "native_windows_on_coder_wire": [],
+    "native_scheduler_events": [],
+    "termination": "observer_unavailable",
+    "exit": 0,
+    "assistant_actions_executed_in_probe": false,
+    "external_provider_requests": 0
+  },
+  "after": {
+    "source_receipt": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+    "binary_sha256": "ccbc085d95ba11c588720c0d7648a40eee4b4a702bb3d8b88e00d02044a505bf",
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer",
+      "coder"
+    ],
+    "authored_reply_digests": [
+      "d895c2896da5c35197dd66fc935c34573f3f3fb57d4960f74c3602caf27225de",
+      "9678d54457803696c80c1545a0779eee2575c625bf976d01571eda18855b526c"
+    ],
+    "native_windows_on_coder_wire": [
+      "[Native read window] The prior Observer recommendation was rejected. The native validator derived this optional first read_file window for a pending target: {\"end_line\":200,\"path\":\"npm/spiral-coder/lib/launcher.cjs\",\"start_line\":1}. Only a new ordinary Coder call can read the file. If you already have the necessary observed bytes, advance the outstanding work."
+    ],
+    "native_scheduler_events": [
+      {
+        "native_read_window": {
+          "end_line": 200,
+          "path": "npm/spiral-coder/lib/launcher.cjs",
+          "start_line": 1
+        },
+        "remaining_coder": 21
+      }
+    ],
+    "termination": "interrupted",
+    "exit": 1,
+    "assistant_actions_executed_in_probe": false,
+    "external_provider_requests": 0
+  },
+  "stop": "The probe deliberately returns HTTP 400 after capturing the repaired Coder wire."
+}
