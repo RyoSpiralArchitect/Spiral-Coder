@@ -189,25 +189,6 @@ fn normalize_key(text: &str) -> String {
         .to_ascii_lowercase()
 }
 
-fn keyword_tokens(text: &str) -> std::collections::BTreeSet<String> {
-    text.split(|ch: char| !ch.is_ascii_alphanumeric())
-        .map(|part| part.trim().to_ascii_lowercase())
-        .filter(|part| part.len() >= 3)
-        .collect()
-}
-
-fn token_overlap_score(
-    a: &std::collections::BTreeSet<String>,
-    b: &std::collections::BTreeSet<String>,
-) -> f32 {
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
-    }
-    let overlap = a.intersection(b).count() as f32;
-    let denom = a.len().min(b.len()).max(1) as f32;
-    (overlap / denom).clamp(0.0, 1.0)
-}
-
 #[derive(Debug, Clone)]
 struct ReflectionSummaryEvent {
     message_index: usize,
@@ -435,25 +416,49 @@ fn session_tool_events(messages: &[serde_json::Value]) -> Vec<SessionToolEvent> 
 
 fn action_matches_tool_event(action: &str, event: &SessionToolEvent) -> bool {
     let action_low = normalize_key(action);
-    let signature_low = normalize_key(event.signature.as_str());
-    if !event.tool_name.is_empty() && action_low.contains(event.tool_name.as_str()) {
-        return true;
+    // A tool name or the path in the tool's own signature cannot corroborate
+    // a reflection about a different file or operation.
+    if matches!(
+        event.tool_name.as_str(),
+        "read_file" | "patch_file" | "write_file" | "apply_diff"
+    ) {
+        let Some(path) = event
+            .path
+            .as_deref()
+            .filter(|p| !p.is_empty() && !p.contains('…'))
+        else {
+            return false;
+        };
+        let path_char = |c: char| c.is_alphanumeric() || matches!(c, '.' | '_' | '-' | '/' | '\\');
+        let named = action.match_indices(path).any(|(i, _)| {
+            let after = &action[i + path.len()..];
+            let sentence_end = after
+                .strip_prefix('.')
+                .is_some_and(|rest| rest.is_empty() || rest.starts_with(char::is_whitespace));
+            !action[..i]
+                .trim_end_matches("./")
+                .chars()
+                .next_back()
+                .is_some_and(path_char)
+                && (sentence_end || !after.chars().next().is_some_and(path_char))
+        });
+        let operation = action_low
+            .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+            .find_map(|word| match word {
+                "read" | "read_file" | "inspect" => Some(SessionToolKind::Observation),
+                "edit" | "patch" | "write" | "replace" | "update" | "fix" | "patch_file"
+                | "write_file" | "apply_diff" => Some(SessionToolKind::Mutation),
+                _ => None,
+            });
+        return named && operation == Some(event.kind);
     }
-    if let Some(path) = event.path.as_deref() {
-        let path_low = normalize_key(path);
-        if !path_low.is_empty()
-            && (action_low.contains(path_low.as_str()) || signature_low.contains(path_low.as_str()))
-        {
-            return true;
-        }
-    }
-    token_overlap_score(
-        &keyword_tokens(action),
-        &keyword_tokens(event.signature.as_str()),
-    ) >= 0.45
+    // For shell and search work, require the recorded invocation in the
+    // reflection. Sharing a word such as "cargo" or "exec" is insufficient.
+    !event.signature.contains('…') && action.contains(&event.signature)
 }
 
 pub fn session_bridge_from_messages(messages: &[serde_json::Value]) -> Option<SessionBridge> {
+    let messages = crate::task_origin::current_task_messages(messages);
     let tool_events = session_tool_events(messages);
     let last_good_verification = tool_events.iter().rev().find_map(|event| {
         (event.kind == SessionToolKind::Verification).then(|| SessionVerificationMemory {

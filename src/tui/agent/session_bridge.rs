@@ -9,9 +9,16 @@ pub(super) struct SessionBridgeView {
 
 impl SessionBridgeView {
     pub(super) fn resolve(persisted: Option<&SessionBridge>, messages: &[Value]) -> Self {
+        // Older multi-task sessions stored the bridge without its task boundary.
+        let task = crate::task_origin::current_task_messages(messages);
         let bridge = persisted
+            .filter(|_| {
+                !messages[..messages.len() - task.len()]
+                    .iter()
+                    .any(crate::task_origin::is_human_request)
+            })
             .cloned()
-            .or_else(|| crate::agent_session::session_bridge_from_messages(messages))
+            .or_else(|| crate::agent_session::session_bridge_from_messages(task))
             .filter(|bridge| !bridge.is_empty());
         Self { bridge }
     }

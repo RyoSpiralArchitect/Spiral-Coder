@@ -1481,3 +1481,10 @@ available. `next_coder_turn` follows the Coder's own declared report
 reservation. With no Coder capacity, a validated no-tool handoff stays
 visible and queues nothing. Its explanation can name the first action
 on a future continuation.
+
+For an ordinary task with no declared acceptance contract, a retained historical
+action can be rendered as a short Coder recall. A file strategy is matched by a
+named target and compatible read or edit intent. Other operations need their
+recorded invocation in the reflection. Missing grounding leaves the strategy
+unmatched. A legacy session bridge with multiple human tasks is rederived from
+the current task before it can enter the Coder prompt.

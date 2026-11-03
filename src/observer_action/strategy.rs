@@ -1,5 +1,5 @@
 //! Bounded view of the whole task for both diagnostic and general Observer turns.
-use crate::tui::agent::task_obligations::TaskObligations;
+use crate::tui::agent::task_obligations::{CoderTurn, TaskObligations};
 use crate::work_budget::WorkState;
 use serde_json::{json, Value};
 
@@ -24,7 +24,9 @@ pub(crate) fn project_budget(
     fields.insert("next_coder_requests".into(), json!(next));
     fields.insert(
         "next_coder_turn".into(),
-        json!(obligations.map(|o| o.coder_turn(next))),
+        json!(obligations
+            .map(|o| o.coder_turn(next))
+            .or_else(|| (next == 0).then_some(CoderTurn::Exhausted))),
     );
     Some(next)
 }
@@ -96,7 +98,7 @@ pub(crate) fn handoff_prompt(packet: &Value, language: &str) -> Option<String> {
     let facts = json!({"task_horizon":horizon(packet),"required_diagnostic_read":obligations["required_diagnostic_read"],
         "required_recheck":obligations["required_recheck"],
         "latest_native_feedback":obligations["latest_action_feedback"]["result"].as_str().map(|s| s.chars().take(450).collect::<String>())});
-    Some(format!("Write a handoff in {language}. {remaining} Identify what is evidenced, what remains unverified and the first action for a future continuation. Place that future action in the explanation. Return one JSON object with summary, response_contract (required=false, focus_axes as a list of strings, note as a string), and one suggestions entry with kind=clarify, suggested_tool=null, suggested_args={{}}, reason, confidence and based_on. Use the native task data below.\n<packet>\n{facts}\n</packet>"))
+    Some(format!("Write a handoff in {language}. {remaining} Identify what is evidenced, what remains unverified and the first action for a future continuation. Place that future action in the explanation. If a required artifact still needs an edit, final check receipts must follow that edit. Earlier reproduction or recovery checks can still be required. Return one JSON object with summary, response_contract (required=false, focus_axes as a list of strings, note as a string), and one suggestions entry with kind=clarify, suggested_tool=null, suggested_args={{}}, reason, confidence and based_on. Use the native task data below.\n<packet>\n{facts}\n</packet>"))
 }
 
 #[cfg(test)]

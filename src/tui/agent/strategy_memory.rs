@@ -63,6 +63,15 @@ pub(crate) struct View {
     history: Recall,
 }
 
+impl View {
+    pub(super) fn standalone_prompt(&self) -> Option<String> {
+        self.history.has_history().then(|| format!(
+            "[Task strategy recall]\nUse these earlier choices as context when selecting your next action. Check them against current evidence.\n{}",
+            serde_json::to_string(self).expect("strategy recall serializes")
+        ))
+    }
+}
+
 pub(super) fn project(messages: &[Value]) -> Option<View> {
     let task = crate::task_origin::current_task_messages(messages);
     if !task
@@ -130,8 +139,14 @@ mod tests {
         assert!(crate::task_origin::provider_messages(&restored)[0]
             .get("strategy_recall")
             .is_none());
+        let rendered = super::super::task_obligations::prompt(&restored, None, None).unwrap();
+        assert!(
+            rendered.contains("[Task strategy recall]")
+                && rendered.contains("patch_file(path=src/lib.rs)")
+        );
         restored.push(json!({"role":"user","content":"Repair the parser"}));
         assert!(project(&restored).is_none());
+        assert!(super::super::task_obligations::prompt(&restored, None, None).is_none());
     }
     #[test]
     fn refused_or_failed_commands_never_seed_a_recalled_strategy() {
@@ -165,6 +180,55 @@ mod tests {
         assert_eq!(
             json!(project(&m))["repeated_observation"],
             "read_file(path=src/main.rs, lines=580-650)"
+        );
+    }
+}
+
+#[cfg(test)]
+mod attribution_tests {
+    use serde_json::json;
+
+    #[test]
+    fn mismatched_targets_and_native_actions_never_become_a_remembered_repair() {
+        let mut history = vec![
+            json!({"role":"user","content":"Repair the parser"}),
+            json!({"role":"assistant","content":"<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: another search would help\nstrategy_change: adjust\nnext_minimal_action: patch_file src/lib.rs. Then verify.\n</reflect>"}),
+        ];
+        for (id, tool, path, result) in [
+            (
+                "wrong",
+                "patch_file",
+                "src/lib.rs.bak",
+                "OK: patched 'src/lib.rs.bak'",
+            ),
+            (
+                "read",
+                "read_file",
+                "src/lib.rs",
+                "[src/lib.rs] (1 lines, 2 bytes)\nok",
+            ),
+        ] {
+            history.extend([
+                json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":json!({"path":path}).to_string()}}]}),
+                json!({"role":"tool","tool_call_id":id,"content":result}),
+            ]);
+        }
+        assert!(super::project(&history).is_none());
+        history.extend([
+            json!({"role":"assistant","tool_calls":[{"id":"right","function":{"name":"patch_file","arguments":r#"{"path":"src/lib.rs"}"#}}]}),
+            json!({"role":"tool","tool_call_id":"right","content":"OK: patched 'src/lib.rs'"}),
+        ]);
+        let saved = crate::agent_session::session_bridge_from_messages(&history).unwrap();
+        assert_eq!(
+            json!(super::project(&history))["matched_historical_action"],
+            "patch_file(path=src/lib.rs)"
+        );
+        history.push(json!({"role":"user","content":"Repair the parser"}));
+        assert!(crate::agent_session::session_bridge_from_messages(&history).is_none());
+        assert!(
+            super::super::session_bridge::SessionBridgeView::resolve(Some(&saved), &history)
+                .prompt()
+                .is_none()
         );
     }
 }
