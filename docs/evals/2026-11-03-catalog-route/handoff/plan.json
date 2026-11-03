@@ -1,0 +1,59 @@
+{
+  "issue": 49,
+  "condition": "R14 archived R11 handoff on a pristine tree",
+  "raw_root": "replay-catalog-native-r14-pair-handoff-20261103",
+  "prior_declaration_sha256": "c28dcb2e9f808c25aeecf4cd0f2b8f47156d0c9aad7f863435179a41f459b60f",
+  "declaration_sha256": "7e45897cadf43408591c7a710d87b4db153d215e6ebc678e8b69ab24c2c295f5",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "aaf900327cc0bce56b8e9e1ebf050eabab948812",
+  "executor_sha256": "f86f101fd60f7d99d42317169893d9a018a9d8250b9dcdcae8e6e6c04ac4ae1c",
+  "protocol_sha256": "40d4a2804c489eecffc7cf80b5395660b3884104c3ef8893bd3c7aaa107f387c",
+  "prompt_sha256": "90e89f46c2ed15e56a1d2b608c759102772d046bb966827559c6b478d0c79596",
+  "spec_sha256": "a0bd28acd98dff5f446aad763a26842065c536e753a7f7ab3985cac894d3fbdc",
+  "preflight_sha256": "78ab8b0a0b20ca0d4a9782278b97a148b09365bcf3d872e14bd742a2fc37778a",
+  "changed_inputs": [
+    "prior_catalog_attempt.patch",
+    "prompt.txt",
+    "spec.json"
+  ],
+  "additional_protected_paths": [
+    "scripts/prior_catalog_attempt.patch"
+  ],
+  "provider_calls_at_pin": 0,
+  "identical_declaration_fields": [
+    "version",
+    "baseline_commit",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "driver_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "boundary"
+  ],
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "observer_reserved_requests": 8,
+    "transport_repair_requests": 4,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "preflight_verdicts_match_prior": true,
+  "seed_patch_sha256": "7ed74db18a0b5be96fdfb84c21348b22cef08b90dce51cc51d0708e7c5db5c1f"
+}
