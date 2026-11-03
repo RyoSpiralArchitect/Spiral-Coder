@@ -76,34 +76,6 @@ The existing independent final-answer checks remain authoritative. Prompts witho
 this explicit instruction retain automatic action closeout. This boundary does
 not claim coverage of unrelated read-only finalizers.
 
-## Read-only replay catalog
-
-Use `spiral tui-replay-list` to inspect replay cases without executing them. For
-example:
-
-```console
-$ spiral tui-replay-list --filter prefs --max-cases 2
-{"version":1,"total":2,"cases":[{"id":"pane-prefs-observer-suggestion","tags":["tui","observer","suggestion","prefs"]},{"id":"pane-prefs-observer-contract","tags":["tui","observer","suggestion","contract","prefs"]}]}
-```
-
-When no cases match, the command produces no JSON on stdout and writes a
-diagnostic on stderr:
-
-```console
-$ spiral tui-replay-list --filter __spiral_no_match__
-$ echo $?
-1
-```
-
-The JSON output preserves catalog order, IDs, and tags. Filtering by case ID or
-tag is ASCII case-insensitive. Filtering happens before `--max-cases`, and a
-zero cap selects one case. Listing only selects and prints metadata: it does
-not execute replay steps, run checks, or mutate the workspace. Use
-`spiral tui-replay` when you want to execute a replay and receive its execution
-output.
-
-## Completion and errors
-
 `done.acceptance_evidence` has two accepted row representations. The canonical
 contract is an array of objects, `{"criterion": ..., "command": ...}`, and is
 what the advertised tool schema declares for most providers. For the Gemini
@@ -341,3 +313,29 @@ synthetic calls; remaining task failures keep the branch unqualified.
 The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.
 
 The [2026-10-21 coupled task proof / JSON / Web readout](evals/2026-10-21-task-proof-json-web/README.md) records two adaptive three-model rounds, their unchanged oracles and remaining failure modes.
+
+## Read-only replay catalog
+
+Use `spiral tui-replay-list` to inspect replay cases without executing them. For
+example:
+
+```console
+$ spiral tui-replay-list --filter prefs --max-cases 2
+{"version":1,"total":2,"cases":[{"id":"pane-prefs-observer-suggestion","tags":["tui","observer","suggestion","prefs"]},{"id":"pane-prefs-observer-contract","tags":["tui","observer","suggestion","contract","prefs"]}]}
+```
+
+When no cases match, the command produces no JSON on stdout and writes a
+diagnostic on stderr:
+
+```console
+$ spiral tui-replay-list --filter __spiral_no_match__
+$ echo $?
+1
+```
+
+The JSON output preserves catalog order, IDs, and tags. Filtering by case ID or
+tag is ASCII case-insensitive. Filtering happens before `--max-cases`, and a
+zero cap selects one case. Listing only selects and prints metadata: it does
+not execute replay steps, run checks, or mutate the workspace. Use
+`spiral tui-replay` when you want to execute a replay and receive its execution
+output.
