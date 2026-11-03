@@ -1,0 +1,64 @@
+{
+  "old": {
+    "source_seal": "6479553cdaab4a18d53d3e94eb8ab9b4476656d7a9d03cceb7b749f009125bc4",
+    "binary_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+    "recorded_replies": 12,
+    "actual_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer"
+    ],
+    "opened_second_iteration": false,
+    "first_progress": {
+      "changed_files": [],
+      "newly_verified": [],
+      "user_refusal": false
+    },
+    "termination": "no_new_edit_or_verification",
+    "exit_code": 0,
+    "unchanged_stock_workspace": true,
+    "external_requests": 0
+  },
+  "new": {
+    "source_seal": "6479553cdaab4a18d53d3e94eb8ab9b4476656d7a9d03cceb7b749f009125bc4",
+    "binary_sha256": "7c18ca8267670c3c72588d51e992bd70f1fb88895735ff0a1b937c89db91a7d7",
+    "recorded_replies": 12,
+    "actual_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "coder",
+      "observer",
+      "coder",
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer",
+      "coder"
+    ],
+    "opened_second_iteration": true,
+    "first_progress": {
+      "changed_files": [],
+      "newly_reproduced_baselines": [
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+      ],
+      "newly_verified": [],
+      "user_refusal": false
+    },
+    "termination": "interrupted",
+    "exit_code": 1,
+    "unchanged_stock_workspace": true,
+    "external_requests": 0
+  }
+}

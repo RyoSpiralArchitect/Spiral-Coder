@@ -1,0 +1,14 @@
+{
+  "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b",
+  "examples": [
+    {
+      "command": "spiral tui-replay-list --filter rescue --max-cases 1",
+      "shown": "{\"version\":1,\"total\":1,\"cases\":[{\"id\":\"rescue-path\",\"tags\":[\"rescue\",\"observer\"]}]}",
+      "actual": "",
+      "exit": 1,
+      "stderr": "Error: no tui replay cases selected from /private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/tmpoyinyxid/project/.spiral-coder/tui_replay.json\n",
+      "matches": false
+    }
+  ],
+  "matches": false
+}

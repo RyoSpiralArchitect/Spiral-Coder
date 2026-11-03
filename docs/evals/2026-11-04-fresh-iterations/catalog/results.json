@@ -1,0 +1,330 @@
+{
+  "plan_sha256": "4c848d6bdc4027aca6e6f5ff09e73aebbc1849f2e382fa6bb0b951e1014bb59f",
+  "declaration_sha256": "ed9a9c4c8d99a11188416220ac736ff2f72be5afe0e48b317d99387587a14136",
+  "sealed_receipt_sha256": "f482d119cecdc89c3f00673b622d8df252741d16958a7f8ed7f44f81bc394c03",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 732.413,
+    "finished_at": "2026-11-03T18:48:32.900588+00:00",
+    "redacted_files": [],
+    "patch_exit_code": 0
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": true,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "src/tui_replay.rs",
+            "src/tui_replay/catalog.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1793730981197-15454-1",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 32
+      },
+      {
+        "completed": true,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1793730981197-15454-1",
+        "progress": {
+          "changed_files": [
+            "docs/evaluation.md",
+            "npm/spiral-coder/lib/launcher.cjs",
+            "src/main.rs"
+          ],
+          "newly_verified": [
+            "cargo test --locked --bin spiral-coder -q",
+            "python3 -S -m unittest -v scripts.catalog_visible"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793731346533-15454-3",
+        "task_requests": 27,
+        "termination": "completed",
+        "wire_requests": 27
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 64,
+    "max_task_requests_per_iteration": 32,
+    "max_wire_requests": 72,
+    "stop_reason": "completed",
+    "task_requests": 59,
+    "version": 1,
+    "wire_requests": 59
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "src/tui_replay.rs",
+          "src/tui_replay/catalog.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793730981197-15454-1",
+      "task_requests": 32,
+      "termination": "blocked",
+      "wire_requests": 32,
+      "roles": {
+        "coder": 24,
+        "observer": 8
+      },
+      "ledger_verified": true,
+      "budget": {
+        "valid": true,
+        "wire_requests": 32,
+        "task_requests": 32,
+        "transport_requests": 0,
+        "coder_task_requests": 24,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      }
+    },
+    {
+      "completed": true,
+      "directory": "iteration-02",
+      "iteration": 2,
+      "parent_task_id": "task-1793730981197-15454-1",
+      "progress": {
+        "changed_files": [
+          "docs/evaluation.md",
+          "npm/spiral-coder/lib/launcher.cjs",
+          "src/main.rs"
+        ],
+        "newly_verified": [
+          "cargo test --locked --bin spiral-coder -q",
+          "python3 -S -m unittest -v scripts.catalog_visible"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793731346533-15454-3",
+      "task_requests": 27,
+      "termination": "completed",
+      "wire_requests": 27,
+      "roles": {
+        "coder": 20,
+        "observer": 7
+      },
+      "ledger_verified": true,
+      "budget": {
+        "valid": true,
+        "wire_requests": 27,
+        "task_requests": 27,
+        "transport_requests": 0,
+        "coder_task_requests": 20,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      }
+    }
+  ],
+  "gates": {
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": true,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_input_and_output": true,
+    "sealed_candidate_matches": true,
+    "distinct_parent_linked_ledgers": true,
+    "bounded_chain": true,
+    "both_roles_called": true,
+    "native_completed": true,
+    "accepted_done": true,
+    "no_remaining_acceptance": true,
+    "native_edit": true,
+    "actual_edit": true,
+    "required_paths_changed": true,
+    "fresh_native_checks": true,
+    "no_pending_checks": true,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "process_ok": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "candidate_unchanged_by_assessor": true,
+    "independent_checks_passed": false
+  },
+  "all_chain_gates_passed": false,
+  "qualified_within_original_single_round": false,
+  "promotion_authorized": false,
+  "changed_files": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "patch_sha256": "9982bab9a94af19d43b39e04bbbebb903d6ca85748ea55de2cae67b2793d9a69",
+  "exact_native_calls": {
+    "python3 -S -m unittest -v scripts.catalog_visible": [
+      {
+        "id": "call_FkIsZ5WUwtmoE1mzYqiVkO1k",
+        "step": 41
+      }
+    ],
+    "cargo test --locked --bin spiral-coder -q": [
+      {
+        "id": "call_NQjimZXJKB9EMnmBbu1u6J14",
+        "step": 42
+      }
+    ]
+  },
+  "terminal_reports": [
+    {
+      "step": 24,
+      "outcome": "OK: blocked",
+      "args": {
+        "acceptance_evidence": [],
+        "completed_acceptance": [],
+        "next_steps": "Continue from the confirmed native anchors: add `TuiReplayList` beside `TuiReplay`, add `TuiReplayListArgs` beside `TuiReplayArgs`, and add the exhaustive match arm calling the catalog handler. Then inspect and patch launcher routing and docs. Run `cargo fmt --manifest-path Cargo.toml`, followed separately by `python3 -S -m unittest -v scripts.catalog_visible` and `cargo test --locked --bin spiral-coder -q`.",
+        "remaining_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3",
+          "acceptance 4"
+        ],
+        "summary": "[BLOCKED] Implemented the focused catalog module and connected it as `src/tui_replay::catalog`; catalog selection filters ASCII case-insensitively by id/tag, preserves spec and tag order, truncates after filtering with zero treated as one, validates selected cases, and emits the requested JSON shape. Files changed: `src/tui_replay.rs`, `src/tui_replay/catalog.rs`. The native command registration/dispatch in `src/main.rs`, installed forwarding in `npm/spiral-coder/lib/launcher.cjs`, documentation in `docs/evaluation.md`, formatting, and required final checks remain undone. The visible check still fails because `tui-replay-list` is absent from native help. Before: FAILED. After: not verified. Next action: patch `src/main.rs` with the catalog enum/args/dispatch, then update launcher/docs, format, and run the two exact required commands separately."
+      }
+    },
+    {
+      "step": 43,
+      "outcome": "OK: done",
+      "args": {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v scripts.catalog_visible",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "criterion": "acceptance 2"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.catalog_visible",
+            "criterion": "acceptance 3"
+          },
+          {
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "criterion": "acceptance 4"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3",
+          "acceptance 4"
+        ],
+        "next_steps": "None; implementation and required verification are complete.",
+        "remaining_acceptance": [],
+        "summary": "Implemented the read-only replay catalog and exposed it through the native and installed CLIs. Changed files: `src/tui_replay/catalog.rs`, `src/tui_replay.rs`, `src/main.rs`, `npm/spiral-coder/lib/launcher.cjs`, and `docs/evaluation.md`. The catalog resolves specs relative to `--tool-root`/`-C`, filters ASCII case-insensitively by id or tag, preserves spec and tag order, applies `--max-cases` after filtering with zero treated as one, validates selected cases, rejects empty selections and invalid inputs, and emits only the requested JSON fields. It does not execute replay cases, call providers, require credentials, or create artifacts. Ordinary replay remains routed through its existing handler. Documentation includes an example, JSON output, filter/cap rules, and the distinction from running a replay.\n\nBefore: FAILED\nAfter: PASSED\n\nIndependent visible check: `python3 -S -m unittest -v scripts.catalog_visible` \u2014 1 test run, 0 failures, 0 errors.\nNative binary tests: `cargo test --locked --bin spiral-coder -q` \u2014 1032 tests registered; 1030 passed, 0 failed, 2 ignored.\n\nBoth required exact checks passed after formatting with `cargo fmt --manifest-path Cargo.toml`."
+      }
+    }
+  ],
+  "report_fields": {
+    "changed_paths_named": true,
+    "commands_named": true,
+    "before_failed": true,
+    "after_passed": true
+  },
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "50b6335bbace8b9cc19624a87da38cadd6b486658c47e28f65bfef197bc5cf86",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "f5113650d1bbeaecfe556f91ba82f9d71c486908097235ce87d0299009e671fa",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 10,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "b949f332c1358a6c2030a8d7749804c1bbe20938768be32795075ec1e74dc149",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "47451e4b6cdd7e9285a013fe4ede955fb442e6f2955151fba2c9c3046db7ae3a",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "1464263c37893b51197f3fb61b74d541db4d172b69d1e628678e9170c7254763",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "407735aad0e889c23d2ffa505a61a0492777fcb1ab0dca94ee9779c7d88348cc",
+      "candidate_binary_sha256": "d95d5b7e4c0199201aebf3cc3516fcb2e3c96b83df810633126d61c41b40b62b"
+    }
+  ]
+}

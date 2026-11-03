@@ -1,0 +1,259 @@
+{
+  "plan_sha256": "7020cbb30da2c9c3b0124c8576d2ff89571506614cb7add8eadc539d612e4b3c",
+  "receipt_sha256": "7800edf2b88dcc32bd2c7a45f4125e6d8dcb39700180df37a37b5adfd0b6deb7",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 90.514
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": true,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "scripts/run_coupled_pilot.py"
+          ],
+          "newly_reproduced_baselines": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1793731277680-20410-1",
+        "task_requests": 11,
+        "termination": "blocked",
+        "wire_requests": 12
+      },
+      {
+        "completed": true,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1793731277680-20410-1",
+        "progress": {
+          "changed_files": [
+            "docs/pilot.md"
+          ],
+          "newly_verified": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793731347779-20410-3",
+        "task_requests": 3,
+        "termination": "completed",
+        "wire_requests": 3
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 22,
+    "max_task_requests_per_iteration": 11,
+    "max_wire_requests": 24,
+    "stop_reason": "completed",
+    "task_requests": 14,
+    "version": 1,
+    "wire_requests": 15
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "scripts/run_coupled_pilot.py"
+        ],
+        "newly_reproduced_baselines": [
+          "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793731277680-20410-1",
+      "task_requests": 11,
+      "termination": "blocked",
+      "wire_requests": 12,
+      "roles": {
+        "coder": 8,
+        "observer": 4
+      },
+      "pending": [
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+      ],
+      "observer_handoff": {
+        "future_action": "Future continuation should first edit docs/pilot.md to document the repaired case-selection semantics, then run exactly `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. The edit receipt and resulting test receipt are still missing; any earlier reproduction or recovery checks may also remain required.",
+        "source_task_id": "task-1793731277680-20410-1",
+        "summary": "The code repair is recorded for scripts/run_coupled_pilot.py, but the episode is incomplete. The documentation artifact docs/pilot.md still lacks an edit receipt, and the required post-edit test has not been verified. The Coder is exhausted with no further request available, so continuation must be handed off.",
+        "version": 1
+      }
+    },
+    {
+      "completed": true,
+      "directory": "iteration-02",
+      "iteration": 2,
+      "parent_task_id": "task-1793731277680-20410-1",
+      "progress": {
+        "changed_files": [
+          "docs/pilot.md"
+        ],
+        "newly_verified": [
+          "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793731347779-20410-3",
+      "task_requests": 3,
+      "termination": "completed",
+      "wire_requests": 3,
+      "roles": {
+        "coder": 3,
+        "observer": 0
+      },
+      "pending": [],
+      "observer_handoff": {
+        "future_action": "Future continuation should first edit docs/pilot.md to document the repaired case-selection semantics, then run exactly `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`. The edit receipt and resulting test receipt are still missing; any earlier reproduction or recovery checks may also remain required.",
+        "source_task_id": "task-1793731277680-20410-1",
+        "summary": "The code repair is recorded for scripts/run_coupled_pilot.py, but the episode is incomplete. The documentation artifact docs/pilot.md still lacks an edit receipt, and the required post-edit test has not been verified. The Coder is exhausted with no further request available, so continuation must be handed off.",
+        "version": 1
+      }
+    }
+  ],
+  "changed_files": [
+    "docs/pilot.md",
+    "scripts/run_coupled_pilot.py"
+  ],
+  "edits": [
+    {
+      "step": 5,
+      "path": "scripts/run_coupled_pilot.py",
+      "call_id": "call_FI49DU5kqYrWTHYKhwCy3zwj"
+    },
+    {
+      "step": 9,
+      "path": "docs/pilot.md",
+      "call_id": "call_Z2FAaHsZHnkf8jyim4Mb5y3p"
+    }
+  ],
+  "checks": [
+    {
+      "step": 1,
+      "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+      "success": false,
+      "call_id": "call_BWfqXEp6tXSq9ccZCZwuFkWO",
+      "counts": {
+        "errors": 0,
+        "failure_events": 1,
+        "runner": "unittest",
+        "skipped": 0,
+        "tests_run": 7
+      }
+    },
+    {
+      "step": 10,
+      "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+      "success": true,
+      "call_id": "call_p6KwfcZJMsyklWTmvKKO4DhG",
+      "counts": {
+        "errors": 0,
+        "failure_events": 0,
+        "runner": "unittest",
+        "skipped": 0,
+        "tests_run": 7
+      }
+    }
+  ],
+  "reports": [
+    {
+      "step": 8,
+      "outcome": "OK: blocked",
+      "args": {
+        "acceptance_evidence": [
+          {
+            "command": "patch_file(path=scripts/run_coupled_pilot.py, replace=selected = cases if not requested else [case for case in cases if case[\"id\"] in requested] out.mkdir(parents=True), search=selected = cases out.mkdir(parents=True))",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "patch_file(path=scripts/run_coupled_pilot.py, replace=selected = cases if not requested else [case for case in cases if case[\"id\"] in requested] out.mkdir(parents=True), search=selected = cases out.mkdir(parents=True))",
+            "criterion": "acceptance 2"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2"
+        ],
+        "next_steps": "Edit docs/pilot.md using native file tools, then execute exactly: python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+        "remaining_acceptance": [
+          "acceptance 3",
+          "acceptance 4"
+        ],
+        "summary": "Implemented the case-selection repair in artifact path scripts/run_coupled_pilot.py: repeated --case values are deduplicated through set membership and emitted in original suite order, while an empty filter still selects all cases. The existing unknown-ID validation remains before output creation and the no-overwrite guard remains unchanged. Documentation artifact path docs/pilot.md was read but could not be updated before the tool budget ended. Before: FAILED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: NOT VERIFIED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nRemaining work: update docs/pilot.md with the --case alpha --case gamma example and explanations, then run the exact check command to record After: PASSED."
+      }
+    },
+    {
+      "step": 11,
+      "outcome": "OK: done",
+      "args": {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "criterion": "acceptance 2"
+          },
+          {
+            "command": "patch_file(path=docs/pilot.md, replace=Run the pilot using `scripts/run_coupled_pilot.py`. To select specific cases, repeat `--case`; for example: ```sh scripts/run_coupled_pilot.py --case alpha --case gamma\n```\n\nEach named case runs at most once, even if an ID is repeated. Selected cases run in their original suite order, not flag order. An unknown case ID is rejected before output is created or any case executes. Without `--case`, the pilot runs every case. Existing output is never overwritten., search=Run the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.)",
+            "criterion": "acceptance 3"
+          },
+          {
+            "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+            "criterion": "acceptance 4"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3",
+          "acceptance 4"
+        ],
+        "next_steps": "None; all requested artifacts and verification requirements are complete.",
+        "remaining_acceptance": [],
+        "summary": "Repaired case selection in artifact path `scripts/run_coupled_pilot.py`: repeated `--case` flags now select each named case once in original suite order, while no `--case` runs the full suite. Existing unknown-ID validation, no-overwrite protection, and independent oracles were preserved. Updated artifact path `docs/pilot.md` with the `--case alpha --case gamma` example and explanations of duplicate handling, original suite order, unknown IDs, and the no-filter default. No remaining work.\nBefore: FAILED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`"
+      }
+    }
+  ],
+  "reproduced_original_failure": true,
+  "fresh_post_edit_pass": true,
+  "authored_closeout": true,
+  "oracle": {
+    "passed": true,
+    "checks": {
+      "supplied_files_preserved": true,
+      "candidate_artifacts_present": true,
+      "independent_check_0": true,
+      "original_test_count": true,
+      "requested_documentation": true
+    },
+    "logs": [
+      {
+        "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+        "exit_code": 0,
+        "timed_out": false,
+        "sha256": "a77dcda5de96ae26a6d1b84eeea4d1861f97909afd6ea04ff18066b58c391d07"
+      }
+    ],
+    "documentation_proxy_revision": "selection-paraphrases-v4",
+    "source_matches_reference": false
+  },
+  "task_passed": true,
+  "second_iteration_passed": true
+}

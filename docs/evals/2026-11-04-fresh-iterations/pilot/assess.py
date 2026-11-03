@@ -39,7 +39,12 @@ def assess(plan_file, trial, expected_receipt, binary):
         assert item["parent_task_id"] == (rounds[-1]["task_id"] if rounds else None)
         assert len(work["requests"]) == item["wire_requests"] and item["task_requests"] <= plan["limits"]["requests"]
         assert sum(x["charge"] == "task" for x in work["requests"]) == item["task_requests"]
-        assert r["role_requests"] == dict(Counter(x["role"] for x in work["requests"]))
+        totals = Counter(x["role"] for x in work["requests"])
+        assert r["role_requests"] == {role: totals[role] for role in ("coder", "observer")}
+        assert work["root"] == (trial / "task.txt").read_text().strip() and work["tool_root"] == str(root)
+        assert work["request_limit"] == plan["limits"]["requests"]
+        assert work["policy"] == {"observer_reserved_requests": plan["limits"]["observer"],
+                                  "transport_repair_limit": plan["limits"]["transport"]}
         assert r["roles"]["coder"]["model"] == r["roles"]["observer"]["model"] == plan["model"]
         messages = read_json(folder / "session.json")["messages"]
         outputs = {x["tool_call_id"]: x for x in messages if x.get("role") == "tool" and x.get("tool_call_id")}
@@ -72,7 +77,8 @@ def assess(plan_file, trial, expected_receipt, binary):
     facts = bool(accepted and not accepted[-1]["args"].get("remaining_acceptance") and
                  all(s in summary for s in [*case["editable"], check, "Before: FAILED", "After: PASSED"]))
     process = seal["process"]
-    passed = bool(manifest["completed"] and process["exit_code"] == 0 and not process["timed_out"]
+    both_roles = all(any(r["roles"][role] > 0 for r in rounds) for role in ("coder", "observer"))
+    passed = bool(both_roles and manifest["completed"] and process["exit_code"] == 0 and not process["timed_out"]
                   and not process["output_limit"] and process["log_redactions"] == 0 and
                   set(changes) == set(case["editable"]) and red and green and facts and
                   not rounds[-1]["pending"] and oracle["passed"])

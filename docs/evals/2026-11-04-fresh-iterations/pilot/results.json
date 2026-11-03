@@ -118,7 +118,7 @@
         "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
         "exit_code": 1,
         "timed_out": false,
-        "sha256": "b5944174d5429384b39bf08986195553bec59e70af17a07c14ed32de741ec0f4"
+        "sha256": "11d0edda0ca70dfd4c5ad0b5a0fafd75bfc584daccc3614e045ce58973f2ae6a"
       }
     ],
     "documentation_proxy_revision": "selection-paraphrases-v4",
