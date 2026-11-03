@@ -21,3 +21,10 @@ second stream, Unicode and the controls for a stale or unrelated Observer result
 cargo test --locked --bin spiral-coder failed_exec_keeps_the_trailing_reason_in_native_action_evidence
 cargo test --locked --bin spiral-coder diagnostic_read_quotes_the_current_matching_failure_only
 ```
+
+A final workspace guard binds the Observer excerpt to the cwd recorded by
+the runtime on its second line. A different directory or a fake cwd in
+stderr omits the excerpt. Both C1 controls and the R15 handoff replay
+passed on this tip, along with the repository suite. The workspace guard
+was added after the R16 executor had been pinned.
+[Final controls and suite](tip-controls.json).
