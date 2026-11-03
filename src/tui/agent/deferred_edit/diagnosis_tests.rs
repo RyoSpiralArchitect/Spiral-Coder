@@ -194,3 +194,45 @@ fn only_a_new_matching_call_can_use_the_completed_diagnosis() {
         &edits
     ));
 }
+
+#[test]
+fn pruning_does_not_remove_a_newer_command_between_a_failure_and_a_proposal() {
+    let (root, mut m) = setup();
+    let proposal = m.split_off(3);
+    exchange(
+        &mut m,
+        "different-check",
+        "exec",
+        json!({"command":"pwd"}),
+        "OK (exit_code: 0)",
+    );
+    m.extend(proposal);
+    for i in 0..60 {
+        exchange(
+            &mut m,
+            &format!("later{i}"),
+            "list_dir",
+            json!({}),
+            "[list_dir: .]",
+        );
+    }
+    assert!(view(&m, root.path()).is_null());
+    agent::message_window::prune_message_window(&mut m);
+    assert!(view(&m, root.path()).is_null());
+}
+
+#[test]
+fn an_identical_premature_retry_keeps_the_original_proposal_until_a_new_read() {
+    let (root, mut m) = setup();
+    let hold = m[4]["content"].as_str().unwrap().to_owned();
+    exchange(&mut m, "premature", "patch_file", patch(), &hold);
+    assert_eq!(view(&m, root.path())["proposal_call_id"], "held");
+    assert_eq!(view(&m, root.path())["suggested_tool"], "read_file");
+    read(&mut m, root.path(), 2, 3);
+    assert_eq!(view(&m, root.path())["suggested_args"], patch());
+    let mut different = patch();
+    different["replace"] = json!("change of plan");
+    let block = hold.replace(&patch().to_string(), &different.to_string());
+    exchange(&mut m, "other", "patch_file", different, &block);
+    assert!(view(&m, root.path()).is_null());
+}

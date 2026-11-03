@@ -1,17 +1,17 @@
 //! Bounded view of the whole task for both diagnostic and general Observer turns.
 use serde_json::{json, Value};
 
-fn sample(list: &Value) -> Value {
+fn sample(list: &Value, earlier_omissions: u64) -> Value {
     let Some(entries) = list.as_array() else {
         return Value::Null;
     };
-    let values: Vec<String> = entries
+    let values: Vec<_> = entries
         .iter()
-        .take(4)
         .filter_map(Value::as_str)
-        .map(|s| s.chars().take(240).collect())
+        .filter(|s| s.chars().take(241).count() <= 240)
+        .take(4)
         .collect();
-    json!({"items":values,"total":entries.len()})
+    json!({"items":values,"total":(entries.len() as u64).saturating_add(earlier_omissions)})
 }
 
 pub(crate) fn horizon(packet: &Value) -> Value {
@@ -26,13 +26,13 @@ pub(crate) fn horizon(packet: &Value) -> Value {
     json!({
         "human_objective_excerpt":objective,
         "strategy_memory": provenance,
-        "paths_with_recorded_edits":sample(&work["native_file_edits"]["successful_paths"]),
-        "declared_paths_without_edit_receipts":sample(&obligations["task_requirements"]["pending_artifact_paths"]),
-        "checks_still_due":sample(&obligations["pending_exact_checks"]),
+        "paths_with_recorded_edits":sample(&work["native_file_edits"]["successful_paths"],work["native_file_edits"]["omitted_successful_paths"].as_u64().unwrap_or(0)),
+        "declared_paths_without_edit_receipts":sample(&obligations["task_requirements"]["pending_artifact_paths"],0),
+        "checks_still_due":sample(&obligations["pending_exact_checks"],0),
         "held_proposal":patch.as_object().map(|_| json!({"id":patch["proposal_call_id"],
             "next_tool":patch["suggested_tool"],"path":patch["suggested_args"]["path"]})),
-        "shared_task_requests_left":packet["work_budget"]["remaining"],
-        "coder_task_requests_left":packet["work_budget"]["coder_remaining"]
+        "shared_task_requests_left":packet["work_budget"]["remaining"].as_u64(),
+        "coder_task_requests_left":packet["work_budget"]["coder_remaining"].as_u64()
     })
 }
 

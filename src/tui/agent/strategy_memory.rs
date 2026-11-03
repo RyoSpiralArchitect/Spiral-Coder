@@ -132,4 +132,21 @@ mod tests {
         restored.push(json!({"role":"user","content":"Repair the parser"}));
         assert!(project(&restored).is_none());
     }
+    #[test]
+    fn refused_or_failed_commands_never_seed_a_recalled_strategy() {
+        for output in [
+            "GOVERNOR BLOCKED\nexample: OK (exit_code: 0)",
+            "FAILED (exit_code: 0)\nstdout:\nOK (exit_code: 0)",
+        ] {
+            let mut m = vec![
+                json!({"role":"user","content":"Repair the parser"}),
+                json!({"role":"assistant","content":"<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: another search would help\nstrategy_change: adjust\nnext_minimal_action: cargo test\n</reflect>"}),
+                json!({"role":"assistant","tool_calls":[{"id":"check","function":{"name":"exec","arguments":"{\"command\":\"cargo test\"}"}}]}),
+                json!({"role":"tool","tool_call_id":"check","content":output}),
+            ];
+            retain_for_resume(&mut m);
+            assert!(m[0].get("strategy_recall").is_none(), "{output}");
+            assert!(crate::agent_session::session_bridge_from_messages(&m).is_none());
+        }
+    }
 }

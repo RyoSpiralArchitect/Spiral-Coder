@@ -294,18 +294,6 @@ fn tool_call_signature(name: &str, arguments: &str) -> String {
     }
 }
 
-fn parse_exec_exit_code(content: &str) -> Option<i32> {
-    let marker = "exit_code:";
-    let start = content.find(marker)?;
-    let tail = &content[start + marker.len()..];
-    let digits: String = tail
-        .trim_start()
-        .chars()
-        .take_while(|ch| ch.is_ascii_digit() || *ch == '-')
-        .collect();
-    digits.parse::<i32>().ok()
-}
-
 fn looks_verification_command(command: &str) -> bool {
     let low = command.to_ascii_lowercase();
     [
@@ -346,7 +334,7 @@ fn successful_session_tool_event(
         "apply_diff" if trimmed.starts_with("OK: applied ") => SessionToolKind::Mutation,
         "exec" => {
             let command = pending.command.as_deref()?;
-            if parse_exec_exit_code(content) != Some(0) {
+            if !crate::execution_evidence::exec_succeeded(content) {
                 return None;
             }
             if looks_verification_command(command) {

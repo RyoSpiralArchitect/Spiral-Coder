@@ -10,7 +10,7 @@ use std::path::Path;
 
 const FILE_LIMIT: u64 = 512 * 1024;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 struct Patch {
     path: String,
@@ -48,10 +48,22 @@ fn held(output: &str) -> bool {
             .is_some_and(|(_, s)| s.starts_with("[Recovery Gate] stage=diagnose\n"))
 }
 
+fn held_patch(event: &Exchange<'_>) -> Option<Patch> {
+    (event.name == "patch_file"
+        && held(event.output)
+        && event.args.len() <= 4608
+        && event.output.ends_with(&format!(
+            "\n\ntool:\npatch_file\narguments:\n{}",
+            event.args
+        )))
+    .then(|| serde_json::from_str(event.args).ok())
+    .flatten()
+}
+
 fn history(messages: &[Value]) -> Option<History<'_>> {
     let mut remaining = crate::task_origin::current_task_messages(messages);
     let suffix = remaining;
-    let proposal = loop {
+    let mut proposal = loop {
         let event = take_exchange(&mut remaining)?;
         if !observation(event.name) {
             break event;
@@ -60,17 +72,8 @@ fn history(messages: &[Value]) -> Option<History<'_>> {
             return None;
         }
     };
-    if proposal.name != "patch_file"
-        || !held(proposal.output)
-        || proposal.args.len() > 4608
-        || !proposal.output.ends_with(&format!(
-            "\n\ntool:\npatch_file\narguments:\n{}",
-            proposal.args
-        ))
-    {
-        return None;
-    }
-    let patch: Patch = serde_json::from_str(proposal.args).ok()?;
+    let patch = held_patch(&proposal)?;
+    let latest_hold = proposal.id;
     if patch.search.trim().is_empty()
         || patch.search == patch.replace
         || patch.search.len() + patch.replace.len() > 4096
@@ -80,6 +83,16 @@ fn history(messages: &[Value]) -> Option<History<'_>> {
     }
     let failure = loop {
         let event = take_exchange(&mut remaining)?;
+        // Retain the original idea if the Coder resubmits it before reading.
+        // A different refusal or a different cwd interrupts this chain.
+        if event.id != proposal.id
+            && held_patch(&event).as_ref() == Some(&patch)
+            && crate::execution_evidence::exec_cwd(event.output)
+                == crate::execution_evidence::exec_cwd(proposal.output)
+        {
+            proposal = event;
+            continue;
+        }
         if !observation(event.name) {
             break event;
         }
@@ -108,7 +121,7 @@ fn history(messages: &[Value]) -> Option<History<'_>> {
     let mut after = suffix;
     let read = loop {
         let event = take_exchange(&mut after)?;
-        if event.id == proposal.id {
+        if event.id == latest_hold {
             break None;
         }
         if event.name == "read_file"
@@ -126,29 +139,39 @@ fn history(messages: &[Value]) -> Option<History<'_>> {
     })
 }
 
-// Protect the last state-changing exchange even if the proposal has expired.
-// Dropping that boundary could otherwise reveal an older blocked patch again.
+// Protect the latest barrier and its predecessor. Dropping an intervening
+// command before a held proposal could falsely reconnect it to an old failure.
 pub(in crate::tui::agent) fn protected_ids(messages: &[Value]) -> Vec<String> {
     let task = crate::task_origin::current_task_messages(messages);
-    if !task
+    let Some(index) = task
         .iter()
-        .any(|m| m["role"] == "tool" && m["content"].as_str().is_some_and(held))
-    {
+        .rposition(|m| m["role"] == "tool" && m["content"].as_str().is_some_and(held))
+    else {
         return Vec::new();
-    }
+    };
     let mut ids: Vec<_> = task
         .iter()
         .rev()
+        .filter(|m| m["role"] == "assistant")
         .filter_map(|m| m["tool_calls"].as_array())
-        .find(|calls| {
+        .filter(|calls| {
             calls
                 .iter()
                 .any(|c| !c["function"]["name"].as_str().is_some_and(observation))
         })
-        .into_iter()
+        .take(2)
         .flatten()
         .filter_map(|c| c["id"].as_str().map(str::to_owned))
         .collect();
+    // Blocked results stay in the window. Keep the preceding actual barrier
+    // even if several identical refusals sit between it and the latest hold.
+    let mut prior = &task[..index.saturating_sub(1)];
+    while let Some(e) = take_exchange(&mut prior) {
+        if !observation(e.name) && !held(e.output) {
+            ids.push(e.id.to_owned());
+            break;
+        }
+    }
     if let Some(h) = history(task) {
         ids.push(h.failure.id.to_owned());
         ids.extend(h.read.map(|r| r.id.to_owned()));
@@ -283,13 +306,20 @@ pub(in crate::tui::agent) fn matches_retry(
     let Some([current]) = assistant["tool_calls"].as_array().map(Vec::as_slice) else {
         return false;
     };
-    if assistant["role"] != "assistant" || current["id"] != call.id {
+    if assistant["role"] != "assistant"
+        || current["id"] != call.id
+        || current["function"]["name"] != call.name
+    {
         return false;
     }
     let Some(offer) = root.and_then(|root| project(before, root)) else {
         return false;
     };
-    offer.confirming_read_call_id.is_some()
+    offer
+        .confirming_read_call_id
+        .as_deref()
+        .is_some_and(|id| id != call.id)
+        && offer.proposal_call_id != call.id
         && focus.check_matches(&offer.failed_check)
         && serde_json::from_str::<Value>(&call.arguments).ok().as_ref()
             == Some(&offer.suggested_args)

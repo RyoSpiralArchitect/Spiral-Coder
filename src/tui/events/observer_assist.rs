@@ -109,6 +109,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     });
     let native_actions = execution.as_ref().map(|e| &e.actions);
 
+    let allocation = app.work_budget.snapshot();
     Ok(json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
         "target_message_id": format!("coder-{}", target_idx),
@@ -138,7 +139,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "task_obligations": obligations,
         "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
         "previous_assist_outcome": app.last_observer_contract_outcome,
-        "work_budget": {"limit":app.work_budget.snapshot().request_limit,"used":app.work_budget.snapshot().requests.len(),"remaining":app.work_budget.remaining(),"coder_remaining":app.work_budget.remaining_for("coder")},
+        "work_budget": {"limit":allocation.request_limit,"used":allocation.requests.len(),"remaining":allocation.request_limit.saturating_sub(allocation.task_requests()),"coder_remaining":allocation.coder_remaining()},
         "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
         "last_error_digest": meta_first_line(&target_msg.content, 240),

@@ -1465,3 +1465,9 @@ An outstanding literal patch remains in its original correlated tool exchange.
 The newest barrier and a bounded confirming read are protected during
 compaction. The native runtime derives the current advice from that history
 and the actual workspace each time it is needed.
+
+The nearest state-changing exchanges also delimit a saved proposal after
+compaction. Consecutive diagnosis refusals of the same literal patch in the
+same workspace keep the original proposal ID. The confirming read must
+follow the most recent refusal. An earlier failed or refused command cannot
+supply an accepted strategy through exit text printed in its output.
