@@ -1,0 +1,27 @@
+{
+  "runtime_commit": "58f0db06a1bd13e369d53d7f3080ef9d8b0ce216",
+  "model": "gpt-5.6-luna",
+  "max_wire_requests": 1,
+  "timeout_seconds": 90,
+  "max_completion_tokens": 1200,
+  "provider_calls_at_pin": 0,
+  "source_run_receipt_sha256": "b2e4eea0196dea02af85315f5717fb4979dbc883deb666a1a680710b90562629",
+  "request_sha256": "d61a073f0ffded76f49e8811da4e39847e58ee62b1212bce7108bb5ad35803e4",
+  "probe_sha256": "80d13299b4331429db65d4d663e55a6984bfba19a2dbd240c9600e110d26bef7",
+  "protocol_sha256": "f61d52fd357929a9c90aaf64f3cf04fd750833424816433788e02d472308a09f",
+  "old_native_user_prompt_sha256": "11762601c7bfa9b74c7a6bc28d15b8542cfc52123dee9dda032d63999c82d4cd",
+  "old_original_rejection": "suggested_args for patch_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields",
+  "old_executor_sha256": "1ee38097566002cd501f209ab787058c7405ffe2f6b55cebeb2489741ea02816",
+  "native_user_prompt_sha256": "cd06287e12ed7f85780de30b5991c3f68018b1e94f90991ad4b1445b2380fee2",
+  "original_reply_sha256": "f2a358ca143252266c9e8678a3df441788cef6c1a040269870c3ca63971867a7",
+  "original_rejection": "No Coder request remains. Give a no-tool clarification for a future continuation, with response_contract.required=false. Schema feedback: suggested_args for patch_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields",
+  "executor_sha256": "9467056a41cda7a8735ab1d8e53252843cf06e3cb5e42da79dbe6be012b38d33",
+  "native_view": {
+    "coder_remaining": 0,
+    "limit": 32,
+    "next_coder_requests": 0,
+    "next_coder_turn": "exhausted",
+    "remaining": 1,
+    "used": 32
+  }
+}
