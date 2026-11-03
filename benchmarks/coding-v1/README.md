@@ -209,3 +209,5 @@ The [small-model repair follow-up](../../docs/evals/2026-10-24-small-model-repai
 retains two more rounds / 132 requests with unchanged tasks and assessors.
 Flash-Lite and mini reach qualified completion in the second round; Mistral
 Small's default-selection regression and first-round timeout remain recorded.
+
+The [two-iteration pilot](../../docs/evals/2026-11-03-coupled-iterations/automatic-pilot/README.md) retains the live failure, its exact workspace and the one additional Luna report after matched replay.

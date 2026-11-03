@@ -37,6 +37,7 @@ The three separately declared conditions after R18 used 38 task requests
 and 39 wire attempts in total. The original single-episode qualification
 stays failed. Each post-R18 chain reached its terminal condition in its first
 allocated round. The paid #49 evidence is therefore about saved-session
-continuation and new human follow-ups.
+continuation and new human follow-ups. The [separate stock pilot](automatic-pilot/README.md)
+exercises one invocation across two real model iterations.
 [Model-free runtime checks](runtime-controls.json) exercise the automatic
 second iteration, the last Coder report, and proof separation on a follow-up.
