@@ -1,0 +1,66 @@
+{
+  "declaration_sha256": "87c1c1ed6d5fe785404fb9ddece22768e5c2bd758fae31cf743193334ce31924",
+  "run_receipt_sha256": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "wire_starts": 32,
+  "response_formats": {
+    "json_schema": 2,
+    "json_object": 6
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "93bb72938b00ef6ebf98491977ce6fe20a42ddf161e365405694bbe715edbc5d",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_delivery_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_iKd0hPg3HRnH8t2QmmzG8mID",
+          "step": 2,
+          "header": "[scripts/catalog_delivery_visible.py] (21 lines, 791 bytes) [pruned 22L]"
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "d5936da3bff558f70cae909368541607253e75bc04e8e8eb708b02da508e2be4",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_delivery_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_LxQixp8B7XUx20jsIYrWxcOF",
+          "step": 11,
+          "header": "[scripts/catalog_delivery_visible.py] (21 lines, 791 bytes) [pruned 22L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "catalog"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'catalog' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    }
+  ]
+}

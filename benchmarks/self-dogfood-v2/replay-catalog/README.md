@@ -28,3 +28,5 @@ record three authored Observer responses, two exact native reads, and distinguis
 working catalog command from the unqualified full candidate.
 
 [R12](../../../docs/evals/2026-11-03-diagnostic-read/r12/README.md) ran the original failed command after two edits and retained its final compile failure.
+
+The [route and handoff experiments](../../../docs/evals/2026-11-03-catalog-route/README.md) retain the original-tree run and the interrupted attempt. The [checkpoint repair](../../../docs/evals/2026-11-03-catalog-route/checkpoint/README.md) composes actual model patches over the original source and runs its original six external checks. The published examples have a separate [executable guide audit](../../../docs/evals/2026-11-03-catalog-route/guide/protocol.md).

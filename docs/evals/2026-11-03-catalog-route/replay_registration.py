@@ -16,6 +16,8 @@ from self_dogfood.runner import cache_lock
 
 
 def replay(target):
+    if target.is_relative_to(REPO):
+        raise ValueError("Choose a disposable Cargo cache outside the checkout")
     record = HERE.parent / "2026-11-03-diagnostic-read/r12"
     patch = record / "candidate.patch"
     manifest = read_json(record / "plain-replay.json")

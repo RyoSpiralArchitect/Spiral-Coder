@@ -21,7 +21,9 @@ R11_PATCH_SHA = "7ed74db18a0b5be96fdfb84c21348b22cef08b90dce51cc51d0708e7c5db5c1
 ORIGINAL_RUST_TESTS = "03ee93445176ec84dfd9e87e64461b9151ccdf14f27e3934c488a48780240dc6"
 
 
-def checkpoint_commit(patch):
+def checkpoint_commit(
+    patch, parent=BASE, title="Exact unqualified R11 catalog checkpoint"
+):
     with tempfile.TemporaryDirectory() as temp:
         env = dict(os.environ, GIT_INDEX_FILE=str(Path(temp) / "index"))
         for role in ("AUTHOR", "COMMITTER"):
@@ -41,15 +43,15 @@ def checkpoint_commit(patch):
                 text=True,
             ).strip()
 
-        git("read-tree", BASE)
+        git("read-tree", parent)
         git("apply", "--cached", "--binary", "--whitespace=nowarn", str(patch))
         return git(
             "commit-tree",
             git("write-tree"),
             "-p",
-            BASE,
+            parent,
             "-m",
-            "Exact unqualified R11 catalog checkpoint",
+            title,
         )
 
 

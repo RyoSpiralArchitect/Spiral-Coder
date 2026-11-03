@@ -1,4 +1,4 @@
-"""Replay two signed model patches on the untouched catalog baseline and run its original probes."""
+"""Replay the sealed catalog patches on the original tree; optionally audit the final guide."""
 
 import argparse
 import hashlib
@@ -24,12 +24,26 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(origin, final, out, target):
+def verify(origin, final, out, target, guide=None):
+    stages = [(origin, ORIGIN), (final, RECORD / "checkpoint")]
+    if guide is not None:
+        stages.append((guide, RECORD / "guide"))
+    stage_roots = [raw for raw, _ in stages]
+
+    if any(
+        path.is_relative_to(protected)
+        for path in (out, target)
+        for protected in [REPO, *stage_roots]
+    ):
+        raise ValueError(
+            "Use output and Cargo cache directories outside the checkout and sealed episodes"
+        )
     # Verify frozen code before importing it. The candidate never supplies the evaluator.
     original_plan, finish_plan = (
         read(folder / "plan.json") for folder in (ORIGIN, RECORD / "checkpoint")
     )
-    for raw, plan in ((origin, original_plan), (final, finish_plan)):
+    for raw, record in stages:
+        plan = read(record / "plan.json")
         assert digest(raw / "predeclared.json") == plan["declaration_sha256"]
         declaration = read(raw / "predeclared.json")
         assert all(
@@ -47,10 +61,8 @@ def verify(origin, final, out, target):
     from self_dogfood.evidence import bound_run
     from self_dogfood.runner import cache_lock
 
-    for raw, plan, record in (
-        (origin, original_plan, ORIGIN),
-        (final, finish_plan, RECORD / "checkpoint"),
-    ):
+    for raw, record in stages:
+        plan = read(record / "plan.json")
         receipt = read(record / "results.json")["run_receipt_sha256"]
         assert bound_run(raw, plan["declaration_sha256"], receipt)
     assert finish_plan["precursor_patch_sha256"] == digest(
@@ -62,14 +74,11 @@ def verify(origin, final, out, target):
         raise ValueError("choose a fresh output directory")
     out.mkdir(parents=True)
     spec = read(origin / "inputs/spec.json")
-    expected = read(final / "episode/candidate-inventory.json")
+    guide_audit = None
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp) / "source"
         git_snapshot(REPO, original_plan["baseline_commit"], root)
         before = inventory(root)
-        for overlay in read(final / "predeclared.json")["visible_fixture_paths"]:
-            assert overlay not in before and overlay in expected
-            expected.pop(overlay)
 
         def git(*args):
             return subprocess.check_output(["git", *args], cwd=root)
@@ -87,13 +96,20 @@ def verify(origin, final, out, target):
             "-qm",
             "Source",
         )
-        for episode in (origin, final):
+        original_guide = (root / "docs/evaluation.md").read_text()
+        for episode, _ in stages:
             patch = episode / "episode/candidate.patch"
             if patch.stat().st_size:
                 git("apply", "--binary", "--whitespace=nowarn", str(patch))
-        actual = inventory(root)
-        if actual != expected:
-            raise ValueError("composed patch differs from sealed candidate")
+            expected = read(episode / "episode/candidate-inventory.json")
+            for overlay in read(episode / "predeclared.json")["visible_fixture_paths"]:
+                assert overlay not in before and overlay in expected
+                expected.pop(overlay)
+            actual = inventory(root)
+            if actual != expected:
+                raise ValueError(
+                    f"composed patch differs from sealed candidate {episode.name}"
+                )
         touched = sorted(
             p for p in before.keys() | actual.keys() if before.get(p) != actual.get(p)
         )
@@ -131,6 +147,34 @@ def verify(origin, final, out, target):
         write_json(out / "layout.json", {"target_dir": str(target)})
         with cache_lock(target):
             results = checks(out, spec, "combined", candidate=clean)
+            if guide is not None and all(r["passed"] for r in results):
+                sys.path.insert(0, str(guide / "inputs"))
+                from guide_visible import measured, discrepancies
+
+                candidate_binary = target / "debug/spiral-coder"
+                assert digest(candidate_binary) == results[0]["candidate_binary_sha256"]
+                observed = measured(candidate_binary, clean)
+                document = (clean / "docs/evaluation.md").read_text()
+                import re
+
+                preserved = re.sub(
+                    r"(?ms)^## Read-only replay catalog[ \t]*\n.*?(?=^## |\Z)",
+                    "",
+                    document,
+                    count=1,
+                )
+                original_lines = [
+                    line for line in original_guide.splitlines() if line.strip()
+                ]
+                remaining_lines = [
+                    line for line in preserved.splitlines() if line.strip()
+                ]
+                guide_audit = {
+                    "packaged_examples": observed,
+                    "discrepancies": discrepancies(document, observed),
+                    "original_nonblank_lines_preserved": original_lines
+                    == remaining_lines,
+                }
     summary = {
         "original_baseline_commit": original_plan["baseline_commit"],
         "precursor_receipt": read(ORIGIN / "results.json")["run_receipt_sha256"],
@@ -153,6 +197,13 @@ def verify(origin, final, out, target):
         ],
         "external_provider_requests": 0,
     }
+    if guide is not None:
+        latest = read(RECORD / "guide/results.json")
+        summary.update(
+            guide_receipt=latest["run_receipt_sha256"],
+            guide_qualified=latest["qualified_candidate"],
+            guide_audit=guide_audit,
+        )
     write_json(out / "verification.json", summary)
     return summary
 
@@ -161,6 +212,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for arg in ("origin", "final", "out", "target"):
         parser.add_argument(arg, type=Path)
+    parser.add_argument("--guide-episode", type=Path)
     args = parser.parse_args()
     print(
         json.dumps(
@@ -168,7 +220,8 @@ if __name__ == "__main__":
                 *(
                     getattr(args, k).resolve()
                     for k in ("origin", "final", "out", "target")
-                )
+                ),
+                guide=args.guide_episode.resolve() if args.guide_episode else None,
             ),
             indent=2,
         )

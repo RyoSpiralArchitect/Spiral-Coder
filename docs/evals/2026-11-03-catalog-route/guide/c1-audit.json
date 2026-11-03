@@ -1,0 +1,21 @@
+{
+  "binary_sha256": "ae01277bd86ea1de5a4858da3cce758d4e682bf5cb61665825549505e048f710",
+  "cases": {
+    "listed": {
+      "exit": 0,
+      "stdout": "{\"version\":1,\"total\":2,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]},{\"id\":\"pane-prefs-observer-contract\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"contract\",\"prefs\"]}]}\n",
+      "stderr": ""
+    },
+    "empty": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"__spiral_no_match__\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n"
+    }
+  },
+  "issues": [
+    "the catalog heading includes an unrelated original completion paragraph",
+    "printed JSON must equal {\"version\":1,\"total\":2,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]},{\"id\":\"pane-prefs-observer-contract\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"contract\",\"prefs\"]}]}",
+    "empty selection: print '$ echo $?' and its observed exit 1",
+    "describe the empty stdout and diagnostic on stderr"
+  ]
+}

@@ -1,0 +1,215 @@
+diff --git a/docs/evaluation.md b/docs/evaluation.md
+index e2a7898..e036564 100644
+--- a/docs/evaluation.md
++++ b/docs/evaluation.md
+@@ -76,6 +76,23 @@ The existing independent final-answer checks remain authoritative. Prompts witho
+ this explicit instruction retain automatic action closeout. This boundary does
+ not claim coverage of unrelated read-only finalizers.
+ 
++## Read-only replay catalog
++
++Use `spiral tui-replay-list` to inspect replay cases without executing them. For
++example:
++
++```console
++$ spiral tui-replay-list --filter prefs --max-cases 2
++{"cases":[{"id":"tui-prefs","tags":["prefs","tui"]},{"id":"prefs-empty","tags":["prefs"]}]}
++```
++
++The JSON output preserves catalog order, IDs, and tags; when no cases match, the
++`cases` array is empty. Filtering by case ID or tag is ASCII case-insensitive.
++Filtering happens before `--max-cases`, and a zero cap selects one case. Listing
++only selects and prints metadata: it does not execute replay steps, run checks,
++or mutate the workspace. Use `spiral tui-replay` when you want to execute a
++replay and receive its execution output.
++
+ `done.acceptance_evidence` has two accepted row representations. The canonical
+ contract is an array of objects, `{"criterion": ..., "command": ...}`, and is
+ what the advertised tool schema declares for most providers. For the Gemini
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index a0038b5..cb34b47 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..d2cb300 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -92,6 +92,9 @@ enum Command {
+     /// Replay a deterministic TUI stuck-case and inspect Observer suggestion plumbing
+     TuiReplay(TuiReplayArgs),
+ 
++    /// List deterministic TUI replay cases without executing them
++    TuiReplayList(TuiReplayListArgs),
++
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
+@@ -348,6 +351,25 @@ struct TuiReplayArgs {
+     max_cases: Option<usize>,
+ }
+ 
++#[derive(Args, Debug, Clone)]
++struct TuiReplayListArgs {
++    /// Directory containing the replay spec (defaults to current directory)
++    #[arg(long, short = 'C', alias = "root")]
++    tool_root: Option<String>,
++
++    /// TUI replay spec JSON file
++    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
++    spec: PathBuf,
++
++    /// Only list cases whose id or tags contain this substring
++    #[arg(long)]
++    filter: Option<String>,
++
++    /// Cap the number of selected cases; zero selects one
++    #[arg(long)]
++    max_cases: Option<usize>,
++}
++
+ #[derive(Args, Debug, Clone)]
+ struct InventoryArgs {
+     /// Directory to inspect (defaults to current directory)
+@@ -616,6 +638,7 @@ async fn main() -> Result<()> {
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
++        Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+         Some(Command::PromoteHarness(args)) => run_promote_harness(args).await,
+         Some(Command::Review(args)) => run_review(args, cli.common).await,
+diff --git a/src/tui_replay.rs b/src/tui_replay.rs
+index 4d27247..e3309f9 100644
+--- a/src/tui_replay.rs
++++ b/src/tui_replay.rs
+@@ -8,8 +8,35 @@ use crate::modes::Mode;
+ use crate::tui::app::{App, Message, Role};
+ use crate::tui::{events, intent};
+ 
++pub(crate) mod catalog;
+ pub(crate) mod diagnostics;
+ 
++pub(crate) fn select_cases(
++    spec: &TuiReplaySpec,
++    filter: Option<&str>,
++    max_cases: Option<usize>,
++) -> Vec<TuiReplayCase> {
++    let filter_lc = filter.map(str::to_ascii_lowercase);
++    let mut selected: Vec<TuiReplayCase> = spec
++        .cases
++        .iter()
++        .filter(|case| {
++            filter_lc.as_deref().is_none_or(|needle| {
++                case.id.to_ascii_lowercase().contains(needle)
++                    || case
++                        .tags
++                        .iter()
++                        .any(|tag| tag.to_ascii_lowercase().contains(needle))
++            })
++        })
++        .cloned()
++        .collect();
++    if let Some(limit) = max_cases.map(|n| n.max(1)) {
++        selected.truncate(limit);
++    }
++    selected
++}
++
+ fn default_spec_version() -> u32 {
+     1
+ }
+@@ -167,26 +194,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
+     std::fs::create_dir_all(&out_dir)
+         .with_context(|| format!("failed to create tui replay out dir: {}", out_dir.display()))?;
+ 
+-    let filter_lc = args.filter.as_ref().map(|s| s.to_ascii_lowercase());
+-    let mut selected: Vec<TuiReplayCase> = spec
+-        .cases
+-        .iter()
+-        .filter(|case| {
+-            if let Some(filter) = filter_lc.as_deref() {
+-                case.id.to_ascii_lowercase().contains(filter)
+-                    || case
+-                        .tags
+-                        .iter()
+-                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
+-            } else {
+-                true
+-            }
+-        })
+-        .cloned()
+-        .collect();
+-    if let Some(limit) = args.max_cases.map(|n| n.max(1)) {
+-        selected.truncate(limit);
+-    }
++    let selected = select_cases(&spec, args.filter.as_deref(), args.max_cases);
+     if selected.is_empty() {
+         return Err(diagnostics::empty_selection(
+             &spec_path,
+diff --git a/src/tui_replay/catalog.rs b/src/tui_replay/catalog.rs
+new file mode 100644
+index 0000000..a22718b
+--- /dev/null
++++ b/src/tui_replay/catalog.rs
+@@ -0,0 +1,52 @@
++use anyhow::{Context, Result};
++use serde::Serialize;
++use std::path::PathBuf;
++
++use super::{load_spec, resolve_path, select_cases};
++
++#[derive(Debug, Serialize)]
++struct CatalogOutput {
++    version: u32,
++    total: usize,
++    cases: Vec<CatalogCase>,
++}
++
++#[derive(Debug, Serialize)]
++struct CatalogCase {
++    id: String,
++    tags: Vec<String>,
++}
++
++pub(crate) fn run(args: crate::TuiReplayListArgs) -> Result<()> {
++    let cwd = std::env::current_dir().context("failed to get current directory")?;
++    let base_root = args
++        .tool_root
++        .clone()
++        .or_else(|| cwd.to_str().map(str::to_owned))
++        .unwrap_or_else(|| ".".to_owned());
++    let base_root_path = PathBuf::from(base_root);
++    let spec_path = resolve_path(&base_root_path, args.spec);
++    let spec = load_spec(&spec_path)?;
++    let selected = select_cases(&spec, args.filter.as_deref(), args.max_cases);
++    if selected.is_empty() {
++        return Err(super::diagnostics::empty_selection(
++            &spec_path,
++            &base_root_path,
++            args.filter.as_deref(),
++            &spec.cases,
++        ));
++    }
++    let output = CatalogOutput {
++        version: 1,
++        total: selected.len(),
++        cases: selected
++            .into_iter()
++            .map(|case| CatalogCase {
++                id: case.id,
++                tags: case.tags,
++            })
++            .collect(),
++    };
++    println!("{}", serde_json::to_string(&output)?);
++    Ok(())
++}

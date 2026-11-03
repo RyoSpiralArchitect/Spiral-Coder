@@ -31,3 +31,5 @@ layout after all declared evidence is ready. Changing that one space to a
 newline passes. Neither replay changed the source or called an external model.
 [Old executor](report-before.json) · [New executor](report-after.json) ·
 [Loopback replay](replay_report.py). The earlier H3 result remains sealed.
+
+[The C1 checkpoint](checkpoint/README.md) connected the installed CLI and restored a shared selector. The actual commands also exposed an incorrect guide example.
