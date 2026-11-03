@@ -43,3 +43,7 @@ native read reproduced this. The repaired runtime separates the source
 bytes from the checked appendix, still rejects a stale source or unexpected
 suffix, and passed the same suite with 1,091 Rust unit tests.
 [Review reproduction and final controls](review-controls.json).
+
+[R18 repeated #49 from the original repository](r18/README.md) with the
+reviewed runtime. The last Observer gave a budget-aware handoff. The pair
+exhausted the shared allowance before the guide, final checks and Coder report.

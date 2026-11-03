@@ -39,3 +39,7 @@ control that builds each intermediate state and exercises the candidate CLI.
 The [R16 continuation and fresh R17](../../../docs/evals/2026-11-03-strategy-memory/README.md)
 compare returning to a held proposal after restart with building from the
 original tree. The final Observer handoff has its own one-request record.
+
+[R18 on the original source](../../../docs/evals/2026-11-03-strategy-memory/r18/README.md)
+tracks all ten Observer decisions against the remaining Coder turns and
+preserves the unresolved native dispatch and absent final report.
