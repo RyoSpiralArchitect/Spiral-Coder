@@ -65,7 +65,7 @@ pub(crate) struct View {
 
 impl View {
     pub(super) fn standalone_prompt(&self) -> Option<String> {
-        self.history.has_history().then(|| format!(
+        self.history.matched_historical_action.is_some().then(|| format!(
             "[Task strategy recall]\nUse these earlier choices as context when selecting your next action. Check them against current evidence.\n{}",
             serde_json::to_string(self).expect("strategy recall serializes")
         ))
