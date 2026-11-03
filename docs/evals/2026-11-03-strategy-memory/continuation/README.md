@@ -18,8 +18,8 @@ Reapplying the incremental patch to the sealed R16 tree reproduced the
 final inventory. It changed only `src/main.rs`. Its bytes match the previous
 operator control that relocated the alias and placed the pair's dispatch
 line. S1 reached that source with two actual model-authored edits. The
-independent build, visible listing and ordinary replay passed, including
-nine of eleven held-out cases within the hidden suite. Empty-selection
-wording, the guide, npm forwarding and formatting remained unfinished.
+independent build, visible listing, ordinary replay and stock suite passed.
+Nine of eleven hidden cases passed. Empty-selection wording, the guide and
+npm forwarding remained unfinished.
 [Byte comparison](compare-to-r16-control.json) ·
 [Incremental model patch](incremental.patch) · [Frozen seeded protocol](protocol.md).
