@@ -11,8 +11,9 @@ matched their sealed source inventories. It then applied this separately
 identified document placement change. The reviewed patch reapplied from
 the original Git tree, passed all six original external checks, matched the
 two packaged CLI examples and preserved the original paragraphs. The
-published proposal also has separate permanent regressions for the guide
-examples and npm argument forwarding.
+[draft adoption PR #60](https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/60) also has separate permanent regressions for the guide
+examples and npm argument forwarding. Its final tip passed the local suite and
+the actual packaged commands. [Adoption-tip receipt](adoption-tip.json).
 
 [Reviewed patch on the original tree](combined.patch) ·
 [Maintainer placement change alone](review-layout.patch) ·

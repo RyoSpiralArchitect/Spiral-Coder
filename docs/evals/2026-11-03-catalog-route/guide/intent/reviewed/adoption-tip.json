@@ -1,0 +1,68 @@
+{
+  "tested_tip": "94297d2789faba7e54bb59da385ab67876dd1d22",
+  "base_commit": "527413cc114e0f621ccbfeb9eba6bd25d2531c15",
+  "source_binary_sha256": "5843edd371d703c1665ef4733666ce60871764de6bc4076478804f715d07a883",
+  "original_guide_prefix_exact": true,
+  "packaged_cli": {
+    "listed": {
+      "exit": 0,
+      "stdout": "{\"version\":1,\"total\":2,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]},{\"id\":\"pane-prefs-observer-contract\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"contract\",\"prefs\"]}]}\n",
+      "stderr": ""
+    },
+    "empty": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"__spiral_no_match__\",\"total_cases\":15}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n"
+    }
+  },
+  "guide_discrepancies": [],
+  "model_requests": 0,
+  "adoption_pr": 60,
+  "checks": {
+    "local_suite_sha256": "7917640fdb8243b656811a5da7f4374a0a3c12dfbfb26ccf9304cc4ae257db25",
+    "rust_unit_passed": 1066,
+    "rust_integration_passed": 5,
+    "rust_unit_ignored": 2,
+    "tui_replays_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke_passed": true
+  },
+  "public_archive_replay": {
+    "stage": "reviewed",
+    "patch_sha256": "2078503a6fca3831f249729f57e93f852ade6073c027488f0502ea4f0af4f32f",
+    "package_json_output": {
+      "version": 1,
+      "total": 2,
+      "cases": [
+        {
+          "id": "pane-prefs-observer-suggestion",
+          "tags": [
+            "tui",
+            "observer",
+            "suggestion",
+            "prefs"
+          ]
+        },
+        {
+          "id": "pane-prefs-observer-contract",
+          "tags": [
+            "tui",
+            "observer",
+            "suggestion",
+            "contract",
+            "prefs"
+          ]
+        }
+      ]
+    },
+    "no_match_exit": 1,
+    "no_match_stdout": "",
+    "no_match_stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"",
+    "guide_discrepancies": [],
+    "original_nonblank_lines_preserved": true,
+    "provider_requests": 0
+  }
+}
