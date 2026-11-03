@@ -139,7 +139,16 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                     _ => None,
                 }
             };
-            action.result = Some(result.chars().take(2400).collect());
+            action.result = Some(
+                if action.tool == "exec"
+                    && action.executed == Some(true)
+                    && action.succeeded == Some(false)
+                {
+                    super::failure_diagnostics::failure_excerpt(result, 2400)
+                } else {
+                    result.chars().take(2400).collect()
+                },
+            );
             action.cargo_inputs = crate::cargo_inputs::Receipt::from_message(message);
             if action.executed == Some(true)
                 && (action.tool == "exec"

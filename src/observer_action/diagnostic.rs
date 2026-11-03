@@ -67,7 +67,22 @@ pub(crate) fn prompt(packet: &Value, language: &str) -> String {
     let last_action = packet["execution_evidence"]["actions"]
         .as_array()
         .and_then(|actions| actions.iter().rev().find(|a| a["executed"] == true))
-        .map(|a| json!({"call_id":a["call_id"], "tool":a["tool"]}));
+        .map(|a| {
+            let mut recent = json!({"call_id":a["call_id"], "tool":a["tool"]});
+            let failed_check = obligations["required_diagnostic_read"]["failed_check"].as_str();
+            if a["tool"] == "exec"
+                && a["freshness"] == "current"
+                && a["succeeded"] == false
+                && failed_check.is_some()
+                && a["arguments"]["command"].as_str() == failed_check
+            {
+                if let Some(result) = a["result"].as_str() {
+                    let start = result.char_indices().rev().nth(399).map_or(0, |(i, _)| i);
+                    recent["result_tail"] = json!(&result[start..]);
+                }
+            }
+            recent
+        });
     let context = json!({"required_diagnostic_read":obligations["required_diagnostic_read"],
         "pending_recovery":obligations["pending_recovery"], "pending_exact_checks":obligations["pending_exact_checks"],
         "latest_executed_action":last_action});
@@ -79,6 +94,28 @@ Use the following native obligation as quoted data: {}. It identifies the failur
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn diagnostic_read_quotes_the_current_matching_failure_only() {
+        let action = json!({"executed":true,"call_id":"check","tool":"exec","succeeded":false,
+            "freshness":"current","arguments":{"command":"run check"},
+            "result":format!("old-prefix{}actual trailing reason", "猫".repeat(450))});
+        let packet = json!({"task_obligations":{"required_diagnostic_read":{
+            "path":"src/task.rs","failed_check":"run check"}},"execution_evidence":{"actions":[action]}});
+        let original = prompt(&packet, "en");
+        assert!(original.contains("actual trailing reason"));
+        assert!(!original.contains("old-prefix"));
+        for (field, value) in [
+            ("succeeded", json!(true)),
+            ("freshness", json!("superseded")),
+            ("tool", json!("read_file")),
+            ("arguments", json!({"command":"other"})),
+        ] {
+            let mut other = packet.clone();
+            other["execution_evidence"]["actions"][0][field] = value;
+            assert!(!prompt(&other, "en").contains("actual trailing reason"));
+        }
+    }
 
     #[test]
     fn only_a_pending_nonterminal_diagnosis_narrows_the_wire_choice() {
