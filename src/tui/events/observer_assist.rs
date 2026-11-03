@@ -109,7 +109,8 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     });
     let native_actions = execution.as_ref().map(|e| &e.actions);
 
-    let allocation = app.work_budget.snapshot();
+    let mut budget = crate::observer_action::strategy::native_budget(&app.work_budget.snapshot());
+    crate::observer_action::strategy::project_budget(&mut budget, obligations.as_ref(), true);
     Ok(json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
         "target_message_id": format!("coder-{}", target_idx),
@@ -139,7 +140,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "task_obligations": obligations,
         "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
         "previous_assist_outcome": app.last_observer_contract_outcome,
-        "work_budget": {"limit":allocation.request_limit,"used":allocation.requests.len(),"remaining":allocation.request_limit.saturating_sub(allocation.task_requests()),"coder_remaining":allocation.coder_remaining()},
+        "work_budget": budget,
         "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
         "last_error_digest": meta_first_line(&target_msg.content, 240),
@@ -222,6 +223,9 @@ pub(crate) fn build_tui_next_action_prompt(
         _ => "Japanese",
     };
     use crate::observer_action::diagnostic::{self, Output};
+    if let Some(handoff) = crate::observer_action::strategy::handoff_prompt(packet, lang_name) {
+        return handoff;
+    }
     if Output::for_packet(packet, reason_hint) == Output::Diagnostic {
         return diagnostic::prompt(packet, lang_name);
     }

@@ -12,7 +12,8 @@ pub(crate) enum Output {
 
 impl Output {
     pub(crate) fn for_packet(packet: &Value, reason: &str) -> Self {
-        if reason != "blocked_terminal_diagnosis"
+        if !super::strategy::needs_handoff(packet)
+            && reason != "blocked_terminal_diagnosis"
             && packet["task_obligations"]["required_diagnostic_read"]["path"]
                 .as_str()
                 .is_some_and(|path| !path.is_empty())

@@ -31,7 +31,31 @@ pub(crate) struct TaskObligations {
     pub deferred_edit: Option<super::deferred_edit::Proposal>,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum CoderTurn {
+    Exhausted,
+    ReportOnly,
+    Work,
+}
+
 impl TaskObligations {
+    pub(crate) fn coder_turn(&self, remaining: usize) -> CoderTurn {
+        if remaining == 0 {
+            CoderTurn::Exhausted
+        } else if super::next_action::Contract::project(
+            Some(remaining),
+            &self.pending_exact_checks,
+            &self.task_requirements,
+        )
+        .report_only()
+        {
+            CoderTurn::ReportOnly
+        } else {
+            CoderTurn::Work
+        }
+    }
+
     pub(crate) fn bind_observer_tools(&self, schemas: &mut Value) {
         super::acceptance_schema::bind_observer(schemas, self);
     }

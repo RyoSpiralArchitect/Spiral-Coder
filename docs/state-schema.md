@@ -1473,3 +1473,11 @@ compaction. Consecutive diagnosis refusals of the same literal patch in the
 same workspace keep the original proposal ID. The confirming read must
 follow the most recent refusal. An earlier failed or refused command cannot
 supply an accepted strategy through exit text printed in its output.
+
+The Observer horizon includes the shared and Coder request counts. On a
+pre-send snapshot, `next_coder_requests` also accounts for the Observer's
+pending task charge. Reply validation uses the current native ledger when
+available. `next_coder_turn` follows the Coder's own declared report
+reservation. With no Coder capacity, a validated no-tool handoff stays
+visible and queues nothing. Its explanation can name the first action
+on a future continuation.
