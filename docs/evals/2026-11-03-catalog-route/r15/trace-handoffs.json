@@ -1,0 +1,91 @@
+{
+  "declaration_sha256": "7212f94cf10c0a8bfe58588aca01cf02d7aa2c9a5b465325ad4435228ebf3153",
+  "run_receipt_sha256": "facfea69efbe73bf3217c902ec22eb187ceeef7e22744ec6e1a68e707f579855",
+  "wire_starts": 32,
+  "response_formats": {
+    "json_schema": 3,
+    "json_object": 5
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "2c21c74c9d7f7c685f5702349de48ad4ba2f5fe080d2e8edf060eea5b8be7c84",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_ik16WaEEjO0NxhFchCG4VUiT",
+          "step": 2,
+          "header": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "ba59e7ce541f9d2ac8023484511c146f2fb12bdc83d652480b742df9f5d1f385",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "src/tui_replay.rs"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": []
+    },
+    {
+      "number": 13,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "de7e6e290da389b0186157a0ba79a7cc3988b4a174e7771bb0b3ce0d3ad5995a",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "src/tui_replay/catalog.rs"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_pskchkEu7yF5eCDi7RnMfEl0",
+          "step": 10,
+          "header": "[src/tui_replay/catalog.rs] (72 lines, 2143 bytes) [pruned 73L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui_replay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'tui_replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "Command::TuiReplay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'Command::TuiReplay' \u2014 3 match(es)] [pruned 4L]"
+      ]
+    }
+  ]
+}
