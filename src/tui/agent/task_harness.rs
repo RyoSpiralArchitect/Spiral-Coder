@@ -2255,26 +2255,7 @@ fn repair_blocked_patch_with_prompt_literal(
     let tail = &body[start..];
     let closing_rel = tail.find("\n];")?;
     let segment = &tail[..closing_rel + 3];
-    let mut last_item_line = None;
-    let mut closing_line = None;
-    for line in segment.lines() {
-        let trimmed = line.trim();
-        if trimmed == "];" {
-            closing_line = Some(line.to_string());
-            break;
-        }
-        if trimmed.starts_with('"') && trimmed.ends_with(',') {
-            last_item_line = Some(line.to_string());
-        }
-    }
-    let last_item_line = last_item_line?;
-    let closing_line = closing_line?;
-    let indent: String = last_item_line
-        .chars()
-        .take_while(|ch| ch.is_whitespace())
-        .collect();
-    let search = format!("{last_item_line}\n{closing_line}");
-    let replace = format!("{last_item_line}\n{indent}\"{missing_literal}\",\n{closing_line}");
+    let (search, replace) = synthesize_list_member_insertion(segment, &missing_literal)?;
     Some(ToolCallData {
         thought_signature: None,
         id: tc.id.clone(),
@@ -2293,20 +2274,23 @@ fn synthesize_list_member_insertion(body: &str, missing_literal: &str) -> Option
     if body.lines().any(|line| line.trim() == quoted_literal) {
         return None;
     }
-    let mut last_item_line = None;
-    let mut closing_line = None;
-    for line in body.lines() {
-        let trimmed = line.trim();
-        if trimmed == "];" {
-            closing_line = Some(line.to_string());
-            break;
-        }
-        if trimmed.starts_with('"') && trimmed.ends_with(',') {
-            last_item_line = Some(line.to_string());
-        }
+    // A different quoted string elsewhere in a file is not a path-list anchor.
+    // Require the observed adjacent member and closing line to be unique.
+    let mut pairs = body
+        .lines()
+        .zip(body.lines().skip(1))
+        .filter(|(member, closing)| {
+            closing.trim() == "];"
+                && member
+                    .trim()
+                    .strip_prefix('"')
+                    .and_then(|s| s.strip_suffix("\","))
+                    .is_some_and(|s| s.starts_with("src/") && !s.contains('"'))
+        });
+    let (last_item_line, closing_line) = pairs.next()?;
+    if pairs.next().is_some() {
+        return None;
     }
-    let last_item_line = last_item_line?;
-    let closing_line = closing_line?;
     let indent: String = last_item_line
         .chars()
         .take_while(|ch| ch.is_whitespace())

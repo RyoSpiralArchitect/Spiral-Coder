@@ -91,6 +91,43 @@ pub(crate) struct Status {
     requirements: Vec<Value>,
 }
 
+/// Optimistic count under the one-call contract. Diagnosis and additional repairs can cost more.
+#[derive(Debug, Serialize)]
+pub(crate) struct DeliveryFloor {
+    artifact_edits: usize,
+    final_checks: usize,
+    authored_reports: usize,
+    pub minimum_coder_requests: usize,
+}
+
+impl Status {
+    pub(super) fn delivery_floor(
+        &self,
+        required: &[String],
+        pending: &[String],
+    ) -> Option<DeliveryFloor> {
+        if !self.declared {
+            return None;
+        }
+        let artifact_edits = self.pending_artifact_paths.len();
+        let final_checks = if artifact_edits == 0 {
+            pending.len()
+        } else {
+            required
+                .iter()
+                .chain(pending)
+                .collect::<BTreeSet<_>>()
+                .len()
+        };
+        Some(DeliveryFloor {
+            artifact_edits,
+            final_checks,
+            authored_reports: 1,
+            minimum_coder_requests: artifact_edits + final_checks + 1,
+        })
+    }
+}
+
 // Only a standalone block in the original human task is authoritative. Quoted
 // examples, model plans, runtime continuations and Observer advice cannot add one.
 pub(super) fn parse(root: &str) -> Result<Option<Contract>> {

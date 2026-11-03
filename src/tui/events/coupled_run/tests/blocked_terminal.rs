@@ -67,6 +67,7 @@ async fn blocked_case(seed_plan: bool) {
                 max_requests: 10,
                 observer_reserved_requests: 3,
                 transport_repair_requests: 2,
+                iterations: 1,
                 seed_session: Some(seed),
                 without_observer: false,
                 observer: roles::ObserverArgs::default(),

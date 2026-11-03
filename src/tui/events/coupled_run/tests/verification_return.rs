@@ -171,6 +171,7 @@ async fn later_verification_failure_returns_to_observer_before_another_coder_req
         max_requests: 9,
         transport_repair_requests: 0,
         observer_reserved_requests: 0,
+        iterations: 1,
         seed_session: Some(seed),
         without_observer: false,
         observer: roles::ObserverArgs::default(),

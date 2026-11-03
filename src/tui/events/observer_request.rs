@@ -13,6 +13,7 @@ pub(crate) struct ObserverAssistRequest {
     repair_started: bool,
     repairing_done: bool,
     pending_report_closeout: bool,
+    pub(super) return_for_delivery: bool,
     request_cursor: usize,
     terminal_diagnosis: bool,
     pub(super) pending_repair: Option<String>,
@@ -29,6 +30,7 @@ impl ObserverAssistRequest {
             repair_started: false,
             repairing_done: false,
             pending_report_closeout: false,
+            return_for_delivery: false,
             request_cursor: app.work_budget.snapshot().requests.len(),
             terminal_diagnosis: false,
             pending_repair: None,
@@ -216,6 +218,19 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         // Keep the failed answer intact for inspection; neither free text nor
         // quickest_check can supply missing tool identity or arguments.
         app.observer.push_tool(format!("(next-action) invalid response prevented automatic forwarding: {issue}; raw Observer output was preserved."));
+        if app
+            .observer_assist_request
+            .as_ref()
+            .is_some_and(|r| !r.terminal_diagnosis)
+            && crate::observer_action::strategy::return_for_overlong_read(parsed.as_ref(), app)
+        {
+            app.observer_assist_request
+                .as_mut()
+                .unwrap()
+                .return_for_delivery = true;
+            app.observer.push_tool("Oversized read rejected. Another Observer repair would spend a remaining Coder delivery turn. Continue from the native obligations.".into());
+            return;
+        }
         let scheduled = app
             .observer_assist_request
             .as_mut()
@@ -247,6 +262,27 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);
+        let terminal = app
+            .observer_assist_request
+            .as_ref()
+            .is_some_and(|req| req.terminal_diagnosis);
+        if (coder_remaining == 0 || terminal) && !app.coder.streaming {
+            let path = coder_session::session_path(app);
+            let task_id = app.work_budget.snapshot().task_id;
+            if let Some(session) = &mut app.coder_session {
+                if agent::iteration_handoff::Note::record(&mut session.messages, &task_id, parsed) {
+                    if let Some(path) = path.filter(|p| p.exists()) {
+                        if let Err(error) =
+                            crate::agent_session::AgentSession::save_atomic(&path, session)
+                        {
+                            app.observer.push_tool(format!(
+                                "Could not save the next iteration's Observer note: {error}"
+                            ));
+                        }
+                    }
+                }
+            }
+        }
         if let Some(hint) = build_observer_suggestion_soft_hint(parsed).filter(|_| {
             coder_remaining > 0
                 && !app

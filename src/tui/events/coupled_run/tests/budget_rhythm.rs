@@ -58,6 +58,7 @@ pub(super) async fn episode(
                 max_requests: cap,
                 observer_reserved_requests: reserved,
                 transport_repair_requests: repair,
+                iterations: 1,
                 seed_session: None,
                 without_observer: false,
                 observer: roles::ObserverArgs::default(),
