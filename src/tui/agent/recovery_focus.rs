@@ -173,6 +173,12 @@ impl RecoveryFocus {
             Observation::Unlocalized => "The latest check failure has no confirmed current location. Diagnose this failure using its diagnostic; any last_confirmed_path is context only and does not require another exact-path read.",
         };
         let mut data = json!({"diagnostic":focus.diagnostic,"failed_check":focus.check});
+        if focus.location == LocationEvidence::Current && focus.diagnostic.starts_with("Diff in ") {
+            if let Some(formatter) = baseline_failure::formatter_for_check(&focus.check) {
+                data["formatter_after_diagnosis"] = json!(formatter);
+                data["formatting_guidance"] = json!("Once the reported file has been read, use the formatter if the human task permits formatting the affected files. Rerun the exact failed check after the change.");
+            }
+        }
         let path_label = match focus.location {
             LocationEvidence::Current => Some("path"),
             LocationEvidence::LastConfirmed => Some("last_confirmed_path"),

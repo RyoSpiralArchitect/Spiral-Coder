@@ -363,6 +363,9 @@ fn rustfmt_diff_restores_the_first_read_and_only_the_exact_recheck_clears_it() {
     );
     let awaiting = RecoveryFocus::from_messages(&messages, location, Some(check));
     assert_eq!(awaiting.required_read().unwrap().path, path);
+    let hint = awaiting.hint().unwrap();
+    assert!(hint.contains(r#""formatter_after_diagnosis":"cargo fmt --all""#));
+    assert!(hint.contains("if the human task permits"));
     let read = call("read-fmt", "read_file", json!({"path":path}));
     let (bytes, error) = crate::file_tools::tool_read_file(&path, location);
     assert!(!error);

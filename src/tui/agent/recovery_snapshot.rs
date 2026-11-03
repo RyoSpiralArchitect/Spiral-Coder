@@ -30,7 +30,9 @@ impl RecoveryFocus {
                     && (recovered_format
                         || (tc.name == "exec"
                             && super::super::parse_exec_command_from_args(&tc.arguments)
-                                .is_some_and(|cmd| baseline_failure::cargo_fmt_check(&cmd))))
+                                .is_some_and(|cmd| {
+                                    baseline_failure::formatter_for_check(&cmd).is_some()
+                                })))
                 {
                     if !recovered_format {
                         state = Self::default();
@@ -39,7 +41,7 @@ impl RecoveryFocus {
                     recovered_format = state
                         .pending
                         .as_ref()
-                        .is_some_and(|f| baseline_failure::cargo_fmt_check(&f.check));
+                        .is_some_and(|f| baseline_failure::formatter_for_check(&f.check).is_some());
                     if recovered_format {
                         refreshed_legacy = false;
                         continue;

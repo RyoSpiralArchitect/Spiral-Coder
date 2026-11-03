@@ -43,7 +43,7 @@ pub(super) fn diagnostic(
 ) -> Result<Option<(String, String)>, ()> {
     let root_path = Path::new(root.ok_or(())?);
     let root = std::fs::canonicalize(root_path).map_err(|_| ())?;
-    if cargo_fmt_check(command) {
+    if formatter_for_check(command).is_some() {
         if let Some(location) = rustfmt_diff(output, root_path, &root)? {
             return Ok(Some(location));
         }
@@ -78,17 +78,18 @@ pub(super) fn diagnostic(
     )))
 }
 
-pub(super) fn cargo_fmt_check(command: &str) -> bool {
-    matches!(
-        command
-            .split_ascii_whitespace()
-            .collect::<Vec<_>>()
-            .as_slice(),
-        ["cargo", "fmt", "--check"]
-            | ["cargo", "fmt", "--", "--check"]
-            | ["cargo", "fmt", "--all", "--check"]
-            | ["cargo", "fmt", "--all", "--", "--check"]
-    )
+pub(super) fn formatter_for_check(command: &str) -> Option<&'static str> {
+    match command
+        .split_ascii_whitespace()
+        .collect::<Vec<_>>()
+        .as_slice()
+    {
+        ["cargo", "fmt", "--check"] | ["cargo", "fmt", "--", "--check"] => Some("cargo fmt"),
+        ["cargo", "fmt", "--all", "--check"] | ["cargo", "fmt", "--all", "--", "--check"] => {
+            Some("cargo fmt --all")
+        }
+        _ => None,
+    }
 }
 
 // Every rustfmt hunk describes a real formatting difference. Reading the first
