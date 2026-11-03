@@ -51,6 +51,8 @@ pub(super) async fn send_last_report(
 pub(super) struct Progress {
     changed_files: BTreeSet<String>,
     newly_verified: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    newly_reproduced_baselines: BTreeSet<String>,
     user_refusal: bool,
 }
 
@@ -59,9 +61,13 @@ pub(super) fn progress(
     old_calls: &BTreeSet<String>,
     old_checks: &BTreeSet<String>,
     required: &[String],
+    newly_reproduced_baselines: BTreeSet<String>,
 ) -> Progress {
     use crate::execution_evidence::FileEditOutcome;
-    let mut out = Progress::default();
+    let mut out = Progress {
+        newly_reproduced_baselines,
+        ..Progress::default()
+    };
     let Some(evidence) = evidence else { return out };
     out.user_refusal = !evidence.approval_rejections().is_empty()
         || evidence.actions.iter().any(|a| {
@@ -116,6 +122,10 @@ impl Receipt {
         }
         if self.iteration_progress.changed_files.is_empty()
             && self.iteration_progress.newly_verified.is_empty()
+            && self
+                .iteration_progress
+                .newly_reproduced_baselines
+                .is_empty()
         {
             return Some("no_new_edit_or_verification");
         }

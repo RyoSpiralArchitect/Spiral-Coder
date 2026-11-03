@@ -220,7 +220,7 @@ fn without_patch_trailer<'a>(diff: &'a str, content: &str) -> Result<Option<&'a 
         }
     }
     anyhow::bail!(
-        "ERROR: unsupported *** patch framing. Send one path in `path` and only its @@ hunks in `diff`. Prefix literal context with a space."
+        "ERROR: unsupported *** patch framing. No part of this edit was applied. Send only the @@ hunks for the current `path` in `diff`. Read its exact anchor if needed. Submit a second file in a separate tool call after the first edit receipt. Prefix literal context with a space."
     )
 }
 

@@ -250,7 +250,11 @@ While an iteration is running, its own ledger includes in-flight requests.
 
 A validated successful report stops the chain immediately. An exhausted
 iteration can advance when it recorded a new changed file or a newly
-verified declared command. A user refusal, pending approval, early blocker,
+verified declared command. It can also advance after the first reproduction of
+a declared pre-edit failing baseline at the task root. This route requires an
+observed failing test count and grants a single continuation for that
+command. Final verification and reporting still require a successful check
+after the edits. A user refusal, pending approval, early blocker,
 provider failure or an exhausted round without this progress ends the run.
 An accepted incomplete report remains incomplete in its original record.
 An explicit `--seed-session FILE` still starts a newly budgeted invocation

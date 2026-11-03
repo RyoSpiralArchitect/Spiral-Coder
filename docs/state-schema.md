@@ -1503,6 +1503,10 @@ output owns its session, work ledger and report. The manifest attributes
 task and transport usage to the original child task ID. The child's
 `iteration_progress` uses fresh correlated native call IDs. Previously
 recorded edits and checks do not count as new progress on a resumed budget.
+The optional `newly_reproduced_baselines` field records a declared pre-edit
+failure once, when the executed command at the task root has a failing
+unittest or libtest count. An ordinary nonzero exit or a repeated failure
+does not earn another iteration.
 A run with positive progress can still fail its acceptance checks.
 
 A version-1 `iteration_handoff` on the original human message stores the

@@ -150,6 +150,17 @@ pub(super) fn capture(mut message: Value, stdout: &str, stderr: &str) -> Value {
     message
 }
 
+/// Only structured native test receipts can make a reproduced baseline eligible for a new iteration.
+pub(super) fn failed_tests_at(message: &Value, workspace: &str) -> bool {
+    message["role"] == "tool"
+        && message["content"]
+            .as_str()
+            .and_then(crate::execution_evidence::exec_cwd)
+            == Some(workspace)
+        && serde_json::from_value::<Counts>(message["test_counts"].clone())
+            .is_ok_and(|c| c.failure_events > 0 && c.tests_run.is_none_or(|n| n > 0))
+}
+
 pub(super) fn facts(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Vec<Value> {
     let messages = crate::task_origin::current_task_messages(messages);
     super::report_outcomes::selected_checks(root, messages, test_cmd)

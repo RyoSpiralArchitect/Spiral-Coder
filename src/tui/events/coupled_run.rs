@@ -353,18 +353,26 @@ async fn run_iteration(
         .coder_session
         .as_ref()
         .map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref()));
+    let messages = app
+        .coder_session
+        .as_ref()
+        .map(|s| s.messages.as_slice())
+        .unwrap_or_default();
+    let obligations = agent::task_obligations::project(messages, app.project_test_cmd.as_deref());
+    let new_baselines = evidence
+        .as_ref()
+        .map(|packet| {
+            obligations
+                .task_requirements
+                .new_test_baselines(messages, packet, &root, &prior_calls)
+        })
+        .unwrap_or_default();
     let progress = iterations::progress(
         evidence.as_ref(),
         &prior_calls,
         &prior_current_checks,
-        &agent::task_obligations::project(
-            app.coder_session
-                .as_ref()
-                .map(|s| s.messages.as_slice())
-                .unwrap_or_default(),
-            app.project_test_cmd.as_deref(),
-        )
-        .required_exact_checks,
+        &obligations.required_exact_checks,
+        new_baselines,
     );
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
