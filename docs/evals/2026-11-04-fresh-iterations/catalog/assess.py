@@ -39,7 +39,8 @@ def assess(out, plan_path, receipt_digest):
         child = episode / "run" / item["directory"]
         report = read_json(child / "report.json")
         work, durable = report["work"], read_json(child / "state/tui-work.json")
-        roles = dict(Counter(row["role"] for row in work["requests"]))
+        counted = Counter(row["role"] for row in work["requests"])
+        roles = {role: counted[role] for role in spec["roles"]}
         spend = budget_accounting(work, spec)
         ledger = (work == durable and work["task_id"] == item["task_id"] and report["parent_task_id"] == item["parent_task_id"] == prior
                   and work["root"] == task and work["tool_root"] == str(root) and report["role_requests"] == roles
@@ -54,12 +55,22 @@ def assess(out, plan_path, receipt_digest):
     assert rows
     final = reports[-1]
     actions = final["execution"]["actions"]
+    all_declared = [*spec["native_checks"], *plan.get("additional_native_checks", [])]
+    def ran_at_root(action):
+        lines = (action.get("result") or "").splitlines()[1:3]
+        if lines and lines[0].startswith("[history digest"):
+            lines = lines[1:]
+        return (lines and lines[0] == "cwd: " + str(root)) or (
+            not any(line.startswith("cwd: ") for line in lines) and action["arguments"].get("cwd") == str(root))
     exact = {cmd: [dict(id=x["call_id"], step=x["result_step"]) for x in actions if x["tool"] == "exec" and
              x["arguments"].get("command") == cmd and x["executed"] and x["succeeded"] and x["freshness"] == "current" and
-             x["result_step"] > (final["execution"]["mutation_step"] or 0)] for cmd in spec["native_checks"]}
+             ran_at_root(x) and x["result_step"] > (final["execution"]["mutation_step"] or 0)] for cmd in all_declared}
     done = [x for x in actions if x["tool"] == "done" and x["executed"] and x["result"] == "OK: done"]
     after_edits = bool(done and all(any(x["step"] < done[-1]["result_step"] for x in xs) for xs in exact.values()))
     pairs, details = paired_gates(out, spec, final, before, after, changed)
+    completed_roles = {x["role"] for r in reports for x in r["work"]["requests"]
+                       if x["status"] == "completed" and x["charge"] == "task"}
+    pairs["both_roles_completed_requests"] = {"coder", "observer"} <= completed_roles
     # Full child reports retain a pre-edit reproduction that can disappear from the later message window.
     if not pairs["native_reproduction"] and len(reports) > 1:
         pairs["native_reproduction"] = paired_gates(out, spec, reports[0], before, after, changed)[0]["native_reproduction"]
@@ -89,6 +100,9 @@ def assess(out, plan_path, receipt_digest):
         no_secret_redactions=not process["redacted_files"] and process["log_redactions"] == 0,
         patch_retained=process["patch_exit_code"] == 0, candidate_unchanged_by_assessor=candidate_is_same,
         independent_checks_passed=len(independent) == len(spec["checks"]) and all(c["passed"] for c in independent))
+    guide = root / "docs/evaluation.md"
+    if plan.get("preserve_original_guide"):
+        gates["original_guide_prefix_preserved"] = guide.read_bytes().startswith((out / "baseline/docs/evaluation.md").read_bytes())
     return dict(plan_sha256=sha(plan_path), declaration_sha256=plan["declaration_sha256"], sealed_receipt_sha256=receipt_digest,
         process=process, manifest=manifest, rounds=rows, gates=gates, all_chain_gates_passed=all(gates.values()),
         qualified_within_original_single_round=all(gates.values()) and len(rows)==1,

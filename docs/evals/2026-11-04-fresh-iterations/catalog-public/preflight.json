@@ -1,0 +1,63 @@
+{
+  "official_preflight_sha256": "566b7e24080adda900ddc2b72de909cae86c13777054896e1149411d54027c26",
+  "original_and_reference_as_expected": true,
+  "unchanged_original_baseline": true,
+  "modified_input_files": [
+    "prompt.txt",
+    "spec.json"
+  ],
+  "baseline_and_reference": [
+    {
+      "id": "candidate-build",
+      "baseline": true,
+      "reference": true,
+      "reference_test_summary": null
+    },
+    {
+      "id": "catalog-visible",
+      "baseline": false,
+      "reference": true,
+      "reference_test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "id": "held-out-catalog",
+      "baseline": false,
+      "reference": true,
+      "reference_test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "id": "packaged-spiral",
+      "baseline": false,
+      "reference": true,
+      "reference_test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "id": "regular-replay",
+      "baseline": true,
+      "reference": true,
+      "reference_test_summary": null
+    },
+    {
+      "id": "stock-regressions",
+      "baseline": true,
+      "reference": true,
+      "reference_test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      }
+    }
+  ]
+}
