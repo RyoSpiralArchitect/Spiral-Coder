@@ -1,0 +1,13 @@
+Finish the public no-match regression on this saved working tree. The previous attempt produced a catalog edit and a useful CLI regression test but did not pass verification. Both changed files are present. Keep the regression's existing assertions. Its ordinary-replay invocation currently spells the output flag --output-dir; the actual --help spells it --out-dir. Correct that argument and let rustfmt format the test. The independent acceptance check will compare the test bytes to exactly that flag correction plus rustfmt.
+
+Use cargo fmt --all for formatting. Run the new integration test and inspect the actual ordinary replay and listing errors. Follow the existing no-match branch in src/tui_replay.rs: it already calls diagnostics::empty_selection with the spec path, root, requested filter and cases. Make the catalog use the existing diagnostic and its actual parameters instead of inventing a message. The earlier edit also added an unused resolve_spec function in the catalog; remove it if there are no callers. Preserve the behavior of valid listings, ordinary replay, the guide, the installed launcher and all other tests.
+
+Allowed paths only:
+- src/tui_replay/catalog.rs
+- tests/tui_replay_catalog.rs
+
+After the last change, run all four exact checks below separately. In your final summary identify the two actual file changes and the measured outcomes, and distinguish your own test runs from outside checks. If anything remains, provide an honest blocked report and the actionable next step.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"public-diagnostic","description":"Pass the pair's preserved comparison test using ordinary replay's actual no-match diagnostic.","artifacts":[{"path":"src/tui_replay/catalog.rs","kind":"source"},{"path":"tests/tui_replay_catalog.rs","kind":"test"}],"checks":[{"command":"cargo fmt --all -- --check"},{"command":"cargo test --locked --test tui_replay_catalog -q"},{"command":"python3 -S -m unittest -v scripts.catalog_visible"},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>
