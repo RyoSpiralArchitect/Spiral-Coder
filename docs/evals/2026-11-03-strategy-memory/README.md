@@ -36,3 +36,10 @@ The final runtime also repeated the seeded two-process repair, replayed the
 saved handoff and passed the repository suite with 1,090 Rust unit tests,
 four integrations and 15 asserted TUI cases. A prior read-only regression
 and its passing control are retained. [Final runtime and check results](release-controls.json).
+
+Review found that a one-line JSON array read could include a diagnostic
+appendix, leaving a correct proposal stuck at the read step. The actual
+native read reproduced this. The repaired runtime separates the source
+bytes from the checked appendix, still rejects a stale source or unexpected
+suffix, and passed the same suite with 1,091 Rust unit tests.
+[Review reproduction and final controls](review-controls.json).
