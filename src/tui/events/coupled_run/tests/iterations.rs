@@ -132,3 +132,80 @@ fn final_shared_request_can_be_a_report_only_after_observer_participation() {
     app.work_budget = crate::work_budget::WorkBudget::new(&task, 1, None);
     assert!(!super::super::iterations::last_coder_report(&app));
 }
+
+#[tokio::test]
+async fn explicit_follow_up_keeps_conversation_and_requires_new_human_task_proof() {
+    let server = MockServer::start();
+    let call = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("seed-proof")
+            .body_contains("pending_artifact_paths");
+        then.status(400)
+            .json_body(json!({"error":{"message":"stop after capturing first request"}}));
+    });
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("project");
+    std::fs::create_dir(&root).unwrap();
+    let mut history = crate::tui::events::tests::closeout_messages();
+    history.push(json!({"role":"assistant","content":"seed-proof"}));
+    let task = crate::task_origin::root_user_text(&history).to_owned();
+    let seed = dir.path().join("prior.json");
+    AgentSession::save_atomic(
+        &seed,
+        &AgentSession::new(
+            Some(root.canonicalize().unwrap().display().to_string()),
+            None,
+            None,
+            None,
+            history,
+        ),
+    )
+    .unwrap();
+    let prompt = dir.path().join("task.txt");
+    std::fs::write(&prompt, &task).unwrap();
+    let out = dir.path().join("out");
+    let cli = crate::Cli::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--model",
+        "offline",
+        "--base-url",
+        &server.base_url(),
+        "--api-key",
+        "offline",
+        "coupled-run",
+        "--tool-root",
+        root.to_str().unwrap(),
+        "--prompt-file",
+        prompt.to_str().unwrap(),
+        "--follow-up-session",
+        seed.to_str().unwrap(),
+        "--out-dir",
+        out.to_str().unwrap(),
+        "--max-requests",
+        "2",
+    ])
+    .unwrap();
+    let Some(crate::Command::CoupledRun(args)) = cli.command else {
+        unreachable!()
+    };
+    assert!(run(args, cli.common).await.is_err());
+    let saved = AgentSession::load(&out.join("session.json")).unwrap();
+    assert_eq!(
+        saved
+            .messages
+            .iter()
+            .filter(|m| crate::task_origin::is_human_request(m) && m["content"] == task)
+            .count(),
+        2
+    );
+    let view = crate::tui::agent::task_obligations::project(&saved.messages, None);
+    assert!(
+        !view.task_requirements.pending_artifact_paths.is_empty()
+            && !view.pending_exact_checks.is_empty()
+    );
+    assert!(view.iteration_handoff.is_none() && view.previous_blocked_report.is_none());
+    call.assert_hits(1);
+}

@@ -70,7 +70,9 @@ pub(super) async fn send_coder_input_with_window(
     });
 
     coder_session::restore(app);
-    if app.coder_intent_anchor.is_none() {
+    if input == CoderInput::NewHumanTask {
+        app.coder_intent_anchor = None;
+    } else if app.coder_intent_anchor.is_none() {
         if let Some(session) = &app.coder_session {
             let original = crate::task_origin::root_user_text(&session.messages);
             app.coder_intent_anchor = Some(intent::apply_intent_update(
