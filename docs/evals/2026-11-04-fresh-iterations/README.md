@@ -117,13 +117,54 @@ requires a fresh guide edit in the task being assessed. The current
 production acceptance instead required code and test edits and four new
 exact checks. [All acceptance gates](format-resume/audit.json) ·
 [Original six groups](format-resume/results.json) ·
-[Composite patch and code review](format-resume/candidate-review.json) ·
+[Composite patch](format-resume/composite.patch) · [Source review](format-resume/candidate-review.json) ·
 [Literal package example](format-resume/guide.json) ·
 [Exact public diagnostic](format-resume/diagnostic.json).
 
 The original R18 single-episode verdict stays failed. This passing
 candidate includes several independently sealed model episodes and explicit
 operator feedback. The operator made zero feature edits in this candidate.
-The raw catalog retains two unused imports. The existing feature PR uses
-its already-reviewed implementation and receives the model-authored
-regression byte-for-byte as a separate integration test.
+The raw catalog retains two unused imports. The existing [feature PR #60](https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/60)
+retains its shared loader, selector and diagnostic implementation and receives the
+model-authored regression byte-for-byte as a separate integration test.
+
+The [Observer receipts](format-resume/observer.json) distinguish accepted
+continuations from matching tool executions. Two suggested verification
+calls matched real successful Coder calls, one matched a real failure, and
+the final accepted report was authored by Coder.
+
+## Final clean comparison and controls
+
+[R21](catalog-final/plan.json) used the exact R20 prompt, baseline, protected
+files, model pair and three-round ceiling. The revised executor localized
+formatting diagnostics. It changed three Rust files and passed the visible
+check and the full native Rust suite. Its public no-match comparison also
+exited zero, but the native runtime observed the expected child diagnostics
+printed to stdout and classified that output as suspicious. The final two
+Observer replies contained one string in `based_on` where a string array
+was required. The first iteration stopped with 30 task requests and 32
+wires, including two transport charges. Two shared task requests remained.
+
+Independent checks passed build, visible and ordinary replay. Ten of eleven
+held-out tests passed, including empty-selection behavior. The held-out
+failure concerned the missing usage guide. The npm launcher had no new
+route, the stock check stopped at formatting, and there was no accepted
+Coder report. [Gates and costs](catalog-final/results.json) ·
+[Measured diagnostic](catalog-final/diagnostic.json) ·
+[Terminal evidence](catalog-final/closing-audit.json).
+
+The two raw Observer replies were replayed on the same native session and
+projected report-only seat. The revised parser admitted both as no-tool
+clarifications and preserved each reference string verbatim as one array
+member. The old parser rejected both. The public comparison can also emit
+the captured child errors only on a mismatch. The revised probe returned
+failure through native exec on the R19 mismatch and success through native
+exec on the R21 match. The tested predicates and the other case inputs were
+identical. [Observer replay](catalog-final/observer-control.json) ·
+[Comparison controls](catalog-final/comparison-control.json).
+
+To materialize that future comparison, run
+`python3 -BS docs/evals/2026-11-04-fresh-iterations/catalog-final/next_inputs.py /absolute/fresh-inputs`.
+The two post-R21 changes have model-free controls. R21 remains the last
+fresh provider trial. Across eight separately declared conditions the pair
+used 286 task requests and 296 wire attempts. [Validation and usage](runtime-checks.json).

@@ -1,0 +1,89 @@
+{
+  "sealed_receipt_sha256": "5c57da0f8c6622d5fded3b6433f30d3a6b9dd414727e7d8110218ba6a61d6e7b",
+  "role_wires": {
+    "coder": 12,
+    "observer": 7
+  },
+  "assists": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "read_file",
+      "suggested_args": {
+        "path": "src/tui_replay/catalog.rs"
+      },
+      "matched_native_call_ids": [],
+      "exact_suggestion_executed": false,
+      "native_succeeded": null
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "exec",
+      "suggested_args": {
+        "check_id": "required-1"
+      },
+      "matched_native_call_ids": [
+        "call_UYadIrxZ7tpT7I6JUU58d13B"
+      ],
+      "exact_suggestion_executed": true,
+      "native_succeeded": false
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "read_file",
+      "suggested_args": {
+        "path": "tests/tui_replay_catalog.rs"
+      },
+      "matched_native_call_ids": [],
+      "exact_suggestion_executed": false,
+      "native_succeeded": null
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "exec",
+      "suggested_args": {
+        "check_id": "required-1"
+      },
+      "matched_native_call_ids": [
+        "call_Uzosx16IE1h4VW3hDlaqFVls"
+      ],
+      "exact_suggestion_executed": true,
+      "native_succeeded": true
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "exec",
+      "suggested_args": {
+        "check_id": "required-2"
+      },
+      "matched_native_call_ids": [
+        "call_UIJ6djt9ygjuByzPhrbJLPOJ"
+      ],
+      "exact_suggestion_executed": true,
+      "native_succeeded": true
+    },
+    {
+      "assist_id": 7,
+      "decision": "accept",
+      "continuation_executed": true,
+      "suggested_tool": "done",
+      "matched_native_call_ids": [],
+      "exact_suggestion_executed": false,
+      "native_succeeded": null,
+      "suggested_args_sha256": "24624577be289a5220aa919c8c6dea404477b56d365307147440faf43e67ce30"
+    }
+  ],
+  "successful_matched_verification": [
+    4,
+    5
+  ]
+}

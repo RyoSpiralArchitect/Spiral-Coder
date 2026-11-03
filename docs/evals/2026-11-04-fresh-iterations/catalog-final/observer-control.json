@@ -1,0 +1,42 @@
+{
+  "seal_sha256": "33b5682af32e178c6f1942aab398a3c98372a08e12b31b0a19999accc14fbd73",
+  "session_sha256": "cd615e2c606cd736c7911ddca469c0249f61f0a56276afda145e7e41fded0ddc",
+  "rows": [
+    {
+      "runtime": "old",
+      "executor_sha256": "05cca44247f8001510be5a763914060184a4c9a29ff1ec7c40feb6f7a6a2c748",
+      "reply_sha256": "367e08c20da268a44be2ec77e72a4cf9aa7f5108fc7c66d3ba6417394c1a845b",
+      "issue": "invalid type: string \"task_horizon shows declared_paths_without_edit_receipts for docs/evaluation.md and npm/spiral-coder/lib/launcher.cjs, checks_still_due includes cargo fmt --all -- --check with total 3, and next_coder_turn is report_only.\", expected a sequence",
+      "hint_available": false,
+      "next_turn": "report_only"
+    },
+    {
+      "runtime": "old",
+      "executor_sha256": "05cca44247f8001510be5a763914060184a4c9a29ff1ec7c40feb6f7a6a2c748",
+      "reply_sha256": "0bcff6530caebb506b44dd7c68d036345361dd9d65e8338913f2e6bf9190bd0f",
+      "issue": "invalid type: string \"task_horizon reports declared_paths_without_edit_receipts for docs/evaluation.md and npm/spiral-coder/lib/launcher.cjs, checks_still_due total 3 including cargo fmt --all -- --check, and next_coder_turn report_only.\", expected a sequence",
+      "hint_available": false,
+      "next_turn": "report_only"
+    },
+    {
+      "runtime": "revised",
+      "executor_sha256": "179c4fee06213cfdc93d588d1c42182536a72c1e4c46018a3287937804c3422a",
+      "reply_sha256": "367e08c20da268a44be2ec77e72a4cf9aa7f5108fc7c66d3ba6417394c1a845b",
+      "issue": null,
+      "hint_available": true,
+      "next_turn": "report_only"
+    },
+    {
+      "runtime": "revised",
+      "executor_sha256": "179c4fee06213cfdc93d588d1c42182536a72c1e4c46018a3287937804c3422a",
+      "reply_sha256": "0bcff6530caebb506b44dd7c68d036345361dd9d65e8338913f2e6bf9190bd0f",
+      "issue": null,
+      "hint_available": true,
+      "next_turn": "report_only"
+    }
+  ],
+  "budget_context": "Two shared and two Coder requests before the Observer send; admitting the answer projects one Coder report-only seat.",
+  "external_requests": 0,
+  "synthetic_tool_executions": 0,
+  "automatically_completed": false
+}
