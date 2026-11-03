@@ -1,0 +1,64 @@
+{
+  "runtime_commit": "61457df08319a9d13c0e2cd1ef9eacdbe804a29e",
+  "executor_sha256": "b36b9a9dac5d8461bbce01920510ed39fea60ba2923f7faee57dc2dc597963ca",
+  "s1_seal": "2945de67e439c5643465f45b9d468ff0c5869e708b67f23103cc211844e50ea8",
+  "duplicate_hold_probe": {
+    "same_bytes": true,
+    "changed_paths": [
+      "src/main.rs"
+    ],
+    "shared_observer_horizon": {
+      "checks_still_due": {
+        "items": [
+          "python3 -S -m unittest -v scripts.catalog_visible",
+          "cargo test --locked --bin spiral-coder -q"
+        ],
+        "total": 2
+      },
+      "coder_task_requests_left": 7,
+      "declared_paths_without_edit_receipts": {
+        "items": [
+          "docs/evaluation.md",
+          "npm/spiral-coder/lib/launcher.cjs"
+        ],
+        "total": 2
+      },
+      "held_proposal": null,
+      "human_objective_excerpt": "Add a useful read-only subcommand to Spiral-Coder itself: spiral tui-replay-list. This is a full repository copy. Implement, verify, and report the result here.",
+      "paths_with_recorded_edits": {
+        "items": [
+          "src/main.rs",
+          "src/tui_replay.rs",
+          "src/tui_replay/catalog.rs"
+        ],
+        "total": 3
+      },
+      "shared_task_requests_left": 7,
+      "strategy_memory": {
+        "admitted_goal": "Implement and verify the read-only replay catalog across native, installed, and documented interfaces.",
+        "matched_historical_action": "read_file(path=src/main.rs, lines=331-334)",
+        "past_approach": "Read exact current main declaration and dispatch region.",
+        "planned_steps": [
+          "Inspect and implement focused catalog.",
+          "Wire native args and dispatch.",
+          "Forward launcher and document.",
+          "Format and run exact checks."
+        ],
+        "planned_steps_total": 4,
+        "repeated_observation": "read_file(path=src/main.rs, lines=325-350)"
+      }
+    }
+  },
+  "checked_in_tests": {
+    "rust_unit_passed": 1086,
+    "rust_unit_ignored": 2,
+    "integration_passed": 4,
+    "tui_replays_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke_passed": true
+  },
+  "local_suite_log_sha256": "be256250fdd4c4d1e144f0f8954ee30bd74dfc4046b56ac4d7887384289794e9"
+}
