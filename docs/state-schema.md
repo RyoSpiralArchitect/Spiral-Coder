@@ -1454,7 +1454,9 @@ the file allowlist nor the native edit and verification evidence required.
 Before compacting assistant turns, the native loop can store a version-1
 `strategy_recall` object on the current human request in the saved message
 array. It retains at most one earlier reflected approach, its matched native
-action and one repeated dead end. Each text field is bounded to 160
+action and one repeated observation. Ranged reads keep their requested line
+window, so inspecting a declaration and its dispatch are distinct. A repeated
+observation can still be necessary after a source change. Each text field is bounded to 160
 characters. The local field is stripped from provider messages. The
 deliberately projected `strategy_memory` combines these historical cues
 with the current task's admitted plan. A new human message starts its own

@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 struct Recall {
     past_approach: Option<String>,
     matched_historical_action: Option<String>,
-    repeated_dead_end: Option<String>,
+    repeated_observation: Option<String>,
 }
 
 impl Recall {
@@ -18,7 +18,8 @@ impl Recall {
         if local["version"] == 1 {
             recall.past_approach = bounded(&local["past_approach"]);
             recall.matched_historical_action = bounded(&local["matched_historical_action"]);
-            recall.repeated_dead_end = bounded(&local["repeated_dead_end"]);
+            recall.repeated_observation = bounded(&local["repeated_observation"])
+                .or_else(|| bounded(&local["repeated_dead_end"]));
         }
         if let Some(bridge) = crate::agent_session::session_bridge_from_messages(task) {
             if let Some(approach) = bridge.accepted_strategies.first() {
@@ -27,14 +28,14 @@ impl Recall {
                     Some(compact_one_line(&approach.matched_command, 160));
             }
             if let Some(dead_end) = bridge.repeated_dead_ends.first() {
-                recall.repeated_dead_end = Some(compact_one_line(&dead_end.command, 160));
+                recall.repeated_observation = Some(compact_one_line(&dead_end.command, 160));
             }
         }
         recall
     }
 
     fn has_history(&self) -> bool {
-        self.past_approach.is_some() || self.repeated_dead_end.is_some()
+        self.past_approach.is_some() || self.repeated_observation.is_some()
     }
 }
 
@@ -148,5 +149,22 @@ mod tests {
             assert!(m[0].get("strategy_recall").is_none(), "{output}");
             assert!(crate::agent_session::session_bridge_from_messages(&m).is_none());
         }
+    }
+    #[test]
+    fn inspecting_two_regions_of_one_file_is_not_a_repeated_observation() {
+        let mut m = vec![json!({"role":"user","content":"Repair the two entries"})];
+        let record = |m: &mut Vec<Value>, id: &str, start: usize, end: usize| {
+            let args = json!({"path":"src/main.rs","start_line":start,"end_line":end});
+            m.push(json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":"read_file","arguments":args.to_string()}}]}));
+            m.push(json!({"role":"tool","tool_call_id":id,"content":format!("[src/main.rs] (700 lines, 1400 bytes) [range: lines {start}-{end}; partial file]\n...")}));
+        };
+        record(&mut m, "declaration", 326, 342);
+        record(&mut m, "dispatch", 580, 650);
+        assert!(project(&m).is_none());
+        record(&mut m, "dispatch-again", 580, 650);
+        assert_eq!(
+            json!(project(&m))["repeated_observation"],
+            "read_file(path=src/main.rs, lines=580-650)"
+        );
     }
 }

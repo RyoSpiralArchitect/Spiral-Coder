@@ -275,6 +275,16 @@ fn tool_call_signature(name: &str, arguments: &str) -> String {
             .unwrap_or_else(|| format!("exec({})", compact_one_line(arguments, 120))),
         "read_file" | "write_file" | "patch_file" | "apply_diff" => {
             let path = json_arg_string(arguments, "path").unwrap_or_else(|| "?".to_string());
+            if name == "read_file" {
+                if let Some((start, end)) =
+                    serde_json::from_str::<crate::file_tools::read_range::ReadRequest>(arguments)
+                        .ok()
+                        .filter(|read| read.is_range())
+                        .and_then(|read| read.bounds().ok())
+                {
+                    return format!("read_file(path={path}, lines={start}-{end})");
+                }
+            }
             format!("{name}(path={path})")
         }
         "list_dir" => {
@@ -511,7 +521,7 @@ pub fn session_bridge_from_messages(messages: &[serde_json::Value]) -> Option<Se
         .filter(|(_, count)| *count >= 2)
         .map(|(command, count)| SessionDeadEnd {
             command: compact_one_line(command.as_str(), 180),
-            reason: "repeat observation without enough new progress".to_string(),
+            reason: "same observation requested more than once".to_string(),
             count,
         })
         .collect::<Vec<_>>();
