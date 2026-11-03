@@ -14,7 +14,7 @@ from coupled_bench.common import inventory, read_json
 from self_dogfood.contracts import git_snapshot
 
 
-def materialize(out, *, order_guidance=False, reuse_guidance=False):
+def materialize(out, *, order_guidance=False, reuse_guidance=False, route_guidance=False):
     if out.exists() or out.is_relative_to(REPO):
         raise ValueError("Use a fresh input directory outside the repository")
     spec_path = HERE / "luna-luna.json"
@@ -32,13 +32,14 @@ def materialize(out, *, order_guidance=False, reuse_guidance=False):
         out.mkdir(parents=True)
         for name in [spec_path.name, spec["prompt"], *(r["source"] for k in ("visible_fixtures", "probes") for r in spec[k])]:
             shutil.copy2(HERE / name, out / name)
-        if order_guidance or reuse_guidance:
+        if order_guidance or reuse_guidance or route_guidance:
             prompt = out / spec["prompt"]
             intro, separator, rest = prompt.read_bytes().partition(b"\n\n")
             if not separator:
                 raise ValueError("Expected the original task introduction as the first paragraph")
             guidance = [(HERE / name).read_bytes().rstrip(b"\n") for name, enabled in
-                        (("order-guidance.txt", order_guidance), ("reuse-guidance.txt", reuse_guidance)) if enabled]
+                        (("order-guidance.txt", order_guidance), ("reuse-guidance.txt", reuse_guidance),
+                         ("route-guidance.txt", route_guidance)) if enabled]
             prompt.write_bytes(separator.join([intro, *guidance, rest]))
         for item in spec["reference"]:
             dst = out / item["source"]
@@ -53,5 +54,8 @@ if __name__ == "__main__":
                         help="Include the second episode's shared edit order in the task prompt")
     parser.add_argument("--reuse-guidance", action="store_true",
                         help="Encourage both roles to consider existing helpers when they fit")
+    parser.add_argument("--route-guidance", action="store_true",
+                        help="Describe the existing CLI entry points and compile the new route together")
     args = parser.parse_args()
-    materialize(args.out.resolve(), order_guidance=args.order_guidance, reuse_guidance=args.reuse_guidance)
+    materialize(args.out.resolve(), order_guidance=args.order_guidance, reuse_guidance=args.reuse_guidance,
+                route_guidance=args.route_guidance)
