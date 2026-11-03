@@ -16,3 +16,10 @@ blocked report was rejected, and neither required command had current native
 proof. This original episode remains unqualified.
 [Original plan](plan.json) · [Native and independent results](results.json) ·
 [Patch replay](plain-replay.json) · [Handoffs](trace-handoffs.json).
+
+Replaying the pair's exact check ID at that handoff on two disposable copies
+of its patch reproduced the refusal on the old executor. The updated governor
+retired the earlier failed patch to the same file after its native change.
+The visible check actually ran and passed. The separate locked Rust check
+remained pending and neither source copy changed. The replay used local HTTP
+responders and no model credentials. [Step 21 control](recheck-control.json).

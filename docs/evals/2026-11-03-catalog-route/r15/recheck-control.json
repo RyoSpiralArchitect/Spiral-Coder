@@ -1,0 +1,47 @@
+{
+  "before": {
+    "run_receipt_sha256": "facfea69efbe73bf3217c902ec22eb187ceeef7e22744ec6e1a68e707f579855",
+    "patch_sha256": "89bb3ad0d1347fbe57280a6e7fc2cb5623ec9c0bf6d0cdf8e2512ae8b422cb5f",
+    "executor_sha256": "9b52bf87ce988c58192b336f73d21bdd63fdb42a7ca4ff97008ada7a6c1297fe",
+    "source_step": 21,
+    "last_changed_step": 20,
+    "wire_selection": {
+      "check_id": "required-1"
+    },
+    "command": "python3 -S -m unittest -v scripts.catalog_visible",
+    "arguments_match_except_relocated_workspace": true,
+    "executed": false,
+    "succeeded": false,
+    "feedback": "GOVERNOR BLOCKED\ncwd: <workspace>\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nexec\narguments:\n{\"check_id\":\"required-1\",\"command\":\"python3 -S -m unittest -v scripts.catalog_visible\",\"cwd\":\"<workspace>\"}",
+    "diagnosis_block": true,
+    "fresh_command_still_pending": true,
+    "remaining_checks": [
+      "python3 -S -m unittest -v scripts.catalog_visible",
+      "cargo test --locked --bin spiral-coder -q"
+    ],
+    "source_unchanged": true,
+    "external_requests": 0
+  },
+  "after": {
+    "run_receipt_sha256": "facfea69efbe73bf3217c902ec22eb187ceeef7e22744ec6e1a68e707f579855",
+    "patch_sha256": "89bb3ad0d1347fbe57280a6e7fc2cb5623ec9c0bf6d0cdf8e2512ae8b422cb5f",
+    "executor_sha256": "35d16729f39424c65b05255a16c960883115b382ea703627d764868cf72f2b2b",
+    "source_step": 21,
+    "last_changed_step": 20,
+    "wire_selection": {
+      "check_id": "required-1"
+    },
+    "command": "python3 -S -m unittest -v scripts.catalog_visible",
+    "arguments_match_except_relocated_workspace": true,
+    "executed": true,
+    "succeeded": true,
+    "feedback": "OK (exit_code: 0)\ncwd: <workspace>",
+    "diagnosis_block": false,
+    "fresh_command_still_pending": false,
+    "remaining_checks": [
+      "cargo test --locked --bin spiral-coder -q"
+    ],
+    "source_unchanged": true,
+    "external_requests": 0
+  }
+}

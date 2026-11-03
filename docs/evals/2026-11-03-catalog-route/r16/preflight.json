@@ -1,0 +1,338 @@
+{
+  "prepared_at": "2026-11-03T06:28:52.917408+00:00",
+  "baseline_expected": true,
+  "reference_passed": true,
+  "baseline": [
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 17.389,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "candidate-build",
+      "kind": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "22b20da9d0807048fa772c93a100ff0bbcd3ce4ef4a774c2d26dfc6810705ee0",
+      "log": "checks/baseline/candidate-build.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.544,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "catalog-visible",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
+      ],
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "passed": false,
+      "log_sha256": "54ea20ad5c067754e968da14ce7e53d1bcd70859200daaacec02044da01f8acd",
+      "log": "checks/baseline/catalog-visible.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.15,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "held-out-catalog",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/catalog_oracle.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 0,
+        "failed": 11,
+        "ignored": 0
+      },
+      "passed": false,
+      "log_sha256": "a9f0868ecb7339e10e0f08c0e3844a935976d256f7de4803621593d020e93dbf",
+      "log": "checks/baseline/held-out-catalog.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.162,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "packaged-spiral",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/packaged_spiral.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "passed": false,
+      "log_sha256": "f09973eb07ba8db82d9106f9614e1386a18bcc8aeb80f44caf5948e80188e456",
+      "log": "checks/baseline/packaged-spiral.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.083,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "regular-replay",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/regular_replay.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r16-recheck-20261103/checks/baseline/artifacts"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "1bb0e2711af22d94240a91322786e2b24d07329c849520b29f5a23296f39e6f5",
+      "log": "checks/baseline/regular-replay.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 43.856,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "stock-regressions",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/stock_checks.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r16-recheck-20261103/checks/baseline/artifacts"
+      ],
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "fe9c07e2f3cb78235e6efb7d28fb64178042bd0ee96ca84c8058e55d5fc9015d",
+      "log": "checks/baseline/stock-regressions.log",
+      "package_cache_reset_sha256": "03ad2329be2d4611c16c42331822348c999ea256e61059c61e48fab0b4018eca",
+      "candidate_binary_sha256": "faf4b7d92de3dee3b02eeee5abfbb9c0ae588d069fc11c58b7438f93c4fc2345"
+    }
+  ],
+  "reference": [
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 15.502,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "candidate-build",
+      "kind": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "918453dbe6e2c3eedaff8505b84300ebc910d5529e87ccea74b7d0315fab795b",
+      "log": "checks/reference/candidate-build.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.578,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "catalog-visible",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.catalog_visible"
+      ],
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "355d77d937276281b8c871122159e6024bb275010995bc96c0cd07d93fb7ce51",
+      "log": "checks/reference/catalog-visible.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.211,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "held-out-catalog",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/catalog_oracle.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "878549db80a7562eb048ecd583d490fe8059f57d28b4c515b58d94738676163b",
+      "log": "checks/reference/held-out-catalog.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.057,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "packaged-spiral",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/packaged_spiral.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "e75af9237d5da9d41a7be1e40f0476bf5187c0a92abafc887dc348765b2d74b0",
+      "log": "checks/reference/packaged-spiral.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.09,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "regular-replay",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/regular_replay.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/observer-return-20261026-build/debug/spiral-coder",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r16-recheck-20261103/checks/reference/artifacts"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "0002d8a7f7481cf6d4030388ad40d826308e24d885547d7ea9dae464993fb4a0",
+      "log": "checks/reference/regular-replay.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 45.167,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "stock-regressions",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".catalog-checks/stock_checks.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r16-recheck-20261103/checks/reference/artifacts"
+      ],
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "b1c317ef7c599c2251bb8b57a581cefb3762bc5997ee29a2184dce70b2d34963",
+      "log": "checks/reference/stock-regressions.log",
+      "package_cache_reset_sha256": "2f1464916d4ee6117ca29ca0e41d08751814c5e5087bf6540c730f1b76bd71b9",
+      "candidate_binary_sha256": "23b7e165255bc3f84c42be800b1e514dc10ee7796fabc895d5a67ab8fe69d0dc"
+    }
+  ],
+  "provider_calls": 0
+}
