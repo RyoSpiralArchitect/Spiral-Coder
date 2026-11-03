@@ -1285,12 +1285,14 @@ remain available on every supported Coder provider.
 ### Provider termination and Observer range repair
 
 After an invalid Observer `done` proposal, its single explicit repair can reach
-the provider output limit. `events/report_closeout.rs` then admits **one Coder
+the provider output limit or produce a malformed envelope with a recorded
+transport rejection. `events/report_closeout.rs` then admits **one Coder
 report-only wire attempt** only when the source context is still current, a
 declared task has no pending artifacts/checks/baselines/recovery, accepted plan
 references and current commands exist, and Coder has remaining allowance.
-Blocked terminal diagnosis, missing evidence, stale advice, malformed repairs
-without an output-limit receipt and provider errors do not activate it.
+The current repair must have exactly one matching Observer receipt. A normal
+semantic rejection, an unclassified response, stale context, blocked terminal
+diagnosis, missing evidence or a provider error ends this path.
 
 `ObserverAssistRequest` owns the transient pending handoff. Consumption rechecks
 native obligations and clears the request. `App.report_closeout_attempted`
@@ -1517,6 +1519,6 @@ primary read can yield to the Coder. The runtime can describe the first
 legal window at the same starting line only for a declared missing artifact
 or mandatory diagnostic target and only after validating the bounded
 action against current obligations. Secondary suggestions and response
-contracts are discarded. The original Observer reply stays rejected. A
+contracts are discarded. The original Observer reply stays rejected. An
 `observer_return_for_delivery` trace names the derived window, and only a
 new Coder tool call can execute it.

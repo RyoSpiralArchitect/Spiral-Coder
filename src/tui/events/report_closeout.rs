@@ -1,4 +1,4 @@
-//! Admission to one final authored report after an output-limited Observer
+//! Admission to one final authored report after a transport-rejected Observer
 //! done repair. No advice, acceptance mapping or completion is synthesized.
 use super::*;
 

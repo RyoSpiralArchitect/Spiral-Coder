@@ -1,0 +1,239 @@
+{
+  "original_r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "plan_sha256": "177bc9359f7934d75d60f946e16754dc0a55f74504059fd42d3f35a29d79753e",
+  "chain_receipt_sha256": "c09b511162962eb9044c80ee5b03b3d440e7f4a6f5879efbc76103195b3c2302",
+  "runtime_commit": "93b4201290ebf5eea74199cbdf2a2013d7a8822a",
+  "executor_sha256": "9cf3751bbb1958a9cfee474304cd7ddc6787217b08786bcabdeed700c3fa8361",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 323.483
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": true,
+    "iterations": [
+      {
+        "completed": true,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "docs/evaluation.md",
+            "src/tui_replay.rs",
+            "src/tui_replay/catalog.rs"
+          ],
+          "newly_verified": [
+            "cargo fmt --all -- --check",
+            "cargo run --locked --quiet --bin spiral-coder -- tui-replay-list --tool-root . --filter observer --max-cases 1",
+            "cargo test --locked --bin spiral-coder -q",
+            "python3 -S -m unittest -v scripts.catalog_visible"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793714953671-23406-1",
+        "task_requests": 23,
+        "termination": "completed",
+        "wire_requests": 24
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 48,
+    "max_task_requests_per_iteration": 24,
+    "max_wire_requests": 56,
+    "stop_reason": "completed",
+    "task_requests": 23,
+    "version": 1,
+    "wire_requests": 24
+  },
+  "rounds": [
+    {
+      "completed": true,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "docs/evaluation.md",
+          "src/tui_replay.rs",
+          "src/tui_replay/catalog.rs"
+        ],
+        "newly_verified": [
+          "cargo fmt --all -- --check",
+          "cargo run --locked --quiet --bin spiral-coder -- tui-replay-list --tool-root . --filter observer --max-cases 1",
+          "cargo test --locked --bin spiral-coder -q",
+          "python3 -S -m unittest -v scripts.catalog_visible"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793714953671-23406-1",
+      "task_requests": 23,
+      "termination": "completed",
+      "wire_requests": 24,
+      "role_requests": {
+        "coder": 16,
+        "observer": 8
+      },
+      "current_checks": {
+        "python3 -S -m unittest -v scripts.catalog_visible": true,
+        "cargo test --locked --bin spiral-coder -q": true
+      },
+      "exact_calls": [
+        {
+          "step": 14,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": true,
+          "freshness": "current"
+        },
+        {
+          "step": 15,
+          "command": "cargo test --locked --bin spiral-coder -q",
+          "succeeded": true,
+          "freshness": "current"
+        }
+      ],
+      "accepted_done": [
+        16
+      ],
+      "latest_mutation": 11,
+      "guide_steps": [
+        11
+      ],
+      "changed_receipts": [
+        {
+          "step": 4,
+          "path": "src/tui_replay.rs",
+          "id": "call_GUNU5Bn5teF3hGfXXkEiAgCS"
+        },
+        {
+          "step": 6,
+          "path": "src/tui_replay.rs",
+          "id": "call_G8sweMhvJX4dtWt6De0Yn9eu"
+        },
+        {
+          "step": 7,
+          "path": "src/tui_replay/catalog.rs",
+          "id": "call_5oLbIoayRpb03tZQvL6fhP4m"
+        },
+        {
+          "step": 11,
+          "path": "docs/evaluation.md",
+          "id": "call_l4jq6WPAWKf91oJAkPSjPMcv"
+        }
+      ],
+      "remaining_native_checks": [],
+      "terminal_summaries": [
+        {
+          "step": 16,
+          "result": "OK: done",
+          "args": {
+            "acceptance_evidence": [
+              {
+                "command": "cargo test --locked --bin spiral-coder -q",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "cargo run --locked --quiet --bin spiral-coder -- tui-replay-list --tool-root . --filter observer --max-cases 1",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -S -m unittest -v scripts.catalog_visible",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "cargo test --locked --bin spiral-coder -q",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "None. All four exact checks succeeded after the final source and documentation edits.",
+            "remaining_acceptance": [],
+            "summary": "Production acceptance completed for the replay catalog. Changed in this acceptance task: `src/tui_replay.rs` and `src/tui_replay/catalog.rs` now share spec loading and case selection helpers with ordinary replay; `docs/evaluation.md` now prints the measured output for the required example. No changes were made to the native command registration, installed launcher, existing replay command, spec, or tests during this acceptance task.\n\nShared behavior was verified by routing catalog loading through the ordinary replay `load_spec` helper and selection through the ordinary replay `select_cases` helper, preserving spec order, ASCII case-insensitive id/tag filters, and zero-cap-as-one behavior. The candidate command output exactly matches the corrected guide example:\n`{\"version\":1,\"total\":1,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]}]}`\n\nBefore: FAILED is not claimed because no fresh baseline failure was executed in this acceptance task. After: PASSED is supported for all four required checks."
+          }
+        }
+      ]
+    }
+  ],
+  "changed_files": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "out_of_scope": [],
+  "missing_required": [],
+  "matched_original_tree_replay": true,
+  "composite_patch_sha256": "94fcae13b9cd38ec2237648f23c3708eb18d8f17181478f639a3231f67091454",
+  "native_guide_checks_report": true,
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "419599bb274261c3895b9450b9cc5aaea2fc99b1ae2ef04c8748be8d25e035b5"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "7e5f0e77c5924db904965079e445afc1aee67abeb04d7735556c8962e39f7790"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 10,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "09dff14e648a2e73f816532041b78ef435947fe52f3af9344b1be1cb5d5e6312"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "4044e198cacb6643d8dd75ea9df589d43efe43f4ecc0e45a9555920f0d28b432"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "0425225b21bde7ea7a1dcb488fcf2455196a55fa432ba2fd87a38bb4afef5d7e"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "891ae237560970b8ec5610c5fe21f0dadf9e341da699e09c5d1adb96b03233ce"
+    }
+  ],
+  "independent_all_passed": false,
+  "original_single_episode_qualification": null
+}

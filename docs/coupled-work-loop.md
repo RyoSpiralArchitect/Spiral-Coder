@@ -267,7 +267,10 @@ counts one native edit per pending artifact, the separate checks due after
 the edits and one authored report. Diagnosis or additional source changes
 can require more turns. At the last shared opportunity the coupled driver
 can send the Coder to report if the Observer's reserved share has already
-been served. A blocked report must still retain the unfinished criteria.
+been served. If the Observer's one repair of a rejected `done` is truncated
+or receives a recorded envelope transport rejection, the Coder can also use
+one report-only attempt when all native proof is current. A blocked report
+must still retain the unfinished criteria.
 
 ## Receipts and budget
 

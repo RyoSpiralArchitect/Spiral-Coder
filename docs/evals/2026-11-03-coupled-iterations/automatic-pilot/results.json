@@ -1,0 +1,192 @@
+{
+  "plan_sha256": "438c871d64165b6c0f5521487b07e3b4b9d9279ea0d886aaabd1a495db9c1ec8",
+  "sealed_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 110.015
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": false,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "scripts/run_coupled_pilot.py"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1793715632050-34452-1",
+        "task_requests": 11,
+        "termination": "blocked",
+        "wire_requests": 11
+      },
+      {
+        "completed": false,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1793715632050-34452-1",
+        "progress": {
+          "changed_files": [
+            "docs/pilot.md"
+          ],
+          "newly_verified": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793715700650-34452-3",
+        "task_requests": 4,
+        "termination": "observer_unavailable",
+        "wire_requests": 5
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 22,
+    "max_task_requests_per_iteration": 11,
+    "max_wire_requests": 24,
+    "stop_reason": "observer_unavailable",
+    "task_requests": 15,
+    "version": 1,
+    "wire_requests": 16
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "scripts/run_coupled_pilot.py"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793715632050-34452-1",
+      "task_requests": 11,
+      "termination": "blocked",
+      "wire_requests": 11,
+      "roles": {
+        "coder": 8,
+        "observer": 3
+      },
+      "requests_remaining": 0,
+      "changes": [
+        {
+          "step": 6,
+          "path": "scripts/run_coupled_pilot.py",
+          "call_id": "call_GELmtRBpdCcnnIrJ36rX7IYe"
+        }
+      ],
+      "exact_checks": [
+        {
+          "step": 4,
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "succeeded": false,
+          "call_id": "call_srV26j4Z0Z1puRZvUTXBbChx"
+        }
+      ],
+      "authored_reports": [
+        {
+          "step": 8,
+          "outcome": "OK: blocked",
+          "next_steps": "Read docs/pilot.md, edit only that file with the requested example and semantics, then execute `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v` as a fresh native check. The recorded baseline was Before: FAILED; the after result remains NOT VERIFIED."
+        }
+      ],
+      "observer_note": {
+        "future_action": "The Coder is blocked because coder requests are exhausted, docs/pilot.md has no edit receipt, and the required final check has not been executed after all required edits. The first future action is to read docs/pilot.md and make the required documentation edit; afterward, run python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v and record its receipt.",
+        "source_task_id": "task-1793715632050-34452-1",
+        "summary": "The source change in scripts/run_coupled_pilot.py is recorded, but the episode is incomplete. The documentation edit and final verification remain outstanding, and the exact test result after the edit is unverified.",
+        "version": 1
+      },
+      "rejections": []
+    },
+    {
+      "completed": false,
+      "directory": "iteration-02",
+      "iteration": 2,
+      "parent_task_id": "task-1793715632050-34452-1",
+      "progress": {
+        "changed_files": [
+          "docs/pilot.md"
+        ],
+        "newly_verified": [
+          "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793715700650-34452-3",
+      "task_requests": 4,
+      "termination": "observer_unavailable",
+      "wire_requests": 5,
+      "roles": {
+        "coder": 3,
+        "observer": 2
+      },
+      "requests_remaining": 7,
+      "changes": [
+        {
+          "step": 10,
+          "path": "docs/pilot.md",
+          "call_id": "call_ct6mA8Ye03U66kU1pxXgyxAb"
+        }
+      ],
+      "exact_checks": [
+        {
+          "step": 11,
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "succeeded": true,
+          "call_id": "call_CuyAGVPjNw96Be06er2lrXzy"
+        }
+      ],
+      "authored_reports": [],
+      "observer_note": {
+        "future_action": "The Coder is blocked because coder requests are exhausted, docs/pilot.md has no edit receipt, and the required final check has not been executed after all required edits. The first future action is to read docs/pilot.md and make the required documentation edit; afterward, run python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v and record its receipt.",
+        "source_task_id": "task-1793715632050-34452-1",
+        "summary": "The source change in scripts/run_coupled_pilot.py is recorded, but the episode is incomplete. The documentation edit and final verification remain outstanding, and the exact test result after the edit is unverified.",
+        "version": 1
+      },
+      "rejections": [
+        "(next-action) invalid response prevented automatic forwarding: suggested_args for done must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields; raw Observer output was preserved.",
+        "(next-action) invalid response prevented automatic forwarding: duplicate JSON field: primary_blocker at line 1 column 1028; raw Observer output was preserved."
+      ]
+    }
+  ],
+  "changed_files": [
+    "docs/pilot.md",
+    "scripts/run_coupled_pilot.py"
+  ],
+  "patch_sha256": "d3adad7f5d1ad708fb9541fbf410b2c7c8551270702304bf44f607aa371e8766",
+  "protected_files_preserved": true,
+  "independent_oracle": {
+    "passed": true,
+    "checks": {
+      "supplied_files_preserved": true,
+      "candidate_artifacts_present": true,
+      "independent_check_0": true,
+      "original_test_count": true,
+      "requested_documentation": true
+    },
+    "logs": [
+      {
+        "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+        "exit_code": 0,
+        "timed_out": false,
+        "log_sha256": "fde1eb6dc2053f24b718d932f109bdbd8245e97f921ad5373ae1c4f1691d0aae"
+      }
+    ],
+    "documentation_proxy_revision": "selection-paraphrases-v4",
+    "source_matches_reference": true
+  },
+  "native_accepted_final_report": false,
+  "closed_in_second_iteration": false
+}

@@ -242,20 +242,22 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             }
             .to_string(),
         );
-        let limited_done_repair = app.observer_assist_request.as_ref().is_some_and(|r| {
+        let unusable_done_repair = app.observer_assist_request.as_ref().is_some_and(|r| {
             let work = app.work_budget.snapshot();
             r.repair_started
                 && r.repairing_done
                 && !r.terminal_diagnosis
                 && matches!(&work.requests[r.request_cursor.min(work.requests.len())..], [receipt]
-                    if receipt.role == "observer" && receipt.status == "output_limited")
+                    if receipt.role == "observer" && (receipt.status == "output_limited"
+                        || (receipt.status == "completed" && receipt.transport_rejection == Some(
+                            crate::work_budget::TransportRejection::ObserverEnvelope))))
         });
-        if !scheduled && limited_done_repair && super::report_closeout::ready(app) {
+        if !scheduled && unusable_done_repair && super::report_closeout::ready(app) {
             app.observer_assist_request
                 .as_mut()
                 .unwrap()
                 .pending_report_closeout = true;
-            app.observer.push_tool("(next-action) done repair reached the output limit. Native checks are current; reserving one Coder report-only wire attempt within the existing task budget. Observer advice remains rejected and completion still requires a validated authored done.".into());
+            app.observer.push_tool("(next-action) done repair ended without a usable envelope. Native checks are current; reserving one Coder report-only wire attempt within the existing task budget. Observer advice remains rejected and completion still requires a validated authored done.".into());
         }
     } else if let Some(parsed) = parsed.as_ref() {
         app.observer.messages[idx].raw_content = Some(raw);
@@ -308,7 +310,7 @@ pub(super) async fn maybe_report_closeout(app: &mut App, tx: &mpsc::Sender<Reque
     if !pending || !super::report_closeout::ready(app) {
         return false;
     }
-    send_coder_input(app, tx, "Observer's done repair reached its output limit; its advice was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. Do not execute more work or infer missing proof. If anything is unverified, report it as remaining. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
+    send_coder_input(app, tx, "The Observer's done repair was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. Do not execute more work or infer missing proof. If anything is unverified, report it as remaining. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
     app.report_closeout_attempted
 }
 

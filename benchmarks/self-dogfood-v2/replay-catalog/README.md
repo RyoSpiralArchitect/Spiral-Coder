@@ -43,3 +43,7 @@ original tree. The final Observer handoff has its own one-request record.
 [R18 on the original source](../../../docs/evals/2026-11-03-strategy-memory/r18/README.md)
 tracks all ten Observer decisions against the remaining Coder turns and
 preserves the unresolved native dispatch and absent final report.
+
+[Bounded iterations after R18](../../../docs/evals/2026-11-03-coupled-iterations/README.md)
+track the preserved dispatch repair, the guide-to-report sequence, and a
+separate operator acceptance task on the same working source.

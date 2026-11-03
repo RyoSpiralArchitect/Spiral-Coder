@@ -8,11 +8,16 @@ fn sse(content: serde_json::Value) -> String {
 #[tokio::test]
 async fn headless_output_limit_handoff_uses_the_same_one_report_consumer() {
     for valid in [true, false] {
-        headless_case(valid).await;
+        headless_case(valid, "", "length").await;
     }
 }
 
-async fn headless_case(valid: bool) {
+#[tokio::test]
+async fn a_transport_rejected_done_repair_returns_to_coder_for_one_native_report() {
+    headless_case(true, r#"{"summary":"first","summary":"duplicate"}"#, "stop").await;
+}
+
+async fn headless_case(valid: bool, repair_text: &str, finish_reason: &str) {
     let coder = MockServer::start();
     let observer = MockServer::start();
     let initial = coder.mock(|when, then| {
@@ -47,7 +52,7 @@ async fn headless_case(valid: bool) {
         then.status(200)
             .header("content-type", "text/event-stream")
             .body(sse(
-                json!({"choices":[{"delta":{"content":""},"finish_reason":"length"}]}),
+                json!({"choices":[{"delta":{"content":repair_text},"finish_reason":finish_reason}]}),
             ));
     });
     let dir = tempfile::tempdir().unwrap();

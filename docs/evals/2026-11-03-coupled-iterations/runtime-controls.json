@@ -1,0 +1,55 @@
+{
+  "runtime_commit": "f1717c621f400c51db56cbb6fb9f7b44f62fc84a",
+  "runtime_sha256": "c4dff7b983adf0636d29e4dfa9744c1579b1c09c9edbd391f83caf9df4acd8bd",
+  "suite": {
+    "rust_unit_passed": 1100,
+    "rust_unit_ignored": 2,
+    "rust_integrations_passed": 4,
+    "tui_replays": 15,
+    "python_tests": 97,
+    "web_tests": 80,
+    "npm_tests": 5,
+    "repo_map_cases": 14,
+    "lite_smoke_passed": true,
+    "local_log_sha256": "b167140517951af90f80b0fd3e7e8303c74e85b93bbf78fb916856b33cca0dcc"
+  },
+  "real_native_wire_replay": {
+    "source_receipt": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+    "binary_sha256": "c4dff7b983adf0636d29e4dfa9744c1579b1c09c9edbd391f83caf9df4acd8bd",
+    "request_roles": [
+      "coder",
+      "coder",
+      "coder",
+      "observer",
+      "observer",
+      "coder"
+    ],
+    "authored_reply_digests": [
+      "d895c2896da5c35197dd66fc935c34573f3f3fb57d4960f74c3602caf27225de",
+      "9678d54457803696c80c1545a0779eee2575c625bf976d01571eda18855b526c"
+    ],
+    "native_windows_on_coder_wire": [
+      "[Native read window] The prior Observer recommendation was rejected. The native validator derived this optional first read_file window for a pending target: {\"end_line\":200,\"path\":\"npm/spiral-coder/lib/launcher.cjs\",\"start_line\":1}. Only a new ordinary Coder call can read the file. If you already have the necessary observed bytes, advance the outstanding work."
+    ],
+    "native_scheduler_events": [
+      {
+        "native_read_window": {
+          "end_line": 200,
+          "path": "npm/spiral-coder/lib/launcher.cjs",
+          "start_line": 1
+        },
+        "remaining_coder": 21
+      }
+    ],
+    "termination": "interrupted",
+    "exit": 1,
+    "assistant_actions_executed_in_probe": false,
+    "external_provider_requests": 0
+  },
+  "end_to_end": [
+    "two separate budget IDs; previous changed file and actual no-tool Observer note on the next Coder wire; no third iteration without progress",
+    "one remaining shared wire sent only to Coder with a done-only schema; the authored report was accepted",
+    "explicit new human task kept its saved conversation, required fresh proof and isolated a repeated prompt",
+    "an altered protected replay baseline refused a new iteration before a provider call"
+  ]
+}
