@@ -21,8 +21,9 @@ one-file patch. [Original protocol](protocol.md) · [Results](results.json) ·
 
 A shared native range error now gives the first legal window and where to
 resume. The recorded invalid proposals stay rejected. The [one-request
-Observer comparison](observer/plan.json) uses the sealed session separately
-from the full paired run.
+Observer comparison](observer/README.md) received the corrected window and
+passed native validation. The [handoff attempt](handoff/README.md) retained its
+on-disk partial result after a host restart.
 
 In the already qualified search repair H3, the Before field followed another
 sentence on the same line. A replay of the actual done call now rejects its
