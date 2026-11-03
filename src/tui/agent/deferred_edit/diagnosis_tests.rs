@@ -236,3 +236,44 @@ fn an_identical_premature_retry_keeps_the_original_proposal_until_a_new_read() {
     exchange(&mut m, "other", "patch_file", different, &block);
     assert!(view(&m, root.path()).is_null());
 }
+
+#[test]
+fn whole_json_range_confirms_source_bytes_without_its_diagnostic_appendix() {
+    let root = tempfile::tempdir().unwrap();
+    let path = "catalog.json";
+    let source = r#"{"cases":["猫"]}"#;
+    std::fs::write(root.path().join(path), source).unwrap();
+    let patch = json!({"path":path,"search":r#"["猫"]"#,"replace":r#"["猫","犬"]"#});
+    let mut m = vec![crate::task_origin::user_message(
+        "Repair the catalog.\nAllowed paths only:\n- catalog.json",
+        crate::task_origin::MessageOrigin::User,
+    )];
+    exchange(
+        &mut m,
+        "mutation",
+        "patch_file",
+        json!({"path":path}),
+        "OK: patched 'catalog.json'\n[auto-test] ✗ FAILED (exit 1)\nassertion failed",
+    );
+    let hold = format!("GOVERNOR BLOCKED\ncwd: {}\n\n[Recovery Gate] stage=diagnose\nInspect the failure\n\ntool:\npatch_file\narguments:\n{patch}", root.path().display());
+    exchange(&mut m, "held", "patch_file", patch.clone(), &hold);
+    let args = view(&m, root.path())["suggested_args"].clone();
+    assert_eq!(args, json!({"path":path,"start_line":1,"end_line":1}));
+    let (result, failed) = crate::file_tools::read_range::execute_args(&args, root.path().to_str());
+    assert!(!failed && result.contains("\n[JSON append guidance — diagnostic only]"));
+    exchange(&mut m, "inspect", "read_file", args, &result);
+    let ready = view(&m, root.path());
+    assert_eq!(ready["confirming_read_call_id"], "inspect");
+    assert_eq!(ready["suggested_args"], patch);
+    // An unrelated change keeps the original anchor but invalidates the full read.
+    std::fs::write(root.path().join(path), r#"{"cases":["猫"],"other":1}"#).unwrap();
+    assert_eq!(view(&m, root.path())["suggested_tool"], "read_file");
+    std::fs::write(root.path().join(path), source).unwrap();
+    for invalid in [
+        format!("{result}unexpected tail"),
+        result.replacen("(1 lines", "(01 lines", 1),
+    ] {
+        m.last_mut().unwrap()["content"] = json!(invalid);
+        assert_eq!(view(&m, root.path())["suggested_tool"], "read_file");
+    }
+}

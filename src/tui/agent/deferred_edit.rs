@@ -96,15 +96,7 @@ fn full_read<'a>(read: &Exchange<'a>, path: &str) -> Option<&'a str> {
     {
         return None;
     }
-    let (header, body) = read.output.split_once('\n')?;
-    (body.len() <= 32 * 1024
-        && header
-            == format!(
-                "[{path}] ({} lines, {} bytes)",
-                body.lines().count(),
-                body.len()
-            ))
-    .then_some(body)
+    crate::file_tools::read_range::fresh_full_body(path, read.output)
 }
 
 pub(super) fn project(messages: &[Value]) -> Option<Proposal> {

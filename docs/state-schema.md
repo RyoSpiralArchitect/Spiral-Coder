@@ -1488,3 +1488,8 @@ named target and compatible read or edit intent. Other operations need their
 recorded invocation in the reflection. Missing grounding leaves the strategy
 unmatched. A legacy session bridge with multiple human tasks is rederived from
 the current task before it can enter the Coder prompt.
+
+When a confirming range covers an entire JSON file, the native read may
+append an array-edit recipe. A deferred proposal compares the declared
+source bytes with the current file and accepts only the canonical diagnostic
+appendix for those bytes. Unexpected trailing text leaves the reread due.
