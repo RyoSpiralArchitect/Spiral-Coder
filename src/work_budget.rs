@@ -183,7 +183,12 @@ impl WorkBudget {
         state
             .protected_artifacts
             .clone_from(&parent.protected_artifacts);
-        self.persist(&mut state)
+        self.persist(&mut state)?;
+        drop(state);
+        if let Some(problem) = self.preservation_issue() {
+            bail!("original protected artifact changed before the next iteration: {problem}");
+        }
+        Ok(())
     }
 
     pub fn protect_replay(&self, root: &std::path::Path) -> Result<()> {

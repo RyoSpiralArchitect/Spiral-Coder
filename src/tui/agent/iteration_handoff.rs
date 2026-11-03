@@ -51,12 +51,47 @@ impl Note {
         let note: Self = serde_json::from_value(root.get("iteration_handoff")?.clone()).ok()?;
         (crate::task_origin::is_human_request(root)
             && note.version == 1
+            && !note.source_task_id.is_empty()
             && note.source_task_id.chars().count() <= 160
             && note.summary.chars().count() <= 600
             && !note.future_action.is_empty()
             && note.future_action.chars().count() <= 800)
             .then_some(note)
     }
+}
+
+pub(crate) fn remember(
+    session: &mut crate::agent_session::AgentSession,
+    path: Option<&std::path::Path>,
+    task_id: &str,
+    reply: &ObserverSuggestionEnvelope,
+) -> anyhow::Result<()> {
+    use crate::agent_session::AgentSession;
+    // Do not replace a newer autosave when the pane received an old answer.
+    // The coupled report still retains the in-memory session and the raw reply.
+    let durable = path
+        .filter(|p| p.exists())
+        .map(AgentSession::load)
+        .transpose();
+    let matches = durable
+        .as_ref()
+        .ok()
+        .and_then(|s| s.as_ref())
+        .is_some_and(|saved| {
+            saved.tool_root == session.tool_root && saved.messages == session.messages
+        });
+    if !Note::record(&mut session.messages, task_id, reply) {
+        return Ok(());
+    }
+    if let (Some(path), Some(mut saved)) = (path, durable?) {
+        anyhow::ensure!(
+            matches,
+            "native session advanced before the Observer note could be saved"
+        );
+        Note::record(&mut saved.messages, task_id, reply);
+        AgentSession::save_atomic(path, &saved)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

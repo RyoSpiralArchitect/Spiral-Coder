@@ -241,3 +241,34 @@ mod tests {
         assert_eq!(budget.remaining(), 7);
     }
 }
+
+#[cfg(test)]
+mod iteration_protection_tests {
+    use super::*;
+
+    #[test]
+    fn fresh_iteration_keeps_the_original_replay_baseline_and_refuses_external_drift() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        let spec = root.join(".spiral-coder/tui_replay.json");
+        std::fs::create_dir_all(spec.parent().unwrap()).unwrap();
+        std::fs::write(
+            &spec,
+            r#"{"cases":[{"id":"one","checks":[{"kind":"must_remain"}]}]}"#,
+        )
+        .unwrap();
+        let prompt = "Preserve every existing case in .spiral-coder/tui_replay.json";
+        let first = WorkBudget::new(prompt, 5, None);
+        first.protect_replay(root).unwrap();
+        let second = WorkBudget::new(prompt, 5, None);
+        second.inherit_protections(&first.snapshot(), root).unwrap();
+        assert_eq!(
+            first.snapshot().protected_artifacts,
+            second.snapshot().protected_artifacts
+        );
+        std::fs::write(&spec, r#"{"cases":[]}"#).unwrap();
+        let third = WorkBudget::new(prompt, 5, None);
+        assert!(third.inherit_protections(&second.snapshot(), root).is_err());
+        assert!(third.snapshot().requests.is_empty());
+    }
+}
