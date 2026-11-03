@@ -31,6 +31,11 @@ pub(super) fn return_for_overlong_read(
     let session = app.coder_session.as_ref()?;
     let obligations =
         agent::task_obligations::project(&session.messages, app.project_test_cmd.as_deref());
+    if obligations.required_diagnostic_read.is_none()
+        && (obligations.required_recheck.is_some() || obligations.report_repair.is_some())
+    {
+        return None;
+    }
     let allocation = app.work_budget.snapshot();
     let coder = allocation.coder_remaining();
     let costly = allocation

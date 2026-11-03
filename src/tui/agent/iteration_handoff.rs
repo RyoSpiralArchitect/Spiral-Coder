@@ -54,7 +54,7 @@ impl Note {
             && !note.source_task_id.is_empty()
             && note.source_task_id.chars().count() <= 160
             && note.summary.chars().count() <= 600
-            && !note.future_action.is_empty()
+            && !note.future_action.trim().is_empty()
             && note.future_action.chars().count() <= 800)
             .then_some(note)
     }

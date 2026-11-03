@@ -1,5 +1,5 @@
 //! Explicitly budgeted successive episodes on one live workspace. Individual
-//! sessions, ledgers and reports stay in their own immutable output directories.
+//! sessions, ledgers and reports stay in their own output directories.
 use super::*;
 use crate::tui::agent::current_evidence::Freshness;
 use crate::work_budget::{RequestCharge, WorkState};
@@ -29,6 +29,22 @@ pub(super) fn last_coder_report(app: &App) -> bool {
                 .task_requirements
                 .declared
         })
+}
+
+pub(super) async fn send_last_report(
+    app: &mut App,
+    tx: &mpsc::Sender<RequestEvent>,
+    trace: &crate::trace_writer::TraceWriter,
+) -> Result<bool> {
+    if !last_coder_report(app) {
+        return Ok(false);
+    }
+    trace.event(
+        "reserved_coder_report",
+        json!({"remaining_shared":1,"remaining_coder":1}),
+    )?;
+    send_coder_input(app,tx,"Use your last turn for the native done report. If anything is unfinished, list the outstanding criteria and the first concrete action for a later iteration.".into(),CoderInput::ReportCloseout).await;
+    Ok(true)
 }
 
 #[derive(Serialize, Deserialize, Default)]

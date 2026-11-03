@@ -209,3 +209,76 @@ async fn explicit_follow_up_keeps_conversation_and_requires_new_human_task_proof
     assert!(view.iteration_handoff.is_none() && view.previous_blocked_report.is_none());
     call.assert_hits(1);
 }
+
+#[tokio::test]
+async fn the_reserved_last_wire_is_a_coder_report_and_can_finish_the_task() {
+    let server = MockServer::start();
+    let terminal=server.mock(|when,then|{
+        when.method(POST).path("/chat/completions").body_contains("Use your last turn").matches(|r| {
+            let v:Value=serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            v["tools"].as_array().is_some_and(|t| t.len()==1 && t[0]["function"]["name"]=="done")
+        });
+        then.status(200).header("content-type","text/event-stream").body(response("done","last-report",crate::tui::events::tests::closeout_args(),"<impact>\nchanged: source.py and docs/usage.md repaired\nprogress: step 2 exact check passed\nremaining_gap: final report\n</impact>\n<think>\ngoal: Report current proof\nstep: 2\ntool: done\nrisk: inaccurate claims\ndoubt: none\nnext: finish report\nverify: retained native check\n</think>"));
+    });
+    let cli = crate::Cli::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--model",
+        "offline",
+        "--base-url",
+        &server.base_url(),
+        "--api-key",
+        "offline",
+        "--timeout-seconds",
+        "2",
+    ])
+    .unwrap();
+    let cfg = cli.common.to_partial_config().resolve().unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("workspace");
+    std::fs::create_dir(&root).unwrap();
+    let output = temp.path().join("capture");
+    let storage = crate::runtime_storage::RuntimeStorage::create(&root, &output).unwrap();
+    let root = root.canonicalize().unwrap().display().to_string();
+    let mut app = App::new(
+        cfg.clone(),
+        cfg.clone(),
+        cfg,
+        Some(root.clone()),
+        Some(root.clone()),
+        false,
+        "en".into(),
+        Some(3),
+    );
+    let messages = crate::tui::events::tests::closeout_messages();
+    let task = crate::task_origin::root_user_text(&messages).to_owned();
+    app.coder_session = Some(AgentSession::new(Some(root), None, None, None, messages));
+    app.work_budget = crate::work_budget::WorkBudget::new(&task, 3, None);
+    for role in ["coder", "observer"] {
+        app.work_budget
+            .begin(role, &json!({}))
+            .unwrap()
+            .status("completed");
+    }
+    let trace = crate::trace_writer::TraceWriter::new(output.join("trace.jsonl")).unwrap();
+    crate::runtime_storage::scope(Some(storage), async {
+        let (tx, mut rx) = mpsc::channel(256);
+        assert!(
+            super::super::iterations::send_last_report(&mut app, &tx, &trace)
+                .await
+                .unwrap()
+        );
+        drain(&mut app, &mut rx, PaneId::Coder, &trace)
+            .await
+            .unwrap();
+    })
+    .await;
+    terminal.assert_hits(1);
+    assert_eq!(app.coder_completed, Some(true));
+    assert_eq!(
+        app.work_budget.snapshot().requests.last().unwrap().role,
+        "coder"
+    );
+    assert_eq!(app.work_budget.remaining(), 0);
+}

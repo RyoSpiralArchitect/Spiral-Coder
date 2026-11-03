@@ -237,6 +237,7 @@ async fn run_iteration(
             "follow-up must use the saved workspace"
         );
         session.repair_for_resume();
+        session.cur_cwd = Some(root.clone());
         app.coder_session = Some(session);
         send_coder_input(&mut app, &coder_tx, prompt, CoderInput::NewHumanTask).await;
     } else if let Some(seed) = &args.seed_session {
@@ -306,11 +307,7 @@ async fn run_iteration(
             }
             let blocked = app.coder_yield_reason
                 == Some(super::super::coder_yield::CoderYieldReason::Blocked);
-            if !blocked && iterations::last_coder_report(&app) {
-                trace.event("reserved_coder_report", json!({"remaining_shared":1,"remaining_coder":1}))?;
-                send_coder_input(&mut app, &coder_tx, "Use your last turn for the native done report. If anything is unfinished, list the outstanding criteria and the first concrete action for a later iteration.".into(), CoderInput::ReportCloseout).await;
-                continue;
-            }
+            if !blocked && iterations::send_last_report(&mut app, &coder_tx, &trace).await? { continue; }
             let idx = app
                 .coder
                 .messages
@@ -332,6 +329,7 @@ async fn run_iteration(
             if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
                 continue;
             }
+            if !blocked && app.pending_observer_hint.is_none() && iterations::send_last_report(&mut app,&coder_tx,&trace).await? { continue; }
             let window = observer_request::take_delivery_window(&mut app);
             if let Some(args) = &window {
                 trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;

@@ -1,5 +1,6 @@
 """Reapply the final composite patch and run the original six #49 checks."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -10,12 +11,16 @@ HERE = Path(__file__).resolve().parent
 
 
 def assess(raw, chain, result, dest, target, plan_path):
+    plan=json.loads(plan_path.read_bytes())
+    declaration=raw/"predeclared.json"
+    digest=lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    assert digest(declaration)==plan["r18_declaration"]
+    assert all(digest(raw/"driver"/name)==value for name,value in json.loads(declaration.read_bytes())["driver_sha256"].items())
     sys.path.insert(0,str(raw/"driver"))
     from coupled_bench.common import inventory, read_json, sha, write_json
     from self_dogfood.assessment import checks
     from self_dogfood.evidence import bound_run
     from self_dogfood.runner import cache_lock
-    plan=read_json(plan_path)
     assert bound_run(raw,plan["r18_declaration"],plan["r18_seal"])
     stored=read_json(chain/"receipt.json")
     assert sha(chain/"receipt.json")==read_json(result)["receipt_sha256"] and stored["plan_sha256"]==sha(plan_path)

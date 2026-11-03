@@ -2096,6 +2096,14 @@ fn recent_blocked_fix_existing_mutation_action(
     None
 }
 
+fn unique_requested_source_member(root: &str, target: &str) -> Option<String> {
+    let mut members = path_literals_in_text(root)
+        .into_iter()
+        .filter(|path| path.starts_with("src/") && path != target);
+    let first = members.next()?;
+    members.all(|member| member == first).then_some(first)
+}
+
 fn synthesize_fix_existing_literal_member_patch(
     messages: &[Value],
     root_user_text: &str,
@@ -2109,9 +2117,7 @@ fn synthesize_fix_existing_literal_member_patch(
         return None;
     }
     let body = reads.get(target_path.as_str())?;
-    let missing_literal = path_literals_in_text(root_user_text)
-        .into_iter()
-        .find(|literal| literal.starts_with("src/") && literal != &target_path)?;
+    let missing_literal = unique_requested_source_member(root_user_text, &target_path)?;
     let (search, replace) = synthesize_list_member_insertion(body, missing_literal.as_str())?;
     Some(ToolCallData {
         thought_signature: None,
@@ -2245,9 +2251,7 @@ fn repair_blocked_patch_with_prompt_literal(
     body: &str,
     root_user_text: &str,
 ) -> Option<ToolCallData> {
-    let missing_literal = path_literals_in_text(root_user_text)
-        .into_iter()
-        .find(|literal| literal.starts_with("src/") && literal != path)?;
+    let missing_literal = unique_requested_source_member(root_user_text, path)?;
     if search_prefix.trim().is_empty() {
         return None;
     }
@@ -5012,6 +5016,11 @@ mod literal_list_recovery_tests {
 
     #[test]
     fn a_lookup_cannot_become_a_patch_against_an_unrelated_string_list() {
+        assert!(super::unique_requested_source_member(
+            "Inspect `src/a.rs`, `src/b.rs` and `src/c.rs`.",
+            "src/a.rs"
+        )
+        .is_none());
         let source="(\n    \"promote-harness\",\n    \"generate governor-contract promotion candidates from harness overlays\",\n),\n];\n";
         assert!(synthesize_list_member_insertion(source, "src/tui_replay/catalog.rs").is_none());
         let lists = "    \"src/a.rs\",\n];\nconst OTHER: &[&str] = &[\n    \"src/b.rs\",\n];\n";
