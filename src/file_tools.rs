@@ -891,6 +891,16 @@ pub fn tool_list_dir(
         if !include_hidden && name.starts_with('.') && name != ".spiral-coder.md" {
             continue;
         }
+        // A discovered link is neither an owned directory nor a sized file.
+        // Show it without following it outside the workspace.
+        if entry
+            .file_type()
+            .map(|kind| kind.is_symlink())
+            .unwrap_or(false)
+        {
+            files.push(format!("{name} (symlink)"));
+            continue;
+        }
         if path.is_dir() {
             dirs.push(format!("{name}/"));
         } else {
@@ -1023,6 +1033,13 @@ pub fn tool_glob_files(pattern: &str, dir: &str, base: Option<&str>) -> (String,
         let mut subdirs: Vec<PathBuf> = Vec::new();
 
         for entry in rd.flatten() {
+            if entry
+                .file_type()
+                .map(|kind| kind.is_symlink())
+                .unwrap_or(false)
+            {
+                continue;
+            }
             let path = entry.path();
             let name = path
                 .file_name()
@@ -1299,6 +1316,45 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
         assert!(!text.contains("needle outside"), "{text}");
         assert!(!text.contains("internal-dir/"), "{text}");
         assert!(text.contains("1 match(es)"), "{text}");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn glob_and_list_dir_neither_descend_nor_mislabel_discovered_links() {
+        use std::{fs, os::unix::fs::symlink};
+
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path().join("work");
+        let nested = root.join("nested");
+        let outside = tmp.path().join("outside");
+        fs::create_dir_all(&nested).unwrap();
+        fs::create_dir(&outside).unwrap();
+        fs::write(nested.join("regular.txt"), "real\n").unwrap();
+        fs::write(outside.join("private.txt"), "outside\n").unwrap();
+        symlink(outside.join("private.txt"), nested.join("alias.txt")).unwrap();
+        symlink(&outside, root.join("external-dir")).unwrap();
+        symlink(&nested, root.join("internal-dir")).unwrap();
+        symlink(root.join("missing"), root.join("dangling")).unwrap();
+        let base = root.to_string_lossy().into_owned();
+
+        let (text, error) = tool_glob_files("**/*.txt", "", Some(&base));
+        assert!(!error, "{text}");
+        assert_eq!(text.matches('\n').count(), 1, "{text}");
+        assert!(text.contains("nested/regular.txt"), "{text}");
+        assert!(!text.contains("alias.txt"), "{text}");
+        assert!(!text.contains("external-dir/"), "{text}");
+        assert!(!text.contains("internal-dir/"), "{text}");
+
+        let (listing, error) = tool_list_dir("", MAX_LIST_DIR_ENTRIES, false, Some(&base));
+        assert!(!error, "{listing}");
+        assert!(!listing.contains("d external-dir/"), "{listing}");
+        assert!(!listing.contains("d internal-dir/"), "{listing}");
+        for name in ["external-dir", "internal-dir", "dangling"] {
+            assert!(
+                listing.contains(&format!("f {name} (symlink)")),
+                "{listing}"
+            );
+        }
     }
 
     #[test]
