@@ -1,0 +1,32 @@
+{
+  "active_iteration": null,
+  "completed": true,
+  "iterations": [
+    {
+      "completed": true,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "hello.py",
+          "test_hello.py"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793855064012-96876-1",
+      "task_requests": 8,
+      "termination": "completed",
+      "wire_requests": 8
+    }
+  ],
+  "max_iterations": 3,
+  "max_task_requests": 30,
+  "max_task_requests_per_iteration": 10,
+  "max_wire_requests": 36,
+  "stop_reason": "completed",
+  "task_requests": 8,
+  "version": 1,
+  "wire_requests": 8
+}

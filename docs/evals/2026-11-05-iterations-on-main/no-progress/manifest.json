@@ -1,0 +1,29 @@
+{
+  "active_iteration": null,
+  "completed": false,
+  "iterations": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793855109130-97016-1",
+      "task_requests": 4,
+      "termination": "budget_exhausted",
+      "wire_requests": 4
+    }
+  ],
+  "max_iterations": 3,
+  "max_task_requests": 12,
+  "max_task_requests_per_iteration": 4,
+  "max_wire_requests": 18,
+  "stop_reason": "no_new_edit_or_verification",
+  "task_requests": 4,
+  "version": 1,
+  "wire_requests": 4
+}

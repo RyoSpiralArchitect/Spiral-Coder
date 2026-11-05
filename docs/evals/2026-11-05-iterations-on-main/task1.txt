@@ -1,0 +1,1 @@
+Create a file hello.py containing a function add(a,b) that returns a+b, and a test_hello.py with one unittest that asserts add(2,3)==5. Run the test with python3 -m unittest test_hello. Report what you did.
