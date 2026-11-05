@@ -216,6 +216,10 @@ pub(crate) fn build_tui_next_action_prompt(
         "en" => "English",
         _ => "Japanese",
     };
+    use crate::observer_action::diagnostic::{self, Output};
+    if Output::for_packet(packet, reason_hint) == Output::Diagnostic {
+        return diagnostic::prompt(packet, lang_name);
+    }
     let reason = if packet["task_obligations"]["report_repair"].is_object() {
         "authored_report"
     } else {
@@ -265,6 +269,7 @@ Rules:\n\
 - Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
 - When work_progress shows repeated observations without an edit or exec, name the concrete missing fact before proposing another read. Use the current exact region if it supports a small repair; otherwise obtain only the missing region or use no-tool clarification. A returned read is not necessarily successful diagnosis and does not authorize an invented patch.\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
+- If task_obligations.required_recheck is present, the repair already landed: propose exec of that exact command in the workspace root before more edits or a different check. A passing automatic test for another command does not resolve it. If unable to recommend the recheck, explain the blocker.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
 - Use final_answer.check_facts for test counts, preserving phase, exact command and runner units. Null counts are unknown. Keep failure events distinct from failed test methods. Check that any example output states its input condition; do not turn the empty-input example into a constant result for every input.\n\
 - For done, use acceptance_criteria.reference exactly in completed_acceptance, remaining_acceptance and acceptance_evidence.criterion. Provide exactly one evidence row for every completed criterion, citing current_commands verbatim. Do not paraphrase references or cover only the test-related criteria. Available command choices are not proof for every criterion: decide each mapping from native evidence and leave unsupported criteria remaining. Keep the envelope concise; one primary suggestion is sufficient.\n\

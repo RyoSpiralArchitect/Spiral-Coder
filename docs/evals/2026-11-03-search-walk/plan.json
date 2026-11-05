@@ -1,0 +1,42 @@
+{
+  "condition": "H1 recursive search on discovered symbolic links",
+  "baseline_commit": "527413cc114e0f621ccbfeb9eba6bd25d2531c15",
+  "runtime_commit": "d78b4a24f57fae7414db0fee76c91e3f323b5370",
+  "executor_sha256": "1d65d5f1625a96661f4ad221c3a4e368c7406ce2647574973d66624076b04308",
+  "raw_root": "search-walk-native-h1-20261103-fmt1",
+  "declaration_sha256": "e1e0ae1ff609ad853413493f1362d8fc79a289c2e7efbdb331998bccdc5d1706",
+  "protocol_sha256": "c5df512add03039963af78c04daccce8eb422bb971230db6a63ea570a9c38e33",
+  "spec_sha256": "3542f89fed4bd1e885b7d3c1a05e3f7e2e54ae97f7e1eb9a8a6977dd00219ab6",
+  "prompt_sha256": "a555c767925a15a8864310fc6eae2df1fc46cc2c809a6760da3ab7bc5638f55d",
+  "preflight_sha256": "3af456ac50ab9ce0fa93e8d3ab05315935a0ee7dafd48d9833b26a2125b00b49",
+  "provider_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "editable": [
+    "src/file_tools.rs"
+  ],
+  "visible_fixtures": [
+    "scripts/search_walk_fixture.py",
+    "scripts/search_walk_visible.py"
+  ],
+  "hidden_and_reference_absent_from_candidate": true
+}

@@ -1,0 +1,278 @@
+{
+  "predeclaration_sha256": "5ceaebe132388dba656da6281b68c9253601d9ca0e10659822b95ca6bfdc2feb",
+  "run_receipt_sha256": "ece65a9eb192e02f985b23bfeb4a6f20becc048760bc51e5fa2615973e860714",
+  "assessment_sha256": "73887570aaa7a30f3cfff9b5fd6d25576c3b961951f0a6c259eab7d29837f238",
+  "completed": true,
+  "termination": "completed",
+  "role_requests": {
+    "coder": 15,
+    "observer": 4
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": true,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": true,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": true,
+    "accepted_done": true,
+    "no_remaining_acceptance": true,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": true,
+    "no_pending_checks": true,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": true,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": true,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/file_tools.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "[DONE] Updated src/file_tools.rs so recursive directory traversal skips discovered symbolic-link entries before reading or descending. Before: FAILED\nAfter: PASSED\nThe baseline command `python3 -S -m unittest -v scripts.search_walk_visible` recorded 1 test run with 1 failure; after the edit it recorded 1 test run with 0 failures. `cargo fmt --all -- --check` passed. `cargo test --locked --bin spiral-coder -q` passed with 1066 tests passed, 0 failed, and 2 ignored.",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.search_walk_visible": true,
+    "cargo fmt --all -- --check": true,
+    "cargo test --locked --bin spiral-coder -q": true
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 19,
+    "task_requests": 19,
+    "transport_requests": 0,
+    "coder_task_requests": 15,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "observed",
+      "visible_passed": "observed",
+      "control_non_regression": "observed",
+      "fresh_full_check": "observed",
+      "docs_and_receipts": "observed"
+    },
+    "highest_contiguous_stage": 6,
+    "first_unmet_stage": null,
+    "termination": "completed"
+  },
+  "first_changed_step_by_path": {
+    "src/file_tools.rs": 5
+  },
+  "changed_edits": [
+    {
+      "result_step": 5,
+      "tool": "patch_file",
+      "call_id": "call_dibM3zfmOBJgYQ38QTK70IKm",
+      "path": "src/file_tools.rs",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 10,
+      "tool": "patch_file",
+      "call_id": "call_7zFl6DTAXzfi1KHaNv7VEOON",
+      "path": "src/file_tools.rs",
+      "auto_test": "PASSED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/search_walk_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_636HmM9zEzUmziU7FwWuiYMf"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_U0FYdXt738t0WLS8sHirGJJy"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "patch_file",
+      "path": "src/file_tools.rs",
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_TgJ3sdKdMGdPXHLgGROrYi1q",
+        "call_7zFl6DTAXzfi1KHaNv7VEOON"
+      ],
+      "linked_changed_calls": [
+        "call_7zFl6DTAXzfi1KHaNv7VEOON"
+      ]
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": true,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_u9sLCu7caNQoPl0nE2pci2Oz",
+        "call_d7vgdWxt4WlykDPEcJrJuelD"
+      ],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "20f5f817b83f1cb409ffc91e96440e452b7288f292ed7f2e468523062d7911e8",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/search_walk_visible.py"
+    },
+    {
+      "text_sha256": "418fa7fa1c22d16ee8b4c57d9e9cfa6d9d73cb25ee999588f16593a2e7694363",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "4dd95f18f7e3848012c2fcd9cbbd27327a8bf74007f3d7246c9d54c1e3cbecab",
+      "first_listed_kind": "edit",
+      "first_listed_tool": "patch_file",
+      "first_listed_path": "src/file_tools.rs"
+    },
+    {
+      "text_sha256": "996824668b429dcc1854d0389b22eff96bff0197f304cf78d4e12bc209006596",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "aac42eea4ddfa100579a146d17728fe4954d4989bb87ccd104e0d28defec2a9c",
+      "has_process_result": true
+    },
+    {
+      "id": "search-walk-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "5c4e3ebe7dcb6f00abcb87c0f640e21291cf098fd0145f5b38081f655dfbf520",
+      "has_process_result": true
+    },
+    {
+      "id": "search-walk-held-out",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "d63d4521681cba0bebd8e4f82f1d2832d19783a36d126866b221cf4107830df6",
+      "has_process_result": true
+    },
+    {
+      "id": "ordinary-search",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "2d9dd9e0888466a1c00eeb8e433037e4b614adedcc291c442ee750cdf8552422",
+      "has_process_result": true
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "e3efcb4e3dc488789217e3bc9d37df08f141bcabd6f5762f1942d5550be3acf0",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [
+    {
+      "result_step": 15,
+      "executed": true,
+      "result": "OK: done",
+      "arguments": {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v scripts.search_walk_visible",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "cargo fmt --all -- --check",
+            "criterion": "acceptance 2"
+          },
+          {
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "criterion": "acceptance 3"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3"
+        ],
+        "next_steps": "None; all requested checks passed after the final edit.",
+        "remaining_acceptance": [],
+        "summary": "[DONE] Updated src/file_tools.rs so recursive directory traversal skips discovered symbolic-link entries before reading or descending. Before: FAILED\nAfter: PASSED\nThe baseline command `python3 -S -m unittest -v scripts.search_walk_visible` recorded 1 test run with 1 failure; after the edit it recorded 1 test run with 0 failures. `cargo fmt --all -- --check` passed. `cargo test --locked --bin spiral-coder -q` passed with 1066 tests passed, 0 failed, and 2 ignored."
+      }
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 204.178
+  }
+}

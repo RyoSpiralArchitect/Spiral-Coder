@@ -85,17 +85,35 @@ impl Catalog {
         Ok(checks)
     }
 
+    #[cfg(test)]
     pub(super) fn bind(&self, tools: &mut Value, base_url: &str) -> Option<String> {
-        let enabled = !self.checks.is_empty()
+        self.bind_for(tools, base_url, None)
+    }
+
+    pub(super) fn bind_for(
+        &self,
+        tools: &mut Value,
+        base_url: &str,
+        recheck: Option<&str>,
+    ) -> Option<String> {
+        let choices: Vec<_> = self
+            .checks
+            .iter()
+            .filter(|c| recheck.is_none_or(|cmd| cmd == c.command))
+            .collect();
+        let enabled = !choices.is_empty()
             && !crate::streaming::provider_metadata::is_google_endpoint(base_url);
         for tool in tools.as_array_mut().into_iter().flatten() {
             if tool["function"]["name"] != "exec" {
                 continue;
             }
             let parameters = &mut tool["function"]["parameters"];
+            if let Some(command) = recheck {
+                parameters["properties"]["command"]["enum"] = json!([command]);
+            }
             if enabled {
                 parameters["properties"]["check_id"]["enum"] =
-                    json!(self.checks.iter().map(|c| &c.id).collect::<Vec<_>>());
+                    json!(choices.iter().map(|c| &c.id).collect::<Vec<_>>());
             } else {
                 parameters["properties"]
                     .as_object_mut()
@@ -107,7 +125,7 @@ impl Catalog {
         if let Some(error) = &self.error {
             return Some(format!("[Check selections unavailable] {error}. Use the original exact commands; all task obligations remain."));
         }
-        enabled.then(|| format!("[Declared check selections]\n{}\nSelect an exact command with exec arguments {{\"check_id\":\"<id>\"}} alone. Runtime executes the listed command at tool_root and records its command, directory and result. Keep tool=exec in think; next may name the check ID. Do not add command, cwd, pipelines or output filters: runtime bounds displayed output. Selection does not grant approval or satisfy a check. Required checks still need fresh successful native execution after final edits; optional reproducers do not create new completion obligations.", json!(self.checks)))
+        enabled.then(|| format!("[Declared check selections]\n{}\nSelect an exact command with exec arguments {{\"check_id\":\"<id>\"}} alone. Runtime executes the listed command at tool_root and records its command, directory and result. Keep tool=exec in think; next may name the check ID. Do not add command, cwd, pipelines or output filters: runtime bounds displayed output. Selection does not grant approval or satisfy a check. Required checks still need fresh successful native execution after final edits; optional reproducers do not create new completion obligations.", json!(choices)))
     }
 
     /// Resolve only a single valid selection, before any action/recovery gate.

@@ -1,0 +1,304 @@
+{
+  "prepared_at": "2026-11-02T18:52:14.154480+00:00",
+  "baseline_expected": true,
+  "reference_passed": false,
+  "baseline": [
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 30.393,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "candidate-build",
+      "kind": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "9d0096d11db1bece9cd22ab3e35e4c4f33058a2d71d1ebcf2ceedbf0010d767e",
+      "log": "checks/baseline/candidate-build.log",
+      "package_cache_reset_sha256": "961cee0da24e13ab58e4560b8835a73ed3d306b3dde47045b382519fb98937d6",
+      "candidate_binary_sha256": "91dbdd7dc5e824d938d62124a1b68a4c2a95e119d21197abefab790778e08de7"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.703,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "search-walk-visible",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.search_walk_visible"
+      ],
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "passed": false,
+      "log_sha256": "318ae39b3443eae993066530b59e4ccbb32cff7bfdc334497928bb01e34af84b",
+      "log": "checks/baseline/search-walk-visible.log",
+      "package_cache_reset_sha256": "961cee0da24e13ab58e4560b8835a73ed3d306b3dde47045b382519fb98937d6",
+      "candidate_binary_sha256": "91dbdd7dc5e824d938d62124a1b68a4c2a95e119d21197abefab790778e08de7"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.249,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "search-walk-held-out",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/held_out.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/cli-route-validation-20261102/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 0,
+        "failed": 2,
+        "ignored": 0
+      },
+      "passed": false,
+      "log_sha256": "9f3e01b9e7713c79a5d681c989323ab44aa06eae97617f3b6841fa145293dfad",
+      "log": "checks/baseline/search-walk-held-out.log",
+      "package_cache_reset_sha256": "961cee0da24e13ab58e4560b8835a73ed3d306b3dde47045b382519fb98937d6",
+      "candidate_binary_sha256": "91dbdd7dc5e824d938d62124a1b68a4c2a95e119d21197abefab790778e08de7"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.132,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": true,
+      "id": "ordinary-search",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/control.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/cli-route-validation-20261102/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "bbbca377e925b8d36e01b22243ffcda4b223baaac1d0152a4cfefa6fad8ddf1a",
+      "log": "checks/baseline/ordinary-search.log",
+      "package_cache_reset_sha256": "961cee0da24e13ab58e4560b8835a73ed3d306b3dde47045b382519fb98937d6",
+      "candidate_binary_sha256": "91dbdd7dc5e824d938d62124a1b68a4c2a95e119d21197abefab790778e08de7"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 57.157,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "stock-regressions",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/stock.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/search-walk-native-h1-20261103/checks/baseline/artifacts"
+      ],
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "30882f83ee747ea8330bc1fa29a2c33c33e7caca9b0db4e0f70c9a7e75cda594",
+      "log": "checks/baseline/stock-regressions.log",
+      "package_cache_reset_sha256": "961cee0da24e13ab58e4560b8835a73ed3d306b3dde47045b382519fb98937d6",
+      "candidate_binary_sha256": "91dbdd7dc5e824d938d62124a1b68a4c2a95e119d21197abefab790778e08de7"
+    }
+  ],
+  "reference": [
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 22.382,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "candidate-build",
+      "kind": "build",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "spiral-coder"
+      ],
+      "test_summary": null,
+      "passed": true,
+      "log_sha256": "bebe3feb1c279a952911a254ec3dcd4f04eb7b5b654e6591c698ac638061bbbc",
+      "log": "checks/reference/candidate-build.log",
+      "package_cache_reset_sha256": "8df8ec53cb11d573beb4d27dbc59011c6ccbbc16bebacbcab60e9168a2cea91c",
+      "candidate_binary_sha256": "551ad36eabc0f9c5d79501d43730c0fba95d5f23c0758f9dbeb589545b27d4e9"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.418,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "search-walk-visible",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.search_walk_visible"
+      ],
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "8c190b60bb325accc5a55f813f91dd9579517f45841aebf98925e8a012d67f82",
+      "log": "checks/reference/search-walk-visible.log",
+      "package_cache_reset_sha256": "8df8ec53cb11d573beb4d27dbc59011c6ccbbc16bebacbcab60e9168a2cea91c",
+      "candidate_binary_sha256": "551ad36eabc0f9c5d79501d43730c0fba95d5f23c0758f9dbeb589545b27d4e9"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.125,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "id": "search-walk-held-out",
+      "kind": "improvement",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/held_out.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/cli-route-validation-20261102/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "a8ce039f71142ecbb942accbd001584fadb888f87d6164f47bc664e476b3e6db",
+      "log": "checks/reference/search-walk-held-out.log",
+      "package_cache_reset_sha256": "8df8ec53cb11d573beb4d27dbc59011c6ccbbc16bebacbcab60e9168a2cea91c",
+      "candidate_binary_sha256": "551ad36eabc0f9c5d79501d43730c0fba95d5f23c0758f9dbeb589545b27d4e9"
+    },
+    {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 0.125,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": true,
+      "id": "ordinary-search",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/control.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/cli-route-validation-20261102/debug/spiral-coder"
+      ],
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "passed": true,
+      "log_sha256": "4d956e7d559146d6c9d50bea88161c6e3893246a4a68f9b5efb62b4c3587b2b8",
+      "log": "checks/reference/ordinary-search.log",
+      "package_cache_reset_sha256": "8df8ec53cb11d573beb4d27dbc59011c6ccbbc16bebacbcab60e9168a2cea91c",
+      "candidate_binary_sha256": "551ad36eabc0f9c5d79501d43730c0fba95d5f23c0758f9dbeb589545b27d4e9"
+    },
+    {
+      "exit_code": 1,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1.588,
+      "executed": true,
+      "skip_reason": null,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "id": "stock-regressions",
+      "kind": "regression",
+      "argv": [
+        "python3",
+        "-S",
+        ".search-checks/stock.py",
+        "/Users/ryospiralarchitect/.cache/spiral-coder/search-walk-native-h1-20261103/checks/reference/artifacts"
+      ],
+      "test_summary": null,
+      "passed": false,
+      "log_sha256": "26b5e88421af0c51c4703030a62fb6edebb86e593ee45cf171d45c6a0ad55ef7",
+      "log": "checks/reference/stock-regressions.log",
+      "package_cache_reset_sha256": "8df8ec53cb11d573beb4d27dbc59011c6ccbbc16bebacbcab60e9168a2cea91c",
+      "candidate_binary_sha256": "551ad36eabc0f9c5d79501d43730c0fba95d5f23c0758f9dbeb589545b27d4e9"
+    }
+  ],
+  "provider_calls": 0
+}

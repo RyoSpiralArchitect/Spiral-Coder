@@ -1,0 +1,25 @@
+{
+  "binary_sha256": "1d65d5f1625a96661f4ad221c3a4e368c7406ce2647574973d66624076b04308",
+  "source_sha256": "64bbb13bef5b38db6abc7edd635b191ca83c0adef040f6341343bb7333838f3e",
+  "searches": {
+    "load_spec": {
+      "header": "[search_files: 'load_spec' \u2014 3 match(es)]",
+      "locations": [
+        "src/tui_replay.rs:153:     let spec = load_spec(&spec_path)?;",
+        "src/tui_replay.rs:568:     let spec = load_spec(path)?;",
+        "src/tui_replay.rs:582: fn load_spec(path: &Path) -> Result<TuiReplaySpec> {"
+      ],
+      "navigation": [
+        "[navigation] Lexical leads for `load_spec` in this file: fn-name lines [582]; call-like lines [153, 568]. Read the locations to verify the definition and caller; these are not resolved references."
+      ]
+    },
+    "select_cases": {
+      "header": "[search_files] No matches for 'select_cases' in file 'src/tui_replay.rs'",
+      "locations": [],
+      "navigation": [
+        "[navigation] No exact identifier spelling `select_cases` was observed in this file. Inspect the existing caller for inline behavior or locate the definition elsewhere before importing it."
+      ]
+    }
+  },
+  "external_requests": 0
+}

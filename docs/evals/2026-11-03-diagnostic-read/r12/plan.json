@@ -1,0 +1,55 @@
+{
+  "issue": 49,
+  "condition": "R12 native recheck selection after repair",
+  "raw_root": "replay-catalog-native-r12-recheck-20261103",
+  "provider_calls_at_pin": 0,
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "d516ee757dff3f1f386d62af935e61e9d379fc29",
+  "executor_sha256": "9e900aa410252db0ab7079fd7cdb860082e0f55750f31a73faf09ef9053b7c1c",
+  "declaration_sha256": "5919899f204787d5ff548da4dcdf48fae870aa57d8605cf25e69313910c710b7",
+  "prior_declaration_sha256": "cf0b8f3751b17916dbd25cb6e6ea83ddb9380d585a71d81ca5a1b48fb7eaccf9",
+  "preflight_sha256": "32264728e5ef30f7fb68825a735ad53e26ffe2e3cacae60153b00bcc5766f32c",
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "driver_sha256",
+    "protected_paths",
+    "visible_fixture_paths",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "layout_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "prompt_sha256",
+    "inputs_inventory"
+  ],
+  "changed_inputs": [],
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "prompt_sha256": "081be62ae2ec98c53f9581291b478445c2a5e9f2188142df0a9ab022cffe32dc",
+  "protocol_sha256": "5510d10e69cd18fe92fbde72f820a3417bba52a5ee268ec4efb130fbc4c9d9ac",
+  "preflight_verdicts_match_prior": true,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36
+}

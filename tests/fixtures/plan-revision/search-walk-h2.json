@@ -1,0 +1,21 @@
+{
+  "source_run_receipt_sha256": "a6dd9fa586d5eda5297f2eca451801c3e7acd2c22ef4e9f6fd9e003836953c63",
+  "call_id": "call_pSknYxKh67k8ZihWNUVMFSEv",
+  "accepted": {
+    "acceptance_criteria": [
+      "Baseline unittest failed and post-edit unittest passed.",
+      "Rustfmt check passes.",
+      "Locked binary tests pass."
+    ],
+    "assumptions": "The source edit is complete and only the two exact checks remain pending.",
+    "goal": "Fix discovered symlink handling in native recursive search and verify every required check.",
+    "risks": "Rustfmt may reject the new guard; locked tests may reveal compilation or regression failures.",
+    "steps": [
+      "Confirm the scoped source repair is in place.",
+      "Run rustfmt check.",
+      "Run locked binary tests.",
+      "Report measured outcomes and changed path."
+    ]
+  },
+  "rejected": "<plan>\ngoal: Complete the native recursive-search symlink fix and exact verification.\nsteps: 1) Run the exact rustfmt check. 2) Run the exact locked binary test. 3) Report measured outcomes and changed path.\nacceptance: 1) Baseline and post-edit unittest results are recorded. 2) Rustfmt check passes. 3) Locked binary tests pass.\nrisks: Rustfmt or compilation may fail after the source edit.\nassumptions: The source edit is applied and the post-edit unittest passed.\n</plan>"
+}

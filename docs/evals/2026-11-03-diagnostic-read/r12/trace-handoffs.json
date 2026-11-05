@@ -1,0 +1,76 @@
+{
+  "declaration_sha256": "5919899f204787d5ff548da4dcdf48fae870aa57d8605cf25e69313910c710b7",
+  "run_receipt_sha256": "98defa1c38e981b61ca3d14fd4fcb8df3561a95991ffab87d8944d9d0d305d3f",
+  "wire_starts": 32,
+  "response_formats": {
+    "json_schema": 2,
+    "json_object": 7
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "a6e2303b3b8c1a1b54743a273e304bc5837373dc3e26a661195d387d5557100d",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_3aJsOZ5PP7hBUNSQuPsZUgBX",
+          "step": 2,
+          "header": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "83e442713d16e4f3774c8cbbd310d16c2159492966f383f1025c013ad7eac354",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "src/tui_replay.rs"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_akzBa7ouquED2NGpMBAX4V5Z",
+          "step": 6,
+          "header": "[src/tui_replay.rs] (672 lines, 21622 bytes) [pruned 279L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui_replay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'tui_replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src/main.rs",
+        "pattern": "TuiReplay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'TuiReplay' \u2014 5 match(es)] [pruned 7L]"
+      ]
+    }
+  ]
+}

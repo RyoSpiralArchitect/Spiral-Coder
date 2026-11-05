@@ -126,3 +126,88 @@ fn eight_real_steps_still_fail_and_inline_lists_remain_supported() {
         .collect::<String>();
     assert_eq!(parse_plan_items(&list).len(), 8);
 }
+
+#[test]
+fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
+    let sample: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/plan-revision/search-walk-h2.json"
+    )))
+    .unwrap();
+    let root = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/benchmarks/self-dogfood-v2/search-walk-links/prompt.txt"
+    ));
+    let contract = derive_task_contract(root, false, true, VerificationLevel::Behavioral);
+    let accepted: PlanBlock = serde_json::from_value(sample["accepted"].clone()).unwrap();
+    let mut proposed = parse_plan_block(sample["rejected"].as_str().unwrap()).unwrap();
+    let messages = vec![
+        json!({"role":"user","content":root}),
+        json!({"role":"assistant","accepted_plan":accepted}),
+    ];
+    let error = plan_revision::validate_alignment(&proposed, &messages, &contract).unwrap_err();
+    let mut stage = None;
+    let feedback = plan_revision::rejection(
+        &mut stage,
+        &error.to_string(),
+        Some(&accepted),
+        &messages,
+        &contract,
+    );
+    assert_eq!(stage, None, "the refused check did not execute");
+    for previous in [
+        RecoveryStage::Diagnose,
+        RecoveryStage::Fix,
+        RecoveryStage::Verify,
+    ] {
+        stage = Some(previous);
+        let _ = plan_revision::rejection(
+            &mut stage,
+            &error.to_string(),
+            Some(&accepted),
+            &messages,
+            &contract,
+        );
+        assert_eq!(stage, Some(previous), "keep outstanding, genuine recovery");
+    }
+    let fields: serde_json::Value = serde_json::from_str(feedback.lines().last().unwrap()).unwrap();
+    assert_eq!(
+        fields,
+        json!({"goal":accepted.goal,"acceptance":accepted.acceptance_criteria})
+    );
+    // Rendering feedback cannot admit the original proposal or its tool call.
+    assert!(plan_revision::validate_alignment(&proposed, &messages, &contract).is_err());
+    proposed.goal = fields["goal"].as_str().unwrap().to_owned();
+    proposed.acceptance_criteria = serde_json::from_value(fields["acceptance"].clone()).unwrap();
+    let resolver = InstructionResolver::new(root, false, false);
+    validate_plan_for_task_contract(&proposed, false, &contract, &resolver, &messages).unwrap();
+    let mut new_task = messages.clone();
+    new_task.push(json!({"role":"user","content":"Another task."}));
+    stage = None;
+    let ordinary = governor_contract::invalid_plan_message(&error.to_string());
+    assert_eq!(
+        plan_revision::rejection(
+            &mut stage,
+            &error.to_string(),
+            Some(&accepted),
+            &new_task,
+            &contract
+        ),
+        ordinary
+    );
+    assert_eq!(
+        plan_revision::rejection(&mut stage, &error.to_string(), None, &messages, &contract),
+        ordinary
+    );
+    assert_eq!(
+        plan_revision::rejection(
+            &mut stage,
+            "wrong shape",
+            Some(&accepted),
+            &messages,
+            &contract
+        ),
+        governor_contract::invalid_plan_message("wrong shape")
+    );
+    assert_eq!(stage, Some(RecoveryStage::Diagnose));
+}

@@ -1,0 +1,60 @@
+{
+  "condition": "H2 explicit format verification and separate report lines",
+  "baseline_commit": "527413cc114e0f621ccbfeb9eba6bd25d2531c15",
+  "runtime_commit": "d78b4a24f57fae7414db0fee76c91e3f323b5370",
+  "executor_sha256": "1d65d5f1625a96661f4ad221c3a4e368c7406ce2647574973d66624076b04308",
+  "raw_root": "search-walk-native-h2-format-20261103",
+  "declaration_sha256": "bd797b61241e5271e4d5da2a0c2f581e20d4e737c41df3f312261ebcbe1d4a55",
+  "protocol_sha256": "05bf1ad70ddaebcad7cbff17b66fdc674790fc1c47bded07ccf41356edace8e2",
+  "spec_sha256": "4aa09888d4dac2277a4b9fe1833dc3004122f7bdc8328476bd0044e7797bc775",
+  "prompt_sha256": "ddf8161e94f4bb425834fa491e9c2e85438aed072fd40793e201f0d42d8ae25d",
+  "preflight_sha256": "93a6ea1dfe777b8efd0bf5aa46fcfc5404b43c36c0292e77b052cc54db91d31f",
+  "provider_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "observer_reserved_requests": 8,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "editable": [
+    "src/file_tools.rs"
+  ],
+  "visible_fixtures": [
+    "scripts/search_walk_fixture.py",
+    "scripts/search_walk_visible.py"
+  ],
+  "hidden_and_reference_absent_from_candidate": true,
+  "prior_declaration_sha256": "e1e0ae1ff609ad853413493f1362d8fc79a289c2e7efbdb331998bccdc5d1706",
+  "changed_inputs": [
+    "prompt.txt",
+    "spec.json"
+  ],
+  "identical_declaration_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "runtime_commit",
+    "binary_sha256",
+    "driver_sha256",
+    "layout_sha256",
+    "roles",
+    "max_requests",
+    "wall_seconds",
+    "protected_paths",
+    "visible_fixture_paths"
+  ]
+}

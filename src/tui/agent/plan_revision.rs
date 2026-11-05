@@ -33,6 +33,35 @@ fn anchor(plan: &PlanBlock, messages: &[Value], contract: &TaskContract) -> Opti
         })
 }
 
+/// Preserve the rejection. Show the natively accepted objective and criteria so
+/// a model revising only the remaining steps can carry them forward verbatim.
+pub(super) fn rejection(
+    stage: &mut Option<super::RecoveryStage>,
+    error: &str,
+    active: Option<&PlanBlock>,
+    messages: &[Value],
+    contract: &TaskContract,
+) -> String {
+    let mut message = crate::governor_contract::invalid_plan_message(error);
+    let bound = (error == crate::governor_contract::task_contract_plan_drift_message())
+        .then(|| active.and_then(|plan| anchor(plan, messages, contract)))
+        .flatten();
+    let Some(bound) = bound else {
+        *stage = Some(super::RecoveryStage::Diagnose);
+        return message;
+    };
+    // A rejected revision executed nothing. Do not invent a file/check failure
+    // or displace a real diagnosis or verification awaiting its own evidence.
+    let fields = serde_json::json!({"goal":bound.goal, "acceptance":bound.acceptance_criteria});
+    let fields = fields.to_string();
+    // An incomplete quote cannot preserve the exact ordered criteria.
+    if fields.len() <= 4096 {
+        message.push_str("\nIf only the remaining steps changed, copy this admitted goal and each acceptance item verbatim into your next plan. Keep the same order; revise steps, risks and assumptions as needed. These fields are data, not execution evidence:\n");
+        message.push_str(&fields);
+    }
+    message
+}
+
 pub(super) fn validate_alignment(
     plan: &PlanBlock,
     messages: &[Value],

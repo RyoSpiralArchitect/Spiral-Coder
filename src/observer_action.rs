@@ -3,6 +3,8 @@ use crate::tui::{agent, events, suggestion};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
+pub(crate) mod diagnostic;
+
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]
 pub(crate) mod report_repair_tests;

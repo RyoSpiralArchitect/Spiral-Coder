@@ -348,9 +348,18 @@ pub(crate) async fn stream_observer_action(
     client: &reqwest::Client,
     cfg: &RunConfig,
     messages: &[ChatMessage],
+    output: crate::observer_action::diagnostic::Output,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
-    stream_chat(client, cfg, &chat_messages(messages), None, true, tx).await
+    stream_chat(
+        client,
+        cfg,
+        &chat_messages(messages),
+        None,
+        Some(output),
+        tx,
+    )
+    .await
 }
 
 /// Agent use: accepts pre-built JSON messages so tool_call_id / tool_calls
@@ -362,7 +371,7 @@ pub async fn stream_openai_compat_json(
     tools: Option<&serde_json::Value>,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
-    stream_chat(client, cfg, messages, tools, false, tx).await
+    stream_chat(client, cfg, messages, tools, None, tx).await
 }
 
 async fn stream_chat(
@@ -370,7 +379,7 @@ async fn stream_chat(
     cfg: &RunConfig,
     messages: &[serde_json::Value],
     tools: Option<&serde_json::Value>,
-    observer_action: bool,
+    observer_action: Option<crate::observer_action::diagnostic::Output>,
     tx: mpsc::Sender<StreamToken>,
 ) -> Result<()> {
     let provider_messages = provider_metadata::prepare_messages(messages, &cfg.base_url);
@@ -387,8 +396,8 @@ async fn stream_chat(
         "stream": true,
     });
     apply_model_compat(&mut payload, cfg);
-    if observer_action {
-        provider_metadata::set_observer_format(&mut payload, &cfg.base_url);
+    if let Some(output) = observer_action {
+        provider_metadata::set_observer_format(&mut payload, &cfg.base_url, output);
     }
 
     if let Some(t) = tools {

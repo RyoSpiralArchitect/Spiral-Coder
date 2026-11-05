@@ -1530,7 +1530,7 @@ pub fn search_files_tool_def() -> serde_json::Value {
                     },
                     "dir": {
                         "type": "string",
-                        "description": "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. A scoped Rust search can suggest lines containing the corresponding identifier. Leave empty to search the whole tree."
+                        "description": "File or directory relative to tool_root. To trace a CLI command, try a working sibling's name in the source file that parses it. In a Rust file, search the exact helper name to see declaration and call-like lines; inspect them before importing. A scoped command search can also suggest the Rust spelling. Leave empty to search the whole tree."
                     },
                     "case_insensitive": {
                         "type": "boolean",
@@ -7548,7 +7548,12 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
         .with_report_closeout(
             crate::work_budget::current().is_some_and(|c| c.budget.is_report_closeout()),
         )
-        .with_diagnostic_read(recovery.focus.required_read());
+        .with_diagnostic_read(recovery.focus.required_read())
+        .with_recheck(
+            (recovery.stage == Some(RecoveryStage::Verify))
+                .then(|| recovery.focus.declared_recheck(&pending_checks))
+                .flatten(),
+        );
         if closing {
             let hint = format!("[Closeout budget] {remaining_calls} model requests remain in this run (shared task budget may be tighter). Reserve one request for your authored final report and one native exec per pending exact check: {}. Avoid scope expansion and repeated passed checks. A mutation invalidates earlier proof; automatic tests do not replace required native execs. If the work cannot fit, report remaining work truthfully; do not claim completion.", serde_json::to_string(&pending_checks).unwrap_or_default());
             match pending_system_hint.as_mut() {
@@ -8091,7 +8096,9 @@ This is the LAST model call for this run.\n\
         let cfg_clone = cfg.clone();
         let mut tools_clone = next_action.tools(&tools);
         let check_catalog = check_catalog::Catalog::from_root(&root_user_text);
-        if let Some(prompt) = check_catalog.bind(&mut tools_clone, &cfg.base_url) {
+        if let Some(prompt) =
+            check_catalog.bind_for(&mut tools_clone, &cfg.base_url, next_action.recheck())
+        {
             msgs_for_call.push(json!({"role":"system", "content":prompt}));
         }
         acceptance_schema::bind(
@@ -9342,9 +9349,13 @@ Execute only the new minimal action: {}",
                                     repaired
                                 } else {
                                     state = AgentState::Recovery;
-                                    recovery.stage = Some(RecoveryStage::Diagnose);
-                                    let block =
-                                        governor_contract::invalid_plan_message(&e.to_string());
+                                    let block = plan_revision::rejection(
+                                        &mut recovery.stage,
+                                        &e.to_string(),
+                                        active_plan.as_ref(),
+                                        &messages,
+                                        &task_contract,
+                                    );
 
                                     let _ = tx
                                         .send(StreamToken::Delta(format!(
@@ -9384,8 +9395,13 @@ Execute only the new minimal action: {}",
                                 }
                             } else {
                                 state = AgentState::Recovery;
-                                recovery.stage = Some(RecoveryStage::Diagnose);
-                                let block = governor_contract::invalid_plan_message(&e.to_string());
+                                let block = plan_revision::rejection(
+                                    &mut recovery.stage,
+                                    &e.to_string(),
+                                    active_plan.as_ref(),
+                                    &messages,
+                                    &task_contract,
+                                );
 
                                 let _ = tx
                                     .send(StreamToken::Delta(format!(
@@ -9425,8 +9441,13 @@ Execute only the new minimal action: {}",
                             }
                         } else {
                             state = AgentState::Recovery;
-                            recovery.stage = Some(RecoveryStage::Diagnose);
-                            let block = governor_contract::invalid_plan_message(&e.to_string());
+                            let block = plan_revision::rejection(
+                                &mut recovery.stage,
+                                &e.to_string(),
+                                active_plan.as_ref(),
+                                &messages,
+                                &task_contract,
+                            );
 
                             let _ = tx
                                 .send(StreamToken::Delta(format!(
@@ -10590,8 +10611,13 @@ Execute only the new minimal action: {}",
                     }
                     Err(e) => {
                         state = AgentState::Recovery;
-                        recovery.stage = Some(RecoveryStage::Diagnose);
-                        let mut block = governor_contract::invalid_plan_message(&e.to_string());
+                        let mut block = plan_revision::rejection(
+                            &mut recovery.stage,
+                            &e.to_string(),
+                            active_plan.as_ref(),
+                            &messages,
+                            &task_contract,
+                        );
                         if root_read_only {
                             block.push_str(
                                 "\nFor this task, keep the plan strictly read-only: inspect/search/read only; no build/test/behavioral verification in steps or acceptance.",

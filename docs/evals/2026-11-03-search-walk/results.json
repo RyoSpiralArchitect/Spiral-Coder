@@ -1,0 +1,306 @@
+{
+  "predeclaration_sha256": "e1e0ae1ff609ad853413493f1362d8fc79a289c2e7efbdb331998bccdc5d1706",
+  "run_receipt_sha256": "54683d892b0e508a90798741946fb587c523e136f67a419c2f53bd2b93678c7c",
+  "assessment_sha256": "b437812e5c1ed2a1cc64aec6f3896cef67169eed954b79f9d265d9e3c7edc262",
+  "completed": true,
+  "termination": "completed",
+  "role_requests": {
+    "coder": 20,
+    "observer": 6
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": true,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": true,
+    "accepted_done": true,
+    "no_remaining_acceptance": true,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": true,
+    "no_pending_checks": true,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/file_tools.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "[DONE] Changed `src/file_tools.rs` to skip symbolic links discovered during recursive directory traversal. Before: FAILED \u2014 `python3 -S -m unittest -v scripts.search_walk_visible` ran 1 test with 1 failure. After: PASSED \u2014 `python3 -S -m unittest -v scripts.search_walk_visible` ran 1 test with 0 failures. `cargo test --locked --bin spiral-coder -q` passed 1066 tests, with 2 ignored and 0 failures.",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.search_walk_visible": true,
+    "cargo test --locked --bin spiral-coder -q": true
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 26,
+    "task_requests": 26,
+    "transport_requests": 0,
+    "coder_task_requests": 20,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "observed",
+      "visible_passed": "observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "observed",
+      "docs_and_receipts": "observed"
+    },
+    "highest_contiguous_stage": 3,
+    "first_unmet_stage": "control_non_regression",
+    "termination": "completed"
+  },
+  "first_changed_step_by_path": {
+    "src/file_tools.rs": 5
+  },
+  "changed_edits": [
+    {
+      "result_step": 5,
+      "tool": "patch_file",
+      "call_id": "call_4CefyLtUyMg16Urlh2VEKeRG",
+      "path": "src/file_tools.rs",
+      "auto_test": "PASSED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/search_walk_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_y01xVTZlJW9SLi2hiOgb7YJ0"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_YThaswEc6vOs0ms3OY0L2L4K"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": false,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_DQkEgRXMZfbWDXOm0aZJsIsK",
+        "call_2MYrZT1qmq2UVuHhPiw88QMy",
+        "call_q1d10dHNDDXFtc4BODQzPRE5"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": false,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_HpCTwISbvMAIouuGAdKhzI2B",
+        "call_tKS8Axe1AiKUFC0oDZpqufJN",
+        "call_0W8W4cSGYiFn4maBThz8gSF2"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": false,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_LyH2zbPqANmwB4BAEVUd3hJv",
+        "call_EiMF9jvQXrCquv4VJDtKToPS",
+        "call_Pu1IlCK1Ky9tLIZPxA494DjX"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "completed": true,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_KZwYgMGsPhh9hCiCYSrVyRKf"
+      ],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "c65e21a3251fa8885635f64ee80f9aeb2ef5671298101a6a43bc4f2000a19dd8",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/search_walk_visible.py"
+    },
+    {
+      "text_sha256": "595e51102abdbebdbfeac1fa40fab186689b884af1e8b9f05ecd91e27079a867",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "5de3872befb58603bb52ebec76a242f9059e2c394850594d69820c9fab0e0368",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "48909ef219088148313fa6f14bcc597d9fa1874d8507c0a9fa5649088e722b6e",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "8139e3b199977dfb084babd214e2806b0f1c88e2473203668ee4ee7a03c51e79",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "ef780b01694c20b9249aa9b2722b5294539bd8bb803ecd4702d9b3326565fbf3",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "e59c1f55596c86c74e6625a1698385a7aab3c150723ab4cecb2d75ee212c18aa",
+      "has_process_result": true
+    },
+    {
+      "id": "search-walk-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "697e83a6ff317d9259d6583906dfd671e9bf4a0747cbdf96d1fee9ecb254525c",
+      "has_process_result": true
+    },
+    {
+      "id": "search-walk-held-out",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "6a2e6c21b30596e859e4c741aa357751e793504fef440859fedd2aa665b1926c",
+      "has_process_result": true
+    },
+    {
+      "id": "ordinary-search",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "415f1edaa9510b4ef2ec018adebdf72237504f0591f434fe7cc1638f1aa78031",
+      "has_process_result": true
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "3336f593b81ad1dad20e5605627b7810361e64efbc32f7ac690b2effdc67b7b9",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [
+    {
+      "result_step": 20,
+      "executed": true,
+      "result": "OK: done",
+      "arguments": {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v scripts.search_walk_visible",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.search_walk_visible",
+            "criterion": "acceptance 2"
+          },
+          {
+            "command": "cargo test --locked --bin spiral-coder -q",
+            "criterion": "acceptance 3"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3"
+        ],
+        "next_steps": "",
+        "remaining_acceptance": [],
+        "summary": "[DONE] Changed `src/file_tools.rs` to skip symbolic links discovered during recursive directory traversal. Before: FAILED \u2014 `python3 -S -m unittest -v scripts.search_walk_visible` ran 1 test with 1 failure. After: PASSED \u2014 `python3 -S -m unittest -v scripts.search_walk_visible` ran 1 test with 0 failures. `cargo test --locked --bin spiral-coder -q` passed 1066 tests, with 2 ignored and 0 failures."
+      }
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 184.201
+  }
+}
