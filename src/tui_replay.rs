@@ -8,7 +8,34 @@ use crate::modes::Mode;
 use crate::tui::app::{App, Message, Role};
 use crate::tui::{events, intent};
 
+pub(crate) mod catalog;
 pub(crate) mod diagnostics;
+
+pub(crate) fn select_cases(
+    spec: &TuiReplaySpec,
+    filter: Option<&str>,
+    max_cases: Option<usize>,
+) -> Vec<TuiReplayCase> {
+    let filter_lc = filter.map(str::to_ascii_lowercase);
+    let mut selected: Vec<TuiReplayCase> = spec
+        .cases
+        .iter()
+        .filter(|case| {
+            filter_lc.as_deref().is_none_or(|needle| {
+                case.id.to_ascii_lowercase().contains(needle)
+                    || case
+                        .tags
+                        .iter()
+                        .any(|tag| tag.to_ascii_lowercase().contains(needle))
+            })
+        })
+        .cloned()
+        .collect();
+    if let Some(limit) = max_cases.map(|n| n.max(1)) {
+        selected.truncate(limit);
+    }
+    selected
+}
 
 fn default_spec_version() -> u32 {
     1
@@ -167,26 +194,7 @@ pub async fn run(args: crate::TuiReplayArgs, common: crate::CommonArgs) -> Resul
     std::fs::create_dir_all(&out_dir)
         .with_context(|| format!("failed to create tui replay out dir: {}", out_dir.display()))?;
 
-    let filter_lc = args.filter.as_ref().map(|s| s.to_ascii_lowercase());
-    let mut selected: Vec<TuiReplayCase> = spec
-        .cases
-        .iter()
-        .filter(|case| {
-            if let Some(filter) = filter_lc.as_deref() {
-                case.id.to_ascii_lowercase().contains(filter)
-                    || case
-                        .tags
-                        .iter()
-                        .any(|tag| tag.to_ascii_lowercase().contains(filter))
-            } else {
-                true
-            }
-        })
-        .cloned()
-        .collect();
-    if let Some(limit) = args.max_cases.map(|n| n.max(1)) {
-        selected.truncate(limit);
-    }
+    let selected = select_cases(&spec, args.filter.as_deref(), args.max_cases);
     if selected.is_empty() {
         return Err(diagnostics::empty_selection(
             &spec_path,

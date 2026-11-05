@@ -17,7 +17,7 @@ test('spiral enters the current project while native commands and explicit roots
   for (const root of [['-C', '/chosen'], ['--root=/chosen'], ['--tool-root', '/chosen'], ['-C/chosen']]) {
     assert.deepEqual(argumentsFor('spiral', root, '/repo'), ['tui', ...root]);
   }
-  for (const args of [['--version'], ['agent', '--provider', 'openai'], ['serve'], ['chat', 'a; $(do not execute)']]) {
+  for (const args of [['--version'], ['agent', '--provider', 'openai'], ['serve'], ['tui-replay-list', '--filter', 'prefs'], ['chat', 'a; $(do not execute)']]) {
     assert.deepEqual(argumentsFor('spiral', args, '/repo'), args);
   }
   assert.deepEqual(argumentsFor('spiral-coder', [], '/repo'), []);
