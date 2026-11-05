@@ -1,0 +1,92 @@
+{
+  "declared": "7e45897cadf43408591c7a710d87b4db153d215e6ebc678e8b69ab24c2c295f5",
+  "qualification": false,
+  "termination": "host_restart_interrupted_no_final_native_receipt",
+  "native_final_report": false,
+  "issued_run_receipt": null,
+  "last_trace_utc": "2026-11-03T01:57:05.616000+00:00",
+  "subsequent_host_boot_utc": "2026-11-03T01:59:46+00:00",
+  "accounted_wire_starts": 13,
+  "roles": {
+    "coder": 10,
+    "observer": 3
+  },
+  "statuses": {
+    "completed": 13
+  },
+  "changed_disk_paths": [
+    "src/main.rs"
+  ],
+  "post_interruption_patch_sha256": "f30bf2ee94cd6056765dca3ec1c3e2f424e853db45da75b84d4b5c97e5bf9290",
+  "post_interruption_replay_matches_disk": true,
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "exit_code": 0,
+      "passed": true,
+      "test_summary": null,
+      "log_sha256": "cc4d2214b682676d65cc5a341393fcf3feb23ae091d53d66008ed423b61c4a21"
+    },
+    {
+      "id": "catalog-visible",
+      "exit_code": 1,
+      "passed": false,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "ed4d452952aaab333fcf89cd598a428f59f4a3fa3e8f722410741cd90387766e"
+    },
+    {
+      "id": "held-out-catalog",
+      "exit_code": 1,
+      "passed": false,
+      "test_summary": {
+        "passed": 0,
+        "failed": 11,
+        "ignored": 0
+      },
+      "log_sha256": "595bc0a6b722e6c0780f0c18c7227ec44b6d4491dce4ad3fa1356641f6898a7e"
+    },
+    {
+      "id": "packaged-spiral",
+      "exit_code": 1,
+      "passed": false,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "961110c7f09c05e26c59f613760fc9e5ef6ce8a8ac2f8cf2ab4e73f9cf90ebe7"
+    },
+    {
+      "id": "regular-replay",
+      "exit_code": 0,
+      "passed": true,
+      "test_summary": null,
+      "log_sha256": "fdb03bf3356ee03fe3d328b64406f110fc92fcb53800102fbfa5d1c35e86c165"
+    },
+    {
+      "id": "stock-regressions",
+      "exit_code": 0,
+      "passed": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "16f35b87128478fcb6a3a3c26da3d8102c23c3f10842534dabf4fafd4e7a5a3d"
+    }
+  ],
+  "evidence_hashes": {
+    "predeclared.json": "7e45897cadf43408591c7a710d87b4db153d215e6ebc678e8b69ab24c2c295f5",
+    "preflight.json": "78ab8b0a0b20ca0d4a9782278b97a148b09365bcf3d872e14bd742a2fc37778a",
+    "episode/started.json": "55736b7fe857583f9b163c62d4ff1cd6f01188b3fd39fcc192b01cc5119b51a3",
+    "episode/run/state/tui-work.json": "2c4880fcc35b13216f95d33c3d90f659136a592d15ad467218ab19fe360faa99",
+    "episode/run/state/tui-session.json": "a608989d6372260d94746d64e1529efa18a87e207869cbbcaafb5a9296d3ef24",
+    "episode/run/trace.jsonl": "de678516e2cbed5a38cbebb1b9fba585bb340081893bb813fb4001cca0702ddf",
+    "assessment-001.json": "b38f35bf409076cdea65d153287c24f25e16ae14c79621eca0d1b3ec3b6343ac",
+    "raw-manifest-001.json": "eb88e563d5cf7b04bb5b02bcd1940bb8cff185b3d4d71a6292ad10dc19910bda"
+  }
+}

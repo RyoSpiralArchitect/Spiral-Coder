@@ -1,0 +1,72 @@
+{
+  "runtime_commit": "bd44ce667d1ea8bb891ce2f2b03aff727b26bbf4",
+  "executor_sha256": "c2c1ab7092b4891064057a980c58445ec7f1a8bc93efe943762f33eaaddbad65",
+  "catalog_delivery_controls": [
+    {
+      "state": "original_failure",
+      "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+      "exit_status_passed": false,
+      "marker_in_action": true,
+      "marker_in_forwarded_observer_actions": [
+        true
+      ],
+      "local_requests": [
+        "coder",
+        "observer"
+      ],
+      "source_unchanged": true,
+      "launcher_sha256": "e78ff9d9ed6c9752ce177ee58155ffd4ffc0cb3a0f93b5bb284308b9ffeaa800"
+    },
+    {
+      "state": "launcher_repaired",
+      "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+      "exit_status_passed": true,
+      "marker_in_action": false,
+      "marker_in_forwarded_observer_actions": [
+        false
+      ],
+      "local_requests": [
+        "coder",
+        "observer"
+      ],
+      "source_unchanged": true,
+      "launcher_sha256": "2c04d6346e0bcc85b89570ed165b7da9bbd61ac723a1831d06ac1b43440f2d7e"
+    }
+  ],
+  "delivery_source_receipt": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "catalog_recheck": {
+    "run_receipt_sha256": "facfea69efbe73bf3217c902ec22eb187ceeef7e22744ec6e1a68e707f579855",
+    "patch_sha256": "89bb3ad0d1347fbe57280a6e7fc2cb5623ec9c0bf6d0cdf8e2512ae8b422cb5f",
+    "executor_sha256": "c2c1ab7092b4891064057a980c58445ec7f1a8bc93efe943762f33eaaddbad65",
+    "source_step": 21,
+    "last_changed_step": 20,
+    "wire_selection": {
+      "check_id": "required-1"
+    },
+    "command": "python3 -S -m unittest -v scripts.catalog_visible",
+    "arguments_match_except_relocated_workspace": true,
+    "executed": true,
+    "succeeded": true,
+    "feedback": "OK (exit_code: 0)\ncwd: <workspace>",
+    "diagnosis_block": false,
+    "fresh_command_still_pending": false,
+    "remaining_checks": [
+      "cargo test --locked --bin spiral-coder -q"
+    ],
+    "source_unchanged": true,
+    "external_requests": 0
+  },
+  "local_suite": {
+    "command": "bash scripts/check-local.sh",
+    "log_sha256": "5ba464e60442509ad230c1b85622e65111ae157fd1b7a0c59e1540ff3955bddb",
+    "rust_unit_passed": 1076,
+    "rust_unit_ignored": 2,
+    "rust_integration_passed": 4,
+    "tui_replay_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke": true
+  }
+}

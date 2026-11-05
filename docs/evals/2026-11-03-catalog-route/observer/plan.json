@@ -1,0 +1,12 @@
+{
+  "source_run_receipt_sha256": "d6c2d8ff84a408ffa4a2eb9ecc63c7bb8d847d654e3f1e5c2bac38cbf16ff086",
+  "executor_sha256": "b5e95787ad01eda338a567b8ed45c99ad9df6fee6c45f4e85a5aa6a65b4aff25",
+  "request_sha256": "442c392f31327bef27be8fbcb479091829124b31dfea2f22136ac1610aa98f03",
+  "max_wire_requests": 1,
+  "timeout_seconds": 90,
+  "max_completion_tokens": 8192,
+  "external_requests_at_pin": 0,
+  "model": "gpt-5.6-luna",
+  "response_format": "json_object",
+  "criterion": "One native-eligible, forwardable read of src/tui_replay.rs lines 150 through 349 inclusive. Keep the first reply or failure. Do not execute the suggestion as part of this probe."
+}

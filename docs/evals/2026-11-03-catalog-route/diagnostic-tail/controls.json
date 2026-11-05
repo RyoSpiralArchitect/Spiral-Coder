@@ -1,0 +1,78 @@
+{
+  "before": {
+    "original_run_sha256": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+    "executor_sha256": "9b52bf87ce988c58192b336f73d21bdd63fdb42a7ca4ff97008ada7a6c1297fe",
+    "external_requests": 0,
+    "expected_failure_marker": "installed alias diverted the listing to tui",
+    "cases": [
+      {
+        "state": "original_failure",
+        "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+        "exit_status_passed": false,
+        "marker_in_action": false,
+        "marker_in_forwarded_observer_actions": [
+          false
+        ],
+        "local_requests": [
+          "coder",
+          "observer"
+        ],
+        "source_unchanged": true,
+        "launcher_sha256": "e78ff9d9ed6c9752ce177ee58155ffd4ffc0cb3a0f93b5bb284308b9ffeaa800"
+      },
+      {
+        "state": "launcher_repaired",
+        "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+        "exit_status_passed": true,
+        "marker_in_action": false,
+        "marker_in_forwarded_observer_actions": [
+          false
+        ],
+        "local_requests": [
+          "coder",
+          "observer"
+        ],
+        "source_unchanged": true,
+        "launcher_sha256": "2c04d6346e0bcc85b89570ed165b7da9bbd61ac723a1831d06ac1b43440f2d7e"
+      }
+    ]
+  },
+  "after": {
+    "original_run_sha256": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+    "executor_sha256": "a5db8ad3b1b7b77bdc62ec94edba2ac490cf425afe6e3f88ae5febff1cddf314",
+    "external_requests": 0,
+    "expected_failure_marker": "installed alias diverted the listing to tui",
+    "cases": [
+      {
+        "state": "original_failure",
+        "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+        "exit_status_passed": false,
+        "marker_in_action": true,
+        "marker_in_forwarded_observer_actions": [
+          true
+        ],
+        "local_requests": [
+          "coder",
+          "observer"
+        ],
+        "source_unchanged": true,
+        "launcher_sha256": "e78ff9d9ed6c9752ce177ee58155ffd4ffc0cb3a0f93b5bb284308b9ffeaa800"
+      },
+      {
+        "state": "launcher_repaired",
+        "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+        "exit_status_passed": true,
+        "marker_in_action": false,
+        "marker_in_forwarded_observer_actions": [
+          false
+        ],
+        "local_requests": [
+          "coder",
+          "observer"
+        ],
+        "source_unchanged": true,
+        "launcher_sha256": "2c04d6346e0bcc85b89570ed165b7da9bbd61ac723a1831d06ac1b43440f2d7e"
+      }
+    ]
+  }
+}

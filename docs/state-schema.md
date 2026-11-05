@@ -12,6 +12,15 @@ Web completion uses the same native projection. See [task requirements](task-req
 correlated runtime result before the advisory packet truncates its display text.
 An unrecognized result has `succeeded: null`; it may have executed but cannot
 prove a required failing baseline. No new persisted status field is introduced.
+If the original task explicitly requests standalone `Before: FAILED` and
+`After: PASSED` lines and its declared baseline and final requirements have
+current proof, `final_answer.standalone_outcome_lines` gives both roles the
+exact lines to author. The native done gate checks individual lines in the
+summary. A blocked report can still describe pending work.
+An overlength `read_file` request reports its inclusive line count, the
+first legal window and the start of the remainder. Coder file reads and
+Observer repair feedback use the same bounds. The original request is
+rejected until a valid range is proposed.
 The same projection exposes `required_diagnostic_read` from `RecoveryFocus` while
 its correlated failure still awaits inspection. Its path is the failure location,
 not authority to edit that file. Both Observer consumers validate a confident
@@ -1431,3 +1440,10 @@ The bounded Web tool client reports upstream redirects directly, so a 307 or
 308 cannot trigger another provider POST inside a single ledger entry. Named
 Markdown fences supply file contents even when their language is a shell.
 Scope validation checks every named target before the six-file write limit.
+
+A direct repair or revision can describe a read-only subject while requesting
+a change to a named artifact. The native task classifier recognizes that
+bounded case when the opening imperative names a file present in both the
+human allowlist and the structured requirements. An explicit read-only
+instruction elsewhere keeps its authority. The classification changes neither
+the file allowlist nor the native edit and verification evidence required.

@@ -319,3 +319,76 @@ fn case_only_mismatch_shows_the_exact_replacement_without_weakening_the_contract
     assert!(absent.contains("explicit item `verified by replay`"));
     assert!(!absent.contains("replace \"Verified by replay\""));
 }
+
+#[test]
+fn supported_bare_outcomes_must_be_authored_on_their_own_lines_when_requested() {
+    let instruction = r#"Use native done. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated; report only measured counts."#;
+    let root = format!(
+        "{instruction}\n<task_requirements>\n{}\n</task_requirements>",
+        json!({
+        "version":1,"requirements":[{"id":"fix","description":"Fix the search","artifacts":[{"path":"src/search.rs","kind":"source"}],
+        "checks":[{"command":"cargo test","baseline_failure":true}]}]})
+    );
+    let mut messages = vec![json!({"role":"user","content":root})];
+    exchange(
+        &mut messages,
+        "exec",
+        json!({"command":"cargo test"}),
+        "FAILED (exit_code: 1)",
+    );
+    exchange(
+        &mut messages,
+        "patch_file",
+        json!({"path":"src/search.rs"}),
+        "OK: patched 'src/search.rs'",
+    );
+    assert!(report_context(&root, &messages, Some("cargo test"))
+        .get("standalone_outcome_lines")
+        .is_none());
+    exchange(
+        &mut messages,
+        "exec",
+        json!({"command":"cargo test"}),
+        "OK (exit_code: 0)",
+    );
+    let ok = "Updated src/search.rs.\nBefore: FAILED\r\nAfter: PASSED\nChecks passed.";
+    let h3 = "Updated src/search.rs. Before: FAILED\nAfter: PASSED\nChecks passed.";
+    assert_eq!(
+        report_context(&root, &messages, Some("cargo test"))["standalone_outcome_lines"],
+        json!(["Before: FAILED", "After: PASSED"])
+    );
+    for bad in [
+        h3,
+        "Before: FAILED\nAfter: PASSED is not claimed",
+        "After: PASSED",
+    ] {
+        let failure = validate_authored_done_summary(&root, bad, ok, &messages, Some("cargo test"))
+            .unwrap_err();
+        assert!(failure.contains("own line"), "{failure}");
+    }
+    validate_authored_done_summary(&root, ok, ok, &messages, Some("cargo test")).unwrap();
+    assert!(!super::super::final_instructions::wants_outcome_lines(
+        &format!("Example: {instruction}").replace("Use native done. ", "")
+    ));
+    for example in [
+        format!("Do not {}", instruction.replace("Use native done. ", "")),
+        format!("\u{60}\u{60}\u{60}text\n{instruction}\n\u{60}\u{60}\u{60}"),
+        "Explain why the final report contains Before: FAILED and After: PASSED.".into(),
+        "Include standalone lines \"Before: FAILED\" and \"After: PASSED\" as an example only."
+            .into(),
+    ] {
+        assert!(
+            !super::super::final_instructions::wants_outcome_lines(&example),
+            "{example}"
+        );
+    }
+    exchange(
+        &mut messages,
+        "exec",
+        json!({"command":"cargo test"}),
+        "FAILED (exit_code: 1)",
+    );
+    assert!(report_context(&root, &messages, Some("cargo test"))
+        .get("standalone_outcome_lines")
+        .is_none());
+}

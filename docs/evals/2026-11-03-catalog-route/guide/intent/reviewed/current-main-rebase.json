@@ -1,0 +1,13 @@
+{
+  "original_baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "adoption_base_commit": "527413cc114e0f621ccbfeb9eba6bd25d2531c15",
+  "base_delta_sha256": "ffe06f848e7a1632596d5497cf538687386dedc4e3b9eaaf36242fd225846180",
+  "model_source_preserved_on_current_main": true,
+  "matched_paths": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "docs/evaluation.md"
+  ]
+}

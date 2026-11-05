@@ -1,0 +1,58 @@
+{
+  "issue": 49,
+  "condition": "R13 coupled CLI route on a pristine tree",
+  "raw_root": "replay-catalog-native-r13-route-20261103",
+  "prior_declaration_sha256": "5919899f204787d5ff548da4dcdf48fae870aa57d8605cf25e69313910c710b7",
+  "declaration_sha256": "c28dcb2e9f808c25aeecf4cd0f2b8f47156d0c9aad7f863435179a41f459b60f",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "aaf900327cc0bce56b8e9e1ebf050eabab948812",
+  "executor_sha256": "f86f101fd60f7d99d42317169893d9a018a9d8250b9dcdcae8e6e6c04ac4ae1c",
+  "protocol_sha256": "18c08695d6d9fe41015e6fc146d382e0583cb8916c2856c227a613dd68f4dca4",
+  "prompt_sha256": "d3e832ee4f81a4b20dbdeb90d90aa7086f4ed001c82956200fb6bcb411f13990",
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "preflight_sha256": "ea5ad9e73d0a433bbfacb8ddb111a467bff65df4f028dcb1e5f99e4291848168",
+  "changed_inputs": [
+    "prompt.txt"
+  ],
+  "additional_protected_paths": [],
+  "provider_calls_at_pin": 0,
+  "identical_declaration_fields": [
+    "version",
+    "baseline_commit",
+    "spec_version",
+    "roles",
+    "same_model_both_roles",
+    "max_requests",
+    "wall_seconds",
+    "driver_sha256",
+    "executor_reloads_candidate",
+    "promotion_authorized",
+    "boundary",
+    "baseline_inventory",
+    "protected_paths",
+    "visible_fixture_paths",
+    "layout_sha256"
+  ],
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "observer_reserved_requests": 8,
+    "transport_repair_requests": 4,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "preflight_verdicts_match_prior": true
+}

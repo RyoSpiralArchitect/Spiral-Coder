@@ -175,6 +175,10 @@ diagnostic reread of its target even outside `src/`; unrelated diagnostics do
 not substitute for that read, and repeated unchanged reads remain gated.
 Resume restores the completed diagnosis as Fix, so an Observer handoff cannot
 force another read before the same repair. A later failure still takes precedence.
+A failed patch followed by a native change to the same target no longer
+counts as an outstanding edit error when a slice resumes. A pending check
+can then return to Verify. It stays pending until its exact command passes.
+An unchanged edit or a change to another file cannot establish that retry.
 The first explicit failing verification can establish the same shared recovery
 obligation before an edit. A unique, existing workspace file from a Rust diagnostic
 or innermost Python traceback determines the diagnostic read; ordinary path

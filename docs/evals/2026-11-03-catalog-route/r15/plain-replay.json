@@ -1,0 +1,8 @@
+{
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "patch_sha256": "89bb3ad0d1347fbe57280a6e7fc2cb5623ec9c0bf6d0cdf8e2512ae8b422cb5f",
+  "patch_bytes": 4347,
+  "applied": true,
+  "matches": true,
+  "different_paths": []
+}

@@ -1,6 +1,7 @@
 //! A completed diagnosis can advance a restored generic Diagnose phase only
 //! when the last actual failure belongs to that same localized obligation.
 use super::*;
+use crate::execution_evidence::{file_edit_outcome, FileEditOutcome};
 
 #[path = "recovery_edit_diagnosis.rs"]
 mod edit_diagnosis;
@@ -97,14 +98,26 @@ fn owned_check(tc: &ToolCallData, message: &Value, root: Option<&str>) -> Option
     matches.then_some(pending.check)
 }
 
-/// Ignore only a managed failure followed by its own actual success. Merely
-/// disappearing from a snapshot (or passing a different check) is insufficient.
+/// Match check failures to their own successful check, and failed file edits
+/// to a later native change to the same path. Neither clears the other.
 fn resolved_failures(messages: &[Value], root: Option<&str>) -> std::collections::BTreeSet<usize> {
     let mut open: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+    let mut failed_edits: BTreeMap<String, Vec<usize>> = BTreeMap::new();
     let mut resolved = std::collections::BTreeSet::new();
     let mut previous: Option<RecoveryFocus> = None;
     for (index, (tc, message)) in correlated_results(messages).enumerate() {
         let output = message["content"].as_str().unwrap_or("");
+        if let Some(outcome) = file_edit_outcome(&tc.name, output) {
+            if let Some(path) = argument_path(&tc).and_then(|path| relative_path(&path, root)) {
+                match outcome {
+                    FileEditOutcome::Failed => failed_edits.entry(path).or_default().push(index),
+                    FileEditOutcome::Changed => {
+                        resolved.extend(failed_edits.remove(&path).unwrap_or_default());
+                    }
+                    FileEditOutcome::Unchanged => {}
+                }
+            }
+        }
         let current = (message[METADATA_KEY]["version"] == 2)
             .then(|| recovery_snapshot::validated_snapshot(message))
             .flatten();

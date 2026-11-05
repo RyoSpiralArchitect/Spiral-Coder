@@ -1,0 +1,30 @@
+diff --git a/src/main.rs b/src/main.rs
+index baf178b..7af6dbc 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -348,6 +348,25 @@ struct TuiReplayArgs {
+     max_cases: Option<usize>,
+ }
+ 
++#[derive(Args, Debug, Clone)]
++struct TuiReplayListArgs {
++    /// Directory containing the replay spec (defaults to current directory)
++    #[arg(long, short = 'C', alias = "root")]
++    tool_root: Option<String>,
++
++    /// TUI replay spec JSON file
++    #[arg(long, default_value = ".spiral-coder/tui_replay.json")]
++    spec: PathBuf,
++
++    /// Only list cases whose id or tags contain this substring
++    #[arg(long)]
++    filter: Option<String>,
++
++    /// Maximum number of cases after filtering; zero selects one
++    #[arg(long)]
++    max_cases: Option<usize>,
++}
++
+ #[derive(Args, Debug, Clone)]
+ struct InventoryArgs {
+     /// Directory to inspect (defaults to current directory)

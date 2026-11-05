@@ -7,6 +7,12 @@ pub(crate) fn exec_may_have_run(content: &str) -> bool {
     !header.starts_with("GOVERNOR BLOCKED") && !header.starts_with("REJECTED BY USER")
 }
 
+/// The runtime inserts this header immediately after the first status or hint
+/// line. A cwd printed later by the process does not identify the execution.
+pub(crate) fn exec_cwd(content: &str) -> Option<&str> {
+    content.lines().nth(1)?.strip_prefix("cwd: ")
+}
+
 /// Trust only the runtime status header, optionally compacted by output pruning.
 pub(crate) fn exec_succeeded(content: &str) -> bool {
     let header = content.trim_start().lines().next().unwrap_or("");

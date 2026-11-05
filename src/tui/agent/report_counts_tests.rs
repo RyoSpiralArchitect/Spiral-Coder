@@ -183,7 +183,9 @@ async fn native_exec_preserves_stderr_counts_before_preview_and_projects_them_to
         });
         let dir = tempfile::tempdir().unwrap();
         let status = if failed { "FAILED (failures=14)" } else { "OK" };
-        std::fs::write(dir.path().join("acceptance.py"), format!("import sys\nsys.stderr.write('diagnostic progress\\n' * 300 + 'Ran 10 tests in 0.003s\\n\\n{status}\\n')\nsys.exit({})\n", if failed {1} else {0})).unwrap();
+        // Both outcomes must exercise counts omitted from the rendered preview.
+        // Failed commands retain both ends, so put the summary between them.
+        std::fs::write(dir.path().join("acceptance.py"), format!("import sys\nsys.stderr.write('diagnostic progress\\n' * 300 + 'Ran 10 tests in 0.003s\\n\\n{status}\\n' + 'cleanup progress\\n' * 40)\nsys.exit({})\n", if failed {1} else {0})).unwrap();
         std::fs::write(dir.path().join("source.txt"), "old\n").unwrap();
         let goal = format!("Repair source.txt. Finish with an authored report naming the changed file and the actual before/after test outcomes.\n<task_requirements>\n{}\n</task_requirements>", json!({"version":1,"requirements":[{"id":"repair","description":"Repair behavior","artifacts":[{"path":"source.txt","kind":"source"}],"checks":[{"command":command,"baseline_failure":true}]}]}));
         let cfg = RunConfig {

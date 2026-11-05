@@ -276,11 +276,7 @@ impl RecoveryFocus {
 fn exec_ran_at_root(output: &str, root: Option<&str>) -> bool {
     // inject_cwd places runtime evidence immediately after the status header.
     // A later `cwd:` printed by stdout or stderr is never location authority.
-    let Some(cwd) = output
-        .lines()
-        .nth(1)
-        .and_then(|line| line.strip_prefix("cwd: "))
-    else {
+    let Some(cwd) = crate::execution_evidence::exec_cwd(output) else {
         return false;
     };
     let Some(root) = root.and_then(|root| std::fs::canonicalize(root).ok()) else {

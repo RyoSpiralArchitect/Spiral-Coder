@@ -7,6 +7,28 @@ const AUTO_TEST_DIAGNOSTIC_LINES: usize = 4;
 const AUTO_TEST_DIAGNOSTIC_CHARS: usize = 220;
 const AUTO_TEST_TAIL_CHARS: usize = 1200;
 
+/// Preserve opening diagnostics and the final explanation across both display
+/// limits. The omission marker separates partial lines and counts toward the cap.
+pub(super) fn failure_excerpt(text: &str, limit: usize) -> String {
+    const GAP: &str = "\n[... output omitted ...]\n";
+    if text.char_indices().nth(limit).is_none() {
+        return text.to_owned();
+    }
+    if limit <= GAP.len() {
+        return text.chars().take(limit).collect();
+    }
+    let retained = limit - GAP.len();
+    let tail = retained / 2;
+    let head: String = text.chars().take(retained - tail).collect();
+    let tail_start = text
+        .char_indices()
+        .rev()
+        .take(tail)
+        .last()
+        .map_or(text.len(), |(i, _)| i);
+    format!("{head}{GAP}{}", &text[tail_start..])
+}
+
 /// Keep both early diagnostics and the final error without copying/scanning an
 /// arbitrarily large captured stream. Do not join two partial lines together.
 fn bounded_source(source: &str) -> String {
@@ -252,6 +274,34 @@ pub(super) fn automatic_test_output(stdout: &str, stderr: &str, exit: i32, cwd: 
 mod tests {
     use super::*;
     use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
+
+    #[test]
+    fn failed_exec_keeps_the_trailing_reason_in_native_action_evidence() {
+        let reason = "installed alias diverted the listing to tui";
+        let stderr = format!(
+            "test_cli (tests.Routing.test_cli) ... FAIL\nFAIL: test_cli (tests.Routing.test_cli)\n\
+             AssertionError: Lists differ\n{}- '1'] : {reason}\n\nRan 1 test in 0.04s\nFAILED (failures=1)\n",
+            "- '出力',\n".repeat(160),
+        );
+        for stdout in [String::new(), "progress 🌀\n".repeat(400)] {
+            let result = super::super::build_failed_tool_output(&stdout, &stderr, 1);
+            let command = "python3 -S -m unittest -v tests";
+            let messages = [
+                serde_json::json!({"role":"user","content":"Run the routing tests"}),
+                serde_json::json!({"role":"assistant","tool_calls":[{"id":"baseline","function":{
+                    "name":"exec","arguments":serde_json::json!({"command":command}).to_string()}}]}),
+                serde_json::json!({"role":"tool","tool_call_id":"baseline","content":result}),
+            ];
+            let packet = super::super::evidence_packet::project(&messages, None);
+            let action = &packet.actions[0];
+            assert_eq!(action.succeeded, Some(false));
+            assert_eq!(action.arguments["command"], command);
+            let excerpt = action.result.as_deref().unwrap();
+            assert!(excerpt.contains("FAIL: test_cli"), "{excerpt}");
+            assert!(excerpt.contains(reason), "{excerpt}");
+            assert!(excerpt.chars().count() <= 2400);
+        }
+    }
 
     #[cfg(not(target_os = "windows"))]
     #[tokio::test]

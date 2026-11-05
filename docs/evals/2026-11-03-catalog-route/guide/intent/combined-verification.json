@@ -1,0 +1,95 @@
+{
+  "original_baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "precursor_receipt": "8e5ae78301fc919fdf17b5b5db8dcaa54972ccac45ff3f24a85f98196344a468",
+  "continuation_receipt": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "continuation_qualified": false,
+  "patch_sha256": "ae5cc815636732b8d0a66f48ca298ff68abd4dedea11ad0149b6e22ae38b54ba",
+  "changed_paths": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "inventory_matches": true,
+  "all_original_external_checks_passed": true,
+  "checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "b2f715b5e833ee5cb042667ebe7e85b4ab05ff312b8f007536f6635147de0748"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "bab07f3c0c7f6fb1a83af3118b5b724ee3891011f91fc75164a33913f728c5f1"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "1cb8da07620911af3f34edf40eea9f3332d41ceb31d72768c6ae26a6c80cf549"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "3af03a8668fd80d918b92cbd3e42b190916834edfc43e1ed0a9e7a1811ddaf4d"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "27b204f0cf3ef67f4786f9d877cc1da0e5fad5006feb11781e59070c321fe569"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "d87497f324032f6d918ee76d58d95a4e4791906015e7e98ee890e5ff4ea00db6"
+    }
+  ],
+  "external_provider_requests": 0,
+  "guide_receipt": "e1da5c6d31c6d655d819ba2698a9de2842a7c1dfdc0d0096c41df035ac45a270",
+  "guide_qualified": true,
+  "guide_audit": {
+    "packaged_examples": {
+      "listed": {
+        "exit": 0,
+        "stdout": "{\"version\":1,\"total\":2,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]},{\"id\":\"pane-prefs-observer-contract\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"contract\",\"prefs\"]}]}\n",
+        "stderr": ""
+      },
+      "empty": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"__spiral_no_match__\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n"
+      }
+    },
+    "discrepancies": [],
+    "original_nonblank_lines_preserved": false
+  }
+}

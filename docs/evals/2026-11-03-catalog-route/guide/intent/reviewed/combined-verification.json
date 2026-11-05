@@ -1,0 +1,103 @@
+{
+  "original_baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "precursor_receipt": "8e5ae78301fc919fdf17b5b5db8dcaa54972ccac45ff3f24a85f98196344a468",
+  "continuation_receipt": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "continuation_qualified": false,
+  "patch_sha256": "2078503a6fca3831f249729f57e93f852ade6073c027488f0502ea4f0af4f32f",
+  "changed_paths": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "inventory_matches": true,
+  "all_original_external_checks_passed": true,
+  "checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "632489ed5a5ab7d26b994446658c7e12526ae82dfa8e6a1a9fd837d7617cef9f"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "1931d9b1569cee4063a00265070e43f1dbf72e9fab62d96a66ea23632b6e5986"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "34a91641c4e28bda181a7efb7f55d27053fdb384604392ab58230d15286cfcf1"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "ed39657ec447cf098eff81697e1c1209dcfbb7c4c8dc80a44b24b07c39df0ea0"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "f3a4f4f0f84fad969f6e4188937425c5af821beee3dd492c20e5190e80fe3775"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "78788a00c1c22cef251f39cf341c334da9d579f3921d129a53f9c3b33680332d"
+    }
+  ],
+  "external_provider_requests": 0,
+  "maintainer_layout_correction": {
+    "patch_sha256": "d7a8d36f9f49685179e14824881022ba76df80b378afea62afe5a5aeb57e68fe",
+    "model_guide_sha256": "aca4f89db6c56900087a3f0efbdd8b166eb09db86a75e2ad439efe2415909727",
+    "reviewed_guide_sha256": "8252c6edaa480ed441d1283fac59b452f0670176433f3196d89edc870cb2794c",
+    "original_guide_bytes_preserved_as_prefix": true
+  },
+  "identical_to_unedited_model_candidate": false,
+  "prior_model_inventories_matched_before_correction": true,
+  "guide_receipt": "e1da5c6d31c6d655d819ba2698a9de2842a7c1dfdc0d0096c41df035ac45a270",
+  "guide_qualified": true,
+  "guide_audit": {
+    "packaged_examples": {
+      "listed": {
+        "exit": 0,
+        "stdout": "{\"version\":1,\"total\":2,\"cases\":[{\"id\":\"pane-prefs-observer-suggestion\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"prefs\"]},{\"id\":\"pane-prefs-observer-contract\",\"tags\":[\"tui\",\"observer\",\"suggestion\",\"contract\",\"prefs\"]}]}\n",
+        "stderr": ""
+      },
+      "empty": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"__spiral_no_match__\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n"
+      }
+    },
+    "discrepancies": [],
+    "original_nonblank_lines_preserved": true
+  }
+}

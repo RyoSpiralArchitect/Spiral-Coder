@@ -1,0 +1,54 @@
+{
+  "condition": "C1 finish the exact R11 patch as existing code",
+  "issue": 49,
+  "raw_root": "replay-catalog-checkpoint-c1-20261103",
+  "baseline_commit": "6b425a71d507aa9b5d7abc59229fa143dc792ca0",
+  "original_baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "precursor_run_receipt_sha256": "8e5ae78301fc919fdf17b5b5db8dcaa54972ccac45ff3f24a85f98196344a468",
+  "precursor_patch_sha256": "7ed74db18a0b5be96fdfb84c21348b22cef08b90dce51cc51d0708e7c5db5c1f",
+  "precursor_changed_paths": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "runtime_commit": "28005fb1fd9359b95b946ca9d0a494685cc427de",
+  "executor_sha256": "b5e95787ad01eda338a567b8ed45c99ad9df6fee6c45f4e85a5aa6a65b4aff25",
+  "declaration_sha256": "87c1c1ed6d5fe785404fb9ddece22768e5c2bd758fae31cf743193334ce31924",
+  "spec_sha256": "3ae61724c904e1540343c9f89a768d0790969e3df623ccece8323d1165c24d73",
+  "prompt_sha256": "bebfd966bc4f1bac02df363cd3892a15727688bd10016ea9837449c5465ab7cc",
+  "protocol_sha256": "6ee038ca3eb52d6d9040d2aded818eeba1801de75b1e1e45c69e42e19088b7a5",
+  "preflight_sha256": "ecdd242c9364d1bf14492b315aafca7d7be77bd45e54915c2c08af4144a04b21",
+  "source_at_start": "exact R11 source, protected visible test overlays only",
+  "provider_calls_at_pin": 0,
+  "expected_baseline_checks": {
+    "candidate-build": true,
+    "catalog-delivery-visible": false,
+    "catalog-visible": true,
+    "held-out-catalog": false,
+    "packaged-spiral": false,
+    "regular-replay": true,
+    "stock-regressions": false
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "transport_repair_requests": 4,
+    "coder_chunk_requests": 8,
+    "observer_reserved_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "original_rust_identities_sha256": "03ee93445176ec84dfd9e87e64461b9151ccdf14f27e3934c488a48780240dc6"
+}

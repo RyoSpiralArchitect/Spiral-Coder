@@ -2,10 +2,9 @@
 
 use super::prose_context;
 
-pub(super) fn instructions(root: &str) -> Vec<&str> {
-    let mut clauses = Vec::new();
+fn prose_lines(root: &str) -> impl Iterator<Item = &str> {
     let mut fence = None;
-    for line in root.lines() {
+    root.lines().filter(move |line| {
         if prose_context::is_fence_line(line) {
             let marker = prose_context::fence_marker(line);
             if fence == Some(marker) {
@@ -13,11 +12,15 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
             } else if fence.is_none() {
                 fence = Some(marker);
             }
-            continue;
+            return false;
         }
-        if fence.is_some() {
-            continue;
-        }
+        fence.is_none()
+    })
+}
+
+pub(super) fn instructions(root: &str) -> Vec<&str> {
+    let mut clauses = Vec::new();
+    for line in prose_lines(root) {
         let lower = line.to_ascii_lowercase();
         let mut starts = Vec::new();
         for marker in [
@@ -81,6 +84,61 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
         }
     }
     clauses
+}
+
+/// Recognize an explicit, positive request for the two bare report lines.
+/// A quoted example or an instruction to preserve a file is not a report contract.
+pub(super) fn wants_outcome_lines(root: &str) -> bool {
+    prose_lines(root).any(|line| {
+        let lower = line.to_ascii_lowercase();
+        lower.match_indices("include ").any(|(start, _)| {
+            let prefix = lower[..start]
+                .rsplit(['.', '!', '?'])
+                .next()
+                .unwrap_or("")
+                .trim();
+            if !matches!(
+                prefix,
+                "" | "final report must"
+                    | "final answer must"
+                    | "final summary must"
+                    | "the final report must"
+                    | "your final report must"
+            ) || prose_context::is_inside_inline_quote(line, start)
+                || is_example_or_negation_context(&lower, start)
+            {
+                return false;
+            }
+            let offset = start + "include ".len();
+            let lower_rest = &lower[offset..];
+            let Some(marker) = [
+                "standalone lines ",
+                "the standalone lines ",
+                "standalone outcome fields ",
+                "the standalone outcome fields ",
+            ]
+            .into_iter()
+            .find(|marker| lower_rest.starts_with(marker)) else {
+                return false;
+            };
+            let fields = &line[offset + marker.len()..];
+            [
+                r#""Before: FAILED" and "After: PASSED""#,
+                "`Before: FAILED` and `After: PASSED`",
+            ]
+            .into_iter()
+            .filter_map(|pair| fields.strip_prefix(pair))
+            .any(|tail| {
+                let condition = tail.split(['.', '!', '?', ';']).next().unwrap_or("").trim();
+                matches!(
+                    condition,
+                    "" | "only when substantiated"
+                        | "only when supported"
+                        | "only when each is supported by the commands"
+                )
+            })
+        })
+    })
 }
 
 fn is_example_or_negation_context(lower: &str, start: usize) -> bool {

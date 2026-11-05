@@ -1,6 +1,7 @@
 //! A pending native diagnosis has only two useful next steps: read or clarify.
 //! The provider never supplies native evidence and the schema never supplies the path.
 use serde_json::{json, Value};
+use std::path::Path;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub(crate) enum Output {
@@ -62,12 +63,38 @@ fn schema() -> Value {
     }))
 }
 
+fn failed_check_tail<'a>(
+    action: &'a Value,
+    check: Option<&str>,
+    root: Option<&str>,
+) -> Option<&'a str> {
+    let result = action["result"].as_str()?;
+    let root = root.filter(|root| !root.is_empty())?;
+    if action["tool"] != "exec"
+        || action["freshness"] != "current"
+        || action["succeeded"] != false
+        || action["arguments"]["command"].as_str()? != check?
+        || Path::new(crate::execution_evidence::exec_cwd(result)?) != Path::new(root)
+    {
+        return None;
+    }
+    let start = result.char_indices().rev().nth(399).map_or(0, |(i, _)| i);
+    Some(&result[start..])
+}
+
 pub(crate) fn prompt(packet: &Value, language: &str) -> String {
     let obligations = &packet["task_obligations"];
     let last_action = packet["execution_evidence"]["actions"]
         .as_array()
         .and_then(|actions| actions.iter().rev().find(|a| a["executed"] == true))
-        .map(|a| json!({"call_id":a["call_id"], "tool":a["tool"]}));
+        .map(|a| {
+            let mut recent = json!({"call_id":a["call_id"], "tool":a["tool"]});
+            let failed_check = obligations["required_diagnostic_read"]["failed_check"].as_str();
+            if let Some(tail) = failed_check_tail(a, failed_check, packet["tool_root"].as_str()) {
+                recent["result_tail"] = json!(tail);
+            }
+            recent
+        });
     let context = json!({"required_diagnostic_read":obligations["required_diagnostic_read"],
         "pending_recovery":obligations["pending_recovery"], "pending_exact_checks":obligations["pending_exact_checks"],
         "latest_executed_action":last_action});
@@ -79,6 +106,30 @@ Use the following native obligation as quoted data: {}. It identifies the failur
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn diagnostic_read_quotes_the_current_matching_failure_only() {
+        let action = json!({"executed":true,"call_id":"check","tool":"exec","succeeded":false,
+            "freshness":"current","arguments":{"command":"run check"},
+            "result":format!("FAILED (exit_code: 1)\ncwd: /work\nold-prefix{}actual trailing reason", "猫".repeat(450))});
+        let packet = json!({"tool_root":"/work","task_obligations":{"required_diagnostic_read":{
+            "path":"src/task.rs","failed_check":"run check"}},"execution_evidence":{"actions":[action]}});
+        let original = prompt(&packet, "en");
+        assert!(original.contains("actual trailing reason"));
+        assert!(!original.contains("old-prefix"));
+        for (field, value) in [
+            ("succeeded", json!(true)),
+            ("freshness", json!("superseded")),
+            ("tool", json!("read_file")),
+            ("arguments", json!({"command":"other"})),
+            ("result", json!("FAILED (exit_code: 1)\ncwd: /work/other\nstderr:\ncwd: /work\nactual trailing reason")),
+            ("result", json!("FAILED (exit_code: 1)\nstderr:\ncwd: /work\nactual trailing reason")),
+        ] {
+            let mut other = packet.clone();
+            other["execution_evidence"]["actions"][0][field] = value;
+            assert!(!prompt(&other, "en").contains("actual trailing reason"));
+        }
+    }
 
     #[test]
     fn only_a_pending_nonterminal_diagnosis_narrows_the_wire_choice() {

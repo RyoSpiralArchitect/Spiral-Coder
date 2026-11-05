@@ -52,8 +52,7 @@ pub(super) fn mark(
             let cwd = a
                 .result
                 .as_deref()
-                .and_then(|r| r.lines().nth(1))
-                .and_then(|line| line.strip_prefix("cwd: "))
+                .and_then(crate::execution_evidence::exec_cwd)
                 .or_else(|| a.arguments["cwd"].as_str());
             serde_json::json!({"command":a.arguments["command"], "cwd":cwd})
         } else {

@@ -1,0 +1,27 @@
+Repair the published examples for Spiral-Coder's read-only replay catalog in docs/evaluation.md. The native CLI, installed npm entry and case selection already work. Change only the guide.
+
+Before touching the guide, reproduce its disagreement with the installed command:
+python3 -S -m unittest -v scripts.catalog_guide_visible
+
+The visible check builds the candidate, assembles its actual local npm entry, runs the commands in a clean copy of the stock spec, and prints the measured JSON and exit status. The successful example must show the complete measured JSON for this exact command, including version, total, case IDs and ordered tags:
+$ spiral tui-replay-list --filter prefs --max-cases 2
+Show the empty example separately in a console fence:
+$ spiral tui-replay-list --filter __spiral_no_match__
+$ echo $?
+Then show the actual exit code. Explain that no matches produces no JSON on stdout and a diagnostic on stderr. Keep the existing accurate selection semantics and distinction between listing and running. Move the catalog section to the end or between whole existing sections so the original completion paragraphs keep their heading. Keep unrelated guide text intact.
+
+Allowed paths only:
+- docs/evaluation.md
+
+Use a native file edit. Run these five checks separately after your last edit. They refer to the final workspace even though the only change is documentation:
+python3 -S -m unittest -v scripts.catalog_guide_visible
+python3 -S -m unittest -v scripts.catalog_delivery_visible
+python3 -S -m unittest -v scripts.catalog_visible
+cargo fmt --all -- --check
+cargo test --locked --bin spiral-coder -q
+
+Use native done. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated. Name the changed file and each exact command with the measured result. The Observer should identify the smallest remaining action and reserve enough requests for the remaining checks and report.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"guide","description":"Make the two published examples match the packaged command and preserve the surrounding guide.","artifacts":[{"path":"docs/evaluation.md","kind":"documentation"}],"checks":[{"command":"python3 -S -m unittest -v scripts.catalog_guide_visible","baseline_failure":true},{"command":"python3 -S -m unittest -v scripts.catalog_delivery_visible"},{"command":"python3 -S -m unittest -v scripts.catalog_visible"},{"command":"cargo fmt --all -- --check"},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>

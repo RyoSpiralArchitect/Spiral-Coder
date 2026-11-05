@@ -1,0 +1,377 @@
+{
+  "predeclaration_sha256": "87c1c1ed6d5fe785404fb9ddece22768e5c2bd758fae31cf743193334ce31924",
+  "run_receipt_sha256": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "assessment_sha256": "494b91d9ae429137fded914af9b5ee1100208b16364ba261261d4a1d37735c20",
+  "completed": false,
+  "termination": "blocked",
+  "role_requests": {
+    "coder": 24,
+    "observer": 8
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": true,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": true,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": false,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/tui_replay.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_delivery_visible": true,
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo fmt --all -- --check": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 32,
+    "task_requests": 32,
+    "transport_requests": 0,
+    "coder_task_requests": 24,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "not_observed",
+      "behavior_changed": "observed",
+      "visible_passed": "observed",
+      "control_non_regression": "observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 0,
+    "first_unmet_stage": "reproduced",
+    "termination": "blocked"
+  },
+  "first_changed_step_by_path": {
+    "src/tui_replay.rs": 9,
+    "npm/spiral-coder/lib/launcher.cjs": 12,
+    "docs/evaluation.md": 16
+  },
+  "changed_edits": [
+    {
+      "result_step": 9,
+      "tool": "patch_file",
+      "call_id": "call_mfhDZNJhWDCCwBmmqjeDTQ1e",
+      "path": "src/tui_replay.rs",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 12,
+      "tool": "patch_file",
+      "call_id": "call_VVciowJ823CatXIH6A6Y3Ka1",
+      "path": "npm/spiral-coder/lib/launcher.cjs",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 16,
+      "tool": "patch_file",
+      "call_id": "call_0TSh8PuD1sZS0MfkibGDDZpy",
+      "path": "docs/evaluation.md",
+      "auto_test": "PASSED"
+    },
+    {
+      "result_step": 22,
+      "tool": "patch_file",
+      "call_id": "call_lxK2OT2yFVet2GrvDGSNJ4n2",
+      "path": "src/tui_replay.rs",
+      "auto_test": "PASSED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_delivery_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_iKd0hPg3HRnH8t2QmmzG8mID"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "patch_file",
+      "path": "npm/spiral-coder/lib/launcher.cjs",
+      "exact_execution": false,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_mQex2Xl0dtQMDAMLNLKcDjLj",
+        "call_LKRdr7nAnDGsUulKzINubCPB"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_isQxxP9j7dH7lW8Y9o3wfNfe"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_delivery_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_LxQixp8B7XUx20jsIYrWxcOF"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_ttKgRYYp8bNkILO81OqVUVel"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "completed": false,
+      "tool": "exec",
+      "path": null,
+      "exact_execution": true,
+      "reported_success": false,
+      "matching_call_ids": [
+        "call_NygTqSDnuGgs9LnkLYLFysUP"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 7,
+      "decision": "accept",
+      "completed": false,
+      "tool": "patch_file",
+      "path": "src/tui_replay.rs",
+      "exact_execution": true,
+      "reported_success": true,
+      "matching_call_ids": [
+        "call_Ht0nnkll5cJkQEZXwoCjjRTr",
+        "call_lxK2OT2yFVet2GrvDGSNJ4n2"
+      ],
+      "linked_changed_calls": [
+        "call_lxK2OT2yFVet2GrvDGSNJ4n2"
+      ]
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "93bb72938b00ef6ebf98491977ce6fe20a42ddf161e365405694bbe715edbc5d",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_delivery_visible.py"
+    },
+    {
+      "text_sha256": "74ce97812339a68d0c90c540d8c119cae7df716434fc74d4169882487697cd64",
+      "first_listed_kind": "edit",
+      "first_listed_tool": "patch_file",
+      "first_listed_path": "npm/spiral-coder/lib/launcher.cjs"
+    },
+    {
+      "text_sha256": "7c9fb03ad301a03f18468a2dd5b17571d1d971e9b231620c64d7169215abe1e4",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "d5936da3bff558f70cae909368541607253e75bc04e8e8eb708b02da508e2be4",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_delivery_visible.py"
+    },
+    {
+      "text_sha256": "ade48b7beb40313b1d5468d4cf99c4902e9b7779e68c483c533b5cc6f5971527",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "9e8a527ed90901b4f37a61738e7cfa372fac71d4a45ad1a660f7f83b4b466214",
+      "first_listed_kind": "verify",
+      "first_listed_tool": "exec",
+      "first_listed_path": null
+    },
+    {
+      "text_sha256": "f74174b71849a2146f29e76ac7ed4edf9eadf69ac6f4d0087043fd253638bff8",
+      "first_listed_kind": "edit",
+      "first_listed_tool": "patch_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "1b0f30ddf01a4c077ad6dcdba36d6af8a00c2d7e11d43ec8076ab75c8638f175",
+      "first_listed_kind": "clarify",
+      "first_listed_tool": null,
+      "first_listed_path": null
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "099d627e870f734210b5d535ec65ac8175622d243e5c536ba76ff7db65123211",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-delivery-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "a0b818e20786f5da9199f5f42304df5affb13dfa48ba0e75473eaff922ecc1a0",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "34649044dc234f74f4311608758ee0f69c803a21126253566941375e04e82ea4",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "a571d7ff79a0d70d031d1df3a398cf6413872b2280f8249a64422199b8ed7f50",
+      "has_process_result": true
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "236fc3f39d8df5fa1d88f8391731d833d62ffa64210a9a930546bf6100096e7a",
+      "has_process_result": true
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "0874a1372f4f01339740dfff3237c1cfc3b34109b70caf9728ba59ed0f91c4ff",
+      "has_process_result": true
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "e0d1378f05122d48ff9775356a40c905385e0ca0c87f5177380edf8aed87aa0c",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [
+    {
+      "result_step": 24,
+      "executed": true,
+      "result": "OK: blocked",
+      "arguments": {
+        "acceptance_evidence": [
+          {
+            "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+            "criterion": "acceptance 1"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+            "criterion": "acceptance 2"
+          }
+        ],
+        "completed_acceptance": [
+          "acceptance 1",
+          "acceptance 2"
+        ],
+        "next_steps": "Run separately, unchanged: python3 -S -m unittest -v scripts.catalog_visible; cargo fmt --all -- --check; cargo test --locked --bin spiral-coder -q. Acceptance 3 remains blocked until all three pass after the final Rust edit.",
+        "remaining_acceptance": [
+          "acceptance 3"
+        ],
+        "summary": "[DONE] Changed npm/spiral-coder/lib/launcher.cjs (added the tui-replay-list alias), docs/evaluation.md (documented listing, JSON, filtering, caps, and execution distinction), and src/tui_replay.rs (shared replay case selection and rustfmt module ordering). Baseline routing check was recorded failing before edits and passing after. After: PASSED. Remaining exact checks were not executable within this run's final tool budget, so this is blocked rather than a completion claim.\n\nBefore: FAILED\nAfter: PASSED\n\nObserved commands:\n- python3 -S -m unittest -v scripts.catalog_delivery_visible \u2014 Before FAILED (1 test run, 1 failure event); After PASSED (1 test run).\n- python3 -S -m unittest -v scripts.catalog_visible \u2014 previously observed successful by the tool, but not retained as an approved current exact execution after the final edit.\n- cargo fmt --all -- --check \u2014 failed before the final two-line reorder; after-reorder exact check not executed.\n- cargo test --locked --bin spiral-coder -q \u2014 not executed.\nChanged files: npm/spiral-coder/lib/launcher.cjs; docs/evaluation.md; src/tui_replay.rs."
+      }
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 285.422
+  }
+}

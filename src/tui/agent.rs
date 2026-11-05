@@ -2553,7 +2553,7 @@ fn build_failed_tool_output(stdout: &str, stderr: &str, exit_code: i32) -> Strin
     // Tail-biased: errors appear at the END of compiler output, not the beginning.
     // Showing the last N chars ensures the real errors are in view.
     let stdout_t = truncate_output_tail(stdout, MAX_STDOUT_CHARS);
-    let stderr_t = truncate_output(stderr, MAX_STDERR_CHARS);
+    let stderr_t = failure_diagnostics::failure_excerpt(stderr.trim_end(), MAX_STDERR_CHARS);
     if !stdout_t.is_empty() {
         out.push_str(&format!("\nstdout (tail):\n{stdout_t}\n"));
     }

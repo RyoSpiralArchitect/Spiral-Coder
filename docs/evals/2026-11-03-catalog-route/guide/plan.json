@@ -1,0 +1,56 @@
+{
+  "condition": "D1 repair executable guide examples on the exact C1 source",
+  "issue": 49,
+  "raw_root": "replay-catalog-guide-d1-20261103",
+  "baseline_commit": "8f081d1e4fa49ad0c190d267f88eba099d14b22b",
+  "runtime_commit": "28005fb1fd9359b95b946ca9d0a494685cc427de",
+  "precursor_run_receipt_sha256": "a821b09f2d19b2e8026cc2b81cf2b3578ac7654ed0b9aec11d6a2c30299adf1e",
+  "precursor_combined_patch_sha256": "e014d470f721941cc3351587550637aac80d35d4b6011bc9a1d89f9489dd3e68",
+  "executor_sha256": "b5e95787ad01eda338a567b8ed45c99ad9df6fee6c45f4e85a5aa6a65b4aff25",
+  "declaration_sha256": "ed7c5b72dd65bd50f84452c4e7576c60dee38ca022b7cfab5a6c4a880426dfe4",
+  "preflight_sha256": "8d5b890356a08c1fe292c07e7a767f45f7711804ffd7913e7dee5f958af0def4",
+  "spec_sha256": "bd2f48301e2c67487a80da5383b738ed374b369cddc3e8bbea67a64c36163858",
+  "protocol_sha256": "13dc5dd43afd7df50523b07bc842c9338bc439608023ce19def171dea81b19c8",
+  "prompt_sha256": "a466554aa619d0d213e9b72a0f7f89cf4673193815fc5e624c72a22feb8e103e",
+  "provider_calls_at_pin": 0,
+  "editable": [
+    "docs/evaluation.md"
+  ],
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "native_checks": [
+    "python3 -S -m unittest -v scripts.catalog_guide_visible",
+    "python3 -S -m unittest -v scripts.catalog_delivery_visible",
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo fmt --all -- --check",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "expected_baseline_checks": {
+    "candidate-build": true,
+    "catalog-guide-visible": false,
+    "catalog-visible": true,
+    "held-out-catalog": true,
+    "packaged-spiral": true,
+    "regular-replay": true,
+    "stock-regressions": true
+  },
+  "budget": {
+    "max_requests": 24,
+    "observer_reserved_requests": 6,
+    "transport_repair_requests": 2,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 26
+}

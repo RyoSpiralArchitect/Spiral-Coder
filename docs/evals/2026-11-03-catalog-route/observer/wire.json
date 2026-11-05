@@ -1,0 +1,25 @@
+{
+  "wire_requests": 1,
+  "request_sha256": "442c392f31327bef27be8fbcb479091829124b31dfea2f22136ac1610aa98f03",
+  "status": 200,
+  "response_sha256": "71c32ed0bc4593370ee2c949e4665d6e90a1b4ae1e5d5eb2448d26ca48f9fa20",
+  "finish_reason": "stop",
+  "model": "gpt-5.6-luna",
+  "usage": {
+    "prompt_tokens": 10701,
+    "completion_tokens": 324,
+    "total_tokens": 11025,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 10698,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "reply_sha256": "81dac1c16683350cb3f9118659d37b78bc5d486480d2f9630b4ea958d7e42f8c"
+}

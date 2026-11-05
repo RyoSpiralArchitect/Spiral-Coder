@@ -1,0 +1,243 @@
+{
+  "predeclaration_sha256": "c28dcb2e9f808c25aeecf4cd0f2b8f47156d0c9aad7f863435179a41f459b60f",
+  "run_receipt_sha256": "d6c2d8ff84a408ffa4a2eb9ecc63c7bb8d847d654e3f1e5c2bac38cbf16ff086",
+  "assessment_sha256": "59c659f546afe58dbff320107b581a0565e3e34fd03b398fb7beea53678e05c6",
+  "completed": false,
+  "termination": "observer_unavailable",
+  "role_requests": {
+    "coder": 15,
+    "observer": 6
+  },
+  "report_closeout_attempted": false,
+  "qualified_candidate": false,
+  "gates": {
+    "native_receipts_valid": true,
+    "required_paths_changed": false,
+    "pinned_run_receipt": true,
+    "native_ledger_binding": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "both_roles_called": true,
+    "exact_role_configuration": true,
+    "role_accounting_consistent": true,
+    "bounded_requests": true,
+    "process_ok": true,
+    "independent_checks_passed": false,
+    "candidate_unchanged_by_assessor": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_candidate_matches": true
+  },
+  "changed_files": [
+    "src/main.rs"
+  ],
+  "out_of_scope_files": [],
+  "authored_summary": "",
+  "native_checks": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "budget_accounting": {
+    "valid": true,
+    "wire_requests": 21,
+    "task_requests": 21,
+    "transport_requests": 0,
+    "coder_task_requests": 15,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "development_progress": {
+    "development_only": true,
+    "qualification_unchanged": true,
+    "milestones": {
+      "reproduced": "observed",
+      "behavior_changed": "not_evaluated",
+      "visible_passed": "not_observed",
+      "control_non_regression": "not_observed",
+      "fresh_full_check": "not_observed",
+      "docs_and_receipts": "not_observed"
+    },
+    "highest_contiguous_stage": 1,
+    "first_unmet_stage": "behavior_changed",
+    "termination": "observer_unavailable"
+  },
+  "first_changed_step_by_path": {
+    "src/main.rs": 7
+  },
+  "changed_edits": [
+    {
+      "result_step": 7,
+      "tool": "apply_diff",
+      "call_id": "call_fAlCx9XzKgKGSkHfS5dfERjk",
+      "path": "src/main.rs",
+      "auto_test": "FAILED"
+    },
+    {
+      "result_step": 11,
+      "tool": "apply_diff",
+      "call_id": "call_qvpI1avNHU8mg7sKfk56xQ1M",
+      "path": "src/main.rs",
+      "auto_test": "FAILED"
+    }
+  ],
+  "outside_scope_edit_attempts": [],
+  "observer_handoffs": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "scripts/catalog_visible.py",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_THHyXOco674ACMuRUl7yZ3oc"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": true,
+      "reported_success": null,
+      "matching_call_ids": [
+        "call_4NmVUX5Ea8AMBHs9E1bHpNIc"
+      ],
+      "linked_changed_calls": []
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "completed": false,
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "exact_execution": false,
+      "reported_success": null,
+      "matching_call_ids": [],
+      "linked_changed_calls": []
+    }
+  ],
+  "observer_replies": [
+    {
+      "text_sha256": "7d24488423dd2ca188475f698bf9d378afb31a9b88a93b3749e8597c4e763f09",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "scripts/catalog_visible.py"
+    },
+    {
+      "text_sha256": "54bc84014c0553ac1116f70da534217927c21df9abf5d661ec1014ecef55fb54",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "427a645c2970f057a0bd2227ee90c650a2910409ab3363c714ef2113c71eafc8",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "0f3b5ccfbfc50a2773e7cd317ff921db2e12866dd72eccf8edc706bfdfbdf255",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/main.rs"
+    },
+    {
+      "text_sha256": "bd7065cedec5f6b3fe08e6a8bb32331fffa667cbf6e9fd42015dbcd84b7262ce",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    },
+    {
+      "text_sha256": "0a885a3f332bd323c9fc72af99417cda42b88af70e82718a0a212ac2f249b4e9",
+      "first_listed_kind": "read",
+      "first_listed_tool": "read_file",
+      "first_listed_path": "src/tui_replay.rs"
+    }
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": false,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "75e6d630016f367579b828b73fce435fb3b7c4884d63ef66f2a596bfff7cf4a3",
+      "has_process_result": true
+    },
+    {
+      "id": "catalog-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "8b2e70c615d387b0d3441acfbe840e6631ac0b96cfba51ece693dda37817e5b5",
+      "has_process_result": true
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "regular-replay",
+      "passed": false,
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "has_process_result": false
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "34bde8370a8f6d22fa57952c0e0897cb82d204f91c0c26db51eee245f31e9ecc",
+      "has_process_result": true
+    }
+  ],
+  "tool_rewrites": [],
+  "terminal_calls": [],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "wall_seconds": 153.253
+  }
+}

@@ -1,0 +1,25 @@
+Finish Spiral-Coder's read-only replay catalog for users of the installed spiral command. This checkout already contains a previous Coder/Observer pair's working native command. Its npm alias still diverts the command to the TUI, the guide is missing, and ordinary replay duplicates the selection logic that the catalog already uses. Complete those remaining changes in this checkout.
+
+First reproduce the public routing failure before any edit:
+python3 -S -m unittest -v scripts.catalog_delivery_visible
+
+Follow the failure, inspect the launcher, and fix the catalog alias in npm/spiral-coder/lib/launcher.cjs. Verify that repair with the same failing command when the governor asks. The next two deliverables are docs/evaluation.md and src/tui_replay.rs. Document a realistic spiral tui-replay-list example and JSON output, that filtering by ID or tag is ASCII case-insensitive, that --max-cases applies after filtering and a zero cap selects one, and how listing differs from executing a replay. Inspect the existing catalog selector and its ordinary replay caller. Use one selection implementation for both, preserving validation, order, tags, empties, errors and output. Format the edited Rust source. Keep the rest of the command working.
+
+Allowed paths only:
+- npm/spiral-coder/lib/launcher.cjs
+- docs/evaluation.md
+- src/tui_replay.rs
+- src/tui_replay/catalog.rs
+- src/main.rs
+- tests/tui_replay_catalog.rs
+Use native file edits for the required artifacts. Treat every supplied test as protected. Work only inside this checkout. Do not inspect external oracles, references or other checkouts. Run separately after the last edit:
+python3 -S -m unittest -v scripts.catalog_delivery_visible
+python3 -S -m unittest -v scripts.catalog_visible
+cargo fmt --all -- --check
+cargo test --locked --bin spiral-coder -q
+
+Use native done. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated. Name each file you changed and all four exact commands with their observed outcomes. Report counts only when measured. If anything remains, return an honest blocked report. The Observer should base the next step on the current real edits and checks.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"delivery","description":"Finish packaged catalog, document usage and share the ordinary replay selector.","artifacts":[{"path":"npm/spiral-coder/lib/launcher.cjs","kind":"source"},{"path":"docs/evaluation.md","kind":"documentation"},{"path":"src/tui_replay.rs","kind":"source"}],"checks":[{"command":"python3 -S -m unittest -v scripts.catalog_delivery_visible","baseline_failure":true},{"command":"python3 -S -m unittest -v scripts.catalog_visible"},{"command":"cargo fmt --all -- --check"},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>
