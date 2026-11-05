@@ -276,6 +276,21 @@ checks the complete original check set.
 
 ## TUI replay assertions
 
+A case may seed a bounded task budget and a resumed transcript before the
+failure packet is built. `work_budget` takes `request_limit`,
+`observer_reserved_requests`, and `spent_coder_requests` /
+`spent_observer_requests` (recorded as completed task-charged receipts, capped
+at the limit). `session_messages` is a raw OpenAI-style message array loaded
+into `coder_session`; `task_obligations` and `execution_evidence` in the packet
+come from it, while top-level `coder_messages` still drive the visible panes
+and target selection. Together they freeze budget-shaped routing such as an
+exhausted or report-only next Coder turn.
+
+`observer_prompt_contains` asserts on the Observer prompt actually sent,
+including handoff and diagnostic variants. `observer_tool_contains` asserts on
+the Observer pane's tool messages, where validation issues such as
+capacity rejections are surfaced.
+
 Every TUI replay case must contain at least one entry in its top-level `checks`
 array. Loading or executing a case with missing or empty checks fails before
 replay artifacts are created. An unknown nested `replay.checks` object does not

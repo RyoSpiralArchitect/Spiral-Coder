@@ -2485,6 +2485,7 @@ pub(crate) struct TuiNextActionReplayOutcome {
     pub pending_observer_hint: Option<String>,
     pub pending_observer_contract: Option<suggestion::ObserverSuggestionEnvelope>,
     pub coder_preview_messages: Vec<ChatMessage>,
+    pub observer_tool_messages: Vec<String>,
 }
 
 pub(crate) fn latest_tui_next_action_target(app: &App) -> Option<(usize, String)> {
@@ -2544,6 +2545,13 @@ pub(crate) fn replay_observer_next_action_case(
         pending_observer_hint: app.pending_observer_hint.clone(),
         pending_observer_contract: app.pending_observer_contract.clone(),
         coder_preview_messages: preview_messages,
+        observer_tool_messages: app
+            .observer
+            .messages
+            .iter()
+            .filter(|m| matches!(m.role, Role::Tool))
+            .map(|m| m.content.clone())
+            .collect(),
     })
 }
 
