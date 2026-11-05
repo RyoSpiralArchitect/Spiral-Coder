@@ -652,6 +652,13 @@ pub fn tool_search_files(
         let mut files: Vec<PathBuf> = Vec::new();
 
         for entry in rd.flatten() {
+            if entry
+                .file_type()
+                .map(|kind| kind.is_symlink())
+                .unwrap_or(false)
+            {
+                continue;
+            }
             let path = entry.path();
             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             if name.starts_with('.') && name != ".spiral-coder.md" {
@@ -1266,6 +1273,32 @@ pub fn requires_pr_ready_handoff(path: &str) -> bool {
         assert!(r.contains("f b.txt"), "{r}");
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn recursive_search_skips_discovered_file_and_directory_links() {
+        use std::{fs, os::unix::fs::symlink};
+
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path().join("work");
+        let nested = root.join("nested");
+        let outside = tmp.path().join("outside");
+        fs::create_dir_all(&nested).unwrap();
+        fs::create_dir(&outside).unwrap();
+        fs::write(nested.join("regular.txt"), "first\nneedle real\n").unwrap();
+        fs::write(outside.join("private.txt"), "needle outside\n").unwrap();
+        symlink(outside.join("private.txt"), nested.join("alias.txt")).unwrap();
+        symlink(&outside, root.join("external-dir")).unwrap();
+        symlink(&nested, root.join("internal-dir")).unwrap();
+        symlink(root.join("missing"), root.join("dangling")).unwrap();
+
+        let (text, error) = tool_search_files("needle", ".", false, root.to_str());
+        assert!(!error, "{text}");
+        assert!(text.contains("nested/regular.txt:2: needle real"), "{text}");
+        assert!(!text.contains("needle outside"), "{text}");
+        assert!(!text.contains("internal-dir/"), "{text}");
+        assert!(text.contains("1 match(es)"), "{text}");
     }
 
     #[test]
