@@ -1447,3 +1447,49 @@ bounded case when the opening imperative names a file present in both the
 human allowlist and the structured requirements. An explicit read-only
 instruction elsewhere keeps its authority. The classification changes neither
 the file allowlist nor the native edit and verification evidence required.
+
+
+### Task-local strategy recall
+
+Before compacting assistant turns, the native loop can store a version-1
+`strategy_recall` object on the current human request in the saved message
+array. It retains at most one earlier reflected approach, its matched native
+action and one repeated observation. Ranged reads keep their requested line
+window, so inspecting a declaration and its dispatch are distinct. A repeated
+observation can still be necessary after a source change. Each text field is bounded to 160
+characters. The local field is stripped from provider messages. The
+deliberately projected `strategy_memory` combines these historical cues
+with the current task's admitted plan. A new human message starts its own
+scope, even when the task text repeats. Older sessions rebuild cues from
+retained messages. These fields carry no edit, check or approval authority.
+
+An outstanding literal patch remains in its original correlated tool exchange.
+The newest barrier and a bounded confirming read are protected during
+compaction. The native runtime derives the current advice from that history
+and the actual workspace each time it is needed.
+
+The nearest state-changing exchanges also delimit a saved proposal after
+compaction. Consecutive diagnosis refusals of the same literal patch in the
+same workspace keep the original proposal ID. The confirming read must
+follow the most recent refusal. An earlier failed or refused command cannot
+supply an accepted strategy through exit text printed in its output.
+
+The Observer horizon includes the shared and Coder request counts. On a
+pre-send snapshot, `next_coder_requests` also accounts for the Observer's
+pending task charge. Reply validation uses the current native ledger when
+available. `next_coder_turn` follows the Coder's own declared report
+reservation. With no Coder capacity, a validated no-tool handoff stays
+visible and queues nothing. Its explanation can name the first action
+on a future continuation.
+
+For an ordinary task with no declared acceptance contract, a retained historical
+action can be rendered as a short Coder recall. A file strategy is matched by a
+named target and compatible read or edit intent. Other operations need their
+recorded invocation in the reflection. Missing grounding leaves the strategy
+unmatched. A legacy session bridge with multiple human tasks is rederived from
+the current task before it can enter the Coder prompt.
+
+When a confirming range covers an entire JSON file, the native read may
+append an array-edit recipe. A deferred proposal compares the declared
+source bytes with the current file and accepts only the canonical diagnostic
+appendix for those bytes. Unexpected trailing text leaves the reread due.

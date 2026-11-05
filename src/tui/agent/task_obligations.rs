@@ -6,6 +6,10 @@ use serde_json::Value;
 
 #[derive(Debug, Serialize)]
 pub(crate) struct TaskObligations {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strategy_memory: Option<super::strategy_memory::View>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_patch: Option<super::deferred_edit::diagnosis::NextAction>,
     pub work_progress: super::work_progress::WorkProgress,
     pub artifact_scope: Option<crate::task_scope::ArtifactScope>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,13 +31,45 @@ pub(crate) struct TaskObligations {
     pub deferred_edit: Option<super::deferred_edit::Proposal>,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum CoderTurn {
+    Exhausted,
+    ReportOnly,
+    Work,
+}
+
 impl TaskObligations {
+    pub(crate) fn coder_turn(&self, remaining: usize) -> CoderTurn {
+        if remaining == 0 {
+            CoderTurn::Exhausted
+        } else if super::next_action::Contract::project(
+            Some(remaining),
+            &self.pending_exact_checks,
+            &self.task_requirements,
+        )
+        .report_only()
+        {
+            CoderTurn::ReportOnly
+        } else {
+            CoderTurn::Work
+        }
+    }
+
     pub(crate) fn bind_observer_tools(&self, schemas: &mut Value) {
         super::acceptance_schema::bind_observer(schemas, self);
     }
 }
 
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
+    project_at(messages, test_cmd, None)
+}
+
+pub(crate) fn project_at(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+    workspace: Option<&str>,
+) -> TaskObligations {
     let root = crate::task_origin::root_user_text(messages);
     let evidence = evidence_packet::project(messages, test_cmd);
     let context =
@@ -48,6 +84,9 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
         .chain(edits.diagnostic_hint())
         .collect();
     TaskObligations {
+        strategy_memory: super::strategy_memory::project(messages),
+        diagnostic_patch: workspace
+            .and_then(|root| super::deferred_edit::diagnosis::project(messages, root)),
         deferred_edit: if pending_recovery.is_empty() {
             super::deferred_edit::project(messages)
         } else {
@@ -80,8 +119,12 @@ pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligat
     }
 }
 
-pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
-    let obligations = project(messages, test_cmd);
+pub(crate) fn prompt(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+    workspace: Option<&str>,
+) -> Option<String> {
+    let obligations = project_at(messages, test_cmd, workspace);
     let root = crate::task_origin::root_user_text(messages);
     let repeated_repair_observation = !root.trim().is_empty()
         && task_harness::TaskHarness::infer(
@@ -96,15 +139,19 @@ pub(crate) fn prompt(messages: &[Value], test_cmd: Option<&str>) -> Option<Strin
         && !obligations.task_requirements.declared
         && obligations.pending_recovery.is_empty()
         && obligations.deferred_edit.is_none()
+        && obligations.diagnostic_patch.is_none()
         && obligations.final_answer["clauses"]
             .as_array()
             .is_none_or(Vec::is_empty)
         && !repeated_repair_observation
     {
-        return None;
+        return obligations
+            .strategy_memory
+            .as_ref()
+            .and_then(|view| view.standalone_prompt());
     }
     Some(format!(
-        "[Shared task obligations]\nwork_progress preserves the original human task separately from declared native proof obligations. Its edit/observation counts are native activity, not a workspace diff or semantic completion. Read the original task and acceptance_criteria before concluding that only documentation or a check remains; an explicit documentation requirement does not replace the requested source repair. If observations repeat without an edit, identify the missing fact and the bounded next action instead of treating another read as progress. When only pending steps change, retain the accepted goal and acceptance criteria verbatim; steps and observed progress are not new task requirements or completion proof. task_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow required_diagnostic_read first: read_file its exact path, even when the likely source to fix is different. This diagnoses the failure and does not authorize changing the supplied test. Follow pending_recovery before starting more checks. Include every final_answer.outcome_rows entry verbatim on its own line in done.summary; these report the recorded before/after checks, including unverified states. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly, one evidence row per completed criterion; do not invent a shortened command or let proof for one criterion stand in for another. Put required_literals exactly in done.summary, with their original case.\n{}",
+        "[Shared task obligations]\nwork_progress preserves the original human task separately from declared native proof obligations. Its edit/observation counts are native activity, not a workspace diff or semantic completion. Read the original task and acceptance_criteria before concluding that only documentation or a check remains; an explicit documentation requirement does not replace the requested source repair. If observations repeat without an edit, identify the missing fact and the bounded next action instead of treating another read as progress. When only pending steps change, retain the accepted goal and acceptance criteria verbatim; steps and observed progress are not new task requirements or completion proof. Use strategy_memory to recall the admitted plan and past approaches. A diagnostic_patch links your earlier held proposal to a fresh target read. Follow its suggested read before reconsidering the patch as a new call. Keep the other deliverables and exact checks in view. task_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow required_diagnostic_read first: read_file its exact path, even when the likely source to fix is different. This diagnoses the failure and does not authorize changing the supplied test. Follow pending_recovery before starting more checks. Include every final_answer.outcome_rows entry verbatim on its own line in done.summary; these report the recorded before/after checks, including unverified states. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly, one evidence row per completed criterion; do not invent a shortened command or let proof for one criterion stand in for another. Put required_literals exactly in done.summary, with their original case.\n{}",
         serde_json::to_string(&obligations).expect("task projection serializes")
     ))
 }
@@ -133,7 +180,7 @@ mod tests {
         ));
         let resumed: Vec<Value> =
             serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
-        let prompt = prompt(&resumed, None).expect("ordinary stalled repair needs context");
+        let prompt = prompt(&resumed, None, None).expect("ordinary stalled repair needs context");
         let rendered: Value = serde_json::from_str(prompt.lines().last().unwrap()).unwrap();
         assert!(rendered["artifact_scope"].is_null());
         assert_eq!(rendered["task_requirements"]["declared"], false);
@@ -151,21 +198,21 @@ mod tests {
             2
         );
         messages.push(json!({"role":"user","content":"Repair src/b.rs"}));
-        assert!(super::prompt(&messages, None).is_none());
+        assert!(super::prompt(&messages, None, None).is_none());
     }
 
     #[test]
     fn progress_admission_does_not_flood_idle_empty_or_read_only_tasks() {
-        assert!(prompt(&[], None).is_none());
+        assert!(prompt(&[], None, None).is_none());
         let mut idle = vec![json!({"role":"user","content":"Repair src/a.rs"})];
-        assert!(prompt(&idle, None).is_none());
+        assert!(prompt(&idle, None, None).is_none());
         read_source(&mut idle, "first");
-        assert!(prompt(&idle, None).is_none());
+        assert!(prompt(&idle, None, None).is_none());
         for root in ["", "Read-only: inspect src/a.rs"] {
             let mut messages = vec![json!({"role":"user","content":root})];
             read_source(&mut messages, "first");
             read_source(&mut messages, "second");
-            assert!(prompt(&messages, None).is_none(), "{root}");
+            assert!(prompt(&messages, None, None).is_none(), "{root}");
         }
     }
 

@@ -127,6 +127,46 @@ pub(crate) fn execute_args(args: &Value, base: Option<&str>) -> (String, bool) {
     }
 }
 
+pub(crate) fn header_counts<'a>(path: &str, header: &'a str) -> Option<(usize, usize, &'a str)> {
+    let header = header.strip_prefix(&format!("[{path}] ("))?;
+    let (lines, header) = header.split_once(" lines, ")?;
+    let (bytes, suffix) = header.split_once(" bytes)")?;
+    Some((lines.parse().ok()?, bytes.parse().ok()?, suffix))
+}
+
+pub(crate) fn complete_body<'a>(
+    path: &str,
+    body: &'a str,
+    lines: usize,
+    bytes: usize,
+) -> Option<&'a str> {
+    let exact = body.get(..bytes)?;
+    // Native full reads are bounded to 8000 characters. Byte/line counts bind
+    // the snapshot to its header without banning marker-like user file text.
+    if exact.chars().count() > super::MAX_READ_CHARS || exact.lines().count() != lines {
+        return None;
+    }
+    let suffix = &body[bytes..];
+    let json_guidance = path.ends_with(".json")
+        && suffix.starts_with("\n[JSON append guidance — diagnostic only]\n")
+        && serde_json::from_str::<Value>(exact).is_ok();
+    (suffix.is_empty() || json_guidance).then_some(exact)
+}
+
+/// Only a fresh, complete native rendering can confirm a held patch.
+/// Use the declared byte boundary so file text cannot introduce an appendix.
+pub(crate) fn fresh_full_body<'a>(path: &str, output: &'a str) -> Option<&'a str> {
+    let (header, body) = output.split_once('\n')?;
+    let (lines, bytes, "") = header_counts(path, header)? else {
+        return None;
+    };
+    let source = complete_body(path, body, lines, bytes)?;
+    let suffix = &body[bytes..];
+    (header == format!("[{path}] ({lines} lines, {bytes} bytes)")
+        && (suffix.is_empty() || suffix == super::json_repair::guidance(source)))
+    .then_some(source)
+}
+
 /// Both successful partial reads and truncated prefixes are useful observations,
 /// but neither permits replacement of the whole existing file.
 pub(crate) fn full_snapshot(text: &str) -> bool {

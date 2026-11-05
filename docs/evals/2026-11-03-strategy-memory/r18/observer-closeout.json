@@ -1,0 +1,260 @@
+{
+  "declaration_sha256": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "run_receipt_sha256": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "guide_in_sealed_diff": false,
+  "native_guide_edit_steps": [],
+  "last_native_mutation_step": 22,
+  "exact_command_attempts": {
+    "python3 -S -m unittest -v scripts.catalog_visible": [
+      {
+        "result_step": 1,
+        "call_id": "call_Q4Ytm3k78suf6A2OFwXOV8jm",
+        "executed": true,
+        "succeeded": false,
+        "freshness": "before_mutation"
+      }
+    ],
+    "cargo test --locked --bin spiral-coder -q": []
+  },
+  "fresh_passes_after_final_mutation": {
+    "python3 -S -m unittest -v scripts.catalog_visible": [],
+    "cargo test --locked --bin spiral-coder -q": []
+  },
+  "accepted_successful_done_steps": [],
+  "pending_checks": [
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "guide_then_checks_then_report": false,
+  "qualified_candidate": false,
+  "budget_note": "Remaining counts are reconstructed from native ledger charges. A repair can reuse a prior prompt. Budget-compatible advice alone does not establish explicit reasoning about the count.",
+  "replies_aligned": true,
+  "decisions": [
+    {
+      "wire": 2,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 31,
+      "coder_before": 23,
+      "coder_after_one_task_charge": 23,
+      "reply_sha256": "e6c3bcac59cbdaaed1ab8546c676fa77ee872b12beea74144af0d18e7bffa40b",
+      "native_validated": true,
+      "summary": "Mandatory next step: read scripts/catalog_visible.py to diagnose the missing `tui-replay-list` help entry before any edit or rerun. The native catalog check and cargo check remain pending.",
+      "why_this_first": null,
+      "reason": "The native check failed because `--help` did not list `tui-replay-list`. Read the mandated failure-location file first, then use its assertions and invoked command path to identify the implementation file that must be edited. This may unblock the unfinished native command deliverable; the launcher and documentation remain separately declared without edit receipts.",
+      "based_on": [
+        "task_obligations.required_diagnostic_read",
+        "task_obligations.pending_recovery",
+        "latest_executed_action"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "scripts/catalog_visible.py",
+      "command": null
+    },
+    {
+      "wire": 7,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 26,
+      "coder_before": 19,
+      "coder_after_one_task_charge": 19,
+      "reply_sha256": "1ee53dafbb2660b0b08d42efc9997f9f87dbc99bfde8f6b7cecb93f2501719d3",
+      "native_validated": true,
+      "summary": "The first unfinished stage is the native implementation: the visible check currently fails because the built binary help omits tui-replay-list, and no source edits are recorded. Inspect the actual CLI definition and dispatch regions, then make the smallest wiring repair before verification.",
+      "why_this_first": "Confirming the three native CLI connection points unlocks one targeted source patch that can make the visible help assertion pass; the decision after that read is whether to wire an existing handler or first complete the missing catalog callable.",
+      "reason": "Inspect the actual native command enum, argument type, and exhaustive dispatch before proposing an edit; these are the specific source facts needed to repair the current missing-help failure without inventing a handler.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "intent_anchor"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 10,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 23,
+      "coder_before": 17,
+      "coder_after_one_task_charge": 17,
+      "reply_sha256": "df499cfee30d5910134dfc56762f765c2c2fbc88ec9ca01afda995c457fd6ed1",
+      "native_validated": false,
+      "summary": "Repair the incomplete native CLI wiring first, then continue the dependency-ordered implementation and verification.",
+      "why_this_first": null,
+      "reason": "The latest compiler diagnostic identifies missing TuiReplayListArgs and an unhandled TuiReplayList match arm, but the current definitions and sibling handler signature are not observed after the mutation. Read the bounded native CLI region before proposing the repair; this unlocks a compileable enum/type/dispatch change without inventing a handler.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "intent_anchor",
+        "recovery_stage"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 11,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 22,
+      "coder_before": 17,
+      "coder_after_one_task_charge": 17,
+      "reply_sha256": "e1463c0f1580b4fed7aa3712b4ea448e2d7f2cc4a6e60929b809c2f323cb4205",
+      "native_validated": true,
+      "summary": "Repair the incomplete native CLI wiring before pursuing launcher, documentation, formatting, and final verification.",
+      "why_this_first": null,
+      "reason": "The compiler diagnostic identifies two missing native connections, but the current sibling argument type, handler signature, and dispatch region were not observed after the edit. Read both bounded windows to obtain the exact anchors needed for a small compileable repair; this unlocks the native build and later exact checks.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "recovery_stage"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 17,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 16,
+      "coder_before": 12,
+      "coder_after_one_task_charge": 12,
+      "reply_sha256": "e753e0c6820dd3d869864a5ac2a3d9241e9b584bbad8dc8752e67d2fe1446d99",
+      "native_validated": true,
+      "summary": "The native command declaration was added, but the binary is currently uncompilable because its exhaustive dispatch match lacks a TuiReplayList arm. Repair that native wiring first, then complete launcher/docs and rerun both exact checks.",
+      "why_this_first": null,
+      "reason": "Inspect the exact current exhaustive command match and nearby handler signatures so the missing TuiReplayList arm can be added without a wildcard or placeholder. This unlocks a buildable native route and enables the remaining launcher, documentation, formatting, and exact verification work.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "failure_kind",
+        "recovery_stage"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 22,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 11,
+      "coder_before": 8,
+      "coder_after_one_task_charge": 8,
+      "reply_sha256": "012e25b77404d039c5b6c01a9869c09b523ec64e3a908a3fd7e4b26e33f45579",
+      "native_validated": true,
+      "summary": "The native command declaration was added, but the binary is currently uncompilable because its exhaustive dispatch match lacks the TuiReplayList arm. Native implementation, launcher forwarding, documentation, formatting, and both final checks remain unfinished.",
+      "why_this_first": null,
+      "reason": "Read the exact current exhaustive dispatch region and nearby handler calls before editing; this resolves the confirmed compile failure without repeating the already observed broader range.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "failure_kind"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 25,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 8,
+      "coder_before": 6,
+      "coder_after_one_task_charge": 6,
+      "reply_sha256": "05ff39c22fb192ad1a44ddfec7c0e05b599e5b216c08b23b3dadcaa10ce1f2a5",
+      "native_validated": true,
+      "summary": "Perform the mandatory diagnostic read of src/main.rs before making any further edit; it will inspect the reported run_catalog failure and guide completion of the native replay catalog while leaving both exact checks pending.",
+      "why_this_first": null,
+      "reason": "Read the exact failure path first: the native check reports that tui_replay::run_catalog is missing at src/main.rs:641:59. This read may unblock the unfinished native catalog and dispatch deliverable, after which the deferred Python catalog check and cargo test --locked --bin spiral-coder -q must still be run from the workspace root.",
+      "based_on": [
+        "task_obligations.required_diagnostic_read",
+        "task_horizon.checks_still_due",
+        "task_horizon.next_coder_turn"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/main.rs",
+      "command": null
+    },
+    {
+      "wire": 28,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 5,
+      "coder_before": 4,
+      "coder_after_one_task_charge": 4,
+      "reply_sha256": "e0674a364554bcd04984b7ae43e3437567bcbff6cc3bb1d74e1b143e9b23d793",
+      "native_validated": false,
+      "summary": "Repair the missing native catalog module and handler first; the current edit only declares src/tui_replay/catalog.rs and compilation fails because that file and tui_replay::run_catalog are absent. After the native route builds, remaining launcher/docs edits and both exact checks are still required.",
+      "why_this_first": null,
+      "reason": "Inspect the current src/tui_replay.rs module and the exact src/main.rs dispatch region to determine the required run_catalog signature and shared replay helpers before editing. This resolves the compile failure and unlocks a focused native repair rather than another stale observation.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "recovery_stage",
+        "failure_kind"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "command": null
+    },
+    {
+      "wire": 29,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 4,
+      "coder_before": 4,
+      "coder_after_one_task_charge": 3,
+      "reply_sha256": "8ab5de3068d79985a57f698a13d5d169f045718eba826647fe3c5a43cf20a093",
+      "native_validated": true,
+      "summary": "The first unfinished stage is the native catalog implementation: the latest edit declares a module, but compilation reports the catalog file and run_catalog handler are missing. Inspect the current source in bounded windows, then repair the native route before launcher/docs work and exact verification.",
+      "why_this_first": null,
+      "reason": "Inspect the current replay module and existing helper structure before repairing the compile failure. This identifies the correct module layout and shared semantics, unlocking a focused native implementation rather than relying on stale pre-mutation context.",
+      "based_on": [
+        "task_obligations",
+        "execution_evidence",
+        "recovery_stage",
+        "failure_kind"
+      ],
+      "kind": "read",
+      "tool": "read_file",
+      "path": "src/tui_replay.rs",
+      "command": null
+    },
+    {
+      "wire": 32,
+      "charge": "task",
+      "status": "completed",
+      "shared_before": 1,
+      "coder_before": 1,
+      "coder_after_one_task_charge": 0,
+      "reply_sha256": "6cbc8790ed8ff823d348dc4cf841026650f4e8309933a6f811a85d5ca7d47ea2",
+      "native_validated": true,
+      "summary": "The replay catalog implementation has recorded edits in src/main.rs, src/tui_replay.rs, and src/tui_replay/catalog.rs, but the task is not complete. The required diagnostic read identifies a failed `cargo test 2>&1` check in src/main.rs. The native launcher and documentation remain without edit receipts, and two exact verification checks are still due.",
+      "why_this_first": null,
+      "reason": "The first future action should be to reproduce and diagnose the failed `cargo test 2>&1` result, while checking whether the missing launcher and documentation edits still need to be made. Once edits are made, run the exact remaining checks: `python3 -S -m unittest -v scripts.catalog_visible` and `cargo test --locked --bin spiral-coder -q`, and collect final receipts after the last edit.",
+      "based_on": [
+        "required diagnostic read: failed_check `cargo test 2>&1` at `src/main.rs`",
+        "checks still due: `python3 -S -m unittest -v scripts.catalog_visible` and `cargo test --locked --bin spiral-coder -q`",
+        "declared paths without edit receipts: `docs/evaluation.md` and `npm/spiral-coder/lib/launcher.cjs`",
+        "recorded edits only in `src/main.rs`, `src/tui_replay.rs`, and `src/tui_replay/catalog.rs`",
+        "task objective requires native, launcher, documentation, and exact verification"
+      ],
+      "kind": "clarify",
+      "tool": null,
+      "path": null,
+      "command": null
+    }
+  ]
+}

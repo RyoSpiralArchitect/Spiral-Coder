@@ -1,0 +1,87 @@
+{
+  "source_run_receipt_sha256": "b2e4eea0196dea02af85315f5717fb4979dbc883deb666a1a680710b90562629",
+  "executor_sha256": "9467056a41cda7a8735ab1d8e53252843cf06e3cb5e42da79dbe6be012b38d33",
+  "pre_send_budget": {
+    "limit": 32,
+    "used": 32,
+    "remaining": 1,
+    "coder_remaining": 0
+  },
+  "native_view": {
+    "coder_remaining": 0,
+    "limit": 32,
+    "next_coder_requests": 0,
+    "next_coder_turn": "exhausted",
+    "remaining": 1,
+    "used": 32
+  },
+  "original_reply_sha256": "f2a358ca143252266c9e8678a3df441788cef6c1a040269870c3ca63971867a7",
+  "original_rejection": "No Coder request remains. Give a no-tool clarification for a future continuation, with response_contract.required=false. Schema feedback: suggested_args for patch_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields",
+  "native_user_prompt_sha256": "cd06287e12ed7f85780de30b5991c3f68018b1e94f90991ad4b1445b2380fee2",
+  "request_sha256": "d61a073f0ffded76f49e8811da4e39847e58ee62b1212bce7108bb5ad35803e4",
+  "reply_sha256": "1f0918684e0e3ae28aff815cdccb83a65448177737ed223664fad9d4eaff6a48",
+  "reply": {
+    "summary": "Handoff: implementation appears recorded, but completion cannot be accepted yet because the required verification checks and documentation evidence remain unresolved.",
+    "response_contract": {
+      "required": false,
+      "focus_axes": [
+        "acceptance_evidence",
+        "verification",
+        "documentation"
+      ],
+      "note": "No Coder request is available in this episode. Preserve every acceptance criterion and cite native evidence for each completed item exactly once."
+    },
+    "suggestions": [
+      {
+        "kind": "clarify",
+        "suggested_tool": null,
+        "suggested_args": {},
+        "reason": "The native feedback shows two checks still due: `python3 -S -m unittest -v scripts.catalog_visible` and `cargo test --locked --bin spiral-coder -q`. `docs/evaluation.md` also has no recorded edit receipt. A future continuation should first run both exact checks, then inspect or update the documentation and collect native evidence before reporting completion.",
+        "confidence": 0.99,
+        "based_on": [
+          "GOVERNOR BLOCKED: done.acceptance_evidence must cover every completed acceptance criterion exactly once.",
+          "checks_still_due contains the two exact commands.",
+          "declared_paths_without_edit_receipts contains docs/evaluation.md.",
+          "coder_task_requests_left is 0 and next_coder_turn is exhausted.",
+          "Recorded edits exist in npm/spiral-coder/lib/launcher.cjs, src/main.rs, src/tui_replay.rs, and src/tui_replay/catalog.rs."
+        ]
+      }
+    ]
+  },
+  "native_issue": null,
+  "queued_hint": false,
+  "queued_response_contract": false,
+  "valid_no_tool_handoff": true,
+  "wire": {
+    "wire_requests": 1,
+    "request_sha256": "d61a073f0ffded76f49e8811da4e39847e58ee62b1212bce7108bb5ad35803e4",
+    "status": 200,
+    "response_sha256": "80e79ea89125ff53c42549ef73f7c99e744e6914375d3533f1f484b87fd70d41",
+    "finish_reason": "stop",
+    "model": "gpt-5.6-luna",
+    "usage": {
+      "prompt_tokens": 560,
+      "completion_tokens": 340,
+      "total_tokens": 900,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "audio_tokens": 0,
+        "accepted_prediction_tokens": 0,
+        "rejected_prediction_tokens": 0
+      }
+    },
+    "reply_sha256": "1f0918684e0e3ae28aff815cdccb83a65448177737ed223664fad9d4eaff6a48"
+  },
+  "semantic_readout": {
+    "recorded_edits": "Names all four paths in based_on.",
+    "remaining_work": "Names the missing guide, both exact commands and rejected acceptance citations.",
+    "future_action": "Proposes running the checks before inspecting or editing the guide.",
+    "ordering_gap": "An ensuing documentation edit would stale both receipts again. The first response did not plan to recheck after that edit.",
+    "completion_claim": false
+  }
+}

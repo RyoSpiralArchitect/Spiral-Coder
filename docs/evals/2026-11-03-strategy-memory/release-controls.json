@@ -1,0 +1,52 @@
+{
+  "runtime_commit": "cc2b2ab5739d05089643a2fdfe507cbd1e1fbe29",
+  "executor_sha256": "ad29bbe99f9b255b42210c5a6c5886cb0a8bf1769dc1ae59cab7d6d07c561584",
+  "checked_in_tests": {
+    "rust_unit_passed": 1090,
+    "rust_unit_ignored": 2,
+    "integration_passed": 4,
+    "tui_replays_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke_passed": true,
+    "local_suite_log_sha256": "d0bad08aaf246411a356147c20af7b7980af405e5b420b5dac8d5375178d4668"
+  },
+  "previous_model_free_failure": {
+    "runtime_commit": "6fdb8db11503aaa9b29e1de54a52e79725e571ed",
+    "test": "progress_admission_does_not_flood_idle_empty_or_read_only_tasks",
+    "reason": "Repeat-only reads in an ordinary read-only task produced an extra standalone recall. The final isolated recall requires a matched historical action.",
+    "log_sha256": "8451d1c0d97238a0a9479746b5703696e0093f25b8f39a539eefadea7d2ab2f7"
+  },
+  "sealed_s1_repeat_refusal": {
+    "s1_run": "2945de67e439c5643465f45b9d468ff0c5869e708b67f23103cc211844e50ea8",
+    "held_call_id": "call_FOkLM8uOxcObuffyDMvhjs7W",
+    "second_hold_call_id": "call_jHmxoRalbVJNlUcMjMhQcO7w",
+    "read_executed": true,
+    "retry_changed": true,
+    "changed_paths": [
+      "src/main.rs"
+    ],
+    "exact_result_bytes": true,
+    "external_requests": 0
+  },
+  "sealed_r17_final_advice_replay": {
+    "source_run_receipt_sha256": "b2e4eea0196dea02af85315f5717fb4979dbc883deb666a1a680710b90562629",
+    "reply_sha256": "1f0918684e0e3ae28aff815cdccb83a65448177737ed223664fad9d4eaff6a48",
+    "native_view": {
+      "coder_remaining": 0,
+      "limit": 32,
+      "next_coder_requests": 0,
+      "next_coder_turn": "exhausted",
+      "remaining": 1,
+      "used": 32
+    },
+    "valid_no_tool_handoff": true,
+    "queued_hint": false,
+    "queued_response_contract": false,
+    "native_user_prompt_sha256": "66704238da76c82b8675b0b334b1ede1e59a6255f149b01d2ee0ed4f39867fec",
+    "current_prompt_explains_final_receipts_follow_edits": true,
+    "new_provider_requests": 0
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "s1_run_sha256": "2945de67e439c5643465f45b9d468ff0c5869e708b67f23103cc211844e50ea8",
+  "original_call_id": "call_FOkLM8uOxcObuffyDMvhjs7W",
+  "repeat_call_id": "call_jHmxoRalbVJNlUcMjMhQcO7w",
+  "tip_runtime_commit": "37e0dc87c518ee508de686d8719c0726c588b960",
+  "before": {
+    "executor_sha256": "1ee38097566002cd501f209ab787058c7405ffe2f6b55cebeb2489741ea02816",
+    "read_executed": true,
+    "expected_read": {
+      "path": "src/main.rs",
+      "start_line": 331,
+      "end_line": 334
+    },
+    "retry_changed": false,
+    "exact_result_bytes": false,
+    "changed_paths": [],
+    "external_requests": 0,
+    "projections": [
+      {
+        "phase": "read",
+        "recipient": "coder",
+        "saved_proposal": null,
+        "suggested_tool": null,
+        "confirming_read": null
+      },
+      {
+        "phase": "read",
+        "recipient": "coder",
+        "saved_proposal": null,
+        "suggested_tool": null,
+        "confirming_read": null
+      },
+      {
+        "phase": "retry",
+        "recipient": "coder",
+        "saved_proposal": null,
+        "suggested_tool": null,
+        "confirming_read": null
+      },
+      {
+        "phase": "retry",
+        "recipient": "coder",
+        "saved_proposal": null,
+        "suggested_tool": null,
+        "confirming_read": null
+      }
+    ]
+  },
+  "after": {
+    "executor_sha256": "6a05b4dab5d168fba2289bd41dd82d3a3e82a262c1dbf156cb85007a74ed9564",
+    "read_executed": true,
+    "expected_read": {
+      "path": "src/main.rs",
+      "start_line": 331,
+      "end_line": 334
+    },
+    "retry_changed": true,
+    "exact_result_bytes": true,
+    "changed_paths": [
+      "src/main.rs"
+    ],
+    "external_requests": 0,
+    "projections": [
+      {
+        "phase": "read",
+        "recipient": "coder",
+        "saved_proposal": "call_FOkLM8uOxcObuffyDMvhjs7W",
+        "suggested_tool": "read_file",
+        "confirming_read": null
+      },
+      {
+        "phase": "read",
+        "recipient": "coder",
+        "saved_proposal": "call_FOkLM8uOxcObuffyDMvhjs7W",
+        "suggested_tool": "patch_file",
+        "confirming_read": "memory-read"
+      },
+      {
+        "phase": "retry",
+        "recipient": "coder",
+        "saved_proposal": "call_FOkLM8uOxcObuffyDMvhjs7W",
+        "suggested_tool": "patch_file",
+        "confirming_read": "memory-read"
+      },
+      {
+        "phase": "retry",
+        "recipient": "observer",
+        "saved_proposal": null,
+        "suggested_tool": null,
+        "confirming_read": null
+      }
+    ]
+  }
+}

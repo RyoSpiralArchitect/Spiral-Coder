@@ -1,0 +1,10 @@
+{
+  "original_r16_run": "c95f27515b3de38ac2aee6842677d66485625de29e0b58a35e14aa3dbb6250f8",
+  "s1_run": "2945de67e439c5643465f45b9d468ff0c5869e708b67f23103cc211844e50ea8",
+  "earlier_control_sha256": "e19253ed49bfed2e7d8f5dc68243e3da98676e2ca40b1ad17ea3d2875e9e2d8b",
+  "only_changed_path": "src/main.rs",
+  "reviewed_derivative_main_sha256": "9d95a55a18f9776e16126a2900136073327e1bc8442e65065638bb54843f16d1",
+  "independently_replayed_s1_main_sha256": "9d95a55a18f9776e16126a2900136073327e1bc8442e65065638bb54843f16d1",
+  "source_bytes_match": true,
+  "operator_edits_during_s1": 0
+}

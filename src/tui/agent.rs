@@ -132,6 +132,7 @@ mod requirement_proof;
 #[cfg(test)]
 mod resume_contract_tests;
 mod session_bridge;
+mod strategy_memory;
 mod success_output;
 mod task_harness;
 pub(crate) mod task_obligations;
@@ -2196,8 +2197,15 @@ fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
         return;
     }
 
+    let confirming_read = deferred_edit::diagnosis::retained_read(messages);
     let prune_count = tool_indices.len() - KEEP_RECENT_TOOL_TURNS;
     for &idx in tool_indices.iter().take(prune_count) {
+        if confirming_read
+            .as_deref()
+            .is_some_and(|id| messages[idx]["tool_call_id"] == id)
+        {
+            continue;
+        }
         if let Some(content) = messages[idx]["content"].as_str() {
             // Keep execution failures, and retain the automatic-test cause when
             // shortening an otherwise successful edit. Do not repeatedly grow
@@ -2347,6 +2355,7 @@ fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
         return;
     }
 
+    strategy_memory::retain_for_resume(messages);
     let prune_count = assistant_indices.len() - KEEP_RECENT_ASSISTANT_TURNS;
     for &idx in assistant_indices.iter().take(prune_count) {
         if crate::streaming::provider_metadata::has_signed_call(&messages[idx])
@@ -7712,7 +7721,9 @@ This is the LAST model call for this run.\n\
         // ── Stream from model ──────────────────────────────────────────────
         // Inject a one-shot governor hint if we detected a repeated failure pattern.
         let mut msgs_for_call = messages.clone();
-        if let Some(hint) = task_obligations::prompt(&messages, test_cmd.as_deref()) {
+        if let Some(hint) =
+            task_obligations::prompt(&messages, test_cmd.as_deref(), tool_root_abs.as_deref())
+        {
             msgs_for_call.push(json!({"role":"system", "content":hint}));
         }
         if let Some(h) = pending_system_hint.take() {
@@ -12621,6 +12632,16 @@ Required now: run `{command}`.\n{verification_status}"
                         &tc,
                         &messages,
                         test_cmd.as_deref(),
+                    )
+            })
+            .filter(|block| {
+                !block.starts_with("[Recovery Gate] stage=diagnose\n")
+                    || !deferred_edit::diagnosis::matches_retry(
+                        &messages,
+                        &tc,
+                        tool_root_abs.as_deref(),
+                        &recovery.focus,
+                        &edit_failures,
                     )
             })
             .or_else(|| {

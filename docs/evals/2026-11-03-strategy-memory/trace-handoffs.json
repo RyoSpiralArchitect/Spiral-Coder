@@ -1,0 +1,55 @@
+{
+  "declaration_sha256": "5f0ce1aa85c788c46b6967132f5d57786fa45047c3f45946eabe130adc3ba3e7",
+  "run_receipt_sha256": "b2e4eea0196dea02af85315f5717fb4979dbc883deb666a1a680710b90562629",
+  "wire_starts": 33,
+  "response_formats": {
+    "json_schema": 1,
+    "json_object": 8
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "fd4924c00a511eae7ca85c5a4d3936d222366e170c2274d2309a43f2a7602299",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_5PcBhILdt00Ic2qMUvFugOye",
+          "step": 2,
+          "header": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+        }
+      ]
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui-replay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'tui-replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src/main.rs",
+        "pattern": "TuiReplayArgs"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'TuiReplayArgs' \u2014 2 match(es)] [pruned 4L]"
+      ]
+    }
+  ]
+}

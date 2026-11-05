@@ -1,5 +1,6 @@
 //! Follow-up pressure cannot replace diagnosis or turn display text into edits.
 use super::super::RecoveryStage;
+use crate::file_tools::read_range::{complete_body, header_counts};
 use crate::streaming::ToolCallData;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -102,25 +103,4 @@ fn observation(path: &str, arguments: &str, output: &str) -> Option<ReadObservat
         },
         snapshot,
     })
-}
-
-fn header_counts<'a>(path: &str, header: &'a str) -> Option<(usize, usize, &'a str)> {
-    let header = header.strip_prefix(&format!("[{path}] ("))?;
-    let (lines, header) = header.split_once(" lines, ")?;
-    let (bytes, suffix) = header.split_once(" bytes)")?;
-    Some((lines.parse().ok()?, bytes.parse().ok()?, suffix))
-}
-
-fn complete_body<'a>(path: &str, body: &'a str, lines: usize, bytes: usize) -> Option<&'a str> {
-    let exact = body.get(..bytes)?;
-    // Native full reads are bounded to 8000 characters. Byte/line counts bind
-    // the snapshot to its header without banning marker-like user file text.
-    if exact.chars().count() > 8000 || exact.lines().count() != lines {
-        return None;
-    }
-    let suffix = &body[bytes..];
-    let json_guidance = path.ends_with(".json")
-        && suffix.starts_with("\n[JSON append guidance — diagnostic only]\n")
-        && serde_json::from_str::<Value>(exact).is_ok();
-    (suffix.is_empty() || json_guidance).then_some(exact)
 }

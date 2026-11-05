@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 pub(crate) mod diagnostic;
+pub(crate) mod strategy;
 
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]
@@ -57,12 +58,27 @@ pub(crate) fn repair_prompt(original: &str, raw: &str, issue: &str) -> String {
 
 /// Schema-valid advice must respect native diagnosis and acceptance evidence.
 /// Uncertain/no-tool advice stays advisory; it is never retried for confidence.
+#[cfg(test)]
 pub(crate) fn validation_issue(
     raw: &str,
     messages: &[Value],
     test_command: Option<&str>,
 ) -> Option<String> {
+    validation_issue_with_capacity(raw, messages, test_command, None)
+}
+
+pub(crate) fn validation_issue_with_capacity(
+    raw: &str,
+    messages: &[Value],
+    test_command: Option<&str>,
+    remaining: Option<usize>,
+) -> Option<String> {
+    use agent::task_obligations::CoderTurn;
+    const EXHAUSTED: &str = "No Coder request remains. Give a no-tool clarification for a future continuation, with response_contract.required=false.";
     if let Some(issue) = suggestion::validation_issue_for_raw(raw) {
+        if remaining == Some(0) {
+            return Some(format!("{EXHAUSTED} Schema feedback: {issue}"));
+        }
         if issue.starts_with("suggested_args for read_file:") {
             if let Some(required) =
                 agent::task_obligations::project(messages, test_command).required_diagnostic_read
@@ -74,11 +90,29 @@ pub(crate) fn validation_issue(
         return Some(issue);
     }
     let envelope = suggestion::parse_observer_suggestion_envelope(raw)?;
+    if remaining == Some(0)
+        && (envelope.response_contract.required
+            || envelope
+                .suggestions
+                .iter()
+                .any(|a| a.suggested_tool.is_some()))
+    {
+        return Some(EXHAUSTED.into());
+    }
     let action = suggestion::primary_suggestion(&envelope)?;
+    let obligations = agent::task_obligations::project(messages, test_command);
+    if remaining.is_some_and(|n| obligations.coder_turn(n) == CoderTurn::ReportOnly)
+        && envelope
+            .suggestions
+            .iter()
+            .filter_map(|a| a.suggested_tool.as_deref())
+            .any(|tool| tool != "done")
+    {
+        return Some("The Coder has only its final report turn. Preserve unfinished work in a no-tool clarification or suggest an evidence-supported done report.".into());
+    }
     if action.confidence < 0.75 || action.suggested_tool.is_none() {
         return None;
     }
-    let obligations = agent::task_obligations::project(messages, test_command);
     if let Some(problem) = obligations.explicit_edit_paths.as_ref().and_then(|scope| {
         scope.issue(
             action.suggested_tool.as_deref()?,
@@ -143,6 +177,17 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         json!(agent::evidence_packet::artifact_guidance(&request.messages));
     let obligations =
         agent::task_obligations::project(&request.messages, request.test_command.as_deref());
+    // The browser has a native ledger on both the prompt and reply requests.
+    // Without one, numeric fields describe an advisory pre-send snapshot.
+    let live = crate::work_budget::current();
+    if let Some(context) = &live {
+        request.packet["work_budget"] = strategy::native_budget(&context.budget.snapshot());
+    }
+    let before_send = live.is_none() || request.response.is_none();
+    let next_coder = request
+        .packet
+        .get_mut("work_budget")
+        .and_then(|b| strategy::project_budget(b, Some(&obligations), before_send));
     let mut schemas =
         suggestion::tool_schemas_for(request.packet["coder_base_url"].as_str().unwrap_or(""));
     obligations.bind_observer_tools(&mut schemas);
@@ -173,18 +218,22 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         .response
         .as_deref()
         .and_then(suggestion::parse_observer_suggestion_envelope);
-    let issue = request
-        .response
-        .as_deref()
-        .and_then(|raw| validation_issue(raw, &request.messages, request.test_command.as_deref()));
-    let hint = if issue.is_none() {
+    let issue = request.response.as_deref().and_then(|raw| {
+        validation_issue_with_capacity(
+            raw,
+            &request.messages,
+            request.test_command.as_deref(),
+            next_coder,
+        )
+    });
+    let hint = if issue.is_none() && next_coder != Some(0) {
         envelope
             .as_ref()
             .and_then(events::build_observer_suggestion_soft_hint)
     } else {
         None
     };
-    let response_contract = if issue.is_none() {
+    let response_contract = if issue.is_none() && next_coder != Some(0) {
         envelope
             .as_ref()
             .and_then(events::build_observer_response_contract)

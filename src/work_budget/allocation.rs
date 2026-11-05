@@ -37,7 +37,7 @@ impl WorkState {
             .count()
     }
 
-    pub(super) fn coder_remaining(&self) -> usize {
+    pub(crate) fn coder_remaining(&self) -> usize {
         self.request_limit
             .saturating_sub(self.policy.observer_reserved_requests)
             .saturating_sub(self.role_tasks("coder"))

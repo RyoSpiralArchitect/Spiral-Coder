@@ -36,7 +36,7 @@ fn declared_repair_brief_reaches_coder_tui_and_browser_after_native_resume() {
     assert_eq!(displayed.raw_content.as_deref(), Some(response.as_str()));
     assert!(displayed.content.starts_with("--- blocker ---"));
     assert_eq!(tui.observer_raw_response, response);
-    let coder = agent::task_obligations::prompt(&resumed,None).unwrap();
+    let coder = agent::task_obligations::prompt(&resumed,None, None).unwrap();
     for prompt in [&coder, &tui.observer_prompt] {
         assert!(prompt.contains("repair_brief") && prompt.contains("bookkeeping"));
         assert!(prompt.contains("observed"));

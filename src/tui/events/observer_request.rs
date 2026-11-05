@@ -183,13 +183,15 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
     };
     let raw = app.observer.messages[idx].content.clone();
     let parsed = suggestion::parse_observer_suggestion_envelope(&raw);
-    let issue = crate::observer_action::validation_issue(
+    let coder_remaining = app.work_budget.remaining_for("coder");
+    let issue = crate::observer_action::validation_issue_with_capacity(
         &raw,
         app.coder_session
             .as_ref()
             .map(|s| s.messages.as_slice())
             .unwrap_or(&[]),
         app.project_test_cmd.as_deref(),
+        Some(coder_remaining),
     );
     app.pending_observer_hint = None;
     app.pending_observer_contract = None;
@@ -246,9 +248,11 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);
         if let Some(hint) = build_observer_suggestion_soft_hint(parsed).filter(|_| {
-            !app.observer_assist_request
-                .as_ref()
-                .is_some_and(|r| r.terminal_diagnosis)
+            coder_remaining > 0
+                && !app
+                    .observer_assist_request
+                    .as_ref()
+                    .is_some_and(|r| r.terminal_diagnosis)
         }) {
             app.pending_observer_hint = Some(hint);
             app.pending_observer_contract = build_observer_response_contract(parsed);
@@ -369,8 +373,8 @@ async fn start_request(
             let client = reqwest::Client::new();
             let system = format!(
                 "You are Observer in next-action assist mode.\n\
-Do not perform a broad critique.\n\
-Focus only on the next concrete step.\n\n\
+Consider the task objective, retained history, outstanding evidence and remaining requests.\n\
+Recommend one feasible next step or a handoff for a future continuation.\n\n\
 [Language]\n{}",
                 language_instruction(Some(&lang), &cfg.mode)
             );

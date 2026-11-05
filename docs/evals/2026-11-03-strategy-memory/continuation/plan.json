@@ -1,0 +1,35 @@
+{
+  "r16_declaration_sha256": "5738050fac89ae084b5407999fb64d3686120bb82c294f26574314024b5a0904",
+  "r16_run_sha256": "c95f27515b3de38ac2aee6842677d66485625de29e0b58a35e14aa3dbb6250f8",
+  "r16_patch_sha256": "f3b9648d272682fe720f4e4d76d648f27db6aa5860c2c0017703c80e04d1343a",
+  "held_call_id": "call_FOkLM8uOxcObuffyDMvhjs7W",
+  "source_step": 22,
+  "seed_commit": "d974c0213a05cdabcaf6b1cb981035a6b1a343e0",
+  "seed_session_sha256": "c67805e08594c2ccace934ac1b9449c0c2e27816ed3d674bfe2df166e536c450",
+  "seed_inventory_sha256": "581e97e1b092894b29dcfb4593af04f4a018772850a239e7161776ee5c513c2b",
+  "task_sha256": "d3e832ee4f81a4b20dbdeb90d90aa7086f4ed001c82956200fb6bcb411f13990",
+  "condition": "S1 R16 seeded continuation",
+  "executor_sha256": "1ee38097566002cd501f209ab787058c7405ffe2f6b55cebeb2489741ea02816",
+  "runtime_commit": "bc677bd00c65ef71dcb15f3d8641958cfbd141f3",
+  "models": {
+    "coder": "gpt-5.6-luna",
+    "observer": "gpt-5.6-luna"
+  },
+  "limits": {
+    "task_requests": 10,
+    "reserved_observer": 2,
+    "transport_repairs": 1,
+    "coder_slice": 4,
+    "request_seconds": 90,
+    "wall_seconds": 420,
+    "coder_output_tokens": 32768,
+    "observer_output_tokens": 8192,
+    "temperature": 0
+  },
+  "runner_sha256": "93cee3e8dab4aec7bd25b7ceb024202e18a7faa58b4edb241fde1ea4de994afe",
+  "seed_builder_sha256": "c12d49e56272b458f2306ab07cced2a5101d080ef0ac3aaf13d42584302a57c6",
+  "protocol_sha256": "e127c154f660891cf112e2bfcdc81d0c890a064f2fd27e74d32ed9592d00f55d",
+  "before_control_sha256": "80087e582e897bfedbb0bce7fc6f23bcd95aed2a0ab598e9e93927a6193cd1c9",
+  "after_control_sha256": "f41b4af39bcd34824bbf6c25db2b2baa56768f5af61ef0effc7a883401ef8626",
+  "provider_calls_at_pin": 0
+}

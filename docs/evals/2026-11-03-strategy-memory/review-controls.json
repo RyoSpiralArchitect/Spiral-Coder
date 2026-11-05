@@ -1,0 +1,43 @@
+{
+  "runtime_commit": "af0b2bf8f3eaefcd9adbd89fd750a1bcbbee653b",
+  "executor_sha256": "125c5827eb48c6b12d5695a1016d14efb3e49aed65a5cf0f6c2c9c6f035cd131",
+  "review": "https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/61#discussion_r4454577433",
+  "regression": "whole_json_range_confirms_source_bytes_without_its_diagnostic_appendix",
+  "before": {
+    "runtime_commit": "cc2b2ab5739d05089643a2fdfe507cbd1e1fbe29",
+    "confirming_read_call_id": null,
+    "before_fix_log_sha256": "408e096541268632db97cf6760786fc5f8d1625a1621e678169e9fe40a0d4be7"
+  },
+  "after": {
+    "confirming_read_call_id": "inspect",
+    "changed_source_rejected": true,
+    "unexpected_suffix_rejected": true,
+    "malformed_line_count_header_rejected": true
+  },
+  "repository_suite": {
+    "rust_unit_passed": 1091,
+    "rust_unit_ignored": 2,
+    "rust_integration_passed": 4,
+    "tui_replays_passed": 15,
+    "python_passed": 97,
+    "web_passed": 80,
+    "npm_passed": 5,
+    "repo_map_passed": 14,
+    "lite_smoke_passed": true,
+    "log_sha256": "93fe51cad1c02b13b14f35376f6421c234de179e1a113afb0e6e1ef25a6ddbaa"
+  },
+  "repeated_native_restart": {
+    "exact_source": true,
+    "changed_files": [
+      "src/main.rs"
+    ],
+    "source_s1_receipt": "2945de67e439c5643465f45b9d468ff0c5869e708b67f23103cc211844e50ea8",
+    "external_requests": 0
+  },
+  "replayed_observer_handoff": {
+    "valid": true,
+    "queued_hint": false,
+    "same_native_user_prompt_as_before_review": true,
+    "new_provider_requests": 0
+  }
+}

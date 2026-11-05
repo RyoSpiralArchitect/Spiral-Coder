@@ -195,6 +195,34 @@ Historical governor blocks remain in native evidence; they are not labeled as
 human approval rejections. The latter list is derived from actual user-rejection
 results in both UI paths.
 
+## Returning to a proposed repair
+
+The native Coder and Observer can recall a literal `patch_file` proposal that
+the diagnosis gate held after a failed check. The first suggestion is a real
+`read_file` of the current source lines. After that read the pair can reconsider
+the original search and replacement. A new Coder call applies it through the
+ordinary file, evidence and approval checks. A resumed generic Diagnose accepts
+only that same proposal when the correlated read and current anchor still agree.
+
+The source must be a regular file inside the workspace, at most 512 KiB, with
+one exact search match within the read limit. The prior failure must either
+come from a changed edit to that target or explicitly locate the failed
+command there. Searches and other successful read-only inspections can
+intervene. A new command, edit, refusal, terminal outcome or human task
+ends the proposal. The read and the originating tool exchanges survive the
+normal context window. The workspace-backed suggestion is available on native
+TUI and coupled runs. History-only consumers can still project the task's
+goal, plan and remaining obligations.
+
+In both general and focused diagnostic requests the Observer sees a compact
+task overview: the human objective, the admitted plan, a historical approach
+and its matched action when available, remaining required artifact edits,
+current check obligations and the available Coder turns when known. A
+diagnostic suggestion still targets the required read. The Observer can use
+its reason to say what that read would unlock for the wider task. Historical
+strategy cues guide the choice of action. Completion still requires native
+receipts for the current task.
+
 ## Receipts and budget
 
 `coupled-run` defaults to the same resolved provider, actual model, endpoint and

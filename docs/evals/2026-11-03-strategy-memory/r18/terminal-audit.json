@@ -1,0 +1,80 @@
+{
+  "run_receipt_sha256": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "observation": "After the episode, validate the actual final authored reply against the same saved native history and pre-send budget on loopback.",
+  "executor_sha256": "125c5827eb48c6b12d5695a1016d14efb3e49aed65a5cf0f6c2c9c6f035cd131",
+  "validation_wire_requests_to_providers": 0,
+  "terminal_wire": 32,
+  "final_native_mutation": {
+    "step": 22,
+    "path": "src/tui_replay/catalog.rs",
+    "call_id": "call_LsrHFEugqox1dcvhd8r3ubrF",
+    "auto_test_handoff": {
+      "automatic_test": true,
+      "call_id": "call_LsrHFEugqox1dcvhd8r3ubrF",
+      "command": null,
+      "tool": "write_file"
+    },
+    "coder_yield_reason": "verification_failure"
+  },
+  "pre_send_budget": {
+    "limit": 32,
+    "used": 31,
+    "remaining": 1,
+    "coder_remaining": 1
+  },
+  "projected_budget": {
+    "coder_remaining": 1,
+    "limit": 32,
+    "next_coder_requests": 0,
+    "next_coder_turn": "exhausted",
+    "remaining": 1,
+    "used": 31
+  },
+  "original_reply_sha256": "6cbc8790ed8ff823d348dc4cf841026650f4e8309933a6f811a85d5ca7d47ea2",
+  "native_issue": null,
+  "queued_hint": false,
+  "required_acknowledgement": false,
+  "terminal_kind": "clarify",
+  "terminal_tool": null,
+  "regenerated_prompt_sha256": "989523a08307e15dda01b5c05eff2f7b59f1e538da48a25b6a9e2d7674523311",
+  "overlong_read_repairs": [
+    {
+      "refused_wire": 10,
+      "refused_args": {
+        "path": "src/main.rs",
+        "start_line": 300,
+        "end_line": 660
+      },
+      "repaired_wire": 11,
+      "repaired_args": {
+        "path": "src/main.rs",
+        "start_line": 300,
+        "end_line": 499
+      },
+      "source_validation": "(next-action) invalid response prevented automatic forwarding: suggested_args for read_file: read at most 200 lines per call. Requested 300 through 660 inclusive (361 lines). For the first window use start_line=300, end_line=499. The remaining window begins at 500.; raw Observer output was preserved.",
+      "shared_remaining_after_repair": 21,
+      "coder_slots_after_task_charged_repair": 17
+    },
+    {
+      "refused_wire": 28,
+      "refused_args": {
+        "path": "src/tui_replay.rs",
+        "start_line": 1,
+        "end_line": 220
+      },
+      "repaired_wire": 29,
+      "repaired_args": {
+        "path": "src/tui_replay.rs",
+        "start_line": 1,
+        "end_line": 200
+      },
+      "source_validation": "(next-action) invalid response prevented automatic forwarding: suggested_args for read_file: read at most 200 lines per call. Requested 1 through 220 inclusive (220 lines). For the first window use start_line=1, end_line=200. The remaining window begins at 201.; raw Observer output was preserved.",
+      "shared_remaining_after_repair": 3,
+      "coder_slots_after_task_charged_repair": 3
+    }
+  ],
+  "read_suggestions": 9,
+  "native_validated_reads": 7,
+  "matching_executed_read_assists": 6,
+  "reason_hint": "incomplete_task"
+}

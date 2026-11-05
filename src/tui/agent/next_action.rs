@@ -74,6 +74,10 @@ impl Contract {
         self
     }
 
+    pub(super) fn report_only(&self) -> bool {
+        self.phase == Phase::Report
+    }
+
     pub(super) fn recheck(&self) -> Option<&str> {
         self.required_recheck.as_deref()
     }

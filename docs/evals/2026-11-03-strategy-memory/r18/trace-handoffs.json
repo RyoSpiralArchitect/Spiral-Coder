@@ -1,0 +1,80 @@
+{
+  "declaration_sha256": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "run_receipt_sha256": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "wire_starts": 32,
+  "response_formats": {
+    "json_schema": 2,
+    "json_object": 8
+  },
+  "reply_alignment_unambiguous": true,
+  "diagnostic_attempts": [
+    {
+      "number": 2,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "e6c3bcac59cbdaaed1ab8546c676fa77ee872b12beea74144af0d18e7bffa40b",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "scripts/catalog_visible.py"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": [
+        {
+          "call_id": "call_xqBtgeSfBtgzGFcU6gqPbJhn",
+          "step": 2,
+          "header": "[scripts/catalog_visible.py] (25 lines, 1129 bytes) [pruned 26L]"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "format": "json_schema",
+      "status": "completed",
+      "raw_sha256": "05ff39c22fb192ad1a44ddfec7c0e05b599e5b216c08b23b3dadcaa10ce1f2a5",
+      "single_response_contract": true,
+      "single_suggestion": true,
+      "native_validated": true,
+      "suggested_tool": "read_file",
+      "authored_args": {
+        "path": "src/main.rs"
+      },
+      "assist_decision": "accept",
+      "matched_native_reads": []
+    }
+  ],
+  "scoped_rust_lookups": [
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "tui-replay"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'tui-replay' \u2014 50 match(es) (first 50 shown \u2014 more may exist)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src/tui_replay.rs",
+        "pattern": "select"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files: 'select' \u2014 14 match(es)] [pruned 11L]"
+      ]
+    },
+    {
+      "arguments": {
+        "dir": "src",
+        "pattern": "run_catalog"
+      },
+      "executed": true,
+      "result_header": [
+        "[search_files] No matches for 'run_catalog' in '/Users/ryospiralarchitect/.cache/spiral-coder/replay-catalog-native-r18-strategy-20261103/episode/workspace/src'"
+      ]
+    }
+  ]
+}

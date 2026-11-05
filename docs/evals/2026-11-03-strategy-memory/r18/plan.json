@@ -1,0 +1,69 @@
+{
+  "issue": 49,
+  "condition": "R18 reviewed budget-aware Luna pair on the original #49 task",
+  "raw_root": "replay-catalog-native-r18-strategy-20261103",
+  "compared_to": "replay-catalog-native-r17-strategy-20261103",
+  "declaration_sha256": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "prior_declaration_sha256": "5f0ce1aa85c788c46b6967132f5d57786fa45047c3f45946eabe130adc3ba3e7",
+  "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+  "runtime_commit": "af0b2bf8f3eaefcd9adbd89fd750a1bcbbee653b",
+  "executor_sha256": "125c5827eb48c6b12d5695a1016d14efb3e49aed65a5cf0f6c2c9c6f035cd131",
+  "prompt_sha256": "d3e832ee4f81a4b20dbdeb90d90aa7086f4ed001c82956200fb6bcb411f13990",
+  "spec_sha256": "54f48691a0d9d768be9ccaf06a04cf0e8abee1706c2a3cabc718ff1ea5dfeeeb",
+  "driver_sha256": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "f4b2080263c47cfba27f39de53831ad16ba43e73b31b8d71954a7f726fe9026d",
+    "coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "coupled_bench/roles.py": "c8f4cba352b5dca771a6d90ab3831e6d9f6338b10faea5f11df2f467b8276900",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "run_self_dogfood.py": "40705efbc4e81e0f129919d8720d9768ec57ab06a0a6ba6ea87bb023e6ca3f01",
+    "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+    "self_dogfood/assessment.py": "c6483f56ff2167a645e9a84719766ec0b1c15257f52f62274928d9c3ccf89eac",
+    "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+    "self_dogfood/contracts.py": "c06556ba7e121aa94363c8024e54226a069c19b6f4386a9915d65fc80707341d",
+    "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+    "self_dogfood/measurement.py": "4bf2b08dad2338f6d61d8ea22b1d14b1a16fd5331eeb7be35c60bc40680954b5",
+    "self_dogfood/paired.py": "7a2c2a208c101bb07b300127ab8f6bae09ca6fbe79cf04d21bdcaba1510c6a19",
+    "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+    "self_dogfood/runner.py": "be04b79e710260c62e9d8bbafb97ca93423286fc9a98f54c1f78e50dfdbcbcf0"
+  },
+  "protocol_sha256": "e52097a83808c4f5f06e9af9904d232ccdb2de05f4641c4942eed58ad2e314c1",
+  "preflight_sha256": "7b8f2c813832e8f11be275c2f8263bf4a24d355d976df7e49e749f791a615535",
+  "matched_candidate_tree": "b1e155b4b6375ccfa3b5544aaf5cf7ee6e916a93",
+  "changed_inputs": [],
+  "changed_declaration_fields": [
+    "binary_sha256",
+    "candidate_base_commit",
+    "preflight_sha256",
+    "prepared_at",
+    "runtime_commit"
+  ],
+  "preflight_verdicts_match": true,
+  "provider_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "budget": {
+    "max_requests": 32,
+    "observer_reserved_requests": 8,
+    "transport_repair_requests": 4,
+    "coder_chunk_requests": 8,
+    "wall_seconds": 1200,
+    "timeout_seconds": 90,
+    "max_tokens": 32768,
+    "observer_max_tokens": 8192
+  },
+  "maximum_wire_requests": 36,
+  "runtime_pr_head": "a63e38e8db41f3ab9def804a457ccbdf24e599d4",
+  "delivery_observation_script_sha256": "4751e327dd17094013518dbf6889692fed1a817aaf7192ac2293d7cbc527e1e0",
+  "first_episode_only": true
+}

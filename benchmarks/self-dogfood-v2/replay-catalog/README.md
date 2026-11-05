@@ -35,3 +35,11 @@ The [route and handoff experiments](../../../docs/evals/2026-11-03-catalog-route
 and [R16's two unexecuted edits](../../../docs/evals/2026-11-03-catalog-route/r16/README.md)
 use the same original source, prompt and budget. R16 includes a key-free
 control that builds each intermediate state and exercises the candidate CLI.
+
+The [R16 continuation and fresh R17](../../../docs/evals/2026-11-03-strategy-memory/README.md)
+compare returning to a held proposal after restart with building from the
+original tree. The final Observer handoff has its own one-request record.
+
+[R18 on the original source](../../../docs/evals/2026-11-03-strategy-memory/r18/README.md)
+tracks all ten Observer decisions against the remaining Coder turns and
+preserves the unresolved native dispatch and absent final report.
