@@ -1,0 +1,259 @@
+{
+  "original_r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "plan_sha256": "a7882474a43de9ae75d92f429da993e53ec8106234142c67cd2c10591be9585d",
+  "chain_receipt_sha256": "5afb9128f7fb3ce17607f667daa978bfbb115d8e4bc4723ec8df05bf06dbc721",
+  "runtime_commit": "c752ac912c6ab66123775da365337045ed5d39e3",
+  "executor_sha256": "ccbc085d95ba11c588720c0d7648a40eee4b4a702bb3d8b88e00d02044a505bf",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 164.815
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": true,
+    "iterations": [
+      {
+        "completed": true,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "docs/evaluation.md",
+            "npm/spiral-coder/lib/launcher.cjs"
+          ],
+          "newly_verified": [
+            "cargo test --locked --bin spiral-coder -q"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793714287826-13092-1",
+        "task_requests": 10,
+        "termination": "completed",
+        "wire_requests": 10
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 54,
+    "max_task_requests_per_iteration": 27,
+    "max_wire_requests": 62,
+    "stop_reason": "completed",
+    "task_requests": 10,
+    "version": 1,
+    "wire_requests": 10
+  },
+  "rounds": [
+    {
+      "completed": true,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "docs/evaluation.md",
+          "npm/spiral-coder/lib/launcher.cjs"
+        ],
+        "newly_verified": [
+          "cargo test --locked --bin spiral-coder -q"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793714287826-13092-1",
+      "task_requests": 10,
+      "termination": "completed",
+      "wire_requests": 10,
+      "role_requests": {
+        "coder": 8,
+        "observer": 2
+      },
+      "current_checks": {
+        "python3 -S -m unittest -v scripts.catalog_visible": true,
+        "cargo test --locked --bin spiral-coder -q": true
+      },
+      "exact_calls": [
+        {
+          "step": 1,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": false,
+          "freshness": "superseded"
+        },
+        {
+          "step": 25,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": true,
+          "freshness": "superseded"
+        },
+        {
+          "step": 31,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": true,
+          "freshness": "current"
+        },
+        {
+          "step": 32,
+          "command": "cargo test --locked --bin spiral-coder -q",
+          "succeeded": true,
+          "freshness": "current"
+        }
+      ],
+      "accepted_done": [
+        33
+      ],
+      "latest_mutation": 30,
+      "guide_steps": [
+        30
+      ],
+      "changed_receipts": [
+        {
+          "step": 7,
+          "path": "src/main.rs",
+          "id": "call_u8EY62srO8Oe4clBgekL2709"
+        },
+        {
+          "step": 12,
+          "path": "src/main.rs",
+          "id": "call_c6aRMBJn9tJX3pqtwNsulEST"
+        },
+        {
+          "step": 18,
+          "path": "src/main.rs",
+          "id": "call_DLtUh2z1AcK1VZvoTaCmWT07"
+        },
+        {
+          "step": 20,
+          "path": "src/tui_replay.rs",
+          "id": "call_kisO0WZ107MishPOSPDGBMyN"
+        },
+        {
+          "step": 22,
+          "path": "src/tui_replay/catalog.rs",
+          "id": "call_LsrHFEugqox1dcvhd8r3ubrF"
+        },
+        {
+          "step": 24,
+          "path": "src/tui_replay.rs",
+          "id": "call_xhlZZB67r5a1sY2xwatxSDfo"
+        },
+        {
+          "step": 28,
+          "path": "npm/spiral-coder/lib/launcher.cjs",
+          "id": "call_kjMNjsPJ3rK6LoSvk3tr8FDc"
+        },
+        {
+          "step": 30,
+          "path": "docs/evaluation.md",
+          "id": "call_C1hsVDsnmJ9swV9xXeBDxs4K"
+        }
+      ],
+      "remaining_native_checks": [],
+      "terminal_summaries": [
+        {
+          "step": 33,
+          "result": "OK: done",
+          "args": {
+            "acceptance_evidence": [
+              {
+                "command": "python3 -S -m unittest -v scripts.catalog_visible",
+                "criterion": "acceptance 1"
+              },
+              {
+                "command": "cargo test --locked --bin spiral-coder -q",
+                "criterion": "acceptance 2"
+              },
+              {
+                "command": "python3 -S -m unittest -v scripts.catalog_visible",
+                "criterion": "acceptance 3"
+              },
+              {
+                "command": "cargo test --locked --bin spiral-coder -q",
+                "criterion": "acceptance 4"
+              }
+            ],
+            "completed_acceptance": [
+              "acceptance 1",
+              "acceptance 2",
+              "acceptance 3",
+              "acceptance 4"
+            ],
+            "next_steps": "None; implementation and required verification are complete.",
+            "remaining_acceptance": [],
+            "summary": "Implemented `spiral tui-replay-list` as a read-only catalog command. Changed files: `src/tui_replay/catalog.rs` (spec loading, validation, ASCII case-insensitive id/tag filtering, spec-order selection, zero-cap handling, JSON output, and empty-selection errors), `src/tui_replay.rs` (catalog module and callable handler), `src/main.rs` (arguments, enum variant, and exhaustive dispatch), `npm/spiral-coder/lib/launcher.cjs` (installed command forwarding), and `docs/evaluation.md` (example, JSON output, selection semantics, and listing-versus-running explanation). Listing does not execute replay cases or require provider credentials. Ordinary replay remains on its existing handler and reporting path.\n\nBefore: FAILED\nThe protected visible baseline check failed because `tui-replay-list` was absent from help.\n\nAfter: PASSED\n\nNative test count: `cargo test --locked --bin spiral-coder -q` ran 1032 tests: 1030 passed, 0 failed, 2 ignored.\nIndependent visible check count: `python3 -S -m unittest -v scripts.catalog_visible` ran 1 test: 1 passed, 0 failed.\n\nExact verification commands and observed results:\n- `python3 -S -m unittest -v scripts.catalog_visible` — PASSED; 1 test, 0 failures.\n- `cargo test --locked --bin spiral-coder -q` — PASSED; 1030 passed, 0 failed, 2 ignored out of 1032."
+          }
+        }
+      ]
+    }
+  ],
+  "changed_files": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "out_of_scope": [],
+  "missing_required": [],
+  "matched_original_tree_replay": true,
+  "composite_patch_sha256": "c956c07e6246024da82783411a0e8ae76402510d20f3cc7894d7841e8eccb792",
+  "native_guide_checks_report": true,
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "aabd11dc39bd1aa3640f2aa6a59131f8ef7710f34ce34164d58ab98255630061"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "9becb4826a520be28c9ea5e2bb5626fe519a17c220637759c674b8f0dca0e3f1"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 9,
+        "failed": 2,
+        "ignored": 0
+      },
+      "log_sha256": "bb9b9ba7d03e315a291a2564f6bc5e9c3aef2d4fcc433b528146a43a405ced7b"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "47e5045ef3081624140b86589c6bd05456714c9322ac391510a8181e05dd36e1"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "15a4af7fa75729445179fe63a36d6ef1c3896a111bae1c28c2daf3c0b56ba216"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "e92204f293063cd6ff2d42f7794dfe73e0c5802cd6636f8ae67a405ebc88be96"
+    }
+  ],
+  "independent_all_passed": false,
+  "original_single_episode_qualification": null
+}

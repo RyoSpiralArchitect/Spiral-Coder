@@ -145,3 +145,52 @@ fn a_failed_marker_in_output_or_a_refusal_cannot_unlock_baseline_edits() {
     messages.extend(history("OK (exit_code: 0)").into_iter().skip(1));
     assert_eq!(project(&messages, None).pending_baselines, [CHECK]);
 }
+
+#[test]
+fn iteration_progress_requires_a_first_counted_pre_edit_failure_at_the_task_root() {
+    use std::collections::BTreeSet;
+    let red = "FAILED (exit_code: 1)\ncwd: /workspace\nstderr:\nfailure";
+    let mut first = history(red);
+    first[2] = agent::report_counts::capture(
+        first[2].clone(),
+        "",
+        "Ran 7 tests in 0.1s\n\nFAILED (failures=1)",
+    );
+    let progress = |messages: &[serde_json::Value], root: &str, old: &[&str]| {
+        let status = project(messages, None);
+        let packet = agent::evidence_packet::project(messages, None);
+        status.new_test_baselines(
+            messages,
+            &packet,
+            root,
+            &old.iter().map(|id| id.to_string()).collect(),
+        )
+    };
+    assert_eq!(
+        progress(&first, "/workspace", &[]),
+        BTreeSet::from([CHECK.to_string()])
+    );
+    assert!(progress(&first, "/elsewhere", &[]).is_empty());
+    assert!(progress(&first, "/workspace", &["baseline"]).is_empty());
+    assert!(progress(&history(red), "/workspace", &[]).is_empty());
+
+    let mut repeated = first.clone();
+    let mut again = first[1..].to_vec();
+    again[0]["tool_calls"][0]["id"] = json!("retry");
+    again[1]["tool_call_id"] = json!("retry");
+    repeated.extend(again);
+    assert!(progress(&repeated, "/workspace", &["baseline"]).is_empty());
+
+    let mut superseded = first.clone();
+    superseded.extend([
+        json!({"role":"assistant","tool_calls":[{"id":"green","function":{"name":"exec","arguments":json!({"command":CHECK}).to_string()}}]}),
+        json!({"role":"tool","tool_call_id":"green","content":"OK (exit_code: 0)\ncwd: /workspace"}),
+    ]);
+    assert!(progress(&superseded, "/workspace", &[]).is_empty());
+    let mut after_edit = first.clone();
+    after_edit.splice(1..1, [
+        json!({"role":"assistant","tool_calls":[{"id":"edit","function":{"name":"patch_file","arguments":r#"{"path":"src/runner.py"}"#}}]}),
+        json!({"role":"tool","tool_call_id":"edit","content":"OK: patched 'src/runner.py'"}),
+    ]);
+    assert!(progress(&after_edit, "/workspace", &[]).is_empty());
+}

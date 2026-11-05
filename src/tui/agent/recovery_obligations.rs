@@ -46,7 +46,7 @@ impl RecoveryFocus {
             .iter()
             .chain(&self.deferred)
             .find(|f| f.check.trim() == check.trim());
-        let location = match baseline_failure::diagnostic(body, root) {
+        let location = match baseline_failure::diagnostic(check, body, root) {
             Ok(Some(location)) => Some(location),
             Ok(None) => {
                 // Preserve the narrow JSON/explicit-path fallback only when no

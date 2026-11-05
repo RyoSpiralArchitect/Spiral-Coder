@@ -12,6 +12,19 @@ pub(crate) struct ReadRequest {
 }
 
 impl ReadRequest {
+    pub(crate) fn overlong(&self) -> bool {
+        let start = self.start_line.unwrap_or(1);
+        start > 0
+            && self
+                .end_line
+                .is_some_and(|end| end.saturating_sub(start) >= MAX_RANGE_LINES)
+    }
+
+    pub(crate) fn first_window(&self) -> Option<Value> {
+        let start = self.start_line.unwrap_or(1);
+        self.overlong().then(|| serde_json::json!({"path":self.path,"start_line":start,"end_line":start.saturating_add(MAX_RANGE_LINES-1)}))
+    }
+
     pub(crate) fn is_range(&self) -> bool {
         self.start_line.is_some() || self.end_line.is_some()
     }
@@ -34,7 +47,7 @@ impl ReadRequest {
             start > 0 && end >= start,
             "use one-based lines with end_line >= start_line"
         );
-        if end > first_end {
+        if self.overlong() {
             anyhow::bail!(
                 "read at most {MAX_RANGE_LINES} lines per call. Requested {start} through {end} inclusive ({} lines). For the first window use start_line={start}, end_line={first_end}. The remaining window begins at {}.",
                 end - start + 1,

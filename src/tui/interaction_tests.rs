@@ -1,4 +1,4 @@
-fn interaction_app() -> (App, tempfile::TempDir) {
+pub(super) fn interaction_app() -> (App, tempfile::TempDir) {
     let root = tempfile::tempdir().unwrap();
     let app = App::new(
         test_cfg(Mode::Vibe),

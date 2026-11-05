@@ -1,0 +1,37 @@
+{
+  "command": "spiral tui-replay-list --tool-root . --filter observer --max-cases 1",
+  "binary_sha256": "fec53191fd45c6c1596b3d8898f2fe1480bddffe9cf77c5b1ed90376c579a404",
+  "exit": 0,
+  "expected": {
+    "version": 1,
+    "total": 1,
+    "cases": [
+      {
+        "id": "pane-prefs-observer-suggestion",
+        "tags": [
+          "tui",
+          "observer",
+          "suggestion",
+          "prefs"
+        ]
+      }
+    ]
+  },
+  "actual": {
+    "version": 1,
+    "total": 1,
+    "cases": [
+      {
+        "id": "pane-prefs-observer-suggestion",
+        "tags": [
+          "tui",
+          "observer",
+          "suggestion",
+          "prefs"
+        ]
+      }
+    ]
+  },
+  "matches": true,
+  "stderr": ""
+}

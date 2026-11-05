@@ -1285,12 +1285,19 @@ remain available on every supported Coder provider.
 ### Provider termination and Observer range repair
 
 After an invalid Observer `done` proposal, its single explicit repair can reach
-the provider output limit. `events/report_closeout.rs` then admits **one Coder
+the provider output limit or produce a malformed envelope with a recorded
+transport rejection. `events/report_closeout.rs` then admits **one Coder
 report-only wire attempt** only when the source context is still current, a
 declared task has no pending artifacts/checks/baselines/recovery, accepted plan
 references and current commands exist, and Coder has remaining allowance.
-Blocked terminal diagnosis, missing evidence, stale advice, malformed repairs
-without an output-limit receipt and provider errors do not activate it.
+A second admission applies when the Coder has exactly one remaining request
+and the declared task assigns it a report-only turn. A completed, structurally
+rejected Observer repair may then hand that request back for an authored
+blocked report, even with outstanding proof. An unresolved approval or user
+refusal blocks this route. Each mode is rechecked at consumption.
+The current repair must have exactly one matching Observer receipt. A normal
+semantic rejection, an unclassified response, stale context, blocked terminal
+diagnosis, missing evidence or a provider error ends this path.
 
 `ObserverAssistRequest` owns the transient pending handoff. Consumption rechecks
 native obligations and clears the request. `App.report_closeout_attempted`
@@ -1493,3 +1500,56 @@ When a confirming range covers an entire JSON file, the native read may
 append an array-edit recipe. A deferred proposal compares the declared
 source bytes with the current file and accepts only the canonical diagnostic
 appendix for those bytes. Unexpected trailing text leaves the reread due.
+
+### Bounded coupled iterations
+
+Each chain owns its top-level `iterations.json` and task copy. Each child
+output owns its session, work ledger and report. The manifest attributes
+task and transport usage to the original child task ID. The child's
+`iteration_progress` uses fresh correlated native call IDs. Previously
+recorded edits and checks do not count as new progress on a resumed budget.
+The optional `newly_reproduced_baselines` field records a declared pre-edit
+failure once, when the executed command at the task root has a failing
+unittest or libtest count. An ordinary nonzero exit or a repeated failure
+does not earn another iteration.
+A run with positive progress can still fail its acceptance checks.
+
+A version-1 `iteration_handoff` on the original human message stores the
+source task ID, up to 600 characters of an accepted terminal Observer
+summary, and up to 800 characters of its clarification reason. It requires
+one no-tool clarification with empty arguments and no acknowledgement.
+It is stripped from provider messages and projected as historical context
+for the same task. The latest accepted Coder blocked report may also expose
+its next steps. File writes, approvals and check receipts retain their native
+authority.
+
+After an unaffordable or already-spent Observer repair, a rejected oversized
+primary read can yield to the Coder. The runtime can describe the first
+legal window at the same starting line only for a declared missing artifact
+or mandatory diagnostic target and only after validating the bounded
+action against current obligations. Secondary suggestions and response
+contracts are discarded. The original Observer reply stays rejected. An
+`observer_return_for_delivery` trace names the derived window, and only a
+new Coder tool call can execute it.
+
+### Restoring a formatting diagnosis
+
+A failed `cargo fmt --all -- --check` can report several independent
+differences. A valid `Diff in <path>:<line>:` section with added or removed
+lines identifies a Rust file to inspect. Every reported path must resolve to
+a file inside the current workspace. Only the first changed section guides
+the read. A read can advance diagnosis to repair. The exact failed formatting
+check must succeed at the task root to clear that obligation.
+
+When an older session has an empty version-2 recovery snapshot beside that
+failed check, the runtime can reconstruct the formatting diagnosis from its
+correlated native output and subsequent recorded actions. Later checks
+and nonempty recovery snapshots retain their normal precedence.
+
+A single terminal Observer clarification with a reason, explicit null tool,
+empty arguments and `response_contract.required=false` may supply its one
+`based_on` reference as a string of up to 800 characters. The native parser
+preserves that text as the sole list member and records the wire recovery.
+The original response remains available. Evidence maps, multiple suggestions,
+required acknowledgements and executable suggestions retain their normal
+type checks.

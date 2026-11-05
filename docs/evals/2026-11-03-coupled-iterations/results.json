@@ -1,0 +1,200 @@
+{
+  "original_r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "plan_sha256": "bd326a84b0f3d7c5e10a3aafd2e41d6692207aa19f4adc0fb92bbdff0a4b3ce0",
+  "chain_receipt_sha256": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+  "runtime_commit": "96f68fa60b35ca9da3536c7995fe261b186bd9f8",
+  "executor_sha256": "8e41a972039733ab52fe3635599d9d9f79a37ad971790bcb15231a2c4b578931",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 83.272
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": false,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "src/tui_replay.rs"
+          ],
+          "newly_verified": [
+            "python3 -S -m unittest -v scripts.catalog_visible"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793713595719-9067-1",
+        "task_requests": 5,
+        "termination": "observer_unavailable",
+        "wire_requests": 5
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 64,
+    "max_task_requests_per_iteration": 32,
+    "max_wire_requests": 72,
+    "stop_reason": "observer_unavailable",
+    "task_requests": 5,
+    "version": 1,
+    "wire_requests": 5
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "src/tui_replay.rs"
+        ],
+        "newly_verified": [
+          "python3 -S -m unittest -v scripts.catalog_visible"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793713595719-9067-1",
+      "task_requests": 5,
+      "termination": "observer_unavailable",
+      "wire_requests": 5,
+      "role_requests": {
+        "coder": 3,
+        "observer": 2
+      },
+      "current_checks": {
+        "python3 -S -m unittest -v scripts.catalog_visible": true,
+        "cargo test --locked --bin spiral-coder -q": false
+      },
+      "exact_calls": [
+        {
+          "step": 1,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": false,
+          "freshness": "superseded"
+        },
+        {
+          "step": 25,
+          "command": "python3 -S -m unittest -v scripts.catalog_visible",
+          "succeeded": true,
+          "freshness": "current"
+        }
+      ],
+      "accepted_done": [],
+      "latest_mutation": 24,
+      "guide_steps": [],
+      "changed_receipts": [
+        {
+          "step": 7,
+          "path": "src/main.rs",
+          "id": "call_u8EY62srO8Oe4clBgekL2709"
+        },
+        {
+          "step": 12,
+          "path": "src/main.rs",
+          "id": "call_c6aRMBJn9tJX3pqtwNsulEST"
+        },
+        {
+          "step": 18,
+          "path": "src/main.rs",
+          "id": "call_DLtUh2z1AcK1VZvoTaCmWT07"
+        },
+        {
+          "step": 20,
+          "path": "src/tui_replay.rs",
+          "id": "call_kisO0WZ107MishPOSPDGBMyN"
+        },
+        {
+          "step": 22,
+          "path": "src/tui_replay/catalog.rs",
+          "id": "call_LsrHFEugqox1dcvhd8r3ubrF"
+        },
+        {
+          "step": 24,
+          "path": "src/tui_replay.rs",
+          "id": "call_xhlZZB67r5a1sY2xwatxSDfo"
+        }
+      ],
+      "remaining_native_checks": [
+        "cargo test --locked --bin spiral-coder -q"
+      ],
+      "terminal_summaries": []
+    }
+  ],
+  "changed_files": [
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "out_of_scope": [],
+  "missing_required": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs"
+  ],
+  "matched_original_tree_replay": true,
+  "composite_patch_sha256": "5feceddc6784d31c0b718a9505f8ddb91ae5a64ffcd754b6e9a2056fe1c65bd9",
+  "native_guide_checks_report": false,
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "5febc68972ad2af1246bb4927178f334a248150528d2a440846565bd5c90f01a"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "16527e2f45eb755dc1b9de9b50eb22a4a057d0f7e82f705da49760258b51847b"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 8,
+        "failed": 3,
+        "ignored": 0
+      },
+      "log_sha256": "25684f3956d01e8f61516784538bdeef8b8f237b0c843a28b4da8458cbe04f18"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "a9a468b6664479b0b9a1423d2c6edb51450a76bb5cf99ae4c9faa305de12681e"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "3b24be5841a7a3adc75deafa1fd0dc996d9361fb07b670fc586223a9ec00beb2"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "7197cf56d8559dd99fdcc187c576f6a1e060163545a5f5c71ef65932f8365018"
+    }
+  ],
+  "independent_all_passed": false,
+  "original_single_episode_qualification": null
+}

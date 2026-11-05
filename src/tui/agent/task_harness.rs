@@ -2096,6 +2096,14 @@ fn recent_blocked_fix_existing_mutation_action(
     None
 }
 
+fn unique_requested_source_member(root: &str, target: &str) -> Option<String> {
+    let mut members = path_literals_in_text(root)
+        .into_iter()
+        .filter(|path| path.starts_with("src/") && path != target);
+    let first = members.next()?;
+    members.all(|member| member == first).then_some(first)
+}
+
 fn synthesize_fix_existing_literal_member_patch(
     messages: &[Value],
     root_user_text: &str,
@@ -2109,9 +2117,7 @@ fn synthesize_fix_existing_literal_member_patch(
         return None;
     }
     let body = reads.get(target_path.as_str())?;
-    let missing_literal = path_literals_in_text(root_user_text)
-        .into_iter()
-        .find(|literal| literal.starts_with("src/") && literal != &target_path)?;
+    let missing_literal = unique_requested_source_member(root_user_text, &target_path)?;
     let (search, replace) = synthesize_list_member_insertion(body, missing_literal.as_str())?;
     Some(ToolCallData {
         thought_signature: None,
@@ -2245,9 +2251,7 @@ fn repair_blocked_patch_with_prompt_literal(
     body: &str,
     root_user_text: &str,
 ) -> Option<ToolCallData> {
-    let missing_literal = path_literals_in_text(root_user_text)
-        .into_iter()
-        .find(|literal| literal.starts_with("src/") && literal != path)?;
+    let missing_literal = unique_requested_source_member(root_user_text, path)?;
     if search_prefix.trim().is_empty() {
         return None;
     }
@@ -2255,26 +2259,7 @@ fn repair_blocked_patch_with_prompt_literal(
     let tail = &body[start..];
     let closing_rel = tail.find("\n];")?;
     let segment = &tail[..closing_rel + 3];
-    let mut last_item_line = None;
-    let mut closing_line = None;
-    for line in segment.lines() {
-        let trimmed = line.trim();
-        if trimmed == "];" {
-            closing_line = Some(line.to_string());
-            break;
-        }
-        if trimmed.starts_with('"') && trimmed.ends_with(',') {
-            last_item_line = Some(line.to_string());
-        }
-    }
-    let last_item_line = last_item_line?;
-    let closing_line = closing_line?;
-    let indent: String = last_item_line
-        .chars()
-        .take_while(|ch| ch.is_whitespace())
-        .collect();
-    let search = format!("{last_item_line}\n{closing_line}");
-    let replace = format!("{last_item_line}\n{indent}\"{missing_literal}\",\n{closing_line}");
+    let (search, replace) = synthesize_list_member_insertion(segment, &missing_literal)?;
     Some(ToolCallData {
         thought_signature: None,
         id: tc.id.clone(),
@@ -2293,20 +2278,23 @@ fn synthesize_list_member_insertion(body: &str, missing_literal: &str) -> Option
     if body.lines().any(|line| line.trim() == quoted_literal) {
         return None;
     }
-    let mut last_item_line = None;
-    let mut closing_line = None;
-    for line in body.lines() {
-        let trimmed = line.trim();
-        if trimmed == "];" {
-            closing_line = Some(line.to_string());
-            break;
-        }
-        if trimmed.starts_with('"') && trimmed.ends_with(',') {
-            last_item_line = Some(line.to_string());
-        }
+    // A different quoted string elsewhere in a file is not a path-list anchor.
+    // Require the observed adjacent member and closing line to be unique.
+    let mut pairs = body
+        .lines()
+        .zip(body.lines().skip(1))
+        .filter(|(member, closing)| {
+            closing.trim() == "];"
+                && member
+                    .trim()
+                    .strip_prefix('"')
+                    .and_then(|s| s.strip_suffix("\","))
+                    .is_some_and(|s| s.starts_with("src/") && !s.contains('"'))
+        });
+    let (last_item_line, closing_line) = pairs.next()?;
+    if pairs.next().is_some() {
+        return None;
     }
-    let last_item_line = last_item_line?;
-    let closing_line = closing_line?;
     let indent: String = last_item_line
         .chars()
         .take_while(|ch| ch.is_whitespace())
@@ -5019,5 +5007,23 @@ required_checks:\n\
         assert!(rewritten.arguments.contains("demo_repo/README.md"));
         assert!(rewritten.arguments.contains("# demo_repo\\n"));
         assert!(coerced.contains("README.md"));
+    }
+}
+
+#[cfg(test)]
+mod literal_list_recovery_tests {
+    use super::synthesize_list_member_insertion;
+
+    #[test]
+    fn a_lookup_cannot_become_a_patch_against_an_unrelated_string_list() {
+        assert!(super::unique_requested_source_member(
+            "Inspect `src/a.rs`, `src/b.rs` and `src/c.rs`.",
+            "src/a.rs"
+        )
+        .is_none());
+        let source="(\n    \"promote-harness\",\n    \"generate governor-contract promotion candidates from harness overlays\",\n),\n];\n";
+        assert!(synthesize_list_member_insertion(source, "src/tui_replay/catalog.rs").is_none());
+        let lists = "    \"src/a.rs\",\n];\nconst OTHER: &[&str] = &[\n    \"src/b.rs\",\n];\n";
+        assert!(synthesize_list_member_insertion(lists, "src/new.rs").is_none());
     }
 }

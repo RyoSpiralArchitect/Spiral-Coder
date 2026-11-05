@@ -3,12 +3,13 @@
 use super::*;
 use anyhow::{Context, Result};
 
+mod iterations;
 mod roles;
 mod termination;
 #[cfg(test)]
 mod tests;
 
-#[derive(clap::Args, Debug)]
+#[derive(clap::Args, Clone, Debug)]
 pub(crate) struct Args {
     #[arg(long)]
     pub tool_root: PathBuf,
@@ -18,6 +19,9 @@ pub(crate) struct Args {
     pub out_dir: PathBuf,
     #[arg(long, default_value_t = 18)]
     pub max_requests: usize,
+    /// Maximum consecutive budgeted iterations of the same task (1..4).
+    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u8).range(1..=4))]
+    pub iterations: u8,
     /// Pure rejected framing/schema responses may spend this separate pool.
     #[arg(long, default_value_t = 0)]
     pub transport_repair_requests: usize,
@@ -26,6 +30,9 @@ pub(crate) struct Args {
     pub observer_reserved_requests: usize,
     #[arg(long)]
     pub seed_session: Option<PathBuf>,
+    /// Submit the prompt as a new human task on a saved native conversation in the same workspace.
+    #[arg(long, conflicts_with = "seed_session")]
+    pub follow_up_session: Option<PathBuf>,
     #[arg(long)]
     pub without_observer: bool,
     #[command(flatten)]
@@ -111,6 +118,15 @@ async fn drain_observer_assist(
 }
 
 pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()> {
+    anyhow::ensure!(
+        (1..=4).contains(&args.iterations),
+        "iterations must be 1..4"
+    );
+    anyhow::ensure!(
+        args.iterations == 1
+            || (!args.evaluate_only && args.case_spec.is_none() && !args.without_observer),
+        "multiple iterations require the pair and separate evaluation of each iteration's receipts"
+    );
     if args.evaluate_only {
         let report = evaluate_receipts(&args, 0)?;
         println!("{}", serde_json::to_string(&report)?);
@@ -150,10 +166,22 @@ pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()>
     let storage = crate::runtime_storage::RuntimeStorage::create(&args.tool_root, &args.out_dir)?
         .with_private_env_names(args.observer.api_key_env.clone());
     args.out_dir = storage.output().to_owned();
-    crate::runtime_storage::scope(Some(storage), run_owned(args, roles)).await
+    if args.iterations > 1 {
+        iterations::run(args, roles).await
+    } else {
+        crate::runtime_storage::scope(Some(storage), run_owned(args, roles)).await
+    }
 }
 
 async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
+    run_iteration(args, roles, None).await
+}
+
+async fn run_iteration(
+    args: Args,
+    roles: roles::ResolvedRoles,
+    parent: Option<&crate::work_budget::WorkState>,
+) -> Result<()> {
     let root = args
         .tool_root
         .canonicalize()?
@@ -191,15 +219,56 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     let started = std::time::Instant::now();
     let (coder_tx, mut coder_rx) = mpsc::channel(256);
     let (observer_tx, mut observer_rx) = mpsc::channel(256);
-    if let Some(seed) = &args.seed_session {
+    let mut prior_calls = std::collections::BTreeSet::new();
+    let mut prior_current_checks = std::collections::BTreeSet::new();
+    if let Some(follow_up) = &args.follow_up_session {
+        anyhow::ensure!(
+            args.seed_session.is_none() && parent.is_none(),
+            "follow-up and same-task seed are mutually exclusive"
+        );
+        let mut session = crate::agent_session::AgentSession::load(follow_up)?;
+        anyhow::ensure!(
+            session
+                .tool_root
+                .as_deref()
+                .and_then(|s| std::path::Path::new(s).canonicalize().ok())
+                .as_deref()
+                == Some(std::path::Path::new(&root)),
+            "follow-up must use the saved workspace"
+        );
+        session.repair_for_resume();
+        session.cur_cwd = Some(root.clone());
+        app.coder_session = Some(session);
+        send_coder_input(&mut app, &coder_tx, prompt, CoderInput::NewHumanTask).await;
+    } else if let Some(seed) = &args.seed_session {
         let mut session = crate::agent_session::AgentSession::load(&seed)?;
         anyhow::ensure!(
             crate::task_origin::root_user_text(&session.messages) == prompt.trim_end(),
             "seed task must match prompt exactly"
         );
-        session.tool_root = Some(root.clone());
-        session.cur_cwd = Some(root.clone());
+        if parent.is_some() {
+            anyhow::ensure!(
+                session.tool_root.as_deref() == Some(root.as_str()),
+                "iteration workspace changed"
+            );
+        } else {
+            session.tool_root = Some(root.clone());
+            session.cur_cwd = Some(root.clone());
+        }
         session.repair_for_resume();
+        let evidence =
+            agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref());
+        for action in evidence.actions {
+            if action.tool == "exec"
+                && action.succeeded == Some(true)
+                && action.freshness == agent::current_evidence::Freshness::Current
+            {
+                if let Some(command) = action.arguments["command"].as_str() {
+                    prior_current_checks.insert(command.to_owned());
+                }
+            }
+            prior_calls.insert(action.call_id);
+        }
         app.coder_session = Some(session);
         app.work_budget = crate::work_budget::WorkBudget::new(
             prompt.trim_end(),
@@ -207,6 +276,10 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             Some(crate::runtime_storage::state_path(&root, "tui-work.json")),
         );
         app.work_budget.configure(app.work_policy)?;
+        if let Some(parent) = parent {
+            app.work_budget
+                .inherit_protections(parent, std::path::Path::new(&root))?;
+        }
         send_coder_input(
             &mut app,
             &coder_tx,
@@ -234,6 +307,7 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             }
             let blocked = app.coder_yield_reason
                 == Some(super::super::coder_yield::CoderYieldReason::Blocked);
+            if !blocked && iterations::send_last_report(&mut app, &coder_tx, &trace).await? { continue; }
             let idx = app
                 .coder
                 .messages
@@ -255,19 +329,15 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
                 continue;
             }
-            if blocked
-                || app.pending_observer_hint.is_none()
-                || app.work_budget.remaining_for("coder") == 0
-            {
+            if !blocked && app.pending_observer_hint.is_none() && iterations::send_last_report(&mut app,&coder_tx,&trace).await? { continue; }
+            let window = observer_request::take_delivery_window(&mut app);
+            if let Some(args) = &window {
+                trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;
+            }
+            if blocked || (app.pending_observer_hint.is_none() && window.is_none()) || app.work_budget.remaining_for("coder") == 0 {
                 break;
             }
-            send_coder_input(
-                &mut app,
-                &coder_tx,
-                "Continue.".into(),
-                CoderInput::RuntimeContinuation,
-            )
-            .await;
+            super::coder_run::send_coder_input_with_window(&mut app, &coder_tx,"Continue.".into(),CoderInput::RuntimeContinuation,window).await;
         }
         Ok(())
     }
@@ -279,6 +349,31 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
             session,
         )?;
     }
+    let evidence = app
+        .coder_session
+        .as_ref()
+        .map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref()));
+    let messages = app
+        .coder_session
+        .as_ref()
+        .map(|s| s.messages.as_slice())
+        .unwrap_or_default();
+    let obligations = agent::task_obligations::project(messages, app.project_test_cmd.as_deref());
+    let new_baselines = evidence
+        .as_ref()
+        .map(|packet| {
+            obligations
+                .task_requirements
+                .new_test_baselines(messages, packet, &root, &prior_calls)
+        })
+        .unwrap_or_default();
+    let progress = iterations::progress(
+        evidence.as_ref(),
+        &prior_calls,
+        &prior_current_checks,
+        &obligations.required_exact_checks,
+        new_baselines,
+    );
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),
         "termination":termination::project(&app, outcome.as_ref().err()),
@@ -293,7 +388,8 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
         "runtime_storage":{"state":"state","python_bytecode":"cache/python","child_tui_replays":"replays","relative_to":"out_dir"},
         "error":outcome.as_ref().err().map(ToString::to_string), "wall_elapsed_ms":started.elapsed().as_millis(),
         "work":app.work_budget.snapshot(),
-        "execution":app.coder_session.as_ref().map(|s| agent::evidence_packet::project(&s.messages, app.project_test_cmd.as_deref())),
+        "execution":evidence,
+        "iteration_progress":progress,"parent_task_id":parent.map(|p| &p.task_id),
         "coder_display":app.coder.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content})).collect::<Vec<_>>(),
         "observer_display":app.observer.messages.iter().map(|m| json!({"role":format!("{:?}",m.role),"content":m.content,"raw_content":m.raw_content})).collect::<Vec<_>>(),
     });

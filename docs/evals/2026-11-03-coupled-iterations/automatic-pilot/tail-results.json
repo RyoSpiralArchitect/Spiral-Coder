@@ -1,0 +1,183 @@
+{
+  "original_receipt_sha256": "def7e37f95bf7f1730dd7ca06a1b788bf6f73a7594c10779c659bce935b6992d",
+  "binary_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 11.465
+  },
+  "replayed_prefix_count": 16,
+  "request_roles": [
+    "coder",
+    "coder",
+    "coder",
+    "observer",
+    "coder",
+    "observer",
+    "coder",
+    "coder",
+    "coder",
+    "coder",
+    "observer",
+    "coder",
+    "coder",
+    "coder",
+    "observer",
+    "observer",
+    "coder"
+  ],
+  "prefix_matched": true,
+  "matched_original_final_workspace": true,
+  "manifest": {
+    "active_iteration": null,
+    "completed": true,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "scripts/run_coupled_pilot.py"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1793716152670-40483-1",
+        "task_requests": 11,
+        "termination": "blocked",
+        "wire_requests": 11
+      },
+      {
+        "completed": true,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1793716152670-40483-1",
+        "progress": {
+          "changed_files": [
+            "docs/pilot.md"
+          ],
+          "newly_verified": [
+            "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1793716154140-40483-3",
+        "task_requests": 5,
+        "termination": "completed",
+        "wire_requests": 6
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 22,
+    "max_task_requests_per_iteration": 11,
+    "max_wire_requests": 24,
+    "stop_reason": "completed",
+    "task_requests": 16,
+    "version": 1,
+    "wire_requests": 17
+  },
+  "per_round_roles": [
+    {
+      "coder": 8,
+      "observer": 3
+    },
+    {
+      "coder": 4,
+      "observer": 2
+    }
+  ],
+  "report_only_boundary": [
+    {
+      "tools": [
+        "done"
+      ],
+      "sha256": "26be3e3a46fd1c3d55fce3217c129e5815c0a509638cd847d81690916a404cd9"
+    }
+  ],
+  "live_upstream_calls": 1,
+  "errors": [],
+  "pending_checks": [],
+  "observer_assists_in_last_round": 0,
+  "plan_sha256": "e039b3c601b2c68ad92a7243ebf39a1ce263a973d0615d75aa679374d43ea8f0",
+  "raw_local_result_sha256": "20eda9765f2e5aa4846b28120b61de22fedfafb073df024f97c297dc4ffb6f88",
+  "upstream_response_sha256": "e3a902b780e621f96ef93efd3d7f86620ac9eb14cbdc9b507498eb539d771907",
+  "upstream_models": [
+    "gpt-5.6-luna"
+  ],
+  "upstream_returned_tools": [
+    "done"
+  ],
+  "last_request_purpose": "report_closeout",
+  "accepted_done": {
+    "step": 12,
+    "outcome": "OK: done",
+    "args": {
+      "acceptance_evidence": [
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "criterion": "acceptance 1"
+        },
+        {
+          "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+          "criterion": "acceptance 2"
+        },
+        {
+          "command": "patch_file(path=docs/pilot.md, replace=# Coupled pilot Run the pilot using `scripts/run_coupled_pilot.py`. To select specific cases, repeat `--case`; for example: ```sh python3 scripts/run_coupled_pilot.py --case alpha --case gamma ``` Case IDs are deduplicated, and selected cases run in their original suite order rather than the order of the flags. Unknown IDs fail before output is created or any case executes. If no `--case` filter is supplied, all cases run. Existing receipts are never overwritten, and the independent oracles remain enabled., search=# Coupled pilot Run the pilot using scripts/run_coupled_pilot.py. Case selection needs documenting.)",
+          "criterion": "acceptance 3"
+        },
+        "next_steps"
+      ],
+      "completed_acceptance": [
+        "acceptance 1",
+        "acceptance 2",
+        "acceptance 3"
+      ],
+      "remaining_acceptance": [],
+      "summary": "Updated both requested artifacts: `/Users/ryospiralarchitect/.cache/spiral-coder/coupled-iterations-work-20261103/pilot-live-report/workspace/scripts/run_coupled_pilot.py` restores filtering so repeated case IDs are selected once in suite order while no filter runs all cases; `/Users/ryospiralarchitect/.cache/spiral-coder/coupled-iterations-work-20261103/pilot-live-report/workspace/docs/pilot.md` documents the requested example and semantics. The retained native verification reports 7 tests run, 0 errors, and 0 failure events after the edits. Before: FAILED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: PASSED — `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nNo remaining work is recorded."
+    }
+  },
+  "count_receipts": [
+    {
+      "errors": 0,
+      "failure_events": 1,
+      "runner": "unittest",
+      "skipped": 0,
+      "tests_run": 7
+    },
+    {
+      "errors": 0,
+      "failure_events": 0,
+      "runner": "unittest",
+      "skipped": 0,
+      "tests_run": 7
+    }
+  ],
+  "independent_oracle": {
+    "passed": true,
+    "checks": {
+      "supplied_files_preserved": true,
+      "candidate_artifacts_present": true,
+      "independent_check_0": true,
+      "original_test_count": true,
+      "requested_documentation": true
+    },
+    "logs": [
+      {
+        "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+        "exit_code": 0,
+        "timed_out": false,
+        "log_sha256": "9c3d9daae7f34bf69ee687afe0159c1e4696de67eda2df22e7c1959abfc29494"
+      }
+    ],
+    "documentation_proxy_revision": "selection-paraphrases-v4",
+    "source_matches_reference": true
+  },
+  "all_conditions_actual": {
+    "task": 54,
+    "wire": 56
+  }
+}

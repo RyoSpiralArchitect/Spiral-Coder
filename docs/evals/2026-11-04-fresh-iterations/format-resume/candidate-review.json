@@ -1,0 +1,38 @@
+{
+  "candidate_patch_sha256": "42561300fcaf3c1a685290ec9c8f7877c377fdc6b40cd758635b8c86f534ec48",
+  "all_original_guide_lines_preserved": true,
+  "guide_insertion_spans": [
+    [
+      "insert",
+      12,
+      12,
+      12,
+      33
+    ]
+  ],
+  "public_commands_share_loader_and_selector": true,
+  "ordinary_and_listing_use_empty_selection_diagnostic": true,
+  "uses_stock_cli_and_installed_entry": true,
+  "protected_model_authored_test_sha256": "8b15f7248d6c8d40faeb72631f7e972247659ec10b7636c882b8ccb63ffca2be",
+  "native_steps": {
+    "cargo fmt --all -- --check": [
+      31
+    ],
+    "cargo test --locked --test tui_replay_catalog -q": [
+      32
+    ],
+    "python3 -S -m unittest -v scripts.catalog_visible": [
+      33
+    ],
+    "cargo test --locked --bin spiral-coder -q": [
+      34
+    ]
+  },
+  "accepted_done_step": 35,
+  "source_note": "The raw candidate still imports bail and Path in the catalog after removing its unused helper. Those two imports have no callers. The pre-existing feature PR already uses the shared implementations and receives only the regression test.",
+  "protected_stock_rust_unit_passed": 1030,
+  "protected_stock_rust_unit_ignored": 2,
+  "standard_tui_replays": 13,
+  "provider_responses_in_resume": 19,
+  "manual_candidate_edits": 0
+}

@@ -1,0 +1,38 @@
+{
+  "preflight_sha256": "396a6abd44e4b2b6476cc361f289565dfccca9da5dc364c12a4fe708e394cffe",
+  "same_r20_human_task_and_input_files": true,
+  "all_baseline_outcomes_as_declared": true,
+  "reference_all_passed": true,
+  "stock_and_reference": [
+    {
+      "id": "candidate-build",
+      "stock": true,
+      "reference": true
+    },
+    {
+      "id": "catalog-visible",
+      "stock": false,
+      "reference": true
+    },
+    {
+      "id": "held-out-catalog",
+      "stock": false,
+      "reference": true
+    },
+    {
+      "id": "packaged-spiral",
+      "stock": false,
+      "reference": true
+    },
+    {
+      "id": "regular-replay",
+      "stock": true,
+      "reference": true
+    },
+    {
+      "id": "stock-regressions",
+      "stock": true,
+      "reference": true
+    }
+  ]
+}

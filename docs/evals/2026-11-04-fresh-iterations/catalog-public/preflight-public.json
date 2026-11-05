@@ -1,0 +1,37 @@
+{
+  "r19_receipt_sha256": "f482d119cecdc89c3f00673b622d8df252741d16958a7f8ed7f44f81bc394c03",
+  "checks": [
+    {
+      "condition": "r19",
+      "results": [
+        {
+          "exit": 1,
+          "stdout_sha256": "cdb84824f82eb14a84f6fa892308b56552e7c610b7b1e1c57151f4cb5fa56c49",
+          "stderr_sha256": "09a596a85bd2c6b81ed1c4f1519e29c8f5cdb5b6a1f7e3b5bde6b48fad697970"
+        },
+        {
+          "exit": 1,
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297",
+          "stderr_sha256": "09a596a85bd2c6b81ed1c4f1519e29c8f5cdb5b6a1f7e3b5bde6b48fad697970"
+        }
+      ]
+    },
+    {
+      "condition": "reference",
+      "results": [
+        {
+          "exit": 0,
+          "stdout_sha256": "ed0b7aec947fe775a3c11dd33a6040adc8c43d3c88ec1f197fca809ad7632849",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "exit": 0,
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "external_calls": 0,
+  "reference_guide_example": "Measured on the unchanged reference binary and appended solely to its disposable positive control."
+}

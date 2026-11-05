@@ -1,0 +1,24 @@
+{
+  "parent_receipt_sha256": "c09b511162962eb9044c80ee5b03b3d440e7f4a6f5879efbc76103195b3c2302",
+  "changed_in_this_task": [
+    "src/tui_replay/catalog.rs",
+    "tests/tui_replay_catalog.rs"
+  ],
+  "all_native_checks_pending": [
+    "cargo fmt --all -- --check",
+    "cargo test --locked --test tui_replay_catalog -q",
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "last_check": "cargo fmt --all -- --check",
+  "last_check_passed": false,
+  "refusals": [
+    "(next-action) invalid response prevented automatic forwarding: invalid type: map, expected a sequence; raw Observer output was preserved.",
+    "(next-action) invalid response prevented automatic forwarding: invalid type: map, expected a sequence; raw Observer output was preserved."
+  ],
+  "remaining_coder_seats": 1,
+  "candidate_and_regular_no_match_equal": false,
+  "packaged_positive_guide_correct": true,
+  "retained_source_sha256": "85719b01105ddbd2bd3f8b26673eb10e3e983c8af18fc7db07eda0e1121616f4",
+  "retained_authored_test_sha256": "b46456f04528476ffd04f4ee248b8bde62eff968f542534a360ba365e5797518"
+}

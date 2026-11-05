@@ -6,6 +6,7 @@ use crate::task_origin::{user_message, MessageOrigin};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum CoderInput {
     HumanSteering,
+    NewHumanTask,
     RuntimeContinuation,
     ReportCloseout,
 }
@@ -55,6 +56,7 @@ pub(super) fn start_state(
             {
                 let managed = index == 0
                     || message.content.starts_with("[Intent Anchor]")
+                    || message.content.starts_with("[Native read window]")
                     || message.content.starts_with("<observer_advisory")
                     || message.content.starts_with("<observer_response_contract");
                 messages.push(

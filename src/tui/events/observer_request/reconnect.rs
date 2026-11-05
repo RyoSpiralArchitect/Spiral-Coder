@@ -36,7 +36,7 @@ pub(in super::super) fn on_error(app: &mut App) -> bool {
     app.pending_observer_hint = None;
     app.pending_observer_contract = None;
     app.last_observer_suggestion = None;
-    request.pending_report_closeout = false;
+    request.pending_report_closeout = None;
     request.pending_repair = None;
     request.reconnect.failed = true;
     let interrupted = work.requests.last().filter(|r| {

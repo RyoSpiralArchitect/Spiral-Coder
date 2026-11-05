@@ -1,0 +1,51 @@
+{
+  "final_runtime_commit": "e2d3eb54a033363e4114987bd9de36d36fce0b15",
+  "runtime": {
+    "rust_unit": 1104,
+    "rust_integrations": 4,
+    "tui_replays": 15,
+    "python_tests": 97,
+    "javascript_test_counts": [
+      80,
+      5
+    ],
+    "repo_map_cases": 14,
+    "lite_smoke": true,
+    "log_sha256": "0ecfb2169215423dcfa3b573e13349392cd4851c23f8208a004703eaff3b8880"
+  },
+  "feature_60_preexisting_head": "94297d2789faba7e54bb59da385ab67876dd1d22",
+  "feature_60_with_exact_regression": {
+    "rust_unit": 1066,
+    "rust_integrations": 6,
+    "tui_replays": 15,
+    "python_tests": 97,
+    "javascript_test_counts": [
+      80,
+      5
+    ],
+    "repo_map_cases": 14,
+    "lite_smoke": true,
+    "log_sha256": "84efc15820d68b7c03368052f5d71aba28f30324b89bb821cf8e758314d8bac3"
+  },
+  "transferred_test_sha256": "8b15f7248d6c8d40faeb72631f7e972247659ec10b7636c882b8ccb63ffca2be",
+  "formatting_gate_regression": "Real cargo fmt --check produced diffs in two files and an empty version-2 snapshot. The runtime required a read, accepted the repair phase, and cleared only after the exact check succeeded.",
+  "runtime_after_r21": {
+    "runtime_commit": "724cff9af92633ca43c2f51dc7da15ef8d12a973",
+    "executor_sha256": "179c4fee06213cfdc93d588d1c42182536a72c1e4c46018a3287937804c3422a",
+    "unit_passed": 1105,
+    "unit_ignored": 2,
+    "rust_integrations": 4,
+    "tui_replays": 15,
+    "python": 97,
+    "web": 80,
+    "npm": 5,
+    "repo_map": 14,
+    "lite_smoke": true,
+    "log_sha256": "66ab3750bd06124c6d94411f89086ec9983f749edf67bb036cce95c49e5bd4da"
+  },
+  "fresh_trial_usage_across_eight_separately_declared_conditions": {
+    "task_requests": 286,
+    "wire_requests": 296,
+    "additional_live_requests_after_r21": 0
+  }
+}

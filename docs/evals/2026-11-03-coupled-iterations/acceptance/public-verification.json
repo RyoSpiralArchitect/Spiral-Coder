@@ -1,0 +1,107 @@
+{
+  "frozen_plan_sha256": "177bc9359f7934d75d60f946e16754dc0a55f74504059fd42d3f35a29d79753e",
+  "sealed_receipt_sha256": "c09b511162962eb9044c80ee5b03b3d440e7f4a6f5879efbc76103195b3c2302",
+  "source_inventory_and_original_patch_replay_verified": true,
+  "relative_to_previous_candidate": [
+    "docs/evaluation.md",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "composite_against_original": [
+    "docs/evaluation.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/main.rs",
+    "src/tui_replay.rs",
+    "src/tui_replay/catalog.rs"
+  ],
+  "role_charges": {
+    "coder": {
+      "task": 16,
+      "transport": 0
+    },
+    "observer": {
+      "task": 7,
+      "transport": 1
+    }
+  },
+  "human_task_root_index": 82,
+  "guide_last_edit_step": 11,
+  "post_edit_native_checks": [
+    {
+      "step": 12,
+      "command": "cargo fmt --all -- --check",
+      "call_id": "call_Pa7e0anOamlzGJiqxHXbd6NB",
+      "root": ".",
+      "exit_code": 0
+    },
+    {
+      "step": 13,
+      "command": "cargo run --locked --quiet --bin spiral-coder -- tui-replay-list --tool-root . --filter observer --max-cases 1",
+      "call_id": "call_rz0VzFvJT6Ce371TnSznog9g",
+      "root": ".",
+      "exit_code": 0
+    },
+    {
+      "step": 14,
+      "command": "python3 -S -m unittest -v scripts.catalog_visible",
+      "call_id": "call_tCYh9EcGrUZ8CGkKxNwLejUh",
+      "root": ".",
+      "exit_code": 0
+    },
+    {
+      "step": 15,
+      "command": "cargo test --locked --bin spiral-coder -q",
+      "call_id": "call_Tcr8d5RdM7On7ld7XHOFfw5a",
+      "root": ".",
+      "exit_code": 0
+    }
+  ],
+  "accepted_coder_report_step": 16,
+  "accepted_plan_criteria": [
+    "Catalog shares loading, validation, and selection semantics with ordinary replay.",
+    "Guide output matches measured candidate output.",
+    "Installed/native replay paths remain intact.",
+    "All four exact checks pass after final edits."
+  ],
+  "no_remaining_checks_or_declared_acceptance": true,
+  "prior_example_match": false,
+  "packaged_example_match": true,
+  "independent_groups_passed": 5,
+  "independent_groups_total": 6,
+  "held_out_passed": 10,
+  "held_out_total": 11,
+  "failing_case": "test_no_matches",
+  "actual_diagnostic": "Error: no replay cases selected",
+  "expected_diagnostic_fragment": "0 cases",
+  "ordinary_replay_uses": "diagnostics::empty_selection",
+  "catalog_uses": "standalone error string after select_cases returned no matches",
+  "stock_regressions": {
+    "rust_unit_passed": 1030,
+    "rust_unit_failed": 0,
+    "rust_unit_ignored": 2,
+    "tui_replays_passed": 13
+  },
+  "trials_excluding_original_r18": [
+    {
+      "receipt_sha256": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+      "task": 5,
+      "wire": 5,
+      "stop": "observer_unavailable"
+    },
+    {
+      "receipt_sha256": "5afb9128f7fb3ce17607f667daa978bfbb115d8e4bc4723ec8df05bf06dbc721",
+      "task": 10,
+      "wire": 10,
+      "stop": "completed"
+    },
+    {
+      "receipt_sha256": "c09b511162962eb9044c80ee5b03b3d440e7f4a6f5879efbc76103195b3c2302",
+      "task": 23,
+      "wire": 24,
+      "stop": "completed"
+    }
+  ],
+  "combined_task_requests": 38,
+  "combined_wire_requests": 39,
+  "original_single_episode_qualified": false
+}

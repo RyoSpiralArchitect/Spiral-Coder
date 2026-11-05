@@ -1,0 +1,39 @@
+{
+  "r18_declaration": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "base": "49011e5af251f9dfe4b7923b3abf18e0a089de12",
+  "parent_receipt_sha256": "9cbf59f72c37244a3afcd646563327ed4b8bd6604c31a32b13b8a7af85698cb0",
+  "prior_task_requests": 5,
+  "parent_session_sha256": "52edcd3c90a958ea5150af96fbea6e230518333b604efe6c64686c18d5b96907",
+  "seed_sha256": "34aeb83336065fe47d8c2124aad297297106740d5a0d89e991f0246952a4c12e",
+  "inventory_sha256": "e0925029987e5b7c3f5db962b57a9090579973dceb27fbdaecd21179046f72ff",
+  "prompt_sha256": "d3e832ee4f81a4b20dbdeb90d90aa7086f4ed001c82956200fb6bcb411f13990",
+  "runtime_commit": "c752ac912c6ab66123775da365337045ed5d39e3",
+  "executor_sha256": "ccbc085d95ba11c588720c0d7648a40eee4b4a702bb3d8b88e00d02044a505bf",
+  "model": "gpt-5.6-luna",
+  "limits": {
+    "iterations": 2,
+    "task_requests": 27,
+    "reserved_observer": 8,
+    "transport_repair": 4,
+    "chunk": 8,
+    "request_seconds": 90,
+    "wall_seconds": 2400,
+    "coder_tokens": 32768,
+    "observer_tokens": 8192
+  },
+  "maximum_new_task_requests": 54,
+  "maximum_new_wire_requests": 62,
+  "previous_continuation_task_requests": 5,
+  "maximum_total_additional_task_requests": 59,
+  "maximum_total_additional_wire_requests": 67,
+  "provider_calls_at_pin": 0,
+  "operator_feature_edits_during_migration": 0,
+  "input_scripts": {
+    "live.py": "8b813debde682752ef1ae68caec7a0d371414d4c6708fc1b737bf8cd6a7f8a4d",
+    "seed.py": "c31113107e344cecf874b193f19bb53d82e0eccb9bdb66acefeb7a6a9f586036",
+    "protocol.md": "7d5852675d150131d7043e07338a59f5a8d0132f8725c51efc7235ebcc6dc096",
+    "replay.py": "56061c3a0a048a73c136536ec938d9d0fa319c2dc6392ea3f2a2956590bea7bc"
+  },
+  "control_sha256": "d4dae6b7c90239a7e9195c35d60711dca7c0f1af5a5b9de2c481acdec0048a5b"
+}

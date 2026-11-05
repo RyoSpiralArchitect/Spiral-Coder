@@ -1,0 +1,129 @@
+{
+  "plan_sha256": "b62273f375747a890b44f32b714ef46123230f0077641a45923b126b4a4a1ab9",
+  "receipt_sha256": "6479553cdaab4a18d53d3e94eb8ab9b4476656d7a9d03cceb7b749f009125bc4",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 66.429
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": false,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1793730748970-10978-1",
+        "task_requests": 11,
+        "termination": "blocked",
+        "wire_requests": 12
+      }
+    ],
+    "max_iterations": 2,
+    "max_task_requests": 22,
+    "max_task_requests_per_iteration": 11,
+    "max_wire_requests": 24,
+    "stop_reason": "no_new_edit_or_verification",
+    "task_requests": 11,
+    "version": 1,
+    "wire_requests": 12
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793730748970-10978-1",
+      "task_requests": 11,
+      "termination": "blocked",
+      "wire_requests": 12,
+      "roles": {
+        "coder": 8,
+        "observer": 4
+      },
+      "pending": [
+        "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v"
+      ],
+      "observer_handoff": {
+        "future_action": "No Coder request remains: coder_task_requests_left=0 and next_coder_turn is exhausted. The missing facts are whether scripts/run_coupled_pilot.py and docs/pilot.md were edited and whether the exact required test command passed after those edits. No completion can be claimed without those receipts.",
+        "source_task_id": "task-1793730748970-10978-1",
+        "summary": "Handoff: the repair remains incomplete. The unchanged test command was recorded as failed before any artifact edits, no edits to either required path are evidenced, and the required post-edit final check is still outstanding.",
+        "version": 1
+      }
+    }
+  ],
+  "changed_files": [],
+  "edits": [],
+  "checks": [
+    {
+      "step": 4,
+      "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+      "success": false,
+      "call_id": "call_TohyTHsGNzuFQfwWcILGYerE",
+      "counts": {
+        "errors": 0,
+        "failure_events": 1,
+        "runner": "unittest",
+        "skipped": 0,
+        "tests_run": 7
+      }
+    }
+  ],
+  "reports": [
+    {
+      "step": 8,
+      "outcome": "OK: blocked",
+      "args": {
+        "acceptance_evidence": [],
+        "completed_acceptance": [],
+        "next_steps": "Edit scripts/run_coupled_pilot.py so selected is [case for case in cases if not requested or case[\"id\"] in requested], preserving unknown-ID validation and the no-overwrite guard. Update docs/pilot.md with the --case alpha --case gamma example and requested semantics. Then run `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v` unchanged.",
+        "remaining_acceptance": [
+          "acceptance 1",
+          "acceptance 2",
+          "acceptance 3"
+        ],
+        "summary": "Blocked: the required unchanged baseline was recorded as failed, but the runtime ended before either requested artifact could be edited or the after-check could run. No source or documentation mutation is verified. Before: FAILED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nAfter: NOT VERIFIED \u2014 `python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v`\nChanged files: none verified (requested files are `scripts/run_coupled_pilot.py` and `docs/pilot.md`). Remaining work: apply the bounded source selection fix, update the documentation, then run the exact check and confirm PASSED."
+      }
+    }
+  ],
+  "reproduced_original_failure": true,
+  "fresh_post_edit_pass": false,
+  "authored_closeout": false,
+  "oracle": {
+    "passed": false,
+    "checks": {
+      "supplied_files_preserved": true,
+      "candidate_artifacts_present": true,
+      "independent_check_0": false,
+      "original_test_count": true,
+      "requested_documentation": false
+    },
+    "logs": [
+      {
+        "command": "python3 -S -m unittest discover -s tests -p test_coupled_pilot.py -v",
+        "exit_code": 1,
+        "timed_out": false,
+        "sha256": "11d0edda0ca70dfd4c5ad0b5a0fafd75bfc584daccc3614e045ce58973f2ae6a"
+      }
+    ],
+    "documentation_proxy_revision": "selection-paraphrases-v4",
+    "source_matches_reference": false
+  },
+  "task_passed": false,
+  "second_iteration_passed": false
+}

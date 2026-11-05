@@ -4,7 +4,7 @@ use crate::modes::Mode;
 use anyhow::{ensure, Context, Result};
 use serde::Serialize;
 
-#[derive(clap::Args, Debug, Default)]
+#[derive(clap::Args, Clone, Debug, Default)]
 pub(crate) struct ObserverArgs {
     /// Observer provider; requires --observer-model. Defaults to the Coder config.
     #[arg(
@@ -32,6 +32,7 @@ pub(crate) struct ObserverArgs {
     pub max_tokens: Option<u32>,
 }
 
+#[derive(Clone)]
 pub(crate) struct ResolvedRoles {
     pub coder: RunConfig,
     pub observer: Option<RunConfig>,

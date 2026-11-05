@@ -73,7 +73,7 @@ fn report_closeout_requires_current_declared_proof_and_never_clears_missing_work
             _ => {},
         }
         let before = app.coder_session.as_ref().unwrap().messages.clone();
-        assert_eq!(report_closeout::ready(&app),case=="ready","{case}");
+        assert_eq!(report_closeout::ready(&app, report_closeout::Reason::Verified),case=="ready","{case}");
         assert_eq!(before, app.coder_session.as_ref().unwrap().messages);
     }
 }
@@ -147,4 +147,60 @@ async fn output_limited_done_repair_allows_only_one_authored_report_and_no_autom
         assert_eq!(work["requests"][1]["charge"],"task");
         if outcome!="stale" { assert_eq!(work["requests"][2]["purpose"],"report_closeout"); }
     }
+}
+
+#[tokio::test]
+async fn malformed_clarification_can_spend_the_last_coder_seat_on_an_honest_blocked_report() {
+    use httpmock::prelude::*;
+    let server = MockServer::start();
+    let (mut app, _root) = closeout_app();
+    for cfg in [&mut app.coder_cfg, &mut app.observer_cfg] {
+        cfg.base_url = server.base_url();
+        cfg.api_key = Some("offline".into());
+        cfg.timeout_seconds = 3;
+    }
+    let messages = &mut app.coder_session.as_mut().unwrap().messages;
+    messages.truncate(messages.len() - 2); // The final check is still due.
+    let task = crate::task_origin::root_user_text(messages);
+    app.work_budget = crate::work_budget::WorkBudget::new(task, 6, None);
+    app.work_budget.configure(crate::work_budget::BudgetPolicy {
+        observer_reserved_requests: 3, transport_repair_limit: 2,
+    }).unwrap();
+    for _ in 0..2 { app.work_budget.begin("coder", &json!({})).unwrap().status("completed"); }
+    let observer = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            !serde_json::from_slice::<serde_json::Value>(r.body.as_deref().unwrap()).unwrap()["tools"].is_array()
+        });
+        let raw = json!({"summary":"handoff","suggestions":[{"kind":"clarify","suggested_tool":null,
+            "suggested_args":{},"reason":"The exact test is due.","confidence":0.95,"based_on":{"paths":["source.py"]}}]});
+        let reply = json!({"choices":[{"delta":{"content":raw.to_string()},"finish_reason":"stop"}]});
+        then.status(200).header("content-type","text/event-stream").body(format!("data: {reply}\n\ndata: [DONE]\n\n"));
+    });
+    let coder = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").body_contains("one report-only request").matches(|r| {
+            let v:serde_json::Value = serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+            v["tools"].as_array().is_some_and(|t| t.len()==1 && t[0]["function"]["name"]=="done")
+        });
+        let args=json!({"summary":"handoff-ready. The required exact check is still unverified.",
+            "completed_acceptance":[],"remaining_acceptance":["acceptance 1","acceptance 2","acceptance 3","acceptance 4"],
+            "acceptance_evidence":[],"next_steps":"Run the exact Python check on the edited files and report."});
+        let text="<think>\ngoal: Report unfinished verification\nstep: 2\ntool: done\nrisk: unsupported completion\ndoubt: none\nnext: run the check\nverify: retained receipts\n</think>";
+        let reply=json!({"choices":[{"delta":{"content":text,"tool_calls":[{"index":0,"id":"honest-blocked","type":"function","function":{"name":"done","arguments":args.to_string()}}]},"finish_reason":"stop"}]});
+        then.status(200).header("content-type","text/event-stream").body(format!("data: {reply}\n\ndata: [DONE]\n\n"));
+    });
+    let (obs_tx, mut obs_rx) = mpsc::channel(128);
+    send_next_action_assist(&mut app, &obs_tx, "last-fail", "incomplete_task").await;
+    closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+    maybe_observer_action_repair(&mut app, &obs_tx).await;
+    closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+    assert!(app.pending_observer_hint.is_none());
+    let (tx, mut rx) = mpsc::channel(128);
+    assert!(observer_request::maybe_report_closeout(&mut app, &tx).await);
+    closeout_drain(&mut app, &mut rx, PaneId::Coder).await;
+    observer.assert_hits(2);
+    coder.assert_hits(1);
+    assert_eq!(app.coder_yield_reason, Some(crate::tui::coder_yield::CoderYieldReason::Blocked));
+    assert_ne!(app.coder_completed, Some(true));
+    assert_eq!(app.work_budget.remaining_for("coder"), 0);
+    assert_eq!(app.work_budget.remaining_for("observer"), 3);
 }

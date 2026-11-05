@@ -56,6 +56,10 @@ pub(crate) fn horizon(packet: &Value) -> Value {
     json!({
         "human_objective_excerpt":objective,
         "strategy_memory": provenance,
+        "previous_iteration_observer":obligations["iteration_handoff"],
+        "previous_blocked_report":obligations["previous_blocked_report"],
+        "minimum_delivery":obligations["minimum_delivery"],
+        "delivery_fits_known_slots":obligations["minimum_delivery"]["minimum_coder_requests"].as_u64().zip(packet["work_budget"]["next_coder_requests"].as_u64()).map(|(floor, slots)| floor <= slots),
         "paths_with_recorded_edits":sample(&work["native_file_edits"]["successful_paths"],work["native_file_edits"]["omitted_successful_paths"].as_u64().unwrap_or(0)),
         "declared_paths_without_edit_receipts":sample(&obligations["task_requirements"]["pending_artifact_paths"],0),
         "checks_still_due":sample(&obligations["pending_exact_checks"],0),
@@ -98,7 +102,7 @@ pub(crate) fn handoff_prompt(packet: &Value, language: &str) -> Option<String> {
     let facts = json!({"task_horizon":horizon(packet),"required_diagnostic_read":obligations["required_diagnostic_read"],
         "required_recheck":obligations["required_recheck"],
         "latest_native_feedback":obligations["latest_action_feedback"]["result"].as_str().map(|s| s.chars().take(450).collect::<String>())});
-    Some(format!("Write a handoff in {language}. {remaining} Identify what is evidenced, what remains unverified and the first action for a future continuation. Place that future action in the explanation. If a required artifact still needs an edit, final check receipts must follow that edit. Earlier reproduction or recovery checks can still be required. Return one JSON object with summary, response_contract (required=false, focus_axes as a list of strings, note as a string), and one suggestions entry with kind=clarify, suggested_tool=null, suggested_args={{}}, reason, confidence and based_on. Use the native task data below.\n<packet>\n{facts}\n</packet>"))
+    Some(format!("Write a handoff in {language}. {remaining} Identify what is evidenced, what remains unverified and the first action for a future continuation. Place that future action in the explanation. If a required artifact still needs an edit, final check receipts must follow that edit. Earlier reproduction or recovery checks can still be required. Return one JSON object with summary, response_contract (required=false, focus_axes as a list of strings, note as a string), and one suggestions entry with kind=clarify, suggested_tool=null, suggested_args={{}}, reason, confidence and based_on as a JSON array of strings (for example [\"task_horizon\"]). Use the native task data below.\n<packet>\n{facts}\n</packet>"))
 }
 
 #[cfg(test)]

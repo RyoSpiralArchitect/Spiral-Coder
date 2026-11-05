@@ -166,6 +166,31 @@ impl WorkBudget {
         })
     }
 
+    pub(crate) fn inherit_protections(
+        &self,
+        parent: &WorkState,
+        root: &std::path::Path,
+    ) -> Result<()> {
+        let root = root.canonicalize()?;
+        let mut state = self.state.lock().unwrap();
+        anyhow::ensure!(
+            state.root == parent.root
+                && parent.tool_root.as_deref() == Some(&root)
+                && state.requests.is_empty(),
+            "iteration must keep the original task and workspace"
+        );
+        state.tool_root = Some(root);
+        state
+            .protected_artifacts
+            .clone_from(&parent.protected_artifacts);
+        self.persist(&mut state)?;
+        drop(state);
+        if let Some(problem) = self.preservation_issue() {
+            bail!("original protected artifact changed before the next iteration: {problem}");
+        }
+        Ok(())
+    }
+
     pub fn protect_replay(&self, root: &std::path::Path) -> Result<()> {
         let mut state = self.state.lock().unwrap();
         let root = root.canonicalize()?;

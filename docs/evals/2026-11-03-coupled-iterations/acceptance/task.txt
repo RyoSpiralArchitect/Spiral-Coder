@@ -1,0 +1,19 @@
+Perform production acceptance on the existing read-only Spiral-Coder replay catalog. The implementation and its operator guide are already in this working tree. Preserve the installed and native command, the existing replay command, its spec and all of the original tests.
+
+The guide's literal successful console example for "spiral tui-replay-list --tool-root . --filter observer --max-cases 1" currently disagrees with the output of the candidate's packaged command. Keep that example command. Measure the actual candidate on the checked-in repository spec and correct what the guide prints. A separate public "cargo fmt --all -- --check" reports Rust formatting differences.
+
+The original feature request asked the list command to share the ordinary replay command's spec loading, validation and case selection. Source review shows the catalog currently reimplements parsing and selection, so having passed one visible example is insufficient. Read the ordinary implementation and the catalog. Reconcile their behavior using the existing code where appropriate, keeping spec order, filters, caps and actionable diagnostics. Keep the change focused and the ordinary replay path intact. Do not invent expected output or hard-code fixture IDs in the implementation.
+
+Allowed paths only:
+- src/main.rs
+- src/tui_replay.rs
+- src/tui_replay/catalog.rs
+- docs/evaluation.md
+- npm/spiral-coder/lib/launcher.cjs
+- tests/tui_replay_catalog.rs
+
+Run cargo fmt --all after the source edits. Run each of the four exact checks below separately after the last source or documentation change. The cargo-run check runs the same candidate subcommand and arguments as the published example. Compare its JSON to the guide. In the final report, identify the files you actually changed in this acceptance task, how the shared behavior was verified, and the exact checks with their real outcomes. If anything is still unverified, give an honest blocked report with the next concrete action.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"delivery","description":"Correct the actual catalog implementation and documented example and verify the finished tree.","artifacts":[{"path":"src/tui_replay/catalog.rs","kind":"source"},{"path":"docs/evaluation.md","kind":"documentation"}],"checks":[{"command":"cargo fmt --all -- --check"},{"command":"cargo run --locked --quiet --bin spiral-coder -- tui-replay-list --tool-root . --filter observer --max-cases 1"},{"command":"python3 -S -m unittest -v scripts.catalog_visible"},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>

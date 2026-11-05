@@ -223,6 +223,64 @@ its reason to say what that read would unlock for the wider task. Historical
 strategy cues guide the choice of action. Completion still requires native
 receipts for the current task.
 
+## Continue a task across budgeted iterations
+
+Use one native invocation when a feature may need another pass through the
+same workspace. For example, this authorizes up to two iterations, each with
+32 shared task requests, eight reserved for Observer and up to four separate
+framing repairs. The total ceiling is 64 task requests and 72 wire attempts.
+
+```sh
+spiral --provider openai --model gpt-5.6-luna coupled-run \
+  --tool-root . --prompt-file ../feature-task.md \
+  --out-dir ../spiral-runs/feature-01 --iterations 2 \
+  --max-requests 32 --observer-reserved-requests 8 \
+  --coder-chunk-requests 8 --transport-repair-requests 4
+```
+
+The default is one iteration. Values from two through four opt into a
+chain. Start with a fresh output directory outside the workspace. The
+chain freezes the task text at launch and uses the same working files,
+native Coder session, validated historical Observer clarification and
+original replay protection baseline. Each iteration has a fresh, explicit
+allowance. Its `iteration-01/`, `iteration-02/` and subsequent directories
+retain separate reports, sessions, traces and ledgers. `iterations.json`
+lists the parent task IDs, per-iteration spend, totals and stop reason.
+While an iteration is running, its own ledger includes in-flight requests.
+
+A validated successful report stops the chain immediately. An exhausted
+iteration can advance when it recorded a new changed file or a newly
+verified declared command. It can also advance after the first reproduction of
+a declared pre-edit failing baseline at the task root. This route requires an
+observed failing test count and grants a single continuation for that
+command. Final verification and reporting still require a successful check
+after the edits. A user refusal, pending approval, early blocker,
+provider failure or an exhausted round without this progress ends the run.
+An accepted incomplete report remains incomplete in its original record.
+An explicit `--seed-session FILE` still starts a newly budgeted invocation
+from an operator-selected native session. Supply the corresponding workspace
+snapshot when using a seed file. To submit a new operator acceptance task
+on the same conversation and workspace, pass `--follow-up-session FILE`
+instead. Its prompt becomes a new human request. Retained conversation
+helps explain the implementation, while its old task's checks, decisions
+and completion do not satisfy the new request. Later automatic iterations
+resume that new request.
+
+Both roles receive an optimistic delivery estimate for declared tasks. It
+counts one native edit per pending artifact, the separate checks due after
+the edits and one authored report. Diagnosis or additional source changes
+can require more turns. At the last shared opportunity the coupled driver
+can send the Coder to report if the Observer's reserved share has already
+been served. If the Observer's one repair of a rejected `done` is truncated
+or receives a recorded envelope transport rejection, the Coder can also use
+one report-only attempt when all native proof is current. After a structurally
+rejected Observer repair, the last request still available to Coder can also
+carry an honest blocked handoff. Requests reserved for Observer stay reserved.
+A blocked report
+must still retain the unfinished criteria. The [fresh two-iteration pilot](evals/2026-11-04-fresh-iterations/README.md)
+includes the actual first-round handoff, second-round verification and
+independent check on the completed change.
+
 ## Receipts and budget
 
 `coupled-run` defaults to the same resolved provider, actual model, endpoint and

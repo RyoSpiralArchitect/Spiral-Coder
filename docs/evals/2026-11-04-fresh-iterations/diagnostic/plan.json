@@ -1,0 +1,36 @@
+{
+  "r18_declaration": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "base": "49011e5af251f9dfe4b7923b3abf18e0a089de12",
+  "parent_receipt_sha256": "c09b511162962eb9044c80ee5b03b3d440e7f4a6f5879efbc76103195b3c2302",
+  "parent_session_sha256": "6dc9c9db0e68224049b8b5801affd774bc1d9260f11f2e912726326878c6ba0a",
+  "seed_sha256": "c4f59d0c84a58e050acd32b4f2cd689e72de965b4bbd0a2571702797162130e1",
+  "inventory_sha256": "6ecc96396fa6d2d981e1fe817963deff7e663e3af2fedaafedd148df1d7242a0",
+  "prompt_sha256": "1ebc61ab86f01b9fed3d6006363dbbeb9949d5ed9be476e43ea0c45a35e8dada",
+  "condition": "New public operator diagnostic follow-up to the 10/11 case. The operator knew its previous external score. No hidden output, wording, test implementation, code edits or reference patch are supplied to either role.",
+  "runtime_commit": "948a03c2f2702d01c76724531dadf0b42d4e017a",
+  "executor_sha256": "e1963f79194765c017c5979687475c38dbb0a311ead08ee7e8bdad308a93266f",
+  "model": "gpt-5.6-luna",
+  "limits": {
+    "iterations": 2,
+    "task_requests": 20,
+    "reserved_observer": 8,
+    "transport_repair": 4,
+    "chunk": 8,
+    "request_seconds": 90,
+    "wall_seconds": 1200,
+    "coder_tokens": 32768,
+    "observer_tokens": 8192
+  },
+  "maximum_task_requests": 40,
+  "maximum_wire_requests": 48,
+  "prior_public_probe": "99eaaeef7738e8b676f30bafa216a9f4645d7a913cdc796c6c5c6282aec9d154",
+  "input_scripts": {
+    "prepare.py": "dee7d1eda1a4290b4325e4292c946b3beeaf4a4105e6423405d1d3979ac7871c",
+    "probe.py": "6548f85d7c15d55ff1a6482daa9266e47c1b0549430c978aaf932ad5df5b290b"
+  },
+  "frozen_runner_parent_sha256": "8b813debde682752ef1ae68caec7a0d371414d4c6708fc1b737bf8cd6a7f8a4d",
+  "frozen_runner_sha256": "91c5e1d8779610f9f0f708743d43472503e84120463421b370275642a6d0d3b0",
+  "external_calls_at_pin": 0,
+  "assessment": "Require two new allowed paths, unchanged original guarantees, fresh four native checks and authored done, exact public no-match diagnostic and no listing writes, real packaged positive guide example, all six independent #49 gates, and a replayed composite on the original baseline. Report adaptive follow-up separately from independent fresh qualification."
+}

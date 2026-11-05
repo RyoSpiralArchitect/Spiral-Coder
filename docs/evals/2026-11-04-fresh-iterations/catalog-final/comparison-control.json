@@ -1,0 +1,56 @@
+{
+  "executor_sha256": "05cca44247f8001510be5a763914060184a4c9a29ff1ec7c40feb6f7a6a2c748",
+  "cases": [
+    {
+      "candidate": "r19_mismatch",
+      "seal_sha256": "f482d119cecdc89c3f00673b622d8df252741d16958a7f8ed7f44f81bc394c03",
+      "measurements": [
+        {
+          "form": "original",
+          "exit": 1,
+          "stdout": "listing: 1 Error: no tui replay cases selected from /private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-probe-output-pbom2gyj/r19_mismatch/.spiral-coder/tui_replay.json\n\nordinary: 1 Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"spiral-public-selection-absent-8547\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n\n",
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError\n"
+        },
+        {
+          "form": "quiet",
+          "exit": 1,
+          "stdout": "",
+          "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAssertionError: {'listing': (1, b'', b'Error: no tui replay cases selected from /private/var/folders/n1/370j5p01145gyd6lmtw62b480000gn/T/spiral-probe-output-pbom2gyj/r19_mismatch/.spiral-coder/tui_replay.json\\n'), 'ordinary': (1, b'', b'Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"spiral-public-selection-absent-8547\",\"total_cases\":13}\\nError: inspect the input spec\\'s case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\\n')}\n"
+        }
+      ],
+      "native_quiet_check": {
+        "executed": true,
+        "succeeded": false,
+        "native_result": "\u26a0 LOGIC ERROR: The code ran but produced wrong results. Re-read the relevant logic before re-running.",
+        "purposefully_stopped_after_action": true,
+        "external_requests": 0
+      }
+    },
+    {
+      "candidate": "r21_match",
+      "seal_sha256": "33b5682af32e178c6f1942aab398a3c98372a08e12b31b0a19999accc14fbd73",
+      "measurements": [
+        {
+          "form": "original",
+          "exit": 0,
+          "stdout": "listing: 1 Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"spiral-public-selection-absent-8547\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n\nordinary: 1 Error: tui replay selected 0 cases; spec=\".spiral-coder/tui_replay.json\"\nError: tui-replay selection {\"available_case_ids\":[\"pane-prefs-observer-suggestion\",\"repo-map-fallback-observer-suggestion\",\"pane-prefs-observer-contract\",\"observer-bounded-file-range\",\"single-tool-rejection-observer\",\"closeout-action-rejection-observer\",\"declared-source-repair-handoff-observer\",\"observer-missing-opening-brace\"],\"filter\":\"spiral-public-selection-absent-8547\",\"total_cases\":13}\nError: inspect the input spec's case IDs and tags against the requested filter. A source-file path in the task does not imply that file exists in the replay workspace. No case or check ran.\n\n",
+          "stderr": ""
+        },
+        {
+          "form": "quiet",
+          "exit": 0,
+          "stdout": "No-match exit status, stdout and diagnostic matched.\n",
+          "stderr": ""
+        }
+      ],
+      "native_quiet_check": {
+        "executed": true,
+        "succeeded": true,
+        "native_result": "OK (exit_code: 0)",
+        "purposefully_stopped_after_action": true,
+        "external_requests": 0
+      }
+    }
+  ],
+  "external_requests": 0
+}

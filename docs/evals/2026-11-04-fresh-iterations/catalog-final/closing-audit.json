@@ -1,0 +1,27 @@
+{
+  "r21_seal": "33b5682af32e178c6f1942aab398a3c98372a08e12b31b0a19999accc14fbd73",
+  "actual_native_comparison": {
+    "command_sha256": "060fa19501eba99ea8a10983b514d6f8ac63698b7bd0a919cae19430d882188d",
+    "observed_process_exit": 0,
+    "native_succeeded": false,
+    "native_reason": "Successful public comparison printed expected child stderr containing Error markers."
+  },
+  "raw_observer_reply_sha256": [
+    "367e08c20da268a44be2ec77e72a4cf9aa7f5108fc7c66d3ba6417394c1a845b",
+    "0bcff6530caebb506b44dd7c68d036345361dd9d65e8338913f2e6bf9190bd0f"
+  ],
+  "original_coder_wires": 22,
+  "original_observer_wires": 10,
+  "task_requests": 30,
+  "wire_requests": 32,
+  "unspent_shared_requests": 2,
+  "source_and_route_working": true,
+  "installed_launcher_or_guide_delivered": false,
+  "externally_measured_no_match_parity": true,
+  "patched_runtime_retested_all_fresh": false,
+  "followup_materializer_sha256": "a3afccae973697d944705a4dffe3ddfbf90328a7888d4affcc5b365aa5e3fb61",
+  "unchanged_case_inputs_except_prompt_reporting": true,
+  "future_prompt_sha256": "89ec32ab73614e025aea715c7f98cc0d4d40d2c936bf87a83d441d0fc2b0165b",
+  "changed_required_command_count": 1,
+  "external_calls_in_postrun_controls": 0
+}

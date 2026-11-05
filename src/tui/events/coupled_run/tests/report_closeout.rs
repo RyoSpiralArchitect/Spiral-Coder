@@ -8,11 +8,16 @@ fn sse(content: serde_json::Value) -> String {
 #[tokio::test]
 async fn headless_output_limit_handoff_uses_the_same_one_report_consumer() {
     for valid in [true, false] {
-        headless_case(valid).await;
+        headless_case(valid, "", "length").await;
     }
 }
 
-async fn headless_case(valid: bool) {
+#[tokio::test]
+async fn a_transport_rejected_done_repair_returns_to_coder_for_one_native_report() {
+    headless_case(true, r#"{"summary":"first","summary":"duplicate"}"#, "stop").await;
+}
+
+async fn headless_case(valid: bool, repair_text: &str, finish_reason: &str) {
     let coder = MockServer::start();
     let observer = MockServer::start();
     let initial = coder.mock(|when, then| {
@@ -37,6 +42,9 @@ async fn headless_case(valid: bool) {
         when.method(POST).path("/chat/completions").matches(|r| !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains("Observer action repair: attempt"));
         let mut args=closeout_args();
         args["acceptance_evidence"].as_array_mut().unwrap().truncate(2);
+        if finish_reason == "stop" {
+            args["completed_acceptance"] = json!("expected an array");
+        }
         let raw=json!({"summary":"Report retained proof","suggestions":[{"kind":"done","confidence":0.95,"suggested_tool":"done","suggested_args":args}]}).to_string();
         then.status(200).header("content-type", "text/event-stream").body(sse(json!({"choices":[{"delta":{"content":raw},"finish_reason":"stop"}]})));
     });
@@ -47,7 +55,7 @@ async fn headless_case(valid: bool) {
         then.status(200)
             .header("content-type", "text/event-stream")
             .body(sse(
-                json!({"choices":[{"delta":{"content":""},"finish_reason":"length"}]}),
+                json!({"choices":[{"delta":{"content":repair_text},"finish_reason":finish_reason}]}),
             ));
     });
     let dir = tempfile::tempdir().unwrap();
@@ -92,7 +100,9 @@ async fn headless_case(valid: bool) {
                 max_requests: 10,
                 observer_reserved_requests: 3,
                 transport_repair_requests: 4,
+                iterations: 1,
                 seed_session: Some(seed),
+                follow_up_session: None,
                 without_observer: false,
                 observer: roles::ObserverArgs::default(),
                 coder_chunk_requests: Some(1),

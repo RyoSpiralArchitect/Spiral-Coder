@@ -48,3 +48,7 @@ reached an accurate final handoff but stopped earlier in implementation.
 The next scheduling question is whether the pair can recognize the four-turn
 closeout cost while implementation is still recoverable and leave a Coder
 report opportunity when work no longer fits. [R17 comparison](../README.md).
+
+The [bounded-iteration continuation](../../2026-11-03-coupled-iterations/README.md)
+resumed from this exact source and session, then independently checked
+the native closeout and the published example.

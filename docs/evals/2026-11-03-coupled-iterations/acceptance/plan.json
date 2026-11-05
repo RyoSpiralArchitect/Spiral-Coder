@@ -1,0 +1,41 @@
+{
+  "r18_declaration": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "base": "49011e5af251f9dfe4b7923b3abf18e0a089de12",
+  "parent_receipt_sha256": "5afb9128f7fb3ce17607f667daa978bfbb115d8e4bc4723ec8df05bf06dbc721",
+  "parent_session_sha256": "fdb77354919e9384904fac9281a3f887c785eb9e405951bbd19863de63cb8654",
+  "seed_sha256": "3c33427fb451b3efbf089fc13edb3118210a912c3feecd8295490ed5d1a72a3f",
+  "inventory_sha256": "4e1c9012ce4fbd22dfa3ce1c5902cf0a5645a498dee6819fc6e6fd129c9e6f99",
+  "prompt_sha256": "6dbc2a9719bd1d1736bdb56eb03b585d7c4e096735df8900069b04db93ca2bb2",
+  "condition": "new operator acceptance on the saved conversation",
+  "model": "gpt-5.6-luna",
+  "runtime_commit": "93b4201290ebf5eea74199cbdf2a2013d7a8822a",
+  "executor_sha256": "9cf3751bbb1958a9cfee474304cd7ddc6787217b08786bcabdeed700c3fa8361",
+  "limits": {
+    "iterations": 2,
+    "task_requests": 24,
+    "reserved_observer": 8,
+    "transport_repair": 4,
+    "chunk": 8,
+    "request_seconds": 90,
+    "wall_seconds": 2400,
+    "coder_tokens": 32768,
+    "observer_tokens": 8192
+  },
+  "previous_continuation_task_requests": 15,
+  "maximum_new_task_requests": 48,
+  "maximum_new_wire_requests": 56,
+  "maximum_combined_additional_task_requests": 63,
+  "maximum_combined_additional_wire_requests": 71,
+  "provider_calls_at_pin": 0,
+  "operator_feature_edits": 0,
+  "prior_example_match": false,
+  "scripts": {
+    "prepare.py": "4bb6107bead4b9ab360b28087e49fcdc846ee46d2eaceb36b9bf9bab36913f99",
+    "example.py": "645e04b1911291b747e1dcf84940f2cbe581cf0764cdf8eeb29d7b256f228934",
+    "protocol.md": "bcc4da01459aed8a3ec97c945d2001a83d1e367382f148dd4edaa243b52f3e3b"
+  },
+  "frozen_runner_parent_sha256": "8b813debde682752ef1ae68caec7a0d371414d4c6708fc1b737bf8cd6a7f8a4d",
+  "frozen_runner_sha256": "91c5e1d8779610f9f0f708743d43472503e84120463421b370275642a6d0d3b0",
+  "only_driver_change": "Use --follow-up-session instead of --seed-session."
+}

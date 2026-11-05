@@ -1,4 +1,4 @@
-//! Recover one recognized framing defect; never edit values or tool arguments.
+//! Recover bounded envelope defects while preserving authored text and tool arguments.
 use serde::Serialize;
 use serde_json::Value;
 
@@ -10,6 +10,7 @@ pub(crate) enum Recovery {
     OpeningBrace,
     OpeningBraceAndQuote,
     RepeatedIdenticalSummary,
+    SingleHandoffReference,
 }
 
 pub(super) fn object(raw: &str) -> Result<(Value, Option<Recovery>), String> {
@@ -17,7 +18,13 @@ pub(super) fn object(raw: &str) -> Result<(Value, Option<Recovery>), String> {
         return Err("structured output exceeds 64 KiB".into());
     }
     let original_error = match crate::structured_output::object(raw) {
-        Ok(parsed) => return Ok((parsed.value, None)),
+        Ok(parsed) => {
+            let mut value = parsed.value;
+            let recovered = parsed.prefix.trim().is_empty()
+                && parsed.suffix.trim().is_empty()
+                && single_handoff_reference(&mut value);
+            return Ok((value, recovered.then_some(Recovery::SingleHandoffReference)));
+        }
         Err(error) => error,
     };
     // The first field must be an exact known envelope key, at the start of the
@@ -61,6 +68,43 @@ pub(super) fn object(raw: &str) -> Result<(Value, Option<Recovery>), String> {
         }
     }
     Err(original_error)
+}
+
+// Only a no-tool clarification may express its one advisory reference as a
+// string. Preserve the exact text; do not coerce fields on executable advice.
+fn single_handoff_reference(value: &mut serde_json::Value) -> bool {
+    use serde_json::Value;
+    if value["response_contract"]["required"] != false {
+        return false;
+    }
+    let Some(suggestions) = value.get_mut("suggestions").and_then(Value::as_array_mut) else {
+        return false;
+    };
+    let [entry] = suggestions.as_mut_slice() else {
+        return false;
+    };
+    if entry["kind"] != "clarify"
+        || !entry["reason"]
+            .as_str()
+            .is_some_and(|s| !s.trim().is_empty())
+        || entry.get("suggested_tool") != Some(&Value::Null)
+        || !entry["suggested_args"]
+            .as_object()
+            .is_some_and(|args| args.is_empty())
+    {
+        return false;
+    }
+    let Some(reference) = entry.get_mut("based_on") else {
+        return false;
+    };
+    if !reference
+        .as_str()
+        .is_some_and(|text| !text.trim().is_empty() && text.chars().count() <= 800)
+    {
+        return false;
+    }
+    *reference = Value::Array(vec![reference.take()]);
+    true
 }
 
 #[cfg(test)]
@@ -153,5 +197,52 @@ mod tests {
         assert!(response.issue.is_some());
         assert!(response.hint.is_none());
         assert!(response.response_contract.is_none());
+    }
+}
+
+#[cfg(test)]
+mod handoff_reference_tests {
+    use super::*;
+    use serde_json::{json, Value};
+
+    #[test]
+    fn actual_scalar_handoff_references_retain_their_text_and_only_advisory_authority() {
+        let samples: Vec<String> = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/observer-handoff/single-reference.json"
+        ))
+        .unwrap();
+        for sample in samples {
+            let original: Value = serde_json::from_str(&sample).unwrap();
+            let reference = original["suggestions"][0]["based_on"].clone();
+            let (parsed, repair) = object(&sample).unwrap();
+            assert_eq!(repair, Some(Recovery::SingleHandoffReference));
+            let mut expected = original.clone();
+            expected["suggestions"][0]["based_on"] = json!([reference]);
+            assert_eq!(parsed, expected);
+            assert_eq!(super::super::transport_issue_for_raw(&sample), None);
+            assert_eq!(super::super::validation_issue_for_raw(&sample), None);
+            let mut rejected = vec![];
+            let mut tool = original.clone();
+            tool["suggestions"][0]["suggested_tool"] = json!("done");
+            rejected.push(tool);
+            let mut required = original.clone();
+            required["response_contract"]["required"] = json!(true);
+            rejected.push(required);
+            let mut mapped = original.clone();
+            mapped["suggestions"][0]["based_on"] = json!({"task_horizon":true});
+            rejected.push(mapped);
+            let mut multiple = original.clone();
+            multiple["suggestions"]
+                .as_array_mut()
+                .unwrap()
+                .push(original["suggestions"][0].clone());
+            rejected.push(multiple);
+            let mut empty_reason = original.clone();
+            empty_reason["suggestions"][0]["reason"] = json!("");
+            rejected.push(empty_reason);
+            for raw in rejected {
+                assert!(super::super::transport_issue_for_raw(&raw.to_string()).is_some());
+            }
+        }
     }
 }

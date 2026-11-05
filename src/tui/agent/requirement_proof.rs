@@ -3,7 +3,7 @@
 use anyhow::{ensure, Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -87,8 +87,82 @@ pub(crate) struct Status {
     pub declared: bool,
     pub pending: Vec<String>,
     pub pending_baselines: Vec<String>,
+    #[serde(skip)]
+    baseline_receipts: BTreeMap<String, String>,
     pub pending_artifact_paths: Vec<String>,
     requirements: Vec<Value>,
+}
+
+/// Optimistic count under the one-call contract. Diagnosis and additional repairs can cost more.
+#[derive(Debug, Serialize)]
+pub(crate) struct DeliveryFloor {
+    artifact_edits: usize,
+    final_checks: usize,
+    authored_reports: usize,
+    pub minimum_coder_requests: usize,
+}
+
+impl Status {
+    pub(crate) fn new_test_baselines(
+        &self,
+        messages: &[Value],
+        evidence: &super::evidence_packet::ExecutionPacket,
+        workspace: &str,
+        old_calls: &BTreeSet<String>,
+    ) -> BTreeSet<String> {
+        if self.baseline_receipts.is_empty() {
+            return BTreeSet::new();
+        }
+        let counted: BTreeSet<_> = crate::task_origin::current_task_messages(messages)
+            .iter()
+            .filter(|m| super::report_counts::failed_tests_at(m, workspace))
+            .filter_map(|m| m["tool_call_id"].as_str())
+            .collect();
+        // A second failure of the same check is not a second reproduction.
+        let historical: BTreeSet<_> = evidence
+            .actions
+            .iter()
+            .filter(|a| {
+                a.tool == "exec"
+                    && a.executed == Some(true)
+                    && a.succeeded == Some(false)
+                    && old_calls.contains(&a.call_id)
+                    && counted.contains(a.call_id.as_str())
+            })
+            .filter_map(|a| a.arguments["command"].as_str())
+            .collect();
+        self.baseline_receipts
+            .iter()
+            .filter(|(cmd, id)| counted.contains(id.as_str()) && !historical.contains(cmd.as_str()))
+            .map(|(cmd, _)| cmd.clone())
+            .collect()
+    }
+
+    pub(super) fn delivery_floor(
+        &self,
+        required: &[String],
+        pending: &[String],
+    ) -> Option<DeliveryFloor> {
+        if !self.declared {
+            return None;
+        }
+        let artifact_edits = self.pending_artifact_paths.len();
+        let final_checks = if artifact_edits == 0 {
+            pending.len()
+        } else {
+            required
+                .iter()
+                .chain(pending)
+                .collect::<BTreeSet<_>>()
+                .len()
+        };
+        Some(DeliveryFloor {
+            artifact_edits,
+            final_checks,
+            authored_reports: 1,
+            minimum_coder_requests: artifact_edits + final_checks + 1,
+        })
+    }
 }
 
 // Only a standalone block in the original human task is authoritative. Quoted
@@ -217,9 +291,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
             return Status {
                 declared: true,
                 pending: vec![format!("Invalid task requirements: {error}")],
-                pending_baselines: vec![],
-                pending_artifact_paths: vec![],
-                requirements: vec![],
+                ..Status::default()
             }
         }
     };
@@ -278,7 +350,11 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                 });
                 // The correlated outcome is parsed before the advisory result
                 // is shortened; diagnostic prefixes may exceed that text cap.
-                if !baseline.is_some_and(|a| a.succeeded == Some(false)) {
+                if let Some(receipt) = baseline.filter(|a| a.succeeded == Some(false)) {
+                    status
+                        .baseline_receipts
+                        .insert(check.command.clone(), receipt.call_id.clone());
+                } else {
                     if !status.pending_baselines.contains(&check.command) {
                         status.pending_baselines.push(check.command.clone());
                     }
@@ -546,5 +622,39 @@ mod tests {
             json!({"role":"assistant","content":root()}),
         ];
         assert!(!project(&messages, None).declared);
+    }
+}
+
+#[cfg(test)]
+mod delivery_tests {
+    use super::*;
+
+    #[test]
+    fn pending_artifacts_require_rechecking_even_previously_passing_commands() {
+        let mut status = Status {
+            declared: true,
+            pending_artifact_paths: vec!["guide.md".into()],
+            ..Default::default()
+        };
+        let checks = vec!["visible".into(), "stock".into(), "stock".into()];
+        let pending = vec!["stock".into()];
+        assert_eq!(
+            status
+                .delivery_floor(&checks, &pending)
+                .unwrap()
+                .minimum_coder_requests,
+            4
+        );
+        status.pending_artifact_paths.clear();
+        assert_eq!(
+            status
+                .delivery_floor(&checks, &pending)
+                .unwrap()
+                .minimum_coder_requests,
+            2
+        );
+        assert!(Status::default()
+            .delivery_floor(&checks, &pending)
+            .is_none());
     }
 }

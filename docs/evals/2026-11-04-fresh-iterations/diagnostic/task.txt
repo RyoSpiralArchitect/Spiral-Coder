@@ -1,0 +1,13 @@
+Repair one operator-facing bug in the existing TUI replay catalog. When an ordinary replay and the read-only listing receive the same spec, root and a filter with no matches, both fail but the catalog discards the ordinary diagnostic. Compare the two public CLI entry points on a temporary project with the checked-in spec and a filter that matches nothing. For the ordinary replay, use an explicit output directory outside the project. Use the existing replay implementation as the behavioral reference. Keep listing read-only, preserve the existing stdout/stderr contract, all successful listing behavior, the guide and installed entry point. Keep the change small.
+
+Add a regression test through the actual CLI for this case. The test should compare to the ordinary replay using the same inputs and check that the listing leaves the project unchanged. Avoid hard-coded text or case IDs from a test fixture. Keep the existing tests and original replay implementation intact. Use temporary directories for test output.
+
+Allowed paths only:
+- src/tui_replay/catalog.rs
+- tests/tui_replay_catalog.rs
+
+After the final edit, run each of the four declared checks separately. Identify the paths actually changed in this task and the measured outcomes in the final report. Distinguish your own checks from any independent assessment.
+
+<task_requirements>
+{"version":1,"requirements":[{"id":"public-diagnostic","description":"Repair the catalog error path and add a CLI regression test for selection parity and read-only behavior.","artifacts":[{"path":"src/tui_replay/catalog.rs","kind":"source"},{"path":"tests/tui_replay_catalog.rs","kind":"test"}],"checks":[{"command":"cargo fmt --all -- --check"},{"command":"cargo test --locked --test tui_replay_catalog -q"},{"command":"python3 -S -m unittest -v scripts.catalog_visible"},{"command":"cargo test --locked --bin spiral-coder -q"}]}]}
+</task_requirements>

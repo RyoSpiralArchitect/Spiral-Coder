@@ -1,0 +1,32 @@
+{
+  "base": "49011e5af251f9dfe4b7923b3abf18e0a089de12",
+  "r18_declaration": "3c79e5142804101147138e6ccbc1526595f7ca7909e9c697ac3615af56ff5c95",
+  "r18_seal": "a3ed30f83e58b33b70854c1004595e35bed8b9f0d1cfaaefb12587efafbcf06c",
+  "parent_receipt_sha256": "c932e8d005482a85d06c068bdaae7ab695661687b08621e784667e1a26cf6c91",
+  "parent_session_sha256": "b837590fbb4abb64d78d40df41be22dcd4a009ce5ed652d35cc217a3d0d1e96f",
+  "inventory_sha256": "ec7cb60d046893e4453ebae5a9680c934e6e6eb3c1fbeb436b6e17602d325669",
+  "seed_sha256": "40a99ed03df2031c103a45a9ade0cb8dfc7f7ab4bf783b304b8ef73bd07b89b5",
+  "prompt_sha256": "152a8b1b1d9baae6d9d170c3b923c81d8df54df37fe91c80360b82e8173694c1",
+  "preserved_regression_sha256": "8b15f7248d6c8d40faeb72631f7e972247659ec10b7636c882b8ccb63ffca2be",
+  "condition": "One assisted production acceptance task on the previous model-authored case. Public CLI help and a public implementation pointer supplied by the operator. Original test assertions frozen. No hidden probe, output wording, answer patch or source edit supplied. Stop after the terminal outcome.",
+  "model": "gpt-5.6-luna",
+  "runtime_commit": "9afe97928b72d774242a161f64a6762753e9eec0",
+  "executor_sha256": "e300996790a30dc0a59f2ec1a2749bb306f56e37c0862a02a8657eed45fe72b2",
+  "limits": {
+    "iterations": 2,
+    "task_requests": 20,
+    "reserved_observer": 8,
+    "transport_repair": 4,
+    "chunk": 8,
+    "request_seconds": 90,
+    "wall_seconds": 1200,
+    "coder_tokens": 32768,
+    "observer_tokens": 8192
+  },
+  "maximum_task_requests": 40,
+  "maximum_wire_requests": 48,
+  "seed_script_sha256": "68a8ca25c38da3d7095d0cf9b9d6a7cd45d0b3f25f9dd6091dd49e00b6099f2f",
+  "frozen_runner_sha256": "91c5e1d8779610f9f0f708743d43472503e84120463421b370275642a6d0d3b0",
+  "external_calls_at_pin": 0,
+  "require": "Both allowed paths, preserved test hash, all four fresh native checks before authored done, exact public diagnostic, read-only listing, measured packaged guide, original six independent gates, exact composite replay; do not credit this directed continuation as a fresh single episode."
+}

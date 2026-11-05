@@ -52,7 +52,9 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
             max_requests: 4,
             transport_repair_requests: 0,
             observer_reserved_requests: 0,
+            iterations: 1,
             seed_session: None,
+            follow_up_session: None,
             without_observer: false,
             observer: roles::ObserverArgs::default(),
             coder_chunk_requests: None,
@@ -90,3 +92,5 @@ async fn failed_first_stream_retains_incomplete_report_and_spent_request() {
     assert!(trace.contains("streamed tool-call id changed"));
     assert!(trace.contains(r#""ok":false"#));
 }
+
+mod iterations;

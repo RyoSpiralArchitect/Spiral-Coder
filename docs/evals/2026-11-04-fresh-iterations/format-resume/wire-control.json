@@ -1,0 +1,41 @@
+{
+  "canonical_workspace": {
+    "old": {
+      "binary_sha256": "e300996790a30dc0a59f2ec1a2749bb306f56e37c0862a02a8657eed45fe72b2",
+      "seed_sha256": "57fc0c4dac3f4f6bc3fce0ee0dfb9fef6e71e52cd0d227f6ffabf4d146ee25a0",
+      "original_call": "call_apVTdmmgY6QeZ0TmwIgnTzgJ",
+      "attempted_command": "cargo fmt --all",
+      "executed": false,
+      "succeeded": false,
+      "native_result": "GOVERNOR BLOCKED\ncwd: <workspace>\n\n[Recovery Gate] stage=diagnose\nYou are in recovery mode. Do NOT start new work yet.\nRequired now: inspect the reported error and read its relevant file or diagnostic evidence. Use directory or repository diagnostics only if the failure concerns location or repository state. Do not repeat the failing check until its cause has been investigated.\n\ntool:\nexec\narguments:\n{\"command\": \"cargo fmt --all\", \"cwd\": \"<workspace>\"}",
+      "wires": [
+        "coder",
+        "coder"
+      ],
+      "external_requests": 0,
+      "actual_changed_paths": [],
+      "formatted_regression_sha256": "df0cc569f77d5225e101001f14e0bf27b6aca215eda8818e8b330aab9b4fa5fc"
+    },
+    "new": {
+      "binary_sha256": "77070fef6719b49e251d24a3572ce0c9af3f7fc31e643b505b90c65ae7c8d075",
+      "seed_sha256": "57fc0c4dac3f4f6bc3fce0ee0dfb9fef6e71e52cd0d227f6ffabf4d146ee25a0",
+      "original_call": "call_apVTdmmgY6QeZ0TmwIgnTzgJ",
+      "attempted_command": "cargo fmt --all",
+      "executed": true,
+      "succeeded": true,
+      "native_result": "OK (exit_code: 0)\ncwd: <workspace>",
+      "wires": [
+        "coder",
+        "coder"
+      ],
+      "external_requests": 0,
+      "actual_changed_paths": [
+        "src/tui_replay/catalog.rs",
+        "tests/tui_replay_catalog.rs"
+      ],
+      "formatted_regression_sha256": "8b15f7248d6c8d40faeb72631f7e972247659ec10b7636c882b8ccb63ffca2be"
+    }
+  },
+  "preliminary_noncanonical_temp_path": "Both executors blocked the local action when stored paths used the /var alias and the native workspace was canonicalized to /private/var. The matched control uses native canonical paths throughout.",
+  "replay_code_sha256": "c9a1d0ac7c9aa587d85eeb93529664a7314d19b32c6cfbf06cc997b2797537c7"
+}
