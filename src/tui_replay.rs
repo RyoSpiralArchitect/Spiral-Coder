@@ -75,9 +75,29 @@ pub struct TuiReplayCase {
     pub tags: Vec<String>,
     #[serde(default)]
     pub coder_messages: Vec<TuiReplayMessage>,
+    /// Raw OpenAI-style messages for a resumed `coder_session`. Projected
+    /// obligations and execution evidence come from this transcript, not from
+    /// `coder_messages` (which drives the visible panes and target selection).
+    #[serde(default)]
+    pub session_messages: Vec<Value>,
+    /// Seed a bounded task budget before the packet is built. Spent requests
+    /// are recorded as completed task-charged receipts for the given role.
+    #[serde(default)]
+    pub work_budget: Option<TuiReplayBudget>,
     pub observer_response: Value,
     #[serde(default)]
     pub checks: Vec<TuiReplayCheck>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TuiReplayBudget {
+    pub request_limit: usize,
+    #[serde(default)]
+    pub observer_reserved_requests: usize,
+    #[serde(default)]
+    pub spent_coder_requests: usize,
+    #[serde(default)]
+    pub spent_observer_requests: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -105,6 +125,8 @@ pub enum TuiReplayCheck {
     ObserverContains { value: String },
     CoderSystemContains { value: String },
     TargetMessageContains { value: String },
+    ObserverPromptContains { value: String },
+    ObserverToolContains { value: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -279,6 +301,38 @@ fn run_case(
         .iter()
         .map(|m| Message::new_complete(map_role(m.role), m.content.clone()))
         .collect();
+    if !case.session_messages.is_empty() {
+        app.coder_session = Some(crate::agent_session::AgentSession::new(
+            Some(root.clone()),
+            None,
+            Some(root.clone()),
+            None,
+            case.session_messages.clone(),
+        ));
+    }
+    if let Some(budget) = &case.work_budget {
+        app.work_budget =
+            crate::work_budget::WorkBudget::new(case.prompt.trim_end(), budget.request_limit, None);
+        app.work_budget
+            .configure(crate::work_budget::BudgetPolicy {
+                observer_reserved_requests: budget.observer_reserved_requests,
+                ..Default::default()
+            })
+            .map_err(|e| input_error(anyhow::anyhow!(e)))?;
+        for (role, count) in [
+            ("coder", budget.spent_coder_requests),
+            ("observer", budget.spent_observer_requests),
+        ] {
+            for _ in 0..count {
+                let request = app
+                    .work_budget
+                    .begin(role, &serde_json::json!({}))
+                    .map_err(|e| input_error(anyhow::anyhow!(e)))?;
+                request.status("completed");
+                drop(request);
+            }
+        }
+    }
 
     let (selector, reason_hint) = resolve_selector_and_reason(&app, case).map_err(input_error)?;
     let observer_response_raw =
@@ -503,6 +557,25 @@ fn evaluate_checks(
                     detail: format!("matched={matched}"),
                 }
             }
+            TuiReplayCheck::ObserverPromptContains { value } => {
+                let matched = outcome.observer_prompt.contains(value);
+                TuiReplayCheckResult {
+                    label: format!("observer_prompt_contains:{value}"),
+                    ok: matched,
+                    detail: format!("matched={matched}"),
+                }
+            }
+            TuiReplayCheck::ObserverToolContains { value } => {
+                let matched = outcome
+                    .observer_tool_messages
+                    .iter()
+                    .any(|m| m.contains(value));
+                TuiReplayCheckResult {
+                    label: format!("observer_tool_contains:{value}"),
+                    ok: matched,
+                    detail: format!("matched={matched}"),
+                }
+            }
             TuiReplayCheck::TargetMessageContains { value } => {
                 let matched = outcome
                     .target_message_id
@@ -620,6 +693,22 @@ fn validate_case(case: &TuiReplayCase) -> Result<()> {
             "tui replay case '{}' requires at least one top-level checks entry; nested replay.checks or observer_response.checks is not part of the case schema.\n\
 Error: tui-replay checks must be a nonempty array on the case object, alongside id, coder_messages and observer_response. Move misplaced intended assertions to that array; an empty checks array does not repair this error. Preserve existing cases and assertions.",
             case.id
+        );
+    }
+    if let Some(budget) = &case.work_budget {
+        anyhow::ensure!(
+            budget.request_limit >= 1,
+            "tui replay case '{}': work_budget.request_limit must be at least 1",
+            case.id
+        );
+        let spent = budget
+            .spent_coder_requests
+            .saturating_add(budget.spent_observer_requests);
+        anyhow::ensure!(
+            spent <= budget.request_limit,
+            "tui replay case '{}': spent requests ({spent}) exceed work_budget.request_limit ({})",
+            case.id,
+            budget.request_limit
         );
     }
     Ok(())

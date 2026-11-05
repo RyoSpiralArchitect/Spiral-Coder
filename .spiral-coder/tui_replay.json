@@ -721,6 +721,175 @@
           "value": "check_id=required-1"
         }
       ]
+    },
+    {
+          "id": "observer-exhausted-coder-handoff",
+          "prompt": "Locate the replay catalog writer and describe its role. Do not edit anything.",
+          "tags": [ "tui", "observer", "handoff", "budget", "exhausted" ],
+          "work_budget": {
+                "request_limit": 2,
+                "observer_reserved_requests": 1,
+                "spent_coder_requests": 1
+          },
+          "coder_messages": [
+                {
+                      "role": "user",
+                      "content": "Locate the replay catalog writer and describe its role. Do not edit anything."
+                },
+                {
+                      "role": "assistant",
+                      "content": "[GOVERNOR BLOCK]\\nMissing <think>\\nNeed one concrete next step before broadening search."
+                }
+          ],
+          "observer_response": {
+                "summary": "No Coder request remains; preserve the unfinished read for a later iteration.",
+                "response_contract": {
+                      "required": false,
+                      "focus_axes": [ "correctness" ],
+                      "note": "no coder turn is available to act on advice"
+                },
+                "suggestions": [
+                      {
+                            "kind": "clarify",
+                            "reason": "The next iteration should read src/tui_replay.rs first.",
+                            "confidence": 0.9,
+                            "suggested_tool": null,
+                            "suggested_args": {},
+                            "based_on": [ "task_obligations", "work_budget" ]
+                      }
+                ]
+          },
+          "checks": [
+                {
+                      "kind": "observer_prompt_contains",
+                      "value": "Write a handoff"
+                },
+                {
+                      "kind": "suggestion_parsed"
+                },
+                {
+                      "kind": "hint_not_queued"
+                }
+          ]
+    },
+    {
+          "id": "observer-exhausted-coder-rejects-tool-advice",
+          "prompt": "Locate the replay catalog writer and describe its role. Do not edit anything.",
+          "tags": [ "tui", "observer", "handoff", "budget", "exhausted", "invalid" ],
+          "work_budget": {
+                "request_limit": 2,
+                "observer_reserved_requests": 1,
+                "spent_coder_requests": 1
+          },
+          "coder_messages": [
+                {
+                      "role": "user",
+                      "content": "Locate the replay catalog writer and describe its role. Do not edit anything."
+                },
+                {
+                      "role": "assistant",
+                      "content": "[GOVERNOR BLOCK]\\nMissing <think>\\nNeed one concrete next step before broadening search."
+                }
+          ],
+          "observer_response": {
+                "summary": "Read the catalog writer next.",
+                "suggestions": [
+                      {
+                            "kind": "read",
+                            "reason": "inspect the writer",
+                            "confidence": 0.95,
+                            "suggested_tool": "read_file",
+                            "suggested_args": {
+                                  "path": "src/tui_replay.rs"
+                            },
+                            "based_on": [ "task_obligations" ]
+                      }
+                ]
+          },
+          "checks": [
+                {
+                      "kind": "observer_prompt_contains",
+                      "value": "Write a handoff"
+                },
+                {
+                      "kind": "suggestion_parsed"
+                },
+                {
+                      "kind": "hint_not_queued"
+                },
+                {
+                      "kind": "observer_tool_contains",
+                      "value": "No Coder request remains"
+                }
+          ]
+    },
+    {
+          "id": "observer-report-only-handoff",
+          "prompt": "Document the replay catalog in guide.md.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"docs\",\"description\":\"document the catalog\",\"artifacts\":[{\"path\":\"guide.md\",\"kind\":\"documentation\"}]}]}\n</task_requirements>",
+          "tags": [
+                "tui",
+                "observer",
+                "handoff",
+                "budget",
+                "report-only",
+                "task-requirements"
+          ],
+          "work_budget": {
+                "request_limit": 3,
+                "observer_reserved_requests": 1,
+                "spent_coder_requests": 1
+          },
+          "session_messages": [
+                {
+                      "role": "user",
+                      "content": "Document the replay catalog in guide.md.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"docs\",\"description\":\"document the catalog\",\"artifacts\":[{\"path\":\"guide.md\",\"kind\":\"documentation\"}]}]}\n</task_requirements>"
+                },
+                {
+                      "role": "assistant",
+                      "content": "<plan>\ngoal: document the catalog\nsteps: write guide.md\n</plan>"
+                }
+          ],
+          "coder_messages": [
+                {
+                      "role": "user",
+                      "content": "Document the replay catalog in guide.md.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"docs\",\"description\":\"document the catalog\",\"artifacts\":[{\"path\":\"guide.md\",\"kind\":\"documentation\"}]}]}\n</task_requirements>"
+                },
+                {
+                      "role": "assistant",
+                      "content": "[GOVERNOR BLOCK]\\nMissing <think>\\nNeed one concrete next step before broadening search."
+                }
+          ],
+          "observer_response": {
+                "summary": "One Coder request remains for its own report; a tool suggestion cannot consume it.",
+                "suggestions": [
+                      {
+                            "kind": "read",
+                            "reason": "confirm guide.md exists",
+                            "confidence": 0.9,
+                            "suggested_tool": "read_file",
+                            "suggested_args": {
+                                  "path": "guide.md"
+                            },
+                            "based_on": [ "task_obligations" ]
+                      }
+                ]
+          },
+          "checks": [
+                {
+                      "kind": "observer_prompt_contains",
+                      "value": "Write a handoff"
+                },
+                {
+                      "kind": "suggestion_parsed"
+                },
+                {
+                      "kind": "hint_not_queued"
+                },
+                {
+                      "kind": "observer_tool_contains",
+                      "value": "final report turn"
+                }
+          ]
     }
   ]
 }
