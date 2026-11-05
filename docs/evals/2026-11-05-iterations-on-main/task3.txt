@@ -1,0 +1,4 @@
+Build a small string utility package: create strutil.py with functions reverse(s) and is_palindrome(s), create test_strutil.py with unittests covering both, create README.md describing usage, then run python3 -m unittest test_strutil.
+<task_requirements>
+{"version":1,"requirements":[{"id":"pkg","description":"string utility package","artifacts":[{"path":"strutil.py","kind":"source"},{"path":"test_strutil.py","kind":"source"},{"path":"README.md","kind":"documentation"}],"checks":[{"command":"python3 -m unittest test_strutil"}]}]}
+</task_requirements>

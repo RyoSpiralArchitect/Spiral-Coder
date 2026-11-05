@@ -322,6 +322,10 @@ The [coupled work-loop contract](coupled-work-loop.md) documents native same-tas
 
 The [2026-10-21 coupled task proof / JSON / Web readout](evals/2026-10-21-task-proof-json-web/README.md) records two adaptive three-model rounds, their unchanged oracles and remaining failure modes.
 
+The [2026-11-05 iterations on merged main](evals/2026-11-05-iterations-on-main/README.md)
+runs three live bounded chains covering the completed, no-progress and
+two-iteration stop paths on post-merge code.
+
 ## Read-only replay catalog
 
 Use `spiral tui-replay-list` to inspect replay cases without executing them. For

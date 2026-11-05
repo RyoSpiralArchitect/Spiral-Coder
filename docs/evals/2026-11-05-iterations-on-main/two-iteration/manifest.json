@@ -1,0 +1,50 @@
+{
+  "active_iteration": null,
+  "completed": true,
+  "iterations": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "README.md",
+          "strutil.py",
+          "test_strutil.py"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1793855158486-97216-1",
+      "task_requests": 6,
+      "termination": "blocked",
+      "wire_requests": 6
+    },
+    {
+      "completed": true,
+      "directory": "iteration-02",
+      "iteration": 2,
+      "parent_task_id": "task-1793855158486-97216-1",
+      "progress": {
+        "changed_files": [],
+        "newly_verified": [
+          "python3 -m unittest test_strutil"
+        ],
+        "user_refusal": false
+      },
+      "task_id": "task-1793855182993-97216-3",
+      "task_requests": 2,
+      "termination": "completed",
+      "wire_requests": 2
+    }
+  ],
+  "max_iterations": 3,
+  "max_task_requests": 18,
+  "max_task_requests_per_iteration": 6,
+  "max_wire_requests": 24,
+  "stop_reason": "completed",
+  "task_requests": 8,
+  "version": 1,
+  "wire_requests": 8
+}
