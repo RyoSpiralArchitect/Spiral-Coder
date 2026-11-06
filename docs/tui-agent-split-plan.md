@@ -229,6 +229,49 @@ Notes:
 - `super::` paths inside moved code that referred to `agent`-level modules now
   use `super::super::`.
 
+## Fourth wave: provider_compat/followup_requirements sub-splits and deeper agent.rs extraction
+
+`provider_compat.rs` and `followup_requirements.rs` were subdivided:
+
+- `provider_compat/mistral_tool_calls.rs` — Mistral name-embedded and nested
+  payload normalization plus observation-tool classification
+- `provider_compat/block_rescue.rs` — synthetic plan/think/impact/evidence
+  block synthesis and missing-block rescue turns
+- `provider_compat/tests.rs`
+- `followup_requirements/transforms.rs` — followup patch synthesis and
+  file-specific literal transforms
+- `followup_requirements/evidence.rs` — followup satisfaction and successful
+  literal mutation tracking
+- `followup_requirements/tests.rs`
+
+`agent.rs` itself dropped from ~13.4k to ~8.1k lines by extracting:
+
+- `telemetry.rs` — autosave/telemetry emitters and blocked-tool exchange
+- `repo_map_hints.rs` — repo-map fallback banners, hint builders, and
+  search-file tool-call rewriting
+- `realize.rs` — realize-on-demand preset/config/latent-plan machinery
+  (`RealizePreset` stays reachable at its old path via `pub use`)
+- `prompt_setup.rs` — tool schema defs, base system prompt, capability
+  addons, and loop constants (`pub` tool defs re-exported)
+- `output_compaction.rs` — truncation, token estimates, message pruning,
+  exec output building, pwd/path helpers
+- `protocol_state.rs` — typed block/state structs (`PlanBlock`, `ThinkBlock`,
+  `ImpactBlock`, `EvidenceBlock`, `TaskContract`, instruction resolver,
+  assumption ledger, `WorkingMemory`, `GoalDelta`, `StrategyChange`, ...)
+- `state_prompts.rs` — working-memory/task-contract/verification prompt
+  builders and plan validation
+- `evidence_collect.rs` — observation evidence collection, evidence-block
+  validation, acceptance reference resolution, successful-command collectors
+- `block_parsers.rs` — tag block extraction, plan/think/reflection parsers,
+  pseudo tool-call block text
+- `plan_governor.rs` — plan adoption/validation, reflection/governor prompt
+  state, local-action intent detection
+- command canonicalization helpers were appended to `governor_signals.rs`
+
+What remains in `agent.rs` is essentially the `run_agentic` /
+`run_agentic_json` orchestration loop plus `AgenticStartState` /
+`AgenticEndState` — the intended item-5 `loop.rs` shape.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:

@@ -5,7 +5,7 @@ use crate::streaming::ToolCallData;
 use serde_json::Value;
 use std::collections::BTreeMap;
 
-pub(super) struct ReadObservation {
+pub(crate) struct ReadObservation {
     pub(super) body: String,
     pub(super) snapshot: Option<String>,
 }

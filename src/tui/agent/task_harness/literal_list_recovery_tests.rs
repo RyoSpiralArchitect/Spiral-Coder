@@ -1,5 +1,3 @@
-use super::*;
-
 use super::synthesize_list_member_insertion;
 
 #[test]
