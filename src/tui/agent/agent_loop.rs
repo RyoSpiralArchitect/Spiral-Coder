@@ -4856,7 +4856,7 @@ Execute this minimal action instead: {}",
                 step_label_for_turn: step_label_for_turn.as_deref(),
                 next_action_for_turn,
             };
-            match tool_dispatch::run_done(&mut done_ctx, &tc).await? {
+            match done_dispatch::run_done(&mut done_ctx, &tc).await? {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }
@@ -5033,7 +5033,7 @@ Execute this minimal action instead: {}",
 
         // ── File tools: read_file / write_file / patch_file ────────────────
         if matches!(tc.name.as_str(), "read_file" | "write_file" | "patch_file") {
-            match tool_dispatch::run_file_tools(&mut tool_ctx, &tc).await? {
+            match file_tool_dispatch::run_file_tools(&mut tool_ctx, &tc).await? {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }
@@ -5043,7 +5043,7 @@ Execute this minimal action instead: {}",
             return Err(anyhow!("unknown tool: {}", tc.name));
         }
 
-        match tool_dispatch::run_exec(&mut tool_ctx, &tc).await? {
+        match exec_dispatch::run_exec(&mut tool_ctx, &tc).await? {
             tool_dispatch::ToolFlow::Break => break,
             tool_dispatch::ToolFlow::Continue => {}
         }

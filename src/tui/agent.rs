@@ -140,6 +140,9 @@ mod report_repair;
 use crate::cargo_inputs::{Probe as CargoInputProbe, Receipt as CargoInputReceipt};
 #[cfg(test)]
 use automatic_test::run as run_test_cmd;
+mod done_dispatch;
+mod exec_dispatch;
+mod file_tool_dispatch;
 pub(crate) mod iteration_handoff;
 mod observer_handoff;
 mod report_surface;

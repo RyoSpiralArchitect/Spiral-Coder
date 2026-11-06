@@ -296,9 +296,27 @@ Landed since:
   `create_or_reemit_checkpoint`, `inject_setup_context` (working-directory
   note, project context, AGENTS.md injection), and `has_system_prefix`.
 
-Remaining inside-loop target: the rest of the setup prologue (~40
-loop-scoped bindings — needs a `LoopSetup` state struct) and per-iteration
-phase helpers for the tool-dispatch block.
+- `loop_setup.rs` — `LoopSetup::init` also owns the rest of the setup
+  prologue (~40 loop-scoped bindings: task contract inference, resume-state
+  restoration, initial governor/telemetry emissions). `run_agentic_json`
+  destructures the struct back into identical locals so the loop body is
+  unchanged.
+- `tool_dispatch.rs` — `ToolDispatchCtx` (borrowed loop state) + `ToolFlow`
+  (continue/break mapping) + the apply_diff and observation-tool handlers
+  (`run_apply_diff`, `run_list_dir`, `run_glob`, `run_search_files`) plus
+  shared helpers (`governor_emit`, `complete_done`,
+  `read_only_iter_cap_finalize`, `apply_diagnostic_transition`).
+- `file_tool_dispatch.rs` — `run_file_tools` (read_file / write_file /
+  patch_file incl. cache, approval, hash/auto-test, read-only finalize).
+- `done_dispatch.rs` — `run_done` (focus-pending pre-gate plus all four
+  done-gate blocks and the acceptance/final-handoff path).
+- `exec_dispatch.rs` — `run_exec` (git landmines, repeat-command guard,
+  approval, cwd tracking, proof recording, reflection trigger).
+
+Remaining inside-loop targets: the pre-dispatch phases — provider
+streaming/response parsing (~770 lines), reflection enforcement
+(~1.7k lines), and the coercion/gate section between the done and
+apply_diff dispatches.
 
 ## Quality gate for each extraction
 
