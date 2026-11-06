@@ -172,6 +172,33 @@ Reason:
 This order minimizes risk because the first two already have strong eval/replay
 pressure and the clearest ownership boundaries.
 
+## Status: first wave complete, second wave landed
+
+All first-wave targets above now exist as modules under `src/tui/agent/`
+(`done_gate`, `read_only`, `provider_compat`, `memory`, `task_harness`,
+`meta_harness`, `evaluator_loop`, `session_bridge`, `harness_evolution`, plus
+many more). `agent.rs` remains the orchestration entrypoint planned as item 5.
+
+Second-wave extractions completed:
+
+- `src/tui/agent/tests.rs` — the large inline `#[cfg(test)] mod tests` block
+  (~4.2k lines) now lives beside the other `agent/` test modules.
+- `src/tui/agent/verification.rs` — `VerificationLevel`/`ExecKind`/`ErrorClass`,
+  verification-requirement prompts, exec-kind/verify-level classification,
+  error signatures, known-failure hints, goal-check order/runner/tracker, and
+  exec-output parsing. `exec_may_mutate_for_evaluation` stays reachable at its
+  previous `crate::tui::agent::` path via a `pub(crate) use` re-export.
+- `src/tui/agent/git_guard.rs` — embedded-repo landmine detection
+  (`should_block_git_landmines`), `.git` discovery helpers, and git checkpoint
+  utilities (`git_create_checkpoint`, `run_git_cmd`).
+- `src/tui/agent/governor_signals.rs` — text/command signature normalization
+  (`command_sig`, `blocked_tool_call_signature`), blocked-tool fingerprinting,
+  and missing `<plan>/<think>/<gate>` governor-block detection
+  (`consecutive_missing_*` helpers).
+
+These were extracted with `pub(super)` visibility and `use super::*;` so call
+sites in `agent.rs` and sibling modules resolve unchanged.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:
