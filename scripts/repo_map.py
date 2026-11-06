@@ -704,6 +704,7 @@ def score_file(
         "path_component_exact": 0.0,
         "path_component_fuzzy": 0.0,
         "path_alignment_bonus": 0.0,
+        "basename_coverage_bonus": 0.0,
         "import_exact": 0.0,
         "import_partial": 0.0,
         "lexeme_exact": 0.0,
@@ -825,6 +826,12 @@ def score_file(
             feature_scores[name] += float(value)
     if is_pathish_query and len(path_hits) >= 2:
         feature_scores["path_alignment_bonus"] = float(len(path_hits) * len(path_hits)) * 2.0
+    # A query that covers the whole basename is naming this file specifically;
+    # do not let sibling files in the same directory outrank it.
+    basename_terms = normalize_terms(entry["path"].rsplit("/", 1)[-1].replace(".", " "))
+    covered_or_hit = covered_terms | {h.split("->")[-1] for h in path_hits}
+    if len(basename_terms) >= 2 and all(t in covered_or_hit for t in basename_terms):
+        feature_scores["basename_coverage_bonus"] = 20.0
     coverage_bonus = float(len(covered_terms)) * 2.5
     feature_scores["coverage_bonus"] = coverage_bonus
     score = (
@@ -833,6 +840,7 @@ def score_file(
         + feature_scores["path_component_exact"]
         + feature_scores["path_component_fuzzy"]
         + feature_scores["path_alignment_bonus"]
+        + feature_scores["basename_coverage_bonus"]
         + feature_scores["import_exact"]
         + feature_scores["import_partial"]
         + feature_scores["lexeme_exact"]

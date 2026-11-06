@@ -103,6 +103,8 @@ fn rustfmt_diff(
     let mut section = None;
     let mut saw_header = false;
     for line in output.lines() {
+        let line = strip_ansi_escapes(line);
+        let line = line.as_str();
         if let Some(header) = line.strip_prefix("Diff in ") {
             let (path, row) = header
                 .strip_suffix(':')
@@ -112,7 +114,7 @@ fn rustfmt_diff(
                 return Err(());
             }
             let path = workspace_file(path, root_path, root).ok_or(())?;
-            section = Some((path, line));
+            section = Some((path, line.to_string()));
             saw_header = true;
         } else if first_changed.is_none() && line.starts_with(['+', '-']) {
             first_changed = section.take();
@@ -121,7 +123,7 @@ fn rustfmt_diff(
     match first_changed {
         Some((path, line)) => Ok(Some((
             path,
-            super::super::failure_diagnostics::recovery_summary(output, Some(line)),
+            super::super::failure_diagnostics::recovery_summary(output, Some(line.as_str())),
         ))),
         None if saw_header => Err(()),
         None => Ok(None),
@@ -144,6 +146,32 @@ fn rust_location(line: &str) -> Option<&str> {
 fn python_location(line: &str) -> Option<&str> {
     let (path, rest) = line.strip_prefix("File \"")?.split_once("\", line ")?;
     positive_number(rest.split(',').next()?).then_some(path)
+}
+
+// rustfmt >= 1.9 emits ANSI color sequences even when stdout is piped.
+fn strip_ansi_escapes(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\u{1b}' {
+            match chars.next() {
+                Some('[') => {
+                    for c in chars.by_ref() {
+                        if c.is_ascii_alphabetic() {
+                            break;
+                        }
+                    }
+                }
+                Some('(') | Some(')') => {
+                    chars.next();
+                }
+                _ => {}
+            }
+        } else {
+            out.push(ch);
+        }
+    }
+    out
 }
 
 fn positive_number(value: &str) -> bool {
