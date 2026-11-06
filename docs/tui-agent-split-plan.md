@@ -199,6 +199,36 @@ Second-wave extractions completed:
 These were extracted with `pub(super)` visibility and `use super::*;` so call
 sites in `agent.rs` and sibling modules resolve unchanged.
 
+## Third wave: sub-splitting the large extracted modules
+
+The largest first-wave modules have been subdivided further:
+
+- `src/tui/agent/task_harness.rs` (~5.0k lines -> ~400) keeps the `TaskLane` /
+  `ArtifactMode` / `TaskHarness` core plus lane coercion glue, and now owns:
+  - `task_harness/benchmark_plan.rs` — benchmark-plan approval detection,
+    required-check bookkeeping, plan tool-call coercion/synthesis
+  - `task_harness/fix_existing.rs` — fix-existing/repo-goal mutation coercion
+    and repair, blocked-mutation validation, focus inference, observation
+    history, literal member patch synthesis
+  - `task_harness/scaffold_status.rs` — repo scaffold status inference and the
+    next-scaffold-tool-call planner
+  - `task_harness/tests.rs` + `task_harness/literal_list_recovery_tests.rs` —
+    the inline test modules (~2.3k lines) moved beside the code they cover
+- `src/tui/agent/done_gate.rs` (~2.7k lines -> ~830) keeps criterion/evidence
+  scoring and acceptance validation, and now owns:
+  - `done_gate/action_closeout.rs` — verified-action done preference, mutation
+    path inference, repo scaffold artifact inference, and the verified-action
+    auto-finalize/rescue/closeout surface
+  - `done_gate/tests.rs` — the inline test module
+
+Notes:
+
+- Items that must stay reachable at the old `super::task_harness::X` /
+  `super::done_gate::X` paths are `pub(crate)` in the new submodules and
+  re-exported with `pub(super) use self::<module>::*`.
+- `super::` paths inside moved code that referred to `agent`-level modules now
+  use `super::super::`.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:
