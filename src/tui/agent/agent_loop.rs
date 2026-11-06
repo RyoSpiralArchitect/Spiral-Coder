@@ -5363,28 +5363,53 @@ Required now: run `{command}`.\n{verification_status}"
             })
         {
             state = AgentState::Recovery;
-            emit_governor_block(
-                GovernorEmit {
-                    tx: &tx,
-                    messages: &mut messages,
-                    autosaver: &autosaver,
-                    tool_root_abs: &tool_root_abs,
-                    checkpoint: &checkpoint,
-                    cur_cwd: &cur_cwd,
-                    pending_system_hint: &mut pending_system_hint,
+            let _ = tx
+                .send(StreamToken::Delta(format!(
+                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                )))
+                .await;
+
+            let cwd_label = cur_cwd
+                .as_deref()
+                .or(tool_root_abs.as_deref())
+                .unwrap_or("(workspace root)")
+                .to_string();
+            let tool_output = inject_cwd(
+                &format!(
+                    "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
+                    tc.name, tc.arguments
+                ),
+                &format!("cwd: {cwd_label}"),
+                None,
+            );
+
+            messages.push(json!({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": tool_output,
+            }));
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+
+            pending_system_hint = Some(block);
+            let _ = tx
+                .send(StreamToken::GovernorState(build_governor_state(
                     state,
-                    recovery: &recovery,
-                    mem: &mem,
+                    &recovery,
+                    &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
                     last_verify_ok_step,
-                    last_reflection: last_reflection.as_ref(),
-                },
-                block,
-                &tc,
-                None,
-            )
-            .await;
+                    last_reflection.as_ref(),
+                )))
+                .await;
             continue;
         }
 
@@ -6899,28 +6924,57 @@ Action required: obtain a complete read of current contents before write_file. F
         if let Some(block) = should_block_git_landmines(&command, tool_root_abs.as_deref()) {
             state = AgentState::Recovery;
             recovery.on_exec_result(ExecKind::Action, None, false);
-            emit_governor_block(
-                GovernorEmit {
-                    tx: &tx,
-                    messages: &mut messages,
-                    autosaver: &autosaver,
-                    tool_root_abs: &tool_root_abs,
-                    checkpoint: &checkpoint,
-                    cur_cwd: &cur_cwd,
-                    pending_system_hint: &mut pending_system_hint,
+            let _ = tx
+                .send(StreamToken::Delta(format!(
+                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+                )))
+                .await;
+
+            let cwd_line = format!("cwd: {cwd_used_label}");
+            let tool_output = inject_cwd(
+                &format!("GOVERNOR BLOCKED\n\n{block}\n\ncommand:\n{command}"),
+                &cwd_line,
+                cwd_note.as_deref(),
+            );
+
+            messages.push(json!({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": tool_output,
+            }));
+            autosave_best_effort(
+                &autosaver,
+                &tx,
+                tool_root_abs.as_deref(),
+                checkpoint.as_deref(),
+                cur_cwd.as_deref(),
+                &messages,
+            )
+            .await;
+
+            // Update memory so repeating the same blocked command triggers stronger hints.
+            let _ = mem.on_tool_result(&command, "", &block, 1);
+            last_exec_step = Some(this_step);
+            pending_system_hint = Some(block);
+            let _ = tx
+                .send(StreamToken::GovernorState(build_governor_state(
                     state,
-                    recovery: &recovery,
-                    mem: &mem,
+                    &recovery,
+                    &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
                     last_verify_ok_step,
-                    last_reflection: last_reflection.as_ref(),
-                },
-                block,
-                &tc,
-                None,
-            )
-            .await;
+                    last_reflection.as_ref(),
+                )))
+                .await;
+
+            if iter + 1 == max_iters {
+                let _ = tx
+                    .send(StreamToken::Delta(format!(
+                        "\n[agent] iteration cap ({max_iters}) reached.\n"
+                    )))
+                    .await;
+            }
             continue;
         }
 
