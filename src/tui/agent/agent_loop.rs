@@ -5251,310 +5251,10 @@ Required now: run `{command}`.\n{verification_status}"
             continue;
         }
 
-        if tc.name.as_str() == "apply_diff" {
-            let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
-            let path = args["path"].as_str().unwrap_or("").to_string();
-            let diff = args["diff"].as_str().unwrap_or("").to_string();
-
-            let _ = tx
-                .send(StreamToken::Delta(format!("\n\n[APPLY_DIFF] {path}\n")))
-                .await;
-            let _ = tx.send(StreamToken::ToolCall(tc.clone())).await;
-
-            let base = tool_root_abs.as_deref();
-            let mut rejected_by_user = false;
-
-            // B — capture old content for diff anchoring
-            let old_for_cache = base.and_then(|b| {
-                crate::file_tools::resolve_safe_path(&path, Some(b))
-                    .ok()
-                    .and_then(|abs| std::fs::read_to_string(&abs).ok())
-            });
-
-            let preview = truncate_preview(&diff, 2800, 140);
-            let approval = approver
-                .approve(ApprovalRequest::Edit {
-                    action: "apply_diff".to_string(),
-                    path: path.clone(),
-                    preview,
-                })
-                .await?;
-            let mut cargo_inputs = None;
-            let (mut result, is_error) = if approval == ApprovalOutcome::Approved {
-                crate::file_tools::tool_apply_diff(&path, &diff, base)
-            } else {
-                rejected_by_user = true;
-                (
-                    format!(
-                        "REJECTED BY USER\naction: apply_diff\npath: {path}\n(no changes applied)"
-                    ),
-                    true,
-                )
-            };
-
-            // Invalidate file cache on success + auto-test
-            let changed = crate::execution_evidence::file_edit_succeeded("apply_diff", &result);
-            if changed {
-                let cache_key = crate::file_tools::resolve_safe_path(&path, base)
-                    .ok()
-                    .map(|p| p.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| path.clone());
-                file_cache.remove(&cache_key);
-                let before_hash = old_for_cache.as_deref().map(hash_text);
-                // Seed cache with new content + hash verification
-                if let Ok(abs) = crate::file_tools::resolve_safe_path(&path, base) {
-                    if let Ok(new_content) = std::fs::read_to_string(&abs) {
-                        let after_hash = hash_text(&new_content);
-                        match before_hash {
-                            Some(bh) => result.push_str(&format!(
-                                "\n[hash] before={} after={}",
-                                fmt_hash(bh),
-                                fmt_hash(after_hash)
-                            )),
-                            None => {
-                                result.push_str(&format!("\n[hash] after={}", fmt_hash(after_hash)))
-                            }
-                        }
-                        file_cache.insert(cache_key, new_content);
-                    }
-                }
-                // A — auto-run tests
-                if let Some(ref cmd) = test_cmd {
-                    if let Some(ref root) = tool_root_abs {
-                        let test_out =
-                            automatic_test::observed(cmd, root, &messages, &mut cargo_inputs).await;
-                        result.push_str(&test_out);
-                    }
-                }
-            }
-
-            recovery.focus.record_result(
-                &tc,
-                &result,
-                tool_root_abs.as_deref(),
-                test_cmd.as_deref(),
-                &exec_verification_context,
-            );
-            let automatic_test =
-                crate::execution_evidence::auto_test_outcome("apply_diff", &result);
-            let verified =
-                !is_error && automatic_test == crate::execution_evidence::AutoTestOutcome::Passed;
-            let verified_level = if verified {
-                configured_test_cmd_verification_level(test_cmd.as_deref())
-            } else {
-                None
-            };
-            if is_error {
-                recovery.on_fix_result(false, None);
-            } else if changed {
-                exec_proof::record_file_result(
-                    exec_proof::FileProofResult {
-                        name: "apply_diff",
-                        content: &result,
-                        test_cmd: test_cmd.as_deref(),
-                    },
-                    this_step,
-                    &mut last_mutation_step,
-                    &mut last_build_verify_ok_step,
-                    &mut last_behavioral_verify_ok_step,
-                );
-                last_verify_ok_step = effective_verify_ok_step(
-                    required_verification,
-                    last_build_verify_ok_step,
-                    last_behavioral_verify_ok_step,
-                );
-                mem.on_file_result(&tc.name, &result, test_cmd.as_deref());
-                recovery.on_successful_edit(automatic_test, verified_level);
-            }
-
-            edit_failures.on_result(&tc, &result, &exec_verification_context);
-            file_tool_consec_failures = edit_failures.count();
-            let first_line = result.lines().next().unwrap_or("").to_string();
-            if is_error {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT_FILE_ERR] {first_line}\n"
-                    )))
-                    .await;
-                state = AgentState::Recovery;
-                if !rejected_by_user {
-                    pending_system_hint = Some(format!("apply_diff error: {first_line}"));
-                    if let Some(reason) = edit_failures.reflection_reason() {
-                        reflection_required = Some(reason);
-                    }
-                } else {
-                    pending_system_hint = Some(
-                        "The user rejected the edit. Choose a safer alternative or ask again with a smaller change."
-                            .to_string(),
-                    );
-                }
-            } else {
-                let _ = tx
-                    .send(StreamToken::Delta(format!("[RESULT_FILE] {first_line}\n")))
-                    .await;
-                state = if recovery.in_recovery() {
-                    AgentState::Recovery
-                } else {
-                    AgentState::Planning
-                };
-                pending_system_hint = if automatic_test
-                    == crate::execution_evidence::AutoTestOutcome::Failed
-                {
-                    Some(recovery::AUTO_TEST_FAILURE_HINT.to_string())
-                } else if recovery.stage == Some(RecoveryStage::Verify) {
-                    Some(format!(
-                        "Recovery stage=verify: {}",
-                        verification_requirement_hint(required_verification, test_cmd.as_deref())
-                    ))
-                } else {
-                    None
-                };
-                if changed {
-                    update_working_memory_after_non_exec(
-                        &mut working_mem,
-                        "apply_diff",
-                        verified,
-                        step_label_for_turn.as_deref(),
-                        next_action_for_turn,
-                        test_cmd.as_deref(),
-                    );
-                    assumption_ledger.refresh_confirmations(&working_mem);
-                    let path_level = verification_level_for_mutation_path(path.as_str());
-                    if path_level > path_required_verification {
-                        path_required_verification = path_level;
-                        required_verification =
-                            intent_required_verification.max(path_required_verification);
-                        recovery.required_verification = required_verification;
-                        last_verify_ok_step = effective_verify_ok_step(
-                            required_verification,
-                            last_build_verify_ok_step,
-                            last_behavioral_verify_ok_step,
-                        );
-                        if recovery.stage == Some(RecoveryStage::Verify) {
-                            pending_system_hint = Some(format!(
-                                "Recovery stage=verify: {}",
-                                verification_requirement_hint(
-                                    required_verification,
-                                    test_cmd.as_deref()
-                                )
-                            ));
-                        }
-                    }
-                    impact_required = Some(format!(
-                        "successful mutation via apply_diff: {}",
-                        compact_one_line(path.as_str(), 80)
-                    ));
-                }
-            }
-
-            if is_error {
-                reflection_required = Some(
-                    pending_system_hint
-                        .clone()
-                        .unwrap_or_else(|| "apply_diff failed".to_string()),
-                );
-                reflection_trigger_sig = tool_call_action_sig(&tc);
-            }
-
-            let history_result = if is_error {
-                result.clone()
-            } else {
-                compact_success_tool_result_for_history("apply_diff", &result)
-            };
-            messages.push(CargoInputReceipt::attach(
-                cargo_inputs,
-                recovery.focus.tool_message(&tc, history_result),
-            ));
-            if changed && !root_read_only {
-                if let Some(hint) = build_fix_stage_progress_hint(
-                    task_harness,
-                    &messages,
-                    recovery.stage,
-                    test_cmd.as_deref(),
-                ) {
-                    pending_system_hint = Some(hint);
-                }
-            }
-            if !is_error && root_read_only {
-                if let Some(plan) = active_plan.as_ref() {
-                    if iter + 1 == max_iters {
-                        if let Some(final_text) = build_read_only_iteration_cap_final_answer(
-                            &root_user_text,
-                            plan,
-                            &observation_evidence,
-                            &messages,
-                            &working_mem,
-                        ) {
-                            task_outcome.finalized(&final_text);
-                            state = AgentState::Done;
-                            messages
-                                .push(json!({"role": "assistant", "content": final_text.clone()}));
-                            autosave_best_effort(
-                                &autosaver,
-                                &tx,
-                                tool_root_abs.as_deref(),
-                                checkpoint.as_deref(),
-                                cur_cwd.as_deref(),
-                                &messages,
-                            )
-                            .await;
-                            let _ = tx
-                                .send(StreamToken::GovernorState(build_governor_state(
-                                    state,
-                                    &recovery,
-                                    &mem,
-                                    file_tool_consec_failures,
-                                    last_mutation_step,
-                                    last_verify_ok_step,
-                                    last_reflection.as_ref(),
-                                )))
-                                .await;
-                            let _ = tx
-                                .send(StreamToken::Delta(format!(
-                                    "\n[agent] iteration cap reached; auto-finalized read-only inspection.\n\n{final_text}\n"
-                                )))
-                                .await;
-                            break;
-                        }
-                    } else if let Some(hint) = build_read_only_completion_hint(
-                        &root_user_text,
-                        plan,
-                        &observation_evidence,
-                        &messages,
-                        &working_mem,
-                    ) {
-                        pending_system_hint = Some(hint);
-                    }
-                }
-            }
-            autosave_best_effort(
-                &autosaver,
-                &tx,
-                tool_root_abs.as_deref(),
-                checkpoint.as_deref(),
-                cur_cwd.as_deref(),
-                &messages,
-            )
-            .await;
-            let _ = tx
-                .send(StreamToken::GovernorState(build_governor_state(
-                    state,
-                    &recovery,
-                    &mem,
-                    file_tool_consec_failures,
-                    last_mutation_step,
-                    last_verify_ok_step,
-                    last_reflection.as_ref(),
-                )))
-                .await;
-            continue;
-        }
-
-        // ── glob tool ─────────────────────────────────────────────────────
-        // ── list_dir tool ────────────────────────────────────────────────────
-        let mut observe_ctx = tool_dispatch::ObserveToolCtx {
+        let mut tool_ctx = tool_dispatch::ToolDispatchCtx {
             tx: &tx,
             autosaver: &autosaver,
+            approver,
             tool_root_abs: &tool_root_abs,
             checkpoint: &checkpoint,
             cur_cwd: &cur_cwd,
@@ -5566,36 +5266,56 @@ Required now: run `{command}`.\n{verification_status}"
             working_mem: &mut working_mem,
             assumption_ledger: &mut assumption_ledger,
             task_outcome: &mut task_outcome,
-            mem: &mem,
-            file_tool_consec_failures,
-            last_mutation_step,
-            last_verify_ok_step,
+            mem: &mut mem,
+            file_cache: &mut file_cache,
+            edit_failures: &mut edit_failures,
+            file_tool_consec_failures: &mut file_tool_consec_failures,
+            last_mutation_step: &mut last_mutation_step,
+            last_build_verify_ok_step: &mut last_build_verify_ok_step,
+            last_behavioral_verify_ok_step: &mut last_behavioral_verify_ok_step,
+            last_verify_ok_step: &mut last_verify_ok_step,
             last_reflection: &last_reflection,
+            reflection_required: &mut reflection_required,
+            reflection_trigger_sig: &mut reflection_trigger_sig,
+            impact_required: &mut impact_required,
+            intent_required_verification: &mut intent_required_verification,
+            path_required_verification: &mut path_required_verification,
+            required_verification: &mut required_verification,
+            exec_verification_context: &exec_verification_context,
             root_read_only,
             task_harness,
             active_plan: &active_plan,
             iter,
             max_iters,
+            this_step,
             root_user_text: &root_user_text,
-            required_verification,
             test_cmd: test_cmd.as_deref(),
             step_label_for_turn: step_label_for_turn.as_deref(),
             next_action_for_turn,
         };
+        if tc.name.as_str() == "apply_diff" {
+            match tool_dispatch::run_apply_diff(&mut tool_ctx, &tc).await? {
+                tool_dispatch::ToolFlow::Break => break,
+                tool_dispatch::ToolFlow::Continue => continue,
+            }
+        }
+
+        // ── glob tool ─────────────────────────────────────────────────────
+        // ── list_dir tool ────────────────────────────────────────────────────
         if tc.name.as_str() == "list_dir" {
-            match tool_dispatch::run_list_dir(&mut observe_ctx, &tc).await? {
+            match tool_dispatch::run_list_dir(&mut tool_ctx, &tc).await? {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }
         }
         if tc.name.as_str() == "glob" {
-            match tool_dispatch::run_glob(&mut observe_ctx, &tc).await? {
+            match tool_dispatch::run_glob(&mut tool_ctx, &tc).await? {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }
         }
         if tc.name.as_str() == "search_files" {
-            match tool_dispatch::run_search_files(&mut observe_ctx, &tc).await? {
+            match tool_dispatch::run_search_files(&mut tool_ctx, &tc).await? {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }
