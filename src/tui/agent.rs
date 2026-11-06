@@ -77,6 +77,7 @@ mod final_handoff;
 mod final_instructions;
 mod followup_requirements;
 mod git_guard;
+mod governor_emit;
 mod governor_signals;
 mod harness_evolution;
 mod impact_recovery;
@@ -179,6 +180,7 @@ use self::followup_requirements::{
     required_existing_followup_no_tool_hint,
 };
 use self::git_guard::*;
+use self::governor_emit::*;
 use self::governor_signals::*;
 pub(crate) use self::harness_evolution::{
     overlay_path_for_root as harness_evolution_overlay_path_for_root,
@@ -2721,40 +2723,32 @@ Execute only the new minimal action: {}",
                                         &task_contract,
                                     );
 
-                                    let _ = tx
-                                        .send(StreamToken::Delta(format!(
-                                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                        )))
-                                        .await;
+                                    emit_governor_block(
+                                        GovernorEmit {
+                                            tx: &tx,
+                                            messages: &mut messages,
+                                            autosaver: &autosaver,
 
-                                    push_blocked_tool_exchange(
-                                        &mut messages,
-                                        &assistant_text_clean,
-                                        tc,
-                                        &block,
-                                    );
-                                    autosave_best_effort(
-                                        &autosaver,
-                                        &tx,
-                                        tool_root_abs.as_deref(),
-                                        checkpoint.as_deref(),
-                                        cur_cwd.as_deref(),
-                                        &messages,
-                                    )
-                                    .await;
+                                            tool_root_abs: &tool_root_abs,
+                                            checkpoint: &checkpoint,
+                                            cur_cwd: &cur_cwd,
 
-                                    pending_system_hint = Some(block);
-                                    let _ = tx
-                                        .send(StreamToken::GovernorState(build_governor_state(
+                                            pending_system_hint: &mut pending_system_hint,
                                             state,
-                                            &recovery,
-                                            &mem,
+                                            recovery: &recovery,
+
+                                            mem: &mem,
                                             file_tool_consec_failures,
                                             last_mutation_step,
+
                                             last_verify_ok_step,
-                                            last_reflection.as_ref(),
-                                        )))
-                                        .await;
+                                            last_reflection: last_reflection.as_ref(),
+                                        },
+                                        block,
+                                        &tc,
+                                        Some(&assistant_text_clean),
+                                    )
+                                    .await;
                                     continue;
                                 }
                             } else {
@@ -2767,40 +2761,32 @@ Execute only the new minimal action: {}",
                                     &task_contract,
                                 );
 
-                                let _ = tx
-                                    .send(StreamToken::Delta(format!(
-                                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                    )))
-                                    .await;
+                                emit_governor_block(
+                                    GovernorEmit {
+                                        tx: &tx,
+                                        messages: &mut messages,
+                                        autosaver: &autosaver,
 
-                                push_blocked_tool_exchange(
-                                    &mut messages,
-                                    &assistant_text_clean,
-                                    tc,
-                                    &block,
-                                );
-                                autosave_best_effort(
-                                    &autosaver,
-                                    &tx,
-                                    tool_root_abs.as_deref(),
-                                    checkpoint.as_deref(),
-                                    cur_cwd.as_deref(),
-                                    &messages,
-                                )
-                                .await;
+                                        tool_root_abs: &tool_root_abs,
+                                        checkpoint: &checkpoint,
+                                        cur_cwd: &cur_cwd,
 
-                                pending_system_hint = Some(block);
-                                let _ = tx
-                                    .send(StreamToken::GovernorState(build_governor_state(
+                                        pending_system_hint: &mut pending_system_hint,
                                         state,
-                                        &recovery,
-                                        &mem,
+                                        recovery: &recovery,
+
+                                        mem: &mem,
                                         file_tool_consec_failures,
                                         last_mutation_step,
+
                                         last_verify_ok_step,
-                                        last_reflection.as_ref(),
-                                    )))
-                                    .await;
+                                        last_reflection: last_reflection.as_ref(),
+                                    },
+                                    block,
+                                    &tc,
+                                    Some(&assistant_text_clean),
+                                )
+                                .await;
                                 continue;
                             }
                         } else {
@@ -2813,40 +2799,32 @@ Execute only the new minimal action: {}",
                                 &task_contract,
                             );
 
-                            let _ = tx
-                                .send(StreamToken::Delta(format!(
-                                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                )))
-                                .await;
+                            emit_governor_block(
+                                GovernorEmit {
+                                    tx: &tx,
+                                    messages: &mut messages,
+                                    autosaver: &autosaver,
 
-                            push_blocked_tool_exchange(
-                                &mut messages,
-                                &assistant_text_clean,
-                                tc,
-                                &block,
-                            );
-                            autosave_best_effort(
-                                &autosaver,
-                                &tx,
-                                tool_root_abs.as_deref(),
-                                checkpoint.as_deref(),
-                                cur_cwd.as_deref(),
-                                &messages,
-                            )
-                            .await;
+                                    tool_root_abs: &tool_root_abs,
+                                    checkpoint: &checkpoint,
+                                    cur_cwd: &cur_cwd,
 
-                            pending_system_hint = Some(block);
-                            let _ = tx
-                                .send(StreamToken::GovernorState(build_governor_state(
+                                    pending_system_hint: &mut pending_system_hint,
                                     state,
-                                    &recovery,
-                                    &mem,
+                                    recovery: &recovery,
+
+                                    mem: &mem,
                                     file_tool_consec_failures,
                                     last_mutation_step,
+
                                     last_verify_ok_step,
-                                    last_reflection.as_ref(),
-                                )))
-                                .await;
+                                    last_reflection: last_reflection.as_ref(),
+                                },
+                                block,
+                                &tc,
+                                Some(&assistant_text_clean),
+                            )
+                            .await;
                             continue;
                         }
                     } else {
@@ -2884,40 +2862,32 @@ Execute only the new minimal action: {}",
                                 recovery.stage = Some(RecoveryStage::Diagnose);
                                 let block = governor_contract::missing_plan_message();
 
-                                let _ = tx
-                                    .send(StreamToken::Delta(format!(
-                                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                    )))
-                                    .await;
+                                emit_governor_block(
+                                    GovernorEmit {
+                                        tx: &tx,
+                                        messages: &mut messages,
+                                        autosaver: &autosaver,
 
-                                push_blocked_tool_exchange(
-                                    &mut messages,
-                                    &assistant_text_clean,
-                                    tc,
-                                    &block,
-                                );
-                                autosave_best_effort(
-                                    &autosaver,
-                                    &tx,
-                                    tool_root_abs.as_deref(),
-                                    checkpoint.as_deref(),
-                                    cur_cwd.as_deref(),
-                                    &messages,
-                                )
-                                .await;
+                                        tool_root_abs: &tool_root_abs,
+                                        checkpoint: &checkpoint,
+                                        cur_cwd: &cur_cwd,
 
-                                pending_system_hint = Some(block);
-                                let _ = tx
-                                    .send(StreamToken::GovernorState(build_governor_state(
+                                        pending_system_hint: &mut pending_system_hint,
                                         state,
-                                        &recovery,
-                                        &mem,
+                                        recovery: &recovery,
+
+                                        mem: &mem,
                                         file_tool_consec_failures,
                                         last_mutation_step,
+
                                         last_verify_ok_step,
-                                        last_reflection.as_ref(),
-                                    )))
-                                    .await;
+                                        last_reflection: last_reflection.as_ref(),
+                                    },
+                                    block,
+                                    &tc,
+                                    Some(&assistant_text_clean),
+                                )
+                                .await;
                                 continue;
                             }
                         } else if let Some(rescued) = rescue_missing_plan_for_tool_turn(
@@ -2953,40 +2923,32 @@ Execute only the new minimal action: {}",
                                 recovery.stage = Some(RecoveryStage::Diagnose);
                                 let block = governor_contract::missing_plan_message();
 
-                                let _ = tx
-                                    .send(StreamToken::Delta(format!(
-                                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                    )))
-                                    .await;
+                                emit_governor_block(
+                                    GovernorEmit {
+                                        tx: &tx,
+                                        messages: &mut messages,
+                                        autosaver: &autosaver,
 
-                                push_blocked_tool_exchange(
-                                    &mut messages,
-                                    &assistant_text_clean,
-                                    tc,
-                                    &block,
-                                );
-                                autosave_best_effort(
-                                    &autosaver,
-                                    &tx,
-                                    tool_root_abs.as_deref(),
-                                    checkpoint.as_deref(),
-                                    cur_cwd.as_deref(),
-                                    &messages,
-                                )
-                                .await;
+                                        tool_root_abs: &tool_root_abs,
+                                        checkpoint: &checkpoint,
+                                        cur_cwd: &cur_cwd,
 
-                                pending_system_hint = Some(block);
-                                let _ = tx
-                                    .send(StreamToken::GovernorState(build_governor_state(
+                                        pending_system_hint: &mut pending_system_hint,
                                         state,
-                                        &recovery,
-                                        &mem,
+                                        recovery: &recovery,
+
+                                        mem: &mem,
                                         file_tool_consec_failures,
                                         last_mutation_step,
+
                                         last_verify_ok_step,
-                                        last_reflection.as_ref(),
-                                    )))
-                                    .await;
+                                        last_reflection: last_reflection.as_ref(),
+                                    },
+                                    block,
+                                    &tc,
+                                    Some(&assistant_text_clean),
+                                )
+                                .await;
                                 continue;
                             }
                         } else if matches!(cfg.provider, ProviderKind::Mistral) {
@@ -3017,40 +2979,32 @@ Execute only the new minimal action: {}",
                                     recovery.stage = Some(RecoveryStage::Diagnose);
                                     let block = governor_contract::missing_plan_message();
 
-                                    let _ = tx
-                                        .send(StreamToken::Delta(format!(
-                                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                        )))
-                                        .await;
+                                    emit_governor_block(
+                                        GovernorEmit {
+                                            tx: &tx,
+                                            messages: &mut messages,
+                                            autosaver: &autosaver,
 
-                                    push_blocked_tool_exchange(
-                                        &mut messages,
-                                        &assistant_text_clean,
-                                        tc,
-                                        &block,
-                                    );
-                                    autosave_best_effort(
-                                        &autosaver,
-                                        &tx,
-                                        tool_root_abs.as_deref(),
-                                        checkpoint.as_deref(),
-                                        cur_cwd.as_deref(),
-                                        &messages,
-                                    )
-                                    .await;
+                                            tool_root_abs: &tool_root_abs,
+                                            checkpoint: &checkpoint,
+                                            cur_cwd: &cur_cwd,
 
-                                    pending_system_hint = Some(block);
-                                    let _ = tx
-                                        .send(StreamToken::GovernorState(build_governor_state(
+                                            pending_system_hint: &mut pending_system_hint,
                                             state,
-                                            &recovery,
-                                            &mem,
+                                            recovery: &recovery,
+
+                                            mem: &mem,
                                             file_tool_consec_failures,
                                             last_mutation_step,
+
                                             last_verify_ok_step,
-                                            last_reflection.as_ref(),
-                                        )))
-                                        .await;
+                                            last_reflection: last_reflection.as_ref(),
+                                        },
+                                        block,
+                                        &tc,
+                                        Some(&assistant_text_clean),
+                                    )
+                                    .await;
                                     continue;
                                 }
                             } else {
@@ -3058,40 +3012,32 @@ Execute only the new minimal action: {}",
                                 recovery.stage = Some(RecoveryStage::Diagnose);
                                 let block = governor_contract::missing_plan_message();
 
-                                let _ = tx
-                                    .send(StreamToken::Delta(format!(
-                                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                    )))
-                                    .await;
+                                emit_governor_block(
+                                    GovernorEmit {
+                                        tx: &tx,
+                                        messages: &mut messages,
+                                        autosaver: &autosaver,
 
-                                push_blocked_tool_exchange(
-                                    &mut messages,
-                                    &assistant_text_clean,
-                                    tc,
-                                    &block,
-                                );
-                                autosave_best_effort(
-                                    &autosaver,
-                                    &tx,
-                                    tool_root_abs.as_deref(),
-                                    checkpoint.as_deref(),
-                                    cur_cwd.as_deref(),
-                                    &messages,
-                                )
-                                .await;
+                                        tool_root_abs: &tool_root_abs,
+                                        checkpoint: &checkpoint,
+                                        cur_cwd: &cur_cwd,
 
-                                pending_system_hint = Some(block);
-                                let _ = tx
-                                    .send(StreamToken::GovernorState(build_governor_state(
+                                        pending_system_hint: &mut pending_system_hint,
                                         state,
-                                        &recovery,
-                                        &mem,
+                                        recovery: &recovery,
+
+                                        mem: &mem,
                                         file_tool_consec_failures,
                                         last_mutation_step,
+
                                         last_verify_ok_step,
-                                        last_reflection.as_ref(),
-                                    )))
-                                    .await;
+                                        last_reflection: last_reflection.as_ref(),
+                                    },
+                                    block,
+                                    &tc,
+                                    Some(&assistant_text_clean),
+                                )
+                                .await;
                                 continue;
                             }
                         } else {
@@ -3099,40 +3045,32 @@ Execute only the new minimal action: {}",
                             recovery.stage = Some(RecoveryStage::Diagnose);
                             let block = governor_contract::missing_plan_message();
 
-                            let _ = tx
-                                .send(StreamToken::Delta(format!(
-                                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                )))
-                                .await;
+                            emit_governor_block(
+                                GovernorEmit {
+                                    tx: &tx,
+                                    messages: &mut messages,
+                                    autosaver: &autosaver,
 
-                            push_blocked_tool_exchange(
-                                &mut messages,
-                                &assistant_text_clean,
-                                tc,
-                                &block,
-                            );
-                            autosave_best_effort(
-                                &autosaver,
-                                &tx,
-                                tool_root_abs.as_deref(),
-                                checkpoint.as_deref(),
-                                cur_cwd.as_deref(),
-                                &messages,
-                            )
-                            .await;
+                                    tool_root_abs: &tool_root_abs,
+                                    checkpoint: &checkpoint,
+                                    cur_cwd: &cur_cwd,
 
-                            pending_system_hint = Some(block);
-                            let _ = tx
-                                .send(StreamToken::GovernorState(build_governor_state(
+                                    pending_system_hint: &mut pending_system_hint,
                                     state,
-                                    &recovery,
-                                    &mem,
+                                    recovery: &recovery,
+
+                                    mem: &mem,
                                     file_tool_consec_failures,
                                     last_mutation_step,
+
                                     last_verify_ok_step,
-                                    last_reflection.as_ref(),
-                                )))
-                                .await;
+                                    last_reflection: last_reflection.as_ref(),
+                                },
+                                block,
+                                &tc,
+                                Some(&assistant_text_clean),
+                            )
+                            .await;
                             continue;
                         }
                     }
@@ -3298,35 +3236,32 @@ Execute only the new minimal action: {}",
                     block.push_str(&hint);
                 }
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3367,35 +3302,32 @@ Execute only the new minimal action: {}",
                     recovery.stage = Some(RecoveryStage::Diagnose);
                     let block = governor_contract::missing_think_message();
 
-                    let _ = tx
-                        .send(StreamToken::Delta(format!(
-                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                        )))
-                        .await;
+                    emit_governor_block(
+                        GovernorEmit {
+                            tx: &tx,
+                            messages: &mut messages,
+                            autosaver: &autosaver,
 
-                    push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                    autosave_best_effort(
-                        &autosaver,
-                        &tx,
-                        tool_root_abs.as_deref(),
-                        checkpoint.as_deref(),
-                        cur_cwd.as_deref(),
-                        &messages,
-                    )
-                    .await;
+                            tool_root_abs: &tool_root_abs,
+                            checkpoint: &checkpoint,
+                            cur_cwd: &cur_cwd,
 
-                    pending_system_hint = Some(block);
-                    let _ = tx
-                        .send(StreamToken::GovernorState(build_governor_state(
+                            pending_system_hint: &mut pending_system_hint,
                             state,
-                            &recovery,
-                            &mem,
+                            recovery: &recovery,
+
+                            mem: &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
+
                             last_verify_ok_step,
-                            last_reflection.as_ref(),
-                        )))
-                        .await;
+                            last_reflection: last_reflection.as_ref(),
+                        },
+                        block,
+                        &tc,
+                        Some(&assistant_text_clean),
+                    )
+                    .await;
                     continue;
                 }
             };
@@ -3414,35 +3346,32 @@ Execute only the new minimal action: {}",
                 recovery.stage = Some(RecoveryStage::Diagnose);
                 let block = governor_contract::invalid_think_message(&e.to_string());
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3458,35 +3387,32 @@ Execute only the new minimal action: {}",
                     "[Assumption Ledger] {conflict}\nGather new evidence or choose a different next action before retrying."
                 );
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3495,35 +3421,32 @@ Execute only the new minimal action: {}",
                 recovery.stage = Some(RecoveryStage::Diagnose);
                 let block = conflict.render();
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3537,44 +3460,28 @@ Execute only the new minimal action: {}",
                 file_tool_consec_failures,
             ) {
                 state = AgentState::Recovery;
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
-                emit_telemetry_event(
-                    &tx,
-                    "progress_gate_blocked",
-                    json!({
-                        "lane": task_harness.lane_label(),
-                        "tool": tc.name,
-                    }),
-                )
-                .await;
-
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
-
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3582,44 +3489,28 @@ Execute only the new minimal action: {}",
                 !requirement_proof::is_pending_baseline(tc, &messages, test_cmd.as_deref())
             }) {
                 state = AgentState::Recovery;
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
-                emit_telemetry_event(
-                    &tx,
-                    "evaluator_loop_blocked",
-                    json!({
-                        "policy_id": evaluator_loop.policy_id(),
-                        "tool": tc.name,
-                    }),
-                )
-                .await;
-
-                push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
-
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    Some(&assistant_text_clean),
+                )
+                .await;
                 continue;
             }
 
@@ -3647,38 +3538,28 @@ Execute only the new minimal action: {}",
                             recovery.stage = Some(RecoveryStage::Diagnose);
                             let block =
                                 build_evidence_gate_prompt(tc, &observations, &assumption_ledger);
-                            let _ = tx
-                                .send(StreamToken::Delta(format!(
-                                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                                )))
-                                .await;
-                            push_blocked_tool_exchange(
-                                &mut messages,
-                                &assistant_text_clean,
-                                tc,
-                                &block,
-                            );
-                            autosave_best_effort(
-                                &autosaver,
-                                &tx,
-                                tool_root_abs.as_deref(),
-                                checkpoint.as_deref(),
-                                cur_cwd.as_deref(),
-                                &messages,
-                            )
-                            .await;
-                            pending_system_hint = Some(block);
-                            let _ = tx
-                                .send(StreamToken::GovernorState(build_governor_state(
+                            emit_governor_block(
+                                GovernorEmit {
+                                    tx: &tx,
+                                    messages: &mut messages,
+                                    autosaver: &autosaver,
+                                    tool_root_abs: &tool_root_abs,
+                                    checkpoint: &checkpoint,
+                                    cur_cwd: &cur_cwd,
+                                    pending_system_hint: &mut pending_system_hint,
                                     state,
-                                    &recovery,
-                                    &mem,
+                                    recovery: &recovery,
+                                    mem: &mem,
                                     file_tool_consec_failures,
                                     last_mutation_step,
                                     last_verify_ok_step,
-                                    last_reflection.as_ref(),
-                                )))
-                                .await;
+                                    last_reflection: last_reflection.as_ref(),
+                                },
+                                block,
+                                &tc,
+                                Some(&assistant_text_clean),
+                            )
+                            .await;
                             continue;
                         }
                     }
@@ -3699,33 +3580,28 @@ Execute only the new minimal action: {}",
                             block.push('\n');
                         }
                     }
-                    let _ = tx
-                        .send(StreamToken::Delta(format!(
-                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                        )))
-                        .await;
-                    push_blocked_tool_exchange(&mut messages, &assistant_text_clean, tc, &block);
-                    autosave_best_effort(
-                        &autosaver,
-                        &tx,
-                        tool_root_abs.as_deref(),
-                        checkpoint.as_deref(),
-                        cur_cwd.as_deref(),
-                        &messages,
-                    )
-                    .await;
-                    pending_system_hint = Some(block);
-                    let _ = tx
-                        .send(StreamToken::GovernorState(build_governor_state(
+                    emit_governor_block(
+                        GovernorEmit {
+                            tx: &tx,
+                            messages: &mut messages,
+                            autosaver: &autosaver,
+                            tool_root_abs: &tool_root_abs,
+                            checkpoint: &checkpoint,
+                            cur_cwd: &cur_cwd,
+                            pending_system_hint: &mut pending_system_hint,
                             state,
-                            &recovery,
-                            &mem,
+                            recovery: &recovery,
+                            mem: &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
                             last_verify_ok_step,
-                            last_reflection.as_ref(),
-                        )))
-                        .await;
+                            last_reflection: last_reflection.as_ref(),
+                        },
+                        block,
+                        &tc,
+                        Some(&assistant_text_clean),
+                    )
+                    .await;
                     continue;
                 }
             }
@@ -5584,51 +5460,32 @@ Execute this minimal action instead: {}",
                     recovery.stage = Some(RecoveryStage::Diagnose);
                     let block = build_realize_done_gate_message(latent);
 
-                    let _ = tx
-                        .send(StreamToken::Delta(format!(
-                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                        )))
-                        .await;
+                    emit_governor_block(
+                        GovernorEmit {
+                            tx: &tx,
+                            messages: &mut messages,
+                            autosaver: &autosaver,
 
-                    messages.push(json!({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": format!(
-                            "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                            tc.name, tc.arguments
-                        ),
-                    }));
-                    autosave_best_effort(
-                        &autosaver,
-                        &tx,
-                        tool_root_abs.as_deref(),
-                        checkpoint.as_deref(),
-                        cur_cwd.as_deref(),
-                        &messages,
-                    )
-                    .await;
+                            tool_root_abs: &tool_root_abs,
+                            checkpoint: &checkpoint,
+                            cur_cwd: &cur_cwd,
 
-                    pending_system_hint = Some(block);
-                    emit_realize_state(
-                        &tx,
-                        &realize_cfg,
-                        latent_plan.as_ref(),
-                        iter,
-                        latent_drift_for_prompt,
-                        &realize_metrics,
-                    )
-                    .await;
-                    let _ = tx
-                        .send(StreamToken::GovernorState(build_governor_state(
+                            pending_system_hint: &mut pending_system_hint,
                             state,
-                            &recovery,
-                            &mem,
+                            recovery: &recovery,
+
+                            mem: &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
+
                             last_verify_ok_step,
-                            last_reflection.as_ref(),
-                        )))
-                        .await;
+                            last_reflection: last_reflection.as_ref(),
+                        },
+                        block,
+                        &tc,
+                        None,
+                    )
+                    .await;
                     continue;
                 }
             }
@@ -5646,42 +5503,32 @@ Required now: {}",
                     verification_requirement_hint(required_verification, test_cmd.as_deref())
                 );
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                messages.push(json!({
-                    "role": "tool",
-                    "tool_call_id": tc.id,
-                    "content": format!(
-                        "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                        tc.name, tc.arguments
-                    ),
-                }));
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    None,
+                )
+                .await;
                 continue;
             }
 
@@ -5703,42 +5550,32 @@ Required now: {}",
 Required now: run `{command}`.\n{verification_status}"
                 );
 
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                    )))
-                    .await;
+                emit_governor_block(
+                    GovernorEmit {
+                        tx: &tx,
+                        messages: &mut messages,
+                        autosaver: &autosaver,
 
-                messages.push(json!({
-                    "role": "tool",
-                    "tool_call_id": tc.id,
-                    "content": format!(
-                        "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                        tc.name, tc.arguments
-                    ),
-                }));
-                autosave_best_effort(
-                    &autosaver,
-                    &tx,
-                    tool_root_abs.as_deref(),
-                    checkpoint.as_deref(),
-                    cur_cwd.as_deref(),
-                    &messages,
-                )
-                .await;
+                        tool_root_abs: &tool_root_abs,
+                        checkpoint: &checkpoint,
+                        cur_cwd: &cur_cwd,
 
-                pending_system_hint = Some(block);
-                let _ = tx
-                    .send(StreamToken::GovernorState(build_governor_state(
+                        pending_system_hint: &mut pending_system_hint,
                         state,
-                        &recovery,
-                        &mem,
+                        recovery: &recovery,
+
+                        mem: &mem,
                         file_tool_consec_failures,
                         last_mutation_step,
+
                         last_verify_ok_step,
-                        last_reflection.as_ref(),
-                    )))
-                    .await;
+                        last_reflection: last_reflection.as_ref(),
+                    },
+                    block,
+                    &tc,
+                    None,
+                )
+                .await;
                 continue;
             }
 
@@ -5798,42 +5635,32 @@ Required now: run `{command}`.\n{verification_status}"
                         acceptance_report::hint(done_plan, &known_acceptance_commands)
                     );
 
-                    let _ = tx
-                        .send(StreamToken::Delta(format!(
-                            "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                        )))
-                        .await;
+                    emit_governor_block(
+                        GovernorEmit {
+                            tx: &tx,
+                            messages: &mut messages,
+                            autosaver: &autosaver,
 
-                    messages.push(json!({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": format!(
-                            "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                            tc.name, tc.arguments
-                        ),
-                    }));
-                    autosave_best_effort(
-                        &autosaver,
-                        &tx,
-                        tool_root_abs.as_deref(),
-                        checkpoint.as_deref(),
-                        cur_cwd.as_deref(),
-                        &messages,
-                    )
-                    .await;
+                            tool_root_abs: &tool_root_abs,
+                            checkpoint: &checkpoint,
+                            cur_cwd: &cur_cwd,
 
-                    pending_system_hint = Some(block);
-                    let _ = tx
-                        .send(StreamToken::GovernorState(build_governor_state(
+                            pending_system_hint: &mut pending_system_hint,
                             state,
-                            &recovery,
-                            &mem,
+                            recovery: &recovery,
+
+                            mem: &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
+
                             last_verify_ok_step,
-                            last_reflection.as_ref(),
-                        )))
-                        .await;
+                            last_reflection: last_reflection.as_ref(),
+                        },
+                        block,
+                        &tc,
+                        None,
+                    )
+                    .await;
                     continue;
                 }
             };
@@ -6002,53 +5829,28 @@ Required now: run `{command}`.\n{verification_status}"
             })
         {
             state = AgentState::Recovery;
-            let _ = tx
-                .send(StreamToken::Delta(format!(
-                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                )))
-                .await;
-
-            let cwd_label = cur_cwd
-                .as_deref()
-                .or(tool_root_abs.as_deref())
-                .unwrap_or("(workspace root)")
-                .to_string();
-            let tool_output = inject_cwd(
-                &format!(
-                    "GOVERNOR BLOCKED\n\n{block}\n\ntool:\n{}\narguments:\n{}",
-                    tc.name, tc.arguments
-                ),
-                &format!("cwd: {cwd_label}"),
-                None,
-            );
-
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": tool_output,
-            }));
-            autosave_best_effort(
-                &autosaver,
-                &tx,
-                tool_root_abs.as_deref(),
-                checkpoint.as_deref(),
-                cur_cwd.as_deref(),
-                &messages,
-            )
-            .await;
-
-            pending_system_hint = Some(block);
-            let _ = tx
-                .send(StreamToken::GovernorState(build_governor_state(
+            emit_governor_block(
+                GovernorEmit {
+                    tx: &tx,
+                    messages: &mut messages,
+                    autosaver: &autosaver,
+                    tool_root_abs: &tool_root_abs,
+                    checkpoint: &checkpoint,
+                    cur_cwd: &cur_cwd,
+                    pending_system_hint: &mut pending_system_hint,
                     state,
-                    &recovery,
-                    &mem,
+                    recovery: &recovery,
+                    mem: &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
                     last_verify_ok_step,
-                    last_reflection.as_ref(),
-                )))
-                .await;
+                    last_reflection: last_reflection.as_ref(),
+                },
+                block,
+                &tc,
+                None,
+            )
+            .await;
             continue;
         }
 
@@ -7563,57 +7365,28 @@ Action required: obtain a complete read of current contents before write_file. F
         if let Some(block) = should_block_git_landmines(&command, tool_root_abs.as_deref()) {
             state = AgentState::Recovery;
             recovery.on_exec_result(ExecKind::Action, None, false);
-            let _ = tx
-                .send(StreamToken::Delta(format!(
-                    "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
-                )))
-                .await;
-
-            let cwd_line = format!("cwd: {cwd_used_label}");
-            let tool_output = inject_cwd(
-                &format!("GOVERNOR BLOCKED\n\n{block}\n\ncommand:\n{command}"),
-                &cwd_line,
-                cwd_note.as_deref(),
-            );
-
-            messages.push(json!({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": tool_output,
-            }));
-            autosave_best_effort(
-                &autosaver,
-                &tx,
-                tool_root_abs.as_deref(),
-                checkpoint.as_deref(),
-                cur_cwd.as_deref(),
-                &messages,
-            )
-            .await;
-
-            // Update memory so repeating the same blocked command triggers stronger hints.
-            let _ = mem.on_tool_result(&command, "", &block, 1);
-            last_exec_step = Some(this_step);
-            pending_system_hint = Some(block);
-            let _ = tx
-                .send(StreamToken::GovernorState(build_governor_state(
+            emit_governor_block(
+                GovernorEmit {
+                    tx: &tx,
+                    messages: &mut messages,
+                    autosaver: &autosaver,
+                    tool_root_abs: &tool_root_abs,
+                    checkpoint: &checkpoint,
+                    cur_cwd: &cur_cwd,
+                    pending_system_hint: &mut pending_system_hint,
                     state,
-                    &recovery,
-                    &mem,
+                    recovery: &recovery,
+                    mem: &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
                     last_verify_ok_step,
-                    last_reflection.as_ref(),
-                )))
-                .await;
-
-            if iter + 1 == max_iters {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "\n[agent] iteration cap ({max_iters}) reached.\n"
-                    )))
-                    .await;
-            }
+                    last_reflection: last_reflection.as_ref(),
+                },
+                block,
+                &tc,
+                None,
+            )
+            .await;
             continue;
         }
 

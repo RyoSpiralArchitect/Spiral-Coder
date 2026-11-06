@@ -272,6 +272,20 @@ What remains in `agent.rs` is essentially the `run_agentic` /
 `run_agentic_json` orchestration loop plus `AgenticStartState` /
 `AgenticEndState` — the intended item-5 `loop.rs` shape.
 
+## Fifth wave: loop-body consolidation started
+
+`agent.rs` is now ~7.9k lines, almost all of it the `run_agentic_json`
+iteration loop. The first inside-loop extraction landed:
+
+- `governor_emit.rs` — `GovernorEmit` context struct +
+  `emit_governor_block`, which absorbs the ~23 identical
+  stream/record/autosave/hint/GovernorState sequences that were inlined at
+  every governor-block callsite (~700 lines of duplication removed).
+
+Next inside-loop targets: the ~430-line setup prologue (a `LoopSetup`
+state struct), the ~110-line closeout epilogue, and per-iteration phase
+helpers for the tool-dispatch block.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:
