@@ -80,250 +80,88 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         glob_tool_def(),
         done_tool_def(&cfg.base_url),
     ]);
-    let mut state = AgentState::Planning;
-    let mut task_outcome = outcome::TaskOutcome::default();
-    let mut pending_system_hint: Option<String> = None;
-    let mut reflection_required: Option<String> = None;
-    let mut impact_required: Option<String> = None;
-    let mut reflection_trigger_sig: Option<ActionIdentity> = None;
-    let mut reflection_guard: Option<ReflectionBlock> = None;
-    let mut forced_tool_once = false;
-    let mut tool_calls_this_run: usize = 0;
-    // C — token budget guardian
-    let mut budget_warned = false;
-    // Diagnostic successes do not resolve failed edits, including after resume.
-    let edit_context = exec_verification::ExecVerificationContext::from_messages(
-        test_cmd.as_deref(),
-        &start.messages,
-    );
-    let mut edit_failures = EditFailureMemory::from_messages(&start.messages, &edit_context);
-    let mut file_tool_consec_failures = edit_failures.count();
-    if let Some(reason) = edit_failures.reflection_reason() {
-        reflection_required = Some(reason);
-    }
-    if let Some((reason, trigger)) =
-        observer_handoff::pending_exec_reflection(&start.messages, test_cmd.as_deref())
-    {
-        reflection_required = Some(reason);
-        reflection_trigger_sig = trigger;
-    }
-
-    let root_user_text = crate::task_origin::root_user_text(&start.messages).to_string();
-    let root_user_text_low = root_user_text.to_ascii_lowercase();
-    let root_read_only = is_root_read_only_observation_task(&root_user_text);
-    let task_harness = TaskHarness::infer(&root_user_text, root_read_only);
-    let exec_verification_context =
-        exec_verification::ExecVerificationContext::from_root(test_cmd.as_deref(), &root_user_text);
-    let progress_context = crate::progress_state::ProgressSaveContext::new(
-        &root_user_text,
-        task_harness.lane_label(),
-        task_harness.artifact_mode_label(),
-    );
-    let verification_contract = governor_contract::verification();
-    let wants_repo_goal = task_harness.allows_repo_goal_check()
-        && text_contains_any(&root_user_text_low, &verification_contract.goal_repo_terms);
-    let wants_test_goal =
-        text_contains_any(&root_user_text_low, &verification_contract.goal_test_terms);
-    let wants_build_goal =
-        text_contains_any(&root_user_text_low, &verification_contract.goal_build_terms);
-    let mut goal_checks = GoalCheckTracker::default();
-    let goal_wants_actions = wants_local_actions(&root_user_text);
-    let mut intent_required_verification =
-        infer_required_verification_level(&root_user_text, test_cmd.as_deref());
-    let task_contract = derive_task_contract(
-        &root_user_text,
+    let loop_setup::LoopSetup {
+        mut state,
+        mut task_outcome,
+        mut pending_system_hint,
+        mut reflection_required,
+        mut impact_required,
+        mut reflection_trigger_sig,
+        mut reflection_guard,
+        mut forced_tool_once,
+        mut tool_calls_this_run,
+        mut budget_warned,
+        mut edit_failures,
+        mut file_tool_consec_failures,
+        root_user_text,
         root_read_only,
+        task_harness,
+        exec_verification_context,
+        progress_context,
+        wants_repo_goal,
+        wants_test_goal,
+        wants_build_goal,
+        mut goal_checks,
         goal_wants_actions,
-        intent_required_verification,
-    );
-    let instruction_resolver = InstructionResolver::new(
-        task_contract.task_summary.as_str(),
-        root_read_only,
-        project_context.is_some()
-            || agents_md.is_some()
-            || has_project_rules_context(&start.messages),
-    );
-    let realize_cfg = RealizeOnDemandConfig::resolve(realize_preset);
-    let mut latent_plan: Option<LatentPlanBuffer> = None;
-    let mut realize_metrics = RealizeMetrics::default();
-
-    // Keep messages as serde_json::Value throughout to preserve tool_call_id.
-    let mut messages: Vec<serde_json::Value> = start.messages;
-    if let Some(guidance) = task_harness::benchmark_replay::guidance(&root_user_text) {
-        if !has_system_prefix(&messages, "[Replay case format]") {
-            messages.push(json!({"role":"system","content":guidance,"ui_context":true}));
-        }
-    }
-    if root_read_only && !has_system_prefix(&messages, "[Read-Only Task Contract]") {
-        let pos = messages.len().min(4);
-        messages.insert(
-            pos,
-            json!({"role":"system","content": read_only_task_addon()}),
-        );
-    }
-    let mut active_plan = plan_resume::latest_valid(&messages, |plan| {
-        validate_plan_for_task_contract(
-            plan,
-            root_read_only,
-            &task_contract,
-            &instruction_resolver,
-            &messages,
-        )
-        .is_ok()
-    });
-    if let Some(plan) = active_plan.as_ref() {
-        if let Some(level) = verification_level_from_plan(plan) {
-            intent_required_verification = level;
-        }
-    }
-    let mut path_required_verification =
-        upgrade_required_verification_from_messages(&messages, VerificationLevel::Build);
-    let mut required_verification = intent_required_verification.max(path_required_verification);
-    let mut last_reflection = last_reflection_from_messages(&messages);
-    let mut working_mem = WorkingMemory::from_messages(&messages, test_cmd.as_deref());
-    let mut assumption_ledger = AssumptionLedger::from_messages(&messages, &working_mem);
-    if let Some(plan) = active_plan.as_ref() {
-        assumption_ledger.sync_to_plan(plan);
-    }
-    assumption_ledger.refresh_confirmations(&working_mem);
-    let mut observation_evidence = collect_observation_evidence(&messages);
-    observation_evidence.merge_session_cache(start.observation_cache.as_ref());
-    sync_observation_cache_autosave(&autosaver, &observation_evidence);
-    sync_progress_context_autosave(&autosaver, progress_context.clone());
-    let session_bridge = SessionBridgeView::resolve(start.session_bridge.as_ref(), &messages);
-    let mut prompt_cache = StablePromptCache::default();
-    let mut prompted_harness_overlay_ids = std::collections::BTreeSet::new();
-    // Normalize before restoring file-localized recovery as well as tool execution.
-    let tool_root_abs = tool_root
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .and_then(absolutize_path)
-        .map(|root| {
-            std::fs::canonicalize(&root)
-                .map(|path| path.to_string_lossy().into_owned())
-                .unwrap_or(root)
-        });
-    // Rebuild loop governor memory from the existing session so resuming runs doesn't
-    // repeat the same failures from scratch.
-    let mut mem = FailureMemory::from_recent_messages(&messages, test_cmd.as_deref());
-    let mut recovery =
-        RecoveryGovernor::restore_from_session(&mem, &messages, required_verification);
-    recovery.restore_pending_edits(&edit_failures);
-    recovery.restore_focus(&messages, tool_root_abs.as_deref(), test_cmd.as_deref());
-    if recovery.in_recovery() {
-        state = AgentState::Recovery;
-    }
-    // Carry the most recent declared strategy across resume, especially if we are
-    // resuming mid-recovery after a failure.
-    if recovery.in_recovery() {
-        if let Some(ref r) = last_reflection {
-            if r.strategy_change == StrategyChange::Abandon {
-                pending_system_hint = Some(format!(
-                    "Strategy previously abandoned.\n\
-Do not retry the previous approach.\n\
-Execute only the new minimal action: {}",
-                    r.next_minimal_action.as_str()
-                ));
-            }
-        }
-    }
-    // E — done gate: require verification after mutations.
-    // Rebuild done-gate tracking from the existing session so resuming runs doesn't
-    // require re-verifying unchanged work.
-    let (
+        mut intent_required_verification,
+        task_contract,
+        instruction_resolver,
+        realize_cfg,
+        mut latent_plan,
+        mut realize_metrics,
+        mut messages,
+        mut active_plan,
+        mut path_required_verification,
+        mut required_verification,
+        mut last_reflection,
+        mut working_mem,
+        mut assumption_ledger,
+        mut observation_evidence,
+        session_bridge,
+        mut prompt_cache,
+        mut prompted_harness_overlay_ids,
+        tool_root_abs,
+        mut mem,
+        mut recovery,
         mut step_seq,
         mut last_mutation_step,
         mut last_build_verify_ok_step,
         mut last_behavioral_verify_ok_step,
         mut last_exec_step,
-    ) = restore_done_gate_from_messages(&messages, test_cmd.as_deref());
-    let mut last_verify_ok_step = effective_verify_ok_step(
-        required_verification,
-        last_build_verify_ok_step,
-        last_behavioral_verify_ok_step,
-    );
-    let last_impact_step = last_impact_step_from_messages(&messages);
-    if last_mutation_step.unwrap_or(0) > last_impact_step.unwrap_or(0) {
-        impact_required =
-            Some("recent mutation has not been evaluated for goal impact".to_string());
-    }
-    let _ = tx
-        .send(StreamToken::GovernorState(build_governor_state(
-            state,
-            &recovery,
-            &mem,
-            file_tool_consec_failures,
-            last_mutation_step,
-            last_verify_ok_step,
-            last_reflection.as_ref(),
-        )))
-        .await;
-    if realize_cfg.enabled {
-        emit_realize_state(&tx, &realize_cfg, None, 0, None, &realize_metrics).await;
-    }
-    emit_telemetry_event(
+        mut last_verify_ok_step,
+        last_impact_step,
+        mut reflection_ledger,
+        progress_state,
+        harness_promoted_overlay,
+        mut harness_evolution_queue,
+        harness_evolution_path,
+        reflection_ledger_path,
+        mut reflection_ledger_warned,
+        mut harness_evolution_warned,
+        checkpoint,
+        mut cur_cwd,
+        mut file_cache,
+        mut read_only_diagnose_streak,
+        mut read_only_diagnose_rescue_count,
+        first_action_deadline,
+        max_iters,
+        initial_handoff_steps,
+        mut observer_handoff,
+        mut blocked_terminal,
+        mut repair_extensions,
+        repair_iterations,
+    } = loop_setup::LoopSetup::init(
+        start,
         &tx,
-        "task_harness",
-        json!({
-            "lane": task_harness.lane_label(),
-            "artifact_mode": task_harness.artifact_mode_label(),
-            "read_only": root_read_only,
-        }),
-    )
-    .await;
-
-    let persisted = loop_setup::load_persisted_state(&tx, &tool_root_abs).await;
-    let mut reflection_ledger = persisted.reflection_ledger;
-    let progress_state = persisted.progress_state;
-    let harness_promoted_overlay = persisted.harness_promoted_overlay;
-    let mut harness_evolution_queue = persisted.harness_evolution_queue;
-    let harness_evolution_path = persisted.harness_evolution_path;
-    let reflection_ledger_path = persisted.reflection_ledger_path;
-    let mut reflection_ledger_warned = false;
-    let mut harness_evolution_warned = false;
-
-    let checkpoint = loop_setup::create_or_reemit_checkpoint(
-        &tx,
-        &tool_root_abs,
-        &start.checkpoint,
-        start.create_checkpoint,
-    )
-    .await;
-    loop_setup::inject_setup_context(&mut messages, &tool_root_abs, project_context, agents_md);
-
-    let mut cur_cwd: Option<String> = start.cur_cwd.clone().or_else(|| tool_root_abs.clone());
-    if let (Some(ref root), Some(ref cwd)) = (tool_root_abs.as_ref(), cur_cwd.as_ref()) {
-        if !is_within_root(cwd, root) {
-            cur_cwd = tool_root_abs.clone();
-        }
-    }
-
-    // Seed the session file early so long runs can resume even if interrupted.
-    autosave_best_effort(
+        tool_root,
+        max_iters,
+        test_cmd.as_deref(),
+        project_context,
+        agents_md,
+        realize_preset,
         &autosaver,
-        &tx,
-        tool_root_abs.as_deref(),
-        checkpoint.as_deref(),
-        cur_cwd.as_deref(),
-        &messages,
     )
     .await;
-
-    // Session-scoped file read cache.
-    // Key: canonical path string.  Invalidated on write_file / patch_file success.
-    let mut file_cache: std::collections::HashMap<String, String> =
-        std::collections::HashMap::new();
-    let mut read_only_diagnose_streak: usize = 0;
-    let mut read_only_diagnose_rescue_count: usize = 0;
-    let first_action_deadline = first_action_deadline_iters(root_read_only, goal_wants_actions);
-
-    let max_iters = max_iters.max(1).min(64);
-    let initial_handoff_steps = step_seq;
-    let mut observer_handoff = None;
-    let mut blocked_terminal = false;
-    let mut repair_extensions = 0;
-    let repair_iterations =
-        crate::work_budget::current().map_or(0, |c| c.budget.transport_remaining());
     for iter in 0..max_iters.saturating_add(repair_iterations) {
         if iter >= max_iters.saturating_add(repair_extensions)
             || crate::work_budget::current().is_some_and(|c| c.budget.slice_remaining("coder") == 0)

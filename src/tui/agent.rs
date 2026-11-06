@@ -195,7 +195,6 @@ pub(crate) use self::harness_evolution::{
     GovernorContractOverlay as HarnessGovernorContractOverlay,
     HarnessEvolutionQueue as PersistentHarnessEvolutionQueue,
 };
-use self::loop_setup::has_system_prefix;
 use self::memory::{
     canonicalize_evidence_command_with_resolution, normalize_memory_entry, normalize_path_alias,
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
