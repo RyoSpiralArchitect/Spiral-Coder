@@ -140,6 +140,9 @@ mod report_repair;
 use crate::cargo_inputs::{Probe as CargoInputProbe, Receipt as CargoInputReceipt};
 #[cfg(test)]
 use automatic_test::run as run_test_cmd;
+mod done_dispatch;
+mod exec_dispatch;
+mod file_tool_dispatch;
 pub(crate) mod iteration_handoff;
 mod observer_handoff;
 mod report_surface;
@@ -153,6 +156,7 @@ mod success_output;
 mod task_harness;
 pub(crate) mod task_obligations;
 mod telemetry;
+mod tool_dispatch;
 mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
@@ -195,7 +199,6 @@ pub(crate) use self::harness_evolution::{
     GovernorContractOverlay as HarnessGovernorContractOverlay,
     HarnessEvolutionQueue as PersistentHarnessEvolutionQueue,
 };
-use self::loop_setup::has_system_prefix;
 use self::memory::{
     canonicalize_evidence_command_with_resolution, normalize_memory_entry, normalize_path_alias,
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
