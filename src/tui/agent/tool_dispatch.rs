@@ -17,7 +17,7 @@ pub(super) struct ToolDispatchCtx<'a> {
     pub(super) approver: &'a dyn Approver,
     pub(super) tool_root_abs: &'a Option<String>,
     pub(super) checkpoint: &'a Option<String>,
-    pub(super) cur_cwd: &'a Option<String>,
+    pub(super) cur_cwd: &'a mut Option<String>,
     pub(super) messages: &'a mut Vec<serde_json::Value>,
     pub(super) observation_evidence: &'a mut ObservationEvidence,
     pub(super) recovery: &'a mut RecoveryGovernor,
@@ -34,7 +34,9 @@ pub(super) struct ToolDispatchCtx<'a> {
     pub(super) last_build_verify_ok_step: &'a mut Option<usize>,
     pub(super) last_behavioral_verify_ok_step: &'a mut Option<usize>,
     pub(super) last_verify_ok_step: &'a mut Option<usize>,
+    pub(super) last_exec_step: &'a mut Option<usize>,
     pub(super) last_reflection: &'a Option<ReflectionBlock>,
+    pub(super) reflection_guard: &'a Option<ReflectionBlock>,
     pub(super) reflection_required: &'a mut Option<String>,
     pub(super) reflection_trigger_sig: &'a mut Option<ActionIdentity>,
     pub(super) impact_required: &'a mut Option<String>,
@@ -42,6 +44,10 @@ pub(super) struct ToolDispatchCtx<'a> {
     pub(super) path_required_verification: &'a mut VerificationLevel,
     pub(super) required_verification: &'a mut VerificationLevel,
     pub(super) exec_verification_context: &'a exec_verification::ExecVerificationContext<'a>,
+    pub(super) cfg: &'a RunConfig,
+    pub(super) realize_cfg: &'a RealizeOnDemandConfig,
+    pub(super) latent_plan: &'a Option<LatentPlanBuffer>,
+    pub(super) validated_plan_for_turn: &'a Option<PlanBlock>,
     pub(super) root_read_only: bool,
     pub(super) task_harness: TaskHarness,
     pub(super) active_plan: &'a Option<PlanBlock>,
@@ -65,6 +71,26 @@ impl ToolDispatchCtx<'_> {
             self.messages,
         )
         .await;
+    }
+
+    /// Reborrowed view used by the shared GOVERNOR BLOCK emitter.
+    fn governor_emit(&mut self) -> GovernorEmit<'_> {
+        GovernorEmit {
+            tx: self.tx,
+            messages: self.messages,
+            autosaver: self.autosaver,
+            tool_root_abs: self.tool_root_abs,
+            checkpoint: self.checkpoint,
+            cur_cwd: self.cur_cwd,
+            pending_system_hint: self.pending_system_hint,
+            state: *self.state,
+            recovery: self.recovery,
+            mem: self.mem,
+            file_tool_consec_failures: *self.file_tool_consec_failures,
+            last_mutation_step: *self.last_mutation_step,
+            last_verify_ok_step: *self.last_verify_ok_step,
+            last_reflection: self.last_reflection.as_ref(),
+        }
     }
 
     async fn emit_governor_state(&self) {
@@ -1260,4 +1286,659 @@ Action required: obtain a complete read of current contents before write_file. F
             .await;
     }
     Ok(ToolFlow::Continue) // skip exec block below
+}
+
+pub(super) async fn run_done(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -> Result<ToolFlow> {
+    // A generic passing check cannot discharge a localized failed check.
+    if ctx.recovery.focus.is_pending() {
+        let block = format!(
+            "[Done Gate] {}",
+            ctx.recovery.focus.hint().unwrap_or_default()
+        );
+        ctx.messages.push(json!({"role":"tool", "tool_call_id":tc.id, "content":format!("GOVERNOR BLOCKED\n{block}")}));
+        *ctx.pending_system_hint = Some(block);
+        *ctx.state = AgentState::Recovery;
+        ctx.autosave().await;
+        return Ok(ToolFlow::Continue);
+    }
+
+    if ctx.realize_cfg.enabled {
+        if let Some(latent) = ctx.latent_plan.as_ref() {
+            *ctx.state = AgentState::Recovery;
+            ctx.recovery.stage = Some(RecoveryStage::Diagnose);
+            let block = build_realize_done_gate_message(latent);
+            emit_governor_block(ctx.governor_emit(), block, tc, None).await;
+            return Ok(ToolFlow::Continue);
+        }
+    }
+
+    let last_mutation = ctx.last_mutation_step.unwrap_or(0);
+    let last_verify_ok = ctx.last_verify_ok_step.unwrap_or(0);
+    if last_mutation > 0 && last_verify_ok < last_mutation {
+        *ctx.state = AgentState::Recovery;
+        ctx.recovery.stage = Some(RecoveryStage::Verify);
+        let block = format!(
+            "[Done Gate] Verification required before `done`.\n\
+Last mutation step: {last_mutation}\n\
+Last verification step: {last_verify_ok}\n\
+Required now: {}",
+            verification_requirement_hint(*ctx.required_verification, ctx.test_cmd)
+        );
+        emit_governor_block(ctx.governor_emit(), block, tc, None).await;
+        return Ok(ToolFlow::Continue);
+    }
+
+    if let Some(command) =
+        benchmark_plan_pending_required_exec_command(ctx.root_user_text, ctx.messages, ctx.test_cmd)
+    {
+        *ctx.state = AgentState::Recovery;
+        ctx.recovery.stage = Some(RecoveryStage::Verify);
+        let verification_status = task_harness::benchmark_plan_verification_hint(
+            ctx.root_user_text,
+            ctx.messages,
+            ctx.test_cmd,
+        )
+        .unwrap_or_default();
+        let block = format!(
+            "[Done Gate] Approved benchmark plan requires explicit verification proof before `done`.\n\
+Required now: run `{command}`.\n{verification_status}"
+        );
+        emit_governor_block(ctx.governor_emit(), block, tc, None).await;
+        return Ok(ToolFlow::Continue);
+    }
+
+    let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
+    let report = final_handoff::report_context(ctx.root_user_text, ctx.messages, ctx.test_cmd);
+    let summary = report_surface::authored(args["summary"].as_str().unwrap_or(""), &report);
+    let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
+    let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
+    let acceptance_evidence =
+        acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
+    let next_steps = args["next_steps"].as_str().unwrap_or("").trim();
+    let done_plan = ctx
+        .validated_plan_for_turn
+        .as_ref()
+        .or(ctx.active_plan.as_ref());
+    let known_acceptance_commands = acceptance_report::current_commands(ctx.messages, ctx.test_cmd);
+    let read_only_scores = if ctx.root_read_only {
+        done_plan
+            .map(|plan| {
+                build_read_only_evidence_scores(ctx.root_user_text, plan, ctx.observation_evidence)
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    let evidence_rows = match validate_done_acceptance(
+        done_plan,
+        &completed_acceptance,
+        &remaining_acceptance,
+        &acceptance_evidence,
+        &known_acceptance_commands,
+        ctx.observation_evidence,
+    ) {
+        Ok(rows) => rows,
+        Err(e) => {
+            *ctx.state = AgentState::Recovery;
+            ctx.recovery.stage = Some(if ctx.root_read_only {
+                RecoveryStage::Diagnose
+            } else {
+                RecoveryStage::Verify
+            });
+            let hint = build_done_acceptance_recovery_hint(
+                &e.to_string(),
+                done_plan,
+                &known_acceptance_commands,
+                &read_only_scores,
+                ctx.cfg
+                    .base_url
+                    .contains("generativelanguage.googleapis.com"),
+            );
+            let block = format!(
+                "{}{}{}",
+                governor_contract::done_invalid_acceptance_message(&e.to_string()),
+                hint,
+                acceptance_report::hint(done_plan, &known_acceptance_commands)
+            );
+            emit_governor_block(ctx.governor_emit(), block, tc, None).await;
+            return Ok(ToolFlow::Continue);
+        }
+    };
+
+    let summary_text = if summary.is_empty() {
+        synthesize_action_done_summary(done_plan, ctx.messages).unwrap_or_default()
+    } else {
+        summary.to_string()
+    };
+
+    let mut final_text = String::new();
+    final_text.push_str("[DONE]\n");
+    if !summary_text.is_empty() {
+        final_text.push_str(summary_text.as_str());
+    }
+    final_text.push_str("\n\nAcceptance:\n");
+    let evidence_by_idx: std::collections::HashMap<usize, String> =
+        evidence_rows.into_iter().collect();
+    let done_plan = done_plan.expect("validated done plan");
+    for item in &completed_acceptance {
+        let idx =
+            resolve_acceptance_reference(item, done_plan).expect("completed acceptance validated");
+        final_text.push_str("- done: ");
+        final_text.push_str(acceptance_reference_label(done_plan, idx).as_str());
+        if let Some(command) = evidence_by_idx.get(&idx) {
+            final_text.push_str(" via `");
+            final_text.push_str(command.as_str());
+            final_text.push('`');
+        }
+        final_text.push('\n');
+    }
+    for item in &remaining_acceptance {
+        let idx =
+            resolve_acceptance_reference(item, done_plan).expect("remaining acceptance validated");
+        final_text.push_str("- remaining: ");
+        final_text.push_str(acceptance_reference_label(done_plan, idx).as_str());
+        final_text.push('\n');
+    }
+    if !next_steps.is_empty() {
+        final_text.push_str("\n\nNext:\n");
+        final_text.push_str(next_steps);
+    }
+
+    let exact_content_error = exact_content::validate_exact_content_task(
+        ctx.root_user_text,
+        ctx.tool_root_abs.as_deref(),
+    )
+    .err();
+    let needs_artifact_repair = exact_content_error.is_some();
+    let requirement_error = remaining_acceptance
+        .is_empty()
+        .then(|| requirement_proof::issue(ctx.messages, ctx.test_cmd))
+        .flatten();
+    let handoff_error = exact_content_error.or(requirement_error).or_else(|| {
+        if ctx.root_read_only {
+            None
+        } else {
+            validate_authored_done_summary(
+                ctx.root_user_text,
+                summary,
+                &final_text,
+                ctx.messages,
+                ctx.test_cmd,
+            )
+            .err()
+        }
+    });
+    if let Some(block) = handoff_error {
+        *ctx.state = AgentState::Recovery;
+        if needs_artifact_repair {
+            // A line-oriented test cannot override a failed exact-byte contract.
+            *ctx.last_build_verify_ok_step = None;
+            *ctx.last_behavioral_verify_ok_step = None;
+            *ctx.last_verify_ok_step = None;
+            ctx.recovery.stage = Some(RecoveryStage::Fix);
+        }
+        ctx.messages.push(json!({
+            "role": "tool",
+            "tool_call_id": tc.id,
+            "content": format!("GOVERNOR BLOCKED\n\n{block}"),
+        }));
+        ctx.autosave().await;
+        let _ = ctx
+            .tx
+            .send(StreamToken::Delta(format!(
+                "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+            )))
+            .await;
+        *ctx.pending_system_hint = Some(block);
+        return Ok(ToolFlow::Continue);
+    }
+
+    ctx.task_outcome.accept_done(&remaining_acceptance);
+
+    // Close out the tool call so session JSON remains valid on resume.
+    ctx.messages.push(json!({
+        "role": "tool",
+        "tool_call_id": tc.id,
+        "content": "OK: done"
+    }));
+    ctx.messages
+        .push(json!({"role": "assistant", "content": final_text.clone()}));
+
+    ctx.autosave().await;
+
+    let _ = ctx
+        .tx
+        .send(StreamToken::Delta(format!("\n\n{final_text}\n")))
+        .await;
+    Ok(ToolFlow::Break)
+}
+
+pub(super) async fn run_exec(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -> Result<ToolFlow> {
+    let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
+    let command = args["command"].as_str().unwrap_or("").to_string();
+
+    // Resolve an optional cwd (absolute or relative). Relative cwd is resolved against
+    // the current tracked directory (or tool_root).
+    let mut cwd_note: Option<String> = None;
+    let cwd_used: Option<String> = if let Some(c0) = args["cwd"]
+        .as_str()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+    {
+        let pb = std::path::PathBuf::from(c0);
+        let candidate = if pb.is_absolute() {
+            pb
+        } else if let Some(base) = ctx.cur_cwd.as_deref().or(ctx.tool_root_abs.as_deref()) {
+            std::path::PathBuf::from(base).join(pb)
+        } else {
+            pb
+        };
+        let cand_str = candidate.to_string_lossy().into_owned();
+        if let Some(ref root) = ctx.tool_root_abs {
+            if is_within_root(&cand_str, root) {
+                Some(cand_str)
+            } else {
+                cwd_note = Some(format!(
+                    "NOTE: requested cwd is outside tool_root; ignoring: {c0}"
+                ));
+                ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+            }
+        } else {
+            Some(cand_str)
+        }
+    } else {
+        ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+    };
+    let cwd_used_label = cwd_used
+        .as_deref()
+        .unwrap_or("(workspace root)")
+        .to_string();
+
+    // Emit tool-call annotation to TUI (dim line the UI will colour differently).
+    let _ = ctx
+        .tx
+        .send(StreamToken::Delta(format!(
+            "\n\n[TOOL][{:?}] {command}\n[cwd] {cwd_used_label}\n",
+            *ctx.state
+        )))
+        .await;
+    let _ = ctx.tx.send(StreamToken::ToolCall(tc.clone())).await;
+
+    if let Some(block) = should_block_git_landmines(&command, ctx.tool_root_abs.as_deref()) {
+        *ctx.state = AgentState::Recovery;
+        ctx.recovery.on_exec_result(ExecKind::Action, None, false);
+        let _ = ctx
+            .tx
+            .send(StreamToken::Delta(format!(
+                "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+            )))
+            .await;
+
+        let cwd_line = format!("cwd: {cwd_used_label}");
+        let tool_output = inject_cwd(
+            &format!("GOVERNOR BLOCKED\n\n{block}\n\ncommand:\n{command}"),
+            &cwd_line,
+            cwd_note.as_deref(),
+        );
+
+        ctx.messages.push(json!({
+            "role": "tool",
+            "tool_call_id": tc.id,
+            "content": tool_output,
+        }));
+        ctx.autosave().await;
+
+        // Update memory so repeating the same blocked command triggers stronger hints.
+        let _ = ctx.mem.on_tool_result(&command, "", &block, 1);
+        *ctx.last_exec_step = Some(ctx.this_step);
+        *ctx.pending_system_hint = Some(block);
+        ctx.emit_governor_state().await;
+
+        if ctx.iter + 1 == ctx.max_iters {
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!(
+                    "\n[agent] iteration cap ({}) reached.\n",
+                    ctx.max_iters
+                )))
+                .await;
+        }
+        return Ok(ToolFlow::Continue);
+    }
+
+    // Runtime block: prevent "same command spam" once it's already repeated.
+    // Allow repeating after a successful mutation (e.g., fix file then rerun tests).
+    let cmd_sig = command_sig(&command);
+    let repeated_cmd = ctx.mem.same_command_repeats >= 3
+        && ctx.mem.last_command_sig.as_deref() == Some(cmd_sig.as_str());
+    let mutated_since_last_exec =
+        ctx.last_mutation_step.unwrap_or(0) > ctx.last_exec_step.unwrap_or(0);
+    if repeated_cmd && !mutated_since_last_exec {
+        *ctx.state = AgentState::Recovery;
+        ctx.recovery.stage = Some(RecoveryStage::Diagnose);
+        let block = format!(
+            "Repeated identical command blocked.\n\
+same_command_repeats: {}\n\
+command_sig: {}\n\
+\n\
+Required now: change strategy (diagnose or apply a fix) before retrying.\n\
+Do NOT run the exact same command again without a material change.",
+            ctx.mem.same_command_repeats, cmd_sig
+        );
+
+        let _ = ctx
+            .tx
+            .send(StreamToken::Delta(format!(
+                "[RESULT][Recovery] GOVERNOR BLOCK\n{block}\n"
+            )))
+            .await;
+
+        let cwd_line = format!("cwd: {cwd_used_label}");
+        let tool_output = inject_cwd(
+            &format!("GOVERNOR BLOCKED\n\n{block}\n\ncommand:\n{command}"),
+            &cwd_line,
+            cwd_note.as_deref(),
+        );
+
+        ctx.messages.push(json!({
+            "role": "tool",
+            "tool_call_id": tc.id,
+            "content": tool_output,
+        }));
+        ctx.autosave().await;
+
+        let _ = ctx.mem.on_tool_result(&command, "", &block, 1);
+        *ctx.last_exec_step = Some(ctx.this_step);
+        *ctx.pending_system_hint = Some(block.clone());
+        *ctx.reflection_required = Some(block);
+        *ctx.reflection_trigger_sig = tool_call_action_sig(tc);
+        ctx.emit_governor_state().await;
+
+        if ctx.iter + 1 == ctx.max_iters {
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!(
+                    "\n[agent] iteration cap ({}) reached.\n",
+                    ctx.max_iters
+                )))
+                .await;
+        }
+        return Ok(ToolFlow::Continue);
+    }
+
+    let approval = ctx
+        .approver
+        .approve(ApprovalRequest::Command {
+            command: command.clone(),
+            cwd: cwd_used.clone(),
+        })
+        .await?;
+    if approval == ApprovalOutcome::Rejected {
+        *ctx.state = AgentState::Recovery;
+        ctx.recovery.on_exec_result(ExecKind::Action, None, false);
+        let _ = ctx
+            .tx
+            .send(StreamToken::Delta(
+                "[RESULT][Recovery] REJECTED by user\n".to_string(),
+            ))
+            .await;
+        let cwd_line = format!("cwd: {cwd_used_label}");
+        let tool_output = format!("REJECTED BY USER\n{cwd_line}\ncommand:\n{command}");
+
+        ctx.messages.push(json!({
+            "role": "tool",
+            "tool_call_id": tc.id,
+            "content": tool_output,
+        }));
+        ctx.autosave().await;
+        *ctx.last_exec_step = Some(ctx.this_step);
+        *ctx.pending_system_hint = Some(
+            "The user rejected the command. Choose a safer alternative or explain why it is necessary before retrying."
+                .to_string(),
+        );
+        ctx.emit_governor_state().await;
+
+        if ctx.iter + 1 == ctx.max_iters {
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!(
+                    "\n[agent] iteration cap ({}) reached.\n",
+                    ctx.max_iters
+                )))
+                .await;
+        }
+        return Ok(ToolFlow::Continue);
+    }
+
+    let cargo_input_probe = cwd_used
+        .as_deref()
+        .zip(ctx.tool_root_abs.as_deref())
+        .and_then(|(cwd, root)| CargoInputProbe::start(ctx.messages, &command, cwd, root));
+    let exec_cmd = wrap_exec_with_pwd(&command);
+    let exec_result = exec::run_command(&exec_cmd, cwd_used.as_deref()).await;
+
+    let (stdout, stderr, exit_code) = match exec_result {
+        Ok(r) => (r.stdout, r.stderr, r.exit_code),
+        Err(e) => (String::new(), e.to_string(), -1),
+    };
+
+    // Update cwd from marker output.
+    let (stdout, pwd_after) = strip_pwd_marker(&stdout);
+    let mut cwd_after_note: Option<String> = None;
+    if let Some(p) = pwd_after {
+        if let Some(ref root) = ctx.tool_root_abs {
+            if is_within_root(&p, root) {
+                *ctx.cur_cwd = Some(p);
+            } else {
+                cwd_after_note = Some(format!(
+                    "NOTE: cwd_after was outside tool_root; ignored: {p}"
+                ));
+            }
+        } else {
+            *ctx.cur_cwd = Some(p);
+        }
+    }
+    let escaped_tool_root = cwd_after_note.is_some();
+    let cwd_after_label = ctx
+        .cur_cwd
+        .as_deref()
+        .unwrap_or(cwd_used_label.as_str())
+        .to_string();
+    let cwd_line = if cwd_used_label == cwd_after_label {
+        format!("cwd: {cwd_used_label}")
+    } else {
+        format!("cwd: {cwd_used_label}\ncwd_after: {cwd_after_label}")
+    };
+
+    let mut note_lines: Vec<String> = Vec::new();
+    if let Some(n) = cwd_note.take() {
+        note_lines.push(n);
+    }
+    if let Some(n) = cwd_after_note.take() {
+        note_lines.push(n);
+    }
+    let note = if note_lines.is_empty() {
+        None
+    } else {
+        Some(note_lines.join("\n"))
+    };
+
+    *ctx.state = AgentState::Verifying;
+    let suspicious_reason = if exit_code == 0 {
+        suspicious_success_reason(&stdout, &stderr)
+    } else {
+        None
+    };
+    let effective_exit_code =
+        if exit_code == 0 && (suspicious_reason.is_some() || escaped_tool_root) {
+            1
+        } else {
+            exit_code
+        };
+
+    let tool_output = if effective_exit_code == 0 {
+        let base = build_ok_tool_output(&stdout);
+        inject_cwd(&base, &cwd_line, note.as_deref())
+    } else {
+        let mut out = build_failed_tool_output(&stdout, &stderr, effective_exit_code);
+        if let Some(reason) = suspicious_reason {
+            out = format!(
+                "NOTE: command returned exit_code=0 but was treated as failure.\nreason: {reason}\n\n{out}"
+            );
+        }
+        if escaped_tool_root && exit_code == 0 {
+            out = format!(
+                "NOTE: command escaped tool_root and was treated as failure.\n\
+This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n{out}"
+            );
+        }
+        inject_cwd(&out, &cwd_line, note.as_deref())
+    };
+
+    ctx.edit_failures
+        .on_result(tc, &tool_output, ctx.exec_verification_context);
+    *ctx.file_tool_consec_failures = ctx.edit_failures.count();
+    ctx.recovery.focus.record_result(
+        tc,
+        &tool_output,
+        ctx.tool_root_abs.as_deref(),
+        ctx.test_cmd,
+        ctx.exec_verification_context,
+    );
+
+    let result_label = if effective_exit_code == 0 {
+        format!("[RESULT][{:?}] exit=0\n", *ctx.state)
+    } else {
+        format!("[RESULT][{:?}] exit={effective_exit_code} !\n", *ctx.state)
+    };
+    let _ = ctx.tx.send(StreamToken::Delta(result_label)).await;
+
+    // ── Append tool result (with tool_call_id preserved) ───────────────
+    let history_tool_output = if effective_exit_code == 0 {
+        compact_success_tool_result_for_history("exec", &tool_output)
+    } else {
+        tool_output.clone()
+    };
+    let cargo_inputs =
+        cargo_input_probe.map(|p| p.finish(effective_exit_code == 0, &stdout, &stderr));
+    ctx.messages.push(report_counts::capture(
+        CargoInputReceipt::attach(
+            cargo_inputs,
+            ctx.recovery.focus.tool_message(tc, history_tool_output),
+        ),
+        &stdout,
+        &stderr,
+    ));
+    *ctx.last_exec_step = Some(ctx.this_step);
+    ctx.autosave().await;
+
+    // Update failure memory + recovery governor + possibly inject a system hint.
+    let classification = ctx.exec_verification_context.classify(&command);
+    let verify_level = classification.verification;
+    let exec_kind = classification.kind;
+    exec_proof::record_result(
+        &command,
+        ctx.exec_verification_context,
+        exec_proof::ExecProofResult {
+            content: &tool_output,
+            succeeded: effective_exit_code == 0 && !escaped_tool_root,
+        },
+        ctx.this_step,
+        ctx.last_mutation_step,
+        ctx.last_build_verify_ok_step,
+        ctx.last_behavioral_verify_ok_step,
+    );
+    *ctx.last_verify_ok_step = effective_verify_ok_step(
+        *ctx.required_verification,
+        *ctx.last_build_verify_ok_step,
+        *ctx.last_behavioral_verify_ok_step,
+    );
+    if effective_exit_code == 0 && !escaped_tool_root {
+        update_working_memory_after_exec(
+            ctx.working_mem,
+            command.as_str(),
+            stdout.as_str(),
+            tool_output.as_str(),
+            exec_kind,
+            ctx.step_label_for_turn,
+            ctx.next_action_for_turn,
+        );
+        ctx.assumption_ledger.refresh_confirmations(ctx.working_mem);
+        if exec_kind == ExecKind::Action {
+            *ctx.impact_required = Some(format!(
+                "successful mutation command: {}",
+                compact_one_line(command.as_str(), 100)
+            ));
+        }
+    }
+    let mut hint = if escaped_tool_root {
+        Some(
+            "SANDBOX BREACH: Your command ended outside tool_root.\n\
+Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` stays under tool_root."
+                .to_string(),
+        )
+    } else {
+        ctx.mem
+            .on_tool_result(&command, &stdout, &stderr, effective_exit_code)
+    };
+
+    ctx.recovery.on_exec_result(
+        exec_kind,
+        verify_level,
+        effective_exit_code == 0 && !escaped_tool_root,
+    );
+
+    if effective_exit_code == 0 && !escaped_tool_root {
+        if ctx.recovery.stage == Some(RecoveryStage::Fix) {
+            hint = Some(
+                "Recovery stage=fix: apply a minimal fix now (edit files or run a corrected command)."
+                    .to_string(),
+            );
+        } else if ctx.recovery.stage == Some(RecoveryStage::Verify) {
+            hint = Some(format!(
+                "Recovery stage=verify: {}",
+                verification_requirement_hint(*ctx.required_verification, ctx.test_cmd)
+            ));
+        }
+    }
+
+    let hint_clone_for_reflect = hint.clone();
+    *ctx.pending_system_hint = hint;
+    *ctx.state = if effective_exit_code != 0 || ctx.recovery.in_recovery() {
+        AgentState::Recovery
+    } else {
+        AgentState::Planning
+    };
+
+    if effective_exit_code != 0 || ctx.mem.repeated_failure_or_stall() {
+        let default_reason = if effective_exit_code != 0 {
+            let class_ctx = error_class_hint(&ctx.mem.last_error_class);
+            if class_ctx.is_empty() {
+                "failure detected".to_string()
+            } else {
+                class_ctx.to_string()
+            }
+        } else {
+            "stall detected".to_string()
+        };
+        *ctx.reflection_required = Some(hint_clone_for_reflect.unwrap_or_else(|| default_reason));
+        *ctx.reflection_trigger_sig = tool_call_action_sig(tc);
+    } else if ctx.reflection_guard.is_none() {
+        *ctx.reflection_trigger_sig = None;
+    }
+
+    ctx.emit_governor_state().await;
+
+    // Safety: stop if we've hit the iteration cap.
+    if ctx.iter + 1 == ctx.max_iters {
+        let _ = ctx
+            .tx
+            .send(StreamToken::Delta(format!(
+                "\n[agent] iteration cap ({}) reached.\n",
+                ctx.max_iters
+            )))
+            .await;
+    }
+    Ok(ToolFlow::Continue)
 }
