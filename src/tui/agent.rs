@@ -55,6 +55,7 @@ mod cargo_input_runtime_tests;
 mod check_catalog;
 #[cfg(test)]
 mod check_catalog_tests;
+mod closeout;
 pub(crate) mod current_evidence;
 mod deferred_edit;
 mod done_gate;
@@ -83,6 +84,7 @@ mod harness_evolution;
 mod impact_recovery;
 mod implied_actions;
 mod json_fields;
+mod loop_setup;
 mod memory;
 mod message_window;
 mod meta_harness;
@@ -157,6 +159,7 @@ mod verification;
 mod work_progress;
 use self::assumption_gate::refuted_assumption_conflict;
 use self::block_parsers::*;
+use self::closeout::*;
 use self::done_gate::{
     build_done_acceptance_recovery_hint, build_post_verify_done_completion_hint,
     build_read_only_completion_hint, build_read_only_evidence_scores,
@@ -182,15 +185,14 @@ use self::followup_requirements::{
 use self::git_guard::*;
 use self::governor_emit::*;
 use self::governor_signals::*;
+use self::harness_evolution::ContractPatchProposal;
 pub(crate) use self::harness_evolution::{
     overlay_path_for_root as harness_evolution_overlay_path_for_root,
     path_for_root as harness_evolution_queue_path_for_root,
     GovernorContractOverlay as HarnessGovernorContractOverlay,
     HarnessEvolutionQueue as PersistentHarnessEvolutionQueue,
 };
-use self::harness_evolution::{
-    ContractPatchProposal, GovernorContractOverlay, HarnessEvolutionQueue,
-};
+use self::loop_setup::has_system_prefix;
 use self::memory::{
     canonicalize_evidence_command_with_resolution, normalize_memory_entry, normalize_path_alias,
     remember_recent_unique, remember_repo_map_resolution, rewrite_tool_call_with_resolution,
@@ -570,192 +572,24 @@ Execute only the new minimal action: {}",
     )
     .await;
 
-    let reflection_ledger_path = tool_root_abs
-        .as_deref()
-        .map(crate::reflection_ledger::path_for_root);
-    let mut reflection_ledger = if let Some(path) = reflection_ledger_path.as_ref() {
-        match crate::reflection_ledger::ReflectionLedger::load(path) {
-            Ok(ledger) => ledger,
-            Err(e) => {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "\n[reflection_ledger] WARN: {e:#}\n"
-                    )))
-                    .await;
-                crate::reflection_ledger::ReflectionLedger::default()
-            }
-        }
-    } else {
-        crate::reflection_ledger::ReflectionLedger::default()
-    };
+    let persisted = loop_setup::load_persisted_state(&tx, &tool_root_abs).await;
+    let mut reflection_ledger = persisted.reflection_ledger;
+    let progress_state = persisted.progress_state;
+    let harness_promoted_overlay = persisted.harness_promoted_overlay;
+    let mut harness_evolution_queue = persisted.harness_evolution_queue;
+    let harness_evolution_path = persisted.harness_evolution_path;
+    let reflection_ledger_path = persisted.reflection_ledger_path;
     let mut reflection_ledger_warned = false;
-    emit_telemetry_event(
-        &tx,
-        "reflection_ledger_loaded",
-        json!({
-            "entries": reflection_ledger.entries.len(),
-            "path": reflection_ledger_path.as_ref().map(|p| p.to_string_lossy().to_string()),
-        }),
-    )
-    .await;
-    let progress_state_path = tool_root_abs
-        .as_deref()
-        .map(crate::progress_state::path_for_root);
-    let progress_state = if let Some(path) = progress_state_path.as_ref() {
-        match crate::progress_state::RepoProgressState::load(path) {
-            Ok(progress) => Some(progress),
-            Err(_) if !path.exists() => None,
-            Err(e) => {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "\n[progress_state] WARN: {e:#}\n"
-                    )))
-                    .await;
-                None
-            }
-        }
-    } else {
-        None
-    };
-    emit_telemetry_event(
-        &tx,
-        "progress_state_loaded",
-        json!({
-            "path": progress_state_path.as_ref().map(|p| p.to_string_lossy().to_string()),
-            "has_state": progress_state.is_some(),
-            "completed_artifacts": progress_state.as_ref().map(|state| state.completed_artifacts.len()).unwrap_or(0),
-            "verified_commands": progress_state.as_ref().map(|state| state.verified_commands.len()).unwrap_or(0),
-        }),
-    )
-    .await;
-    let harness_promoted_overlay_path = tool_root_abs
-        .as_deref()
-        .map(self::harness_evolution::overlay_path_for_root);
-    let harness_promoted_overlay = if let Some(path) = harness_promoted_overlay_path.as_ref() {
-        match GovernorContractOverlay::load(path) {
-            Ok(overlay) => overlay,
-            Err(e) => {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "\n[harness_evolution_promoted] WARN: {e:#}\n"
-                    )))
-                    .await;
-                GovernorContractOverlay::default()
-            }
-        }
-    } else {
-        GovernorContractOverlay::default()
-    };
-    emit_telemetry_event(
-        &tx,
-        "harness_evolution_promoted_loaded",
-        json!({
-            "policies": harness_promoted_overlay.promoted_policies.len(),
-            "path": harness_promoted_overlay_path.as_ref().map(|p| p.to_string_lossy().to_string()),
-        }),
-    )
-    .await;
-    let harness_evolution_path = tool_root_abs
-        .as_deref()
-        .map(self::harness_evolution::path_for_root);
-    let mut harness_evolution_queue = if let Some(path) = harness_evolution_path.as_ref() {
-        match HarnessEvolutionQueue::load(path) {
-            Ok(queue) => queue,
-            Err(e) => {
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "\n[harness_evolution] WARN: {e:#}\n"
-                    )))
-                    .await;
-                HarnessEvolutionQueue::default()
-            }
-        }
-    } else {
-        HarnessEvolutionQueue::default()
-    };
     let mut harness_evolution_warned = false;
-    emit_telemetry_event(
+
+    let checkpoint = loop_setup::create_or_reemit_checkpoint(
         &tx,
-        "harness_evolution_loaded",
-        json!({
-            "proposals": harness_evolution_queue.proposal_count(),
-            "path": harness_evolution_path.as_ref().map(|p| p.to_string_lossy().to_string()),
-        }),
+        &tool_root_abs,
+        &start.checkpoint,
+        start.create_checkpoint,
     )
     .await;
-
-    fn has_system_prefix(messages: &[serde_json::Value], prefix: &str) -> bool {
-        messages.iter().any(|m| {
-            m.get("role").and_then(|r| r.as_str()) == Some("system")
-                && m.get("content")
-                    .and_then(|c| c.as_str())
-                    .map(|s| s.trim_start().starts_with(prefix))
-                    .unwrap_or(false)
-        })
-    }
-
-    let mut checkpoint = start.checkpoint.clone();
-    // D — git checkpoint: snapshot HEAD so the user can /rollback if the session goes wrong.
-    if let Some(ref root) = tool_root_abs {
-        if checkpoint.is_none() && start.create_checkpoint {
-            if let Some(hash) = git_create_checkpoint(root).await {
-                checkpoint = Some(hash.clone());
-                let short = hash[..hash.len().min(8)].to_string();
-                let _ = tx.send(StreamToken::Checkpoint(hash)).await;
-                let _ = tx
-                    .send(StreamToken::Delta(format!(
-                        "[git checkpoint] {short} saved — use /rollback to restore\n\n"
-                    )))
-                    .await;
-            }
-        } else if let Some(ref hash) = checkpoint {
-            // Resume: re-emit checkpoint token for UI/CLI consumers.
-            let _ = tx.send(StreamToken::Checkpoint(hash.clone())).await;
-        }
-    }
-
-    if let Some(ref root) = tool_root_abs {
-        let _ = std::fs::create_dir_all(root);
-        let note = format!(
-            "[Working directory]\n\
-Working directory (tool_root): {root}\n\
-IMPORTANT: Each exec runs in a fresh process; `cd` does NOT persist unless the tool reports cwd.\n\
- Always operate under tool_root. Create new repos under tool_root (fresh directory).\n\
- NEVER create a git repo inside another git repo. If you see 'embedded git repository', STOP and relocate."
-        );
-        if !has_system_prefix(&messages, "[Working directory]") {
-            if messages.first().and_then(|m| m["role"].as_str()) == Some("system") {
-                messages.insert(1, json!({"role":"system","content": note}));
-            } else {
-                messages.insert(0, json!({"role":"system","content": note}));
-            }
-        }
-    }
-    // Project context — inject once at position 2 (after [Working directory] note).
-    if let Some(ctx_text) = project_context {
-        if !ctx_text.is_empty() {
-            if !has_system_prefix(&messages, "[Project Context") {
-                let pos = messages.len().min(2);
-                messages.insert(pos, json!({"role":"system","content": ctx_text}));
-            }
-        }
-    }
-    // AGENTS.md / .spiral-coder.md — project-specific rules injected right after project context.
-    // These take precedence over generic instructions and can override coding conventions.
-    if let Some(agents_text) = agents_md {
-        if !agents_text.is_empty() {
-            if !has_system_prefix(
-                &messages,
-                "[Project Instructions — .spiral-coder.md / AGENTS.md]",
-            ) {
-                let pos = messages.len().min(3);
-                messages.insert(pos, json!({
-                    "role": "system",
-                    "content": format!("[Project Instructions — .spiral-coder.md / AGENTS.md]\n{agents_text}")
-                }));
-            }
-        }
-    }
+    loop_setup::inject_setup_context(&mut messages, &tool_root_abs, project_context, agents_md);
 
     let mut cur_cwd: Option<String> = start.cur_cwd.clone().or_else(|| tool_root_abs.clone());
     if let (Some(ref root), Some(ref cwd)) = (tool_root_abs.as_ref(), cur_cwd.as_ref()) {
@@ -7766,108 +7600,37 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         }
     }
 
-    if let Some(final_text) = done_gate::maybe_build_verified_action_closeout_text(
-        &root_user_text,
-        tool_root_abs.as_deref(),
-        active_plan.as_ref(),
-        &messages,
-        &working_mem,
-        &observation_evidence,
-        required_verification,
-        test_cmd.as_deref(),
+    Ok(run_closeout(Closeout {
+        tx: &tx,
+        messages: &mut messages,
+        task_outcome: &mut task_outcome,
+        observer_handoff: &observer_handoff,
+        blocked_terminal,
+        state,
+        root_user_text: &root_user_text,
+        tool_root_abs: &tool_root_abs,
+        checkpoint: &checkpoint,
+        cur_cwd: &cur_cwd,
+        autosaver: &autosaver,
+        test_cmd: test_cmd.as_deref(),
+        active_plan: &mut active_plan,
+        working_mem: &mut working_mem,
+        assumption_ledger: &mut assumption_ledger,
+        observation_evidence: &observation_evidence,
+        intent_required_verification: &mut intent_required_verification,
+        path_required_verification,
+        required_verification: &mut required_verification,
+        recovery: &mut recovery,
         last_mutation_step,
-        last_verify_ok_step,
-    )
-    .filter(|_| observer_handoff.is_none() && !blocked_terminal)
-    {
-        task_outcome.finalized(&final_text);
-        let final_text = enrich_text_final_handoff(
-            final_text.as_str(),
-            &root_user_text,
-            &messages,
-            test_cmd.as_deref(),
-        )
-        .unwrap_or(final_text);
-        messages.push(json!({"role": "assistant", "content": final_text.clone()}));
-        autosave_best_effort(
-            &autosaver,
-            &tx,
-            tool_root_abs.as_deref(),
-            checkpoint.as_deref(),
-            cur_cwd.as_deref(),
-            &messages,
-        )
-        .await;
-        let _ = tx
-            .send(StreamToken::Delta(format!(
-                "\n[agent] auto-finalized verified action task at session end.\n\n{final_text}\n"
-            )))
-            .await;
-    }
-
-    if realize_cfg.enabled {
-        if let Some(latent) = latent_plan.take() {
-            let latency = max_iters.saturating_sub(latent.created_iter);
-            let drift = drift_distance(
-                realize_cfg.drift_metric,
-                &latent.summary,
-                &latent.anchor_baseline,
-            );
-            realize_metrics.missing += 1;
-            realize_metrics.realize_count += 1;
-            realize_metrics.total_realize_latency += latency;
-            adopt_valid_plan(
-                &latent.plan,
-                &mut working_mem,
-                &mut assumption_ledger,
-                &mut active_plan,
-                &mut intent_required_verification,
-                path_required_verification,
-                &mut required_verification,
-                &mut recovery,
-                &mut last_verify_ok_step,
-                last_build_verify_ok_step,
-                last_behavioral_verify_ok_step,
-            );
-            messages.push(json!({"role": "assistant", "content": latent.raw_text}));
-            let _ = tx
-                .send(StreamToken::Delta(build_realize_banner(
-                    "session_end",
-                    latency,
-                    drift,
-                    &realize_metrics,
-                )))
-                .await;
-            autosave_best_effort(
-                &autosaver,
-                &tx,
-                tool_root_abs.as_deref(),
-                checkpoint.as_deref(),
-                cur_cwd.as_deref(),
-                &messages,
-            )
-            .await;
-            emit_realize_state(&tx, &realize_cfg, None, max_iters, None, &realize_metrics).await;
-        }
-    }
-
-    emit_telemetry_event(
-        &tx,
-        "agent_outcome",
-        json!({
-            "completed": !blocked_terminal && observer_handoff.is_none() && task_outcome.completed(&messages),
-            "state": format!("{state:?}").to_ascii_lowercase(),
-            "yield_reason": if blocked_terminal { Some(super::coder_yield::CoderYieldReason::Blocked) } else { observer_handoff.as_ref().map(|_| super::coder_yield::CoderYieldReason::VerificationFailure) },
-        }),
-    )
-    .await;
-    let _ = tx.send(StreamToken::Done).await;
-    Ok(AgenticEndState {
-        messages,
-        checkpoint,
-        cur_cwd,
-        observation_cache: Some(observation_evidence.to_session_cache()),
+        last_verify_ok_step: &mut last_verify_ok_step,
+        last_build_verify_ok_step,
+        last_behavioral_verify_ok_step,
+        realize_cfg: &realize_cfg,
+        latent_plan: &mut latent_plan,
+        realize_metrics: &mut realize_metrics,
+        max_iters,
     })
+    .await)
 }
 
 #[cfg(test)]

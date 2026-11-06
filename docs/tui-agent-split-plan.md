@@ -286,6 +286,20 @@ Next inside-loop targets: the ~430-line setup prologue (a `LoopSetup`
 state struct), the ~110-line closeout epilogue, and per-iteration phase
 helpers for the tool-dispatch block.
 
+Landed since:
+
+- `closeout.rs` — `Closeout` context struct + `run_closeout`, covering the
+  post-iteration epilogue (verified-action auto-finalize, session-end
+  latent-plan realization, outcome telemetry, `AgenticEndState` assembly).
+- `loop_setup.rs` — `load_persisted_state` (reflection ledger, progress
+  state, promoted harness overlay, harness evolution queue + telemetry),
+  `create_or_reemit_checkpoint`, `inject_setup_context` (working-directory
+  note, project context, AGENTS.md injection), and `has_system_prefix`.
+
+Remaining inside-loop target: the rest of the setup prologue (~40
+loop-scoped bindings — needs a `LoopSetup` state struct) and per-iteration
+phase helpers for the tool-dispatch block.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:
