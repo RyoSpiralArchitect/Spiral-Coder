@@ -709,6 +709,7 @@ fn evidence_score_label(score: f32) -> &'static str {
 pub(super) fn build_done_acceptance_recovery_hint(
     error_text: &str,
     plan: Option<&PlanBlock>,
+    claimed_completed: &[String],
     known_commands: &[String],
     read_only_scores: &[CriterionEvidenceScore],
     flat_evidence_rows: bool,
@@ -743,6 +744,33 @@ pub(super) fn build_done_acceptance_recovery_hint(
             "Hint: each completed_acceptance item needs exactly one acceptance_evidence row."
                 .to_string(),
         );
+        if !claimed_completed.is_empty() {
+            let command_slot = if known_commands.len() == 1 {
+                known_commands[0].clone()
+            } else {
+                "<one command from the known-successful list below>".to_string()
+            };
+            lines.push(format!(
+                "Required shape: acceptance_evidence must be exactly {} row(s), one per submitted completed criterion:",
+                claimed_completed.len()
+            ));
+            for (idx, entry) in claimed_completed.iter().enumerate() {
+                let row = if flat_evidence_rows {
+                    format!(
+                        "\"{} | {}\"",
+                        compact_one_line(entry, 120),
+                        compact_one_line(&command_slot, 160)
+                    )
+                } else {
+                    format!(
+                        "{{\"criterion\":\"{}\",\"command\":\"{}\"}}",
+                        compact_one_line(entry, 120),
+                        compact_one_line(&command_slot, 160)
+                    )
+                };
+                lines.push(format!("  {}. {}", idx + 1, row));
+            }
+        }
         lines.push(
             "If you do not have proof yet, move that criterion from completed_acceptance to remaining_acceptance."
                 .to_string(),

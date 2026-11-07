@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "updated_at_ms": 1793972075838,
+  "task_summary": "Find where pane-scoped TUI preferences are serialized and restored. Do not edit anything. Final answer must include the main file path.",
+  "current_objective": "Locate and confirm the code that serializes and restores pane-scoped TUI preferences.",
+  "lane": "read_only_observe",
+  "artifact_mode": "observe_only",
+  "completed_artifacts": [],
+  "verified_commands": [],
+  "accepted_strategies": [],
+  "repeated_dead_ends": []
+}

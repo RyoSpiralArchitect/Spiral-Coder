@@ -78,6 +78,26 @@ pub(in super::super) fn build_progress_gate_block(
                 compact_one_line(tc.arguments.as_str(), 120)
             )
         });
+    let attempted_line = format!(
+        "Attempted next action: {}",
+        compact_one_line(&attempted, 180)
+    );
+    let prior_same_blocks = task
+        .iter()
+        .filter(|message| {
+            message.get("role").and_then(Value::as_str) == Some("tool")
+                && message["content"].as_str().is_some_and(|content| {
+                    content.contains("GOVERNOR BLOCKED") && content.contains(&attempted_line)
+                })
+        })
+        .count();
+    let escalation = if prior_same_blocks == 0 {
+        String::new()
+    } else {
+        format!(
+            "This exact call was already governor-blocked {prior_same_blocks} time(s). Do not retry it. If the target path may not exist, first run `list_dir` on its parent directory or `search_files` for the symbol to confirm the real location.\n"
+        )
+    };
     if !verify_without_mutation {
         if harness.lane == TaskLane::FixExisting
             && !history.searched
@@ -119,12 +139,14 @@ Recovery stage is already `fix`.\n\
 Attempted next action: {}\n\
 Successful observation commands so far: {}\n\
 This is stalled progress, not forward motion.\n\
+{}\
 Required now: read `{}` now to inspect the implementation before patching.\n\
 Do NOT rerun verification or widen search until `{}` is read.\n\
 Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
             harness.lane_label(),
             compact_one_line(&attempted, 180),
             history.total_successes_since_mutation,
+            escalation,
             compact_one_line(path, 140),
             compact_one_line(path, 140),
         ));
@@ -179,12 +201,14 @@ Recovery stage is already `fix`.\n\
 Attempted next action: {}\n\
 Successful observation commands so far: {}\n\
 This is stalled progress, not forward motion.\n\
+{}\
 Required now: {}.\n\
 {}\
 Do NOT call the same observation tool on the same target again until the target changes or a mutation lands.",
         harness.lane_label(),
         compact_one_line(&attempted, 180),
         history.total_successes_since_mutation,
+        escalation,
         next_action,
         verify_hint
     ))
@@ -468,6 +492,41 @@ mod tests {
                 "unchanged repeated reads still need a different next action"
             );
         }
+    }
+
+    #[test]
+    fn repeated_block_for_same_attempt_escalates_to_path_confirmation() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/missing.rs"}),
+            "[src/missing.rs] (2 lines, 20 bytes)\nx",
+        );
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/missing.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        assert!(!first.contains("already governor-blocked"), "{first}");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/missing.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("already governor-blocked 1 time(s)"),
+            "{second}"
+        );
+        assert!(
+            second.contains("list_dir") && second.contains("search_files"),
+            "{second}"
+        );
     }
 
     #[test]

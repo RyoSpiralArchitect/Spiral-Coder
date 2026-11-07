@@ -311,12 +311,18 @@ impl<'a> LoopSetup<'a> {
         let goal_wants_actions = wants_local_actions(&root_user_text);
         let mut intent_required_verification =
             infer_required_verification_level(&root_user_text, test_cmd);
-        let task_contract = derive_task_contract(
+        let mut task_contract = derive_task_contract(
             &root_user_text,
             root_read_only,
             goal_wants_actions,
             intent_required_verification,
         );
+        if is_continuation_request(&root_user_text) {
+            task_contract.alignment_terms = crate::task_origin::prior_task_texts(&start.messages)
+                .iter()
+                .map(|text| text.to_string())
+                .collect();
+        }
         let instruction_resolver = InstructionResolver::new(
             task_contract.task_summary.as_str(),
             root_read_only,

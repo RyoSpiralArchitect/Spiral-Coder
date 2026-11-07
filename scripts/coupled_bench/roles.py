@@ -78,7 +78,8 @@ def configuration_evidence(report, profile, case, matrix):
         "observer_reservation": sum(r.get("role") == "coder" for r in tasks)
             <= case["max_requests"] - case["observer_reserved_requests"],
         "transport_eligibility": all(r.get("status") == "completed" and
-            r.get("transport_rejection") == ("native_arguments" if r.get("role") == "coder" else "observer_envelope")
+            r.get("transport_rejection") in (("native_arguments", "governor_block")
+            if r.get("role") == "coder" else ("observer_envelope",))
             for r in repairs),
     }
     return {"valid": all(checks.values()), "checks": checks, "task_requests": len(tasks),

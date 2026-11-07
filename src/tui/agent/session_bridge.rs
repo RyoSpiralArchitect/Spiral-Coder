@@ -11,11 +11,19 @@ impl SessionBridgeView {
     pub(super) fn resolve(persisted: Option<&SessionBridge>, messages: &[Value]) -> Self {
         // Older multi-task sessions stored the bridge without its task boundary.
         let task = crate::task_origin::current_task_messages(messages);
+        // A continuation-style root resumes the earlier human request instead of
+        // superseding it, so that request must not invalidate the persisted bridge.
+        let resumed_prior_task = task
+            .first()
+            .and_then(|message| message["content"].as_str())
+            .map(is_continuation_request)
+            .unwrap_or(false);
         let bridge = persisted
             .filter(|_| {
-                !messages[..messages.len() - task.len()]
-                    .iter()
-                    .any(crate::task_origin::is_human_request)
+                resumed_prior_task
+                    || !messages[..messages.len() - task.len()]
+                        .iter()
+                        .any(crate::task_origin::is_human_request)
             })
             .cloned()
             .or_else(|| crate::agent_session::session_bridge_from_messages(task))
@@ -140,6 +148,31 @@ mod tests {
         assert!(prompt.contains("last_good_verification"));
         assert!(prompt.contains("accepted_strategy"));
         assert!(prompt.contains("repeated_dead_end"));
+    }
+
+    #[test]
+    fn continuation_root_keeps_persisted_bridge_across_prior_human_request() {
+        let bridge = SessionBridge {
+            last_good_verification: Some(SessionVerificationMemory {
+                command: "cargo test 2>&1".to_string(),
+            }),
+            accepted_strategies: vec![],
+            repeated_dead_ends: vec![],
+        };
+        let messages = vec![
+            serde_json::json!({"role":"user","content":"Fix the failing test"}),
+            serde_json::json!({"role":"assistant","content":"working"}),
+            serde_json::json!({"role":"user","content":"Continue from the previous session state"}),
+        ];
+        let view = SessionBridgeView::resolve(Some(&bridge), &messages);
+        assert!(view.prompt().is_some());
+
+        let steering = vec![
+            messages[0].clone(),
+            serde_json::json!({"role":"user","content":"Now rewrite the README instead"}),
+        ];
+        let view = SessionBridgeView::resolve(Some(&bridge), &steering);
+        assert!(view.prompt().is_none());
     }
 
     #[test]

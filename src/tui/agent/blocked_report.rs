@@ -52,6 +52,20 @@ pub(super) fn prepare(
             observation,
         )?;
         let obligations = task_obligations::project(messages, test_cmd);
+        // A blocked report needs a live blocker. When an explicit requirements
+        // contract exists and every declared requirement and pending check is
+        // already discharged, the honest closeout is `done` — not an
+        // incomplete report. Undeclared prose tasks are out of scope: without a
+        // declared contract we cannot prove nothing remains, so a truthful
+        // incomplete report stays admissible.
+        let requirements = requirement_proof::project(messages, test_cmd);
+        anyhow::ensure!(
+            !(requirements.declared
+                && requirements.pending.is_empty()
+                && obligations.pending_exact_checks.is_empty()
+                && obligations.pending_recovery.is_empty()),
+            "Blocked report claims remaining work, but every declared requirement and pending check is already discharged. Call `done` with the accurate completed/remaining split, or execute the one missing step first."
+        );
         Ok(BlockedReport {
             summary: summary.into(),
             remaining_acceptance,
@@ -144,5 +158,101 @@ mod tests {
             &ObservationEvidence::default()
         )
         .is_none());
+    }
+
+    #[test]
+    fn undeclared_task_keeps_truthful_blocked_report_admissible() {
+        let plan = PlanBlock {
+            goal: "greet".into(),
+            steps: vec!["edit".into()],
+            acceptance_criteria: vec!["greeting updated".into(), "docs updated".into()],
+            risks: "none".into(),
+            assumptions: "none".into(),
+        };
+        let call = ToolCallData {
+            id: "report".into(),
+            name: "done".into(),
+            arguments: json!({
+                "summary": "Docs path was not confirmed",
+                "completed_acceptance": [],
+                "remaining_acceptance": ["acceptance 1", "acceptance 2"],
+                "acceptance_evidence": [],
+                "next_steps": "confirm docs"
+            })
+            .to_string(),
+            thought_signature: None,
+        };
+        // No <task_requirements> contract and no executed tools: we cannot
+        // prove nothing remains, so the honest report must be admitted.
+        let messages = vec![crate::task_origin::user_message(
+            "Update the greeting output",
+            crate::task_origin::MessageOrigin::User,
+        )];
+        let report = prepare(
+            &[call],
+            Some(&plan),
+            &messages,
+            None,
+            &ObservationEvidence::default(),
+        )
+        .unwrap()
+        .expect("undeclared work cannot be proven discharged");
+        assert!(report.render().contains("acceptance 2"));
+    }
+
+    #[test]
+    fn blocked_report_rejected_when_every_declared_requirement_is_discharged() {
+        let plan = PlanBlock {
+            goal: "greet".into(),
+            steps: vec!["edit".into(), "verify".into()],
+            acceptance_criteria: vec!["greeting updated".into(), "verified".into()],
+            risks: "none".into(),
+            assumptions: "none".into(),
+        };
+        let root = "Fix the greeting.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"greet\",\"description\":\"update greeting\",\"artifacts\":[{\"path\":\"src/greet.py\",\"kind\":\"source\"}],\"checks\":[{\"command\":\"python3 test_greet.py\",\"baseline_failure\":false}]}]}\n</task_requirements>";
+        let mut messages = vec![crate::task_origin::user_message(
+            root,
+            crate::task_origin::MessageOrigin::User,
+        )];
+        for (id, name, arguments, content) in [
+            (
+                "edit1",
+                "patch_file",
+                json!({"path":"src/greet.py","search":"?","replace":"!"}).to_string(),
+                "OK: patched 'src/greet.py'",
+            ),
+            (
+                "exec1",
+                "exec",
+                json!({"command":"python3 test_greet.py"}).to_string(),
+                "OK (exit_code: 0)\n1 passed",
+            ),
+        ] {
+            messages.push(json!({"role":"assistant","tool_calls":[{"id":id,"type":"function","function":{"name":name,"arguments":arguments}}]}));
+            messages.push(json!({"role":"tool","tool_call_id":id,"content":content}));
+        }
+        let call = ToolCallData {
+            id: "report".into(),
+            name: "done".into(),
+            arguments: json!({
+                "summary": "claimed unfinished",
+                "completed_acceptance": [],
+                "remaining_acceptance": ["acceptance 1", "acceptance 2"],
+                "acceptance_evidence": [],
+                "next_steps": "none"
+            })
+            .to_string(),
+            thought_signature: None,
+        };
+        let error = prepare(
+            &[call],
+            Some(&plan),
+            &messages,
+            None,
+            &ObservationEvidence::default(),
+        )
+        .unwrap()
+        .unwrap_err();
+        assert!(error.to_string().contains("already discharged"), "{error}");
     }
 }

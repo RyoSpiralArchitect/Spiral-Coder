@@ -3960,6 +3960,129 @@ fn validate_plan_against_task_contract_rejects_drift() {
 }
 
 #[test]
+fn continuation_contract_alignment_terms_admit_resumed_task_vocabulary() {
+    let mut contract = derive_task_contract(
+        "Continue from the previous session state. Finish the smallest safe fix \
+         and run tests before you finish. Final answer must include the changed file path.",
+        false,
+        true,
+        VerificationLevel::Behavioral,
+    );
+    let plan = PlanBlock {
+        goal: "Restore greeting punctuation so the failing test passes".to_string(),
+        steps: vec![
+            "Inspect the code".to_string(),
+            "Apply the punctuation edit".to_string(),
+            "Verify the behavior".to_string(),
+        ],
+        acceptance_criteria: vec!["the previously failing test now passes".to_string()],
+        risks: "wrong file".to_string(),
+        assumptions: "fixture compiles".to_string(),
+    };
+
+    // A meta resume prompt cannot prove alignment on its own wording.
+    assert!(validate_plan_against_task_contract(&plan, &contract).is_err());
+
+    contract.alignment_terms = vec![
+        "Fix the failing test with the smallest code change. Run tests before you finish."
+            .to_string(),
+    ];
+    assert!(validate_plan_against_task_contract(&plan, &contract).is_ok());
+}
+
+#[test]
+fn is_continuation_request_detects_resume_and_bridge_roots() {
+    for text in [
+        "Continue from the previous session state. Finish the smallest safe fix.",
+        crate::task_origin::continuation_prompt("en"),
+        crate::task_origin::continuation_prompt("ja"),
+        crate::task_origin::continuation_prompt("fr"),
+        "Resume the interrupted session repair",
+    ] {
+        assert!(is_continuation_request(text), "{text}");
+    }
+    for text in [
+        "Fix the failing test with the smallest code change.",
+        "Locate the slash command handler without editing files",
+        "rewrite README prose",
+    ] {
+        assert!(!is_continuation_request(text), "{text}");
+    }
+}
+
+#[test]
+fn governor_block_relief_counts_recovered_distinct_blocks_only() {
+    let plan_block = json!({"role":"tool","tool_call_id":"c1","content":"GOVERNOR BLOCKED\n\n[Plan Gate] Missing valid <plan>."});
+    let shape_block = json!({"role":"tool","tool_call_id":"c2","content":"GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan must include at least 2 numbered steps in `steps:`"});
+    let turn = json!({"role":"assistant","content":"next turn"});
+    let tool_ok = json!({"role":"tool","tool_call_id":"ok","content":"[src/lib.rs] (13 lines)"});
+
+    // A block with no later successful tool turn earns nothing yet.
+    let trailing = vec![
+        json!({"role":"user","content":"task"}),
+        turn.clone(),
+        plan_block.clone(),
+        turn.clone(),
+    ];
+    assert_eq!(governor_block_iter_relief(&trailing), 0);
+    assert_eq!(count_governor_blocked_tool_turns(&trailing), 1);
+
+    // Once a later tool result lands, each distinct gate reason earns one
+    // iteration; identical repeats of a reason do not stack.
+    let recovered = vec![
+        json!({"role":"user","content":"task"}),
+        turn.clone(),
+        plan_block.clone(),
+        tool_ok.clone(),
+        turn.clone(),
+        shape_block.clone(),
+        tool_ok.clone(),
+        turn.clone(),
+        plan_block.clone(),
+        tool_ok.clone(),
+        turn.clone(),
+    ];
+    assert_eq!(governor_block_iter_relief(&recovered), 2);
+    assert_eq!(count_governor_blocked_tool_turns(&recovered), 3);
+
+    // Blocks from a prior task do not leak into the current task window.
+    let prior_task = vec![
+        json!({"role":"user","content":"first task"}),
+        turn.clone(),
+        plan_block.clone(),
+        tool_ok.clone(),
+        json!({"role":"user","content":"new task"}),
+        turn.clone(),
+    ];
+    assert_eq!(governor_block_iter_relief(&prior_task), 0);
+    assert_eq!(count_governor_blocked_tool_turns(&prior_task), 0);
+}
+
+#[test]
+fn prior_task_texts_drops_only_the_current_root() {
+    let messages = vec![
+        crate::task_origin::user_message(
+            "Fix the failing test",
+            crate::task_origin::MessageOrigin::User,
+        ),
+        json!({"role":"assistant","content":"working"}),
+        crate::task_origin::user_message(
+            "runtime note",
+            crate::task_origin::MessageOrigin::Runtime,
+        ),
+        json!({"role":"user","content":"Continue from the previous session state"}),
+    ];
+    assert_eq!(
+        crate::task_origin::prior_task_texts(&messages),
+        vec!["Fix the failing test"]
+    );
+    assert_eq!(
+        crate::task_origin::prior_task_texts(&messages[..1]),
+        Vec::<&str>::new()
+    );
+}
+
+#[test]
 fn instruction_priority_uses_authority_then_explicit_then_locality_then_sequence() {
     let root = InstructionPriority {
         authority: InstructionAuthority::Root,
