@@ -1200,13 +1200,13 @@ productive/task charges cannot exceed `request_limit`.
 
 Independently of any shared budget, the Coder loop also grants bounded
 iteration relief for governor-blocked turns (`governor_signals.rs`). A
-`GOVERNOR BLOCKED` tool message earns back one iteration only once a later
-successful tool result proves the block was recovered from, and identical gate
-reasons earn only once, capped at `GOVERNOR_BLOCK_ITER_RELIEF` (4). A block
-that is still the run's latest tool outcome earns nothing: the model must
-recover before relief applies. The allowance recomputes from message history
-each iteration, so pruning cannot shrink earned relief and a resumed session
-counts only blocks inside the current task window.
+`GOVERNOR BLOCKED` tool message earns back one iteration once any later
+non-blocking tool result shows the agent moved past the block, and identical
+gate reasons earn only once, capped at `GOVERNOR_BLOCK_ITER_RELIEF` (4). A
+block that is still the run's latest tool outcome earns nothing: the model
+must act again before relief applies. The allowance recomputes from retained
+message history each iteration and counts only blocks inside the current task
+window.
 
 Coder may consume at most `request_limit - observer_reserved_requests` task
 requests. Slices distribute remaining Coder allowance over still-reserved
