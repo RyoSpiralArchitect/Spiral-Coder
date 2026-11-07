@@ -41,6 +41,19 @@ pub fn root_user_text(messages: &[Value]) -> &str {
         .unwrap_or("")
 }
 
+/// Human request texts that precede the current task root. A continuation-style
+/// root ("continue the previous session") carries no task vocabulary of its own;
+/// these earlier requests are the actual resumed task wording.
+pub fn prior_task_texts(messages: &[Value]) -> Vec<&str> {
+    let mut texts: Vec<&str> = messages
+        .iter()
+        .filter(|message| is_human_request(message))
+        .filter_map(|message| message["content"].as_str())
+        .collect();
+    texts.pop();
+    texts
+}
+
 /// Local provenance and recovery snapshots never enter the provider wire schema.
 pub fn provider_messages(messages: &[Value]) -> Vec<Value> {
     messages

@@ -279,7 +279,9 @@ mod tests {
             ))
             .await
             .unwrap();
-            mock.assert_hits(1);
+            // A seeded governor block recovered by this run's read earns one
+            // extra iteration, so that variant reaches the mock twice.
+            mock.assert_hits(usize::from(blocked_first && valid) + 1);
             assert_eq!(
                 result.messages.iter().any(|m| m["role"] == "tool"
                     && m["tool_call_id"] == "resumed-read"

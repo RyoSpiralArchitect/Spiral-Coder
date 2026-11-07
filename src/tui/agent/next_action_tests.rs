@@ -114,8 +114,10 @@ async fn rejected_signed_batch_reaches_next_request_with_every_correlated_refusa
         "https://generativelanguage.googleapis.com/v1beta/openai",
     );
     assert!(google.iter().any(|m| m == signed));
+    // The recovered batch rejection earns one extra iteration, which replays
+    // the same scripted read.
     first.assert_hits(1);
-    second.assert_hits(1);
+    second.assert_hits(2);
     assert!(!root.path().join("sentinel.txt").exists());
     assert_eq!(crate::task_origin::root_user_text(&result.messages), goal);
     assert!(result
@@ -182,8 +184,10 @@ async fn repaired_json_plan_can_run_first_declared_baseline_after_protocol_refus
     )
     .await
     .unwrap();
+    // The recovered protocol refusal earns one extra iteration, which replays
+    // the same scripted baseline exec.
     first.assert_hits(1);
-    second.assert_hits(1);
+    second.assert_hits(2);
     let evidence = evidence_packet::project(&result.messages, None);
     assert!(
         evidence
@@ -359,7 +363,7 @@ async fn diagnostic_read_reopens_work_without_executing_an_unoffered_edit_or_ver
         }
         assert_eq!(
             (first.hits(), read.hits(), reopened.hits()),
-            (1, 1, 1),
+            (1, 1, 2),
             "{display}\n{:?}",
             result.messages
         );

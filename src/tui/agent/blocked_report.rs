@@ -52,6 +52,15 @@ pub(super) fn prepare(
             observation,
         )?;
         let obligations = task_obligations::project(messages, test_cmd);
+        // A blocked report needs a live blocker. When every declared
+        // requirement and pending check is already discharged, the honest
+        // closeout is `done` — not an incomplete report.
+        anyhow::ensure!(
+            !(obligations.pending_exact_checks.is_empty()
+                && obligations.pending_recovery.is_empty()
+                && requirement_proof::issue(messages, test_cmd).is_none()),
+            "Blocked report claims remaining work, but every declared requirement and pending check is already discharged. Call `done` with the accurate completed/remaining split, or execute the one missing step first."
+        );
         Ok(BlockedReport {
             summary: summary.into(),
             remaining_acceptance,
@@ -144,5 +153,43 @@ mod tests {
             &ObservationEvidence::default()
         )
         .is_none());
+    }
+
+    #[test]
+    fn blocked_report_rejected_when_nothing_remains_pending() {
+        let plan = PlanBlock {
+            goal: "greet".into(),
+            steps: vec!["edit".into()],
+            acceptance_criteria: vec!["greeting updated".into(), "docs updated".into()],
+            risks: "none".into(),
+            assumptions: "none".into(),
+        };
+        let call = ToolCallData {
+            id: "report".into(),
+            name: "done".into(),
+            arguments: json!({
+                "summary": "Docs path was not confirmed",
+                "completed_acceptance": [],
+                "remaining_acceptance": ["acceptance 1", "acceptance 2"],
+                "acceptance_evidence": [],
+                "next_steps": "confirm docs"
+            })
+            .to_string(),
+            thought_signature: None,
+        };
+        let messages = vec![crate::task_origin::user_message(
+            "Update the greeting output",
+            crate::task_origin::MessageOrigin::User,
+        )];
+        let error = prepare(
+            &[call],
+            Some(&plan),
+            &messages,
+            None,
+            &ObservationEvidence::default(),
+        )
+        .unwrap()
+        .unwrap_err();
+        assert!(error.to_string().contains("already discharged"), "{error}");
     }
 }

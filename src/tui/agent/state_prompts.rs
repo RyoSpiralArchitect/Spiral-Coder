@@ -396,7 +396,33 @@ pub(crate) fn derive_task_contract(
         hard_constraints,
         non_goals,
         output_shape,
+        alignment_terms: Vec::new(),
     }
+}
+
+/// Continuation-style roots resume an earlier task instead of stating one, so
+/// the plan-drift gate must read task vocabulary from the requests they resume.
+pub(crate) fn is_continuation_request(text: &str) -> bool {
+    let s = text.to_ascii_lowercase();
+    const MARKERS: &[&str] = &[
+        "continue from",
+        "continue the",
+        "continue working",
+        "previous session",
+        "previous state",
+        "resume the",
+        "resume from",
+        "unfinished task",
+        "interrupted session",
+        "pick up where",
+        "reprends",
+        "reprendre",
+        "inachev",
+        "前回の",
+        "未完了",
+        "再開",
+    ];
+    MARKERS.iter().any(|marker| s.contains(marker))
 }
 
 pub(crate) fn build_task_contract_prompt(
@@ -441,7 +467,10 @@ pub(crate) fn validate_plan_against_task_contract(
     plan: &PlanBlock,
     contract: &TaskContract,
 ) -> Result<()> {
-    let task_tokens = keyword_tokens(contract.task_summary.as_str());
+    let mut task_tokens = keyword_tokens(contract.task_summary.as_str());
+    for term in &contract.alignment_terms {
+        task_tokens.extend(keyword_tokens(term));
+    }
     if task_tokens.len() < 3 {
         return Ok(());
     }

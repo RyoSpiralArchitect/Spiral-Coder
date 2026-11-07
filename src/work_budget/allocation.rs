@@ -20,6 +20,9 @@ pub(crate) enum RequestCharge {
 pub(crate) enum TransportRejection {
     NativeArguments,
     ObserverEnvelope,
+    /// A completed response whose only tool call was governor-blocked: no tool
+    /// executed, so the request belongs to the bounded transport repair pool.
+    GovernorBlock,
 }
 
 impl WorkState {

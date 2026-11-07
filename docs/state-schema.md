@@ -1066,6 +1066,16 @@ and a new human task cannot authorize this exception. It is not a claim of work
 completed. Multiline numbered lists use line-start ordinals, so an in-step
 `(exit 1) recorded` is data; the seven-step ceiling is unchanged.
 
+The task contract's plan-drift check scores plan vocabulary against the task
+summary, which is truncated to a single line. For a continuation-style root
+(resume/bridge prompts detected by `is_continuation_request`), that summary is
+meta wording like "continue the previous session", so `TaskContract.alignment_terms`
+carries the earlier human request texts from `task_origin::prior_task_texts` as
+additional on-topic vocabulary. Ordinary roots and genuine steering requests
+populate no terms, keeping the original token-overlap rejection unchanged. The
+terms are alignment vocabulary only: they admit no obligations, grant no
+execution or completion authority, and never cross the wire schema.
+
 `protocol_framing.rs` can read a leading `plan>` or standalone `>` with a full
 closing `</plan>` and exactly one of each authored plan field. It rejects
 quotations, duplicate/missing fields, nested tags and ambiguous closing tags.
@@ -1177,15 +1187,26 @@ The latter accepts 0..8; reservation must leave a Coder request.
 
 Every wire attempt retains its monotonic `RequestReceipt.id`, role, duration,
 usage and status. Its `charge` defaults to `task`. A completed response rejected
-before **any** execution for invalid native argument JSON or invalid Observer
-JSON/typed envelope may be reclassified as `transport`, with a typed
-`transport_rejection` reason. This consumes the separate pool; no receipt is
+before **any** execution for invalid native argument JSON, invalid Observer
+JSON/typed envelope, or a governor-blocked tool call may be reclassified as
+`transport`, with a typed `transport_rejection` reason. This consumes the
+separate pool; no receipt is
 removed. The cursor captured before the request must identify exactly one wire
 attempt for that role. EOF without a terminal frame, interrupted streams, compatibility retry sequences,
-semantic/action/evidence/governor rejection and actual failed checks remain task
+semantic/action/evidence rejection and actual failed checks remain task
 requests. Deterministic opening-brace repair makes no extra request and uses no
 transport credit. The hard wire ceiling is `request_limit + transport_repair_limit`;
 productive/task charges cannot exceed `request_limit`.
+
+Independently of any shared budget, the Coder loop also grants bounded
+iteration relief for governor-blocked turns (`governor_signals.rs`). A
+`GOVERNOR BLOCKED` tool message earns back one iteration only once a later
+successful tool result proves the block was recovered from, and identical gate
+reasons earn only once, capped at `GOVERNOR_BLOCK_ITER_RELIEF` (4). A block
+that is still the run's latest tool outcome earns nothing: the model must
+recover before relief applies. The allowance recomputes from message history
+each iteration, so pruning cannot shrink earned relief and a resumed session
+counts only blocks inside the current task window.
 
 Coder may consume at most `request_limit - observer_reserved_requests` task
 requests. Slices distribute remaining Coder allowance over still-reserved

@@ -124,6 +124,7 @@ fn done_acceptance_recovery_hint_lists_valid_criterion_references() {
     let hint = build_done_acceptance_recovery_hint(
         "done.completed_acceptance must reference a real current acceptance criterion",
         Some(&plan),
+        &[],
         &["grep -q \"src/tui/review_panel.rs\" .spiral-coder/tui_replay.json".into()],
         &[],
         false,
@@ -149,12 +150,14 @@ fn done_acceptance_recovery_hint_uses_flat_rows_for_flat_schema() {
     let hint = build_done_acceptance_recovery_hint(
         "done.acceptance_evidence must cover every completed acceptance criterion exactly once",
         Some(&plan),
+        &["acceptance 1".to_string()],
         &["cargo test".into()],
         &[],
         true,
     );
     assert!(hint.contains("acceptance 1 | <paste a command"), "{hint}");
     assert!(!hint.contains("\"criterion\":\"acceptance 1\""), "{hint}");
+    assert!(hint.contains("\"acceptance 1 | cargo test\""), "{hint}");
 }
 
 #[test]
@@ -162,6 +165,7 @@ fn done_acceptance_recovery_hint_omits_criteria_list_without_plan() {
     let hint = build_done_acceptance_recovery_hint(
         "done requires a valid current plan",
         None,
+        &[],
         &[],
         &[],
         false,

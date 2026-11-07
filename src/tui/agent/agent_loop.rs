@@ -162,8 +162,49 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         &autosaver,
     )
     .await;
-    for iter in 0..max_iters.saturating_add(repair_iterations) {
-        if iter >= max_iters.saturating_add(repair_extensions)
+    // Governor-blocked turns execute no tool, so each one earns back at most
+    // one extra iteration (bounded) plus a transport-pool refund when a shared
+    // work budget is active. The counter is seeded from message history and
+    // then tracks deltas, so pruning can never shrink the earned relief.
+    let mut governor_blocked_turns = count_governor_blocked_tool_turns(&messages);
+    let mut prev_blocked_turns = governor_blocked_turns;
+    for iter in 0..max_iters
+        .saturating_add(repair_iterations)
+        .saturating_add(GOVERNOR_BLOCK_ITER_RELIEF)
+    {
+        let observed_blocked_turns = count_governor_blocked_tool_turns(&messages);
+        let newly_blocked = observed_blocked_turns.saturating_sub(prev_blocked_turns);
+        prev_blocked_turns = observed_blocked_turns;
+        if newly_blocked > 0 {
+            governor_blocked_turns = governor_blocked_turns.saturating_add(newly_blocked);
+            if let Some(context) = crate::work_budget::current() {
+                for _ in 0..newly_blocked {
+                    let cursor = context.budget.snapshot().requests.len().saturating_sub(1);
+                    if context
+                        .budget
+                        .reject_transport(
+                            "coder",
+                            cursor,
+                            crate::work_budget::TransportRejection::GovernorBlock,
+                        )
+                        .unwrap_or(false)
+                    {
+                        emit_telemetry_event(
+                            &tx,
+                            "transport_rejection",
+                            json!({"role":"coder", "cursor":cursor, "reason":"governor_block"}),
+                        )
+                        .await;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        let iter_allowance = max_iters
+            .saturating_add(repair_extensions)
+            .saturating_add(governor_block_iter_relief(&messages));
+        if iter >= iter_allowance
             || crate::work_budget::current().is_some_and(|c| c.budget.slice_remaining("coder") == 0)
         {
             break;
@@ -263,7 +304,7 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
 
         let shared_remaining =
             crate::work_budget::current().map(|c| c.budget.remaining_for("coder"));
-        let remaining_calls = shared_remaining.unwrap_or(max_iters.saturating_sub(iter));
+        let remaining_calls = shared_remaining.unwrap_or(iter_allowance.saturating_sub(iter));
         let pending_checks = task_harness::benchmark_proof::pending_commands(
             crate::task_origin::current_task_messages(&messages),
             &root_user_text,
@@ -356,14 +397,14 @@ Be concise: prefer tool calls over long explanations. Summarise intermediate res
         // ── Final iteration handoff ─────────────────────────────────────────
         // If we hit the iteration cap, force a clean handoff via `done()` so
         // long sessions are resumable (session JSON keeps full history).
-        if shared_remaining.map_or(iter + 1 == max_iters, |remaining| remaining == 1) {
+        if shared_remaining.map_or(iter + 1 == iter_allowance, |remaining| remaining == 1) {
             let final_hint = format!(
                 "[Final Iteration — iter {}/{}]\n\
 This is the LAST model call for this run.\n\
 - Only ONE tool call remains. If the task is fully done AND verified, call `done` now with the requested final report. Do not rerun already successful checks just for reporting.\n\
 - If the task is NOT done: call `done` with (1) verified-complete items, (2) satisfied acceptance criteria, (3) remaining acceptance criteria, (4) verification evidence for completed criteria, and (5) the exact next commands/files to continue on the next run.",
                 iter + 1,
-                max_iters
+                iter_allowance
             );
             match pending_system_hint.as_mut() {
                 Some(existing) => {
@@ -4849,7 +4890,7 @@ Execute this minimal action instead: {}",
                 task_harness,
                 active_plan: &active_plan,
                 iter,
-                max_iters,
+                max_iters: iter_allowance,
                 this_step,
                 root_user_text: &root_user_text,
                 test_cmd: test_cmd.as_deref(),
@@ -4996,7 +5037,7 @@ Execute this minimal action instead: {}",
             task_harness,
             active_plan: &active_plan,
             iter,
-            max_iters,
+            max_iters: iter_allowance,
             this_step,
             root_user_text: &root_user_text,
             test_cmd: test_cmd.as_deref(),

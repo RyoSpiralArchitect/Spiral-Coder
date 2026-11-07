@@ -104,6 +104,63 @@ pub(super) fn is_missing_gate_governor_block(msg: &serde_json::Value) -> bool {
     is_missing_plan_governor_block(msg) || is_missing_think_governor_block(msg)
 }
 
+/// Iteration relief granted to governor-blocked turns: a rejected call executed
+/// nothing, so it cannot be the run's productive work.
+pub(super) const GOVERNOR_BLOCK_ITER_RELIEF: usize = 4;
+
+pub(super) fn count_governor_blocked_tool_turns(messages: &[serde_json::Value]) -> usize {
+    crate::task_origin::current_task_messages(messages)
+        .iter()
+        .filter(|msg| {
+            msg.get("role").and_then(|v| v.as_str()) == Some("tool")
+                && msg
+                    .get("content")
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|content| content.contains("GOVERNOR BLOCKED"))
+        })
+        .count()
+}
+
+fn governor_block_signature(content: &str) -> &str {
+    content
+        .split("GOVERNOR BLOCKED")
+        .nth(1)
+        .unwrap_or("")
+        .lines()
+        .find(|line| !line.trim().is_empty())
+        .map(|line| line.trim())
+        .unwrap_or("")
+}
+
+/// Blocked turns earn back at most one iteration each, and only once a later
+/// tool result proves the block was recovered from. A block with no successful
+/// later tool turn is still the run's open wound — extending the budget there
+/// cannot help — and identical repeats of the same gate reason earn only once.
+pub(super) fn governor_block_iter_relief(messages: &[serde_json::Value]) -> usize {
+    let task = crate::task_origin::current_task_messages(messages);
+    let is_block = |msg: &serde_json::Value| {
+        msg.get("role").and_then(|v| v.as_str()) == Some("tool")
+            && msg
+                .get("content")
+                .and_then(|v| v.as_str())
+                .is_some_and(|content| content.contains("GOVERNOR BLOCKED"))
+    };
+    let mut signatures = std::collections::BTreeSet::new();
+    for (index, msg) in task.iter().enumerate() {
+        if !is_block(msg) {
+            continue;
+        }
+        let recovered = task[index + 1..].iter().any(|later| {
+            later.get("role").and_then(|v| v.as_str()) == Some("tool") && !is_block(later)
+        });
+        if recovered {
+            let content = msg["content"].as_str().unwrap_or("");
+            signatures.insert(governor_block_signature(content).to_string());
+        }
+    }
+    signatures.len().min(GOVERNOR_BLOCK_ITER_RELIEF)
+}
+
 pub(super) fn consecutive_missing_plan_blocks_for_tool(
     messages: &[serde_json::Value],
     tc: &ToolCallData,

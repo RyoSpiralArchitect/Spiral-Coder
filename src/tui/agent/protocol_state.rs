@@ -123,6 +123,10 @@ pub(crate) struct TaskContract {
     pub(crate) hard_constraints: Vec<String>,
     pub(crate) non_goals: Vec<String>,
     pub(crate) output_shape: Vec<String>,
+    /// Extra on-topic task vocabulary for plan-drift alignment. Populated only
+    /// for continuation-style roots (resume/bridge prompts), whose own wording
+    /// is meta and cannot prove a plan is about the resumed task.
+    pub(crate) alignment_terms: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
