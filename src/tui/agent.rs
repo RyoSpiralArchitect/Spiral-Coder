@@ -95,6 +95,7 @@ mod next_action;
 mod next_action_tests;
 #[cfg(test)]
 mod no_change_runtime_tests;
+mod no_tool_call;
 mod observation_stall;
 mod outcome;
 mod output_compaction;

@@ -337,10 +337,14 @@ Progress on the pre-dispatch phases:
   rewrite, read-only observation/follow-up coercions, task-harness
   benchmark/fix-existing/follow-up/repo-scaffold stages, and the
   reflection-ledger action telemetry (~370 lines out of `agent_loop.rs`).
+- `no_tool_call.rs` — `NoToolCtx` + `handle_no_tool_call` own the entire
+  no-tool-call turn branch: recovery-focus hints, realize deferral,
+  implied-action execution, goal checks, text-finalize and done paths
+  (~1.7k lines out of `agent_loop.rs`, which is now under 2.9k).
 
 Still inside the loop: the remaining prompt-assembly and response-parsing
-phases around the stream call, the impact-enforcement block before the
-coercion pipeline, and the append-turn section after dispatch.
+phases around the stream call, and the impact-enforcement block before
+the coercion pipeline.
 
 ## Quality gate for each extraction
 
