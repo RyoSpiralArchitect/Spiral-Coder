@@ -168,6 +168,18 @@
      "name": "exec"
     },
     {
+     "kind": "tool_root_file_exists",
+     "path": "demo_repo/README.md"
+    },
+    {
+     "kind": "tool_root_file_exists",
+     "path": "demo_repo/.gitignore"
+    },
+    {
+     "kind": "tool_root_file_exists",
+     "path": "demo_repo/.git/HEAD"
+    },
+    {
      "kind": "assistant_contains",
      "value": "demo_repo"
     },

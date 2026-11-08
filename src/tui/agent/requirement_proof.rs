@@ -432,7 +432,90 @@ pub(super) fn mutation_issue(
             status.pending_baselines.join("\n")
         ));
     }
-    None
+    repeated_successful_mutation_issue(messages, tc)
+}
+
+/// An identical patch/apply_diff call that already succeeded lands the same
+/// bytes again — usually as accidental duplication that cannot fix a failing
+/// test. A different successful mutation in between can legitimately make the
+/// same edit necessary, so only an uninterrupted repeat is blocked.
+fn repeated_successful_mutation_issue(
+    messages: &[Value],
+    tc: &crate::streaming::ToolCallData,
+) -> Option<String> {
+    if !matches!(tc.name.as_str(), "patch_file" | "apply_diff") {
+        return None;
+    }
+    // Full argument equality (key-order insensitive) — canonical signatures
+    // compact long args and could merge two genuinely different patches.
+    let attempted_args = serde_json::from_str::<Value>(tc.arguments.as_str()).ok()?;
+    let attempted = super::canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
+        .unwrap_or_else(|| format!("{}({})", tc.name, tc.arguments));
+    let mut pending: std::collections::BTreeMap<String, (String, String)> =
+        std::collections::BTreeMap::new();
+    let mut prior_success = false;
+    for message in crate::task_origin::current_task_messages(messages) {
+        match message.get("role").and_then(Value::as_str) {
+            Some("assistant") => {
+                for call in message
+                    .get("tool_calls")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                {
+                    let id = call.get("id").and_then(Value::as_str).unwrap_or("");
+                    let Some(function) = call.get("function") else {
+                        continue;
+                    };
+                    let name = function.get("name").and_then(Value::as_str).unwrap_or("");
+                    let arguments = function
+                        .get("arguments")
+                        .and_then(Value::as_str)
+                        .unwrap_or("");
+                    if id.is_empty() {
+                        continue;
+                    }
+                    pending.insert(id.to_string(), (name.to_string(), arguments.to_string()));
+                }
+            }
+            Some("tool") => {
+                let Some((name, arguments)) = message
+                    .get("tool_call_id")
+                    .and_then(Value::as_str)
+                    .and_then(|id| pending.remove(id))
+                else {
+                    continue;
+                };
+                if !matches!(name.as_str(), "patch_file" | "apply_diff") {
+                    continue;
+                }
+                let content = message.get("content").and_then(Value::as_str).unwrap_or("");
+                let succeeded = content.trim_start().starts_with("OK: patched '")
+                    || content.trim_start().starts_with("OK: applied ");
+                if !succeeded {
+                    continue;
+                }
+                let same_args = serde_json::from_str::<Value>(arguments.as_str())
+                    .ok()
+                    .is_some_and(|prior| prior == attempted_args);
+                if same_args {
+                    prior_success = true;
+                } else {
+                    // A different landed edit can restore the exact search
+                    // text, making a repeat meaningful again.
+                    prior_success = false;
+                }
+            }
+            _ => {}
+        }
+    }
+    prior_success.then(|| {
+        format!(
+            "[Requirement Gate]\nThis exact {} call already succeeded earlier; an identical mutation lands the same bytes again and cannot change the failing check.\nAttempted next action: {}\nRequired now: diagnose the auto-test failure output and make a *different* minimal edit — a different search/replace, hunk, or target. If the current file content no longer matches your assumption, re-read the target once first.",
+            tc.name,
+            super::compact_one_line(&attempted, 180),
+        )
+    })
 }
 
 pub(super) fn issue(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
@@ -656,5 +739,91 @@ mod delivery_tests {
         assert!(Status::default()
             .delivery_floor(&checks, &pending)
             .is_none());
+    }
+}
+
+#[cfg(test)]
+mod repeated_mutation_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn exchange(messages: &mut Vec<Value>, id: &str, tool: &str, args: Value, output: &str) {
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}),
+            json!({"role":"tool","tool_call_id":id,"content":output}),
+        ]);
+    }
+
+    fn patch_args() -> Value {
+        json!({"path":"src/lib.rs","search":"old guard","replace":"new guard"})
+    }
+
+    fn attempt() -> crate::streaming::ToolCallData {
+        crate::streaming::ToolCallData {
+            id: "next".into(),
+            name: "patch_file".into(),
+            arguments: patch_args().to_string(),
+            thought_signature: None,
+        }
+    }
+
+    #[test]
+    fn identical_successful_patch_repeat_is_blocked_until_another_edit_lands() {
+        let mut messages = vec![json!({"role":"user","content":"Fix it."})];
+        assert!(mutation_issue(&attempt(), &messages, None).is_none());
+        exchange(
+            &mut messages,
+            "p1",
+            "patch_file",
+            patch_args(),
+            "OK: patched 'src/lib.rs' (+1 lines)",
+        );
+        let issue = mutation_issue(&attempt(), &messages, None)
+            .expect("uninterrupted identical success must be blocked");
+        assert!(issue.contains("already succeeded"), "{issue}");
+        // A failed retry does not reset the record; a different landed edit does.
+        exchange(
+            &mut messages,
+            "p2",
+            "patch_file",
+            patch_args(),
+            "GOVERNOR BLOCKED",
+        );
+        assert!(mutation_issue(&attempt(), &messages, None).is_some());
+        exchange(
+            &mut messages,
+            "p3",
+            "patch_file",
+            json!({"path":"src/lib.rs","search":"other","replace":"else"}),
+            "OK: patched 'src/lib.rs' (+1 lines)",
+        );
+        assert!(
+            mutation_issue(&attempt(), &messages, None).is_none(),
+            "an intervening different edit can restore the search text"
+        );
+    }
+
+    #[test]
+    fn failed_or_unchanged_patches_do_not_arm_the_repeat_gate() {
+        let mut messages = vec![json!({"role":"user","content":"Fix it."})];
+        exchange(
+            &mut messages,
+            "p1",
+            "patch_file",
+            patch_args(),
+            "ERROR: search string not found",
+        );
+        assert!(mutation_issue(&attempt(), &messages, None).is_none());
+        exchange(
+            &mut messages,
+            "p2",
+            "apply_diff",
+            json!({"path":"src/lib.rs","diff":"@@ -1 +1 @@\n-old\n+new"}),
+            "OK: applied 1/1 hunk(s) to 'src/lib.rs'",
+        );
+        assert!(
+            mutation_issue(&attempt(), &messages, None).is_none(),
+            "a different tool signature is a different mutation"
+        );
     }
 }
