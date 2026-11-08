@@ -157,6 +157,7 @@ mod success_output;
 mod task_harness;
 pub(crate) mod task_obligations;
 mod telemetry;
+mod tool_coercion;
 mod tool_dispatch;
 mod tool_result_history;
 #[cfg(test)]
