@@ -783,37 +783,65 @@ pub(crate) fn resolve_existing_rust_path(path: &str, tool_root: Option<&str>) ->
 /// original spelling for display, but observation maps key on this form so
 /// `./src/x.rs` and `src/x.rs` resolve to the same cached read.
 pub(crate) fn normalize_observed_path(path: &str) -> String {
-    let mut trimmed = path.trim();
-    while let Some(rest) = trimmed.strip_prefix("./") {
-        trimmed = rest;
+    let mut normalized = path.trim().to_string();
+    while normalized.contains("//") {
+        normalized = normalized.replace("//", "/");
     }
-    trimmed.trim_end_matches('/').to_string()
+    while let Some(rest) = normalized.strip_prefix("./") {
+        normalized = rest.to_string();
+    }
+    if normalized != "/" {
+        normalized = normalized.trim_end_matches('/').to_string();
+    }
+    if normalized.is_empty() {
+        return if path.trim().starts_with('/') {
+            "/".to_string()
+        } else {
+            ".".to_string()
+        };
+    }
+    normalized
 }
 
-fn read_file_call_target(tc: &Value) -> Option<(String, bool)> {
-    let arguments = tc
+fn read_file_call_target(tc: &Value) -> Option<String> {
+    let path = tc
         .get("function")
         .and_then(|v| v.get("arguments"))
         .and_then(|v| v.as_str())
-        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())?;
-    let path = arguments
-        .get("path")
-        .and_then(|v| v.as_str())
-        .map(str::to_string)
-        .unwrap_or_default();
+        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
+        .and_then(|value| {
+            value
+                .get("path")
+                .and_then(|v| v.as_str())
+                .map(str::to_string)
+        })?;
     if path.trim().is_empty() {
         return None;
     }
-    let ranged = arguments.get("start_line").is_some() || arguments.get("end_line").is_some();
-    Some((normalize_observed_path(path.as_str()), ranged))
+    Some(normalize_observed_path(path.as_str()))
 }
 
-/// Paths that were fully read at least once (no start/end line range). A
-/// ranged read still lands in `successful_read_contents`, but only an
-/// unranged read proves the whole file was observed.
-pub(crate) fn successful_full_read_paths(messages: &[Value]) -> std::collections::BTreeSet<String> {
+/// A tool result only proves a complete file read when it carries the native
+/// full-read header and no partial/truncation markers. This excludes failed
+/// reads (`ERROR reading '...'`), ranged reads, and unranged reads capped by
+/// the character limit.
+fn is_complete_read_result(content: &str) -> bool {
+    let trimmed = content.trim_start();
+    let Some(header) = trimmed.lines().next() else {
+        return false;
+    };
+    if !(header.starts_with('[') && header.contains(" lines, ") && header.contains(" bytes)")) {
+        return false;
+    }
+    !trimmed.contains("partial file]") && !trimmed.contains("…truncated")
+}
+
+/// Latest authenticated full-read body per normalized path. Unlike
+/// `successful_read_contents`, partial and failed reads never land here, so
+/// the stored body is the honest complete snapshot at observation time.
+pub(crate) fn successful_full_read_contents(messages: &[Value]) -> BTreeMap<String, String> {
     let mut pending: BTreeMap<String, String> = BTreeMap::new();
-    let mut out = std::collections::BTreeSet::new();
+    let mut out = BTreeMap::new();
 
     for msg in messages {
         let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
@@ -833,10 +861,8 @@ pub(crate) fn successful_full_read_paths(messages: &[Value]) -> std::collections
                     if id.is_empty() || name != "read_file" {
                         continue;
                     }
-                    if let Some((path, ranged)) = read_file_call_target(tc) {
-                        if !ranged {
-                            pending.insert(id.to_string(), path);
-                        }
+                    if let Some(path) = read_file_call_target(tc) {
+                        pending.insert(id.to_string(), path);
                     }
                 }
             }
@@ -850,8 +876,12 @@ pub(crate) fn successful_full_read_paths(messages: &[Value]) -> std::collections
                     continue;
                 };
                 let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-                if non_exec_tool_succeeded(content) {
-                    out.insert(path);
+                if is_complete_read_result(content) {
+                    let body = content
+                        .split_once('\n')
+                        .map(|(_, rest)| rest.to_string())
+                        .unwrap_or_default();
+                    out.insert(path, body);
                 }
             }
             _ => {}
@@ -882,7 +912,7 @@ pub(crate) fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, S
                     if id.is_empty() || name != "read_file" {
                         continue;
                     }
-                    if let Some((path, _)) = read_file_call_target(tc) {
+                    if let Some(path) = read_file_call_target(tc) {
                         pending.insert(id.to_string(), path);
                     }
                 }

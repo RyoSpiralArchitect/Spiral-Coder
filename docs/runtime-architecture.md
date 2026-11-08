@@ -196,11 +196,12 @@ since the last confirmed mutation, using the same correlated-result window as
 MetaHarness. Rejected writes cannot reset that window. A real edit permits a
 fresh inspection, while unchanged read loops remain bounded. When the same attempted
 call is governor-blocked repeatedly by this gate, the block escalates: when the
-attempted `read_file` targets a path already read in full (no line range), the block
-rejects the re-read inline and injects its latest observed contents; ranged reads and
-other repeated observations are pointed at `list_dir`/`search_files`. Observation
-maps key on a normalized lexical path so `./src/x.rs` and `src/x.rs` share one cached
-read and one repeated-call signature.
+attempted `read_file` targets a path whose latest authenticated complete read is
+known (native full-read header, no partial/truncation marker), the block rejects the
+re-read inline and injects that snapshot; partial, failed, and never-read targets are
+pointed at `list_dir`/`search_files`. Observation maps key on a normalized lexical
+path so `./src/x.rs` and `src/x.rs` share one cached read and one repeated-call
+signature.
 Fix-existing focus inference prefers a module file that was actually read (e.g.
 `tui/mod.rs`) over a guessed sibling (`tui.rs`) that may not exist on disk.
 The separate new-repo scaffold

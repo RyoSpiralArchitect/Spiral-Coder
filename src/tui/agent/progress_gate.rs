@@ -101,26 +101,18 @@ pub(in super::super) fn build_progress_gate_block(
             serde_json::from_str::<Value>(tc.arguments.as_str())
                 .ok()
                 .and_then(|args| {
-                    let path = args.get("path").and_then(Value::as_str)?;
-                    let ranged = args.get("start_line").is_some() || args.get("end_line").is_some();
-                    Some((super::fix_existing::normalize_observed_path(path), ranged))
+                    args.get("path")
+                        .and_then(Value::as_str)
+                        .map(|path| super::fix_existing::normalize_observed_path(path))
                 })
         } else {
             None
         };
-        let cached = attempted_read
-            .as_ref()
-            .filter(|(_, ranged)| !ranged)
-            .and_then(|(path, _)| {
-                if !super::fix_existing::successful_full_read_paths(messages)
-                    .contains(path.as_str())
-                {
-                    return None;
-                }
-                super::fix_existing::successful_read_contents(messages)
-                    .get(path)
-                    .map(|body| (path.clone(), body.clone()))
-            });
+        let cached = attempted_read.as_ref().and_then(|path| {
+            super::fix_existing::successful_full_read_contents(messages)
+                .get(path)
+                .map(|body| (path.clone(), body.clone()))
+        });
         if let Some((path, body)) = cached {
             let mut excerpt = compact_one_line(&body, 400);
             if excerpt.trim().is_empty() {
@@ -609,6 +601,79 @@ mod tests {
             "a partial read must not claim the whole file is known: {second}"
         );
         assert!(!second.contains("already read in full"), "{second}");
+    }
+
+    #[test]
+    fn repeated_block_injects_last_full_read_not_later_partial() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs"}),
+            "[src/full.rs] (2 lines, 20 bytes)\nfull body",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs","start_line":1,"end_line":1}),
+            "[src/full.rs] (2 lines, 20 bytes) [range: lines 1-1; partial file]\nfull",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/full.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("full body"),
+            "the authenticated full read must be injected, not the later partial: {second}"
+        );
+    }
+
+    #[test]
+    fn repeated_block_skips_failed_read_results() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            "[src/ghost.rs] (1 lines, 10 bytes)\nseen once",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            "ERROR reading 'src/ghost.rs': file deleted between reads",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/ghost.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("seen once"),
+            "the last authenticated full read is still injectable: {second}"
+        );
+        assert!(!second.contains("ERROR reading"), "{second}");
     }
 
     #[test]
