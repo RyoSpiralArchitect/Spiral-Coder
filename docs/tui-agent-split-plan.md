@@ -332,10 +332,15 @@ Progress on the pre-dispatch phases:
   transitions (~240 lines out of `agent_loop.rs`).
 - `plan_governor.rs` — `build_reflection_prompt_with_recent` composes the
   reflection system prompt with the two most recent reflection summaries.
+- `tool_coercion.rs` — `CoercionCtx` + `coerce_authored_tool_call` own the
+  sequential coercion pipeline for the authored call: resolution-memory
+  rewrite, read-only observation/follow-up coercions, task-harness
+  benchmark/fix-existing/follow-up/repo-scaffold stages, and the
+  reflection-ledger action telemetry (~370 lines out of `agent_loop.rs`).
 
 Still inside the loop: the remaining prompt-assembly and response-parsing
-phases around the stream call, and the coercion/gate section between the
-done and apply_diff dispatches.
+phases around the stream call, the impact-enforcement block before the
+coercion pipeline, and the append-turn section after dispatch.
 
 ## Quality gate for each extraction
 
