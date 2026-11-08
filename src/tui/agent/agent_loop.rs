@@ -187,7 +187,6 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         let observed_executed_turns = count_executed_tool_turns(&messages);
         let wholly_rejected =
             newly_blocked > 0 && observed_executed_turns.saturating_sub(prev_executed_turns) == 0;
-        prev_executed_turns = observed_executed_turns;
         if newly_blocked > 0 {
             governor_blocked_turns = governor_blocked_turns.saturating_add(newly_blocked);
             if !wholly_rejected {
@@ -242,6 +241,10 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         prune_old_tool_results(&mut messages);
         prune_old_assistant_messages(&mut messages);
         prune_message_window_with_context(&mut messages, &exec_verification_context);
+        // Re-seed deltas on the post-prune transcript so removed history can
+        // never cancel a new blocked/executed turn in the next measurement.
+        prev_blocked_turns = count_governor_blocked_tool_turns(&messages);
+        prev_executed_turns = count_executed_tool_turns(&messages);
         emit_telemetry_event(
             &tx,
             "agent_iter",
