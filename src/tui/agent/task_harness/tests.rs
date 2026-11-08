@@ -2289,3 +2289,28 @@ fn repair_repo_scaffold_write_tool_call_rewrites_to_readme_after_gitignore() {
     assert!(rewritten.arguments.contains("# demo_repo\\n"));
     assert!(coerced.contains("README.md"));
 }
+
+#[test]
+fn infer_fix_existing_focus_prefers_read_mod_rs_over_unread_sibling() {
+    let messages = vec![
+        json!({"role":"user","content":"Fix the existing module."}),
+        json!({"role":"assistant","tool_calls":[{
+            "id":"c1","type":"function",
+            "function":{"name":"read_file","arguments":"{\"path\":\"src/lib.rs\"}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"c1",
+            "content":"[src/lib.rs] (1 lines, 13 bytes)\npub mod tui;"}),
+        json!({"role":"assistant","tool_calls":[{
+            "id":"c2","type":"function",
+            "function":{"name":"read_file","arguments":"{\"path\":\"src/tui/mod.rs\"}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"c2",
+            "content":"[src/tui/mod.rs] (1 lines, 15 bytes)\npub mod agent;"}),
+    ];
+    let focus = infer_fix_existing_focus(&messages).expect("focus");
+    assert_eq!(
+        focus,
+        FixExistingFocus::PatchImplementation("src/tui/mod.rs".to_string()),
+        "the already-read mod.rs must win over the guessed src/tui.rs"
+    );
+}

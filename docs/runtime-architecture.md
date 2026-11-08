@@ -194,7 +194,13 @@ policies and learned progress prompt overlays are suspended for that phase; save
 requirements remain intact. The progress gate counts successful observations
 since the last confirmed mutation, using the same correlated-result window as
 MetaHarness. Rejected writes cannot reset that window. A real edit permits a
-fresh inspection, while unchanged read loops remain bounded. The separate new-repo scaffold
+fresh inspection, while unchanged read loops remain bounded. When the same attempted
+call is governor-blocked repeatedly, the block escalates: an already-read `read_file`
+target is blacklisted inline with its latest observed contents (re-reading keeps being
+blocked), while other repeated observations are pointed at `list_dir`/`search_files`.
+Fix-existing focus inference prefers a module file that was actually read (e.g.
+`tui/mod.rs`) over a guessed sibling (`tui.rs`) that may not exist on disk.
+The separate new-repo scaffold
 policy retains the recovery gate's existing missing-artifact creation allowance.
 
 Current code:

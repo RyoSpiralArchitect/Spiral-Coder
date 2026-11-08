@@ -94,9 +94,35 @@ pub(in super::super) fn build_progress_gate_block(
     let escalation = if prior_same_blocks == 0 {
         String::new()
     } else {
-        format!(
-            "This exact call was already governor-blocked {prior_same_blocks} time(s). Do not retry it. If the target path may not exist, first run `list_dir` on its parent directory or `search_files` for the symbol to confirm the real location.\n"
-        )
+        let mut escalation = format!(
+            "This exact call was already governor-blocked {prior_same_blocks} time(s). Do not retry it.\n"
+        );
+        let attempted_path = (tc.name == "read_file")
+            .then(|| {
+                serde_json::from_str::<Value>(tc.arguments.as_str())
+                    .ok()
+                    .and_then(|args| args.get("path").and_then(Value::as_str).map(str::to_string))
+            })
+            .flatten();
+        let cached = attempted_path.as_deref().and_then(|path| {
+            super::fix_existing::successful_read_contents(messages)
+                .get(path)
+                .map(|body| (path.to_string(), body.clone()))
+        });
+        if let Some((path, body)) = cached {
+            let mut excerpt = compact_one_line(&body, 400);
+            if excerpt.trim().is_empty() {
+                excerpt = "(empty file)".to_string();
+            }
+            escalation.push_str(&format!(
+                "`{path}` is blacklisted: it was already read successfully and re-reading it will keep being blocked. Latest observed contents: {excerpt}\n"
+            ));
+        } else {
+            escalation.push_str(
+                "If the target path may not exist, first run `list_dir` on its parent directory or `search_files` for the symbol to confirm the real location.\n",
+            );
+        }
+        escalation
     };
     if !verify_without_mutation {
         if harness.lane == TaskLane::FixExisting
@@ -524,9 +550,44 @@ mod tests {
             "{second}"
         );
         assert!(
+            second.contains("blacklisted") && second.contains("Latest observed contents"),
+            "already-read path must be blacklisted with cached contents: {second}"
+        );
+    }
+
+    #[test]
+    fn repeated_block_for_non_read_attempt_still_points_at_location_tools() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "list_dir",
+            json!({"dir":"src"}),
+            "[list_dir: 'src' ・ 2 item(s)]\nlib.rs\ntui/",
+        );
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "list_dir", json!({"dir": "src"}));
+        let first = attempt(&messages).expect("repeat observation is gated");
+        tool(
+            &mut messages,
+            "list_dir",
+            json!({"dir": "src"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("already governor-blocked 1 time(s)"),
+            "{second}"
+        );
+        assert!(
             second.contains("list_dir") && second.contains("search_files"),
             "{second}"
         );
+        assert!(!second.contains("blacklisted"), "{second}");
     }
 
     #[test]

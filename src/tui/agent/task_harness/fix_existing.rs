@@ -478,9 +478,25 @@ pub(crate) fn infer_fix_existing_focus(messages: &[Value]) -> Option<FixExisting
                 .iter()
                 .find_map(|entry| {
                     let body = reads.get(*entry)?;
-                    rust_module_file_candidates(entry, body)
+                    let candidates: Vec<String> = rust_module_file_candidates(entry, body)
                         .into_iter()
-                        .find(|candidate| !candidate.trim().is_empty() && eligible(candidate))
+                        .flat_map(|candidate| {
+                            let mut forms = vec![candidate.clone()];
+                            if let Some(stem) = candidate.strip_suffix(".rs") {
+                                forms.push(format!("{stem}/mod.rs"));
+                            }
+                            forms
+                        })
+                        .filter(|candidate| !candidate.trim().is_empty() && eligible(candidate))
+                        .collect();
+                    // A module file that was already read is a better focus than
+                    // a guessed sibling (e.g. `tui.rs`) that may not exist on
+                    // disk when the repo uses `tui/mod.rs` layout.
+                    candidates
+                        .iter()
+                        .find(|candidate| reads.contains_key(candidate.as_str()))
+                        .or_else(|| candidates.first())
+                        .cloned()
                 })
         })
         .or_else(|| latest_successful_source_read_path(messages, &reads).filter(eligible))?;
