@@ -478,9 +478,25 @@ pub(crate) fn infer_fix_existing_focus(messages: &[Value]) -> Option<FixExisting
                 .iter()
                 .find_map(|entry| {
                     let body = reads.get(*entry)?;
-                    rust_module_file_candidates(entry, body)
+                    let candidates: Vec<String> = rust_module_file_candidates(entry, body)
                         .into_iter()
-                        .find(|candidate| !candidate.trim().is_empty() && eligible(candidate))
+                        .flat_map(|candidate| {
+                            let mut forms = vec![candidate.clone()];
+                            if let Some(stem) = candidate.strip_suffix(".rs") {
+                                forms.push(format!("{stem}/mod.rs"));
+                            }
+                            forms
+                        })
+                        .filter(|candidate| !candidate.trim().is_empty() && eligible(candidate))
+                        .collect();
+                    // A module file that was already read is a better focus than
+                    // a guessed sibling (e.g. `tui.rs`) that may not exist on
+                    // disk when the repo uses `tui/mod.rs` layout.
+                    candidates
+                        .iter()
+                        .find(|candidate| reads.contains_key(candidate.as_str()))
+                        .or_else(|| candidates.first())
+                        .cloned()
                 })
         })
         .or_else(|| latest_successful_source_read_path(messages, &reads).filter(eligible))?;
@@ -727,6 +743,7 @@ pub(crate) fn latest_successful_source_read_path(
             let Some(path) = path else {
                 continue;
             };
+            let path = normalize_observed_path(path.as_str());
             if reads.contains_key(path.as_str())
                 && path.starts_with("src/")
                 && path.ends_with(".rs")
@@ -762,6 +779,117 @@ pub(crate) fn resolve_existing_rust_path(path: &str, tool_root: Option<&str>) ->
     }
 }
 
+/// Lexical identity for an observed file path. Tool arguments keep their
+/// original spelling for display, but observation maps key on this form so
+/// `./src/x.rs` and `src/x.rs` resolve to the same cached read.
+pub(crate) fn normalize_observed_path(path: &str) -> String {
+    let mut normalized = path.trim().to_string();
+    while normalized.contains("//") {
+        normalized = normalized.replace("//", "/");
+    }
+    while let Some(rest) = normalized.strip_prefix("./") {
+        normalized = rest.to_string();
+    }
+    if normalized != "/" {
+        normalized = normalized.trim_end_matches('/').to_string();
+    }
+    if normalized.is_empty() {
+        return if path.trim().starts_with('/') {
+            "/".to_string()
+        } else {
+            ".".to_string()
+        };
+    }
+    normalized
+}
+
+fn read_file_call_target(tc: &Value) -> Option<String> {
+    let path = tc
+        .get("function")
+        .and_then(|v| v.get("arguments"))
+        .and_then(|v| v.as_str())
+        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
+        .and_then(|value| {
+            value
+                .get("path")
+                .and_then(|v| v.as_str())
+                .map(str::to_string)
+        })?;
+    if path.trim().is_empty() {
+        return None;
+    }
+    Some(normalize_observed_path(path.as_str()))
+}
+
+/// A tool result only proves a complete file read when it carries the native
+/// full-read header and no partial/truncation markers. This excludes failed
+/// reads (`ERROR reading '...'`), ranged reads, and unranged reads capped by
+/// the character limit.
+fn is_complete_read_result(content: &str) -> bool {
+    let trimmed = content.trim_start();
+    let Some(header) = trimmed.lines().next() else {
+        return false;
+    };
+    if !(header.starts_with('[') && header.contains(" lines, ") && header.contains(" bytes)")) {
+        return false;
+    }
+    !trimmed.contains("partial file]") && !trimmed.contains("…truncated")
+}
+
+/// Latest authenticated full-read body per normalized path. Unlike
+/// `successful_read_contents`, partial and failed reads never land here, so
+/// the stored body is the honest complete snapshot at observation time.
+pub(crate) fn successful_full_read_contents(messages: &[Value]) -> BTreeMap<String, String> {
+    let mut pending: BTreeMap<String, String> = BTreeMap::new();
+    let mut out = BTreeMap::new();
+
+    for msg in messages {
+        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
+        match role {
+            "assistant" => {
+                let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
+                    continue;
+                };
+                for tc in tool_calls {
+                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
+                    let name = tc
+                        .get("function")
+                        .and_then(|v| v.get("name"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .trim();
+                    if id.is_empty() || name != "read_file" {
+                        continue;
+                    }
+                    if let Some(path) = read_file_call_target(tc) {
+                        pending.insert(id.to_string(), path);
+                    }
+                }
+            }
+            "tool" => {
+                let tool_call_id = msg
+                    .get("tool_call_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .trim();
+                let Some(path) = pending.remove(tool_call_id) else {
+                    continue;
+                };
+                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
+                if is_complete_read_result(content) {
+                    let body = content
+                        .split_once('\n')
+                        .map(|(_, rest)| rest.to_string())
+                        .unwrap_or_default();
+                    out.insert(path, body);
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 pub(crate) fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, String> {
     let mut pending: BTreeMap<String, String> = BTreeMap::new();
     let mut out = BTreeMap::new();
@@ -784,19 +912,7 @@ pub(crate) fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, S
                     if id.is_empty() || name != "read_file" {
                         continue;
                     }
-                    let path = tc
-                        .get("function")
-                        .and_then(|v| v.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                        .and_then(|value| {
-                            value
-                                .get("path")
-                                .and_then(|v| v.as_str())
-                                .map(str::to_string)
-                        })
-                        .unwrap_or_default();
-                    if !path.trim().is_empty() {
+                    if let Some(path) = read_file_call_target(tc) {
                         pending.insert(id.to_string(), path);
                     }
                 }
@@ -1207,7 +1323,10 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
         let parsed = serde_json::from_str::<Value>(tc.arguments.as_str()).ok()?;
         let path = parsed.get("path").and_then(|v| v.as_str())?.trim();
         let diff = parsed.get("diff").and_then(|v| v.as_str())?.trim();
-        if path.is_empty() || diff.is_empty() || !reads.contains_key(path) {
+        if path.is_empty()
+            || diff.is_empty()
+            || !reads.contains_key(normalize_observed_path(path).as_str())
+        {
             return None;
         }
         return Some(tc.clone());
@@ -1223,7 +1342,7 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
                 .map(str::to_string)
         })
         .or_else(|| extract_loose_json_string_field(tc.arguments.as_str(), "path"))?;
-    if !reads.contains_key(path.as_str()) {
+    if !reads.contains_key(normalize_observed_path(path.as_str()).as_str()) {
         return None;
     }
     let search = parsed
@@ -1255,7 +1374,7 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
         tc,
         path.as_str(),
         search.as_deref().unwrap_or(""),
-        reads.get(path.as_str())?,
+        reads.get(normalize_observed_path(path.as_str()).as_str())?,
         root_user_text,
     )
 }

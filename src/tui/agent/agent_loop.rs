@@ -168,6 +168,11 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     // then tracks deltas, so pruning can never shrink the earned relief.
     let mut governor_blocked_turns = count_governor_blocked_tool_turns(&messages);
     let mut prev_blocked_turns = governor_blocked_turns;
+    // Cursor of the wire request that produced the most recent model response.
+    // Governor blocks are attributed to that response's receipt rather than a
+    // positional guess at the end of the request log, so interleaved or
+    // multi-attempt receipts cannot be misclassified into the transport pool.
+    let mut last_request_cursor: Option<usize> = None;
     for iter in 0..max_iters
         .saturating_add(repair_iterations)
         .saturating_add(GOVERNOR_BLOCK_ITER_RELIEF)
@@ -179,7 +184,9 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             governor_blocked_turns = governor_blocked_turns.saturating_add(newly_blocked);
             if let Some(context) = crate::work_budget::current() {
                 for _ in 0..newly_blocked {
-                    let cursor = context.budget.snapshot().requests.len().saturating_sub(1);
+                    let Some(cursor) = last_request_cursor else {
+                        break;
+                    };
                     if context
                         .budget
                         .reject_transport(
@@ -897,6 +904,7 @@ This is the LAST model call for this run.\n\
         let request_cursor = request_context
             .as_ref()
             .map(|c| c.budget.snapshot().requests.len());
+        last_request_cursor = request_cursor;
         let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
             stream_openai_compat_json(
                 &client_clone,

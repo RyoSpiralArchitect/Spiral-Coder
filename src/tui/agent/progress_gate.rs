@@ -94,9 +94,39 @@ pub(in super::super) fn build_progress_gate_block(
     let escalation = if prior_same_blocks == 0 {
         String::new()
     } else {
-        format!(
-            "This exact call was already governor-blocked {prior_same_blocks} time(s). Do not retry it. If the target path may not exist, first run `list_dir` on its parent directory or `search_files` for the symbol to confirm the real location.\n"
-        )
+        let mut escalation = format!(
+            "This exact call was already governor-blocked {prior_same_blocks} time(s). Do not retry it.\n"
+        );
+        let attempted_read = if tc.name == "read_file" {
+            serde_json::from_str::<Value>(tc.arguments.as_str())
+                .ok()
+                .and_then(|args| {
+                    args.get("path")
+                        .and_then(Value::as_str)
+                        .map(|path| super::fix_existing::normalize_observed_path(path))
+                })
+        } else {
+            None
+        };
+        let cached = attempted_read.as_ref().and_then(|path| {
+            super::fix_existing::successful_full_read_contents(messages)
+                .get(path)
+                .map(|body| (path.clone(), body.clone()))
+        });
+        if let Some((path, body)) = cached {
+            let mut excerpt = compact_one_line(&body, 400);
+            if excerpt.trim().is_empty() {
+                excerpt = "(empty file)".to_string();
+            }
+            escalation.push_str(&format!(
+                "`{path}` was already read in full: re-reading it stays blocked in this phase. Latest observed contents: {excerpt}\n"
+            ));
+        } else {
+            escalation.push_str(
+                "If the target path may not exist, first run `list_dir` on its parent directory or `search_files` for the symbol to confirm the real location.\n",
+            );
+        }
+        escalation
     };
     if !verify_without_mutation {
         if harness.lane == TaskLane::FixExisting
@@ -524,9 +554,193 @@ mod tests {
             "{second}"
         );
         assert!(
+            second.contains("already read in full")
+                && second.contains("Latest observed contents")
+                && second.contains("x"),
+            "already-read path must inject its cached contents: {second}"
+        );
+        assert!(
+            !second.contains("list_dir") && !second.contains("search_files"),
+            "cached injection replaces the location hint: {second}"
+        );
+    }
+
+    #[test]
+    fn repeated_block_on_ranged_read_keeps_location_hint() {
+        let mut messages = vec![crate::task_origin::user_message(
+            "Repair src/big.rs",
+            crate::task_origin::MessageOrigin::User,
+        )];
+        messages.extend(observed_project("Cargo.toml"));
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        // A failed exec clears observation history, so the partial read must
+        // come after it to count as previously observed.
+        let ranged_args = json!({"path":"src/big.rs","start_line":1,"end_line":20});
+        tool(
+            &mut messages,
+            "read_file",
+            ranged_args.clone(),
+            "[src/big.rs] (500 lines, 9000 bytes) [range: lines 1-20; partial file]\nbody",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", ranged_args.clone());
+        let first = attempt(&messages).expect("repeat ranged read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            ranged_args.clone(),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same ranged attempt still gated");
+        assert!(
+            second.contains("list_dir") && second.contains("search_files"),
+            "a partial read must not claim the whole file is known: {second}"
+        );
+        assert!(!second.contains("already read in full"), "{second}");
+    }
+
+    #[test]
+    fn repeated_block_injects_last_full_read_not_later_partial() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs"}),
+            "[src/full.rs] (2 lines, 20 bytes)\nfull body",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs","start_line":1,"end_line":1}),
+            "[src/full.rs] (2 lines, 20 bytes) [range: lines 1-1; partial file]\nfull",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/full.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/full.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("full body"),
+            "the authenticated full read must be injected, not the later partial: {second}"
+        );
+    }
+
+    #[test]
+    fn repeated_block_skips_failed_read_results() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            "[src/ghost.rs] (1 lines, 10 bytes)\nseen once",
+        );
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            "ERROR reading 'src/ghost.rs': file deleted between reads",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/ghost.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/ghost.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("seen once"),
+            "the last authenticated full read is still injectable: {second}"
+        );
+        assert!(!second.contains("ERROR reading"), "{second}");
+    }
+
+    #[test]
+    fn repeated_block_matches_cached_read_across_dot_slash_alias() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"./src/missing.rs"}),
+            "[./src/missing.rs] (2 lines, 20 bytes)\naliased body",
+        );
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        // Same canonical attempted call as the `./` read via an explicit prior
+        // block, then a raw `src/` spelling retry must still find the cache.
+        let attempt = |msgs: &[Value]| blocked(msgs, "read_file", json!({"path":"src/missing.rs"}));
+        let first = attempt(&messages).expect("repeat read is gated");
+        tool(
+            &mut messages,
+            "read_file",
+            json!({"path":"src/missing.rs"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("aliased body"),
+            "normalized path lookup must find the ./ read: {second}"
+        );
+    }
+
+    #[test]
+    fn repeated_block_for_non_read_attempt_still_points_at_location_tools() {
+        let mut messages = observed_project("Cargo.toml");
+        tool(
+            &mut messages,
+            "list_dir",
+            json!({"dir":"src"}),
+            "[list_dir: 'src' ・ 2 item(s)]\nlib.rs\ntui/",
+        );
+        tool(
+            &mut messages,
+            "exec",
+            json!({"command":"cargo test 2>&1"}),
+            "FAILED (exit_code: 1)\nstdout:\ntest failed",
+        );
+        let attempt = |msgs: &[Value]| blocked(msgs, "list_dir", json!({"dir": "src"}));
+        let first = attempt(&messages).expect("repeat observation is gated");
+        tool(
+            &mut messages,
+            "list_dir",
+            json!({"dir": "src"}),
+            &format!("GOVERNOR BLOCKED\n\n{first}"),
+        );
+        let second = attempt(&messages).expect("same attempt still gated");
+        assert!(
+            second.contains("already governor-blocked 1 time(s)"),
+            "{second}"
+        );
+        assert!(
             second.contains("list_dir") && second.contains("search_files"),
             "{second}"
         );
+        assert!(!second.contains("blacklisted"), "{second}");
     }
 
     #[test]
