@@ -108,6 +108,13 @@ pub(super) fn is_missing_gate_governor_block(msg: &serde_json::Value) -> bool {
 /// nothing, so it cannot be the run's productive work.
 pub(super) const GOVERNOR_BLOCK_ITER_RELIEF: usize = 4;
 
+/// Block results are emitted as `GOVERNOR BLOCKED\n\n<block>` at the start of
+/// the tool content. Quoting the marker inside a real result body (read_file,
+/// exec stdout) must not classify the turn as blocked.
+fn is_governor_block_content(content: &str) -> bool {
+    content.trim_start().starts_with("GOVERNOR BLOCKED")
+}
+
 pub(super) fn count_governor_blocked_tool_turns(messages: &[serde_json::Value]) -> usize {
     crate::task_origin::current_task_messages(messages)
         .iter()
@@ -116,7 +123,7 @@ pub(super) fn count_governor_blocked_tool_turns(messages: &[serde_json::Value]) 
                 && msg
                     .get("content")
                     .and_then(|v| v.as_str())
-                    .is_some_and(|content| content.contains("GOVERNOR BLOCKED"))
+                    .is_some_and(is_governor_block_content)
         })
         .count()
 }
@@ -132,7 +139,7 @@ pub(super) fn count_executed_tool_turns(messages: &[serde_json::Value]) -> usize
                 && msg
                     .get("content")
                     .and_then(|v| v.as_str())
-                    .is_some_and(|content| !content.contains("GOVERNOR BLOCKED"))
+                    .is_some_and(|content| !is_governor_block_content(content))
         })
         .count()
 }
@@ -159,7 +166,7 @@ pub(super) fn governor_block_iter_relief(messages: &[serde_json::Value]) -> usiz
             && msg
                 .get("content")
                 .and_then(|v| v.as_str())
-                .is_some_and(|content| content.contains("GOVERNOR BLOCKED"))
+                .is_some_and(is_governor_block_content)
     };
     let mut signatures = std::collections::BTreeSet::new();
     for (index, msg) in task.iter().enumerate() {

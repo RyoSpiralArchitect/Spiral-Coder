@@ -432,7 +432,7 @@ pub(super) fn mutation_issue(
             status.pending_baselines.join("\n")
         ));
     }
-    repeated_successful_mutation_issue(messages, tc)
+    repeated_successful_mutation_issue(messages, tc, test_cmd)
 }
 
 /// An identical patch/apply_diff call that already succeeded lands the same
@@ -442,13 +442,35 @@ pub(super) fn mutation_issue(
 fn repeated_successful_mutation_issue(
     messages: &[Value],
     tc: &crate::streaming::ToolCallData,
+    test_cmd: Option<&str>,
 ) -> Option<String> {
     if !matches!(tc.name.as_str(), "patch_file" | "apply_diff") {
         return None;
     }
-    // Full argument equality (key-order insensitive) — canonical signatures
-    // compact long args and could merge two genuinely different patches.
+    // Non-idempotent patches legitimately repeat: a replace that keeps its
+    // search anchor (e.g. `entry\n# INSERT`) lands again cleanly, and
+    // `json_pointer: "/-"` appends are unbounded by design.
     let attempted_args = serde_json::from_str::<Value>(tc.arguments.as_str()).ok()?;
+    if tc.name == "patch_file" {
+        let search = attempted_args
+            .get("search")
+            .and_then(Value::as_str)
+            .unwrap_or("");
+        let replace = attempted_args
+            .get("replace")
+            .and_then(Value::as_str)
+            .unwrap_or("");
+        if !search.is_empty() && replace.contains(search) {
+            return None;
+        }
+        if attempted_args
+            .get("json_pointer")
+            .and_then(Value::as_str)
+            .is_some_and(|p| p.ends_with("/-"))
+        {
+            return None;
+        }
+    }
     let attempted = super::canonicalize_tool_call_command(tc.name.as_str(), tc.arguments.as_str())
         .unwrap_or_else(|| format!("{}({})", tc.name, tc.arguments));
     let mut pending: std::collections::BTreeMap<String, (String, String)> =
@@ -486,25 +508,38 @@ fn repeated_successful_mutation_issue(
                 else {
                     continue;
                 };
-                if !matches!(name.as_str(), "patch_file" | "apply_diff") {
-                    continue;
-                }
                 let content = message.get("content").and_then(Value::as_str).unwrap_or("");
-                let succeeded = content.trim_start().starts_with("OK: patched '")
-                    || content.trim_start().starts_with("OK: applied ");
-                if !succeeded {
+                // Any other landed mutation — including write_file and action
+                // execs such as `git checkout` — can restore the exact search
+                // text and make a repeat meaningful again.
+                let landed_mutation = match name.as_str() {
+                    "patch_file" | "apply_diff" => {
+                        let trimmed = content.trim_start();
+                        trimmed.starts_with("OK: patched '") || trimmed.starts_with("OK: applied ")
+                    }
+                    "write_file" => content.trim_start().starts_with("OK: wrote '"),
+                    "exec" => crate::execution_evidence::exec_succeeded(content)
+                        && super::parse_exec_command_from_args(arguments.as_str()).is_some_and(
+                            |command| {
+                                super::exec_verification::ExecVerificationContext::from_messages(
+                                    test_cmd,
+                                    crate::task_origin::current_task_messages(messages),
+                                )
+                                .classify(&command)
+                                .kind
+                                    == super::ExecKind::Action
+                            },
+                        ),
+                    _ => false,
+                };
+                if !landed_mutation {
                     continue;
                 }
-                let same_args = serde_json::from_str::<Value>(arguments.as_str())
-                    .ok()
-                    .is_some_and(|prior| prior == attempted_args);
-                if same_args {
-                    prior_success = true;
-                } else {
-                    // A different landed edit can restore the exact search
-                    // text, making a repeat meaningful again.
-                    prior_success = false;
-                }
+                let same_args = name == tc.name
+                    && serde_json::from_str::<Value>(arguments.as_str())
+                        .ok()
+                        .is_some_and(|prior| prior == attempted_args);
+                prior_success = same_args;
             }
             _ => {}
         }
@@ -825,5 +860,71 @@ mod repeated_mutation_tests {
             mutation_issue(&attempt(), &messages, None).is_none(),
             "a different tool signature is a different mutation"
         );
+    }
+}
+
+#[cfg(test)]
+mod repeat_gate_hardening_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn exchange(messages: &mut Vec<Value>, id: &str, tool: &str, args: Value, output: &str) {
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}),
+            json!({"role":"tool","tool_call_id":id,"content":output}),
+        ]);
+    }
+
+    #[test]
+    fn anchor_retaining_and_append_patches_may_repeat() {
+        let mut messages = vec![json!({"role":"user","content":"Fix it."})];
+        let anchor = json!({"path":"src/lib.rs","search":"# INSERT","replace":"entry\n# INSERT"});
+        exchange(
+            &mut messages,
+            "p1",
+            "patch_file",
+            anchor.clone(),
+            "OK: patched 'src/lib.rs' (+1 lines)",
+        );
+        let call = crate::streaming::ToolCallData {
+            id: "n".into(),
+            name: "patch_file".into(),
+            arguments: anchor.to_string(),
+            thought_signature: None,
+        };
+        assert!(mutation_issue(&call, &messages, None).is_none());
+        let append = crate::streaming::ToolCallData {
+            arguments: json!({"path":"data.json","json_pointer":"/values/-","json_value":"0"})
+                .to_string(),
+            ..call
+        };
+        assert!(mutation_issue(&append, &messages, None).is_none());
+    }
+
+    #[test]
+    fn write_file_success_resets_the_repeat_gate() {
+        let mut messages = vec![json!({"role":"user","content":"Fix it."})];
+        let args = json!({"path":"src/lib.rs","search":"old","replace":"new"});
+        exchange(
+            &mut messages,
+            "p1",
+            "patch_file",
+            args.clone(),
+            "OK: patched 'src/lib.rs' (+1 lines)",
+        );
+        exchange(
+            &mut messages,
+            "w1",
+            "write_file",
+            json!({"path":"src/lib.rs","content":"old"}),
+            "OK: wrote 'src/lib.rs'",
+        );
+        let call = crate::streaming::ToolCallData {
+            id: "n".into(),
+            name: "patch_file".into(),
+            arguments: args.to_string(),
+            thought_signature: None,
+        };
+        assert!(mutation_issue(&call, &messages, None).is_none());
     }
 }
