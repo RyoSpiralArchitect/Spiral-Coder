@@ -180,7 +180,6 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     {
         let observed_blocked_turns = count_governor_blocked_tool_turns(&messages);
         let newly_blocked = observed_blocked_turns.saturating_sub(prev_blocked_turns);
-        prev_blocked_turns = observed_blocked_turns;
         // A transport refund requires a wholly rejected response: new blocked
         // turns and zero executed turns since the previous iteration. Mixed
         // batches (executed + blocked) stay task work.
@@ -868,32 +867,18 @@ This is the LAST model call for this run.\n\
         }
 
         if let Some(reason) = reflection_required.as_ref() {
-            let mut reflection_prompt =
-                build_reflection_prompt(reason, &mem, state, file_tool_consec_failures);
-            let recent =
-                crate::agent_session::recent_reflection_summaries_from_messages(&messages, 2);
-            if !recent.is_empty() {
-                reflection_prompt.push_str("\n\n[Recent Reflections]\n");
-                for r in recent.iter().rev() {
-                    let delta = r.goal_delta.as_deref().unwrap_or("-");
-                    let strat = r.strategy_change.as_deref().unwrap_or("-");
-                    let wrong = compact_one_line(r.wrong_assumption.as_deref().unwrap_or("-"), 90);
-                    let next =
-                        compact_one_line(r.next_minimal_action.as_deref().unwrap_or("-"), 90);
-                    reflection_prompt.push_str(&format!(
-                        "- delta={delta} strategy={strat} wrong={wrong} next={next}\n"
-                    ));
-                }
-                reflection_prompt.push_str("Do not repeat the same mistake verbatim.\n");
-            }
             msgs_for_call.push(json!({
                 "role": "system",
-                "content": reflection_prompt
+                "content": build_reflection_prompt_with_recent(
+                    reason,
+                    &mem,
+                    state,
+                    file_tool_consec_failures,
+                    &messages,
+                ),
             }));
         }
 
-        let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
-        let cfg_clone = cfg.clone();
         let mut tools_clone = next_action.tools(&tools);
         let check_catalog = check_catalog::Catalog::from_root(&root_user_text);
         if let Some(prompt) =
@@ -911,87 +896,20 @@ This is the LAST model call for this run.\n\
             &final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref()),
         );
         msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
-        let client_clone = client.clone();
-        let msgs_clone = msgs_for_call;
 
-        let request_context = crate::work_budget::current();
-        let request_cursor = request_context
-            .as_ref()
-            .map(|c| c.budget.snapshot().requests.len());
-        last_request_cursor = request_cursor;
-        let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
-            stream_openai_compat_json(
-                &client_clone,
-                &cfg_clone,
-                &msgs_clone,
-                Some(&tools_clone),
-                token_tx,
-            )
-            .await
-        }));
-        let _cancel_stream = crate::streaming::request_guard::AbortOnDrop::new(&stream_task);
-
-        let mut assistant_text = String::new();
-        let mut tool_calls: Vec<ToolCallData> = Vec::new();
-        let mut stream_error: Option<String> = None;
-
-        while let Some(token) = token_rx.recv().await {
-            match token {
-                StreamToken::Delta(s) => {
-                    assistant_text.push_str(&s);
-                    let _ = tx.send(StreamToken::Delta(s)).await;
-                }
-                StreamToken::ToolCall(tc) => {
-                    if matches!(cfg.provider, ProviderKind::Mistral) {
-                        let (blocks, normalized) = normalize_mistral_tool_call(&tc);
-                        for block_text in blocks {
-                            if !assistant_text.trim().is_empty() {
-                                assistant_text.push_str("\n\n");
-                            }
-                            assistant_text.push_str(&block_text);
-                            let _ = tx.send(StreamToken::Delta(block_text)).await;
-                        }
-                        if let Some(tc) = normalized {
-                            tool_calls.push(tc);
-                            continue;
-                        }
-                        continue;
-                    }
-                    tool_calls.push(tc);
-                }
-                StreamToken::GovernorState(_) => {} // not emitted by inner stream
-                StreamToken::RealizeState(_) => {}  // not emitted by inner stream
-                StreamToken::Telemetry(ev) => {
-                    let _ = tx.send(StreamToken::Telemetry(ev)).await;
-                }
-                StreamToken::Done => break,
-                StreamToken::Error(e) => {
-                    let _ = tx.send(StreamToken::Error(e.clone())).await;
-                    stream_error = Some(e);
-                    break;
-                }
-                StreamToken::Checkpoint(_) => {} // not emitted by inner stream
-            }
-        }
-
-        match stream_task.await {
-            Err(join_err) => {
-                let msg = format!("stream task panicked: {join_err}");
-                if stream_error.is_none() {
-                    let _ = tx.send(StreamToken::Error(msg.clone())).await;
-                }
-                stream_error = Some(msg);
-            }
-            Ok(Err(e)) => {
-                // Stream failed (network error, bad status, etc.) — surface it.
-                let msg = format!("{e:#}");
-                if stream_error.is_none() {
-                    let _ = tx.send(StreamToken::Error(msg.clone())).await;
-                }
-                stream_error = Some(msg);
-            }
-            Ok(Ok(())) => {}
-        }
+        let turn = turn_stream::request_turn_stream(
+            &client,
+            cfg,
+            msgs_for_call,
+            tools_clone,
+            &tx,
+            &mut last_request_cursor,
+        )
+        .await;
+        let request_cursor = turn.request_cursor;
+        let assistant_text = turn.assistant_text;
+        let mut tool_calls = turn.tool_calls;
+        let stream_error = turn.error;
 
         if stream_error.is_some() {
             let _ = tx
@@ -1279,203 +1197,34 @@ This is the LAST model call for this run.\n\
         }
 
         // ── Reflection enforcement (before any tool call) ─────────────────
-        // When reflection is required, the model MUST emit exactly one <reflect> block
-        // AND exactly one tool call in the same assistant turn.
-        if let Some(reason) = reflection_required.clone() {
-            let reflect = match parse_reflection_block(&assistant_text) {
-                Some(r) => r,
-                None => {
-                    if tool_calls.len() == 1 {
-                        if let Some(reflect) = rescue_missing_reflection_for_tool_turn(
-                            reason.as_str(),
-                            &tool_calls[0],
-                            root_read_only,
-                            goal_wants_actions,
-                            cfg.provider.clone(),
-                            &mem,
-                            file_tool_consec_failures,
-                        ) {
-                            let _ = tx
-                                .send(StreamToken::Delta(
-                                    "\n[compat] synthesized reflection block for the rescued tool turn\n"
-                                        .to_string(),
-                                ))
-                                .await;
-                            reflect
-                        } else {
-                            let msg = provider_turn::tool_count_feedback(
-                                governor_contract::reflection_missing_message(reason.as_str()),
-                                &tool_calls,
-                            );
-                            let _ = tx
-                                .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
-                                .await;
-                            impact_recovery::emit_rejection(
-                                &tx,
-                                "reflection",
-                                &msg,
-                                &tool_calls,
-                                &assistant_text,
-                            )
-                            .await;
-                            pending_system_hint = Some(msg);
-                            state = AgentState::Recovery;
-                            reflection_required = Some(reason);
-                            continue;
-                        }
-                    } else {
-                        let msg = provider_turn::tool_count_feedback(
-                            governor_contract::reflection_missing_message(reason.as_str()),
-                            &tool_calls,
-                        );
-                        let _ = tx
-                            .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
-                            .await;
-                        impact_recovery::emit_rejection(
-                            &tx,
-                            "reflection",
-                            &msg,
-                            &tool_calls,
-                            &assistant_text,
-                        )
-                        .await;
-                        pending_system_hint = Some(msg);
-                        state = AgentState::Recovery;
-                        reflection_required = Some(reason);
-                        continue;
-                    }
-                }
+        {
+            let mut gate = reflection_gate::ReflectionGateCtx {
+                tx: &tx,
+                provider: cfg.provider.clone(),
+                root_read_only,
+                goal_wants_actions,
+                mem: &mem,
+                file_tool_consec_failures,
+                recovery: &recovery,
+                last_mutation_step,
+                last_verify_ok_step,
+                pending_system_hint: &mut pending_system_hint,
+                state: &mut state,
+                reflection_required: &mut reflection_required,
+                last_reflection: &mut last_reflection,
+                reflection_guard: &mut reflection_guard,
+                ledger: &mut reflection_ledger,
+                ledger_path: reflection_ledger_path.as_deref(),
+                ledger_warned: &mut reflection_ledger_warned,
+                working_mem: &mut working_mem,
+                assumption_ledger: &mut assumption_ledger,
             };
-
-            if let Err(e) = validate_reflection(&reflect, &mem, file_tool_consec_failures) {
-                let msg = provider_turn::tool_count_feedback(
-                    governor_contract::reflection_invalid_message(&e.to_string(), reason.as_str()),
-                    &tool_calls,
-                );
-                let _ = tx
-                    .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
-                    .await;
-                impact_recovery::emit_rejection(
-                    &tx,
-                    "reflection",
-                    &msg,
-                    &tool_calls,
-                    &assistant_text,
-                )
-                .await;
-                pending_system_hint = Some(msg);
-                state = AgentState::Recovery;
-                reflection_required = Some(reason);
+            if matches!(
+                reflection_gate::enforce_reflection(&mut gate, &assistant_text, &tool_calls).await,
+                reflection_gate::ReflectionGate::Reject
+            ) {
                 continue;
             }
-
-            if tool_calls.len() != 1 {
-                let msg = provider_turn::tool_count_feedback(
-                    governor_contract::reflection_one_tool_message(tool_calls.len()),
-                    &tool_calls,
-                );
-                let _ = tx
-                    .send(StreamToken::Delta(format!("\n[reflect] {msg}\n")))
-                    .await;
-                impact_recovery::emit_rejection(
-                    &tx,
-                    "reflection",
-                    &msg,
-                    &tool_calls,
-                    &assistant_text,
-                )
-                .await;
-                pending_system_hint = Some(msg);
-                state = AgentState::Recovery;
-                reflection_required = Some(reason);
-                continue;
-            }
-
-            let _ = tx
-                .send(StreamToken::Delta(format!(
-                    "\n[reflect] goal_delta={} strategy={} next={}\n",
-                    reflect.goal_delta.as_str(),
-                    reflect.strategy_change.as_str(),
-                    reflect.next_minimal_action.as_str()
-                )))
-                .await;
-
-            last_reflection = Some(reflect.clone());
-            reflection_guard = Some(reflect);
-            reflection_required = None;
-
-            if let Some(ref r) = last_reflection {
-                if reflection_ledger.remember(
-                    r.wrong_assumption.as_str(),
-                    r.next_minimal_action.as_str(),
-                    Some(reason.as_str()),
-                    r.last_outcome.as_str(),
-                    r.goal_delta.as_str(),
-                    r.strategy_change.as_str(),
-                ) {
-                    let remembered_count = reflection_ledger
-                        .find_entry(r.wrong_assumption.as_str(), r.next_minimal_action.as_str())
-                        .map(|entry| entry.count)
-                        .unwrap_or(1);
-                    emit_telemetry_event(
-                        &tx,
-                        "reflection_ledger_remembered",
-                        json!({
-                            "wrong_assumption": r.wrong_assumption,
-                            "next_minimal_action": r.next_minimal_action,
-                            "trigger": reason,
-                            "count": remembered_count,
-                            "entries": reflection_ledger.entries.len(),
-                        }),
-                    )
-                    .await;
-                    if let Some(path) = reflection_ledger_path.as_ref() {
-                        if let Err(e) = reflection_ledger.save_atomic(path) {
-                            if !reflection_ledger_warned {
-                                reflection_ledger_warned = true;
-                                let _ = tx
-                                    .send(StreamToken::Delta(format!(
-                                        "\n[reflection_ledger] WARN: {e:#}\n"
-                                    )))
-                                    .await;
-                            }
-                        }
-                    }
-                }
-                if !r.wrong_assumption.trim().is_empty() {
-                    assumption_ledger.mark_refuted(
-                        r.wrong_assumption.as_str(),
-                        Some(r.next_minimal_action.as_str()),
-                    );
-                }
-                if matches!(
-                    r.strategy_change,
-                    StrategyChange::Adjust | StrategyChange::Abandon
-                ) {
-                    working_mem.set_strategy(r.next_minimal_action.as_str());
-                    assumption_ledger.refresh_confirmations(&working_mem);
-                }
-                if r.strategy_change == StrategyChange::Abandon {
-                    pending_system_hint = Some(format!(
-                        "Strategy abandoned.\n\
-Do not retry the previous approach.\n\
-Execute only the new minimal action: {}",
-                        r.next_minimal_action.as_str()
-                    ));
-                }
-            }
-
-            let _ = tx
-                .send(StreamToken::GovernorState(build_governor_state(
-                    state,
-                    &recovery,
-                    &mem,
-                    file_tool_consec_failures,
-                    last_mutation_step,
-                    last_verify_ok_step,
-                    last_reflection.as_ref(),
-                )))
-                .await;
         }
 
         if let Some(reason) = impact_required.clone() {

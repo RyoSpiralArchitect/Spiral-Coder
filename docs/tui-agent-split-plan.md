@@ -318,6 +318,25 @@ streaming/response parsing (~770 lines), reflection enforcement
 (~1.7k lines), and the coercion/gate section between the done and
 apply_diff dispatches.
 
+Progress on the pre-dispatch phases:
+
+- `turn_stream.rs` — `request_turn_stream` owns the wire-request spawn
+  (work-budget scope, receipt cursor capture, abort-on-drop), the token
+  drain incl. Mistral tool-call normalization, and the join/error mapping
+  into `StreamedTurn` (~120 lines out of `agent_loop.rs`).
+- `reflection_gate.rs` — `ReflectionGateCtx` (borrowed loop state) +
+  `enforce_reflection` + `ReflectionGate` (pass/reject) own the full
+  pre-dispatch reflection contract: `<reflect>` parse, compat rescue for a
+  single-call turn, field validation, one-tool enforcement, rejection
+  feedback, ledger remember/persist, assumption refutation, and strategy
+  transitions (~240 lines out of `agent_loop.rs`).
+- `plan_governor.rs` — `build_reflection_prompt_with_recent` composes the
+  reflection system prompt with the two most recent reflection summaries.
+
+Still inside the loop: the remaining prompt-assembly and response-parsing
+phases around the stream call, and the coercion/gate section between the
+done and apply_diff dispatches.
+
 ## Quality gate for each extraction
 
 Each extraction should preserve:

@@ -152,6 +152,34 @@ Rules:\n\
     )
 }
 
+/// Reflection system prompt plus the two most recent reflection summaries
+/// from the transcript, so a re-triggered model sees its own history and
+/// cannot repeat the same mistake verbatim.
+pub(crate) fn build_reflection_prompt_with_recent(
+    reason: &str,
+    mem: &FailureMemory,
+    state: AgentState,
+    file_tool_consec_failures: usize,
+    messages: &[serde_json::Value],
+) -> String {
+    let mut prompt = build_reflection_prompt(reason, mem, state, file_tool_consec_failures);
+    let recent = crate::agent_session::recent_reflection_summaries_from_messages(messages, 2);
+    if !recent.is_empty() {
+        prompt.push_str("\n\n[Recent Reflections]\n");
+        for r in recent.iter().rev() {
+            let delta = r.goal_delta.as_deref().unwrap_or("-");
+            let strat = r.strategy_change.as_deref().unwrap_or("-");
+            let wrong = compact_one_line(r.wrong_assumption.as_deref().unwrap_or("-"), 90);
+            let next = compact_one_line(r.next_minimal_action.as_deref().unwrap_or("-"), 90);
+            prompt.push_str(&format!(
+                "- delta={delta} strategy={strat} wrong={wrong} next={next}\n"
+            ));
+        }
+        prompt.push_str("Do not repeat the same mistake verbatim.\n");
+    }
+    prompt
+}
+
 pub(crate) fn build_governor_state(
     state: AgentState,
     recovery: &RecoveryGovernor,

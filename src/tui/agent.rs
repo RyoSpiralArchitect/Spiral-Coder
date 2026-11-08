@@ -125,6 +125,7 @@ mod recovery_policy_tests;
 mod reflection_action;
 #[cfg(test)]
 mod reflection_action_tests;
+mod reflection_gate;
 mod repair_brief;
 #[cfg(test)]
 mod repair_feedback_tests;
@@ -160,6 +161,7 @@ mod tool_dispatch;
 mod tool_result_history;
 #[cfg(test)]
 mod tool_result_history_tests;
+mod turn_stream;
 mod verification;
 mod work_progress;
 #[allow(unused_imports)] // keep the historical `agent::run_agentic` path working
