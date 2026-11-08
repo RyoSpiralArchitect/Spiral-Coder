@@ -370,7 +370,13 @@ pub(crate) fn canonicalize_named_command(name: &str, args: &[(String, String)]) 
         .iter()
         .filter_map(|(key, value)| {
             let key = key.trim().to_ascii_lowercase();
-            let value = compact_one_line(strip_matching_quotes(value.trim()).trim(), 160);
+            let value = strip_matching_quotes(value.trim()).trim();
+            let value = if matches!(key.as_str(), "path" | "dir" | "file" | "filename") {
+                super::task_harness::normalize_observed_path(value)
+            } else {
+                value.to_string()
+            };
+            let value = compact_one_line(&value, 160);
             if key.is_empty() || value.is_empty() || value == "-" {
                 None
             } else {

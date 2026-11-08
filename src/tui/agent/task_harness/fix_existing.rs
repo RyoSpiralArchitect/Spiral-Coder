@@ -743,6 +743,7 @@ pub(crate) fn latest_successful_source_read_path(
             let Some(path) = path else {
                 continue;
             };
+            let path = normalize_observed_path(path.as_str());
             if reads.contains_key(path.as_str())
                 && path.starts_with("src/")
                 && path.ends_with(".rs")
@@ -778,6 +779,87 @@ pub(crate) fn resolve_existing_rust_path(path: &str, tool_root: Option<&str>) ->
     }
 }
 
+/// Lexical identity for an observed file path. Tool arguments keep their
+/// original spelling for display, but observation maps key on this form so
+/// `./src/x.rs` and `src/x.rs` resolve to the same cached read.
+pub(crate) fn normalize_observed_path(path: &str) -> String {
+    let mut trimmed = path.trim();
+    while let Some(rest) = trimmed.strip_prefix("./") {
+        trimmed = rest;
+    }
+    trimmed.trim_end_matches('/').to_string()
+}
+
+fn read_file_call_target(tc: &Value) -> Option<(String, bool)> {
+    let arguments = tc
+        .get("function")
+        .and_then(|v| v.get("arguments"))
+        .and_then(|v| v.as_str())
+        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())?;
+    let path = arguments
+        .get("path")
+        .and_then(|v| v.as_str())
+        .map(str::to_string)
+        .unwrap_or_default();
+    if path.trim().is_empty() {
+        return None;
+    }
+    let ranged = arguments.get("start_line").is_some() || arguments.get("end_line").is_some();
+    Some((normalize_observed_path(path.as_str()), ranged))
+}
+
+/// Paths that were fully read at least once (no start/end line range). A
+/// ranged read still lands in `successful_read_contents`, but only an
+/// unranged read proves the whole file was observed.
+pub(crate) fn successful_full_read_paths(messages: &[Value]) -> std::collections::BTreeSet<String> {
+    let mut pending: BTreeMap<String, String> = BTreeMap::new();
+    let mut out = std::collections::BTreeSet::new();
+
+    for msg in messages {
+        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
+        match role {
+            "assistant" => {
+                let Some(tool_calls) = msg.get("tool_calls").and_then(|v| v.as_array()) else {
+                    continue;
+                };
+                for tc in tool_calls {
+                    let id = tc.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
+                    let name = tc
+                        .get("function")
+                        .and_then(|v| v.get("name"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .trim();
+                    if id.is_empty() || name != "read_file" {
+                        continue;
+                    }
+                    if let Some((path, ranged)) = read_file_call_target(tc) {
+                        if !ranged {
+                            pending.insert(id.to_string(), path);
+                        }
+                    }
+                }
+            }
+            "tool" => {
+                let tool_call_id = msg
+                    .get("tool_call_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .trim();
+                let Some(path) = pending.remove(tool_call_id) else {
+                    continue;
+                };
+                let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
+                if non_exec_tool_succeeded(content) {
+                    out.insert(path);
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 pub(crate) fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, String> {
     let mut pending: BTreeMap<String, String> = BTreeMap::new();
     let mut out = BTreeMap::new();
@@ -800,19 +882,7 @@ pub(crate) fn successful_read_contents(messages: &[Value]) -> BTreeMap<String, S
                     if id.is_empty() || name != "read_file" {
                         continue;
                     }
-                    let path = tc
-                        .get("function")
-                        .and_then(|v| v.get("arguments"))
-                        .and_then(|v| v.as_str())
-                        .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
-                        .and_then(|value| {
-                            value
-                                .get("path")
-                                .and_then(|v| v.as_str())
-                                .map(str::to_string)
-                        })
-                        .unwrap_or_default();
-                    if !path.trim().is_empty() {
+                    if let Some((path, _)) = read_file_call_target(tc) {
                         pending.insert(id.to_string(), path);
                     }
                 }
@@ -1223,7 +1293,10 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
         let parsed = serde_json::from_str::<Value>(tc.arguments.as_str()).ok()?;
         let path = parsed.get("path").and_then(|v| v.as_str())?.trim();
         let diff = parsed.get("diff").and_then(|v| v.as_str())?.trim();
-        if path.is_empty() || diff.is_empty() || !reads.contains_key(path) {
+        if path.is_empty()
+            || diff.is_empty()
+            || !reads.contains_key(normalize_observed_path(path).as_str())
+        {
             return None;
         }
         return Some(tc.clone());
@@ -1239,7 +1312,7 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
                 .map(str::to_string)
         })
         .or_else(|| extract_loose_json_string_field(tc.arguments.as_str(), "path"))?;
-    if !reads.contains_key(path.as_str()) {
+    if !reads.contains_key(normalize_observed_path(path.as_str()).as_str()) {
         return None;
     }
     let search = parsed
@@ -1271,7 +1344,7 @@ pub(crate) fn validate_or_repair_blocked_fix_existing_mutation(
         tc,
         path.as_str(),
         search.as_deref().unwrap_or(""),
-        reads.get(path.as_str())?,
+        reads.get(normalize_observed_path(path.as_str()).as_str())?,
         root_user_text,
     )
 }
