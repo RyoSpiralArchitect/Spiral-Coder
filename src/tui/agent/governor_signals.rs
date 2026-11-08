@@ -121,6 +121,22 @@ pub(super) fn count_governor_blocked_tool_turns(messages: &[serde_json::Value]) 
         .count()
 }
 
+/// Tool turns where something other than a governor block ran (success or
+/// real error). A response is only wholly rejected when the window adds
+/// blocked turns and zero executed turns.
+pub(super) fn count_executed_tool_turns(messages: &[serde_json::Value]) -> usize {
+    crate::task_origin::current_task_messages(messages)
+        .iter()
+        .filter(|msg| {
+            msg.get("role").and_then(|v| v.as_str()) == Some("tool")
+                && msg
+                    .get("content")
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|content| !content.contains("GOVERNOR BLOCKED"))
+        })
+        .count()
+}
+
 fn governor_block_signature(content: &str) -> &str {
     content
         .split("GOVERNOR BLOCKED")

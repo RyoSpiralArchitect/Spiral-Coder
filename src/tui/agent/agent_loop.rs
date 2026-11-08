@@ -168,6 +168,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     // then tracks deltas, so pruning can never shrink the earned relief.
     let mut governor_blocked_turns = count_governor_blocked_tool_turns(&messages);
     let mut prev_blocked_turns = governor_blocked_turns;
+    let mut prev_executed_turns = count_executed_tool_turns(&messages);
     // Cursor of the wire request that produced the most recent model response.
     // Governor blocks are attributed to that response's receipt rather than a
     // positional guess at the end of the request log, so interleaved or
@@ -180,9 +181,19 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         let observed_blocked_turns = count_governor_blocked_tool_turns(&messages);
         let newly_blocked = observed_blocked_turns.saturating_sub(prev_blocked_turns);
         prev_blocked_turns = observed_blocked_turns;
+        // A transport refund requires a wholly rejected response: new blocked
+        // turns and zero executed turns since the previous iteration. Mixed
+        // batches (executed + blocked) stay task work.
+        let observed_executed_turns = count_executed_tool_turns(&messages);
+        let wholly_rejected =
+            newly_blocked > 0 && observed_executed_turns.saturating_sub(prev_executed_turns) == 0;
+        prev_executed_turns = observed_executed_turns;
         if newly_blocked > 0 {
             governor_blocked_turns = governor_blocked_turns.saturating_add(newly_blocked);
-            if let Some(context) = crate::work_budget::current() {
+            if !wholly_rejected {
+                // Iteration relief is unchanged; only the pool refund requires
+                // the whole-response proof.
+            } else if let Some(context) = crate::work_budget::current() {
                 for _ in 0..newly_blocked {
                     let Some(cursor) = last_request_cursor else {
                         break;
