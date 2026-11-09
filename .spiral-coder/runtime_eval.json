@@ -562,7 +562,7 @@
     "pr-ready",
     "merge-gate"
    ],
-   "prompt": "Fix the existing TUI agent merge approval module so an approved passing merge gate review produces a PR-ready final handoff, missing approval stays human approval pending, and failed cases stay blocked, using the smallest safe code change. Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Run `cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `PR-ready merge approved`.",
+   "prompt": "Fix the existing TUI agent merge approval module so an approved passing merge gate review produces a PR-ready final handoff, missing approval stays human approval pending, and failed cases stay blocked, using the smallest safe code change. Use any `failing: ...` identities in pending verification hints as diagnostic context only; do not change tests to hide a failure. After the final mutation, run the required test command again before a successful done. Because PR-ready merge approval paths are documented and benchmarked in this repo, update `docs/state-schema.md` and `.spiral-coder/runtime_eval.json` to match. Run `cargo test -q tui::agent::merge_approval::tests:: 2>&1 && bash scripts/pr-ready-smoke.sh` before you finish. Final answer must include the changed Rust file path, the docs file path, the runtime eval spec path, the verification command, and the status label `PR-ready merge approved`.",
    "checks": [
     {
      "kind": "completed"

@@ -52,6 +52,14 @@ silently replace the enclosing plan or supply its missing acceptance criteria.
 history. A matching successful automatic check clears the failed command's
 in-memory repetition counters in live execution and resume. This creates no
 explicit `exec` receipt and does not discharge exact task requirements.
+`RecoveryFocus` derives bounded failing test identities from its diagnostic
+summary and exposes them in the pending verification hint as diagnostic-only
+context; these names do not prove a case outcome. Successful automatic tests
+can satisfy the generic verification floor, but any later mutation requires a
+fresh verification result before successful completion.
+The PR-ready handoff decision flow is exercised by
+`tests/fixtures/runtime-self-fix-pr-ready-merge-approval/src/tui/agent/merge_approval.rs`
+and its runtime-eval case; it is fixture code, not a second production state owner.
 Confident Observer `done` advice uses the same authored-summary normalization and
 report validator as Coder, after checking its native acceptance citations. A
 missing report field withholds forwarding and can use the existing one repair
