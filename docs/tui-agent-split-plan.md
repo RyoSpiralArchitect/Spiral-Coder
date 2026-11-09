@@ -345,9 +345,18 @@ Progress on the pre-dispatch phases:
   own the pre-dispatch impact contract: resume-plan restoration, `<impact>`
   parse, compat rescue, validation, one-tool enforcement, and rejection
   feedback (~190 lines out of `agent_loop.rs`).
+- `prompt_assembly.rs` — `AssemblyCtx` + `assemble_turn` own the
+  per-iteration request assembly: transcript clone, task-obligation/
+  governor/benchmark/resolver/meta-harness/evaluator-loop/harness-evolution/
+  session-bridge/task-harness/verification/impact/edit-failure/recovery-focus/
+  reflection prompt injection, tool-schema binding (check catalog,
+  acceptance schema), and the next-action contract prompt. Returns
+  `AssemblyOut` with the message payload, tool schema, check catalog,
+  meta-harness, and evaluator-loop handles (~390 lines out of
+  `agent_loop.rs`, which is now under 2.5k).
 
-Still inside the loop: the remaining prompt-assembly and response-parsing
-phases around the stream call.
+Still inside the loop: the post-stream plan/think validation and
+governor-block section (~1k lines, the largest remaining block).
 
 ## Quality gate for each extraction
 
