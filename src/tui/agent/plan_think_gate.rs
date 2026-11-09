@@ -16,6 +16,43 @@ pub(super) struct PlanThinkOut {
     pub think: Option<ThinkBlock>,
 }
 
+/// Shared `GovernorEmit` view used by every rejection in this gate; only
+/// `block`, `tc`, and the clean text vary per callsite.
+#[allow(clippy::too_many_arguments)]
+fn governor_emit<'a>(
+    tx: &'a mpsc::Sender<StreamToken>,
+    messages: &'a mut Vec<serde_json::Value>,
+    autosaver: &'a Option<std::sync::Arc<crate::agent_session::SessionAutoSaver>>,
+    tool_root_abs: &'a Option<String>,
+    checkpoint: &'a Option<String>,
+    cur_cwd: &'a Option<String>,
+    pending_system_hint: &'a mut Option<String>,
+    state: AgentState,
+    recovery: &'a RecoveryGovernor,
+    mem: &'a FailureMemory,
+    file_tool_consec_failures: usize,
+    last_mutation_step: Option<usize>,
+    last_verify_ok_step: Option<usize>,
+    last_reflection: Option<&'a ReflectionBlock>,
+) -> GovernorEmit<'a> {
+    GovernorEmit {
+        tx,
+        messages,
+        autosaver,
+        tool_root_abs,
+        checkpoint,
+        cur_cwd,
+        pending_system_hint,
+        state,
+        recovery,
+        mem,
+        file_tool_consec_failures,
+        last_mutation_step,
+        last_verify_ok_step,
+        last_reflection,
+    }
+}
+
 pub(super) struct PlanThinkCtx<'a> {
     pub tx: &'a mpsc::Sender<StreamToken>,
     pub autosaver: &'a Option<std::sync::Arc<crate::agent_session::SessionAutoSaver>>,
@@ -147,26 +184,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                             );
 
                             emit_governor_block(
-                                GovernorEmit {
-                                    tx: &tx,
-                                    messages: &mut *messages,
-                                    autosaver: &autosaver,
-
-                                    tool_root_abs: &tool_root_abs,
-                                    checkpoint: &checkpoint,
-                                    cur_cwd: &cur_cwd,
-
-                                    pending_system_hint: &mut *pending_system_hint,
-                                    state: *state,
-                                    recovery: &*recovery,
-
-                                    mem: &mem,
+                                governor_emit(
+                                    &tx,
+                                    &mut *messages,
+                                    &autosaver,
+                                    &tool_root_abs,
+                                    &checkpoint,
+                                    &cur_cwd,
+                                    &mut *pending_system_hint,
+                                    *state,
+                                    &*recovery,
+                                    &mem,
                                     file_tool_consec_failures,
                                     last_mutation_step,
-
-                                    last_verify_ok_step: *last_verify_ok_step,
-                                    last_reflection: last_reflection.as_ref(),
-                                },
+                                    *last_verify_ok_step,
+                                    last_reflection.as_ref(),
+                                ),
                                 block,
                                 &*tc,
                                 Some(&assistant_text_clean),
@@ -189,26 +222,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                         );
 
                         emit_governor_block(
-                            GovernorEmit {
-                                tx: &tx,
-                                messages: &mut *messages,
-                                autosaver: &autosaver,
-
-                                tool_root_abs: &tool_root_abs,
-                                checkpoint: &checkpoint,
-                                cur_cwd: &cur_cwd,
-
-                                pending_system_hint: &mut *pending_system_hint,
-                                state: *state,
-                                recovery: &*recovery,
-
-                                mem: &mem,
+                            governor_emit(
+                                &tx,
+                                &mut *messages,
+                                &autosaver,
+                                &tool_root_abs,
+                                &checkpoint,
+                                &cur_cwd,
+                                &mut *pending_system_hint,
+                                *state,
+                                &*recovery,
+                                &mem,
                                 file_tool_consec_failures,
                                 last_mutation_step,
-
-                                last_verify_ok_step: *last_verify_ok_step,
-                                last_reflection: last_reflection.as_ref(),
-                            },
+                                *last_verify_ok_step,
+                                last_reflection.as_ref(),
+                            ),
                             block,
                             &*tc,
                             Some(&assistant_text_clean),
@@ -231,26 +260,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     );
 
                     emit_governor_block(
-                        GovernorEmit {
-                            tx: &tx,
-                            messages: &mut *messages,
-                            autosaver: &autosaver,
-
-                            tool_root_abs: &tool_root_abs,
-                            checkpoint: &checkpoint,
-                            cur_cwd: &cur_cwd,
-
-                            pending_system_hint: &mut *pending_system_hint,
-                            state: *state,
-                            recovery: &*recovery,
-
-                            mem: &mem,
+                        governor_emit(
+                            &tx,
+                            &mut *messages,
+                            &autosaver,
+                            &tool_root_abs,
+                            &checkpoint,
+                            &cur_cwd,
+                            &mut *pending_system_hint,
+                            *state,
+                            &*recovery,
+                            &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
-
-                            last_verify_ok_step: *last_verify_ok_step,
-                            last_reflection: last_reflection.as_ref(),
-                        },
+                            *last_verify_ok_step,
+                            last_reflection.as_ref(),
+                        ),
                         block,
                         &*tc,
                         Some(&assistant_text_clean),
@@ -298,26 +323,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                         let block = governor_contract::missing_plan_message();
 
                         emit_governor_block(
-                            GovernorEmit {
-                                tx: &tx,
-                                messages: &mut *messages,
-                                autosaver: &autosaver,
-
-                                tool_root_abs: &tool_root_abs,
-                                checkpoint: &checkpoint,
-                                cur_cwd: &cur_cwd,
-
-                                pending_system_hint: &mut *pending_system_hint,
-                                state: *state,
-                                recovery: &*recovery,
-
-                                mem: &mem,
+                            governor_emit(
+                                &tx,
+                                &mut *messages,
+                                &autosaver,
+                                &tool_root_abs,
+                                &checkpoint,
+                                &cur_cwd,
+                                &mut *pending_system_hint,
+                                *state,
+                                &*recovery,
+                                &mem,
                                 file_tool_consec_failures,
                                 last_mutation_step,
-
-                                last_verify_ok_step: *last_verify_ok_step,
-                                last_reflection: last_reflection.as_ref(),
-                            },
+                                *last_verify_ok_step,
+                                last_reflection.as_ref(),
+                            ),
                             block,
                             &*tc,
                             Some(&assistant_text_clean),
@@ -363,26 +384,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                         let block = governor_contract::missing_plan_message();
 
                         emit_governor_block(
-                            GovernorEmit {
-                                tx: &tx,
-                                messages: &mut *messages,
-                                autosaver: &autosaver,
-
-                                tool_root_abs: &tool_root_abs,
-                                checkpoint: &checkpoint,
-                                cur_cwd: &cur_cwd,
-
-                                pending_system_hint: &mut *pending_system_hint,
-                                state: *state,
-                                recovery: &*recovery,
-
-                                mem: &mem,
+                            governor_emit(
+                                &tx,
+                                &mut *messages,
+                                &autosaver,
+                                &tool_root_abs,
+                                &checkpoint,
+                                &cur_cwd,
+                                &mut *pending_system_hint,
+                                *state,
+                                &*recovery,
+                                &mem,
                                 file_tool_consec_failures,
                                 last_mutation_step,
-
-                                last_verify_ok_step: *last_verify_ok_step,
-                                last_reflection: last_reflection.as_ref(),
-                            },
+                                *last_verify_ok_step,
+                                last_reflection.as_ref(),
+                            ),
                             block,
                             &*tc,
                             Some(&assistant_text_clean),
@@ -424,26 +441,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                             let block = governor_contract::missing_plan_message();
 
                             emit_governor_block(
-                                GovernorEmit {
-                                    tx: &tx,
-                                    messages: &mut *messages,
-                                    autosaver: &autosaver,
-
-                                    tool_root_abs: &tool_root_abs,
-                                    checkpoint: &checkpoint,
-                                    cur_cwd: &cur_cwd,
-
-                                    pending_system_hint: &mut *pending_system_hint,
-                                    state: *state,
-                                    recovery: &*recovery,
-
-                                    mem: &mem,
+                                governor_emit(
+                                    &tx,
+                                    &mut *messages,
+                                    &autosaver,
+                                    &tool_root_abs,
+                                    &checkpoint,
+                                    &cur_cwd,
+                                    &mut *pending_system_hint,
+                                    *state,
+                                    &*recovery,
+                                    &mem,
                                     file_tool_consec_failures,
                                     last_mutation_step,
-
-                                    last_verify_ok_step: *last_verify_ok_step,
-                                    last_reflection: last_reflection.as_ref(),
-                                },
+                                    *last_verify_ok_step,
+                                    last_reflection.as_ref(),
+                                ),
                                 block,
                                 &*tc,
                                 Some(&assistant_text_clean),
@@ -461,26 +474,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                         let block = governor_contract::missing_plan_message();
 
                         emit_governor_block(
-                            GovernorEmit {
-                                tx: &tx,
-                                messages: &mut *messages,
-                                autosaver: &autosaver,
-
-                                tool_root_abs: &tool_root_abs,
-                                checkpoint: &checkpoint,
-                                cur_cwd: &cur_cwd,
-
-                                pending_system_hint: &mut *pending_system_hint,
-                                state: *state,
-                                recovery: &*recovery,
-
-                                mem: &mem,
+                            governor_emit(
+                                &tx,
+                                &mut *messages,
+                                &autosaver,
+                                &tool_root_abs,
+                                &checkpoint,
+                                &cur_cwd,
+                                &mut *pending_system_hint,
+                                *state,
+                                &*recovery,
+                                &mem,
                                 file_tool_consec_failures,
                                 last_mutation_step,
-
-                                last_verify_ok_step: *last_verify_ok_step,
-                                last_reflection: last_reflection.as_ref(),
-                            },
+                                *last_verify_ok_step,
+                                last_reflection.as_ref(),
+                            ),
                             block,
                             &*tc,
                             Some(&assistant_text_clean),
@@ -498,26 +507,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     let block = governor_contract::missing_plan_message();
 
                     emit_governor_block(
-                        GovernorEmit {
-                            tx: &tx,
-                            messages: &mut *messages,
-                            autosaver: &autosaver,
-
-                            tool_root_abs: &tool_root_abs,
-                            checkpoint: &checkpoint,
-                            cur_cwd: &cur_cwd,
-
-                            pending_system_hint: &mut *pending_system_hint,
-                            state: *state,
-                            recovery: &*recovery,
-
-                            mem: &mem,
+                        governor_emit(
+                            &tx,
+                            &mut *messages,
+                            &autosaver,
+                            &tool_root_abs,
+                            &checkpoint,
+                            &cur_cwd,
+                            &mut *pending_system_hint,
+                            *state,
+                            &*recovery,
+                            &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
-
-                            last_verify_ok_step: *last_verify_ok_step,
-                            last_reflection: last_reflection.as_ref(),
-                        },
+                            *last_verify_ok_step,
+                            last_reflection.as_ref(),
+                        ),
                         block,
                         &*tc,
                         Some(&assistant_text_clean),
@@ -699,26 +704,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         }
 
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -769,26 +770,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
             let block = governor_contract::missing_think_message();
 
             emit_governor_block(
-                GovernorEmit {
-                    tx: &tx,
-                    messages: &mut *messages,
-                    autosaver: &autosaver,
-
-                    tool_root_abs: &tool_root_abs,
-                    checkpoint: &checkpoint,
-                    cur_cwd: &cur_cwd,
-
-                    pending_system_hint: &mut *pending_system_hint,
-                    state: *state,
-                    recovery: &*recovery,
-
-                    mem: &mem,
+                governor_emit(
+                    &tx,
+                    &mut *messages,
+                    &autosaver,
+                    &tool_root_abs,
+                    &checkpoint,
+                    &cur_cwd,
+                    &mut *pending_system_hint,
+                    *state,
+                    &*recovery,
+                    &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
-
-                    last_verify_ok_step: *last_verify_ok_step,
-                    last_reflection: last_reflection.as_ref(),
-                },
+                    *last_verify_ok_step,
+                    last_reflection.as_ref(),
+                ),
                 block,
                 &*tc,
                 Some(&assistant_text_clean),
@@ -816,26 +813,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         let block = governor_contract::invalid_think_message(&e.to_string());
 
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -858,26 +851,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
     );
 
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -896,26 +885,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         let block = conflict.render();
 
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -939,22 +924,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
     ) {
         *state = AgentState::Recovery;
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -973,22 +958,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
     {
         *state = AgentState::Recovery;
         emit_governor_block(
-            GovernorEmit {
-                tx: &tx,
-                messages: &mut *messages,
-                autosaver: &autosaver,
-                tool_root_abs: &tool_root_abs,
-                checkpoint: &checkpoint,
-                cur_cwd: &cur_cwd,
-                pending_system_hint: &mut *pending_system_hint,
-                state: *state,
-                recovery: &*recovery,
-                mem: &mem,
+            governor_emit(
+                &tx,
+                &mut *messages,
+                &autosaver,
+                &tool_root_abs,
+                &checkpoint,
+                &cur_cwd,
+                &mut *pending_system_hint,
+                *state,
+                &*recovery,
+                &mem,
                 file_tool_consec_failures,
                 last_mutation_step,
-                last_verify_ok_step: *last_verify_ok_step,
-                last_reflection: last_reflection.as_ref(),
-            },
+                *last_verify_ok_step,
+                last_reflection.as_ref(),
+            ),
             block,
             &*tc,
             Some(&assistant_text_clean),
@@ -1025,22 +1010,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     recovery.stage = Some(RecoveryStage::Diagnose);
                     let block = build_evidence_gate_prompt(tc, &observations, &*assumption_ledger);
                     emit_governor_block(
-                        GovernorEmit {
-                            tx: &tx,
-                            messages: &mut *messages,
-                            autosaver: &autosaver,
-                            tool_root_abs: &tool_root_abs,
-                            checkpoint: &checkpoint,
-                            cur_cwd: &cur_cwd,
-                            pending_system_hint: &mut *pending_system_hint,
-                            state: *state,
-                            recovery: &*recovery,
-                            mem: &mem,
+                        governor_emit(
+                            &tx,
+                            &mut *messages,
+                            &autosaver,
+                            &tool_root_abs,
+                            &checkpoint,
+                            &cur_cwd,
+                            &mut *pending_system_hint,
+                            *state,
+                            &*recovery,
+                            &mem,
                             file_tool_consec_failures,
                             last_mutation_step,
-                            last_verify_ok_step: *last_verify_ok_step,
-                            last_reflection: last_reflection.as_ref(),
-                        },
+                            *last_verify_ok_step,
+                            last_reflection.as_ref(),
+                        ),
                         block,
                         &*tc,
                         Some(&assistant_text_clean),
@@ -1071,22 +1056,22 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                 }
             }
             emit_governor_block(
-                GovernorEmit {
-                    tx: &tx,
-                    messages: &mut *messages,
-                    autosaver: &autosaver,
-                    tool_root_abs: &tool_root_abs,
-                    checkpoint: &checkpoint,
-                    cur_cwd: &cur_cwd,
-                    pending_system_hint: &mut *pending_system_hint,
-                    state: *state,
-                    recovery: &*recovery,
-                    mem: &mem,
+                governor_emit(
+                    &tx,
+                    &mut *messages,
+                    &autosaver,
+                    &tool_root_abs,
+                    &checkpoint,
+                    &cur_cwd,
+                    &mut *pending_system_hint,
+                    *state,
+                    &*recovery,
+                    &mem,
                     file_tool_consec_failures,
                     last_mutation_step,
-                    last_verify_ok_step: *last_verify_ok_step,
-                    last_reflection: last_reflection.as_ref(),
-                },
+                    *last_verify_ok_step,
+                    last_reflection.as_ref(),
+                ),
                 block,
                 &*tc,
                 Some(&assistant_text_clean),
