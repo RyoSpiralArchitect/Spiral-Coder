@@ -105,6 +105,7 @@ mod plan_resume;
 mod plan_revision;
 #[cfg(test)]
 mod plan_revision_tests;
+mod plan_think_gate;
 mod progress_bridge;
 mod prompt_assembly;
 mod prompt_setup;

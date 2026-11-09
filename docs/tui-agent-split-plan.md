@@ -355,8 +355,15 @@ Progress on the pre-dispatch phases:
   meta-harness, and evaluator-loop handles (~390 lines out of
   `agent_loop.rs`, which is now under 2.5k).
 
-Still inside the loop: the post-stream plan/think validation and
-governor-block section (~1k lines, the largest remaining block).
+- `plan_think_gate.rs` — `PlanThinkCtx` + `validate_plan_think` +
+  `PlanThinkOut` own the entire post-stream plan/think validation:
+  Mistral plan rescue, contract validation, governor-block rejections,
+  read-only/verified-action auto-finalization, and evaluator-loop
+  violation blocks (~930 lines out of `agent_loop.rs`, now ~1.5k — a
+  70% reduction from the original 5.1k).
+
+The loop body is now thin glue: refund accounting → pruning → governor
+hints → prompt assembly → stream → gates → append/dispatch.
 
 ## Quality gate for each extraction
 
