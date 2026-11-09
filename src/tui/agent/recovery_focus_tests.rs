@@ -22,6 +22,27 @@ fn context() -> ExecVerificationContext<'static> {
     ExecVerificationContext::from_root(Some(CHECK), "Repair the existing replay")
 }
 
+#[test]
+fn pending_verification_hint_names_the_failing_test_as_diagnostic_context() {
+    let focus = RecoveryFocus {
+        pending: Some(FailureFocus {
+            path: "src/tui/agent/merge_approval.rs".into(),
+            diagnostic: "thread 'tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved' panicked at src/tui/agent/merge_approval.rs:93:9:".into(),
+            check: "cargo test -q tui::agent::merge_approval::tests::".into(),
+            observation: Observation::Unlocalized,
+            location: LocationEvidence::Current,
+        }),
+        deferred: Vec::new(),
+    };
+
+    let hint = focus.hint().expect("pending failure hint");
+    assert!(hint.contains("\"failing_tests\":[\"tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved\"]"));
+    assert!(hint.contains(
+        "failing: tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved"
+    ));
+    assert!(hint.contains("diagnostic only"));
+}
+
 fn exec_output(status: &str, root: &Path) -> String {
     agent::inject_cwd(status, &format!("cwd: {}", root.display()), None)
 }

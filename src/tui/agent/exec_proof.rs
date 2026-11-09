@@ -283,6 +283,30 @@ mod tests {
     }
 
     #[test]
+    fn a_mutation_after_a_passing_auto_test_requires_fresh_verification() {
+        let mut messages = Vec::new();
+        file_exchange(
+            &mut messages,
+            "patch_file",
+            "OK: patched 'src/lib.rs'\n[auto-test] ✓ PASSED (exit 0)",
+        );
+        exchange(
+            &mut messages,
+            "printf changed > verification_receipt.txt",
+            "OK (exit_code: 0)",
+        );
+
+        let (_, mutation, _, behavioral, _) =
+            restore_done_gate_from_messages(&messages, Some("cargo test"));
+        assert!(mutation > behavioral);
+
+        exchange(&mut messages, "cargo test", "OK (exit_code: 0)");
+        let (_, mutation, _, behavioral, _) =
+            restore_done_gate_from_messages(&messages, Some("cargo test"));
+        assert!(behavioral > mutation);
+    }
+
+    #[test]
     fn failed_edits_cannot_supply_mutation_or_auto_test_evidence_from_their_body() {
         let mut messages = Vec::new();
         file_exchange(

@@ -106,6 +106,37 @@ pub(super) fn unittest_cases(body: &str) -> Vec<String> {
     cases
 }
 
+pub(super) fn failing_test_names(body: &str) -> Vec<String> {
+    let mut names = Vec::new();
+    for line in bounded_source(body).lines().map(str::trim) {
+        let name = unittest_case(line)
+            .and_then(|case| {
+                case.strip_prefix("FAIL: ")
+                    .or_else(|| case.strip_prefix("ERROR: "))
+            })
+            .or_else(|| {
+                line.strip_prefix("thread '")?
+                    .split_once("' panicked at ")
+                    .map(|(name, _)| name)
+            })
+            .or_else(|| {
+                line.strip_prefix("test ")
+                    .and_then(|line| line.strip_suffix(" ... FAILED"))
+            });
+        let Some(name) = name.filter(|name| !name.is_empty()) else {
+            continue;
+        };
+        let name = bounded_line(name, AUTO_TEST_DIAGNOSTIC_CHARS);
+        if !names.contains(&name) {
+            names.push(name);
+        }
+        if names.len() == 4 {
+            break;
+        }
+    }
+    names
+}
+
 pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
     let mut lines = Vec::new();
     for source in [stderr, stdout] {
@@ -357,6 +388,23 @@ mod tests {
         );
         let unicode = recovery_summary(&format!("Error: {}", "🐈‍⬛".repeat(1000)), None);
         assert!(unicode.len() <= 2048);
+    }
+
+    #[test]
+    fn failing_test_names_include_rust_and_unittest_case_identities() {
+        let diagnostics = concat!(
+            "thread 'tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved' panicked at src/tui/agent/merge_approval.rs:93:9:\n",
+            "FAIL: test_default (tests.Selection.test_default)\n",
+            "test tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved ... FAILED\n"
+        );
+
+        assert_eq!(
+            failing_test_names(diagnostics),
+            [
+                "tui::agent::merge_approval::tests::failed_case_is_blocked_even_if_approved",
+                "test_default (tests.Selection.test_default)"
+            ]
+        );
     }
 
     fn compact_and_prune(output: &str) -> String {
