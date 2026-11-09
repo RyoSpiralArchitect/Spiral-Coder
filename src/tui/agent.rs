@@ -82,6 +82,7 @@ mod git_guard;
 mod governor_emit;
 mod governor_signals;
 mod harness_evolution;
+mod impact_gate;
 mod impact_recovery;
 mod implied_actions;
 mod json_fields;

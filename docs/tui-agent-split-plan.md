@@ -341,10 +341,13 @@ Progress on the pre-dispatch phases:
   no-tool-call turn branch: recovery-focus hints, realize deferral,
   implied-action execution, goal checks, text-finalize and done paths
   (~1.7k lines out of `agent_loop.rs`, which is now under 2.9k).
+- `impact_gate.rs` — `ImpactGateCtx` + `enforce_impact` + `ImpactGate`
+  own the pre-dispatch impact contract: resume-plan restoration, `<impact>`
+  parse, compat rescue, validation, one-tool enforcement, and rejection
+  feedback (~190 lines out of `agent_loop.rs`).
 
 Still inside the loop: the remaining prompt-assembly and response-parsing
-phases around the stream call, and the impact-enforcement block before
-the coercion pipeline.
+phases around the stream call.
 
 ## Quality gate for each extraction
 

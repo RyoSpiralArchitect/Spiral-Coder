@@ -1227,182 +1227,40 @@ This is the LAST model call for this run.\n\
             }
         }
 
-        if let Some(reason) = impact_required.clone() {
-            let pending_mutation = impact_recovery::UnreviewedMutation::from_steps(
+        {
+            let mut gate = impact_gate::ImpactGateCtx {
+                tx: &tx,
+                provider: cfg.provider.clone(),
+                root_read_only,
+                goal_wants_actions,
+                task_harness,
+                task_contract: &task_contract,
+                instruction_resolver: &instruction_resolver,
+                root_user_text: &root_user_text,
+                test_cmd: test_cmd.as_deref(),
+                messages: &messages,
                 last_mutation_step,
                 last_impact_step,
-            );
-            let mut restored_impact_plan = false;
-            let impact_plan = parse_plan_block(&assistant_text)
-                .filter(|plan| {
-                    validate_plan_for_task_contract(
-                        plan,
-                        root_read_only,
-                        &task_contract,
-                        &instruction_resolver,
-                        &messages,
-                    )
-                    .is_ok()
-                })
-                .or_else(|| active_plan.clone())
-                .or_else(|| {
-                    let [tc] = tool_calls.as_slice() else {
-                        return None;
-                    };
-                    let plan = impact_recovery::benchmark_resume_plan(
-                        pending_mutation,
-                        task_harness,
-                        tc,
-                        &root_user_text,
-                        required_verification,
-                        test_cmd.as_deref(),
-                    )?;
-                    validate_plan_for_task_contract(
-                        &plan,
-                        root_read_only,
-                        &task_contract,
-                        &instruction_resolver,
-                        &messages,
-                    )
-                    .ok()?;
-                    restored_impact_plan = true;
-                    Some(plan)
-                });
-            // Keep the contract-validated plan before impact can reject this
-            // turn, so the next request exposes the same accepted step labels.
-            if restored_impact_plan {
-                if let Some(plan) = impact_plan.as_ref() {
-                    adopt_valid_plan(
-                        plan,
-                        &mut working_mem,
-                        &mut assumption_ledger,
-                        &mut active_plan,
-                        &mut intent_required_verification,
-                        path_required_verification,
-                        &mut required_verification,
-                        &mut recovery,
-                        &mut last_verify_ok_step,
-                        last_build_verify_ok_step,
-                        last_behavioral_verify_ok_step,
-                    );
-                    emit_telemetry_event(
-                        &tx,
-                        "impact_resume_plan_restored",
-                        json!({
-                            "mutation_step": pending_mutation.map(|pending| pending.step),
-                            "lane": task_harness.lane_label(),
-                        }),
-                    )
-                    .await;
-                }
-            }
-            let impact = match parse_impact_block(&assistant_text) {
-                Some(impact) => impact,
-                None => {
-                    if tool_calls.len() == 1 {
-                        if let Some(impact) = rescue_missing_impact_for_tool_turn(
-                            reason.as_str(),
-                            &tool_calls[0],
-                            root_read_only,
-                            goal_wants_actions,
-                            cfg.provider.clone(),
-                            impact_plan.as_ref(),
-                            pending_mutation,
-                        ) {
-                            let _ = tx
-                                .send(StreamToken::Delta(
-                                    "\n[compat] synthesized impact block for the rescued mutation turn\n"
-                                        .to_string(),
-                                ))
-                                .await;
-                            impact
-                        } else {
-                            let msg = provider_turn::tool_count_feedback(
-                                governor_contract::impact_missing_message(reason.as_str()),
-                                &tool_calls,
-                            );
-                            let _ = tx
-                                .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
-                                .await;
-                            impact_recovery::emit_rejection(
-                                &tx,
-                                "impact",
-                                &msg,
-                                &tool_calls,
-                                &assistant_text,
-                            )
-                            .await;
-                            pending_system_hint = Some(msg);
-                            state = AgentState::Recovery;
-                            impact_required = Some(reason);
-                            continue;
-                        }
-                    } else {
-                        let msg = provider_turn::tool_count_feedback(
-                            governor_contract::impact_missing_message(reason.as_str()),
-                            &tool_calls,
-                        );
-                        let _ = tx
-                            .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
-                            .await;
-                        impact_recovery::emit_rejection(
-                            &tx,
-                            "impact",
-                            &msg,
-                            &tool_calls,
-                            &assistant_text,
-                        )
-                        .await;
-                        pending_system_hint = Some(msg);
-                        state = AgentState::Recovery;
-                        impact_required = Some(reason);
-                        continue;
-                    }
-                }
+                path_required_verification,
+                last_build_verify_ok_step,
+                last_behavioral_verify_ok_step,
+                pending_system_hint: &mut pending_system_hint,
+                state: &mut state,
+                impact_required: &mut impact_required,
+                working_mem: &mut working_mem,
+                assumption_ledger: &mut assumption_ledger,
+                active_plan: &mut active_plan,
+                intent_required_verification: &mut intent_required_verification,
+                required_verification: &mut required_verification,
+                recovery: &mut recovery,
+                last_verify_ok_step: &mut last_verify_ok_step,
             };
-
-            if let Err(e) = validate_impact(&impact, impact_plan.as_ref()) {
-                let msg = provider_turn::tool_count_feedback(
-                    governor_contract::impact_invalid_message(&e.to_string(), reason.as_str()),
-                    &tool_calls,
-                );
-                let _ = tx
-                    .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
-                    .await;
-                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
-                    .await;
-                pending_system_hint = Some(msg);
-                state = AgentState::Recovery;
-                impact_required = Some(reason);
+            if matches!(
+                impact_gate::enforce_impact(&mut gate, &assistant_text, &tool_calls).await,
+                impact_gate::ImpactGate::Reject
+            ) {
                 continue;
             }
-
-            if tool_calls.len() != 1 {
-                let msg = provider_turn::tool_count_feedback(
-                    governor_contract::impact_one_tool_message(tool_calls.len()),
-                    &tool_calls,
-                );
-                let _ = tx
-                    .send(StreamToken::Delta(format!("\n[impact] {msg}\n")))
-                    .await;
-                impact_recovery::emit_rejection(&tx, "impact", &msg, &tool_calls, &assistant_text)
-                    .await;
-                pending_system_hint = Some(msg);
-                state = AgentState::Recovery;
-                impact_required = Some(reason);
-                continue;
-            }
-
-            let _ = tx
-                .send(StreamToken::Delta(format!(
-                    "\n[impact] changed={} progress={} gap={}\n",
-                    impact.changed.as_str(),
-                    impact.progress.as_str(),
-                    impact.remaining_gap.as_str()
-                )))
-                .await;
-
-            impact_required = None;
         }
 
         let realize_reason = parse_realize_block(&assistant_text);
