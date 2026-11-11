@@ -1,0 +1,27 @@
+{
+  "condition": "Saved-state comparison to the earlier two-request Luna report probe. Same task, seed bytes, candidate root and contents, pair, sampling and two-request cap. Only the executor changes. One prospective invocation; keep its first outcome.",
+  "previous_plan_sha256": "1581fdb2f23df91dccd23d7b65b9bd485512460f38ad8d4bda6190417ac4f502",
+  "previous_report_sha256": "edcff1611e450875388cb0fb4623ebb5de81bba092cd7eb56ba93af454f7312e",
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+  "prompt_sha256": "b493932e70c53b7b5d4a04c431151a16a6b191eb418e0240b365cb6c68a7a0e3",
+  "candidate_inventory_sha256": "35b1b3fd1fc2eceac414aae61cf44de240a2e3c236636bb8100a970e3288d595",
+  "layout_sha256": "480bc06386c05077391ce5ab39e50156eafb828bce71de2f188e31c64ca83853",
+  "binary_sha256": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
+  "runtime_commit": "17ee4e6",
+  "max_task_requests": 2,
+  "max_wire_requests": 2,
+  "observer_reserved_requests": 1,
+  "transport_repair_requests": 0,
+  "wall_seconds": 210,
+  "external_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  }
+}
