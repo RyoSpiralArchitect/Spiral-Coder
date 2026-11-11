@@ -119,5 +119,10 @@ tests / two ignored, six integration cases and 20 TUI replays, plus all other
 required suites. Seven reference groups pass; reference tests detect four
 faults, the thin control misses three, and retained S12 tests fail their valid
 reference prerequisite. [S13 controls](s13-sensitivity-controls.json). This is a
-combined condition, not a causal comparison. No provider calls at this pin;
-the first bounded terminal will be retained, without candidate adoption.
+combined condition, not a causal comparison. The first terminal is retained: three rounds, 487.371 seconds, 66 task / 74 wires.
+The third round immediately repeats a blocked report, then stops for no new
+edit or verification. Independent cases are **22/24**, below S12; running and
+unknown totals fail. Three missing interrupted-path subcases fail, docs/tests
+are absent, stock stops at rustfmt and the sensitivity audit is unrun. This run
+does not reach the authored-test repair stage. **Unqualified, not adopted,
+#82 open.** [S13 result and evidence limits](s13-current-failure/README.md).
