@@ -508,8 +508,24 @@ fn status_validation_rules_and_required_test_survive_shared_projection() {
         let rows = view["task_requirements"]["requirements"]
             .as_array()
             .unwrap();
-        assert_eq!(rows.len(), 8);
-        for row in &rows[1..] {
+        assert_eq!(rows.len(), 9);
+        let native_tests = &rows[8]["requirement"];
+        assert_eq!(native_tests["id"], "native-tests");
+        assert_eq!(
+            native_tests["artifacts"][0]["path"],
+            "tests/coupled_status.rs"
+        );
+        let description = native_tests["description"].as_str().unwrap();
+        for rule in [
+            "native durable writer",
+            "numeric request IDs",
+            "successful unchanged baseline",
+            "single-invariant",
+            "four-fault sensitivity",
+        ] {
+            assert!(description.contains(rule), "{description}");
+        }
+        for row in &rows[1..8] {
             let rule = row["requirement"]["description"].as_str().unwrap();
             assert!(task.contains(rule));
             assert_eq!(
