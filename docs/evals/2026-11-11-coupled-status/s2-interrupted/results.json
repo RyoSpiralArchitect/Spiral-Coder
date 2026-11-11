@@ -1,0 +1,203 @@
+{
+  "plan_sha256": "484b11efbf8df8b9e7a4915f7df8310c42ea2494ab5f9d4c86d1579602f429cf",
+  "declaration_sha256": "97a5dc22df0b2253159c069782c43e0ae25f5fc2e323dfb7cf71edf22463a079",
+  "sealed_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "process": {
+    "exit_code": 1,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 470.086,
+    "finished_at": "2026-11-11T12:50:10.915695+00:00",
+    "redacted_files": [],
+    "patch_exit_code": 0
+  },
+  "manifest": {
+    "active_iteration": null,
+    "completed": false,
+    "iterations": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "src/coupled_status.rs",
+            "src/main.rs"
+          ],
+          "newly_reproduced_baselines": [
+            "python3 -S -m unittest -v scripts.status_visible"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794400941063-70224-1",
+        "task_requests": 20,
+        "termination": "interrupted",
+        "wire_requests": 20
+      }
+    ],
+    "max_iterations": 6,
+    "max_task_requests": 192,
+    "max_task_requests_per_iteration": 32,
+    "max_wire_requests": 216,
+    "stop_reason": "interrupted",
+    "task_requests": 20,
+    "version": 1,
+    "wire_requests": 20
+  },
+  "rounds": [
+    {
+      "completed": false,
+      "directory": "iteration-01",
+      "iteration": 1,
+      "parent_task_id": null,
+      "progress": {
+        "changed_files": [
+          "src/coupled_status.rs",
+          "src/main.rs"
+        ],
+        "newly_reproduced_baselines": [
+          "python3 -S -m unittest -v scripts.status_visible"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "task_id": "task-1794400941063-70224-1",
+      "task_requests": 20,
+      "termination": "interrupted",
+      "wire_requests": 20,
+      "roles": {
+        "coder": 14,
+        "observer": 6
+      },
+      "ledger_verified": true,
+      "budget": {
+        "valid": true,
+        "wire_requests": 20,
+        "task_requests": 20,
+        "transport_requests": 0,
+        "coder_task_requests": 14,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      }
+    }
+  ],
+  "gates": {
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_input_and_output": true,
+    "sealed_candidate_matches": true,
+    "distinct_parent_linked_ledgers": true,
+    "bounded_chain": true,
+    "both_roles_called": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "required_paths_changed": false,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "process_ok": false,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "candidate_unchanged_by_assessor": true,
+    "independent_checks_passed": false
+  },
+  "all_chain_gates_passed": false,
+  "qualified_within_original_single_round": false,
+  "promotion_authorized": false,
+  "changed_files": [
+    "src/coupled_status.rs",
+    "src/main.rs"
+  ],
+  "patch_sha256": "99709712fd87d53f59c6ba9ebae721b523cf4e5c8bc41d68ff423f21a075faac",
+  "exact_native_calls": {
+    "cargo fmt --all -- --check": [],
+    "python3 -S -m unittest -v scripts.status_visible": [],
+    "python3 -S -m unittest -v scripts.status_guide": [],
+    "cargo test --locked --bin spiral-coder -q": []
+  },
+  "terminal_reports": [],
+  "report_fields": {
+    "changed_paths_named": false,
+    "commands_named": false,
+    "before_failed": false,
+    "after_passed": false
+  },
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "af1580a323138a1982945517ad6a493e8710346c22c17f1f20e1a139feb39c39",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "status-visible",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "fa24b073e9c7fe09b640b9f6e15e795dd6b8cfb2e19c2972cded08a240901513",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "executed": false,
+      "skip_reason": "candidate_binary_unavailable",
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "packaged-status",
+      "passed": false,
+      "executed": false,
+      "skip_reason": "candidate_binary_unavailable",
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "guide-example",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "1a960dba94f38c1ef4f4296fea6f52b2ee2e02d1c74e71da79b2abe74ae738f2",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "aaf4d0940ab2c3c14ce446259cc2e5ab8d6ee1389efa5e4fefbfd94f2fe0ef89",
+      "candidate_binary_sha256": null
+    }
+  ]
+}

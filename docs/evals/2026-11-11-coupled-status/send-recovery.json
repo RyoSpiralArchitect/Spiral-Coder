@@ -1,0 +1,21 @@
+{
+  "reproduction": "Local TCP server drains the POST, then closes before HTTP response headers. Old native streaming code returns the same SendRequest / connection closed before message completed error.",
+  "old_code_reproducer_passed": false,
+  "new_streaming_tests": {
+    "passed": 34,
+    "failed": 0
+  },
+  "checks": [
+    "both roles spend a second ordinary task request and resend the identical payload",
+    "one-task cap prevents a second send",
+    "existing retry cap stops after five failed attempts with budget remaining",
+    "malformed request construction is not eligible",
+    "existing quota, authentication and post-header interruption tests pass"
+  ],
+  "intermediate_compile_failure": "A third Anthropic caller still used the moved helper; corrected before the final streaming tests.",
+  "logs": {
+    "send-before.log": "ff356deb1b5276d9c47ddb5e534d07e3354ad8eb0b2207aae2e307cac0b660a3",
+    "send-after.log": "531fe156555cafdcf201160099b4dd8afc4601fd61a95fc8655c4743afac2def",
+    "send-after-fixed.log": "0a534f237f0a6f71a27b52c92dfe783ce9c5bcd5433405b971ac589f670974e5"
+  }
+}

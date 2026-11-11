@@ -1,0 +1,103 @@
+{
+  "sealed_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "manifest_sha256": "6367f5a3830dfdf0f9a278564b4426a9a8c732dd2ad83c57b9e7353b94f7b7c1",
+  "completed": false,
+  "active_iteration_at_stop": null,
+  "by_role": {
+    "coder": {
+      "wire_requests": 14,
+      "task_requests": 14,
+      "statuses": {
+        "completed": 13,
+        "in_flight_or_interrupted": 1
+      },
+      "estimated_input_tokens_total": 249698,
+      "estimated_input_tokens_median": 18867.5,
+      "estimated_input_tokens_max": 21363,
+      "provider_usage_receipts": 0,
+      "provider_seconds": 300.66
+    },
+    "observer": {
+      "wire_requests": 6,
+      "task_requests": 6,
+      "statuses": {
+        "completed": 5,
+        "in_flight_or_interrupted": 1
+      },
+      "estimated_input_tokens_total": 54065,
+      "estimated_input_tokens_median": 10364.5,
+      "estimated_input_tokens_max": 10722,
+      "provider_usage_receipts": 0,
+      "provider_seconds": 114.153
+    }
+  },
+  "rounds": [
+    {
+      "iteration": 1,
+      "termination": "interrupted",
+      "native_wall_seconds": 469.601,
+      "by_role": {
+        "coder": {
+          "wire_requests": 14,
+          "task_requests": 14,
+          "statuses": {
+            "completed": 13,
+            "in_flight_or_interrupted": 1
+          },
+          "estimated_input_tokens_total": 249698,
+          "estimated_input_tokens_median": 18867.5,
+          "estimated_input_tokens_max": 21363,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 300.66
+        },
+        "observer": {
+          "wire_requests": 6,
+          "task_requests": 6,
+          "statuses": {
+            "completed": 5,
+            "in_flight_or_interrupted": 1
+          },
+          "estimated_input_tokens_total": 54065,
+          "estimated_input_tokens_median": 10364.5,
+          "estimated_input_tokens_max": 10722,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 114.153
+        }
+      },
+      "coder_context": {
+        "assemblies": 14,
+        "reduced_assemblies": 4,
+        "protected_overflows": 7,
+        "message_bytes_before_total": 906813,
+        "message_bytes_after_total": 886686,
+        "message_bytes_saved": 20127,
+        "message_bytes_before_max": 84603,
+        "message_bytes_after_max": 77046,
+        "largest_compacted_exchange_count": 4
+      },
+      "durable_work_matches": true,
+      "parent_link_matches": true,
+      "current_configuration_checks": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "transport_rejections": [],
+      "native_messages": 39,
+      "native_session_bytes": 88891,
+      "tool_message_retention": null,
+      "pending_exact_checks": 4,
+      "session_sha256": "f6ea43bcca6a0701d79f583f9d4ab1414951f9c8b8f7a3f04feb9af122a71a20",
+      "report_sha256": "2ff84a2128f5a89ea2d4c5ac44c03e8a1130954eec30344efe13ff956edfc083",
+      "trace_sha256": "d22670011f2fa1c4ea312a96ac9bf9fb6359bfe636c34377c9e8a9d1970f6191"
+    }
+  ],
+  "method": "Finalized native rounds only. Token estimates are serialized payload characters divided by four, rounded up. Coder byte telemetry measures message assembly before and after history projection and excludes tool schemas. Cross-round retention compares full tool message JSON values as multisets. Current configuration checks describe the executed ledger separately from the frozen assessor's verdict."
+}

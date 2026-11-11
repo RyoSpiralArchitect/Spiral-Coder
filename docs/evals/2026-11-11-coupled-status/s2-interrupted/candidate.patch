@@ -1,0 +1,62 @@
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..9080a3e
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,34 @@
++use anyhow::{Context, Result};
++use clap::Args as ClapArgs;
++use serde_json::json;
++use std::path::PathBuf;
++
++#[derive(Args, Debug)]
++pub struct Args {
++    /// Native coupled run directory.
++    #[arg(long)]
++    pub run_dir: PathBuf,
++}
++
++pub fn run(args: Args) -> Result<()> {
++    let manifest = args.run_dir.join("iterations.json");
++    let value: serde_json::Value = serde_json::from_reader(
++        std::fs::File::open(&manifest).with_context(|| format!("read {}", manifest.display()))?,
++    )?;
++    let output = json!({
++        "status": if value.get("completed").and_then(serde_json::Value::as_bool).unwrap_or(false) { "completed" } else if value.get("stop_reason").is_some() { "stopped" } else { "running" },
++        "iterations": [],
++        "pending": null,
++        "requests": {
++            "task_used": value.get("task_requests").cloned().unwrap_or(json!(0)),
++            "wire_used": value.get("wire_requests").cloned().unwrap_or(json!(0)),
++            "task_limit": value.get("max_task_requests").cloned().unwrap_or(json!(0)),
++            "wire_limit": value.get("max_wire_requests").cloned().unwrap_or(json!(0)),
++            "task_remaining": null,
++            "wire_remaining": null
++        },
++        "progress": []
++    });
++    println!("{}", serde_json::to_string(&output)?);
++    Ok(())
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..e834bf9 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,6 +4,7 @@ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
+ mod config;
++mod coupled_status;
+ mod eval_merge_gate;
+ mod exec;
+ mod execution_evidence;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect a native multi-iteration coupled run without executing it
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 

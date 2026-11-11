@@ -16,6 +16,8 @@ pub(crate) mod request_guard;
 mod retry_policy;
 #[cfg(test)]
 mod retry_policy_tests;
+#[cfg(test)]
+mod send_retry_tests;
 pub(crate) mod tool_calls;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -179,10 +181,6 @@ fn backoff_delay(
         }
     }
     d
-}
-
-fn is_retryable_send_error(e: &reqwest::Error) -> bool {
-    e.is_timeout() || e.is_connect()
 }
 
 async fn emit_retry_telemetry(
@@ -449,7 +447,10 @@ async fn stream_chat(
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
-                    let retryable = is_retryable_send_error(&e);
+                    if let Some(meter) = request_meter.as_mut() {
+                        meter.status("send_failed");
+                    }
+                    let retryable = retry_policy::send_retryable(&e);
                     let err = anyhow!(e).context(connect_ctx.clone());
                     if attempt < max_connect_retries && retryable {
                         last_err = Some(err);
@@ -560,7 +561,10 @@ async fn stream_chat(
             let r = match req.send().await {
                 Ok(r) => r,
                 Err(e) => {
-                    if attempt < max_connect_retries && is_retryable_send_error(&e) {
+                    if let Some(meter) = request_meter.as_mut() {
+                        meter.status("send_failed");
+                    }
+                    if attempt < max_connect_retries && retry_policy::send_retryable(&e) {
                         last_err = Some(anyhow!(e).context("request failed"));
                         let d = backoff_delay(&cfg.provider, None, attempt, None);
                         emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
@@ -783,7 +787,10 @@ pub async fn stream_anthropic(
         let r = match r {
             Ok(r) => r,
             Err(e) => {
-                if attempt < max_connect_retries && is_retryable_send_error(&e) {
+                if let Some(meter) = request_meter.as_mut() {
+                    meter.status("send_failed");
+                }
+                if attempt < max_connect_retries && retry_policy::send_retryable(&e) {
                     let d = backoff_delay(&cfg.provider, None, attempt, None);
                     emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
                     attempt = attempt.saturating_add(1);

@@ -1274,6 +1274,14 @@ requests. Deterministic opening-brace repair makes no extra request and uses no
 transport credit. The hard wire ceiling is `request_limit + transport_repair_limit`;
 productive/task charges cannot exceed `request_limit`.
 
+Native streaming sends that fail before HTTP response headers record
+`status: send_failed`. reqwest request-stage connection closures, connect errors
+and timeouts can use the existing bounded provider retry loop. Each retry obtains
+a new ordinary task reservation; failed requests retain their IDs, durations and
+charges. This does not grant framing-repair credit or replay a partially received
+response. Builder errors and HTTP authentication/quota responses retain their
+separate failure policy.
+
 Independently of any shared budget, the Coder loop also grants bounded
 iteration relief for governor-blocked turns (`governor_signals.rs`). A
 `GOVERNOR BLOCKED` tool message earns back one iteration once any later
