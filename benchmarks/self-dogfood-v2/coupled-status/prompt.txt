@@ -1,0 +1,87 @@
+Implement a useful long-run operator command inside Spiral-Coder: spiral coupled-status --run-dir PATH. It inspects existing native multi-iteration records without making provider calls, running tools, creating or changing files, or requiring API keys. This is a full copy of the current repository. Work only in this candidate.
+
+First reproduce the missing command with exactly:
+python3 -S -m unittest -v scripts.status_visible
+A compiler error or timeout is not the intended failure. The native --help must lack coupled-status. Read the protected scripts/status_fixture.py and scripts/status_visible.py for complete input and expected-output examples. Look at src/tui/events/coupled_run/iterations.rs and src/work_budget.rs for actual native records. Reuse existing types/helpers where their semantics fit; a focused new parser is also acceptable.
+
+Behavior contract:
+- Add coupled-status with a required --run-dir PATH. Relative PATH resolves from the caller's cwd. Forward the same command/arguments through npm's spiral entry; preserve default TUI and all existing commands.
+- Read PATH/iterations.json version 1 and each finalized iteration's DIRECTORY/state/tui-work.json. Count every durable request, including failed or in-flight attempts. wire_requests is requests.length; task_requests counts charge=task, including the native default when charge is omitted. Reject duplicate request IDs. Do not infer requests from text logs or report prose.
+- Validate positive max_iterations and max_task_requests_per_iteration, their checked product equals max_task_requests, max_wire_requests >= max_task_requests, row count <= max_iterations, row order 1..N and exact directories iteration-01, iteration-02, etc. Require unique nonempty task IDs and exact parent_task_id linkage starting with null. Each row's task ID and counts must match its ledger and task count must not exceed max_task_requests_per_iteration. Row completed must equal termination==completed; only the last row can be completed, and only in a completed manifest. A completed manifest requires a completed last row, stop_reason=completed, and no active or interrupted iteration. Manifest completed must equal stop_reason==completed.
+- A pending iteration may be named by active_iteration or interrupted_iteration.directory, never both. Its directory must be iteration-N+1 within max_iterations; a pending task ID must be new. Active requires null stop_reason; interrupted requires stop_reason=interrupted. Its ledger is read at the same relative path. Missing pending ledger is valid and means unknown usage, represented by null, never zero. An existing malformed pending ledger is an error. In-flight count is the number of requests with status=in_flight_or_interrupted.
+- For a normal or active run, manifest task_requests/wire_requests must equal finalized row sums (native manifests omit ongoing spend). For an interrupted run, both interrupted_iteration counts must match the pending ledger, or both null if absent; manifest totals must equal finalized+pending counts, or null if absent. Include pending spend exactly once in output. Reject overflow and known aggregate usage above the declared caps.
+- Reject malformed JSON, unsupported versions, missing finalized ledgers, mismatched counts/links, traversal directories, and any symlink below the run directory on a manifest/ledger path. Return nonzero with nonempty stderr and empty stdout. A caller-supplied run directory itself may resolve normally. For success, stdout must contain exactly one JSON object with the exact fields shown by scripts.status_fixture.expected; array order and progress string order are preserved. No extra fields. status is completed for a completed record, stopped when a stop_reason exists, otherwise running. This is recorded native status, never independent qualification or promotion authorization.
+- Include finalized rows with iteration, task_id, termination, task_requests, wire_requests, changed_files and newly_verified. Include pending as null or {directory, task_id, task_requests, wire_requests, in_flight_requests}, with unknown fields null. requests has task_used, wire_used, task_limit, wire_limit, task_remaining, wire_remaining; if pending usage is unknown, both used and remaining totals are null. Limits remain known. Empty-start manifests are valid if their totals are zero.
+
+Allowed paths only:
+- src/main.rs
+- src/coupled_status.rs
+- npm/spiral-coder/lib/launcher.cjs
+- docs/coupled-status.md
+- docs/state-schema.md
+- tests/coupled_status.rs
+
+Keep CLI wiring in src/main.rs small, behavior in src/coupled_status.rs, and document ownership in docs/state-schema.md without changing existing persistence. Add docs/coupled-status.md explaining how to run the native and installed command, count task versus wire requests, handle unknown interrupted usage, and distinguish recorded completion from independent verification. Include one JSON fenced block exactly equal to scripts.status_fixture.expected('completed'), explicitly described as the completed synthetic example from scripts.status_fixture.make. Existing docs must retain their original content; append the new state-schema section.
+
+All existing tests, fixtures, manifests, lockfiles, CI, provider configuration, visible checks and execution settings are protected. Do not inspect external probes/reference repairs, change the scheduler, perform network operations, or edit files outside the list. Do not run scripts/check-local.sh in this candidate; the independent verifier runs it on a disposable copy. Build artifacts belong in the provided CARGO_TARGET_DIR.
+
+Acceptance:
+1. Native and installed coupled-status produce the specified read-only summary and handle unknown usage honestly.
+2. Validation rejects inconsistent records without outputting success JSON; all existing behavior stays intact.
+3. The command guide and state-schema documentation describe ownership, usage and limits, with a measured fixture example.
+4. After the last source/test/document edit, all exact checks below must pass, then submit the native done report:
+cargo fmt --all -- --check
+python3 -S -m unittest -v scripts.status_visible
+python3 -S -m unittest -v scripts.status_guide
+cargo test --locked --bin spiral-coder -q
+
+Format Rust before the final checks. Name every changed path and all four exact commands in the final report. Explain the behavior and observed results. Include standalone lines Before: FAILED and After: PASSED only if supported. Report only measured test counts; external independent checks have not run inside this episode. If blocked, preserve remaining criteria and the next concrete action.
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "status",
+      "description": "Deliver read-only coupled run status, honest pending budgets and measured documentation.",
+      "artifacts": [
+        {
+          "path": "src/main.rs",
+          "kind": "source"
+        },
+        {
+          "path": "src/coupled_status.rs",
+          "kind": "source"
+        },
+        {
+          "path": "npm/spiral-coder/lib/launcher.cjs",
+          "kind": "source"
+        },
+        {
+          "path": "docs/coupled-status.md",
+          "kind": "documentation"
+        },
+        {
+          "path": "docs/state-schema.md",
+          "kind": "documentation"
+        }
+      ],
+      "checks": [
+        {
+          "command": "cargo fmt --all -- --check"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_visible",
+          "baseline_failure": true
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_guide"
+        },
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>
