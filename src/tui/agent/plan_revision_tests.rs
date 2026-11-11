@@ -155,6 +155,10 @@ fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
         &contract,
     );
     assert_eq!(stage, None, "the refused check did not execute");
+    assert!(feedback.contains(&format!(
+        "exactly {} separate numbered lines",
+        accepted.acceptance_criteria.len()
+    )));
     for previous in [
         RecoveryStage::Diagnose,
         RecoveryStage::Fix,

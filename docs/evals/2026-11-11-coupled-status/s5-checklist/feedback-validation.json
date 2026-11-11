@@ -1,0 +1,15 @@
+{
+  "phase": "Post-S5 acceptance formatting feedback; no fresh provider run after this change",
+  "targeted_tests": 4,
+  "full_check_exit_code": 0,
+  "full_check_log_sha256": "a8298afea76a0d029771d1b84e879776ec129db5cfeef1f5789b2631b0dc6322",
+  "rust_main": 1157,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true
+}

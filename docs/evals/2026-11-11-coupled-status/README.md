@@ -33,3 +33,7 @@ The plan preserves the first terminal outcome and runs independent validation
 on a disposable replay of the sealed candidate. Native completion, independent
 qualification, authorship and adoption are reported separately. No candidate
 patch is automatically merged or used to replace the running executor.
+
+S5 tested an explicit checklist with the final S4 executor. It stopped after
+three rounds (95 task / 107 wires), with 15/24 independent cases passing and
+no qualification. [Failed checklist condition and concrete diagnoses](s5-checklist/README.md).

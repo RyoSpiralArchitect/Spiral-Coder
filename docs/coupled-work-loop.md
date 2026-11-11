@@ -744,3 +744,7 @@ still help explain the code. It can only lead to a forced edit suggestion for
 a file on that list, grounded in observations from the current task.
 The native file tools also check the proposed path before executing a write.
 Required deliverables can be a subset of the allowed files.
+
+Plan-revision rejection feedback includes the admitted acceptance count and
+requires separate numbered lines. Joining all criteria into one paragraph changes
+the parsed references; the runtime does not silently split or accept that revision.

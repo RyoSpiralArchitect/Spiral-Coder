@@ -1,0 +1,14 @@
+{
+  "runtime_commit": "1b07c706ca8981e4593f177b35a8defd1d0552ee",
+  "full_check_log_sha256": "931218daf08dba59420daabdd8c17b6a8d9a66e7d3c6f1b4f6b2b2d9b91fff4d",
+  "rust_main_passed": 1157,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "phase": "Post-S4 final runtime; live S4 executor validation retained in s4-four-rounds/runtime-validation.json"
+}
