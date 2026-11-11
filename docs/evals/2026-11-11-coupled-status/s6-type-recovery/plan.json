@@ -1,0 +1,79 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S6",
+  "created_at": "2026-11-11T14:37:55.455887+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "eb9e8bdea108611d8767a3b8eb7a88fd2cf59481",
+  "binary_sha256": "b53082cb36b6e2535113dff5e5108e289c6da8fabe9c032c0af70e3ccf2f7ceb",
+  "declaration_sha256": "bd38b1bc51b4d004c16e7ed2302ef865845c733b867c88ec02f95b68ee871b46",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "fc0e79451a4e8b9586c1aef3d4688c8263be5d1048de7b2f5a22061296add9be",
+  "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
+  "preflight_sha256": "9e6fe767c39238825df6f8ce770595656fbf869ecfdb08fc1a48113734175064",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh same baseline, prompt, evaluator and six-round cap as S5; runtime preserves concrete deserialization causes and provides explicit numbered acceptance feedback. No seed or operator steering",
+  "main_merge_required_before_run": true,
+  "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "matched_s1_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "matched_s2_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_blocked_receipt_sha256": "528a39ac9f4ded7041bccb0ed9d7085f556c769fb9fcf06794b0ea1064ec98cb",
+  "matched_s3_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "matched_s4_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "input_changes": [
+    "prompt.txt only: explicit validation self-checks and append-only documentation; all probes and success gates unchanged"
+  ],
+  "matched_s5_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ]
+}

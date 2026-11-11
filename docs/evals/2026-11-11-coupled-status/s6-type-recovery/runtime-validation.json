@@ -1,0 +1,14 @@
+{
+  "runtime_commit": "eb9e8bdea108611d8767a3b8eb7a88fd2cf59481",
+  "full_check_log_sha256": "0f565ba542358780102669940abb4f242a5580cb10dc5c0f4d39996fb5851d9a",
+  "rust_main_passed": 1159,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "phase": "S6 runtime with cause retention and numbered plan feedback"
+}

@@ -37,3 +37,7 @@ patch is automatically merged or used to replace the running executor.
 S5 tested an explicit checklist with the final S4 executor. It stopped after
 three rounds (95 task / 107 wires), with 15/24 independent cases passing and
 no qualification. [Failed checklist condition and concrete diagnoses](s5-checklist/README.md).
+
+S6 keeps S5 inputs fixed and tests cause retention plus numbered-plan feedback.
+It reaches 19/24 independent cases in four rounds (98 task / 107 wires), then
+stops without new progress. [S6 evidence and remaining contract failures](s6-type-recovery/README.md).
