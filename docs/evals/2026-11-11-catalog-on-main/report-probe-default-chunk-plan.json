@@ -1,0 +1,37 @@
+{
+  "condition": "Operator-directed closeout on the exact sealed R22 candidate, before its final done. Existing checks and source retained. The only task text change is an explicit requirement to name the two already requested commands in the report. Up to one Coder report request and one Observer request. The Coder's response will be newly generated.",
+  "source_seal_sha256": "dda14f75f8cbf6552e19d7a7ada253993bbdfa033bec6cd421b8ff14b3737500",
+  "source_round": 3,
+  "old_done_step": 65,
+  "old_session_sha256": "7cdcb15e4b493086ca18a7f8454f433c3ee785f8017217ffd544d19cea400a22",
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+  "candidate_inventory_sha256": "35b1b3fd1fc2eceac414aae61cf44de240a2e3c236636bb8100a970e3288d595",
+  "patch_sha256": "7e12a58df11b90952789b88e79d614798a8c775cd2f548e843ff262eaf5ddc02",
+  "prompt_sha256": "b493932e70c53b7b5d4a04c431151a16a6b191eb418e0240b365cb6c68a7a0e3",
+  "runtime_commit": "433a40ddbd05c2903dd6de7a33d7942a773d98a9",
+  "binary_sha256": "2f719fe3be0f2a3134889cc0958bbabb0eae975905e66803c9087b1b6cf41e70",
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "required_literals": [
+    "python3 -S -m unittest -v scripts.catalog_visible",
+    "cargo test --locked --bin spiral-coder -q"
+  ],
+  "max_task_requests": 2,
+  "max_wire_requests": 2,
+  "observer_reserved_requests": 1,
+  "transport_repair_requests": 0,
+  "max_coder_requests": 1,
+  "coder_chunk_requests": null,
+  "previous_start_provider_calls": 0,
+  "timeout_seconds": 90,
+  "wall_seconds": 210,
+  "external_calls_at_pin": 0
+}
