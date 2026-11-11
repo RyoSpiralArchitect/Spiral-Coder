@@ -1,0 +1,121 @@
+{
+  "plan_sha256": "f98a652ddf326e5f544e6421a3a522d2a0b653d66a47c0b313f3a77d2f59670e",
+  "declaration_sha256": "75a6260cf95bd80118a0d92eae0726a7c9c959c09e33fad2643662f321cdb672",
+  "sealed_receipt_sha256": "7c43b755a8398f23b8b2c9fcac96d9674da8ac5ecf7ad3a6bcbe586b35ff626d",
+  "process": {
+    "exit_code": 101,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 60.326,
+    "finished_at": "2026-11-11T15:09:06.741783+00:00",
+    "redacted_files": [],
+    "patch_exit_code": 0
+  },
+  "manifest": {
+    "active_iteration": "iteration-01",
+    "completed": false,
+    "iterations": [],
+    "max_iterations": 6,
+    "max_task_requests": 192,
+    "max_task_requests_per_iteration": 32,
+    "max_wire_requests": 216,
+    "stop_reason": null,
+    "task_requests": 0,
+    "version": 1,
+    "wire_requests": 0
+  },
+  "all_chain_gates_passed": false,
+  "promotion_authorized": false,
+  "termination": "runtime_panic_before_first_round_finalization",
+  "chain_gates_unavailable": true,
+  "pending_ledger_budget": {
+    "valid": true,
+    "wire_requests": 9,
+    "task_requests": 9,
+    "transport_requests": 0,
+    "coder_task_requests": 7,
+    "policy": {
+      "transport_repair_limit": 4,
+      "observer_reserved_requests": 8
+    }
+  },
+  "pending_ledger_roles": {
+    "coder": 7,
+    "observer": 2
+  },
+  "changed_files": [
+    "src/main.rs"
+  ],
+  "patch_sha256": "be2aa15060ecab9921e5a9cab8a72c314842233d6e1c18bd7dcc7d1f040da6bd",
+  "sealed_candidate_matches": true,
+  "strict_scope": true,
+  "original_protected_files_preserved": true,
+  "candidate_unchanged_by_assessor": true,
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "bec02c224e11976f94e7b9544d58c05bb2665a4dc17457117ce8887562d8958e",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "status-visible",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "8910d652143c4fb04eaee8a9549205c03221ca00a6162cd475d38849bd0e7add",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "executed": false,
+      "skip_reason": "candidate_binary_unavailable",
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "packaged-status",
+      "passed": false,
+      "executed": false,
+      "skip_reason": "candidate_binary_unavailable",
+      "exit_code": null,
+      "test_summary": null,
+      "log_sha256": null,
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "guide-example",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "d3627a0593aacdfb82ad2255c51fc8a0fcbb21b4a3a950eed26a145eafddf116",
+      "candidate_binary_sha256": null
+    },
+    {
+      "id": "stock-regressions",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 101,
+      "test_summary": null,
+      "log_sha256": "733f2a19ae66d221dc561390c0a916710400b648663a2f0ece55e94f63605874",
+      "candidate_binary_sha256": null
+    }
+  ]
+}

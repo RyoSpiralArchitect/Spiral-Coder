@@ -41,3 +41,10 @@ no qualification. [Failed checklist condition and concrete diagnoses](s5-checkli
 S6 keeps S5 inputs fixed and tests cause retention plus numbered-plan feedback.
 It reaches 19/24 independent cases in four rounds (98 task / 107 wires), then
 stops without new progress. [S6 evidence and remaining contract failures](s6-type-recovery/README.md).
+
+S7 adds actual-budget restart guidance and visible pending-state diagnostics.
+It stops before the first round finalizes: an Observer digest cuts inside a
+UTF-8 character and panics after nine requests. This is an executor failure;
+no conclusion about the intended two changes is possible from this run.
+[Preserved panic, pending ledger and incomplete patch](s7-utf8-panic/README.md).
+The UTF-8 correction has a failing-before/passing-after native reproducer.

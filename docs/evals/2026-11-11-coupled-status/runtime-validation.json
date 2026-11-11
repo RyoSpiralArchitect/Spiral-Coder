@@ -1,7 +1,7 @@
 {
-  "runtime_commit": "3b48c73f80810b2a8b91254b21a3a94032ee5900",
-  "full_check_log_sha256": "fe6a99be33f1b1963810187ad53d39748545a995222bc218b105606594c3db64",
-  "rust_main_passed": 1159,
+  "runtime_commit": "6e27841f62a73ceb534399ee57bd2392b3ee558d",
+  "full_check_log_sha256": "f8adeb86856b406d4de13a188830672e7da5beeaa1971c47553e7d1e7b0f870e",
+  "rust_main_passed": 1161,
   "rust_ignored": 2,
   "integration": 6,
   "tui_replay": 20,
@@ -10,5 +10,5 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S7 fresh-allowance restart and pending-scenario visible diagnostics"
+  "phase": "S8 fresh-allowance restart and UTF-8-safe Observer diagnostic digests"
 }
