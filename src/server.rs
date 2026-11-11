@@ -1385,8 +1385,7 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
     // - poison proxy env scrubbing
     // - Windows output decoding (CP932 fallback)
     let start = Instant::now();
-    let cwd = crate::exec::canonical_cwd(req.cwd.as_deref());
-    let r = crate::exec::run_command(&req.command, cwd.as_deref().or(req.cwd.as_deref())).await;
+    let r = crate::exec::run_command(&req.command, req.cwd.as_deref()).await;
     let duration_ms: u64 = start.elapsed().as_millis().min(u128::from(u64::MAX)) as u64;
     let out = match r {
         Ok(r) => Res {
@@ -1394,7 +1393,7 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
             stderr: r.stderr,
             exit_code: r.exit_code,
             duration_ms,
-            cwd,
+            cwd: r.cwd,
         },
         Err(e) => Res {
             stdout: String::new(),

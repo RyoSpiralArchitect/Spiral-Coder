@@ -21,6 +21,7 @@ pub struct ExecResult {
     pub stdout: String,
     pub stderr: String,
     pub exit_code: i32,
+    pub cwd: Option<String>,
 }
 
 /// Validate `cwd` passed into `run_command`.
@@ -705,6 +706,13 @@ pub(crate) fn canonical_cwd(cwd: Option<&str>) -> Option<String> {
         .ok()
 }
 
+pub(crate) fn execution_cwd(cwd: Option<&str>) -> Result<Option<String>> {
+    if let Some(path) = cwd {
+        validate_cwd(path).context("invalid cwd")?;
+    }
+    Ok(canonical_cwd(cwd))
+}
+
 fn find_git_root(mut start: &Path) -> Option<std::path::PathBuf> {
     // Walk up a few levels; we only need this to catch `git add` invoked from a subdir.
     for _ in 0..12 {
@@ -819,6 +827,7 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
             stdout: String::new(),
             stderr: String::new(),
             exit_code: 0,
+            cwd: None,
         });
     }
 
@@ -827,6 +836,7 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
             stdout: String::new(),
             stderr: format!("[BLOCKED] dangerous command: {reason}"),
             exit_code: -1,
+            cwd: None,
         });
     }
 
@@ -844,14 +854,18 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
             stdout: String::new(),
             stderr: format!("[BLOCKED] dangerous command: {reason}"),
             exit_code: -1,
+            cwd: None,
         });
     }
 
-    if let Some(reason) = check_nested_git_add_all_preflight(&cleaned, cwd) {
+    let resolved_cwd = execution_cwd(cwd)?;
+    let launch_cwd = resolved_cwd.as_deref().or(cwd);
+    if let Some(reason) = check_nested_git_add_all_preflight(&cleaned, launch_cwd) {
         return Ok(ExecResult {
             stdout: String::new(),
             stderr: format!("[BLOCKED] {reason}"),
             exit_code: -1,
+            cwd: None,
         });
     }
 
@@ -861,8 +875,7 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
     scrub_poison_proxy_env(&mut cmd);
     crate::runtime_storage::configure_child(&mut cmd);
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
-    if let Some(cwd) = cwd.filter(|s| !s.trim().is_empty()) {
-        validate_cwd(cwd).context("invalid cwd")?;
+    if let Some(cwd) = launch_cwd.filter(|s| !s.trim().is_empty()) {
         cmd.current_dir(cwd);
     }
 
@@ -872,6 +885,7 @@ pub async fn run_command(command: &str, cwd: Option<&str>) -> Result<ExecResult>
         stdout: decode_output(&output.stdout),
         stderr: decode_output(&output.stderr),
         exit_code: output.status.code().unwrap_or(-1),
+        cwd: resolved_cwd,
     })
 }
 
@@ -1023,6 +1037,21 @@ pub fn decode_output(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn execution_records_canonical_cwd_after_validating_the_raw_path() {
+        let area = tempfile::tempdir().unwrap();
+        let root = area.path().canonicalize().unwrap();
+        std::fs::create_dir(root.join("sub")).unwrap();
+        let invalid = root.join("sub/..");
+        assert!(run_command("pwd", invalid.to_str()).await.is_err());
+        let valid = root.join(".");
+        let result = run_command("pwd", valid.to_str()).await.unwrap();
+        assert_eq!(result.exit_code, 0);
+        assert_eq!(result.cwd.as_deref(), root.to_str());
+        assert_eq!(result.stdout.trim(), root.to_str().unwrap());
+    }
 
     #[test]
     fn sanitize_strips_prompt_markers() {

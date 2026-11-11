@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import vm from 'node:vm';
 import { mountApp, textOf } from './helpers/app.mjs';
 
@@ -74,7 +75,17 @@ test('actual Gemini App retries a rejected flat done, then persists successful n
         citable_checks: verified ? [{ id: 'unit', command }] : [],
       } }, completion_issue: null });
     }
-    if (url === '/api/exec') return json({ ok: true, cwd: '/workspace', exit_code: 0, stdout: '', stderr: 'Ran 1 test\nOK' });
+    if (url === '/api/exec') {
+      if (process.platform !== 'win32') {
+        const lines = body.command.split('\n');
+        assert.equal(lines[0], command);
+        lines[0] = 'false';
+        const quietFailure = spawnSync('sh', ['-c', lines.join('\n')], { encoding: 'utf8' });
+        assert.equal(quietFailure.status, 1);
+        assert.match(quietFailure.stdout, /__SPIRAL_CODER_PWD__=/);
+      }
+      return json({ ok: true, cwd: '/workspace', exit_code: 0, stdout: '', stderr: 'Ran 1 test\nOK' });
+    }
     if (url === '/api/chat_tools_stream') {
       turn++;
       const tool = turn === 1 ? 'exec' : 'done';

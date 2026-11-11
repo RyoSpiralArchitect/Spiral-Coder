@@ -172,10 +172,11 @@ test('approval result is bound to the native call and cannot be reused for a rep
   const {api, storage} = setup();
   const work = api.open(storage, 'thread', 'verify', 8, true);
   api.snapshot(storage, 'thread', work, [{role:'assistant',tool_calls:[{id:'call-A',function:{name:'exec',arguments:'{"command":"node --test note.test.mjs"}'}}]}, {role:'tool',tool_call_id:'call-A',content:'Awaiting approval via /api/approve_command\napproval_id: pc_1'}]);
-  const item = {id:'pc_1',command:'node --test note.test.mjs',cwd:'.',result:{exit_code:0,stdout:'passed',stderr:''}};
+  const item = {id:'pc_1',command:'node --test note.test.mjs',cwd:'.',result:{exit_code:0,cwd:'/workspace',stdout:'passed',stderr:''}};
   assert.equal(api.resolveApproval(storage, 'thread', 'pc_1', {...item, command:'different command'}, true), false);
   assert.equal(api.resolveApproval(storage, 'thread', 'pc_1', item, true), true);
   assert.match(work.messages[1].content, /^OK \(exit_code: 0\)/);
+  assert.equal(work.messages[1].content.split('\n')[1], 'cwd: /workspace');
   assert.equal(api.resolveApproval(storage, 'thread', 'pc_1', item, true), false);
   api.open(storage, 'thread', 'new task', 8, true);
   assert.equal(api.resolveApproval(storage, 'thread', 'pc_1', item, true), false);

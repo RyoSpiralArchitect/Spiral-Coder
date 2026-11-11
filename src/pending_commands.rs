@@ -213,6 +213,7 @@ impl PendingCommandStore {
                 "stdout": r.stdout,
                 "stderr": r.stderr,
                 "exit_code": r.exit_code,
+                "cwd": r.cwd,
             }),
             Err(e) => serde_json::json!({
                 "ok": false,

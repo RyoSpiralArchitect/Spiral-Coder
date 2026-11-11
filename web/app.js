@@ -6417,8 +6417,8 @@
             "}",
           ].join("\n");
         }
-        // POSIX: keep behavior simple (do not `set -e`).
-        return raw + `\necho "${PWD_MARKER}$(pwd)"`;
+        // The marker is display metadata. Preserve the command's result.
+        return raw + `\n__spiral_coder_status=$?\nprintf '\\n%s\\n' "${PWD_MARKER}$(pwd)"\nexit "$__spiral_coder_status"`;
       };
 
       const stripPwdMarker = (stdoutRaw) => {
@@ -8398,7 +8398,7 @@ state: ${agentState}`);
                 }
 
 	                toolResult = failed
-	                  ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
+	                  ? `FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\n${prefixText}stderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
 	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	                if (stdout) display += "\n" + stdout;

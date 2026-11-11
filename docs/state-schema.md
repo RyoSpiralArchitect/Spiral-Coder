@@ -1194,7 +1194,10 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 `TaskObligations.citable_checks` contains the current task's declared check IDs
 whose latest native execution is a current success at `tool_root`. The runtime
 keeps the execution directory in the receipt header when shortening its
-display. It also reads that header in older digested receipts. A subsequent
+display. Direct and approved Web executions record the resolved directory
+returned by the command runner. The runner validates the supplied path before
+resolving it. Older digested receipts retain their supported header format.
+A subsequent
 execution of the same command with a different or unknown directory withholds
 the ID until a new root-scoped success.
 An evidence row

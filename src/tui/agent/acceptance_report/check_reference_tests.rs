@@ -160,8 +160,14 @@ fn optional_alias_selects_the_latest_root_execution() {
     assert!(resolve(&messages).is_err());
     result(&mut messages, "exec", json!({"command":command}), SUCCESS);
     assert_eq!(resolve(&messages).unwrap()[0].command, command);
-    result(&mut messages, "exec", json!({"command":command}), FAILED);
+    result(
+        &mut messages,
+        "exec",
+        json!({"command":command}),
+        "⚠ LOGIC ERROR: test failed\n\nFAILED (exit_code: 1).\nduration_ms: 5\ncwd: /workspace\nstdout: (empty)",
+    );
     assert!(resolve(&messages).is_err());
+    assert!(current_commands(&messages, None).is_empty());
 }
 
 #[test]
