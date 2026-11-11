@@ -1,0 +1,71 @@
+{
+  "sealed_receipt_sha256": "f956a2f1c44884570663136cee540e54afa61873595d321a1ad73b2cbf9890f6",
+  "wall_seconds": 1155.343,
+  "native_completed": false,
+  "independent_qualified": false,
+  "candidate_adopted": false,
+  "rounds": [
+    {
+      "iteration": "iteration-01",
+      "new_retained_tool_results": 28,
+      "plan_gate_rejections": 2,
+      "first_retained_tools": [
+        "exec",
+        "read_file",
+        "read_file"
+      ],
+      "session_sha256": "8198a24415a2cf6b86654022b6eb5c88a8e10b42156e1e1bb6a33617a6903204"
+    },
+    {
+      "iteration": "iteration-02",
+      "new_retained_tool_results": 27,
+      "plan_gate_rejections": 2,
+      "first_retained_tools": [
+        "read_file",
+        "search_files",
+        "read_file"
+      ],
+      "session_sha256": "f38aaab2b1ab1fc2b50e52b1ec5634cda06df56bf4e557452956e0adfce0bb5d"
+    },
+    {
+      "iteration": "iteration-03",
+      "new_retained_tool_results": 28,
+      "plan_gate_rejections": 4,
+      "first_retained_tools": [
+        "read_file",
+        "read_file",
+        "patch_file"
+      ],
+      "session_sha256": "409070c23a1fdecaec268adbfd20cd1faccde74b594e9f3bbbc2a0afc7558aad"
+    },
+    {
+      "iteration": "iteration-04",
+      "new_retained_tool_results": 28,
+      "plan_gate_rejections": 18,
+      "first_retained_tools": [
+        "read_file",
+        "read_file",
+        "read_file"
+      ],
+      "session_sha256": "5a045984763ef2c06962f76bb9a06e46e7608a4a8b9db1705a2412ed7d95e446"
+    },
+    {
+      "iteration": "iteration-05",
+      "new_retained_tool_results": 28,
+      "plan_gate_rejections": 27,
+      "first_retained_tools": [
+        "read_file",
+        "read_file",
+        "read_file"
+      ],
+      "session_sha256": "b3eb70512dad94861ca833ad262f06b80cf92dffaaddfefbd63fb7d7a69476d2"
+    }
+  ],
+  "observation": "Iterations 2-4 execute work after restart and record edits. Iteration 5 makes no new edit or verification; the unchanged no-progress gate stops the chain.",
+  "plan_drift": {
+    "proposed_goal": "Complete coupled-status implementation, required artifacts, and all mandated verification.",
+    "admitted_goal": "Complete coupled-status implementation, artifacts, and all mandated verification.",
+    "difference": "Added required; exact inherited-goal fallback requires verbatim goal and acceptance. No gate was relaxed."
+  },
+  "post_run_projection_correction": "Shared strategy_memory can independently select a valid reporting plan. Follow-up source/test correction is outside the frozen S14 runtime; no live benefit claimed."
+}

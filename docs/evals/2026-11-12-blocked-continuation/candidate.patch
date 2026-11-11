@@ -1,0 +1,106 @@
+diff --git a/docs/coupled-status.md b/docs/coupled-status.md
+new file mode 100644
+index 0000000..a2a7f78
+--- /dev/null
++++ b/docs/coupled-status.md
+@@ -0,0 +1,27 @@
++# Coupled-run status
++
++`spiral coupled-status --run-dir PATH` reads a native coupled-run directory and prints a JSON summary. It is read-only: it makes no provider calls, runs no tools, and does not require API keys. Relative paths are resolved from the caller's current working directory.
++
++The installed `spiral` entry forwards the same command and arguments:
++
++```sh
++spiral coupled-status --run-dir /path/to/run
++```
++
++A source checkout can invoke the native command directly:
++
++```sh
++cargo run -- coupled-status --run-dir /path/to/run
++```
++
++`wire_requests` counts every durable request in a ledger. `task_requests` counts requests whose `charge` is `task`; native records that omit `charge` use the native task default. Failed and in-flight attempts are counted, while prose and text logs are ignored.
++
++For an interrupted iteration, the ledger may be absent because the run stopped before it was durably written. In that case pending usage is unknown and the output uses `null`, not zero. A malformed existing ledger is an error.
++
++The `completed` status reports recorded native state only. It is not an independent verification, qualification, or promotion authorization.
++
++The following is the completed synthetic example produced by `scripts.status_fixture.make` and `scripts.status_fixture.expected('completed')`:
++
++```json
++{"version": 1, "status": "completed", "stop_reason": "completed", "iterations": [{"iteration": 1, "task_id": "t1", "termination": "completed", "task_requests": 2, "wire_requests": 3, "changed_files": ["src/a.rs"], "newly_verified": ["cargo test -q"]}], "pending": null, "requests": {"task_used": 2, "wire_used": 3, "task_limit": 192, "wire_limit": 216, "task_remaining": 190, "wire_remaining": 213}}
++```
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..f8403ef 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'coupled-status', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..807c45c
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,24 @@
++use anyhow::{Context, Result};
++use clap::Args as ClapArgs;
++use serde_json::Value;
++use std::fs;
++use std::path::PathBuf;
++
++#[derive(Debug, ClapArgs)]
++pub struct Args {
++    /// Existing coupled-run directory
++    #[arg(long)]
++    pub run_dir: PathBuf,
++}
++
++pub fn run(args: Args) -> Result<()> {
++    let path = args.run_dir.join("iterations.json");
++    let text = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
++    let manifest: Value = serde_json::from_str(&text)
++        .with_context(|| format!("parse {}", path.display()))?;
++    if manifest.get("version").and_then(Value::as_u64) != Some(1) {
++        anyhow::bail!("unsupported iterations manifest version");
++    }
++    // Implement the validated fixture-shaped summary here.
++    anyhow::bail!("coupled-status summary construction is not implemented")
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..375efe9 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,6 +4,7 @@ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
+ mod config;
++mod coupled_status;
+ mod eval_merge_gate;
+ mod exec;
+ mod execution_evidence;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect a coupled run without making provider calls
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +642,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,

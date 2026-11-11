@@ -1,0 +1,20 @@
+{
+  "runtime_commit": "3f7451228aade18270be24315aa54c057d55fdf7",
+  "phase": "post-S14 shared strategy summary correction",
+  "provider_calls": 0,
+  "in_frozen_s14": false,
+  "live_effect_measured": false,
+  "red_log_sha256": "d70396cb979e1c7a9a68500a6d2d0ae11ba1cd058e4018640db6bbeb87f5d258",
+  "full_check_log_sha256": "46ebeeb1b5223b9ee680692a40b69ec1c74ecda7245b6708b0997064fdafd483",
+  "initial_test_log_sha256": "bfdc552275a6abab4be513b0a8d45535c19e62b599a42c6a49b0b398152049ea",
+  "initial_test_result": "Passed without exercising defect: one-step report plan was invalid for the shared strategy validator. Corrected to a valid three-step closeout plan before reproducing red.",
+  "rust_main_passed": 1173,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true
+}
