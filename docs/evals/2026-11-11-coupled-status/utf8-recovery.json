@@ -1,0 +1,19 @@
+{
+  "failure": "S7 runtime panic in Observer failure digest before first iteration finalized",
+  "cause": "String::truncate byte limit fell inside a UTF-8 scalar",
+  "old_code_reproducer_passed": false,
+  "new_observer_tests": {
+    "passed": 30,
+    "failed": 0
+  },
+  "checks": [
+    "2-, 3-, 4-byte characters straddling every interior byte at all native caps",
+    "minimum cap, exact-boundary ASCII, line normalization unchanged",
+    "native Observer failure packet retains outcome and tool diagnostic without panic"
+  ],
+  "logs": {
+    "s8-utf8-red.log": "0c73668980613e353da9fee3b3875a9a4a1b2ff705ff57f434b5957818b4e9cb",
+    "s8-utf8-green.log": "c174e3b8d11399f19c9872ea6071cef37f2ff2c4d76083cdcaf503151b128c00",
+    "s8-full-check.log": "f8adeb86856b406d4de13a188830672e7da5beeaa1971c47553e7d1e7b0f870e"
+  }
+}

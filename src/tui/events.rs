@@ -2215,7 +2215,7 @@ fn resolve_tui_meta_target(messages: &[Message], selector: &str) -> Result<usize
         .ok_or_else(|| "meta-diagnose: no failed coder message found".to_string())
 }
 
-fn meta_digest_text(text: &str, max_chars: usize, max_lines: usize) -> String {
+fn meta_digest_text(text: &str, max_bytes: usize, max_lines: usize) -> String {
     let mut out = text
         .replace("\r\n", "\n")
         .replace('\r', "\n")
@@ -2225,8 +2225,12 @@ fn meta_digest_text(text: &str, max_chars: usize, max_lines: usize) -> String {
         .take(max_lines.max(1))
         .collect::<Vec<_>>()
         .join("\n");
-    if out.len() > max_chars.max(32) {
-        out.truncate(max_chars.max(32) - 3);
+    if out.len() > max_bytes.max(32) {
+        let mut end = max_bytes.max(32) - 3;
+        while !out.is_char_boundary(end) {
+            end -= 1;
+        }
+        out.truncate(end);
         out.push_str("...");
     }
     out
