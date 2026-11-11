@@ -263,8 +263,10 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             let malformed = wire.status == "completed"
                 && wire.transport_rejection
                     == Some(crate::work_budget::TransportRejection::ObserverEnvelope);
-            if r.repairing_done
-                && (malformed || wire.status == "output_limited")
+            // A malformed first envelope cannot reliably identify a suggested
+            // `done`. Current native proof, not rejected prose, admits the
+            // report-only fallback after the one repair is also malformed.
+            if (malformed || (r.repairing_done && wire.status == "output_limited"))
                 && super::report_closeout::ready(app, Reason::Verified)
             {
                 return Some(Reason::Verified);

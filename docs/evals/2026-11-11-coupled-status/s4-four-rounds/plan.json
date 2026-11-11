@@ -1,0 +1,63 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S4",
+  "created_at": "2026-11-11T13:22:10.712524+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "ecc45d00e16514bf92f745e1c53a49badaecf0db",
+  "binary_sha256": "0a8a15fc6b140c5cdcf4648fdc281c9bf4d1882601df510ca74bb8872a6d561e",
+  "declaration_sha256": "db25edf5597ea382d8430d42131495ec7d116deaf280161a6f661820283d617b",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "4fd1e6c5a5c20e32db632eb3dc16651e470ae4c4f4b654ea5721fa72ab27859c",
+  "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
+  "preflight_sha256": "2052d0fe637253c81e1263073145bf641c5cae5094109bf7489d781b1bed7d27",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh same task/baseline and six-iteration envelope as S3. The executor permits an accepted blocked report with new progress and no approval barrier to use the next predeclared iteration despite unused Coder allowance. No seeded state, candidate edits or operator steering.",
+  "main_merge_required_before_run": true,
+  "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "matched_s1_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "matched_s2_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_blocked_receipt_sha256": "fe2e0224edf7214b3d30143139b27dd8fb66f703cb8317345090b15447dd3b69",
+  "matched_s3_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ]
+}

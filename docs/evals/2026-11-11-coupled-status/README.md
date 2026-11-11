@@ -11,7 +11,9 @@ S3 reached an accepted blocked report after 30 task requests / 31 wires, but the
 
 The executor now permits fresh progress from an accepted blocked report to use the next predeclared iteration. Approval barriers, no progress, errors and completion still stop. [Native red/green controls](early-blocked-recovery.json) · [Send-recovery controls](send-recovery.json)
 
-S4 will use the same original task, baseline and six-iteration envelope after local validation of the continuation correction.
+S4 completed four iterations in 947.206 seconds, using 103 task requests / 118 wires. All four exact native checks and the guide passed, but duplicate-key Observer responses prevented the final report. Independent status tests reached 21/24; the existing-document preservation check also failed. The candidate is unqualified and not adopted. [Full S4 result](s4-four-rounds/README.md)
+
+The terminal raw response pair is now a native regression fixture. The final executor correction offers one report-only Coder attempt after a malformed Observer repair when all native proof is current and no approval barrier exists. It keeps duplicate-key rejection and every report gate. [Replay controls](duplicate-closeout.json) This post-S4 fix has model-free validation; no fresh provider run of that final revision is claimed.
 
 [Plan](plan.json) pins the full candidate source at PR #81's
 `7ad8be4`, the separate executor revision, exact binary, frozen input/driver declaration and wrapper hashes.

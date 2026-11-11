@@ -1,0 +1,31 @@
+{
+  "source_run": "S4, round 4, receipt bb4dff250b0f58884ce5c4f32532d7dca3d9e7840374cf032d1742ab76359d87",
+  "failure": "Both original and repair envelopes contain duplicate keys. The original cannot set repairing_done, so existing native proof did not admit a report-only return.",
+  "raw_pair_fixture_sha256": "790437b81e158c7fc794fe970dd9734ebe807e51b5f5b4508d3148f2bbe491b5",
+  "before": "Minimal duplicate-pair native reproducer stops after three requests without calling the Coder report mock.",
+  "after": "The retained original S4 raw pair is replayed through the native driver: exactly one report-only request, valid evidence completes, invalid evidence remains incomplete; neither rejected Observer answer becomes an accepted assist.",
+  "additional_controls": [
+    "missing or stale proof, new human task, pending diagnosis, already attempted closeout and no Coder allowance remain ineligible",
+    "user refusal and pending approval block the all-proof fallback",
+    "one report consumer and mutation rejection retain existing native tests"
+  ],
+  "provider_calls_after_fix": 0,
+  "new_native_fixture_passed_in_full_suite": true,
+  "logs": {
+    "duplicate-before.log": "66dfff50756c689f40686e038dfc86667e3049850ec34994fb6e16cac803b7a9",
+    "duplicate-after.log": "045b867760496d87d64500f4d15edeb75c7189a4966ee8bcacde9b681028edc1",
+    "duplicate-full-check.log": "931218daf08dba59420daabdd8c17b6a8d9a66e7d3c6f1b4f6b2b2d9b91fff4d"
+  },
+  "full_checks": {
+    "rust_main": 1157,
+    "rust_ignored": 2,
+    "integration": 6,
+    "tui": 20,
+    "python": 97,
+    "web": 80,
+    "npm": 5,
+    "repo_map": 14,
+    "lite_smoke": true
+  },
+  "boundary": "Post-S4 model-free correction. S4 remains unqualified; no fresh live run of this final runtime revision or candidate adoption is claimed."
+}

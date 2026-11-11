@@ -70,7 +70,7 @@ fn observer_done_vocabulary_matches_coder_in_tui_and_browser_without_rewriting_e
 
 #[test]
 fn report_closeout_requires_current_declared_proof_and_never_clears_missing_work() {
-    for case in ["ready","missing_check","later_edit","human_steering","diagnosis","blocked","already_attempted","no_budget"] {
+    for case in ["ready","missing_check","later_edit","human_steering","diagnosis","blocked","already_attempted","no_budget","refusal","pending_approval"] {
         let (mut app, _root) = closeout_app();
         match case {
             "missing_check" => { app.coder_session.as_mut().unwrap().messages.truncate(6); },
@@ -80,6 +80,10 @@ fn report_closeout_requires_current_declared_proof_and_never_clears_missing_work
             "blocked" => app.coder_yield_reason = Some(super::super::coder_yield::CoderYieldReason::Blocked),
             "already_attempted" => app.report_closeout_attempted = true,
             "no_budget" => app.work_budget = crate::work_budget::WorkBudget::new("",0,None),
+            "refusal" | "pending_approval" => app.coder_session.as_mut().unwrap().messages.extend([
+                json!({"role":"assistant","tool_calls":[{"id":"approval","function":{"name":"exec","arguments":"{\"command\":\"echo pending\"}"}}]}),
+                json!({"role":"tool","tool_call_id":"approval","content":if case=="refusal" { "REJECTED BY USER" } else { "Awaiting approval" }}),
+            ]),
             _ => {},
         }
         let before = app.coder_session.as_ref().unwrap().messages.clone();

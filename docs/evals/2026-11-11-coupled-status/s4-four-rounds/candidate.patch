@@ -1,0 +1,350 @@
+diff --git a/docs/coupled-status.md b/docs/coupled-status.md
+new file mode 100644
+index 0000000..f7f8a8c
+--- /dev/null
++++ b/docs/coupled-status.md
+@@ -0,0 +1,19 @@
++# Coupled run status
++
++`spiral-coder coupled-status --run-dir PATH` reads an existing native coupled-run record and prints one JSON summary. It is read-only: it does not call providers, run tools, create files, or require API keys. `PATH` is resolved from the caller's current working directory. The installed npm entry forwards the same command and arguments:
++
++```sh
++spiral-coder coupled-status --run-dir ./runs/example
++```
++
++The native record is `iterations.json` plus each finalized iteration's `state/tui-work.json`. A wire request is every entry in a ledger's `requests` array. A task request is an entry whose `charge` is `task`; an omitted charge uses the native default of `task`. Thus task and wire budgets can differ. Failed and in-flight/interrupted attempts remain durable requests and are counted. Requests are never inferred from prose or logs.
++
++An interrupted iteration can have unknown usage when its ledger is absent. The summary reports pending usage and aggregate used/remaining values as `null` in that case; it never treats unknown usage as zero. Known usage is included once. Limits remain available from the manifest.
++
++`status: completed` reports the native manifest's recorded completion. `running` means an active iteration is recorded, and `stopped` means a stop reason is recorded without completion. This is an operational record, not independent verification, promotion authorization, or proof that the work is correct.
++
++The following is the completed synthetic example produced by `scripts.status_fixture.make` and returned by `scripts.status_fixture.expected('completed')`:
++
++```json
++{"version":1,"status":"completed","stop_reason":"completed","iterations":[{"iteration":1,"task_id":"t1","termination":"completed","task_requests":2,"wire_requests":3,"changed_files":["src/a.rs"],"newly_verified":["cargo test -q"]}],"pending":null,"requests":{"task_used":2,"wire_used":3,"task_limit":192,"wire_limit":216,"task_remaining":190,"wire_remaining":213}}
++```
+diff --git a/docs/state-schema.md b/docs/state-schema.md
+index 269cc9d..30cfe5b 100644
+--- a/docs/state-schema.md
++++ b/docs/state-schema.md
+@@ -77,6 +77,17 @@ Observer answers, so they cannot establish which format fallback was used.
+ The goal is simple: new features should not invent "just one more place" to
+ store state without first choosing the correct owner.
+ 
++## Coupled status ownership
++
++`spiral coupled-status --run-dir PATH` is a read-only projection owned by the
++native coupled-run records. It reads `iterations.json` and finalized
++`state/tui-work.json` ledgers; it does not create a second persistence surface
++or modify scheduler state. Wire requests are ledger request entries, while task
++requests are entries charged `task` (including the native default when charge is
++omitted). An interrupted ledger that is absent represents unknown usage and is
++reported as `null`, never as zero. The command's completion status is the
++manifest's recorded status, not independent verification or promotion authority.
++
+ ## State layers
+ 
+ | Layer | Owner | Lifetime | Backing store | Examples |
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..a24a700 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'coupled-status', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..0895547
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,254 @@
++use anyhow::{Context, Result};
++use clap::Args as ClapArgs;
++use serde_json::Value;
++use std::path::PathBuf;
++
++#[derive(ClapArgs, Debug)]
++pub struct Args {
++    #[arg(long, value_name = "PATH")]
++    pub run_dir: PathBuf,
++}
++
++pub fn run(args: Args) -> Result<()> {
++    let root = args
++        .run_dir
++        .canonicalize()
++        .context("resolve run directory")?;
++    let manifest_path = root.join("iterations.json");
++    let bytes = std::fs::read(&manifest_path)
++        .with_context(|| format!("read {}", manifest_path.display()))?;
++    let value: Value = serde_json::from_slice(&bytes).context("parse iterations.json")?;
++    let manifest = value.as_object().context("manifest must be an object")?;
++    anyhow::ensure!(
++        manifest.get("version").and_then(Value::as_u64) == Some(1),
++        "unsupported manifest version"
++    );
++    let max_iterations = manifest
++        .get("max_iterations")
++        .and_then(Value::as_u64)
++        .context("max_iterations")?;
++    let per_iteration = manifest
++        .get("max_task_requests_per_iteration")
++        .and_then(Value::as_u64)
++        .context("max_task_requests_per_iteration")?;
++    let max_task = manifest
++        .get("max_task_requests")
++        .and_then(Value::as_u64)
++        .context("max_task_requests")?;
++    let max_wire = manifest
++        .get("max_wire_requests")
++        .and_then(Value::as_u64)
++        .context("max_wire_requests")?;
++    anyhow::ensure!(
++        max_iterations > 0
++            && per_iteration > 0
++            && max_task
++                == max_iterations
++                    .checked_mul(per_iteration)
++                    .context("limit overflow")?
++            && max_wire >= max_task,
++        "invalid request limits"
++    );
++    let rows = manifest
++        .get("iterations")
++        .and_then(Value::as_array)
++        .context("iterations must be an array")?;
++    anyhow::ensure!(rows.len() as u64 <= max_iterations, "too many iterations");
++    let mut ids = std::collections::HashSet::new();
++    let mut parent = None::<String>;
++    let mut task_used = 0u64;
++    let mut wire_used = 0u64;
++    let mut iterations = Vec::new();
++    for (index, row_value) in rows.iter().enumerate() {
++        let row = row_value
++            .as_object()
++            .context("iteration row must be an object")?;
++        let number = row
++            .get("iteration")
++            .and_then(Value::as_u64)
++            .context("iteration number")?;
++        let directory = row
++            .get("directory")
++            .and_then(Value::as_str)
++            .context("iteration directory")?;
++        anyhow::ensure!(
++            number == index as u64 + 1 && directory == format!("iteration-{number:02}"),
++            "invalid iteration ordering"
++        );
++        let task_id = row
++            .get("task_id")
++            .and_then(Value::as_str)
++            .filter(|s| !s.is_empty())
++            .context("task_id")?;
++        anyhow::ensure!(ids.insert(task_id.to_owned()), "duplicate task_id");
++        let expected_parent = row.get("parent_task_id").cloned().unwrap_or(Value::Null);
++        anyhow::ensure!(
++            expected_parent == parent.clone().map(Value::String).unwrap_or(Value::Null),
++            "invalid parent linkage"
++        );
++        let ledger_path = root.join(directory).join("state/tui-work.json");
++        let ledger_bytes = std::fs::read(&ledger_path)
++            .with_context(|| format!("read {}", ledger_path.display()))?;
++        let ledger: Value = serde_json::from_slice(&ledger_bytes).context("parse ledger")?;
++        let ledger_obj = ledger.as_object().context("ledger must be an object")?;
++        anyhow::ensure!(
++            ledger_obj.get("task_id").and_then(Value::as_str) == Some(task_id),
++            "task id does not match ledger"
++        );
++        let requests = ledger_obj
++            .get("requests")
++            .and_then(Value::as_array)
++            .context("ledger requests")?;
++        let wire = requests.len() as u64;
++        let task = requests
++            .iter()
++            .filter(|r| r.get("charge").and_then(Value::as_str).unwrap_or("task") == "task")
++            .count() as u64;
++        anyhow::ensure!(
++            row.get("task_requests").and_then(Value::as_u64) == Some(task)
++                && row.get("wire_requests").and_then(Value::as_u64) == Some(wire)
++                && task <= per_iteration,
++            "ledger counts mismatch"
++        );
++        task_used = task_used.checked_add(task).context("task usage overflow")?;
++        wire_used = wire_used.checked_add(wire).context("wire usage overflow")?;
++        let progress = row.get("progress").and_then(Value::as_object);
++        iterations.push(serde_json::json!({"iteration":number,"task_id":task_id,"termination":row.get("termination").cloned().unwrap_or(Value::Null),"task_requests":task,"wire_requests":wire,"changed_files":progress.and_then(|p| p.get("changed_files")).cloned().unwrap_or_else(|| Value::Array(vec![])),"newly_verified":progress.and_then(|p| p.get("newly_verified")).cloned().unwrap_or_else(|| Value::Array(vec![]))}));
++        parent = Some(task_id.to_owned());
++    }
++    let pending_name = manifest
++        .get("active_iteration")
++        .and_then(Value::as_str)
++        .or_else(|| {
++            manifest
++                .get("interrupted_iteration")
++                .and_then(Value::as_object)
++                .and_then(|x| x.get("directory"))
++                .and_then(Value::as_str)
++        });
++    let pending = if let Some(directory) = pending_name {
++        let path = root.join(directory).join("state/tui-work.json");
++        match std::fs::read(&path) {
++            Ok(data) => {
++                let ledger: Value =
++                    serde_json::from_slice(&data).context("parse pending ledger")?;
++                let obj = ledger.as_object().context("pending ledger object")?;
++                let req = obj
++                    .get("requests")
++                    .and_then(Value::as_array)
++                    .context("pending requests")?;
++                let task = req
++                    .iter()
++                    .filter(|r| r.get("charge").and_then(Value::as_str).unwrap_or("task") == "task")
++                    .count() as u64;
++                let wire = req.len() as u64;
++                let inflight = req
++                    .iter()
++                    .filter(|r| {
++                        r.get("status").and_then(Value::as_str) == Some("in_flight_or_interrupted")
++                    })
++                    .count() as u64;
++                task_used = task_used.checked_add(task).context("task usage overflow")?;
++                wire_used = wire_used.checked_add(wire).context("wire usage overflow")?;
++                Some(
++                    serde_json::json!({"directory": directory, "task_id": obj.get("task_id").cloned().unwrap_or(Value::Null), "task_requests": task, "wire_requests": wire, "in_flight_requests": inflight}),
++                )
++            }
++            Err(_) => Some(
++                serde_json::json!({"directory": directory, "task_id": null, "task_requests": null, "wire_requests": null, "in_flight_requests": null}),
++            ),
++        }
++    } else {
++        None
++    };
++    let stop_reason = manifest.get("stop_reason").cloned().unwrap_or(Value::Null);
++    let manifest_task = manifest
++        .get("task_requests")
++        .cloned()
++        .unwrap_or(Value::Null);
++    let manifest_wire = manifest
++        .get("wire_requests")
++        .cloned()
++        .unwrap_or(Value::Null);
++    let interrupted = stop_reason.as_str() == Some("interrupted");
++    if interrupted {
++        if let (Some(task), Some(wire)) = (manifest_task.as_u64(), manifest_wire.as_u64()) {
++            anyhow::ensure!(
++                task == task_used && wire == wire_used,
++                "manifest totals mismatch"
++            );
++        } else {
++            anyhow::ensure!(
++                manifest_task.is_null() && manifest_wire.is_null(),
++                "manifest totals must both be known or unknown"
++            );
++        }
++    } else {
++        anyhow::ensure!(
++            manifest_task.as_u64()
++                == Some(
++                    task_used
++                        - pending
++                            .as_ref()
++                            .and_then(|p| p.get("task_requests"))
++                            .and_then(Value::as_u64)
++                            .unwrap_or(0)
++                ),
++            "manifest totals mismatch"
++        );
++        anyhow::ensure!(
++            manifest_wire.as_u64()
++                == Some(
++                    wire_used
++                        - pending
++                            .as_ref()
++                            .and_then(|p| p.get("wire_requests"))
++                            .and_then(Value::as_u64)
++                            .unwrap_or(0)
++                ),
++            "manifest totals mismatch"
++        );
++    }
++    if let Some(task) = manifest_task.as_u64() {
++        anyhow::ensure!(task <= max_task, "aggregate usage exceeds limits");
++    }
++    if let Some(wire) = manifest_wire.as_u64() {
++        anyhow::ensure!(wire <= max_wire, "aggregate usage exceeds limits");
++    }
++    let status = if manifest.get("completed").and_then(Value::as_bool) == Some(true) {
++        "completed"
++    } else if manifest
++        .get("active_iteration")
++        .and_then(Value::as_str)
++        .is_some()
++    {
++        "running"
++    } else {
++        "stopped"
++    };
++    let task_unknown = pending
++        .as_ref()
++        .and_then(|p| p.get("task_requests"))
++        .map(|v| v.is_null())
++        .unwrap_or(false);
++    let wire_unknown = pending
++        .as_ref()
++        .and_then(|p| p.get("wire_requests"))
++        .map(|v| v.is_null())
++        .unwrap_or(false);
++    let task_value = if task_unknown {
++        Value::Null
++    } else {
++        Value::from(task_used)
++    };
++    let wire_value = if wire_unknown {
++        Value::Null
++    } else {
++        Value::from(wire_used)
++    };
++    println!(
++        "{}",
++        serde_json::json!({"version":1,"status":status,"stop_reason":stop_reason,"iterations":iterations,"pending":pending.unwrap_or(Value::Null),"requests":{"task_used":task_value,"wire_used":wire_value,"task_limit":max_task,"wire_limit":max_wire,"task_remaining":task_value.as_u64().map(|v| Value::from(max_task-v)).unwrap_or(Value::Null),"wire_remaining":wire_value.as_u64().map(|v| Value::from(max_wire-v)).unwrap_or(Value::Null)}})
++    );
++    Ok(())
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..11eb415 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,6 +4,7 @@ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
+ mod config;
++mod coupled_status;
+ mod eval_merge_gate;
+ mod exec;
+ mod execution_evidence;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect a native coupled run without provider calls or filesystem changes
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +642,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,

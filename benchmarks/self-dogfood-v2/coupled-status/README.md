@@ -38,3 +38,25 @@ Later steps depend on this result. First use the status command on actual saved
 runs, then target a bounded internal harness change with a failing reproducer,
 neighboring controls and unchanged completion gates. Only after that consider
 multi-feature work that changes both persistence and execution behavior.
+
+## Progression after the first longer run
+
+[The first frozen series](../../../docs/evals/2026-11-11-coupled-status/README.md)
+retains four launches through S4. S4 reaches four current exact checks and a
+measured guide in four iterations, but misses three independent cases, existing
+document preservation and the accepted final report. It is not qualified.
+
+1. Finish this read-only feature under the unchanged contract: valid summaries,
+   contradictory/duplicate/symlink rejection, original document preservation,
+   current checks and an authored report. Then inspect saved real runs on copies.
+2. Freeze one internal control repair with a failing native reproducer, positive
+   continuation and negative stop controls, TUI replay and the original test set.
+   The pair edits the candidate harness; the separate executor/evaluator remains
+   frozen. This demonstrates a bounded internal repair, not recursive deployment.
+3. Only after qualification, combine two dependent features and an interrupted
+   continuation: preserve accepted work and evidence, complete the second change,
+   rerun affected and full checks, then report. Freeze the total multi-episode
+   budget before calls, retaining no-progress and incomplete terminals.
+
+These are capability milestones, not promises that the current pair will pass.
+Raising the cap alone does not close missing constraints or final delivery.

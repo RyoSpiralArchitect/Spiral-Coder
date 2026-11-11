@@ -1,5 +1,5 @@
 //! Admission to one final authored report after a transport-rejected Observer
-//! done repair. No advice, acceptance mapping or completion is synthesized.
+//! repair with current proof. No advice, acceptance mapping or completion is synthesized.
 use super::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,4 +45,6 @@ pub(super) fn ready(app: &App, reason: Reason) -> bool {
         && obligations.required_diagnostic_read.is_none()
         && !obligations.acceptance_criteria.is_empty()
         && !obligations.current_commands.is_empty()
+        && !agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
+            .has_approval_barrier()
 }
