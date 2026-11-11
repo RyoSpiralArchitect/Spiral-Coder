@@ -1,4 +1,5 @@
 """Native-format fixtures shared by visible and independent status checks."""
+import copy
 import json
 from pathlib import Path
 
@@ -10,13 +11,21 @@ def put(root, name, value):
 
 
 def work(task, charges=('task', 'task', 'transport'), pending=False):
-    return {'task_id': task, 'root': 'a task', 'tool_root': '/unused',
-            'started_at_ms': 1, 'request_limit': 32,
-            'policy': {'transport_repair_limit': 4, 'observer_reserved_requests': 8},
-            'assists': [], 'requests': [dict(id=i, role='coder' if i % 2 == 0 else 'observer',
-                estimated_input_tokens=1, provider_usage=None, duration_ms=None,
-                status='in_flight_or_interrupted' if pending and i == len(charges)-1 else 'completed',
-                charge=charge) for i, charge in enumerate(charges)]}
+    # The template is emitted by WorkBudget's real durable writer. Preserve
+    # every native field; scenario edits change values, not a guessed schema.
+    native = json.loads(Path(__file__).with_name('native_work.json').read_text())
+    result = copy.deepcopy(native)
+    result['task_id'] = task
+    result['tool_root'] = '/unused'
+    result['requests'] = []
+    for i, charge in enumerate(charges):
+        receipt = copy.deepcopy(native['requests'][2 if charge == 'transport' else 0])
+        receipt.update(id=i, role='coder' if i % 2 == 0 else 'observer', charge=charge,
+                       status='in_flight_or_interrupted' if pending and i == len(charges)-1 else 'completed')
+        if receipt['status'] == 'in_flight_or_interrupted': receipt['duration_ms'] = None
+        result['requests'].append(receipt)
+    return result
+
 
 
 def make(root, state='completed'):
@@ -67,3 +76,12 @@ def expected(state='completed'):
                          'task_limit': 192, 'wire_limit': 216,
                          'task_remaining': (189 if pending else 190) if known else None,
                          'wire_remaining': (211 if pending else 213) if known else None}}
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='Write native-format status fixtures into a test directory.')
+    parser.add_argument('root', type=Path)
+    parser.add_argument('state', choices=('completed', 'running', 'interrupted', 'unknown', 'stopped'))
+    args = parser.parse_args()
+    make(args.root, args.state)

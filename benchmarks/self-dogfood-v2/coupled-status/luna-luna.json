@@ -195,6 +195,10 @@
     {
       "source": "baseline/src/config/env_test_support.rs",
       "target": "src/config/env_test_support.rs"
+    },
+    {
+      "source": "native_work.json",
+      "target": "scripts/native_work.json"
     }
   ],
   "probes": [

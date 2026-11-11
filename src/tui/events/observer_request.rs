@@ -3,6 +3,7 @@ use super::*;
 use std::hash::{Hash, Hasher};
 
 mod delivery;
+mod uncertain;
 pub(super) use delivery::take_delivery_window;
 pub(super) mod reconnect;
 
@@ -313,6 +314,7 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             app.pending_observer_contract = build_observer_response_contract(parsed);
             app.coder.push_tool("(observer suggestion) queued an advisory next step for the next coder continuation.".to_string());
         }
+        uncertain::queue_report(app, parsed);
     }
     app.last_observer_suggestion = parsed;
     let stamp = source_stamp(app);
@@ -335,7 +337,11 @@ pub(super) async fn maybe_report_closeout(app: &mut App, tx: &mpsc::Sender<Reque
     if !super::report_closeout::ready(app, reason) {
         return false;
     }
-    send_coder_input(app, tx, "The Observer repair was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. If anything remains unverified, give a blocked report with the outstanding criteria and a concrete next action. All completion gates still apply.".into(), CoderInput::ReportCloseout).await;
+    let prompt = match reason {
+        super::report_closeout::Reason::LowConfidence => "The Observer primary action is below the existing confidence threshold and was not adopted. Use one report-only request to author done from native evidence and exact acceptance references. If anything is unfinished, give a blocked report with every outstanding criterion and a concrete next action for the next predeclared iteration. Do not infer progress or execute any Observer suggestion. All completion and approval gates still apply.",
+        _ => "The Observer repair was rejected. Use one report-only request to author done from the retained native evidence and exact acceptance references. If anything remains unverified, give a blocked report with the outstanding criteria and a concrete next action. All completion gates still apply.",
+    };
+    send_coder_input(app, tx, prompt.into(), CoderInput::ReportCloseout).await;
     app.report_closeout_attempted
 }
 

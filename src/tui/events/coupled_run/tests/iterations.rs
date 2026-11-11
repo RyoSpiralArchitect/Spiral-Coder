@@ -46,15 +46,24 @@ async fn a_progressed_early_blocked_round_resumes_and_no_progress_still_stops() 
     iteration_case(FirstRound::Blocked).await;
 }
 
+#[tokio::test]
+async fn uncertain_advice_hands_off_progress_without_lowering_confidence_or_completion() {
+    iteration_case(FirstRound::Uncertain).await;
+}
+
 #[derive(Clone, Copy)]
 enum FirstRound {
     Exhausted,
     Blocked,
+    Uncertain,
 }
 
 async fn iteration_case(first: FirstRound) {
     let server = MockServer::start();
-    let blocked_args = json!({"summary":"The greeting was edited, but independent verification remains unfinished.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[],"next_steps":"Inspect guide.md and verify the greeting before reporting completion."});
+    let mut blocked_args = json!({"summary":"The greeting was edited, but independent verification remains unfinished.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[],"next_steps":"Inspect guide.md and verify the greeting before reporting completion."});
+    if matches!(first, FirstRound::Uncertain) {
+        blocked_args["next_steps"] = json!("carry-greeting-forward: inspect guide.md and run the declared check before completion.");
+    }
     let blocked_text = "<impact>\nchanged: guide.md greeting\nprogress: edit recorded\nremaining_gap: verification\n</impact>\n<think>\ngoal: Update the greeting in guide.md\nstep: 2\ntool: done\nrisk: inaccurate claims\ndoubt: verification unfinished\nnext: hand off verification\nverify: inspect guide.md\n</think>";
     let coder_first = server.mock(|when,then| {
         when.method(POST).path("/chat/completions").matches(|r| {
@@ -87,7 +96,7 @@ async fn iteration_case(first: FirstRound) {
                 FirstRound::Exhausted => {
                     "2 task requests, 1 currently available to Coder, 1 reserved for Observer"
                 }
-                FirstRound::Blocked => {
+                FirstRound::Blocked | FirstRound::Uncertain => {
                     "5 task requests, 4 currently available to Coder, 1 reserved for Observer"
                 }
             })
@@ -104,7 +113,7 @@ async fn iteration_case(first: FirstRound) {
                 FirstRound::Exhausted => {
                     response("", "", json!({}), "The current proof is incomplete.")
                 }
-                FirstRound::Blocked => {
+                FirstRound::Blocked | FirstRound::Uncertain => {
                     response("done", "still-blocked", blocked_args.clone(), blocked_text)
                 }
             });
@@ -114,14 +123,22 @@ async fn iteration_case(first: FirstRound) {
             let v:Value=serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
             !v["tools"].is_array()
         });
-        then.status(200).header("content-type","text/event-stream").body(response("","",json!({}),
-            &json!({"summary":"The edit was recorded.","suggestions":[{"kind":"clarify","suggested_tool":null,"suggested_args":{},"reason":"carry-greeting-forward","confidence":0.9}]}).to_string()));
+        let reply = if matches!(first, FirstRound::Uncertain) {
+            json!({"summary":"Uncertain edit; unfinished work remains.","suggestions":[{"kind":"edit","suggested_tool":"patch_file","suggested_args":{"path":"guide.md","search":"hello","replace":"do-not-adopt"},"confidence":0.74}]})
+        } else {
+            json!({"summary":"The edit was recorded.","suggestions":[{"kind":"clarify","suggested_tool":null,"suggested_args":{},"reason":"carry-greeting-forward","confidence":0.9}]})
+        };
+        then.status(200).header("content-type","text/event-stream").body(response("","",json!({}), &reply.to_string()));
     });
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("project");
     std::fs::create_dir(&root).unwrap();
     std::fs::write(root.join("guide.md"), "old\n").unwrap();
-    let task = "Update the greeting in guide.md from old to hello.";
+    let task = if matches!(first, FirstRound::Uncertain) {
+        "Update the greeting in guide.md from old to hello.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"guide\",\"description\":\"Verify the greeting\",\"artifacts\":[{\"path\":\"guide.md\",\"kind\":\"documentation\"}],\"checks\":[{\"command\":\"printf verified\"}]}]}\n</task_requirements>"
+    } else {
+        "Update the greeting in guide.md from old to hello."
+    };
     let prompt = dir.path().join("task.txt");
     std::fs::write(&prompt, task).unwrap();
     let seed = dir.path().join("seed.json");
@@ -153,7 +170,7 @@ async fn iteration_case(first: FirstRound) {
         "--max-requests",
         match first {
             FirstRound::Exhausted => "2",
-            FirstRound::Blocked => "5",
+            FirstRound::Blocked | FirstRound::Uncertain => "5",
         },
         "--observer-reserved-requests",
         "1",
@@ -161,10 +178,23 @@ async fn iteration_case(first: FirstRound) {
         "6",
     ])
     .unwrap();
-    let Some(crate::Command::CoupledRun(args)) = cli.command else {
+    let Some(crate::Command::CoupledRun(mut args)) = cli.command else {
         panic!("coupled-run")
     };
-    let result = run(args, cli.common).await;
+    if matches!(first, FirstRound::Uncertain) {
+        args.coder_chunk_requests = Some(1);
+    }
+    let result = if matches!(first, FirstRound::Uncertain) {
+        // The owned native-consumer test uses a one-turn slice to isolate the
+        // handoff; public CLI limits are independently tested above.
+        let cfg = cli.common.to_partial_config().resolve().unwrap();
+        let roles = roles::resolve(cfg, &args.observer, false).unwrap();
+        std::fs::create_dir_all(&output).unwrap();
+        super::super::iterations::run(args, roles).await
+    } else {
+        run(args, cli.common).await
+    };
+    assert!(result.is_ok(), "{result:?}");
     let manifest: Value =
         serde_json::from_slice(&std::fs::read(output.join("iterations.json")).unwrap()).unwrap();
     assert!(result.is_ok(), "{result:?} {manifest}");
@@ -177,12 +207,12 @@ async fn iteration_case(first: FirstRound) {
     assert_eq!(manifest["max_iterations"], 6);
     let (limit, spent) = match first {
         FirstRound::Exhausted => (12, 4),
-        FirstRound::Blocked => (30, 5),
+        FirstRound::Blocked | FirstRound::Uncertain => (30, 5),
     };
     assert_eq!(manifest["max_task_requests"], limit);
     assert_eq!(manifest["max_wire_requests"], limit);
     assert_eq!(manifest["wire_requests"], spent);
-    if matches!(first, FirstRound::Blocked) {
+    if matches!(first, FirstRound::Blocked | FirstRound::Uncertain) {
         assert_eq!(manifest["iterations"][0]["termination"], "blocked");
         assert_eq!(manifest["iterations"][0]["task_requests"], 3);
         assert_eq!(manifest["completed"], false);
@@ -202,6 +232,19 @@ async fn iteration_case(first: FirstRound) {
         std::fs::read_to_string(root.join("guide.md")).unwrap(),
         "hello\n"
     );
+    if matches!(first, FirstRound::Uncertain) {
+        let report: Value = serde_json::from_slice(
+            &std::fs::read(output.join("iteration-01/report.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(report["report_closeout_attempted"], true);
+        assert_eq!(report["work"]["requests"][2]["purpose"], "report_closeout");
+        assert_eq!(report["work"]["assists"], json!([]));
+        assert!(report["execution"]["pending_exact_checks"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("printf verified")));
+    }
     coder_first.assert_hits(1);
     resumed.assert_hits(1);
     observer.assert_hits(2);

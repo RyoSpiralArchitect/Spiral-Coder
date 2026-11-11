@@ -8,6 +8,8 @@ use std::sync::{Arc, Mutex};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 mod allocation;
+#[cfg(test)]
+mod native_fixture;
 pub(crate) use allocation::{BudgetPolicy, RequestCharge, TransportRejection};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

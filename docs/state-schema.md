@@ -1686,3 +1686,10 @@ type checks.
 A coupled child iteration projects its newly created WorkState allowance into
 the runtime continuation message. It is not new persisted state or a human task;
 old blocked reports and parent-ledger protections remain unchanged.
+
+Low-confidence Observer handoff reuses the transient request's
+`pending_report_closeout` with reason `LowConfidence`; no new durable owner is
+introduced. Raw advice remains in the Observer report, while the Coder receives
+only a native report instruction. An authored, validated `blocked_report` remains
+the same-task continuation record. Native completion evidence, terminal status,
+iteration progress and approval barriers keep their existing authority.

@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::{fs, path::Path, process::Command};
 
 fn fixture(root: &Path, state: &str) {
-    assert!(Command::new("python3").args(["-S", "-c", "from pathlib import Path; import sys; from scripts.status_fixture import make; make(Path(sys.argv[1]),sys.argv[2])"])
+    assert!(Command::new("python3").args(["-S", "scripts/status_fixture.py"])
         .arg(root).arg(state).status().unwrap().success());
 }
 fn read(path: &Path) -> Value { serde_json::from_slice(&fs::read(path).unwrap()).unwrap() }

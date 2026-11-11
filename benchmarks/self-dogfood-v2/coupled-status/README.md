@@ -104,3 +104,37 @@ existing test identities and production provider logic are preserved. This
 removes shared-process environment mutation from those two tests. It does not
 rerate S10's retained stock-check failure. These overlays, new public controls
 and stronger prompt make S11 a new condition, not a matched S10 comparison.
+
+## S12 native fixtures and uncertain-advice handoff
+
+The protected `native_work.json` template is produced by the real WorkBudget
+writer: create a durable ledger, reserve three requests, finish them, reclassify
+one as transport, and read it back through `WorkState`. Only the task identity and
+clocks are normalized. The test
+`work_budget::native_fixture::saved_work_state_fixture_uses_native_serialization`
+compares native serialization to the checked-in template without provider calls.
+To export to a new file, set `SPIRAL_NATIVE_FIXTURE_OUT` for that exact test;
+existing files are never overwritten. The public `status_fixture.make` helper
+retains the native fields and varies scenario values. The manifest fixture and
+expected output contract remain the same; only the ledger template is generated
+by the native writer.
+
+Coder/Observer now retain an explicit typed obligation to use that helper from
+public-CLI tests, establish an accepted base fixture, and change one invariant
+per negative case. Numeric request IDs and unrelated native fields must survive.
+This is a stronger input condition; the original oracle, six exact checks,
+four-fault sensitivity gate, acceptance thresholds and provider caps are unchanged.
+
+A current valid Observer primary below 0.75 cannot become executable advice.
+The separate executor can spend one existing Coder request on an honest report
+instead. A progressed accepted blocked report uses the existing bounded next
+iteration rule; neither uncertain advice nor the new report opportunity creates
+completion evidence, permission or extra budget.
+
+Rust tests can invoke `python3 -S scripts/status_fixture.py TEMP_DIR completed`
+with `Command` arguments, then invoke the native status binary and assert success
+before mutating one field. The helper also accepts `running`, `interrupted`,
+`unknown` and `stopped`; it calls the same protected `make` function used by the
+original visible and independent cases. Operator reference tests exercise this
+CLI entry before any live run. No candidate assertions or implementation are
+supplied by the helper.
