@@ -1129,9 +1129,11 @@ Reading the target advances diagnosis but does not remove the repair obligation.
 On continuation, completed localized diagnosis may advance a generic restored
 `Diagnose` phase only when the latest actual failure belongs to that same check
 or target and is followed by the corresponding read/repair. A different newer
-failure keeps diagnosis pending. Old exec failure counters cannot erase a
-completed diagnosis; no repair or verification proof is fabricated by restoring
-the phase.
+failure keeps diagnosis pending. A later correlated native read of the same
+normalized path resolves an earlier read error for this phase calculation,
+including a corrected line range. The original failed check still requires its
+own current verification. Old exec failure counters cannot erase a completed
+diagnosis.
 
 `agent/current_evidence.rs` derives `ActionEvidence.result_step` and `freshness`
 from correlated tool results within the current human task. Labels distinguish
@@ -1354,6 +1356,13 @@ authored envelope. Only `completed` responses can receive transport repair credi
 so truncated/empty/filtered output remains task work even when it also fails JSON
 validation. Visible provider notes are diagnostics, never authored proof. Existing
 receipts retain their recorded status; no historical ledger is rewritten.
+
+A fully framed Observer object with an explicit optional response contract can
+express one no-tool clarification as a single `suggestions` object. The parser
+wraps it in a singleton array when it has a reason, an explicit null tool,
+empty arguments and a string-array `based_on`. The raw response and
+`single_handoff_suggestion` recovery marker remain available, and the normal
+action validator checks the recovered envelope.
 
 Observer read-range validation uses `ReadRequest::bounds`, as native reads do.
 Its specific failure (one-based ordering or the 200-line ceiling) is retained in

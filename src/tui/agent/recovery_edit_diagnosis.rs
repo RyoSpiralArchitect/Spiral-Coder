@@ -148,27 +148,3 @@ impl RecoveryFocus {
         })
     }
 }
-
-/// Require a native read header for the correlated argument's exact path. File
-/// contents, another target's header, refusals and stale reads are not proof.
-fn successful_read(tc: &ToolCallData, output: &str, path: &str, root: Option<&str>) -> bool {
-    let Some((read_path, details)) = output
-        .lines()
-        .next()
-        .and_then(|line| line.strip_prefix('['))
-        .and_then(|line| line.split_once("] ("))
-    else {
-        return false;
-    };
-    relative_path(read_path, root).as_deref() == Some(path)
-        && details.contains(" lines, ")
-        && details.split_once(" bytes)").is_some_and(|(_, suffix)| {
-            suffix.is_empty()
-                || suffix == " [⚡ cached — unchanged since last read]"
-                || suffix.starts_with(" [pruned ")
-                || crate::file_tools::read_range::matches_range_header(
-                    &tc.arguments,
-                    output.lines().next().unwrap_or(""),
-                )
-        })
-}

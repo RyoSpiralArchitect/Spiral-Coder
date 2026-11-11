@@ -341,6 +341,16 @@ fn automatic_success_restores_the_remaining_explicit_check_through_handoff() {
         &tc,
         "OK: patched 'source.rs'\n[auto-test] ✓ PASSED (exit 0)",
     );
+    // The later npm observation in R22 exceeded the read window once, then
+    // succeeded with corrected bounds. Its old error must not re-open Diagnose.
+    for (end, failed) in [(240, true), (200, false)] {
+        let args = json!({"path":"source.rs","start_line":1,"end_line":end});
+        let tc = call(&format!("launcher-read-{end}"), "read_file", args.clone());
+        let (output, error) =
+            crate::file_tools::read_range::execute_args(&args, root.path().to_str());
+        assert_eq!(error, failed, "{output}");
+        record(&mut focus, &mut messages, root.path(), &tc, &output);
+    }
     assert!(focus.check_matches(FIRST) && focus.repaired());
     let mut live = RecoveryGovernor {
         stage: Some(RecoveryStage::Fix),
