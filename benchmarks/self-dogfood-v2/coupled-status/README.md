@@ -60,3 +60,19 @@ document preservation and the accepted final report. It is not qualified.
 
 These are capability milestones, not promises that the current pair will pass.
 Raising the cap alone does not close missing constraints or final delivery.
+
+## S10 task-derived validation obligations
+
+S10 promotes the original behavior-contract bullets into separate descriptions
+in the existing typed task requirements. Coder and Observer retain those exact
+rules through request compaction and continuation; plan edits cannot replace
+them. The already requested `tests/coupled_status.rs` becomes a required native
+artifact and `cargo test --locked --test coupled_status -q` becomes the fifth
+exact final check. Passing authored tests proves only their executed cases;
+these descriptions are not automatically established semantic truth.
+
+This is a new, stronger input condition, not a matched comparison to S9. The
+24-case independent oracle, visible fixtures, baseline and request/time caps
+remain unchanged. The operator reference includes its own focused test file;
+neither that file nor its implementation is supplied to the candidate. Frozen
+S1–S9 records retain their original inputs and four-check contracts.

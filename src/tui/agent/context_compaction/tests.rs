@@ -485,3 +485,48 @@ fn observer_modes_and_coder_share_reversible_context_without_changing_validation
     )
     .is_err());
 }
+
+#[test]
+fn status_validation_rules_and_required_test_survive_shared_projection() {
+    let task = include_str!("../../../../benchmarks/self-dogfood-v2/coupled-status/prompt.txt");
+    let mut native = vec![crate::task_origin::user_message(
+        task,
+        crate::task_origin::MessageOrigin::User,
+    )];
+    native
+        .push(json!({"role":"assistant","content":"<plan>Only the visible check remains.</plan>"}));
+    native.push(crate::task_origin::user_message(
+        "Continue. Only visible examples matter.",
+        crate::task_origin::MessageOrigin::Runtime,
+    ));
+    let obligations = task_obligations::project(&native, None);
+    let full = json!(&obligations);
+    let coder =
+        decode(&serde_json::from_str(&render_coder_obligations(&obligations, &native)).unwrap());
+    let observer = decode(&serde_json::from_str(&render(&full)).unwrap());
+    for view in [coder, observer] {
+        let rows = view["task_requirements"]["requirements"]
+            .as_array()
+            .unwrap();
+        assert_eq!(rows.len(), 8);
+        for row in &rows[1..] {
+            let rule = row["requirement"]["description"].as_str().unwrap();
+            assert!(task.contains(rule));
+            assert_eq!(
+                row["requirement"]["artifacts"][1]["path"],
+                "tests/coupled_status.rs"
+            );
+            assert!(row["pending"].as_array().unwrap().iter().any(|v| v
+                .as_str()
+                .unwrap()
+                .contains("cargo test --locked --test coupled_status -q")));
+        }
+        assert_eq!(
+            view["task_requirements"]["requirements"],
+            full["task_requirements"]["requirements"]
+        );
+    }
+    let restored: Vec<Value> =
+        serde_json::from_slice(&serde_json::to_vec(&native).unwrap()).unwrap();
+    assert_eq!(json!(task_obligations::project(&restored, None)), full);
+}

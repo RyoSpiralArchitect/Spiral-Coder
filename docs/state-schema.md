@@ -16,7 +16,9 @@ If the original task explicitly requests standalone `Before: FAILED` and
 `After: PASSED` lines and its declared baseline and final requirements have
 current proof, `final_answer.standalone_outcome_lines` gives both roles the
 exact lines to author. The native done gate checks individual lines in the
-summary. A blocked report can still describe pending work.
+summary. Explicit quoted, backtick-delimited and bare outcome labels are recognized,
+including the conditional wording `only if supported`; examples and negations do
+not create a report requirement. A blocked report can still describe pending work.
 An overlength `read_file` request reports its inclusive line count, the
 first legal window and the start of the remainder. Coder file reads and
 Observer repair feedback use the same bounds. The original request is

@@ -15,7 +15,8 @@
     "src/coupled_status.rs",
     "npm/spiral-coder/lib/launcher.cjs",
     "docs/coupled-status.md",
-    "docs/state-schema.md"
+    "docs/state-schema.md",
+    "tests/coupled_status.rs"
   ],
   "protected": [
     "Cargo.toml",
@@ -49,7 +50,8 @@
     "cargo fmt --all -- --check",
     "python3 -S -m unittest -v scripts.status_visible",
     "python3 -S -m unittest -v scripts.status_guide",
-    "cargo test --locked --bin spiral-coder -q"
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q"
   ],
   "reproducer_command": "python3 -S -m unittest -v scripts.status_visible",
   "visible_check_id": "status-visible",
@@ -197,6 +199,10 @@
     {
       "source": "reference/docs/state-schema.md",
       "target": "docs/state-schema.md"
+    },
+    {
+      "source": "reference/tests/coupled_status.rs",
+      "target": "tests/coupled_status.rs"
     }
   ]
 }

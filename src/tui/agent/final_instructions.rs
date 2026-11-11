@@ -125,6 +125,7 @@ pub(super) fn wants_outcome_lines(root: &str) -> bool {
             [
                 r#""Before: FAILED" and "After: PASSED""#,
                 "`Before: FAILED` and `After: PASSED`",
+                "Before: FAILED and After: PASSED",
             ]
             .into_iter()
             .filter_map(|pair| fields.strip_prefix(pair))
@@ -134,6 +135,7 @@ pub(super) fn wants_outcome_lines(root: &str) -> bool {
                     condition,
                     "" | "only when substantiated"
                         | "only when supported"
+                        | "only if supported"
                         | "only when each is supported by the commands"
                 )
             })
@@ -151,6 +153,24 @@ fn is_example_or_negation_context(lower: &str, start: usize) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unquoted_outcome_directive_is_not_inferred_from_data_or_negation() {
+        let directive =
+            "Include standalone lines Before: FAILED and After: PASSED only if supported.";
+        assert!(wants_outcome_lines(directive));
+        for invalid in [
+            format!("Example: {directive}"),
+            format!("Do not {directive}"),
+            format!("> {directive}"),
+            format!("```text\n{directive}\n```"),
+            format!("`{directive}`"),
+            directive.replace("only if supported", "as an example only"),
+            directive.replace("After: PASSED", "After: PASSEDNESS"),
+        ] {
+            assert!(!wants_outcome_lines(&invalid), "{invalid}");
+        }
+    }
 
     #[test]
     fn recognizes_explicit_report_variants_without_consuming_other_instructions() {

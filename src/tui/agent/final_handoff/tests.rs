@@ -322,7 +322,11 @@ fn case_only_mismatch_shows_the_exact_replacement_without_weakening_the_contract
 
 #[test]
 fn supported_bare_outcomes_must_be_authored_on_their_own_lines_when_requested() {
-    let instruction = r#"Use native done. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated; report only measured counts."#;
+    for instruction in [
+        r#"Use native done. Include standalone lines "Before: FAILED" and "After: PASSED" only when substantiated; report only measured counts."#,
+        "Format Rust before the final checks. Include standalone lines Before: FAILED and After: PASSED only if supported. Report only measured test counts.",
+        "Include standalone lines `Before: FAILED` and `After: PASSED` only when supported.",
+    ] {
     let root = format!(
         "{instruction}\n<task_requirements>\n{}\n</task_requirements>",
         json!({
@@ -358,6 +362,7 @@ fn supported_bare_outcomes_must_be_authored_on_their_own_lines_when_requested() 
         json!(["Before: FAILED", "After: PASSED"])
     );
     for bad in [
+        include_str!("../../../../tests/fixtures/report-standalone/s9-summary.txt"),
         h3,
         "Before: FAILED\nAfter: PASSED is not claimed",
         "After: PASSED",
@@ -367,11 +372,12 @@ fn supported_bare_outcomes_must_be_authored_on_their_own_lines_when_requested() 
         assert!(failure.contains("own line"), "{failure}");
     }
     validate_authored_done_summary(&root, ok, ok, &messages, Some("cargo test")).unwrap();
+    let directive = format!("Include {}", instruction.split_once("Include ").unwrap().1);
     assert!(!super::super::final_instructions::wants_outcome_lines(
-        &format!("Example: {instruction}").replace("Use native done. ", "")
+        &format!("Example: {directive}")
     ));
     for example in [
-        format!("Do not {}", instruction.replace("Use native done. ", "")),
+        format!("Do not {directive}"),
         format!("\u{60}\u{60}\u{60}text\n{instruction}\n\u{60}\u{60}\u{60}"),
         "Explain why the final report contains Before: FAILED and After: PASSED.".into(),
         "Include standalone lines \"Before: FAILED\" and \"After: PASSED\" as an example only."
@@ -391,4 +397,5 @@ fn supported_bare_outcomes_must_be_authored_on_their_own_lines_when_requested() 
     assert!(report_context(&root, &messages, Some("cargo test"))
         .get("standalone_outcome_lines")
         .is_none());
+    }
 }

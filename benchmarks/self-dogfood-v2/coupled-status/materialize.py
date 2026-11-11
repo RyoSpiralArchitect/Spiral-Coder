@@ -35,6 +35,7 @@ Task usage counts task charges; wire usage counts every request including transp
 ''')
         with (root/'docs/state-schema.md').open('a') as f:
             f.write('\n## Coupled status inspection\n\nThe read-only coupled-status projection lives in src/coupled_status.rs. It reads existing iterations.json and child state/tui-work.json ledgers; it owns no persisted state. Missing pending usage is null. Recorded completion is not independent verification.\n')
+        shutil.copyfile(HERE/'reference_tests.rs',root/'tests/coupled_status.rs')
         subprocess.run(['cargo','fmt','--manifest-path',str(root/'Cargo.toml')],check=True)
         out.mkdir(parents=True)
         for name in ['luna-luna.json','prompt.txt',*(r['source'] for key in ('visible_fixtures','probes') for r in spec[key])]:
