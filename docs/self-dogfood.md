@@ -197,6 +197,13 @@ explicit limit, or the original default when absent. These are configured output
 limits, not measured token use or a guarantee that a provider supplies that many
 tokens; provider-specific transformations and reported usage remain separate.
 
+Current self-dogfood and coupled benchmark assessors share transport receipt
+eligibility. A completed Coder response can carry `native_arguments` or
+`governor_block`. A completed Observer response can carry `observer_envelope`.
+The assessor checks these typed reasons inside the declared transport cap, wire
+cap and Observer reservation. Archived assessments use the driver pinned in
+their own episode.
+
 The raw manifest hashes frozen authority, native receipts, candidate artifacts,
 check outputs and the assessment. All candidate files, including ignored and
 untracked files, participate in scope inventory; only `.git` internals are

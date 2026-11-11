@@ -64,13 +64,14 @@ pub(crate) fn validation_issue(
     messages: &[Value],
     test_command: Option<&str>,
 ) -> Option<String> {
-    validation_issue_with_capacity(raw, messages, test_command, None)
+    validation_issue_with_capacity(raw, messages, test_command, None, None)
 }
 
 pub(crate) fn validation_issue_with_capacity(
     raw: &str,
     messages: &[Value],
     test_command: Option<&str>,
+    tool_root: Option<&str>,
     remaining: Option<usize>,
 ) -> Option<String> {
     use agent::task_obligations::CoderTurn;
@@ -100,7 +101,7 @@ pub(crate) fn validation_issue_with_capacity(
         return Some(EXHAUSTED.into());
     }
     let action = suggestion::primary_suggestion(&envelope)?;
-    let obligations = agent::task_obligations::project(messages, test_command);
+    let obligations = agent::task_obligations::project_advisory(messages, test_command, tool_root);
     if remaining.is_some_and(|n| obligations.coder_turn(n) == CoderTurn::ReportOnly)
         && envelope
             .suggestions
@@ -142,6 +143,7 @@ pub(crate) fn validation_issue_with_capacity(
             messages,
             &action.suggested_args,
             test_command,
+            tool_root,
         )
         .or_else(|| {
             agent::evidence_packet::report_issue(
@@ -175,13 +177,21 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         json!(crate::work_budget::current().and_then(|c| c.budget.preservation_issue()));
     request.packet["artifact_guidance"] =
         json!(agent::evidence_packet::artifact_guidance(&request.messages));
-    let obligations =
-        agent::task_obligations::project(&request.messages, request.test_command.as_deref());
     // The browser has a native ledger on both the prompt and reply requests.
     // Without one, numeric fields describe an advisory pre-send snapshot.
-    let live = crate::work_budget::current();
-    if let Some(context) = &live {
-        request.packet["work_budget"] = strategy::native_budget(&context.budget.snapshot());
+    let live = crate::work_budget::current().map(|c| c.budget.snapshot());
+    let tool_root = match &live {
+        Some(state) => state.tool_root.as_deref().and_then(std::path::Path::to_str),
+        None => request.packet["tool_root"].as_str(),
+    }
+    .map(str::to_owned);
+    let obligations = agent::task_obligations::project_advisory(
+        &request.messages,
+        request.test_command.as_deref(),
+        tool_root.as_deref(),
+    );
+    if let Some(state) = &live {
+        request.packet["work_budget"] = strategy::native_budget(state);
     }
     let before_send = live.is_none() || request.response.is_none();
     let next_coder = request
@@ -223,6 +233,7 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
             raw,
             &request.messages,
             request.test_command.as_deref(),
+            tool_root.as_deref(),
             next_coder,
         )
     });

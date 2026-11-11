@@ -23,6 +23,14 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 
 ## Experiments and open questions
 
+The [context-compression readout](../evals/2026-11-11-context-compression/README.md)
+separates provider context from retained native history. Matched captures reduce
+Coder message bytes by 38.8% and Observer prompt bytes by 26.4–30.4%, preserving
+native evidence projections. One saved-state Luna reporting continuation finishes
+in one request. The [fresh R24 run](../evals/2026-11-11-context-compression/long-run/README.md)
+completes the catalog repair in two iterations and 70 wires, with six independent
+groups passing and one frozen ledger gate failed.
+
 The [CLI continuity follow-up](../evals/2026-10-31-cli-continuity/README.md)
 retains edit-diagnosis provenance across continuation, with newer-failure controls
 and replay of the three previously blocked native prefixes. The same GPT pair

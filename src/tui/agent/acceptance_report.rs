@@ -1,6 +1,101 @@
 //! Lossless handoff for authored completion: stable criterion references plus
 //! currently citable native receipts. Never guess which criterion a check proves.
 use super::*;
+use anyhow::Context;
+
+#[cfg(test)]
+#[path = "acceptance_report/check_reference_tests.rs"]
+mod check_reference_tests;
+
+pub(super) struct CurrentEvidence {
+    pub commands: Vec<String>,
+    pub citable_checks: Vec<check_catalog::Check>,
+}
+
+impl CurrentEvidence {
+    pub(super) fn from_native(
+        messages: &[serde_json::Value],
+        test_cmd: Option<&str>,
+        tool_root: Option<&str>,
+    ) -> Self {
+        let packet = evidence_packet::project(messages, test_cmd);
+        Self::from_packet(messages, test_cmd, tool_root, &packet)
+    }
+
+    pub(super) fn from_packet(
+        messages: &[serde_json::Value],
+        test_cmd: Option<&str>,
+        tool_root: Option<&str>,
+        packet: &evidence_packet::ExecutionPacket,
+    ) -> Self {
+        Self {
+            commands: current_commands_in_packet(messages, test_cmd, packet),
+            citable_checks: citable_checks(
+                crate::task_origin::root_user_text(messages),
+                tool_root,
+                packet,
+            ),
+        }
+    }
+}
+
+/// A declared ID requires the exact command's latest execution to be a
+/// current success at tool_root. Older receipts may store a lexical cwd
+/// alias, so a later execution elsewhere cannot leave the ID citable.
+fn citable_checks(
+    root: &str,
+    tool_root: Option<&str>,
+    packet: &evidence_packet::ExecutionPacket,
+) -> Vec<check_catalog::Check> {
+    use std::path::Path;
+    let Some(root_path) = tool_root.map(Path::new).filter(|p| p.is_absolute()) else {
+        return Vec::new();
+    };
+    check_catalog::Catalog::from_root(root)
+        .checks
+        .into_iter()
+        .filter(|check| {
+            packet
+                .actions
+                .iter()
+                .filter(|a| {
+                    a.tool == "exec"
+                        && a.executed == Some(true)
+                        && a.arguments["command"] == check.command
+                })
+                .max_by_key(|a| a.result_step)
+                .is_some_and(|a| {
+                    a.succeeded == Some(true)
+                        && a.freshness == current_evidence::Freshness::Current
+                        && a.exec_cwd
+                            .as_deref()
+                            .is_some_and(|cwd| Path::new(cwd) == root_path)
+                })
+        })
+        .collect()
+}
+
+/// An explicit @check-id selects the original successful command. The authored
+/// criterion mapping and provider arguments remain intact.
+pub(super) fn resolve_evidence(
+    value: &serde_json::Value,
+    evidence: &CurrentEvidence,
+) -> Result<Vec<DoneAcceptanceEvidence>> {
+    let mut rows = parse_done_acceptance_evidence(value);
+    for row in &mut rows {
+        // A real command beginning with @ keeps its existing literal meaning.
+        if evidence.commands.contains(&row.command) {
+            continue;
+        }
+        if let Some(id) = row.command.strip_prefix('@') {
+            let check = evidence.citable_checks.iter().find(|check| check.id == id).with_context(|| {
+                format!("Acceptance check reference @{id} has no current successful receipt at tool_root in this task")
+            })?;
+            row.command.clone_from(&check.command);
+        }
+    }
+    Ok(rows)
+}
 
 /// Parse `done.acceptance_evidence` rows. Object rows
 /// (`{"criterion": ..., "command": ...}`) are the canonical contract; flat
@@ -54,12 +149,21 @@ pub(super) fn criteria(plan: Option<&PlanBlock>) -> Vec<serde_json::Value> {
         .collect()
 }
 
+#[cfg(test)]
 pub(super) fn current_commands(
     messages: &[serde_json::Value],
     test_cmd: Option<&str>,
 ) -> Vec<String> {
-    let messages = crate::task_origin::current_task_messages(messages);
     let evidence = evidence_packet::project(messages, test_cmd);
+    current_commands_in_packet(messages, test_cmd, &evidence)
+}
+
+fn current_commands_in_packet(
+    messages: &[serde_json::Value],
+    test_cmd: Option<&str>,
+    evidence: &evidence_packet::ExecutionPacket,
+) -> Vec<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
     let mut commands = Vec::new();
     for action in evidence.current_actions() {
         // Terminal narration is never independent proof of an acceptance item,
@@ -113,8 +217,8 @@ pub(super) fn current_commands(
     commands
 }
 
-pub(super) fn hint(plan: Option<&PlanBlock>, commands: &[String]) -> String {
-    format!("\n[Authored acceptance mapping]\nKeep your own completed/remaining decisions and map evidence to the exact criterion reference below. Supply exactly one evidence row for each completed criterion, using a current command exactly as recorded. Do not invent a shorter shell command. If one criterion needs multiple checks, describe that in summary and cite the decisive recorded check; all required exact checks remain independently enforced. The runtime will not reassign evidence or silently move a criterion to remaining. Repair this report using retained proof; do not rerun passed checks just to repair its format.\n{}\n", json!({"criteria":criteria(plan),"current_commands":commands}))
+pub(super) fn hint(plan: Option<&PlanBlock>, evidence: &CurrentEvidence) -> String {
+    format!("\n[Authored acceptance mapping]\nKeep your own completed/remaining decisions and map evidence to the exact criterion reference below. Supply exactly one evidence row for each completed criterion, using a current command exactly as recorded or @<id> from citable_checks. For example, command=\"@required-1\" selects that check's current successful receipt. Do not invent a shorter shell command. If one criterion needs multiple checks, describe that in summary and cite the decisive recorded check; all required exact checks remain independently enforced. Repair this report using retained proof; do not rerun passed checks just to repair its format.\n{}\n", json!({"criteria":criteria(plan),"current_commands":evidence.commands,"citable_checks":evidence.citable_checks}))
 }
 
 #[cfg(test)]

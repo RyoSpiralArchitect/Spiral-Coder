@@ -5,7 +5,12 @@ use serde_json::{json, Value};
 
 const MAX_ENUM_BYTES: usize = 16_384;
 
-pub(super) fn bind(tools: &mut Value, plan: Option<&PlanBlock>, commands: &[String]) {
+pub(super) fn bind(
+    tools: &mut Value,
+    plan: Option<&PlanBlock>,
+    commands: &[String],
+    checks: &[super::check_catalog::Check],
+) {
     let references: Vec<String> = acceptance_report::criteria(plan)
         .iter()
         .filter_map(|c| c["reference"].as_str().map(str::to_owned))
@@ -20,7 +25,12 @@ pub(super) fn bind(tools: &mut Value, plan: Option<&PlanBlock>, commands: &[Stri
     }) else {
         return;
     };
-    bind_parameters(&mut done["function"]["parameters"], &references, commands);
+    bind_parameters(
+        &mut done["function"]["parameters"],
+        &references,
+        commands,
+        checks,
+    );
 }
 
 pub(super) fn bind_observer(
@@ -42,14 +52,29 @@ pub(super) fn bind_observer(
         &mut done["parameters"],
         &references,
         &obligations.current_commands,
+        &obligations.citable_checks,
     );
     bind_summary_parameters(&mut done["parameters"], &obligations.final_answer);
 }
 
-fn bind_parameters(parameters: &mut Value, references: &[String], commands: &[String]) {
+fn bind_parameters(
+    parameters: &mut Value,
+    references: &[String],
+    commands: &[String],
+    checks: &[super::check_catalog::Check],
+) {
     if references.is_empty() {
         return;
     }
+    let commands: Vec<_> = commands
+        .iter()
+        .map(|command| {
+            checks
+                .iter()
+                .find(|check| check.command == *command)
+                .map_or_else(|| command.clone(), |check| format!("@{}", check.id))
+        })
+        .collect();
     let properties = &mut parameters["properties"];
     for field in ["completed_acceptance", "remaining_acceptance"] {
         set_enum(&mut properties[field]["items"], references);
@@ -57,7 +82,7 @@ fn bind_parameters(parameters: &mut Value, references: &[String], commands: &[St
     let items = &mut properties["acceptance_evidence"]["items"];
     if items["type"] == "object" {
         set_enum(&mut items["properties"]["criterion"], references);
-        set_enum(&mut items["properties"]["command"], commands);
+        set_enum(&mut items["properties"]["command"], &commands);
     } else if items["type"] == "string" {
         // Google compatibility needs flat rows. Bound the Cartesian product
         // before allocation; never shorten a command to make it fit.
@@ -80,7 +105,7 @@ fn bind_parameters(parameters: &mut Value, references: &[String], commands: &[St
         }
     }
     properties["acceptance_evidence"]["description"] = json!(
-        "Choose exactly one evidence row per completed criterion. Choices are current receipts, not proof that every receipt supports every criterion. Decide that mapping yourself. Keep unverified criteria in remaining_acceptance; never rerun checks just to reformat this report."
+        "Choose exactly one evidence row per completed criterion. command may be a current command or @<id> from citable_checks, for example @required-1. The ID selects the exact original successful command. Decide which receipt supports each criterion. Keep unverified criteria in remaining_acceptance; never rerun checks just to reformat this report."
     );
 }
 
@@ -164,7 +189,7 @@ mod tests {
             "https://generativelanguage.googleapis.com/v1beta/openai",
         ] {
             let mut tools = json!([super::super::done_tool_def(base)]);
-            bind(&mut tools, Some(&plan()), &[command.clone()]);
+            bind(&mut tools, Some(&plan()), &[command.clone()], &[]);
             let props = &tools[0]["function"]["parameters"]["properties"];
             assert_eq!(
                 props["completed_acceptance"]["items"]["enum"],
@@ -201,11 +226,11 @@ mod tests {
             "https://generativelanguage.googleapis.com"
         )]);
         let mut tools = original.clone();
-        bind(&mut tools, None, &["check".into()]);
+        bind(&mut tools, None, &["check".into()], &[]);
         assert_eq!(tools, original);
         for commands in [vec![], vec!["x".repeat(MAX_ENUM_BYTES)]] {
             let mut tools = original.clone();
-            bind(&mut tools, Some(&plan()), &commands);
+            bind(&mut tools, Some(&plan()), &commands, &[]);
             assert!(
                 tools[0]["function"]["parameters"]["properties"]["acceptance_evidence"]["items"]
                     .get("enum")

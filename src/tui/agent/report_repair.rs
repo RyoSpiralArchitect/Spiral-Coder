@@ -14,6 +14,7 @@ pub(super) fn project(
     messages: &[Value],
     test_cmd: Option<&str>,
     evidence: &ExecutionPacket,
+    tool_root: Option<&str>,
     recovery_pending: bool,
 ) -> Option<ReportRepair> {
     if recovery_pending
@@ -38,7 +39,8 @@ pub(super) fn project(
             .arguments
             .get("remaining_acceptance")
             .is_some_and(|v| v.as_array().is_none_or(|a| !a.is_empty()))
-        || evidence_packet::acceptance_issue(messages, &action.arguments, test_cmd).is_some()
+        || evidence_packet::acceptance_issue(messages, &action.arguments, test_cmd, tool_root)
+            .is_some()
     {
         return None;
     }

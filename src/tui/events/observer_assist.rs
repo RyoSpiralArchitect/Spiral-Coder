@@ -94,11 +94,12 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
     let mut available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
+    let tool_root = execution_root(app);
     let obligations = app.coder_session.as_ref().map(|session| {
         agent::task_obligations::project_at(
             &session.messages,
             app.project_test_cmd.as_deref(),
-            app.tool_root.as_deref(),
+            tool_root.as_deref(),
         )
     });
     if let Some(obligations) = &obligations {
@@ -123,7 +124,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "coder_provider": app.coder_cfg.provider.to_string(),
         "coder_model": app.coder_cfg.model.clone(),
         "observer_model": app.observer_cfg.model.clone(),
-        "tool_root": app.tool_root.clone(),
+        "tool_root": tool_root,
         "cur_cwd": app.coder_session.as_ref().and_then(|s| s.cur_cwd.clone()),
         "checkpoint": app.last_git_checkpoint.clone(),
         "system_prompt_digest": system_digest,
@@ -282,7 +283,7 @@ Rules:\n\
 - If task_obligations.required_recheck is present, the repair already landed: propose exec of that exact command in the workspace root before more edits or a different check. A passing automatic test for another command does not resolve it. If unable to recommend the recheck, explain the blocker.\n\
 - Put every final_answer.outcome_rows entry verbatim in done.summary when reporting requested before/after test outcomes. These rows come from native evidence; never invent a pass or omit an unverified result.\n\
 - Use final_answer.check_facts for test counts, preserving phase, exact command and runner units. Null counts are unknown. Keep failure events distinct from failed test methods. Check that any example output states its input condition; do not turn the empty-input example into a constant result for every input.\n\
-- For done, use acceptance_criteria.reference exactly in completed_acceptance, remaining_acceptance and acceptance_evidence.criterion. Provide exactly one evidence row for every completed criterion, citing current_commands verbatim. Do not paraphrase references or cover only the test-related criteria. Available command choices are not proof for every criterion: decide each mapping from native evidence and leave unsupported criteria remaining. Keep the envelope concise; one primary suggestion is sufficient.\n\
+- For done, use acceptance_criteria.reference exactly in completed_acceptance, remaining_acceptance and acceptance_evidence.criterion. Provide exactly one evidence row for every completed criterion, citing current_commands verbatim or @<id> from citable_checks in the command field. Do not paraphrase references or cover only the test-related criteria. Available command choices are not proof for every criterion: decide each mapping from native evidence and leave unsupported criteria remaining. Keep the envelope concise; one primary suggestion is sufficient.\n\
 - When task_obligations.report_repair is non-null, its native feedback is the current blocker. Suggest done with a corrected authored summary using final_answer and current_commands, or no-tool clarify when uncertain. Do not restart reading, editing or passed checks based on selected historical failures. Preserve exact case and spaces.\n\
 - If recent_tool_results already contain useful evidence, continue from that evidence instead of restarting broad search.\n\
 - execution_evidence.actions is chronological history. An earlier governor rejection is not a current blocker or a user approval rejection; use the latest action feedback and current pending checks.\n\
@@ -310,8 +311,8 @@ stuck packet:\n\
 <packet>\n\
 {}\n\
 </packet>",
-        serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view }).unwrap_or_else(|_| "{}".to_string())
+        schema,
+        agent::context_compaction::render(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view })
     )
 }
 
@@ -332,4 +333,19 @@ fn diagnostic_lines(content: &str) -> Vec<String> {
         .take(4)
         .map(|line| line.chars().take(360).collect())
         .collect()
+}
+pub(super) fn execution_root(app: &App) -> Option<String> {
+    let root = app.tool_root.as_deref()?.trim();
+    if root.is_empty() {
+        return None;
+    }
+    crate::exec::canonical_cwd(Some(root)).or_else(|| {
+        // Replay fixtures can supply an absolute workspace label without a
+        // real directory. Receipts still have to match that exact label.
+        std::path::absolute(root)
+            .ok()?
+            .into_os_string()
+            .into_string()
+            .ok()
+    })
 }

@@ -128,7 +128,11 @@ class RoleContracts(unittest.TestCase):
         report["work"]["requests"][-1]["status"] = "output_limited"
         self.assertFalse(check()["valid"])
         self.assertFalse(check()["checks"]["transport_eligibility"])
-        report["work"]["requests"][-1]["status"] = "completed"
+        report["work"]["requests"][-1].update(
+            status="completed", role="coder", transport_rejection="governor_block"
+        )
+        report["role_requests"] = {"coder": 19, "observer": 6}
+        self.assertTrue(check()["valid"])
         report["roles"]["observer"]["model"] = "wrong"
         self.assertFalse(check()["valid"])
 

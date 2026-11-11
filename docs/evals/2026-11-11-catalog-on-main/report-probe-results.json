@@ -1,0 +1,66 @@
+{
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 21.342
+  },
+  "report_sha256": "edcff1611e450875388cb0fb4623ebb5de81bba092cd7eb56ba93af454f7312e",
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+  "plan_sha256": "1581fdb2f23df91dccd23d7b65b9bd485512460f38ad8d4bda6190417ac4f502",
+  "same_source": true,
+  "native_completed": false,
+  "termination": "budget_exhausted",
+  "task_requests": 2,
+  "wire_requests": 2,
+  "role_requests": {
+    "coder": 1,
+    "observer": 1
+  },
+  "pending_checks": [],
+  "new_actions": [
+    {
+      "tool": "done",
+      "result_step": 65,
+      "result": "GOVERNOR BLOCKED\n\n[Done Gate] Invalid acceptance summary: done.acceptance_evidence command must match a known successful verification command\nRequired now: call `done` with `completed_acceptance`, `remaining_acceptance`, and `acceptance_evidence` that cover every current plan acceptance criterion and cite known-good verification commands.\nValid acceptance criteria (reference each as \"acceptance N\" or its exact text):\n- acceptance 1: Read-only filtered JSON.\n- acceptance 2: Shared replay diagnostics.\n- acceptance 3: Launcher and guide updated.\n- acceptance 4: All checks pass.\nExample shape (keep your own completed/remaining split; cite only criteria that actually have proof): completed_acceptance=[\"acceptance 1\", ...only criteria with proof], remaining_acceptance=[<each unproven \"acceptance N\">], acceptance_evidence=[{\"criterion\":\"acceptance 1\",\"command\":\"<paste a command from the list below, exactly>\"}, ...one row per completed criterion]\nHint: cite only commands that already succeeded in this session; do not invent a new proof command inside done.\nKnown successful commands you can cite now:\n- python3 -S -c 'import json,os,pathlib,subprocess,tempfile;subprocess.run([\"cargo\",\"build\",\"--locked\",\"--quiet\",\"--bin\",\"spiral-coder\"],check=True);b=str(pathlib.Path(os.environ[\"CARGO_TARGET_DIR\"])/\"d…\n- python3 -S -c 'import json,os,pathlib,subprocess,tempfile;subprocess.run([\"cargo\",\"build\",\"--locked\",\"--quiet\",\"--bin\",\"spiral-coder\"],check=True);b=str(pathlib.Path(os.environ[\"CARGO_TARGET_DIR\"])/\"d…\n- cargo test --locked --bin spiral-coder -q\n- python3 -S -m unittest -v scripts.catalog_visible\n- cargo fmt --all -- --check\n[Authored acceptance mapping]\nKeep your own completed/remaining decisions and map evidence to the exact criterion reference below. Supply exactly one evidence row for each completed criterion, using a current command exactly as recorded. Do not invent a shorter shell command. If one criterion needs multiple checks, describe that in summary and cite the decisive recorded check; all required exact checks remain independently enforced. The runtime will not reassign evidence or silently move a criterion to remaining. Repair this report using retained proof; do not rerun passed checks just to repair its format.\n{\"criteria\":[{\"criterion\":\"Read-only filtered JSON.\",\"reference\":\"acceptance 1\"},{\"criterion\":\"Shared replay diagnostics.\",\"reference\":\"acceptan",
+      "executed": false
+    }
+  ],
+  "exact_report_literals": {
+    "python3 -S -m unittest -v scripts.catalog_visible": false,
+    "cargo test --locked --bin spiral-coder -q": false
+  },
+  "authored_summary": "",
+  "attempted_summary": "Implemented and verified the read-only `spiral tui-replay-list` command.\n\nChanged files:\n- `src/main.rs`: added the `TuiReplayList` command, arguments (`--tool-root/-C`, `--spec`, `--filter`, `--max-cases`), and dispatch.\n- `src/tui_replay.rs`: connected the catalog module and callable handler.\n- `src/tui_replay/catalog.rs`: added read-only spec loading, case-insensitive ID/tag filtering, spec-order preservation, zero-cap handling, selected-case validation, shared no-match diagnostics, and exact JSON output.\n- `npm/spiral-coder/lib/launcher.cjs`: forwarded `tui-replay-list` through the installed entry point.\n- `docs/evaluation.md`: appended selection semantics, distinction from replay execution, and the measured `prefs` example.\n\nThe listing path does not execute replay cases, contact providers, or create replay artifacts. The public no-match comparison confirmed matching status, stdout, and diagnostics with ordinary replay.\n\nBefore: FAILED\nThe baseline visible check failed because `tui-replay-list` was absent from help.\n\nAfter: PASSED\nThe visible check passed after implementation.\n\nNative test count: `cargo test --locked --bin spiral-coder -q` ran 1032 tests: 1030 passed, 0 failed, 2 ignored.\nIndependent visible check: 1 unittest passed.\nPublic checks passed: no-match behavior matched ordinary replay; the documented filtered JSON matched native output.\nFormatting passed: `cargo fmt --all -- --check`.\n\ncargo test --locked --bin spiral-coder -q\npython3 -S -m unittest -v scripts.catalog_visible",
+  "attempted_report_literals": {
+    "python3 -S -m unittest -v scripts.catalog_visible": true,
+    "cargo test --locked --bin spiral-coder -q": true
+  },
+  "attempted_evidence": [
+    {
+      "criterion": "acceptance 1",
+      "command_length": 721,
+      "matches_current_receipt": false
+    },
+    {
+      "criterion": "acceptance 2",
+      "command_length": 697,
+      "matches_current_receipt": false
+    },
+    {
+      "criterion": "acceptance 3",
+      "command_length": 613,
+      "matches_current_receipt": false
+    },
+    {
+      "criterion": "acceptance 4",
+      "command_length": 41,
+      "matches_current_receipt": true
+    }
+  ],
+  "preliminary_cli_launch": {
+    "provider_calls": 0,
+    "error": "Error: coder-chunk-requests must be at least 4 and leave at least 2 shared requests"
+  }
+}

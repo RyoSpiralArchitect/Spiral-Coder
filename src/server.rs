@@ -1305,6 +1305,8 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
         stderr: String,
         exit_code: i32,
         duration_ms: u64,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        cwd: Option<String>,
     }
 
     let req: Req = match serde_json::from_slice(body) {
@@ -1391,12 +1393,14 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
             stderr: r.stderr,
             exit_code: r.exit_code,
             duration_ms,
+            cwd: r.cwd,
         },
         Err(e) => Res {
             stdout: String::new(),
             stderr: format!("spawn failed: {e:#}"),
             exit_code: -1,
             duration_ms,
+            cwd: None,
         },
     };
     write_json(stream, 200, "OK", &out).await

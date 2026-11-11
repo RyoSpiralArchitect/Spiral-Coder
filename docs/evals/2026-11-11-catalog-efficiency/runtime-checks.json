@@ -1,0 +1,38 @@
+{
+  "runtime_commit": "17ee4e6295a7c99c20021cd8484d3e80cea95587",
+  "check_script": "bash scripts/check-local.sh",
+  "exit_code": 0,
+  "log_sha256": "331fe10519383e7f869eac5a9f3e60ee72a97efb39761fb6a5a846d53664df6c",
+  "rust_main": {
+    "passed": 1133,
+    "failed": 0,
+    "ignored": 2
+  },
+  "rust_integrations": {
+    "passed": 6,
+    "failed": 0
+  },
+  "tui_replay": {
+    "passed": 20,
+    "total": 20
+  },
+  "python": {
+    "passed": 97,
+    "total": 97
+  },
+  "web": {
+    "passed": 80,
+    "total": 80
+  },
+  "npm": {
+    "passed": 5,
+    "total": 5
+  },
+  "repo_map": {
+    "passed": 14,
+    "total": 14
+  },
+  "lite_smoke": true,
+  "source_note": "The first all-target run found one old vocabulary expectation, which assumed full commands in the enum. The final run updates that expectation and also checks that the original command remains available in citable_checks and current_commands. Production code and the frozen binary are unchanged from 17ee4e6.",
+  "first_all_target_log_sha256": "c299eaf9d3ffd43f184bfe4087d31b0442e5a75dcd4d1dd27930f66fe6b9b66e"
+}

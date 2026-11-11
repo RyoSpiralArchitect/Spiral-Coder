@@ -1,0 +1,107 @@
+{
+  "frozen_results_sha256": "5d16fce52b0e3b29ba02647a1654552e3d89102db7ddffb25e0552e552549a54",
+  "frozen_result_unchanged": true,
+  "current_policy_diagnostic_only": true,
+  "rounds": [
+    {
+      "iteration": 1,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": false,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 32,
+      "wire_requests": 33,
+      "transport": [
+        {
+          "id": 24,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": false,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 32,
+      "wire_requests": 36,
+      "transport": [
+        {
+          "id": 4,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 5,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 9,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 15,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": true,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 19,
+      "wire_requests": 19,
+      "transport": []
+    }
+  ]
+}

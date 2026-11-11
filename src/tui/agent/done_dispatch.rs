@@ -65,14 +65,17 @@ Required now: run `{command}`.\n{verification_status}"
     let summary = report_surface::authored(args["summary"].as_str().unwrap_or(""), &report);
     let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
     let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
-    let acceptance_evidence =
-        acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
     let next_steps = args["next_steps"].as_str().unwrap_or("").trim();
     let done_plan = ctx
         .validated_plan_for_turn
         .as_ref()
         .or(ctx.active_plan.as_ref());
-    let known_acceptance_commands = acceptance_report::current_commands(ctx.messages, ctx.test_cmd);
+    let acceptance = acceptance_report::CurrentEvidence::from_native(
+        ctx.messages,
+        ctx.test_cmd,
+        ctx.tool_root_abs.as_deref(),
+    );
+    let known_acceptance_commands = &acceptance.commands;
     let read_only_scores = if ctx.root_read_only {
         done_plan
             .map(|plan| {
@@ -83,42 +86,46 @@ Required now: run `{command}`.\n{verification_status}"
         Vec::new()
     };
 
-    let evidence_rows = match validate_done_acceptance(
-        done_plan,
-        &completed_acceptance,
-        &remaining_acceptance,
-        &acceptance_evidence,
-        &known_acceptance_commands,
-        ctx.observation_evidence,
-    ) {
-        Ok(rows) => rows,
-        Err(e) => {
-            *ctx.state = AgentState::Recovery;
-            ctx.recovery.stage = Some(if ctx.root_read_only {
-                RecoveryStage::Diagnose
-            } else {
-                RecoveryStage::Verify
-            });
-            let hint = build_done_acceptance_recovery_hint(
-                &e.to_string(),
-                done_plan,
-                &completed_acceptance,
-                &known_acceptance_commands,
-                &read_only_scores,
-                ctx.cfg
-                    .base_url
-                    .contains("generativelanguage.googleapis.com"),
-            );
-            let block = format!(
-                "{}{}{}",
-                governor_contract::done_invalid_acceptance_message(&e.to_string()),
-                hint,
-                acceptance_report::hint(done_plan, &known_acceptance_commands)
-            );
-            emit_governor_block(ctx.governor_emit(), block, tc, None).await;
-            return Ok(ToolFlow::Continue);
-        }
-    };
+    let evidence_rows =
+        match acceptance_report::resolve_evidence(&args["acceptance_evidence"], &acceptance)
+            .and_then(|rows| {
+                validate_done_acceptance(
+                    done_plan,
+                    &completed_acceptance,
+                    &remaining_acceptance,
+                    &rows,
+                    known_acceptance_commands,
+                    ctx.observation_evidence,
+                )
+            }) {
+            Ok(rows) => rows,
+            Err(e) => {
+                *ctx.state = AgentState::Recovery;
+                ctx.recovery.stage = Some(if ctx.root_read_only {
+                    RecoveryStage::Diagnose
+                } else {
+                    RecoveryStage::Verify
+                });
+                let hint = build_done_acceptance_recovery_hint(
+                    &e.to_string(),
+                    done_plan,
+                    &completed_acceptance,
+                    known_acceptance_commands,
+                    &read_only_scores,
+                    ctx.cfg
+                        .base_url
+                        .contains("generativelanguage.googleapis.com"),
+                );
+                let block = format!(
+                    "{}{}{}",
+                    governor_contract::done_invalid_acceptance_message(&e.to_string()),
+                    hint,
+                    acceptance_report::hint(done_plan, &acceptance)
+                );
+                emit_governor_block(ctx.governor_emit(), block, tc, None).await;
+                return Ok(ToolFlow::Continue);
+            }
+        };
 
     let summary_text = if summary.is_empty() {
         synthesize_action_done_summary(done_plan, ctx.messages).unwrap_or_default()

@@ -6,8 +6,10 @@ pub(crate) const MAX_STDOUT_CHARS: usize = 1500;
 
 pub(crate) const MAX_STDERR_CHARS: usize = 600;
 
+#[cfg(test)]
 pub(crate) const KEEP_RECENT_TOOL_TURNS: usize = 4;
 
+#[cfg(test)]
 pub(crate) const KEEP_RECENT_ASSISTANT_TURNS: usize = 6;
 
 pub(crate) const SUCCESS_TOOL_HISTORY_MAX_LINES: usize = 10;

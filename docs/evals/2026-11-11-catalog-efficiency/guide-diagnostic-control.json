@@ -1,0 +1,81 @@
+{
+  "condition": "Prospective guide check diagnostics. A prebuilt native catalog binary and the original spec supply actual guide output. Build setup is skipped on both arms for this diagnostic control only. No model calls or qualification claim.",
+  "executor_sha256": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
+  "original_command_sha256": "10d4bdc82920127038e12077833bbd637e3821963cce6b0c954cd43e7124f12b",
+  "annotated_command_sha256": "c766d78778b385754fa0a503b37e83f3a7dc629d37f5d385ea8835930c2bca1b",
+  "original_prompt_sha256": "b493932e70c53b7b5d4a04c431151a16a6b191eb418e0240b365cb6c68a7a0e3",
+  "annotated_prompt_sha256": "a60eb0545e60ba1773bd5b290a6fa332255630fc7ffc79bd39d874c537c8bde8",
+  "same_assertion_predicates_and_non_assert_statements": true,
+  "identical_other_frozen_inputs": true,
+  "provider_calls": 0,
+  "cases": [
+    {
+      "case": "missing",
+      "runs": [
+        {
+          "condition": "original",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        },
+        {
+          "condition": "annotated",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError: docs/evaluation.md: expected one guide command marker, found 0. Add or correct the measured guide example using candidate output above.",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        }
+      ]
+    },
+    {
+      "case": "mismatch",
+      "runs": [
+        {
+          "condition": "original",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        },
+        {
+          "condition": "annotated",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError: {'error': 'docs/evaluation.md example differs from measured candidate output', 'guide_example': {'version': 1, 'total': 2, 'cases': [{'id': 'wrong-measured-case', 'tags': ['tui', 'observer', 'suggestion', 'prefs']}, {'id': 'pane-prefs-observer-contract', 'tags': ['tui', 'observer', 'suggestion', 'contract', 'prefs']}]}, 'candidate_output': {'version': 1, 'total': 2, 'cases': [{'id': 'pane-prefs-observer-suggestion', 'tags': ['tui', 'observer', 'suggestion', 'prefs']}, {'id': 'pane-prefs-observer-contract', 'tags': ['tui', 'observer', 'suggestion', 'contract', 'prefs']}]}}",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        }
+      ]
+    },
+    {
+      "case": "matching",
+      "runs": [
+        {
+          "condition": "original",
+          "exit_code": 0,
+          "last_stderr_line": null,
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        },
+        {
+          "condition": "annotated",
+          "exit_code": 0,
+          "last_stderr_line": null,
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        }
+      ]
+    },
+    {
+      "case": "duplicate",
+      "runs": [
+        {
+          "condition": "original",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        },
+        {
+          "condition": "annotated",
+          "exit_code": 1,
+          "last_stderr_line": "AssertionError: docs/evaluation.md: expected one guide command marker, found 2. Add or correct the measured guide example using candidate output above.",
+          "stdout_sha256": "3be3991e3218dcfff583e989f22a2ddd16216fbdefc6c9ae379c63d8725c5297"
+        }
+      ]
+    }
+  ]
+}

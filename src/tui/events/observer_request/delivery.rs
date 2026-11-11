@@ -69,6 +69,7 @@ pub(super) fn return_for_overlong_read(
         &text,
         &session.messages,
         app.project_test_cmd.as_deref(),
+        super::super::observer_assist::execution_root(app).as_deref(),
         Some(coder),
     )
     .is_none()

@@ -179,6 +179,7 @@ pub(in crate::tui::agent) fn protected_ids(messages: &[Value]) -> Vec<String> {
     ids
 }
 
+#[cfg(test)]
 pub(in crate::tui::agent) fn retained_read(messages: &[Value]) -> Option<String> {
     let read = history(messages)?.read?;
     (read.output.len() <= 32 * 1024).then(|| read.id.to_owned())

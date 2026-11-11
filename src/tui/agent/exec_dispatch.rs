@@ -8,34 +8,53 @@ pub(super) async fn run_exec(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -
     // Resolve an optional cwd (absolute or relative). Relative cwd is resolved against
     // the current tracked directory (or tool_root).
     let mut cwd_note: Option<String> = None;
-    let cwd_used: Option<String> = if let Some(c0) = args["cwd"]
+    let default_cwd = ctx.cur_cwd.as_deref().or(ctx.tool_root_abs.as_deref());
+    let default_cwd = crate::exec::execution_cwd(default_cwd)
+        .ok()
+        .flatten()
+        .or_else(|| default_cwd.map(str::to_owned))
+        .filter(|cwd| {
+            ctx.tool_root_abs
+                .as_deref()
+                .is_none_or(|root| is_within_root(cwd, root))
+        })
+        .or_else(|| ctx.tool_root_abs.clone());
+    let requested_cwd = args["cwd"]
         .as_str()
         .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-    {
-        let pb = std::path::PathBuf::from(c0);
-        let candidate = if pb.is_absolute() {
-            pb
-        } else if let Some(base) = ctx.cur_cwd.as_deref().or(ctx.tool_root_abs.as_deref()) {
-            std::path::PathBuf::from(base).join(pb)
-        } else {
-            pb
-        };
-        let cand_str = candidate.to_string_lossy().into_owned();
-        if let Some(ref root) = ctx.tool_root_abs {
-            if is_within_root(&cand_str, root) {
-                Some(cand_str)
+        .filter(|s| !s.is_empty());
+    let cwd_used = match requested_cwd {
+        // Preserve invalid input for the runner's native validation failure.
+        // In particular, normalization must not erase a forbidden component.
+        Some(cwd) if crate::exec::validate_cwd(cwd).is_err() => Some(cwd.to_owned()),
+        Some(c0) => {
+            let pb = std::path::PathBuf::from(c0);
+            let candidate = if pb.is_absolute() {
+                pb
+            } else if let Some(base) = ctx.cur_cwd.as_deref().or(ctx.tool_root_abs.as_deref()) {
+                std::path::PathBuf::from(base).join(pb)
             } else {
-                cwd_note = Some(format!(
-                    "NOTE: requested cwd is outside tool_root; ignoring: {c0}"
-                ));
-                ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+                pb
+            };
+            let raw = candidate.to_string_lossy().into_owned();
+            let cand_str = crate::exec::execution_cwd(Some(&raw))
+                .ok()
+                .flatten()
+                .unwrap_or(raw);
+            if let Some(ref root) = ctx.tool_root_abs {
+                if is_within_root(&cand_str, root) {
+                    Some(cand_str)
+                } else {
+                    cwd_note = Some(format!(
+                        "NOTE: requested cwd is outside tool_root; ignoring: {c0}"
+                    ));
+                    default_cwd
+                }
+            } else {
+                Some(cand_str)
             }
-        } else {
-            Some(cand_str)
         }
-    } else {
-        ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+        None => default_cwd,
     };
     let cwd_used_label = cwd_used
         .as_deref()
@@ -205,15 +224,17 @@ Do NOT run the exact same command again without a material change.",
     let exec_cmd = wrap_exec_with_pwd(&command);
     let exec_result = exec::run_command(&exec_cmd, cwd_used.as_deref()).await;
 
-    let (stdout, stderr, exit_code) = match exec_result {
-        Ok(r) => (r.stdout, r.stderr, r.exit_code),
-        Err(e) => (String::new(), e.to_string(), -1),
+    let (stdout, stderr, exit_code, actual_cwd) = match exec_result {
+        Ok(r) => (r.stdout, r.stderr, r.exit_code, r.cwd),
+        Err(e) => (String::new(), e.to_string(), -1, None),
     };
+    let cwd_used_label = actual_cwd.unwrap_or(cwd_used_label);
 
     // Update cwd from marker output.
     let (stdout, pwd_after) = strip_pwd_marker(&stdout);
     let mut cwd_after_note: Option<String> = None;
     if let Some(p) = pwd_after {
+        let p = crate::exec::canonical_cwd(Some(&p)).unwrap_or(p);
         if let Some(ref root) = ctx.tool_root_abs {
             if is_within_root(&p, root) {
                 *ctx.cur_cwd = Some(p);

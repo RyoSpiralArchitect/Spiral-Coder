@@ -39,6 +39,8 @@ pub(super) fn mark(
         .max()
         .unwrap_or(0);
     let mut latest = std::collections::BTreeMap::new();
+    let mut latest_exec = std::collections::BTreeMap::new();
+    let mut latest_unscoped_exec = std::collections::BTreeMap::new();
     let latest_executed = actions
         .iter()
         .filter(|a| a.executed == Some(true))
@@ -50,9 +52,8 @@ pub(super) fn mark(
             // Use the runtime location header, never a cwd printed in stdout.
             // Selection IDs label a command; they are not distinct executions.
             let cwd = a
-                .result
+                .exec_cwd
                 .as_deref()
-                .and_then(crate::execution_evidence::exec_cwd)
                 .or_else(|| a.arguments["cwd"].as_str());
             serde_json::json!({"command":a.arguments["command"], "cwd":cwd})
         } else {
@@ -61,10 +62,25 @@ pub(super) fn mark(
         (a.tool.clone(), arguments.to_string())
     };
     for action in actions.iter().filter(|a| a.executed == Some(true)) {
+        let step = action.result_step.unwrap_or(0);
         latest
             .entry(key(action))
-            .and_modify(|step: &mut usize| *step = (*step).max(action.result_step.unwrap_or(0)))
-            .or_insert(action.result_step.unwrap_or(0));
+            .and_modify(|previous: &mut usize| *previous = (*previous).max(step))
+            .or_insert(step);
+        if action.tool == "exec" {
+            if let Some(command) = action.arguments["command"].as_str() {
+                latest_exec
+                    .entry(command.to_owned())
+                    .and_modify(|previous: &mut usize| *previous = (*previous).max(step))
+                    .or_insert(step);
+                if action.exec_cwd.is_none() {
+                    latest_unscoped_exec
+                        .entry(command.to_owned())
+                        .and_modify(|previous: &mut usize| *previous = (*previous).max(step))
+                        .or_insert(step);
+                }
+            }
+        }
     }
     for action in actions {
         let Some(step) = action.result_step else {
@@ -84,11 +100,23 @@ pub(super) fn mark(
         } else {
             mutation.unwrap_or(0)
         };
+        // When either receipt lacks a native cwd, its requested cwd cannot
+        // establish that these were executions in different directories.
+        let ambiguous_rerun = action.tool == "exec"
+            && action.arguments["command"].as_str().is_some_and(|command| {
+                let latest_rerun = if action.exec_cwd.is_some() {
+                    latest_unscoped_exec.get(command)
+                } else {
+                    latest_exec.get(command)
+                };
+                latest_rerun.is_some_and(|latest| *latest > step)
+            });
         action.freshness = if action.executed != Some(true) {
             Freshness::Unexecuted
-        } else if latest
-            .get(&key(action))
-            .is_some_and(|latest| *latest > step)
+        } else if ambiguous_rerun
+            || latest
+                .get(&key(action))
+                .is_some_and(|latest| *latest > step)
         {
             Freshness::Superseded
         } else if action.tool == "exec"

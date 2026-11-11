@@ -890,6 +890,221 @@
                       "value": "final report turn"
                 }
           ]
+    },
+    {
+      "id": "observer-cites-verified-check-reference",
+      "tool_root": "/workspace",
+      "prompt": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "evidence",
+        "check-reference"
+      ],
+      "session_messages": [
+        {
+          "role": "user",
+          "content": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>"
+        },
+        {
+          "role": "assistant",
+          "accepted_plan": {
+            "goal": "Verify source.py",
+            "steps": [
+              "Verify",
+              "Report"
+            ],
+            "acceptance_criteria": [
+              "Tests pass"
+            ],
+            "risks": "regressions",
+            "assumptions": "tests exist"
+          }
+        },
+        {
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "id": "verified-check",
+              "function": {
+                "name": "exec",
+                "arguments": "{\"command\": \"cargo test -q\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "verified-check",
+          "content": "OK (exit_code: 0)\ncwd: /workspace"
+        }
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] An authored report remains; cite only current native proof."
+        }
+      ],
+      "observer_response": {
+        "summary": "Cite the current native check by its declared ID.",
+        "suggestions": [
+          {
+            "kind": "done",
+            "reason": "The declared check has current successful proof.",
+            "confidence": 0.95,
+            "suggested_tool": "done",
+            "suggested_args": {
+              "summary": "Verified with cargo test -q.",
+              "completed_acceptance": [
+                "acceptance 1"
+              ],
+              "remaining_acceptance": [],
+              "acceptance_evidence": [
+                {
+                  "criterion": "acceptance 1",
+                  "command": "@required-1"
+                }
+              ]
+            },
+            "based_on": [
+              "task_obligations.citable_checks"
+            ]
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_queued"
+        },
+        {
+          "kind": "coder_system_contains",
+          "value": "@required-1"
+        }
+      ]
+    },
+    {
+      "id": "observer-rejects-failed-check-reference",
+      "tool_root": "/workspace",
+      "prompt": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>",
+      "tags": [
+        "tui",
+        "observer",
+        "suggestion",
+        "evidence",
+        "check-reference"
+      ],
+      "session_messages": [
+        {
+          "role": "user",
+          "content": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>"
+        },
+        {
+          "role": "assistant",
+          "accepted_plan": {
+            "goal": "Verify source.py",
+            "steps": [
+              "Verify",
+              "Report"
+            ],
+            "acceptance_criteria": [
+              "Tests pass"
+            ],
+            "risks": "regressions",
+            "assumptions": "tests exist"
+          }
+        },
+        {
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "id": "previous-pass",
+              "function": {
+                "name": "exec",
+                "arguments": "{\"command\": \"cargo test -q\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "previous-pass",
+          "content": "OK (exit_code: 0)\n[history digest — kept 10/16 lines, 950 chars]\ncwd: /workspace\nstdout:\nchecks passed"
+        },
+        {
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "id": "failed-rerun",
+              "function": {
+                "name": "exec",
+                "arguments": "{\"command\": \"cargo test -q\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "failed-rerun",
+          "content": "FAILED (exit_code: 1)\ncwd: /workspace"
+        }
+      ],
+      "coder_messages": [
+        {
+          "role": "user",
+          "content": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>"
+        },
+        {
+          "role": "assistant",
+          "content": "[GOVERNOR BLOCK] An authored report remains; cite only current native proof."
+        }
+      ],
+      "observer_response": {
+        "summary": "Cite the current native check by its declared ID.",
+        "suggestions": [
+          {
+            "kind": "done",
+            "reason": "The declared check has current successful proof.",
+            "confidence": 0.95,
+            "suggested_tool": "done",
+            "suggested_args": {
+              "summary": "Verified with cargo test -q.",
+              "completed_acceptance": [
+                "acceptance 1"
+              ],
+              "remaining_acceptance": [],
+              "acceptance_evidence": [
+                {
+                  "criterion": "acceptance 1",
+                  "command": "@required-1"
+                }
+              ]
+            },
+            "based_on": [
+              "task_obligations.citable_checks"
+            ]
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "suggestion_parsed"
+        },
+        {
+          "kind": "hint_not_queued"
+        },
+        {
+          "kind": "observer_tool_contains",
+          "value": "has no current successful receipt"
+        }
+      ]
     }
   ]
 }

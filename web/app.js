@@ -1935,6 +1935,7 @@
   }
 
   function resolveKnownVerificationCommand(command, knownCommands) {
+    if (Array.isArray(knownCommands) && knownCommands.includes(command)) return command;
     const want = normalizeScratchEntry(command);
     if (!want) return "";
     for (const candidate of Array.isArray(knownCommands) ? knownCommands : []) {
@@ -6339,9 +6340,18 @@
           // Never prune failures: they are the most important recovery context.
           if (!isPrunableToolSuccess(content)) continue;
           const lines = content.split("\n");
-          if (lines.length > 2) {
-            msgs[idx] = { ...msgs[idx], content: lines[0] + ` [pruned ${lines.length}L]` };
+          if (lines.length <= 2 || / \[pruned \d+L\]$/.test(lines[0])) continue;
+          const headers = [`${lines[0]} [pruned ${lines.length}L]`];
+          if (lines[0] === "OK (exit_code: 0)") {
+            const digest = /^\[history digest — kept \d+\/\d+ lines, \d+ chars\]$/;
+            const start = digest.test(lines[1]) ? 2 : 1;
+            let end = start;
+            if (/^duration_ms: \d+$/.test(lines[end])) end++;
+            if (lines[end]?.startsWith("cwd: ")) end++;
+            if (lines[end]?.startsWith("cwd_after: ")) end++;
+            headers.push(...lines.slice(start, end));
           }
+          msgs[idx] = { ...msgs[idx], content: headers.join("\n") };
         }
       };
 
@@ -6411,13 +6421,15 @@
             "$ErrorActionPreference = 'Stop'",
             "try {",
             raw,
+            "$__spiral_coder_status = if ($?) { 0 } elseif ($LASTEXITCODE) { $LASTEXITCODE } else { 1 }",
             "} finally {",
             `Write-Output ("${PWD_MARKER}" + (Get-Location).Path)`,
             "}",
+            "if ($__spiral_coder_status -ne 0) { exit $__spiral_coder_status }",
           ].join("\n");
         }
-        // POSIX: keep behavior simple (do not `set -e`).
-        return raw + `\necho "${PWD_MARKER}$(pwd)"`;
+        // The runner strips bare exit lines as transcript output.
+        return raw + `\n__spiral_coder_status=$?\nprintf '\\n%s\\n' "${PWD_MARKER}$(pwd)"\n(exit "$__spiral_coder_status")`;
       };
 
       const stripPwdMarker = (stdoutRaw) => {
@@ -6981,17 +6993,17 @@
         if (text.length <= 1200 && lines.length <= 10) return text;
         const kept = [];
         const seen = new Set();
-        const pushLine = (line) => {
+        const pushLine = (line, preserve = false) => {
           const trimmed = String(line || "").trim();
           if (!trimmed) return;
-          const compact = clip(trimmed, 220);
+          const compact = preserve ? line : clip(trimmed, 220);
           if (seen.has(compact)) return;
           seen.add(compact);
           kept.push(compact);
         };
         pushLine(lines[0] || "");
         if (name === "exec") {
-          lines.slice(1, 4).forEach(pushLine);
+          lines.slice(1, 4).forEach(line => pushLine(line, line.startsWith("cwd: ")));
         }
         const markers = [
           "[auto-test]",
@@ -8182,16 +8194,20 @@ state: ${agentState}`);
               if (!current()) break;
               const nativeCommands = finalContract.packet?.task_obligations?.current_commands;
               const completionCommands = Array.isArray(nativeCommands) ? nativeCommands : knownGoodVerificationCommands;
-              const validation = validateDoneAcceptance(
+              const checkReferences = finalContract.packet?.task_obligations?.citable_checks || [];
+              const resolved = window.SpiralCoderWork.resolveDoneCheckReferences(
+                acceptanceEvidence, completionCommands, checkReferences,
+              );
+              const validation = resolved.error ? resolved : validateDoneAcceptance(
                 governorContract,
                 activePlan,
                 completedAcceptance,
                 remainingAcceptance,
-                acceptanceEvidence,
+                resolved.rows,
                 completionCommands,
               );
               if (validation && validation.error) {
-                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands);
+                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands, checkReferences);
                 messages.push({ role: "tool", tool_call_id: tc.id, content: "GOVERNOR BLOCKED\n\n" + toolResult });
                 display += (display ? "\n\n" : "") + "[GOVERNOR BLOCK]\n" + toolResult;
                 flush();
@@ -8334,7 +8350,7 @@ state: ${agentState}`);
                 const prefix = [hintClass, digest].filter(Boolean).join("\n\n");
                 const prefixText = prefix ? (prefix + "\n\n") : "";
 
-                const cwdUsedLabel = cwdUsed ? String(cwdUsed) : "(workspace root)";
+                const cwdUsedLabel = String(execRes.cwd || cwdUsed || "(workspace root)");
                 const cwdAfter = cwdNow();
                 const cwdAfterLabel = cwdAfter ? String(cwdAfter) : "(workspace root)";
                 const cwdLine = cwdUsedLabel === cwdAfterLabel
@@ -8393,7 +8409,7 @@ state: ${agentState}`);
                 }
 
 	                toolResult = failed
-	                  ? `${prefixText}FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\nstderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
+	                  ? `FAILED (exit_code: ${exitCode}).\nduration_ms: ${durationMs}\n${cwdLine}\n${prefixText}stderr: ${stderr || "(empty)"}\nstdout: ${stdout || "(empty)"}${hint ? ("\n\n" + hint) : ""}\n⚠ The command failed. Diagnose the error above and call exec again with the fix. Do NOT continue to the next step until this succeeds.`
 	                  : `OK (exit_code: 0)\nduration_ms: ${durationMs}\n${cwdLine}\nstdout: ${stdout || "(empty)"}\nstderr: ${stderr || "(empty)"}`;
 
 	                if (stdout) display += "\n" + stdout;

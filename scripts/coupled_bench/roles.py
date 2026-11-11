@@ -14,6 +14,17 @@ def wire_limit(case):
     return case["max_requests"] + case.get("transport_repair_requests", 0)
 
 
+def eligible_transport_repair(receipt):
+    """Check a completed transport charge against the native role and reason."""
+    if receipt.get("status") != "completed":
+        return False
+    role = receipt.get("role")
+    reason = receipt.get("transport_rejection")
+    if role == "coder":
+        return reason in ("native_arguments", "governor_block")
+    return role == "observer" and reason == "observer_envelope"
+
+
 def command_and_env(binary, folder, profile, case, matrix):
     roles = pair(profile)
     coder = roles["coder"]
@@ -77,10 +88,7 @@ def configuration_evidence(report, profile, case, matrix):
             and len(repairs) <= case["transport_repair_requests"] and len(rows) <= wire_limit(case),
         "observer_reservation": sum(r.get("role") == "coder" for r in tasks)
             <= case["max_requests"] - case["observer_reserved_requests"],
-        "transport_eligibility": all(r.get("status") == "completed" and
-            r.get("transport_rejection") in (("native_arguments", "governor_block")
-            if r.get("role") == "coder" else ("observer_envelope",))
-            for r in repairs),
+        "transport_eligibility": all(eligible_transport_repair(r) for r in repairs),
     }
     return {"valid": all(checks.values()), "checks": checks, "task_requests": len(tasks),
             "transport_requests": len(repairs), "wire_requests": len(rows) if isinstance(requests, list) else None,

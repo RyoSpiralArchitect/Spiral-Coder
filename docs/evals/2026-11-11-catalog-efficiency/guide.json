@@ -1,0 +1,62 @@
+{
+  "candidate_binary_sha256": "0dd6f42f7ddd128305b52707d08e189ab10d5967df8abd1f5a0068a312fdc53f",
+  "examples": [
+    {
+      "command": "spiral tui-replay-list --filter prefs --max-cases 2",
+      "shown": {
+        "version": 1,
+        "total": 2,
+        "cases": [
+          {
+            "id": "pane-prefs-observer-suggestion",
+            "tags": [
+              "tui",
+              "observer",
+              "suggestion",
+              "prefs"
+            ]
+          },
+          {
+            "id": "pane-prefs-observer-contract",
+            "tags": [
+              "tui",
+              "observer",
+              "suggestion",
+              "contract",
+              "prefs"
+            ]
+          }
+        ]
+      },
+      "actual": {
+        "version": 1,
+        "total": 2,
+        "cases": [
+          {
+            "id": "pane-prefs-observer-suggestion",
+            "tags": [
+              "tui",
+              "observer",
+              "suggestion",
+              "prefs"
+            ]
+          },
+          {
+            "id": "pane-prefs-observer-contract",
+            "tags": [
+              "tui",
+              "observer",
+              "suggestion",
+              "contract",
+              "prefs"
+            ]
+          }
+        ]
+      },
+      "exit": 0,
+      "stderr": "",
+      "matches": true
+    }
+  ],
+  "matches": true
+}

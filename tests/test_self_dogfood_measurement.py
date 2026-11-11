@@ -9,14 +9,30 @@ from self_dogfood.measurement import budget_accounting, development_progress
 
 
 class MeasurementTests(unittest.TestCase):
-    def test_transport_has_its_own_cap_and_cannot_hide_semantic_or_network_failures(self):
+    def test_transport_requires_eligible_completed_receipts_and_stays_within_its_cap(self):
         spec = {"max_requests": 4, "transport_repair_requests": 1, "observer_reserved_requests": 1}
         rows = [{"id": i, "role": role, "charge": "task"} for i, role in enumerate(["coder"] * 3 + ["observer"])]
         rows.append({"id": 4, "role": "observer", "charge": "transport", "status": "completed", "transport_rejection": "observer_envelope"})
         work = {"request_limit": 4, "policy": {"transport_repair_limit": 1, "observer_reserved_requests": 1}, "requests": rows}
-        self.assertTrue(budget_accounting(work, spec)["valid"])
+        for role, reason in (
+            ("observer", "observer_envelope"),
+            ("coder", "native_arguments"),
+            ("coder", "governor_block"),
+        ):
+            with self.subTest(role=role, reason=reason):
+                rows[-1].update(role=role, transport_rejection=reason)
+                budget = budget_accounting(work, spec)
+                self.assertTrue(budget["valid"])
+                self.assertEqual(budget["task_requests"], 4)
+                self.assertEqual(budget["coder_task_requests"], 3)
+                self.assertEqual(budget["transport_requests"], 1)
+                self.assertEqual(budget["wire_requests"], 5)
         for change in [lambda w: w["requests"][-1].update(status="stream_interrupted"),
                        lambda w: w["requests"][-1].update(transport_rejection="proof_failure"),
+                       lambda w: w["requests"][-1].update(role="observer"),
+                       lambda w: w["requests"][-1].update(transport_rejection="observer_envelope"),
+                       lambda w: w["requests"][0].update(transport_rejection="governor_block"),
+                       lambda w: w["requests"][-1].update(id=0),
                        lambda w: w["requests"][3].update(role="coder"),
                        lambda w: w["requests"].append({**rows[-1], "id": 5}),
                        lambda w: w["policy"].update(transport_repair_limit=2)]:

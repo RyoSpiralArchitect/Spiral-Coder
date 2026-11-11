@@ -193,6 +193,7 @@ pub(crate) fn benchmark_plan_verification_hint(
     benchmark_proof::verification_hint(messages, root_user_text, test_cmd)
 }
 
+#[cfg(test)]
 pub(crate) fn benchmark_plan_protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
     benchmark_proof::protected_call_ids(messages)
 }

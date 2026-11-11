@@ -1,0 +1,58 @@
+{
+  "plan_sha256": "70fb853fce501c8d82512ee5e49b3df9c699882289041c64972674c84913aa88",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 13.392
+  },
+  "report_sha256": "95e22d1c0c4f0eecedb043f374005e116e5fb555e24dd02f6989f8b012e4fe74",
+  "same_source": true,
+  "completed": true,
+  "termination": "completed",
+  "task_requests": 1,
+  "wire_requests": 1,
+  "role_requests": {
+    "coder": 1,
+    "observer": 0
+  },
+  "pending_checks": [],
+  "new_actions": [
+    {
+      "tool": "done",
+      "step": 65,
+      "executed": true,
+      "result": "OK: done"
+    }
+  ],
+  "final_arguments": {
+    "acceptance_evidence": [
+      {
+        "command": "@required-4",
+        "criterion": "acceptance 1"
+      },
+      {
+        "command": "@required-3",
+        "criterion": "acceptance 2"
+      },
+      {
+        "command": "@required-4",
+        "criterion": "acceptance 3"
+      },
+      {
+        "command": "@required-2",
+        "criterion": "acceptance 4"
+      }
+    ],
+    "completed_acceptance": [
+      "acceptance 1",
+      "acceptance 2",
+      "acceptance 3",
+      "acceptance 4"
+    ],
+    "next_steps": "None; all requested implementation and verification steps are complete.",
+    "remaining_acceptance": [],
+    "summary": "Implemented the read-only `spiral tui-replay-list` subcommand and completed verification. Changed files: `src/tui_replay/catalog.rs` (catalog listing, filtering, truncation, validation, JSON output), `src/tui_replay.rs` (module connection and callable handler), `src/main.rs` (CLI argument type, enum variant, and dispatch), `npm/spiral-coder/lib/launcher.cjs` (installed-entry forwarding), and `docs/evaluation.md` (selection rules, distinction from replay execution, and measured console example). Listing uses the shared replay selection and diagnostics, emits only version/total/cases JSON, requires no credentials, does not run providers, and does not create replay artifacts. For input `--filter prefs --max-cases 2`, the documented output contained 2 selected cases and matched the native command. Empty/no-match behavior was compared with ordinary replay and matched status, stdout, and stderr.\n\nBefore: FAILED\nAfter: PASSED\n\ncargo test --locked --bin spiral-coder -q\nObserved: 1030 passed, 0 failed, 2 ignored.\npython3 -S -m unittest -v scripts.catalog_visible\nObserved: 1 test run, 0 failures, passed.\nAdditional exact checks passed: `cargo fmt --all -- --check`; the no-match listing/replay diagnostic comparison; and the documented positive catalog-output comparison."
+  }
+}

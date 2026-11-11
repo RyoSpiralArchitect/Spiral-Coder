@@ -241,6 +241,44 @@ Resume repair:
 - Repair changes history, not the filesystem: interrupted tools may have already
   produced side effects. A missing result is not evidence that an action failed.
 
+Request context compression:
+
+- `src/tui/agent/context_compaction/` owns disposable provider projections, not
+  persistent state. New Coder turns retain native messages in `AgentSession`;
+  recovery, approval, evidence, requirement checks, budget accounting and Observer
+  validation always read those original messages. Previously shortened sessions
+  remain loadable; omitted historical bytes are not reconstructed or certified.
+- Above a 64 KiB metadata-free serialized-message target, the Coder projection
+  replaces eligible old complete exchanges with a labelled historical digest.
+  It keeps the last eight tool turns and sixteen messages, current observations
+  and check receipts, unresolved diagnostic checks, recovery transitions, held
+  proposals, approval refusals, latest structured anchors and admitted plan.
+  Human, runtime and system messages remain intact. Signed, ambiguous and
+  incomplete exchanges are retained. Eligible exchanges from earlier human tasks
+  have a separate digest before the current task root. Each digest displays up
+  to twelve historical action excerpts and counts omitted entries. Native
+  actions from the current task establish its execution and completion proof.
+- The target is soft: mandatory context can exceed it. `context_compaction`
+  telemetry records version, role, before/after serialized message bytes,
+  target bytes, compacted exchanges/messages, omitted historical entries and
+  protected overflow. These counts exclude tool schemas and are not billed
+  tokens. Compaction adds no provider calls or task-budget allowance.
+- Coder shared obligations and all three next-action Observer modes (general,
+  diagnosis and continuation handoff) use the same `shared_text_v1` encoding
+  when it is smaller. Repeated strings of at least 256 bytes are stored once in
+  `texts`; single-key `{"$context_text":"t1"}` objects in `value` refer to the
+  exact string. A source tag collision disables encoding. No string is shortened
+  by this encoding. The prompt instructs the model to expand references before
+  copying literal commands or report requirements. These references are distinct
+  from executable/citable check IDs and are never resolved in native arguments.
+  Actual wire tool schemas, stored packets, authored replies and validation do
+  not change. Observer payloads also omit JSON indentation.
+- A new request recomputes its view from native state, including after an edit,
+  task change or iteration resume. A compacted view is never saved back into the
+  transcript, so repeated compression cannot turn a stale success into proof or
+  permanently erase an unfinished obligation. Full retained history can still
+  grow on disk; this is a request-context policy, not a storage quota.
+
 Provider tool continuation:
 
 - Native and Web streaming share `src/streaming/tool_calls.rs`. Tool indices keep
@@ -250,8 +288,8 @@ Provider tool continuation:
 - `src/streaming/provider_metadata.rs` owns this opaque metadata. Normal and
   governor-blocked assistant exchanges serialize it unchanged. Session save/load
   and resume repair preserve it on retained complete exchanges; assistant text
-  compaction skips signed turns. Whole-exchange window pruning remains bounded
-  by the existing retention rules.
+  compaction skips signed turns. Request-only history projection retains signed
+  exchanges in full, including their correlated results.
 - Gemini tool requests use `tool_choice: "auto"` so the model can emit the
   required plan/think/evidence text alongside a call. Other compatible providers
   retain `required`; no governor gate is waived.
@@ -413,16 +451,14 @@ Autosave ordering:
   are explicitly skipped instead of publishing a stale pre-round transcript.
 - Save comparison and session/progress writes share one lock. Change detection
   compares message content, root, checkpoint, cwd, observation cache, and progress
-  context; message count is not a revision, because compaction can shorten history.
+  context. Resume repair can shorten a retained transcript, so message count is
+  not a revision.
 - Each file is replaced atomically, but session and repo-progress files are not a
   single crash-atomic transaction. Current transcript/tool evidence remains primary.
 
-Context-window compaction lives in `src/tui/agent/message_window.rs`. It removes
-complete assistant tool-call/result exchanges, including multi-tool turns, as a
-unit. Recent results protect their matching calls. Failed, observational, or
-incomplete exchanges and the latest structured anchors are retained even when
-this exceeds the target window. Session history is currently compacted in place;
-separating the full audit transcript from provider context is a future change.
+Request context compression uses the provider projection described above. The
+tests in `src/tui/agent/message_window.rs` cover the earlier in-place compaction
+policy for legacy sessions.
 
 ### 3b. Project-local repo progress snapshot
 
@@ -1129,9 +1165,11 @@ Reading the target advances diagnosis but does not remove the repair obligation.
 On continuation, completed localized diagnosis may advance a generic restored
 `Diagnose` phase only when the latest actual failure belongs to that same check
 or target and is followed by the corresponding read/repair. A different newer
-failure keeps diagnosis pending. Old exec failure counters cannot erase a
-completed diagnosis; no repair or verification proof is fabricated by restoring
-the phase.
+failure keeps diagnosis pending. A later correlated native read of the same
+normalized path resolves an earlier read error for this phase calculation,
+including a corrected line range. The original failed check still requires its
+own current verification. Old exec failure counters cannot erase a completed
+diagnosis.
 
 `agent/current_evidence.rs` derives `ActionEvidence.result_step` and `freshness`
 from correlated tool results within the current human task. Labels distinguish
@@ -1152,6 +1190,23 @@ redirects and full length. A known command is provenance, not a semantic proof
 that an arbitrary criterion is satisfied; the independent task/verification
 gates remain mandatory. Legacy automatic summaries are separate from authored
 `done` and cannot satisfy an explicit authored-report requirement.
+
+`TaskObligations.citable_checks` contains the current task's declared check IDs
+whose latest native execution is a current success at `tool_root`. The runtime
+keeps the execution directory in the receipt header when shortening its
+display, including in the Web tool window. Direct and approved Web executions
+record the resolved directory returned by the command runner. The runner
+validates the supplied path before resolving it and preserves spaces in
+directory names. Web working-directory markers preserve the command's exit
+status. When either receipt lacks a directory, a later execution of the same
+command supersedes the earlier receipt. Check IDs require a new root-scoped
+success after a rerun in a different or unknown directory.
+An evidence row can use `command: "@required-1"` to select that original command. Coder,
+Observer and blocked-report validation resolve the same table while retaining
+the authored arguments and criterion mapping. A failed rerun, later mutation
+or new human task changes which checks are citable. A literal successful
+command beginning with `@` keeps its literal meaning. Requested command names
+in the summary still require their full text.
 
 `agent/acceptance_schema.rs` binds the same criterion references, current exact
 commands and final-summary guidance to both the Coder function schema and the
@@ -1305,6 +1360,12 @@ so a newer failed direct call or another ID for that command supersedes an older
 success. Observer assist receipts correlate the selected ID with the resolved
 call even when approval is refused or pending; correlation never grants execution.
 
+The next-action contract can expose a `preferred_verification` for a pending
+`cargo fmt --all -- --check` or `cargo fmt -- --check`. It is offered after
+baseline reproduction and artifact edits, ahead of expensive final checks.
+Diagnosis, an exact recovery recheck and reporting take priority. This ordering
+is advisory, and every declared check retains its own proof requirement.
+
 Catalogs are derived state, not a new persisted authority. Provider-signed
 arguments cannot be rewritten: Google endpoints keep the existing full-command
 schema, and any signed ID selection is rejected without modifying the call.
@@ -1354,6 +1415,13 @@ authored envelope. Only `completed` responses can receive transport repair credi
 so truncated/empty/filtered output remains task work even when it also fails JSON
 validation. Visible provider notes are diagnostics, never authored proof. Existing
 receipts retain their recorded status; no historical ledger is rewritten.
+
+A fully framed Observer object with an explicit optional response contract can
+express one no-tool clarification as a single `suggestions` object. The parser
+wraps it in a singleton array when it has a reason, an explicit null tool,
+empty arguments and a string-array `based_on`. The raw response and
+`single_handoff_suggestion` recovery marker remain available, and the normal
+action validator checks the recovered envelope.
 
 Observer read-range validation uses `ReadRequest::bounds`, as native reads do.
 Its specific failure (one-based ordering or the 200-line ceiling) is retained in

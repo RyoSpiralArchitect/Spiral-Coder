@@ -39,13 +39,30 @@
       return [{ criterion: criterion.trim(), command: command.trim() }];
     });
   }
-  function doneEvidenceHint(baseUrl, provider, plan, commands) {
+  function resolveDoneCheckReferences(rows, commands, checks) {
+    const literals = new Set(commands);
+    const declared = Array.isArray(checks) ? checks : [];
+    const resolved = [];
+    for (const row of rows) {
+      if (!row.command.startsWith("@") || literals.has(row.command)) {
+        resolved.push(row);
+        continue;
+      }
+      const check = declared.find(check => check?.id === row.command.slice(1));
+      if (!check || !literals.has(check.command)) {
+        return { error: `Acceptance check reference ${row.command} has no current successful receipt at tool_root in this task` };
+      }
+      resolved.push({ ...row, command: check.command });
+    }
+    return { rows: resolved };
+  }
+  function doneEvidenceHint(baseUrl, provider, plan, commands, checks = []) {
     const row = flatDoneEvidence(baseUrl, provider)
       ? "<criterion reference> | <exact recorded command>"
       : { criterion: "<criterion reference>", command: "<exact recorded command>" };
     return "\n[Authored acceptance mapping]\nUse exactly one evidence row per completed criterion. Keep unproven criteria in remaining_acceptance. Do not rerun checks only to repair report formatting.\n" +
       JSON.stringify({ criteria: (plan?.acceptanceCriteria || []).map((criterion, i) => ({ reference: `acceptance ${i + 1}`, criterion })),
-        current_commands: commands, evidence_row_shape: row });
+        current_commands: commands, citable_checks: checks, evidence_row_shape: row });
   }
   function cacheFor(storage) {
     if (!caches.has(storage)) caches.set(storage, new Map());
@@ -161,7 +178,7 @@
     if (call.function.name === "exec") {
       if (String(args.command).trim() !== String(item.command).trim()) return false;
       if (approved && (!result || typeof result.exit_code !== "number")) return false;
-      content = approved ? `${result.exit_code === 0 ? "OK" : "ERROR"} (exit_code: ${result.exit_code})\ncwd: ${item.cwd || ""}\nstdout:\n${result.stdout || ""}\nstderr:\n${result.stderr || ""}` : "REJECTED BY USER";
+      content = approved ? `${result.exit_code === 0 ? "OK" : "FAILED"} (exit_code: ${result.exit_code})\ncwd: ${result.cwd ?? item.cwd ?? ""}\nstdout:\n${result.stdout || ""}\nstderr:\n${result.stderr || ""}` : "REJECTED BY USER";
     } else {
       if (!["write_file", "patch_file", "apply_diff"].includes(call.function.name) || item.action !== call.function.name) return false;
       if (!String(pending.content).split("\n").includes("approval_path: " + item.path)) return false;
@@ -231,5 +248,5 @@
         return { text: fullText, finishReason, toolCalls, usage };
       };
 
-  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools, baselineMutationIssue, flatDoneEvidence, doneEvidenceItems, parseDoneEvidence, doneEvidenceHint };
+  window.SpiralCoderWork = { read, open, reserve, finish, snapshot, persist, isCurrent, isActive, runCurrent, claimAdvice, resolveApproval, updateAssists, nativeArgumentsIssue, streamChatTools, baselineMutationIssue, flatDoneEvidence, doneEvidenceItems, parseDoneEvidence, resolveDoneCheckReferences, doneEvidenceHint };
 })();

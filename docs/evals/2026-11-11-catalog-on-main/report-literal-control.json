@@ -1,0 +1,17 @@
+{
+  "rows": [
+    {
+      "condition": "recorded_report",
+      "issue": "[Final handoff] Call `done` with a nonempty `summary` answering the original final-answer instruction. Cite full artifact paths and exact verification commands from recorded evidence. Put required paths and phrases in the TEXT of `done.summary`, with exact capitalization and spaces (matching is case-sensitive). Extra JSON keys or custom fields are not displayed and cannot satisfy the final answer. Include claims only when supported by evidence; state limitations truthfully. Do not rerun successful tools just to obtain a summary.\nOriginal final-answer instruction:\nFinal answer must include `python3 -S -m unittest -v scripts.catalog_visible` and `cargo test --locked --bin spiral-coder -q`.\nMissing from the final answer:\n- explicit item `python3 -S -m unittest -v scripts.catalog_visible`\nRevise the `done` answer using this evidence; successful verification remains valid.",
+      "hint_available": false
+    },
+    {
+      "condition": "one_literal_added",
+      "issue": null,
+      "hint_available": true
+    }
+  ],
+  "external_requests": 0,
+  "tool_executions": 0,
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f"
+}

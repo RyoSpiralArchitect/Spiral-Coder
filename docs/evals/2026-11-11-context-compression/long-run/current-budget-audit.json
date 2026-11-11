@@ -1,0 +1,67 @@
+{
+  "scope": "Ledger accounting replay on the sealed R24 episode",
+  "frozen_assessment_sha256": "b9e8aff7be73ec820be620e5b2103104568021e293056587be9ee517876a10b9",
+  "sealed_run_receipt_sha256": "a13d1ca2d9389a17c518d19d70666c975746f7dd5e913aea7d275cd76ca3e86a",
+  "current_validator_sha256": {
+    "self_dogfood/measurement.py": "cee7d2f818b75bdfae4877498cdb63cb0dc4e81a5c5f02a0fc8a3ec3aeabddfa",
+    "coupled_bench/roles.py": "c60203ed38fe271896dc82702408ab0d7cbf191eacdbcb74790f5d0662ab2c19"
+  },
+  "rounds": [
+    {
+      "iteration": 1,
+      "durable_ledger_sha256": "14c2211f3694b15555ee9013461f784bbb63b060f0882387eb89d394a06f3528",
+      "governor_block_transport_charges": 4,
+      "frozen_accounting": {
+        "valid": false,
+        "wire_requests": 36,
+        "task_requests": 32,
+        "transport_requests": 4,
+        "coder_task_requests": 24,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      },
+      "current_accounting": {
+        "valid": true,
+        "wire_requests": 36,
+        "task_requests": 32,
+        "transport_requests": 4,
+        "coder_task_requests": 24,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      }
+    },
+    {
+      "iteration": 2,
+      "durable_ledger_sha256": "d496edde15d2658712dbc57000e20da2cf5d5b24ef8a10ca2cbbc8ba4d54821d",
+      "governor_block_transport_charges": 4,
+      "frozen_accounting": {
+        "valid": false,
+        "wire_requests": 34,
+        "task_requests": 30,
+        "transport_requests": 4,
+        "coder_task_requests": 23,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      },
+      "current_accounting": {
+        "valid": true,
+        "wire_requests": 34,
+        "task_requests": 30,
+        "transport_requests": 4,
+        "coder_task_requests": 23,
+        "policy": {
+          "transport_repair_limit": 4,
+          "observer_reserved_requests": 8
+        }
+      }
+    }
+  ],
+  "frozen_qualification": false,
+  "model_requests": 0
+}

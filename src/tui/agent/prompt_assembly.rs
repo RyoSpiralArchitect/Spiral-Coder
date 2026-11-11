@@ -479,16 +479,25 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
     {
         msgs_for_call.push(json!({"role":"system", "content":prompt}));
     }
+    let acceptance = acceptance_report::CurrentEvidence::from_native(
+        messages,
+        test_cmd.as_deref(),
+        tool_root_abs.as_deref(),
+    );
     acceptance_schema::bind(
         &mut tools_clone,
         active_plan.as_ref(),
-        &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
+        &acceptance.commands,
+        &acceptance.citable_checks,
     );
     acceptance_schema::bind_summary(
         &mut tools_clone,
         &final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref()),
     );
     msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
+    let (msgs_for_call, compaction) =
+        context_compaction::coder(&msgs_for_call, test_cmd.as_deref());
+    emit_telemetry_event(&tx, "context_compaction", json!(compaction)).await;
     AssemblyOut {
         messages: msgs_for_call,
         tools: tools_clone,

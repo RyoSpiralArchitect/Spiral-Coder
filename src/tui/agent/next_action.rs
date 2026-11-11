@@ -22,12 +22,15 @@ pub(super) struct Contract {
     #[serde(skip_serializing_if = "Option::is_none")]
     required_recheck: Option<String>,
     required_diagnostic_read: Option<super::recovery_focus::DiagnosticRead>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    preferred_verification: Option<String>,
 }
 
 impl Contract {
     pub(super) fn with_report_closeout(mut self, closeout: bool) -> Self {
         if closeout {
             self.phase = Phase::Report;
+            self.preferred_verification = None;
         }
         self
     }
@@ -53,6 +56,22 @@ impl Contract {
             pending_artifact_paths: requirements.pending_artifact_paths.clone(),
             required_recheck: None,
             required_diagnostic_read: None,
+            preferred_verification: if !report
+                && requirements.pending_artifact_paths.is_empty()
+                && requirements.pending_baselines.is_empty()
+            {
+                pending
+                    .iter()
+                    .find(|command| {
+                        matches!(
+                            command.as_str(),
+                            "cargo fmt --all -- --check" | "cargo fmt -- --check"
+                        )
+                    })
+                    .cloned()
+            } else {
+                None
+            },
         }
     }
 
@@ -62,6 +81,7 @@ impl Contract {
     ) -> Self {
         if self.phase == Phase::Work && read.is_some() {
             self.phase = Phase::Diagnose;
+            self.preferred_verification = None;
         }
         self.required_diagnostic_read = read;
         self
@@ -69,6 +89,9 @@ impl Contract {
 
     pub(super) fn with_recheck(mut self, command: Option<String>) -> Self {
         if self.phase == Phase::Work {
+            if command.is_some() {
+                self.preferred_verification = None;
+            }
             self.required_recheck = command;
         }
         self
@@ -119,8 +142,12 @@ impl Contract {
         } else {
             "Choose exactly one native function call. Keep required plan/think/reflect/impact blocks in assistant text alongside that call; text or XML is not tool execution. pending_artifact_paths are required artifacts without a successful native edit, not a claim that all other behavior is correct. After diagnosis, address the remaining task artifacts before the final exact checks; preserve the user's edit restrictions. After the final mutation, execute each pending exact verification command before a successful done; automatic checks are not a substitute. Leave one Coder request for your authored done report. If blocked, use done with nonempty remaining_acceptance, a blocker summary, and concrete next_steps; this terminates incomplete without clearing obligations."
         };
+        let format_hint = self.preferred_verification.as_deref()
+            .filter(|_| self.phase == Phase::Work && self.required_recheck.is_none())
+            .map(|command| format!("\nPrefer the pending formatting check `{command}` before the expensive final checks. If formatting needs an edit, finish it before collecting final proof; then every required check needs a current result. This is a suggested order."))
+            .unwrap_or_default();
         format!(
-            "[Next action contract]\n{}\n{action}",
+            "[Next action contract]\n{}\n{action}{format_hint}",
             serde_json::to_string(self).expect("contract serializes")
         )
     }
@@ -162,6 +189,42 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn formatting_preference_keeps_baseline_diagnosis_and_verification_gates() {
+        let checks = vec!["cargo test -q".into(), "cargo fmt --all -- --check".into()];
+        let mut status = Status::default();
+        status.declared = true;
+        let contract = Contract::project(Some(8), &checks, &status);
+        assert_eq!(
+            contract.preferred_verification.as_deref(),
+            Some(checks[1].as_str())
+        );
+        let verify = ToolCallData {
+            id: "ordinary-check".into(),
+            name: "exec".into(),
+            arguments: json!({"command":"cargo test -q"}).to_string(),
+            thought_signature: None,
+        };
+        assert!(
+            contract.rejection(&[verify]).is_none(),
+            "the preferred order adds no execution gate"
+        );
+        assert_eq!(contract.pending_exact_checks, checks);
+        assert!(Contract::project(Some(8), &checks, &status)
+            .with_recheck(Some("cargo test -q".into()))
+            .preferred_verification
+            .is_none());
+        status.pending_baselines.push("cargo test -q".into());
+        assert!(Contract::project(Some(8), &checks, &status)
+            .preferred_verification
+            .is_none());
+        status.pending_baselines.clear();
+        status.pending_artifact_paths.push("source.rs".into());
+        assert!(Contract::project(Some(8), &checks, &status)
+            .preferred_verification
+            .is_none());
+    }
 
     #[test]
     fn diagnosis_never_consumes_the_reserved_final_report_or_changes_proof() {

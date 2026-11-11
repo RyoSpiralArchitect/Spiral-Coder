@@ -9,6 +9,9 @@ pub(crate) struct ActionEvidence {
     pub tool: String,
     pub arguments: serde_json::Value,
     pub result: Option<String>,
+    /// Runtime execution directory from the full correlated result.
+    #[serde(skip)]
+    pub(crate) exec_cwd: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cargo_inputs: Option<crate::cargo_inputs::Receipt>,
     pub executed: Option<bool>,
@@ -102,6 +105,7 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                             .and_then(|s| serde_json::from_str(s).ok())
                             .unwrap_or(serde_json::Value::Null),
                         result: None,
+                        exec_cwd: None,
                         cargo_inputs: None,
                         executed: None,
                         succeeded: None,
@@ -128,6 +132,9 @@ pub(crate) fn project(messages: &[serde_json::Value], test_cmd: Option<&str>) ->
                 result.starts_with("GOVERNOR BLOCKED") || result.starts_with("REJECTED BY USER");
             let pending = result.starts_with("Awaiting approval");
             action.executed = Some(!rejected && !pending);
+            if action.tool == "exec" && action.executed == Some(true) {
+                action.exec_cwd = crate::execution_evidence::exec_cwd(result).map(str::to_owned);
+            }
             action.edit_outcome =
                 crate::execution_evidence::file_edit_outcome(&action.tool, result);
             action.succeeded = if pending {
@@ -235,12 +242,23 @@ pub(crate) fn acceptance_issue(
     messages: &[serde_json::Value],
     args: &serde_json::Value,
     test_cmd: Option<&str>,
+    tool_root: Option<&str>,
 ) -> Option<String> {
     let messages = crate::task_origin::current_task_messages(messages);
     let plan = super::plan_resume::latest_valid(messages, |plan| validate_plan(plan).is_ok());
+    let acceptance =
+        super::acceptance_report::CurrentEvidence::from_native(messages, test_cmd, tool_root);
+    let commands = &acceptance.commands;
     let rows =
-        super::acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
-    let commands = super::acceptance_report::current_commands(messages, test_cmd);
+        match super::acceptance_report::resolve_evidence(&args["acceptance_evidence"], &acceptance)
+        {
+            Ok(rows) => rows,
+            Err(error) => {
+                return Some(format!(
+                    "Suggested done has invalid acceptance evidence: {error}"
+                ))
+            }
+        };
     let observations = collect_observation_evidence(messages);
     // Advice may precede Coder's first valid plan. Check its citations now, but
     // leave plan admission to the real done gate on the ensuing Coder turn.
@@ -250,7 +268,7 @@ pub(crate) fn acceptance_issue(
             .any(|row| {
                 super::done_gate::preferred_known_command_for_evidence(
                     &row.command,
-                    &commands,
+                    commands,
                     &observations,
                 )
                 .is_none()
@@ -267,7 +285,7 @@ pub(crate) fn acceptance_issue(
         &parse_string_list_arg(&args["completed_acceptance"]),
         &parse_string_list_arg(&args["remaining_acceptance"]),
         &rows,
-        &commands,
+        commands,
         &observations,
     )
     .err()
