@@ -245,6 +245,32 @@ fn old_reads_keep_their_header_and_diagnostics_keep_their_excerpts() {
         json!({"path":"src/missing.rs"}),
         "ERROR: file not found",
     );
+    let range = json!({"path":"src/a.rs","start_line":4,"end_line":6});
+    let wrong_range =
+        "[src/a.rs] (12 lines, 80 bytes) [range: lines 5-6; partial file]\nrange diagnostic";
+    let unknown = "[src/a.rs] (12 lines, 80 bytes) [legacy status]\nlegacy diagnostic";
+    exchange(
+        &mut messages,
+        "bad-range",
+        "read_file",
+        range.clone(),
+        wrong_range,
+    );
+    exchange(
+        &mut messages,
+        "legacy",
+        "read_file",
+        json!({"path":"src/a.rs"}),
+        unknown,
+    );
+    let range_header = "[src/a.rs] (12 lines, 80 bytes) [range: lines 4-6; partial file]";
+    exchange(
+        &mut messages,
+        "valid-range",
+        "read_file",
+        range,
+        &format!("{range_header}\nold range text"),
+    );
     add_edits(&mut messages, 18, 9);
     let (wire, metrics) = coder(&messages, None);
     assert!(metrics.compacted_exchanges > 0);
@@ -261,6 +287,9 @@ fn old_reads_keep_their_header_and_diagnostics_keep_their_excerpts() {
     for (id, output) in [
         ("old-read", "[src/a.rs] (1 lines, 16 bytes)"),
         ("missing", "ERROR: file not found"),
+        ("bad-range", wrong_range),
+        ("legacy", unknown),
+        ("valid-range", range_header),
     ] {
         assert_eq!(
             rows.iter().find(|row| row["call_id"] == id).unwrap()["result_excerpt"],
