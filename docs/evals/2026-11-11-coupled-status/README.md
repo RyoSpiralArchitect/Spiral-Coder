@@ -3,12 +3,14 @@
 The next task after #49 is tracked in [issue #82](https://github.com/RyoSpiralArchitect/Spiral-Coder/issues/82).
 The [benchmark contract](../../../benchmarks/self-dogfood-v2/coupled-status/README.md)
 adds read-only native run inspection, honest unknown pending usage, npm routing
-and a measured usage guide. The first prospective run is S1.
+and a measured usage guide. The first launch S1 stopped before any provider calls at the old four-iteration CLI limit. [Original launch and correction](s1-launch/README.md)
 
-[Plan](plan.json) pins the full candidate and executor source at PR #81's
-`7ad8be4`, the exact binary, frozen input/driver declaration and wrapper hashes.
-The live run begins only after that change is merged, with its Git tree checked
-against the candidate pin. The pair is `gpt-5.6-luna` in both distinct roles.
+The next prospective condition is S2, using the same task and six-iteration envelope with an executor that accepts up to eight explicitly budgeted iterations.
+
+[Plan](plan.json) pins the full candidate source at PR #81's
+`7ad8be4`, the separate executor revision, exact binary, frozen input/driver declaration and wrapper hashes.
+PR #81 was merged as `8e3cecf`; its Git tree is identical to the candidate pin.
+[Merge verification](merge-proof.json) The pair is `gpt-5.6-luna` in both distinct roles.
 Limits are six iterations, 192 task requests, 216 wires and 3,600 seconds.
 The original baseline contains no solution or new benchmark/reference files.
 
