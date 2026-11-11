@@ -1,7 +1,8 @@
 {
-  "runtime_commit": "ba0ad867d444fffde6c5f82f054ad9b21f966e90",
-  "full_check_log_sha256": "81d47f949273e72932b4b84b95984f67c11080516aa7b96bb9ebd23a09a457fc",
-  "rust_main_passed": 1169,
+  "runtime_commit": "548b923718593557f210420c99cd73a261ebf1e6",
+  "phase": "S13 current failure routing and fixture-cardinality obligation",
+  "full_check_log_sha256": "a5225ab964bb00945e70346ecfb2452fe0e9b410afbedb761cf33b4dbf95e503",
+  "rust_main_passed": 1171,
   "rust_ignored": 2,
   "integration": 6,
   "tui_replay": 20,
@@ -10,11 +11,8 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S12 full local checks; native low-confidence report handoff, native fixture export, and both-role projection coverage",
-  "first_full_check_log_sha256": "9a5b5b2ede5671b68bfc479f8b76416ae2c439830c8f94f1a019c183a349c0ca",
-  "first_full_check_failure": "Existing context projection test expected eight requirements; now asserts the ninth native-tests obligation and exact preservation for both roles",
-  "handoff_red_log_sha256": "439625835ca131754699fa1143149e4440c25c7e678ca371418723ca76de4baf",
-  "handoff_green_log_sha256": "99e42ade9cf099734eeb7b710d019470e19bc970ba9d72005c69d9497ba62951",
-  "native_export_log_sha256": "b1f633575ce6ab689ae7cb634fa8d0a1bac962d4efb171e449c3fa9722f8607b",
-  "native_export_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+  "routing_red_log_sha256": "1aa5e55c8ab083832c5da67d0ed889976c1645ff34562aa0e88d1f59cd7eaf7f",
+  "routing_green_log_sha256": "3680f9cef12328fb22bf303721893a64d857778580f723a12066c892fe417854",
+  "initial_green_test_assumption_correction": "Successful read commands are legitimate current evidence, but not successful failed-check receipts.",
+  "initial_green_log_sha256": "47a53b8d7251b8808db708745489d3866435293926a4595541cab3f6317f5ae5"
 }

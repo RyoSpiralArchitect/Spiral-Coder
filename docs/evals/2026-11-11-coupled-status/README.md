@@ -23,7 +23,7 @@ Limits are six iterations, 192 task requests, 216 wires and 3,600 seconds.
 The original baseline contains no solution or new benchmark/reference files.
 
 [Preflight](preflight.json) records the required missing-command baseline
-failures and all seven passing S12 reference groups (six in S1–S10). The visible check, 24 independent
+failures and all seven passing S13 reference groups (six in S1–S10). The visible check, 24 independent
 cases, real assembled npm entry, guide check and all stock regressions were
 executed without provider calls. The separate reference can read the real
 R25 chain and recover its 73 task requests and 80 wires.
@@ -108,3 +108,16 @@ stale and the final report is rejected. All Observer primaries are at least
 0.87, so the new low-confidence path has deterministic coverage but no live
 invocation. **Still unqualified, not adopted, #82 open.**
 [S12 evidence and post-run diagnostic correction](s12-native-fixtures/README.md).
+
+
+S13 is prospectively pinned before calls: the baseline inventory is byte-identical
+to S12, and only prompt.txt differs among frozen inputs. Fixture cardinality and
+positive-scenario validation become explicit typed obligations. The executor
+retains the current native failure ahead of old implementation guesses and
+includes the post-S12 warning/panic correction. Local checks pass 1,171 main Rust
+tests / two ignored, six integration cases and 20 TUI replays, plus all other
+required suites. Seven reference groups pass; reference tests detect four
+faults, the thin control misses three, and retained S12 tests fail their valid
+reference prerequisite. [S13 controls](s13-sensitivity-controls.json). This is a
+combined condition, not a causal comparison. No provider calls at this pin;
+the first bounded terminal will be retained, without candidate adoption.
