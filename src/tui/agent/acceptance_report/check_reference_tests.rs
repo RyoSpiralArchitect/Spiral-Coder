@@ -155,8 +155,10 @@ fn optional_alias_selects_the_latest_root_execution() {
         &mut messages,
         "exec",
         json!({"command":command}),
-        "FAILED (exit_code: 1)\ncwd: /workspace/sub",
+        "FAILED (exit_code: 1)\ncwd: /workspace/sub/..",
     );
+    assert!(resolve(&messages).is_err());
+    result(&mut messages, "exec", json!({"command":command}), SUCCESS);
     assert_eq!(resolve(&messages).unwrap()[0].command, command);
     result(&mut messages, "exec", json!({"command":command}), FAILED);
     assert!(resolve(&messages).is_err());

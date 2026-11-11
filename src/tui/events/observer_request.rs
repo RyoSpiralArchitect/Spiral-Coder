@@ -202,7 +202,7 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             .map(|s| s.messages.as_slice())
             .unwrap_or(&[]),
         app.project_test_cmd.as_deref(),
-        app.tool_root.as_deref(),
+        super::observer_assist::execution_root(app).as_deref(),
         Some(coder_remaining),
     );
     app.pending_observer_hint = None;

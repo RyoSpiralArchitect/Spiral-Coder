@@ -384,11 +384,8 @@ impl<'a> LoopSetup<'a> {
         let tool_root_abs = tool_root
             .map(|s| s.trim())
             .filter(|s| !s.is_empty())
-            .and_then(absolutize_path)
-            .map(|root| {
-                std::fs::canonicalize(&root)
-                    .map(|path| path.to_string_lossy().into_owned())
-                    .unwrap_or(root)
+            .and_then(|root| {
+                crate::exec::canonical_cwd(Some(root)).or_else(|| absolutize_path(root))
             });
         // Rebuild loop governor memory from the existing session so resuming runs doesn't
         // repeat the same failures from scratch.

@@ -8,6 +8,15 @@ pub(super) async fn run_exec(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -
     // Resolve an optional cwd (absolute or relative). Relative cwd is resolved against
     // the current tracked directory (or tool_root).
     let mut cwd_note: Option<String> = None;
+    let default_cwd = ctx.cur_cwd.as_deref().or(ctx.tool_root_abs.as_deref());
+    let default_cwd = crate::exec::canonical_cwd(default_cwd)
+        .or_else(|| default_cwd.map(str::to_owned))
+        .filter(|cwd| {
+            ctx.tool_root_abs
+                .as_deref()
+                .is_none_or(|root| is_within_root(cwd, root))
+        })
+        .or_else(|| ctx.tool_root_abs.clone());
     let cwd_used: Option<String> = if let Some(c0) = args["cwd"]
         .as_str()
         .map(|s| s.trim())
@@ -21,7 +30,8 @@ pub(super) async fn run_exec(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -
         } else {
             pb
         };
-        let cand_str = candidate.to_string_lossy().into_owned();
+        let raw = candidate.to_string_lossy().into_owned();
+        let cand_str = crate::exec::canonical_cwd(Some(&raw)).unwrap_or(raw);
         if let Some(ref root) = ctx.tool_root_abs {
             if is_within_root(&cand_str, root) {
                 Some(cand_str)
@@ -29,13 +39,13 @@ pub(super) async fn run_exec(ctx: &mut ToolDispatchCtx<'_>, tc: &ToolCallData) -
                 cwd_note = Some(format!(
                     "NOTE: requested cwd is outside tool_root; ignoring: {c0}"
                 ));
-                ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+                default_cwd
             }
         } else {
             Some(cand_str)
         }
     } else {
-        ctx.cur_cwd.clone().or_else(|| ctx.tool_root_abs.clone())
+        default_cwd
     };
     let cwd_used_label = cwd_used
         .as_deref()
@@ -214,6 +224,7 @@ Do NOT run the exact same command again without a material change.",
     let (stdout, pwd_after) = strip_pwd_marker(&stdout);
     let mut cwd_after_note: Option<String> = None;
     if let Some(p) = pwd_after {
+        let p = crate::exec::canonical_cwd(Some(&p)).unwrap_or(p);
         if let Some(ref root) = ctx.tool_root_abs {
             if is_within_root(&p, root) {
                 *ctx.cur_cwd = Some(p);

@@ -1305,6 +1305,8 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
         stderr: String,
         exit_code: i32,
         duration_ms: u64,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        cwd: Option<String>,
     }
 
     let req: Req = match serde_json::from_slice(body) {
@@ -1383,7 +1385,8 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
     // - poison proxy env scrubbing
     // - Windows output decoding (CP932 fallback)
     let start = Instant::now();
-    let r = crate::exec::run_command(&req.command, req.cwd.as_deref()).await;
+    let cwd = crate::exec::canonical_cwd(req.cwd.as_deref());
+    let r = crate::exec::run_command(&req.command, cwd.as_deref().or(req.cwd.as_deref())).await;
     let duration_ms: u64 = start.elapsed().as_millis().min(u128::from(u64::MAX)) as u64;
     let out = match r {
         Ok(r) => Res {
@@ -1391,12 +1394,14 @@ async fn api_exec(stream: &mut TcpStream, body: &[u8]) -> Result<()> {
             stderr: r.stderr,
             exit_code: r.exit_code,
             duration_ms,
+            cwd,
         },
         Err(e) => Res {
             stdout: String::new(),
             stderr: format!("spawn failed: {e:#}"),
             exit_code: -1,
             duration_ms,
+            cwd: None,
         },
     };
     write_json(stream, 200, "OK", &out).await

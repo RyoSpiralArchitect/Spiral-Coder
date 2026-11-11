@@ -8,11 +8,18 @@ pub(crate) fn exec_may_have_run(content: &str) -> bool {
 }
 
 /// The runtime inserts this header immediately after the first status or hint
-/// line. Older successful history digests inserted their marker before it.
+/// line. Web receipts may include duration first, and older successful
+/// history digests inserted their marker ahead of the native headers.
 pub(crate) fn exec_cwd(content: &str) -> Option<&str> {
     let mut headers = content.lines().skip(1);
     let mut line = headers.next()?;
     if exec_succeeded(content) && history_digest_marker(line) {
+        line = headers.next()?;
+    }
+    if line
+        .strip_prefix("duration_ms: ")
+        .is_some_and(decimal_field)
+    {
         line = headers.next()?;
     }
     line.strip_prefix("cwd: ").filter(|cwd| !cwd.is_empty())
@@ -29,9 +36,11 @@ fn history_digest_marker(line: &str) -> bool {
     let Some((kept, total)) = counts.split_once('/') else {
         return false;
     };
-    [kept, total, chars]
-        .into_iter()
-        .all(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
+    [kept, total, chars].into_iter().all(decimal_field)
+}
+
+fn decimal_field(n: &str) -> bool {
+    !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit())
 }
 
 /// Trust only the runtime status header, optionally compacted by output pruning.
@@ -181,6 +190,14 @@ mod tests {
 
     #[test]
     fn cwd_uses_the_native_header_including_legacy_history_digests() {
+        assert_eq!(
+            exec_cwd("OK (exit_code: 0)\n[history digest — kept 9/12 lines, 341 chars]\nduration_ms: 12\ncwd: /work"),
+            Some("/work"),
+        );
+        assert_eq!(
+            exec_cwd("OK (exit_code: 0)\nduration_ms: 12\ncwd: /work"),
+            Some("/work")
+        );
         assert_eq!(
             exec_cwd("OK (exit_code: 0)\ncwd: /work  root"),
             Some("/work  root")

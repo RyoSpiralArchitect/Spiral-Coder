@@ -94,11 +94,12 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         .map(str::to_owned)
         .unwrap_or_else(|| recent_users.last().cloned().unwrap_or_default());
     let mut available_tools = suggestion::tool_schemas_for(&app.coder_cfg.base_url);
+    let tool_root = execution_root(app);
     let obligations = app.coder_session.as_ref().map(|session| {
         agent::task_obligations::project_at(
             &session.messages,
             app.project_test_cmd.as_deref(),
-            app.tool_root.as_deref(),
+            tool_root.as_deref(),
         )
     });
     if let Some(obligations) = &obligations {
@@ -123,7 +124,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "coder_provider": app.coder_cfg.provider.to_string(),
         "coder_model": app.coder_cfg.model.clone(),
         "observer_model": app.observer_cfg.model.clone(),
-        "tool_root": app.tool_root.clone(),
+        "tool_root": tool_root,
         "cur_cwd": app.coder_session.as_ref().and_then(|s| s.cur_cwd.clone()),
         "checkpoint": app.last_git_checkpoint.clone(),
         "system_prompt_digest": system_digest,
@@ -332,4 +333,19 @@ fn diagnostic_lines(content: &str) -> Vec<String> {
         .take(4)
         .map(|line| line.chars().take(360).collect())
         .collect()
+}
+pub(super) fn execution_root(app: &App) -> Option<String> {
+    let root = app.tool_root.as_deref()?.trim();
+    if root.is_empty() {
+        return None;
+    }
+    crate::exec::canonical_cwd(Some(root)).or_else(|| {
+        // Replay fixtures can supply an absolute workspace label without a
+        // real directory. Receipts still have to match that exact label.
+        std::path::absolute(root)
+            .ok()?
+            .into_os_string()
+            .into_string()
+            .ok()
+    })
 }

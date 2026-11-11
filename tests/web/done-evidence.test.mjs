@@ -27,6 +27,12 @@ test('Gemini schema and repair examples agree; both formats preserve exact comma
   assert.equal(typeof data.evidence_row_shape, 'string');
   assert.equal(data.criteria[1].reference, 'acceptance 2');
   assert.equal(data.current_commands[0], command);
+  const authored = [{ criterion: 'acceptance 1', command: '@unit' }];
+  const checks = [{ id: 'unit', command }];
+  assert.equal(api.resolveDoneCheckReferences(authored, [command], checks).rows[0].command, command);
+  assert.equal(authored[0].command, '@unit');
+  assert.match(api.resolveDoneCheckReferences(authored, [command], []).error, /no current successful receipt/);
+  assert.equal(api.resolveDoneCheckReferences(authored, ['@unit', command], checks).rows[0].command, '@unit');
 });
 
 const plan = `<plan>
@@ -61,15 +67,21 @@ test('actual Gemini App retries a rejected flat done, then persists successful n
     const body = options.body ? JSON.parse(options.body) : {};
     if (url === '/api/status') return json({ ok: true, features: { chat_tools: true } });
     if (url === '/api/governor_contract') return json(JSON.parse(readFileSync(new URL('../../shared/governor_contract.json', import.meta.url), 'utf8')));
-    if (url === '/api/observer_action') return json({ native_messages: body.messages, packet: { task_obligations: { current_commands: body.messages.some(m => m.tool_call_id === 'native-1' && m.content.startsWith('OK (')) ? [command] : [] } }, completion_issue: null });
-    if (url === '/api/exec') return json({ ok: true, exit_code: 0, stdout: '', stderr: 'Ran 1 test\nOK' });
+    if (url === '/api/observer_action') {
+      const verified = body.messages.some(m => m.tool_call_id === 'native-1' && m.content.startsWith('OK ('));
+      return json({ native_messages: body.messages, packet: { task_obligations: {
+        current_commands: verified ? [command] : [],
+        citable_checks: verified ? [{ id: 'unit', command }] : [],
+      } }, completion_issue: null });
+    }
+    if (url === '/api/exec') return json({ ok: true, cwd: '/workspace', exit_code: 0, stdout: '', stderr: 'Ran 1 test\nOK' });
     if (url === '/api/chat_tools_stream') {
       turn++;
       const tool = turn === 1 ? 'exec' : 'done';
       const args = turn === 1 ? { command } : {
         summary: 'Verified python3 -m unittest: PASS.',
         completed_acceptance: ['acceptance 1'], remaining_acceptance: [],
-        acceptance_evidence: turn === 2 ? [] : [`acceptance 1 | ${command}`],
+        acceptance_evidence: turn === 2 ? [] : ['acceptance 1 | @unit'],
       };
       const text = (turn === 1 ? plan : '') + think(tool);
       const call = { id: `native-${turn}`, type: 'function', function: { name: tool, arguments: JSON.stringify(args) } };
@@ -90,6 +102,8 @@ test('actual Gemini App retries a rejected flat done, then persists successful n
   assert.equal(calls.length, 3);
   assert.ok(calls[2].body.messages.some(m => m.tool_call_id === 'native-2' && m.content.includes('evidence_row_shape')));
   assert.ok(work.messages.some(m => m.tool_call_id === 'native-3' && m.content === 'OK: done'));
+  assert.ok(work.messages.some(m => m.tool_calls?.some(call => call.id === 'native-3' && call.function.arguments.includes('@unit'))));
+  assert.ok(work.messages.some(m => m.tool_call_id === 'native-1' && m.content.includes('cwd: /workspace')));
   assert.ok(work.messages.some(m => m.tool_call_id === 'native-1' && m.content.includes('stderr: Ran 1 test')), 'preserve successful unittest output in native proof');
   assert.ok(app.requests.filter(r => r.url === '/api/observer_action').every(r => r.body.packet.coder_base_url === google));
 });

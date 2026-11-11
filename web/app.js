@@ -1935,6 +1935,7 @@
   }
 
   function resolveKnownVerificationCommand(command, knownCommands) {
+    if (Array.isArray(knownCommands) && knownCommands.includes(command)) return command;
     const want = normalizeScratchEntry(command);
     if (!want) return "";
     for (const candidate of Array.isArray(knownCommands) ? knownCommands : []) {
@@ -6981,17 +6982,17 @@
         if (text.length <= 1200 && lines.length <= 10) return text;
         const kept = [];
         const seen = new Set();
-        const pushLine = (line) => {
+        const pushLine = (line, preserve = false) => {
           const trimmed = String(line || "").trim();
           if (!trimmed) return;
-          const compact = clip(trimmed, 220);
+          const compact = preserve ? line : clip(trimmed, 220);
           if (seen.has(compact)) return;
           seen.add(compact);
           kept.push(compact);
         };
         pushLine(lines[0] || "");
         if (name === "exec") {
-          lines.slice(1, 4).forEach(pushLine);
+          lines.slice(1, 4).forEach(line => pushLine(line, line.startsWith("cwd: ")));
         }
         const markers = [
           "[auto-test]",
@@ -8182,16 +8183,20 @@ state: ${agentState}`);
               if (!current()) break;
               const nativeCommands = finalContract.packet?.task_obligations?.current_commands;
               const completionCommands = Array.isArray(nativeCommands) ? nativeCommands : knownGoodVerificationCommands;
-              const validation = validateDoneAcceptance(
+              const checkReferences = finalContract.packet?.task_obligations?.citable_checks || [];
+              const resolved = window.SpiralCoderWork.resolveDoneCheckReferences(
+                acceptanceEvidence, completionCommands, checkReferences,
+              );
+              const validation = resolved.error ? resolved : validateDoneAcceptance(
                 governorContract,
                 activePlan,
                 completedAcceptance,
                 remainingAcceptance,
-                acceptanceEvidence,
+                resolved.rows,
                 completionCommands,
               );
               if (validation && validation.error) {
-                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands);
+                const toolResult = doneInvalidAcceptanceMessage(governorContract, validation.error) + window.SpiralCoderWork.doneEvidenceHint(reqCfg.baseUrl, reqCfg.provider, activePlan, completionCommands, checkReferences);
                 messages.push({ role: "tool", tool_call_id: tc.id, content: "GOVERNOR BLOCKED\n\n" + toolResult });
                 display += (display ? "\n\n" : "") + "[GOVERNOR BLOCK]\n" + toolResult;
                 flush();
@@ -8334,7 +8339,7 @@ state: ${agentState}`);
                 const prefix = [hintClass, digest].filter(Boolean).join("\n\n");
                 const prefixText = prefix ? (prefix + "\n\n") : "";
 
-                const cwdUsedLabel = cwdUsed ? String(cwdUsed) : "(workspace root)";
+                const cwdUsedLabel = String(execRes.cwd || cwdUsed || "(workspace root)");
                 const cwdAfter = cwdNow();
                 const cwdAfterLabel = cwdAfter ? String(cwdAfter) : "(workspace root)";
                 const cwdLine = cwdUsedLabel === cwdAfterLabel

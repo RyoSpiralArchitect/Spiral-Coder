@@ -695,6 +695,16 @@ fn resolve_cwd_path(cwd: Option<&str>) -> Option<std::path::PathBuf> {
     Some(base)
 }
 
+/// Resolve the directory the process will enter before recording its identity.
+pub(crate) fn canonical_cwd(cwd: Option<&str>) -> Option<String> {
+    resolve_cwd_path(cwd)?
+        .canonicalize()
+        .ok()?
+        .into_os_string()
+        .into_string()
+        .ok()
+}
+
 fn find_git_root(mut start: &Path) -> Option<std::path::PathBuf> {
     // Walk up a few levels; we only need this to catch `git add` invoked from a subdir.
     for _ in 0..12 {

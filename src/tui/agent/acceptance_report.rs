@@ -39,9 +39,9 @@ impl CurrentEvidence {
     }
 }
 
-/// A declared ID executes at tool_root. The newest matching execution there
-/// must carry a current native success. An unknown directory on a later run
-/// cannot establish that the earlier root success still holds.
+/// A declared ID requires the exact command's latest execution to be a
+/// current success at tool_root. Older receipts may store a lexical cwd
+/// alias, so a later execution elsewhere cannot leave the ID citable.
 fn citable_checks(
     root: &str,
     tool_root: Option<&str>,
@@ -62,9 +62,6 @@ fn citable_checks(
                     a.tool == "exec"
                         && a.executed == Some(true)
                         && a.arguments["command"] == check.command
-                        && a.exec_cwd
-                            .as_deref()
-                            .is_none_or(|cwd| Path::new(cwd) == root_path)
                 })
                 .max_by_key(|a| a.result_step)
                 .is_some_and(|a| {

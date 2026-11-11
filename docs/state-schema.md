@@ -1192,10 +1192,11 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 `done` and cannot satisfy an explicit authored-report requirement.
 
 `TaskObligations.citable_checks` contains the current task's declared check IDs
-whose latest native execution at `tool_root` is a current success. The runtime
+whose latest native execution is a current success at `tool_root`. The runtime
 keeps the execution directory in the receipt header when shortening its
-display. It also reads that header in older digested receipts. An ambiguous
-later execution directory withholds the ID until a root-scoped receipt exists.
+display. It also reads that header in older digested receipts. A subsequent
+execution of the same command with a different or unknown directory withholds
+the ID until a new root-scoped success.
 An evidence row
 can use `command: "@required-1"` to select that original command. Coder,
 Observer and blocked-report validation resolve the same table while retaining
