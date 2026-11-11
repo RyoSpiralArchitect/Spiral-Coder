@@ -13,6 +13,29 @@ fn response(tool: &str, id: &str, args: Value, text: &str) -> String {
     )
 }
 
+#[test]
+fn iteration_cli_keeps_a_finite_explicit_upper_bound() {
+    for value in ["0", "1", "4", "6", "8", "9", "255"] {
+        let parsed = crate::Cli::try_parse_from([
+            "spiral-coder",
+            "coupled-run",
+            "--tool-root",
+            ".",
+            "--prompt-file",
+            "task.txt",
+            "--out-dir",
+            "run",
+            "--iterations",
+            value,
+        ]);
+        assert_eq!(
+            parsed.is_ok(),
+            matches!(value, "1" | "4" | "6" | "8"),
+            "{value}"
+        );
+    }
+}
+
 #[tokio::test]
 async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its_budget() {
     let server = MockServer::start();
@@ -82,7 +105,7 @@ async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its
         "--observer-reserved-requests",
         "1",
         "--iterations",
-        "3",
+        "6",
     ])
     .unwrap();
     let Some(crate::Command::CoupledRun(args)) = cli.command else {
@@ -98,6 +121,9 @@ async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its
         "{manifest}"
     );
     assert_eq!(manifest["stop_reason"], "no_new_edit_or_verification");
+    assert_eq!(manifest["max_iterations"], 6);
+    assert_eq!(manifest["max_task_requests"], 12);
+    assert_eq!(manifest["max_wire_requests"], 12);
     assert_eq!(manifest["wire_requests"], 4);
     assert_eq!(
         manifest["iterations"][1]["parent_task_id"],

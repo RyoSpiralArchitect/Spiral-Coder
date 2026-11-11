@@ -238,7 +238,7 @@ spiral --provider openai --model gpt-5.6-luna coupled-run \
   --coder-chunk-requests 8 --transport-repair-requests 4
 ```
 
-The default is one iteration. Values from two through four opt into a
+The default is one iteration. Values from two through eight opt into a
 chain. Start with a fresh output directory outside the workspace. The
 chain freezes the task text at launch and uses the same working files,
 native Coder session, validated historical Observer clarification and

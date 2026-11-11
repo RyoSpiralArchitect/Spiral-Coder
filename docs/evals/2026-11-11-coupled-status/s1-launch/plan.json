@@ -1,0 +1,39 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S1",
+  "created_at": "2026-11-11T12:31:45.854697+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "binary_sha256": "c84a49b2be60263b56f00a57417eb3c3e97614ed2119ccec42ec417499a67503",
+  "declaration_sha256": "e12aacec217617c84d9e7bf1f94d77d474c19ebeab3456e9fdc8b8f6c63b9e52",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "4fd1e6c5a5c20e32db632eb3dc16651e470ae4c4f4b654ea5721fa72ab27859c",
+  "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
+  "preflight_sha256": "049a7275a514bcd94f65b936654e68ab95b142e7c35263f58f3d8b2803b73b35",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh full-repository additive status feature; no seeded state, operator steering or candidate edits. Retain first terminal outcome.",
+  "main_merge_required_before_run": true,
+  "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49."
+}
