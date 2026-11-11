@@ -1,0 +1,12 @@
+{
+  "check-local.log": {
+    "sha256": "71091587f117f08a29cff5d4787f58c12b3711555ee4fcc47b623c82057f3290"
+  },
+  "build.log": {
+    "sha256": "1afa8f5e4e59f3ba5d7645ca272f021d25c685eb9e2acfa7c891e0847daeb847"
+  },
+  "setup_failures": [
+    "The first unit assertion incorrectly expected a bare unrecognized command to be rejected by the reference resolver. The test now checks an unknown @check reference; literal commands continue through the existing evidence gates.",
+    "The first loopback capture driver expected process exit 0 although its intentional HTTP 400 correctly exits 1. The original console log remains in capture/old/console.log. capture-v2 records this expected exit and checks the captured request, no new native action and unchanged source. No provider call occurred in either capture."
+  ]
+}

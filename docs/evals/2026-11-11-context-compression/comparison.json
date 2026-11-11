@@ -1,0 +1,40 @@
+{
+  "condition": "Single saved-state continuation per runtime, same seed/task/workspace/pair/caps. Not a fresh task or causal latency study. The newer run completed before an Observer request was needed.",
+  "previous": {
+    "completed": false,
+    "termination": "budget_exhausted",
+    "process_wall_seconds": 19.681,
+    "requests": [
+      {
+        "role": "coder",
+        "status": "completed",
+        "estimated_input_tokens": 38746,
+        "duration_ms": 9133,
+        "charge": "task"
+      },
+      {
+        "role": "observer",
+        "status": "completed",
+        "estimated_input_tokens": 790,
+        "duration_ms": 5901,
+        "charge": "task"
+      }
+    ],
+    "report_sha256": "20f34558bafc8f9023fd22fd7ec68c1157a81d4c3d084a63ff8a88d850f9c7fd"
+  },
+  "compressed": {
+    "completed": true,
+    "termination": "completed",
+    "process_wall_seconds": 13.392,
+    "requests": [
+      {
+        "role": "coder",
+        "status": "completed",
+        "estimated_input_tokens": 24511,
+        "duration_ms": 11456,
+        "charge": "task"
+      }
+    ],
+    "report_sha256": "95e22d1c0c4f0eecedb043f374005e116e5fb555e24dd02f6989f8b012e4fe74"
+  }
+}
