@@ -51,7 +51,8 @@
     "python3 -S -m unittest -v scripts.status_visible",
     "python3 -S -m unittest -v scripts.status_guide",
     "cargo test --locked --bin spiral-coder -q",
-    "cargo test --locked --test coupled_status -q"
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
   ],
   "reproducer_command": "python3 -S -m unittest -v scripts.status_visible",
   "visible_check_id": "status-visible",
@@ -139,6 +140,25 @@
       "timeout_seconds": 180
     },
     {
+      "id": "status-paths",
+      "kind": "improvement",
+      "baseline": "fail",
+      "argv": [
+        "python3",
+        "-S",
+        "-m",
+        "unittest",
+        "-v",
+        "scripts.status_paths"
+      ],
+      "expected_test_count": 3,
+      "expected_baseline_failures": 3,
+      "baseline_failure_contains": [
+        "coupled-status command missing from --help"
+      ],
+      "timeout_seconds": 180
+    },
+    {
       "id": "stock-regressions",
       "kind": "regression",
       "baseline": "pass",
@@ -163,6 +183,18 @@
     {
       "source": "status_guide.py",
       "target": "scripts/status_guide.py"
+    },
+    {
+      "source": "status_paths.py",
+      "target": "scripts/status_paths.py"
+    },
+    {
+      "source": "baseline/src/config.rs",
+      "target": "src/config.rs"
+    },
+    {
+      "source": "baseline/src/config/env_test_support.rs",
+      "target": "src/config/env_test_support.rs"
     }
   ],
   "probes": [
@@ -177,6 +209,10 @@
     {
       "source": "stock_checks.py",
       "target": ".status-checks/stock_checks.py"
+    },
+    {
+      "source": "audit_reference.rs",
+      "target": ".status-checks/audit_reference.rs"
     }
   ],
   "reference": [

@@ -26,12 +26,12 @@ Keep CLI wiring in src/main.rs small, behavior in src/coupled_status.rs, and doc
 All existing tests, fixtures, manifests, lockfiles, CI, provider configuration, visible checks and execution settings are protected. Do not inspect external probes/reference repairs, change the scheduler, perform network operations, or edit files outside the list. Do not run scripts/check-local.sh in this candidate; the independent verifier runs it on a disposable copy. Build artifacts belong in the provided CARGO_TARGET_DIR.
 
 Execution checklist (the behavior contract above remains authoritative):
-- Before implementing, read scripts/status_fixture.py as well as scripts/status_visible.py. The visible check covers examples, not the full behavior contract.
+- Before implementing, read scripts/status_fixture.py as well as scripts/status_visible.py. The visible check covers examples, not the full behavior contract. Also read scripts/status_paths.py: missing iteration directory, missing state directory, and missing ledger file all mean unknown pending usage; existing malformed data and symlinks (including dangling links) are errors. Check each existing ancestor without following links before treating a missing suffix as unknown.
 - Keep the admitted goal and acceptance items verbatim when revising a plan. Change only the remaining steps, risks and assumptions; a new phase does not require rewriting the objective.
-- Maintain a checklist for every validation rule above, including negative cases. Add focused tests in tests/coupled_status.rs for contradictory completed/active records, duplicate request IDs, and symlinks at each component of finalized and pending ledger paths. Also cover absent pending ledgers and omitted native charge defaults. Run these tests while implementing with `cargo test --locked --test coupled_status -q`; a successful native edit of tests/coupled_status.rs and a fresh exact run are required before done. Cover every stated rule, not only these examples. Tests you author are evidence for the cases they execute, not independent qualification. A passing visible example does not establish these rejection rules.
+- Maintain a checklist for every validation rule above, including negative cases. Add focused tests in tests/coupled_status.rs for contradictory completed/active records, duplicate request IDs, and symlinks at each component of finalized and pending ledger paths. Also cover absent pending ledgers and omitted native charge defaults. Exercise the public CLI from your tests, not private parser functions. Include missing pending directory/state/file, malformed existing pending ledgers, symlink components (including dangling links), duplicate request IDs and wrong parent linkage. A separate evaluator will check whether your tests pass against a valid reference and detect four injected fault families: missing-pending rejection, symlink acceptance, duplicate-request acceptance, and parent-link acceptance. Test names/counts alone are not coverage. Run these tests while implementing with `cargo test --locked --test coupled_status -q`; a successful native edit of tests/coupled_status.rs and a fresh exact run are required before done. Cover every stated rule, not only these examples. Tests you author are evidence for the cases they execute, not independent qualification. A passing visible example does not establish these rejection rules.
 - Reuse native WorkState where useful. Validate before printing any success JSON. Check every request ID for uniqueness, and each manifest/ledger path component for symlinks before reading it.
 - docs/state-schema.md is append-only for this task. Read its final lines and use a unique end-of-file anchor to append the new section. Do not rewrite, summarize, reformat or replace any existing paragraph. Verify its original content is retained with git diff before the final checks. Write the new guide separately using the measured fixture JSON.
-- After the final edit, run all five exact checks separately, then author done immediately from those receipts. Do not spend remaining turns re-reading unchanged source or rewriting an already accepted plan. Missing semantic checks remain unfinished even when all visible checks are green.
+- After the final edit, run all six exact checks separately, then author done immediately from those receipts. Do not spend remaining turns re-reading unchanged source or rewriting an already accepted plan. Missing semantic checks remain unfinished even when all visible checks are green.
 
 Acceptance:
 1. Native and installed coupled-status produce the specified read-only summary and handle unknown usage honestly.
@@ -43,8 +43,9 @@ python3 -S -m unittest -v scripts.status_visible
 python3 -S -m unittest -v scripts.status_guide
 cargo test --locked --bin spiral-coder -q
 cargo test --locked --test coupled_status -q
+python3 -S -m unittest -v scripts.status_paths
 
-Format Rust before the final checks. Name every changed path and all five exact commands in the final report. Explain the behavior and observed results. Include standalone lines Before: FAILED and After: PASSED only if supported. Report only measured test counts; external independent checks have not run inside this episode. If blocked, preserve remaining criteria and the next concrete action.
+Format Rust before the final checks. Name every changed path and all six exact commands in the final report. Explain the behavior and observed results. Include standalone lines Before: FAILED and After: PASSED only if supported. Report only measured test counts; external independent checks have not run inside this episode. If blocked, preserve remaining criteria and the next concrete action.
 
 <task_requirements>
 {
@@ -95,6 +96,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
         },
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -114,6 +118,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -133,6 +140,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -152,6 +162,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -171,6 +184,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -190,6 +206,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -209,6 +228,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     },
@@ -228,6 +250,9 @@ Format Rust before the final checks. Name every changed path and all five exact 
       "checks": [
         {
           "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
         }
       ]
     }

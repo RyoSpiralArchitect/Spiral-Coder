@@ -11,6 +11,9 @@ def materialize(out,base):
     spec=json.loads((HERE/'luna-luna.json').read_text())
     with tempfile.TemporaryDirectory() as tmp:
         root=Path(tmp)/'source'; git_snapshot(REPO,base,root)
+        # S11 declares a test-only baseline correction; no solution is overlaid.
+        for name in ['src/config.rs','src/config/env_test_support.rs']:
+            target=root/name; target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(REPO/name,target)
         main=root/'src/main.rs'; text=main.read_text()
         assert 'mod coupled_status;' not in text
         text=text.replace('mod config;','mod config;\nmod coupled_status;',1)
@@ -39,7 +42,9 @@ Task usage counts task charges; wire usage counts every request including transp
         subprocess.run(['cargo','fmt','--manifest-path',str(root/'Cargo.toml')],check=True)
         out.mkdir(parents=True)
         for name in ['luna-luna.json','prompt.txt',*(r['source'] for key in ('visible_fixtures','probes') for r in spec[key])]:
-            shutil.copy2(HERE/name,out/name)
+            target=out/name; target.parent.mkdir(parents=True,exist_ok=True)
+            source = root/name.removeprefix('baseline/') if name.startswith('baseline/') else (HERE/'reference.rs' if name=='audit_reference.rs' else HERE/name)
+            shutil.copy2(source,target)
         for r in spec['reference']:
             target=out/r['source']; target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(root/r['target'],target)
         (out/'baseline-ref.txt').write_text(base+'\n')

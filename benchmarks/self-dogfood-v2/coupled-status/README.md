@@ -76,3 +76,31 @@ This is a new, stronger input condition, not a matched comparison to S9. The
 remain unchanged. The operator reference includes its own focused test file;
 neither that file nor its implementation is supplied to the candidate. Frozen
 S1–S9 records retain their original inputs and four-check contracts.
+
+## S11 boundary controls and authored-test sensitivity
+
+S11 adds a sixth exact check, `python3 -S -m unittest -v scripts.status_paths`.
+Its three tests exercise 26 subcases: missing active/interrupted directory,
+state directory or ledger file; malformed existing pending ledgers; and live or
+dangling symlinks at each record path component. Missing usage stays unknown;
+malformed or symlinked existing records remain errors. The original 24-case
+independent oracle and its acceptance threshold are unchanged.
+
+`test_sensitivity.py` separately transplants the authored CLI tests onto a
+correct reference copy. Tests must first pass there, then detect each of four
+advertised fault families: missing-pending rejection, symlink acceptance,
+duplicate-request acceptance and parent-link acceptance. Each injected fault
+must first change an operator control case. Compile failures, timeouts, ignored
+tests, or changed executed test counts do not qualify as detection. The
+reference, controls and fault implementation stay outside the live workspace.
+This is limited fault sensitivity, not comprehensive coverage or proof of test
+quality. The audit has its own frozen 600-second evaluation budget, no provider
+calls, and never modifies the sealed candidate. Its result is an additional
+qualification gate; it cannot rescue a failed original gate.
+
+The prepared baseline explicitly overlays the prior test-only environment
+isolation in `src/config.rs` and `src/config/env_test_support.rs`. Assertions,
+existing test identities and production provider logic are preserved. This
+removes shared-process environment mutation from those two tests. It does not
+rerate S10's retained stock-check failure. These overlays, new public controls
+and stronger prompt make S11 a new condition, not a matched S10 comparison.
