@@ -80,6 +80,14 @@ fn python_exception(line: &str) -> bool {
             .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | '.'))
 }
 
+fn input_type_cause(line: &str) -> bool {
+    ["invalid type:", "missing field `", "unknown variant `"]
+        .iter()
+        .any(|prefix| line.starts_with(prefix))
+        && line.contains(" at line ")
+        && line.contains(" column ")
+}
+
 fn unittest_case(line: &str) -> Option<&str> {
     let case = line
         .strip_prefix("FAIL: ")
@@ -171,6 +179,7 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
                 named_test = false;
             }
             if exception
+                || input_type_cause(line)
                 || line.starts_with("--> ")
                 || (line.starts_with("thread '") && line.contains(" panicked at "))
                 || [
@@ -213,6 +222,15 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
 pub(super) fn recovery_summary(body: &str, primary: Option<&str>) -> String {
     let digest = error_digest("", body);
     let mut lines = Vec::new();
+    // A wrapper's traceback locates the assertion, not the deserialized field.
+    // Keep the concrete cause before the bounded frame/summary can crowd it out.
+    if let Some(cause) = bounded_source(body)
+        .lines()
+        .map(str::trim)
+        .find(|s| input_type_cause(s))
+    {
+        lines.push(bounded_line(cause, 256));
+    }
     if let Some(primary) = primary {
         lines.push(bounded_line(primary.trim(), 256));
     }
@@ -305,6 +323,29 @@ pub(super) fn automatic_test_output(stdout: &str, stderr: &str, exit: i32, cwd: 
 mod tests {
     use super::*;
     use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
+
+    #[test]
+    fn wrapped_input_type_error_survives_compaction_without_inventing_a_field() {
+        for cause in [
+            "invalid type: integer `0`, expected a string at line 14 column 13",
+            "missing field `task_id` at line 38 column 3",
+        ] {
+            let body = format!("FAIL: test_read (tests.Status.test_read)\nTraceback (most recent call last):\n  File \"scripts/check.py\", line 25, in test_read\nAssertionError: 1 != 0 : Error: invalid ledger\n\nCaused by:\n    {cause}\n{}", "cleanup\n".repeat(300));
+            let retained = compact_and_prune(&automatic_test_output("", &body, 1, "/work"));
+            assert!(retained.contains(cause), "{retained}");
+            let summary = recovery_summary(&body, Some("File scripts/check.py, line 25"));
+            assert!(summary.contains(cause), "{summary}");
+            assert!(summary.chars().count() <= 512);
+            assert!(!summary.contains("charge"));
+            assert_eq!(
+                auto_test_outcome(
+                    "patch_file",
+                    &format!("OK: patched 'source.rs'\n{retained}")
+                ),
+                AutoTestOutcome::Failed
+            );
+        }
+    }
 
     #[test]
     fn failed_exec_keeps_the_trailing_reason_in_native_action_evidence() {

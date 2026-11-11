@@ -748,3 +748,9 @@ Required deliverables can be a subset of the allowed files.
 Plan-revision rejection feedback includes the admitted acceptance count and
 requires separate numbered lines. Joining all criteria into one paragraph changes
 the parsed references; the runtime does not silently split or accept that revision.
+
+Input-deserialization failures retain their concrete type/missing-field cause
+before wrapper traceback frames in bounded recovery diagnostics. Coder and
+Observer are directed to compare the failing input field with the parser
+declaration; input line/column coordinates never authorize a source edit or
+identify a field by guesswork. This does not change recovery or completion gates.
