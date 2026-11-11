@@ -49,3 +49,7 @@ track the preserved dispatch repair, the guide-to-report sequence, and a
 separate operator acceptance task on the same working source.
 
 [Fresh catalog iterations](../../../docs/evals/2026-11-04-fresh-iterations/README.md) record R19 on the original task and a separate prospective condition with public diagnostic and guide checks. Both start from the original repository copy. The assisted repair has separate data and a frozen checksum for the model-authored test.
+
+[R22 on merged main](../../../docs/evals/2026-11-11-catalog-on-main/README.md)
+reached an authored report in iteration three and passed all six independent
+groups. Its frozen reporting and transport eligibility gates remain failed.

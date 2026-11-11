@@ -1,0 +1,128 @@
+{
+  "frozen_receipt_sha256": "06d33b17dd2a0a2dc55a2b0ddc98371c3a1d3bfed68361fd3f402ce72c87fb62",
+  "provider_calls": 0,
+  "baseline_expected": true,
+  "reference_passed": true,
+  "baseline": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "3caec0e517eec85ec3c8f441ba9428955c718e5f86a6ad00b3d5f0385460d50a"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "d63dbad5c44f072047e417acc2b257bd38ad85ffe27a6d64af8264628186cfc6"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 11,
+        "ignored": 0
+      },
+      "log_sha256": "c61a940d730cf1682b48af1d55bb04842330b5cbe70ab6f92f99d132a0a1fc29"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": false,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "75049a65ea649e48f9937ea40519413a9466eede81bdd33b10a1866185222b2c"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "661b5fecf8119f0c8429f7f948e92dcbd5c60c827a18f98e7c824780ee666654"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "bedd41d5a3fc006f72e76b357877e2927829c4829cdc931b0867480a5e3ea8e3"
+    }
+  ],
+  "reference": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "3ac94f79a14f9df65cede7db6542076d15605628310115de07f91ec51e2541fa"
+    },
+    {
+      "id": "catalog-visible",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "0dbae41bd786f7a6c9a5a561b546c42d0c19b1fee534142e60b993288a87ed71"
+    },
+    {
+      "id": "held-out-catalog",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 11,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "33d5d9a85a481bf8c5844e0e2308379828f0fd3ad5c1289b42b22e3293f41adc"
+    },
+    {
+      "id": "packaged-spiral",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "cd6d60f0954fbedd6ad185508faac99a0047941a1757b40f54c4af4972dbd87f"
+    },
+    {
+      "id": "regular-replay",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "8ab4307167e45a84c7477b33636db89fcb4572be108bfbf6849764f8df064837"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "a58d1077a2a6e670ecc2fa2c8c82c25717816a231093b5c732b2b52e0a9ab0c9"
+    }
+  ],
+  "preliminary_preflight_sha256": "fcc29567d2f5fdb80c90157b641b4de336db1d731927fd26d0334cec7b3884a1",
+  "preliminary_difference": "The preliminary preparation had mode 0600 on the operator overlay. The executed preparation matched R21 mode 0644 and full inventory."
+}

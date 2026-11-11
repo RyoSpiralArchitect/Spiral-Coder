@@ -1,0 +1,52 @@
+{
+  "source_seal_sha256": "dda14f75f8cbf6552e19d7a7ada253993bbdfa033bec6cd421b8ff14b3737500",
+  "iteration": 2,
+  "path": "npm/spiral-coder/lib/launcher.cjs",
+  "reads": [
+    {
+      "step": 25,
+      "call_id": "call_EblLD2yNP2IEKqp5qOxg3378",
+      "bounds": [
+        1,
+        240
+      ],
+      "result_header": "ERROR reading 'npm/spiral-coder/lib/launcher.cjs': read at most 200 lines per call. Requested 1 through 240 inclusive (240 lines). For the first window use start_line=1, end_line=200. The remaining window begins at 201."
+    },
+    {
+      "step": 26,
+      "call_id": "call_WNNhAlXvuXieQfIGpUsNR3jE",
+      "bounds": [
+        1,
+        200
+      ],
+      "result_header": "[npm/spiral-coder/lib/launcher.cjs] (84 lines, 4571 bytes) [pruned 85L]"
+    }
+  ],
+  "blocked_visible_attempts": [
+    {
+      "step": 28,
+      "call_id": "call_wbFtbkSYdke4SRANNea7HbW8"
+    },
+    {
+      "step": 29,
+      "call_id": "call_XLZCkEtOGXL9fisF1ALdM33c"
+    },
+    {
+      "step": 32,
+      "call_id": "call_sXtB6nouObFNU4BIyHTHlM3e"
+    },
+    {
+      "step": 36,
+      "call_id": "call_ybGabxWngOqKkorPj68CNHQW"
+    },
+    {
+      "step": 40,
+      "call_id": "call_saDea6m7AczGLr6tmWKeGXiO"
+    }
+  ],
+  "expected_stage": "verify",
+  "old_stage": "diagnose",
+  "test": "automatic_success_restores_the_remaining_explicit_check_through_handoff",
+  "before_fix_log_sha256": "4707e9d9569f30d8cb213872a4a57cfd6928cfd4d7a04089e1b095b8cb1223b1",
+  "after_fix_log_sha256": "6336184c11038945d85bdce4e403ef030a9d9de157245ba54db0886e413b4d6f"
+}

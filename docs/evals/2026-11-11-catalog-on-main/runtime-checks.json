@@ -1,0 +1,16 @@
+{
+  "command": "bash scripts/check-local.sh",
+  "executor_source": "433a40ddbd05c2903dd6de7a33d7942a773d98a9",
+  "final_log_sha256": "e48dbea9bf72f40afa77c44b59a47f7591a6060768922f416bf56628b38417d1",
+  "rust_unit_passed": 1129,
+  "rust_unit_ignored": 2,
+  "rust_integration_passed": 6,
+  "tui_replays_passed": 18,
+  "python_passed": 97,
+  "web_passed": 80,
+  "npm_passed": 5,
+  "repo_map_cases_passed": 14,
+  "lite_smoke_passed": true,
+  "external_provider_attempts": 90,
+  "external_task_requests": 85
+}
