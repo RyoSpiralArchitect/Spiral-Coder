@@ -171,6 +171,30 @@ fn optional_alias_selects_the_latest_root_execution() {
 }
 
 #[test]
+fn a_scoped_rerun_supersedes_an_earlier_pruned_pass_without_a_directory() {
+    let command = "cargo test -q";
+    let mut messages = vec![json!({"role":"user","content":task(command)})];
+    result(
+        &mut messages,
+        "exec",
+        json!({"command":command}),
+        "OK (exit_code: 0) [pruned 5L]",
+    );
+    assert_eq!(current_commands(&messages, None), vec![command]);
+
+    result(
+        &mut messages,
+        "exec",
+        json!({"command":command}),
+        "FAILED (exit_code: 1).\nduration_ms: 5\ncwd: /workspace",
+    );
+    assert!(current_commands(&messages, None).is_empty());
+
+    result(&mut messages, "exec", json!({"command":command}), SUCCESS);
+    assert_eq!(current_commands(&messages, None), vec![command]);
+}
+
+#[test]
 fn coder_and_observer_schemas_offer_the_same_short_citations() {
     let command = format!("python3 -S -m unittest test_{}", "x".repeat(250));
     let root = task(&command);

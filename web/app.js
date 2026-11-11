@@ -6340,9 +6340,16 @@
           // Never prune failures: they are the most important recovery context.
           if (!isPrunableToolSuccess(content)) continue;
           const lines = content.split("\n");
-          if (lines.length > 2) {
-            msgs[idx] = { ...msgs[idx], content: lines[0] + ` [pruned ${lines.length}L]` };
+          if (lines.length <= 2 || / \[pruned \d+L\]$/.test(lines[0])) continue;
+          let end = 1;
+          if (lines[0] === "OK (exit_code: 0)") {
+            if (/^duration_ms: \d+$/.test(lines[end])) end++;
+            if (lines[end]?.startsWith("cwd: ")) end++;
+            if (lines[end]?.startsWith("cwd_after: ")) end++;
           }
+          const headers = lines.slice(0, end);
+          headers[0] += ` [pruned ${lines.length}L]`;
+          msgs[idx] = { ...msgs[idx], content: headers.join("\n") };
         }
       };
 
@@ -6412,13 +6419,15 @@
             "$ErrorActionPreference = 'Stop'",
             "try {",
             raw,
+            "$__spiral_coder_status = if ($?) { 0 } elseif ($LASTEXITCODE) { $LASTEXITCODE } else { 1 }",
             "} finally {",
             `Write-Output ("${PWD_MARKER}" + (Get-Location).Path)`,
             "}",
+            "if ($__spiral_coder_status -ne 0) { exit $__spiral_coder_status }",
           ].join("\n");
         }
-        // The marker is display metadata. Preserve the command's result.
-        return raw + `\n__spiral_coder_status=$?\nprintf '\\n%s\\n' "${PWD_MARKER}$(pwd)"\nexit "$__spiral_coder_status"`;
+        // The runner strips bare exit lines as transcript output.
+        return raw + `\n__spiral_coder_status=$?\nprintf '\\n%s\\n' "${PWD_MARKER}$(pwd)"\n(exit "$__spiral_coder_status")`;
       };
 
       const stripPwdMarker = (stdoutRaw) => {

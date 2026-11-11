@@ -1194,14 +1194,14 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 `TaskObligations.citable_checks` contains the current task's declared check IDs
 whose latest native execution is a current success at `tool_root`. The runtime
 keeps the execution directory in the receipt header when shortening its
-display. Direct and approved Web executions record the resolved directory
-returned by the command runner. The runner validates the supplied path before
-resolving it. Older digested receipts retain their supported header format.
-A subsequent
-execution of the same command with a different or unknown directory withholds
-the ID until a new root-scoped success.
-An evidence row
-can use `command: "@required-1"` to select that original command. Coder,
+display, including in the Web tool window. Direct and approved Web executions
+record the resolved directory returned by the command runner. The runner
+validates the supplied path before resolving it and preserves spaces in
+directory names. Web working-directory markers preserve the command's exit
+status. When either receipt lacks a directory, a later execution of the same
+command supersedes the earlier receipt. Check IDs require a new root-scoped
+success after a rerun in a different or unknown directory.
+An evidence row can use `command: "@required-1"` to select that original command. Coder,
 Observer and blocked-report validation resolve the same table while retaining
 the authored arguments and criterion mapping. A failed rerun, later mutation
 or new human task changes which checks are citable. A literal successful

@@ -682,8 +682,8 @@ fn is_git_add_all_command(cmd: &str) -> bool {
 }
 
 fn resolve_cwd_path(cwd: Option<&str>) -> Option<std::path::PathBuf> {
-    let p = cwd.unwrap_or("").trim();
-    let base = if p.is_empty() {
+    let p = cwd.unwrap_or("");
+    let base = if p.trim().is_empty() {
         std::env::current_dir().ok()?
     } else {
         let pb = std::path::PathBuf::from(p);
@@ -1051,6 +1051,36 @@ mod tests {
         assert_eq!(result.exit_code, 0);
         assert_eq!(result.cwd.as_deref(), root.to_str());
         assert_eq!(result.stdout.trim(), root.to_str().unwrap());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn execution_preserves_whitespace_in_the_requested_directory() {
+        let area = tempfile::tempdir().unwrap();
+        let root = area.path().canonicalize().unwrap();
+        std::fs::create_dir(root.join("work")).unwrap();
+        let spaced = root.join("work ");
+        std::fs::create_dir(&spaced).unwrap();
+        let result = run_command("pwd", spaced.to_str()).await.unwrap();
+        assert_eq!(result.exit_code, 0);
+        assert_eq!(result.cwd.as_deref(), spaced.to_str());
+        assert_eq!(
+            result.stdout.trim_end_matches('\n'),
+            spaced.to_str().unwrap()
+        );
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn web_status_trailer_survives_command_sanitizing() {
+        let command = r#"false
+__spiral_coder_status=$?
+printf '\n%s\n' "__SPIRAL_CODER_PWD__=$(pwd)"
+(exit "$__spiral_coder_status")"#;
+        let result = run_command(command, None).await.unwrap();
+        assert_eq!(result.exit_code, 1);
+        assert!(result.stderr.is_empty());
+        assert!(result.stdout.contains("__SPIRAL_CODER_PWD__="));
     }
 
     #[test]
