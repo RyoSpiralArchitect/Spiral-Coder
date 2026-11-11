@@ -73,7 +73,13 @@ in [validation.json](validation.json); neither was a provider trial. Raw capture
 native reports, trace and session remain outside the repository under
 `~/.cache/spiral-coder/context-compression-artifacts-20261111/`.
 
-Remaining limits: retained native storage and its projection CPU work can grow;
-mandatory/signed context is allowed to exceed the soft target; old already-pruned
-sessions cannot recover missing bytes. A fresh multi-iteration repair with both
-roles actively using compression remains the next whole-task measurement.
+## Fresh long run
+
+Both Luna roles completed the original-tree repair in two iterations and
+70 wire requests. All five final native checks and six independent groups
+passed. The frozen ledger eligibility gate remains failed.
+[R24 live run, context measurements and receipts](long-run/README.md)
+
+Retained native storage and its projection CPU work can grow. Mandatory and
+signed context may exceed the soft target. Previously pruned sessions retain
+only their available history.

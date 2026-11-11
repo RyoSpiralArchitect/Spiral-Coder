@@ -450,16 +450,14 @@ Autosave ordering:
   are explicitly skipped instead of publishing a stale pre-round transcript.
 - Save comparison and session/progress writes share one lock. Change detection
   compares message content, root, checkpoint, cwd, observation cache, and progress
-  context; message count is not a revision, because compaction can shorten history.
+  context. Resume repair can shorten a retained transcript, so message count is
+  not a revision.
 - Each file is replaced atomically, but session and repo-progress files are not a
   single crash-atomic transaction. Current transcript/tool evidence remains primary.
 
-Context-window compaction lives in `src/tui/agent/message_window.rs`. It removes
-complete assistant tool-call/result exchanges, including multi-tool turns, as a
-unit. Recent results protect their matching calls. Failed, observational, or
-incomplete exchanges and the latest structured anchors are retained even when
-this exceeds the target window. Session history is currently compacted in place;
-separating the full audit transcript from provider context is a future change.
+Request context compression uses the provider projection described above. The
+tests in `src/tui/agent/message_window.rs` cover the earlier in-place compaction
+policy for legacy sessions.
 
 ### 3b. Project-local repo progress snapshot
 

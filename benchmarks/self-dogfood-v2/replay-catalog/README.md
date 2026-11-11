@@ -60,3 +60,8 @@ reduce evidence retyping, while the fresh run spends 96 task requests and 106
 wires and ends before final proof. All six independent groups pass. The trace
 separates late artifact delivery, repeated builds and report validation, and
 preserves a guide diagnostic control for a future run.
+
+[R24 with context compression](../../../docs/evals/2026-11-11-context-compression/long-run/README.md)
+uses the same R23 task, original tree and limits. The Luna pair completes in
+62 task requests and 70 wires across two iterations. All final native and
+independent checks pass. The frozen transport eligibility gate remains failed.

@@ -1,0 +1,99 @@
+{
+  "manifest_sha256": "397d757bef8a5860e32364531d67769931172d93eabf0eba1ad61525ab80b8e7",
+  "completed": true,
+  "task_requests": 62,
+  "wire_requests": 70,
+  "native_round_wall_seconds": 634.7909999999999,
+  "provider_seconds": 432.03999999999996,
+  "tool_calls": {
+    "exec": 14,
+    "read_file": 17,
+    "search_files": 3,
+    "apply_diff": 9,
+    "write_file": 2,
+    "done": 4,
+    "patch_file": 4
+  },
+  "observed_failure_markers": {
+    "overlong_read": 1,
+    "recovery_gate": 3,
+    "plan_gate": 3,
+    "compile_failure": 3,
+    "ambiguous_diff": 1
+  },
+  "tool_interval_seconds": {
+    "exec": 87.888,
+    "read_file": 0.001,
+    "search_files": 0.0,
+    "apply_diff": 74.866,
+    "write_file": 29.198,
+    "patch_file": 3.53
+  },
+  "rounds": [
+    {
+      "iteration": 1,
+      "termination": "blocked",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "wall_seconds": 302.829,
+      "provider_seconds": {
+        "coder": 157.70100000000002,
+        "observer": 53.035000000000004
+      },
+      "new_tool_calls": {
+        "exec": 1,
+        "read_file": 12,
+        "search_files": 3,
+        "apply_diff": 8,
+        "write_file": 1,
+        "done": 1
+      },
+      "new_rejected_tool_calls": {
+        "apply_diff": 3,
+        "read_file": 1,
+        "write_file": 1
+      },
+      "tool_interval_seconds": {
+        "exec": 17.35,
+        "read_file": 0.0,
+        "search_files": 0.0,
+        "apply_diff": 71.35
+      },
+      "report_sha256": "7402cc639eafb6cd8852d3cc45e4650b20d30fe6ad76eb7a51d370480011c0ba",
+      "trace_sha256": "f10686c9ced5da07cd96c44b75df556b9edbcd6d939aff37880d1b751db1a601"
+    },
+    {
+      "iteration": 2,
+      "termination": "completed",
+      "task_requests": 30,
+      "wire_requests": 34,
+      "wall_seconds": 331.962,
+      "provider_seconds": {
+        "coder": 165.10299999999995,
+        "observer": 56.20099999999999
+      },
+      "new_tool_calls": {
+        "write_file": 1,
+        "exec": 13,
+        "read_file": 5,
+        "apply_diff": 1,
+        "done": 3,
+        "patch_file": 4
+      },
+      "new_rejected_tool_calls": {
+        "done": 2,
+        "patch_file": 2
+      },
+      "tool_interval_seconds": {
+        "write_file": 29.198,
+        "exec": 70.53800000000001,
+        "read_file": 0.001,
+        "apply_diff": 3.516,
+        "patch_file": 3.53
+      },
+      "report_sha256": "f997294fd46f3a87aaf365e08e333e84a7a4a3ae2877ffe1b97710ca4639e9a9",
+      "trace_sha256": "40783f2a4e1063c9cadcea3e9b2459bf5eeaea4f0ec50f4c068d7f87a671c31b"
+    }
+  ],
+  "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls and failure markers are deduplicated by call ID across retained iteration history; a result may contain multiple markers and pruned results may omit a marker. Qualification is assessed separately."
+}
