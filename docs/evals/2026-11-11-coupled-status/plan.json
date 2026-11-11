@@ -1,17 +1,17 @@
 {
   "task": "coupled-status",
   "issue": 82,
-  "run": "S4",
-  "created_at": "2026-11-11T13:22:10.712524+00:00",
+  "run": "S5",
+  "created_at": "2026-11-11T13:56:36.865918+00:00",
   "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
-  "runtime_commit": "ecc45d00e16514bf92f745e1c53a49badaecf0db",
-  "binary_sha256": "0a8a15fc6b140c5cdcf4648fdc281c9bf4d1882601df510ca74bb8872a6d561e",
-  "declaration_sha256": "db25edf5597ea382d8430d42131495ec7d116deaf280161a6f661820283d617b",
+  "runtime_commit": "1b07c706ca8981e4593f177b35a8defd1d0552ee",
+  "binary_sha256": "651c23aba1ed2aac95529c05312961a0498dbb8f2a5e9970bf8376819f6b0309",
+  "declaration_sha256": "e6b774b409041b15e24e17bb2f7784ea93ff91dc7ef204d6fb23264b4a7d80fd",
   "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
   "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
-  "prompt_sha256": "4fd1e6c5a5c20e32db632eb3dc16651e470ae4c4f4b654ea5721fa72ab27859c",
+  "prompt_sha256": "fc0e79451a4e8b9586c1aef3d4688c8263be5d1048de7b2f5a22061296add9be",
   "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
-  "preflight_sha256": "2052d0fe637253c81e1263073145bf641c5cae5094109bf7489d781b1bed7d27",
+  "preflight_sha256": "a13d177357b3237c66d4dd6e3ba83d6ae6d725de3092aca3f959d422cb32cc97",
   "iterations": 6,
   "maximum_task_requests": 192,
   "maximum_wire_requests": 216,
@@ -33,7 +33,7 @@
   "additional_native_checks": [],
   "preserve_original_guide": false,
   "external_calls_at_pin": 0,
-  "condition": "Fresh same task/baseline and six-iteration envelope as S3. The executor permits an accepted blocked report with new progress and no approval barrier to use the next predeclared iteration despite unused Coder allowance. No seeded state, candidate edits or operator steering.",
+  "condition": "Fresh original baseline, unchanged six-iteration cap and evaluator; explicit task checklist plus the post-S4 report-only fallback. No seed, operator edits or mid-run steering. Not a matched causal comparison.",
   "main_merge_required_before_run": true,
   "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
   "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
@@ -52,12 +52,21 @@
     "protected_paths",
     "visible_fixture_paths"
   ],
-  "previous_blocked_receipt_sha256": "fe2e0224edf7214b3d30143139b27dd8fb66f703cb8317345090b15447dd3b69",
+  "previous_blocked_receipt_sha256": "bb4dff250b0f58884ce5c4f32532d7dca3d9e7840374cf032d1742ab76359d87",
   "matched_s3_fields": [
     "baseline_commit",
     "baseline_inventory",
     "inputs_inventory",
     "protected_paths",
     "visible_fixture_paths"
+  ],
+  "matched_s4_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "input_changes": [
+    "prompt.txt only: explicit validation self-checks and append-only documentation; all probes and success gates unchanged"
   ]
 }
