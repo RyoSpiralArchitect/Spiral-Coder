@@ -80,12 +80,24 @@ async fn iteration_case(first: FirstRound) {
             ));
     });
     let resumed = server.mock(|when, then| {
-        when.method(POST).path("/chat/completions").matches(|r| {
-            let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
-            v["tools"].is_array()
-                && v.to_string().contains("observed-edit")
-                && v.to_string().contains("carry-greeting-forward")
-        });
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("[New iteration allowance]")
+            .body_contains(match first {
+                FirstRound::Exhausted => {
+                    "2 task requests, 1 currently available to Coder, 1 reserved for Observer"
+                }
+                FirstRound::Blocked => {
+                    "5 task requests, 4 currently available to Coder, 1 reserved for Observer"
+                }
+            })
+            .matches(|r| {
+                let v: Value =
+                    serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+                v["tools"].is_array()
+                    && v.to_string().contains("observed-edit")
+                    && v.to_string().contains("carry-greeting-forward")
+            });
         then.status(200)
             .header("content-type", "text/event-stream")
             .body(match first {

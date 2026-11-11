@@ -9,6 +9,13 @@ use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::Path;
 
+pub(super) fn restart_prompt(work: &WorkState) -> String {
+    format!(
+        "[New iteration allowance]\nThis is a fresh, predeclared allowance for the SAME unfinished task: {} task requests, {} currently available to Coder, {} reserved for Observer. Prior blocked reports describe the previous iteration, not current budget exhaustion. Use the retained next step and current failure evidence to choose one concrete inspection, repair, or exact verification now. Do not repeat the old blocked report solely because the previous allowance ended. If a current approval barrier, user refusal, or genuine external blocker prevents work, report it honestly; no permission or completion rule is relaxed. The original task and acceptance conditions remain unchanged.",
+        work.request_limit, work.coder_remaining(), work.policy.observer_reserved_requests
+    )
+}
+
 pub(super) fn last_coder_report(app: &App) -> bool {
     let budget = app.work_budget.snapshot();
     if budget.request_limit.saturating_sub(budget.task_requests()) != 1

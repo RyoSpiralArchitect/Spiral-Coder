@@ -1677,3 +1677,7 @@ preserves that text as the sole list member and records the wire recovery.
 The original response remains available. Evidence maps, multiple suggestions,
 required acknowledgements and executable suggestions retain their normal
 type checks.
+
+A coupled child iteration projects its newly created WorkState allowance into
+the runtime continuation message. It is not new persisted state or a human task;
+old blocked reports and parent-ledger protections remain unchanged.

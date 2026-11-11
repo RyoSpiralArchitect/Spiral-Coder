@@ -754,3 +754,10 @@ before wrapper traceback frames in bounded recovery diagnostics. Coder and
 Observer are directed to compare the failing input field with the parser
 declaration; input line/column coordinates never authorize a source edit or
 identify a field by guesswork. This does not change recovery or completion gates.
+
+Automatic child iterations begin with a runtime-origin message reporting their
+new native task allowance, available Coder share and Observer reserve. Earlier
+blocked reports remain historical evidence, not current budget exhaustion. The
+message asks for one grounded inspection, repair or exact check, while preserving
+current approval barriers and genuine external blockers. It creates no human
+task, tool action, progress receipt or extra allowance; no-progress still stops.

@@ -282,10 +282,15 @@ async fn run_iteration(
             app.work_budget
                 .inherit_protections(parent, std::path::Path::new(&root))?;
         }
+        let continuation = if parent.is_some() {
+            iterations::restart_prompt(&app.work_budget.snapshot())
+        } else {
+            "Continue.".into()
+        };
         send_coder_input(
             &mut app,
             &coder_tx,
-            "Continue.".into(),
+            continuation,
             CoderInput::RuntimeContinuation,
         )
         .await;
