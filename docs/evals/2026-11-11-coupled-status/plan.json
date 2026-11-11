@@ -1,17 +1,17 @@
 {
   "task": "coupled-status",
   "issue": 82,
-  "run": "S9",
-  "created_at": "2026-11-11T15:24:57.844584+00:00",
+  "run": "S10",
+  "created_at": "2026-11-11T15:52:12.465813+00:00",
   "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
-  "runtime_commit": "014d05a5cf74f483eda18ae06ee6306db69ff4e0",
-  "binary_sha256": "cabd4383e3895a67349b8fa649ee91c03273f2f2e6e998d1b0be5db940ae41b7",
-  "declaration_sha256": "9d3903e4fc3e8937360919983c290e1e50ba85849518beb0b954749cb1f3b711",
+  "runtime_commit": "cbb762456759997352f0692d28925c4a0b0f98e0",
+  "binary_sha256": "630e3a5dcde3e839195670e0c74c2bca23eb9b1d115bbceebefc2cbf8d65b55e",
+  "declaration_sha256": "dddb8ee287c61e463748e73644beb2b312c882a305dbe098ea80a8bcb1ccaed7",
   "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
   "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
-  "prompt_sha256": "fc0e79451a4e8b9586c1aef3d4688c8263be5d1048de7b2f5a22061296add9be",
-  "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
-  "preflight_sha256": "f073f9cc2e464d563c01e48aab904e5c8c7a13518895f9ecb3fbf526339c516d",
+  "prompt_sha256": "5e71e5c8d9b37cd5f357fe72adf41f024555b2393b0d29b42a7da53043b6af82",
+  "spec_sha256": "817e4115140f48f0bf2d328545ceb8f8dc02996e27c58e85a6e4607ed5873eaf",
+  "preflight_sha256": "35e3bf50d780cd3a088de6415986ccb67f4c52eb2fd0aab6a31948b84b8d7088",
   "iterations": 6,
   "maximum_task_requests": 192,
   "maximum_wire_requests": 216,
@@ -33,63 +33,21 @@
   "additional_native_checks": [],
   "preserve_original_guide": false,
   "external_calls_at_pin": 0,
-  "condition": "Fresh same baseline, exact inputs and six-round cap as S8; executor names the one-tool limit per-response and renders current shared Coder allowance on every next-action contract. No phase, tool, completion, approval or no-progress gate changes. Descriptive comparison only; no seed or operator steering",
+  "condition": "Fresh original baseline. Original behavior bullets are retained as typed requirement descriptions; authored focused tests and a fifth exact native check are mandatory. Runtime recognizes unquoted standalone Before/After with only-if-supported wording. Stronger input condition, not a matched comparison; original oracle, visible checks, source baseline and caps unchanged. No seed or operator steering.",
   "main_merge_required_before_run": true,
   "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
   "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
-  "matched_s1_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "inputs_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
   "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
-  "matched_s2_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "inputs_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
   "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
-  "matched_s3_fields": [
+  "input_changes": [
+    "prompt.txt",
+    "reference/tests/coupled_status.rs",
+    "spec.json"
+  ],
+  "previous_completed_receipt_sha256": "3d74303bbae3a16342ebb5fcb1cce6140b8a0c473eef620b2b8938eaa657a7f9",
+  "matched_s9_fields": [
     "baseline_commit",
     "baseline_inventory",
-    "inputs_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
-  "matched_s4_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
-  "input_changes": [],
-  "matched_s5_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "inputs_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
-  "matched_s6_fields": [
-    "baseline_commit",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
-  "matched_s7_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "inputs_inventory",
-    "protected_paths",
-    "visible_fixture_paths"
-  ],
-  "matched_s8_fields": [
-    "baseline_commit",
-    "baseline_inventory",
-    "inputs_inventory",
     "protected_paths",
     "visible_fixture_paths"
   ]

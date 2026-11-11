@@ -1,7 +1,7 @@
 {
-  "runtime_commit": "014d05a5cf74f483eda18ae06ee6306db69ff4e0",
-  "full_check_log_sha256": "acd226420d700ceadeaeb9234adff55d6f4c67f159e014f9cd786f88b1ee55b7",
-  "rust_main_passed": 1162,
+  "runtime_commit": "cbb762456759997352f0692d28925c4a0b0f98e0",
+  "full_check_log_sha256": "2729c4868f1df519ba599a09777dabc179c1eade96a6765273d193dd364f3fbd",
+  "rust_main_passed": 1164,
   "rust_ignored": 2,
   "integration": 6,
   "tui_replay": 20,
@@ -10,5 +10,11 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S9 current shared Coder allowance distinguished from one-tool-per-response"
+  "phase": "S10 bare standalone report labels and retained task-derived validation obligations",
+  "report_reproducer": {
+    "old_code_passed": false,
+    "red_log_sha256": "d372d8a57afa04e21c8224a3fa8fda4d4b64f2c0dec99aa2263cc7da5c7bca10",
+    "green_log_sha256": "acc9968e678ceb2950efddfdfe63eb8e5e4998d957f40ec7fcd39e790061ec8d",
+    "raw_s9_summary_replayed": true
+  }
 }
