@@ -1,6 +1,7 @@
 """Development diagnostics only. These never replace binary qualification gates."""
 import re
 from coupled_bench.evidence import native_file_edit_changed
+from coupled_bench.roles import eligible_transport_repair
 
 
 def budget_accounting(work, spec):
@@ -21,8 +22,7 @@ def budget_accounting(work, spec):
             valid = valid and row.get("transport_rejection") is None
         elif charge == "transport":
             transport += 1
-            expected = "native_arguments" if row.get("role") == "coder" else "observer_envelope"
-            valid = valid and row.get("status") == "completed" and row.get("transport_rejection") == expected
+            valid = valid and eligible_transport_repair(row)
         else:
             valid = False
     valid = valid and 0 <= task <= spec["max_requests"] and transport <= policy["transport_repair_limit"]

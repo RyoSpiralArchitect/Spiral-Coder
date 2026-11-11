@@ -46,6 +46,11 @@ current coupled benchmark policy. Each transport charge correlates with its
 native trace event. The frozen qualification verdict remains false.
 [Frozen assessment](results.json) · [Current ledger audit](context.json)
 
+The shared transport receipt rule in the current self-dogfood assessor accepts
+both sealed R24 ledgers with the original counts. The frozen driver still
+reproduces its original accounting and qualification result.
+[Current self-dogfood ledger replay](current-budget-audit.json)
+
 ## Context across iterations
 
 | Iteration | Coder assemblies reduced | Coder message bytes before | After | Reduction |
