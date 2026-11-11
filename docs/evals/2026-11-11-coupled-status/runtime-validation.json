@@ -1,6 +1,6 @@
 {
-  "runtime_commit": "eb9e8bdea108611d8767a3b8eb7a88fd2cf59481",
-  "full_check_log_sha256": "0f565ba542358780102669940abb4f242a5580cb10dc5c0f4d39996fb5851d9a",
+  "runtime_commit": "3b48c73f80810b2a8b91254b21a3a94032ee5900",
+  "full_check_log_sha256": "fe6a99be33f1b1963810187ad53d39748545a995222bc218b105606594c3db64",
   "rust_main_passed": 1159,
   "rust_ignored": 2,
   "integration": 6,
@@ -10,5 +10,5 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S6 runtime with cause retention and numbered plan feedback"
+  "phase": "S7 fresh-allowance restart and pending-scenario visible diagnostics"
 }
