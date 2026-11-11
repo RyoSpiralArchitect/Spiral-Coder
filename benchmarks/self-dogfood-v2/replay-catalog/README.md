@@ -65,3 +65,8 @@ preserves a guide diagnostic control for a future run.
 uses the same R23 task, original tree and limits. The Luna pair completes in
 62 task requests and 70 wires across two iterations. All final native and
 independent checks pass. The frozen transport eligibility gate remains failed.
+
+[R25 on merged main](../../../docs/evals/2026-11-11-context-compression/r25/README.md)
+qualifies under the frozen three-round contract with 73 task requests and
+80 wires. All native gates, six independent groups and the packaged guide pass.
+It also supplies sealed states for the next model-free compression comparison.

@@ -1,0 +1,107 @@
+{
+  "baseline_commit": "ad72c841ad4ccc0a8b17421c45451e951c35593b",
+  "sealed_run_sha256": "4382e678ca958d86f21706744edc9ee5b0ba7f7237678b08bae89d19b6baea28",
+  "external_provider_calls": 0,
+  "tool_executions": 0,
+  "rounds": [
+    {
+      "round": 1,
+      "coder_messages_bytes": [
+        99069,
+        96794
+      ],
+      "observer_prompt_bytes": [
+        45982,
+        44868
+      ],
+      "coder_reduction_pct": 2.3,
+      "observer_reduction_pct": 2.42,
+      "coder_reduction_from_main_pct": 11.51,
+      "observer_reduction_from_main_pct": 16.13,
+      "native_messages_preserved": 50,
+      "native_observer_packet_equal": true,
+      "wire_tool_schemas_equal": true
+    },
+    {
+      "round": 2,
+      "coder_messages_bytes": [
+        113648,
+        112343
+      ],
+      "observer_prompt_bytes": [
+        42710,
+        41574
+      ],
+      "coder_reduction_pct": 1.15,
+      "observer_reduction_pct": 2.66,
+      "coder_reduction_from_main_pct": 9.39,
+      "observer_reduction_from_main_pct": 16.93,
+      "native_messages_preserved": 106,
+      "native_observer_packet_equal": true,
+      "wire_tool_schemas_equal": true
+    },
+    {
+      "round": 3,
+      "coder_messages_bytes": [
+        107440,
+        106436
+      ],
+      "observer_prompt_bytes": [
+        42263,
+        40927
+      ],
+      "coder_reduction_pct": 0.93,
+      "observer_reduction_pct": 3.16,
+      "coder_reduction_from_main_pct": 7.98,
+      "observer_reduction_from_main_pct": 14.79,
+      "native_messages_preserved": 122,
+      "native_observer_packet_equal": true,
+      "wire_tool_schemas_equal": true
+    }
+  ],
+  "observer_mode_controls": [
+    {
+      "mode": "openai",
+      "authored_done_accepted": true,
+      "native_equal": true,
+      "before": {
+        "prompt_bytes": 40736,
+        "item_type": "object",
+        "choice_count": 6,
+        "has_strategy_in_horizon": true
+      },
+      "after": {
+        "prompt_bytes": 39660,
+        "item_type": "object",
+        "choice_count": 6,
+        "has_strategy_in_horizon": false
+      }
+    },
+    {
+      "mode": "gemini",
+      "authored_done_accepted": true,
+      "native_equal": true,
+      "before": {
+        "prompt_bytes": 42566,
+        "item_type": "string",
+        "choice_count": 24,
+        "has_strategy_in_horizon": true
+      },
+      "after": {
+        "prompt_bytes": 39345,
+        "item_type": "string",
+        "choice_count": 0,
+        "has_strategy_in_horizon": false
+      }
+    },
+    {
+      "mode": "handoff",
+      "prompt_equal": true,
+      "prompt_bytes": 3122
+    }
+  ],
+  "final_binary_sha256": "c2deff0c71cbfdd295f4042dc2bc42dc800f98c8a99e2fd0bdfd29f8725db27e",
+  "observer_general_captures_equal_to_mode_control_build": true,
+  "runtime_commit": "68a3119",
+  "main_comparison_commit": "737b3958714b4c78f3df91534089847fdc310869"
+}
