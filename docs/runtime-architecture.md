@@ -451,3 +451,14 @@ test; the original scope and preservation gates still decide what can be edited.
 A read never grants completion proof, and unrelated successful checks do not
 clear the pending failure. This avoids sending an authored fixture failure back
 to an unrelated production module merely because that module was read earlier.
+
+## Resuming after an incomplete closeout
+
+An accepted native `done` call with an `OK: blocked` result and nonempty
+`blocked_report.remaining_acceptance` is retained as historical reporting.
+Its assistant turn does not replace the resumable work plan, last work
+reflection or working-memory strategy. These projections require the matching
+call ID and adjacent native result; rejected, unmatched and text-only reports
+do not qualify. Earlier work strategies, failed-check recovery, approval
+barriers, outstanding obligations and the full terminal transcript remain.
+No new persisted state, budget, progress credit or completion exception is added.

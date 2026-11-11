@@ -338,7 +338,10 @@ pub(crate) fn last_think_from_messages(messages: &[serde_json::Value]) -> Option
 pub(crate) fn last_reflection_from_messages(
     messages: &[serde_json::Value],
 ) -> Option<ReflectionBlock> {
-    for msg in messages.iter().rev() {
+    for (index, msg) in messages.iter().enumerate().rev() {
+        if super::blocked_report::is_accepted_closeout(messages, index) {
+            continue;
+        }
         if msg.get("role").and_then(|r| r.as_str()) != Some("assistant") {
             continue;
         }

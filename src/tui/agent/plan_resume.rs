@@ -16,10 +16,12 @@ pub(super) fn latest_valid(
     messages: &[Value],
     validate: impl Fn(&PlanBlock) -> bool,
 ) -> Option<PlanBlock> {
-    crate::task_origin::current_task_messages(messages)
-        .iter()
+    let task = crate::task_origin::current_task_messages(messages);
+    task.iter()
+        .enumerate()
         .rev()
-        .find_map(|message| from_message(message).filter(&validate))
+        .filter(|(index, _)| !super::blocked_report::is_accepted_closeout(task, *index))
+        .find_map(|(_, message)| from_message(message).filter(&validate))
 }
 
 #[cfg(test)]

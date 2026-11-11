@@ -99,8 +99,9 @@ pub(super) fn prune_message_window_with_context(
         }
     }
     protected.extend(messages.len().saturating_sub(KEEP_RECENT_MESSAGE_WINDOW)..messages.len());
-    if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(_, msg)| {
-        msg.get("accepted_plan").is_some_and(|plan| !plan.is_null())
+    if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(idx, msg)| {
+        !super::blocked_report::is_accepted_closeout(messages, *idx)
+            && msg.get("accepted_plan").is_some_and(|plan| !plan.is_null())
             && super::plan_resume::from_message(msg).is_some()
     }) {
         protected.insert(idx);
@@ -113,8 +114,9 @@ pub(super) fn prune_message_window_with_context(
         |content| parse_evidence_block(content).is_some(),
     ];
     for check in anchors {
-        if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(_, msg)| {
-            msg["role"].as_str() == Some("assistant")
+        if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(idx, msg)| {
+            !super::blocked_report::is_accepted_closeout(messages, *idx)
+                && msg["role"].as_str() == Some("assistant")
                 && check(msg["content"].as_str().unwrap_or("").trim())
         }) {
             protected.insert(idx);

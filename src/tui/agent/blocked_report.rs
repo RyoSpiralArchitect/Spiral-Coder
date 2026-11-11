@@ -3,6 +3,33 @@
 use super::*;
 use serde_json::Value;
 
+/// A native accepted incomplete closeout is historical reporting, not a work
+/// strategy for resume. Keep its transcript/obligations; exclude only the
+/// correlated assistant turn from executable plan/reflection projections.
+pub(super) fn is_accepted_closeout(messages: &[Value], index: usize) -> bool {
+    let Some(message) = messages.get(index) else {
+        return false;
+    };
+    let Some(result) = messages.get(index + 1) else {
+        return false;
+    };
+    let Some(calls) = message["tool_calls"].as_array() else {
+        return false;
+    };
+    let [call] = calls.as_slice() else {
+        return false;
+    };
+    message["role"] == "assistant"
+        && call["function"]["name"] == "done"
+        && call["id"].as_str().is_some_and(|id| !id.is_empty())
+        && result["role"] == "tool"
+        && result["tool_call_id"] == call["id"]
+        && result["content"] == "OK: blocked"
+        && result["blocked_report"]["remaining_acceptance"]
+            .as_array()
+            .is_some_and(|remaining| !remaining.is_empty())
+}
+
 #[derive(Debug, serde::Serialize)]
 pub(super) struct BlockedReport {
     pub summary: String,
@@ -92,6 +119,184 @@ impl BlockedReport {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn restored_blocked_report_can_execute_diagnosis_without_closeout_strategy_hint() {
+        use clap::Parser;
+        use httpmock::prelude::*;
+        let server = MockServer::start();
+        let mock = server.mock(|when,then| {
+            when.method(POST).path("/chat/completions").matches(|request| {
+                let body: Value=serde_json::from_slice(request.body.as_deref().unwrap_or_default()).unwrap();
+                !body["messages"].as_array().unwrap().iter().any(|m| m["role"]=="system" && m["content"].as_str().is_some_and(|s| s.contains("Execute only the new minimal action: report incomplete work")))
+            });
+            let text="<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: test would pass\nstrategy_change: adjust\nnext_minimal_action: read fixture.txt\n</reflect>\n<think>\ngoal: repair fixture.txt\nstep: 1\ntool: read_file\nrisk: missing cause\ndoubt: cause unknown\nnext: read fixture.txt\nverify: cargo test -q\n</think>";
+            then.status(200).header("content-type","text/event-stream").body(format!("data: {}\n\ndata: [DONE]\n\n",json!({"choices":[{"delta":{"content":text,"tool_calls":[{"index":0,"id":"diagnosis","function":{"name":"read_file","arguments":"{\"path\":\"fixture.txt\"}"}}]},"finish_reason":"tool_calls"}]})));
+        });
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("fixture.txt"), "broken parser\n").unwrap();
+        let cli = crate::Cli::try_parse_from([
+            "spiral-coder",
+            "--provider",
+            "openai-compatible",
+            "--base-url",
+            &server.base_url(),
+            "--api-key",
+            "offline",
+            "--timeout-seconds",
+            "3",
+        ])
+        .unwrap();
+        let cfg = cli.common.to_partial_config().resolve().unwrap();
+        let messages = vec![
+            json!({"role":"user","content":"Repair fixture.txt. Run exactly: cargo test -q"}),
+            json!({"role":"assistant","accepted_plan":{"goal":"Repair fixture.txt","steps":["Read fixture.txt","Repair and test"],"acceptance_criteria":["cargo test -q passes"],"risks":"regression","assumptions":"fixture exists"},"tool_calls":[{"id":"failed","function":{"name":"exec","arguments":"{\"command\":\"cargo test -q\"}"}}]}),
+            json!({"role":"tool","tool_call_id":"failed","content":"FAILED (exit_code: 1)"}),
+            json!({"role":"assistant","content":"<reflect>\nlast_outcome: partial\ngoal_delta: same\nwrong_assumption: allowance ended\nstrategy_change: abandon\nnext_minimal_action: report incomplete work\n</reflect>","tool_calls":[{"id":"terminal","function":{"name":"done","arguments":"{}"}}]}),
+            json!({"role":"tool","tool_call_id":"terminal","content":"OK: blocked","blocked_report":{"remaining_acceptance":["acceptance 1"],"next_steps":"read fixture.txt"}}),
+            crate::task_origin::user_message(
+                "Continue with a fresh allowance",
+                crate::task_origin::MessageOrigin::Runtime,
+            ),
+        ];
+        let start = AgenticStartState {
+            messages,
+            checkpoint: None,
+            cur_cwd: None,
+            observation_cache: None,
+            session_bridge: None,
+            create_checkpoint: false,
+        };
+        let (tx, _rx) = mpsc::channel(512);
+        let result = Box::pin(run_agentic_json(
+            start,
+            &cfg,
+            root.path().to_str(),
+            1,
+            tx,
+            None,
+            None,
+            None,
+            true,
+            Some(RealizePreset::Off),
+            None,
+            &crate::approvals::AutoApprover,
+        ))
+        .await
+        .unwrap();
+        mock.assert_hits(1);
+        assert!(result.messages.iter().any(|m| m["role"] == "tool"
+            && m["tool_call_id"] == "diagnosis"
+            && m["content"]
+                .as_str()
+                .is_some_and(|s| s.contains("broken parser"))));
+        assert!(!outcome::TaskOutcome::default().completed(&result.messages));
+        assert!(task_obligations::project(&result.messages, None)
+            .pending_exact_checks
+            .contains(&"cargo test -q".into()));
+    }
+
+    #[test]
+    fn accepted_blocked_closeout_does_not_replace_resumable_work_strategy() {
+        let work = PlanBlock {
+            goal: "Repair parser".into(),
+            steps: vec!["Diagnose parser".into(), "Repair and verify".into()],
+            acceptance_criteria: vec!["Tests pass".into()],
+            risks: "regression".into(),
+            assumptions: "fixture available".into(),
+        };
+        let mut report = work.clone();
+        report.steps = vec!["Report incomplete work".into()];
+        let reflection = |action: &str| {
+            format!("<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: previous approach failed\nstrategy_change: abandon\nnext_minimal_action: {action}\n</reflect>")
+        };
+        let mut messages = vec![
+            crate::task_origin::user_message(
+                "Repair parser",
+                crate::task_origin::MessageOrigin::User,
+            ),
+            json!({"role":"assistant", "accepted_plan":work, "content":reflection("Inspect the failing parser branch")}),
+            json!({"role":"assistant", "accepted_plan":report, "content":reflection("Report incomplete work only"),
+                "tool_calls":[{"id":"closeout", "function":{"name":"done", "arguments":"{}"}}]}),
+            json!({"role":"tool", "tool_call_id":"closeout", "content":"OK: blocked", "blocked_report":{"remaining_acceptance":["acceptance 1"], "next_steps":"Inspect the failing parser branch"}}),
+            crate::task_origin::user_message(
+                "Continue with a new allowance",
+                crate::task_origin::MessageOrigin::Runtime,
+            ),
+        ];
+        let restored: crate::agent_session::AgentSession = serde_json::from_value(
+            serde_json::to_value(crate::agent_session::AgentSession::new(
+                None,
+                None,
+                None,
+                None,
+                messages.clone(),
+            ))
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            last_reflection_from_messages(&restored.messages)
+                .unwrap()
+                .next_minimal_action,
+            "Inspect the failing parser branch"
+        );
+        assert_eq!(
+            plan_resume::latest_valid(&restored.messages, |_| true)
+                .unwrap()
+                .steps,
+            work.steps
+        );
+        assert_eq!(
+            WorkingMemory::from_messages(&restored.messages, None)
+                .chosen_strategy
+                .as_deref(),
+            Some("Inspect the failing parser branch")
+        );
+        assert_eq!(
+            restored.messages, messages,
+            "projection must not erase the terminal receipt"
+        );
+        let mut compacted = restored.messages.clone();
+        // Put work anchors beyond the recent window, leaving the report later.
+        compacted.splice(
+            2..2,
+            (0..80).map(|_| json!({"role":"assistant","content":"continuing"})),
+        );
+        super::super::message_window::prune_message_window(&mut compacted);
+        assert_eq!(
+            plan_resume::latest_valid(&compacted, |_| true)
+                .unwrap()
+                .steps,
+            work.steps
+        );
+        assert_eq!(
+            last_reflection_from_messages(&compacted)
+                .unwrap()
+                .next_minimal_action,
+            "Inspect the failing parser branch"
+        );
+        assert_eq!(
+            WorkingMemory::from_messages(&compacted, None)
+                .chosen_strategy
+                .as_deref(),
+            Some("Inspect the failing parser branch")
+        );
+        for result in [
+            json!({"role":"tool","tool_call_id":"other","content":"OK: blocked","blocked_report":{}}),
+            json!({"role":"tool","tool_call_id":"closeout","content":"GOVERNOR BLOCKED"}),
+            json!({"role":"tool","tool_call_id":"closeout","content":"OK: blocked"}),
+        ] {
+            messages[3] = result;
+            assert_eq!(
+                last_reflection_from_messages(&messages)
+                    .unwrap()
+                    .next_minimal_action,
+                "Report incomplete work only",
+                "unaccepted or uncorrelated reports must not be suppressed"
+            );
+        }
+    }
 
     #[test]
     fn terminal_reports_cannot_be_cited_as_evidence_after_resume() {
