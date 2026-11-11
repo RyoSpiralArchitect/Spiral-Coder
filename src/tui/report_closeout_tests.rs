@@ -52,7 +52,8 @@ fn observer_done_vocabulary_matches_coder_in_tui_and_browser_without_rewriting_e
     let props = done(&browser.packet)["properties"].clone();
     assert_eq!(done(&browser.packet), done(&tui.packet));
     assert_eq!(props["completed_acceptance"]["items"]["enum"], json!(["acceptance 1","acceptance 2","acceptance 3","acceptance 4"]));
-    assert_eq!(props["acceptance_evidence"]["items"]["properties"]["command"]["enum"], browser.packet["task_obligations"]["current_commands"]);
+    assert_eq!(props["acceptance_evidence"]["items"]["properties"]["command"]["enum"], json!(["patch_file(path=docs/usage.md)","@required-1"]));
+    assert_eq!(browser.packet["task_obligations"]["citable_checks"][0]["command"], CLOSEOUT_CHECK);
     assert!(browser.packet["task_obligations"]["current_commands"].as_array().unwrap().contains(&json!(CLOSEOUT_CHECK)));
     assert!(props["summary"].get("default").is_none());
     assert!(tui.observer_prompt.contains("exactly one evidence row for every completed criterion"));

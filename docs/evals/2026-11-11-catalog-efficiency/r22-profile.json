@@ -1,0 +1,117 @@
+{
+  "manifest_sha256": "596051026cb32f50e7608abca53d5911c05c5c7b57addda130885d5f749e0136",
+  "completed": true,
+  "task_requests": 83,
+  "wire_requests": 88,
+  "native_round_wall_seconds": 890.0830000000001,
+  "provider_seconds": 569.531,
+  "tool_calls": {
+    "exec": 22,
+    "read_file": 21,
+    "search_files": 3,
+    "apply_diff": 6,
+    "write_file": 2,
+    "list_dir": 1,
+    "done": 2,
+    "patch_file": 8
+  },
+  "tool_interval_seconds": {
+    "exec": 109.213,
+    "read_file": 0.001,
+    "search_files": 0.0,
+    "apply_diff": 102.957,
+    "list_dir": 0.0,
+    "write_file": 17.835,
+    "patch_file": 82.587
+  },
+  "rounds": [
+    {
+      "iteration": 1,
+      "termination": "blocked",
+      "task_requests": 32,
+      "wire_requests": 33,
+      "wall_seconds": 366.071,
+      "provider_seconds": {
+        "coder": 165.118,
+        "observer": 60.29
+      },
+      "new_tool_calls": {
+        "exec": 1,
+        "read_file": 11,
+        "search_files": 2,
+        "apply_diff": 6,
+        "write_file": 2,
+        "list_dir": 1,
+        "done": 1
+      },
+      "new_rejected_tool_calls": {
+        "write_file": 1
+      },
+      "tool_interval_seconds": {
+        "exec": 17.536,
+        "read_file": 0.001,
+        "search_files": 0.0,
+        "apply_diff": 102.957,
+        "list_dir": 0.0,
+        "write_file": 17.835
+      },
+      "report_sha256": "6f4384c4f8d2fe0e88779458f9492e76c5cf294c47412d8ecf3ab5215118a746",
+      "trace_sha256": "15d98d3cbcb35f44ae5ac97f9352c4d77e1b7aae2452a8c6a5244d9837890a38"
+    },
+    {
+      "iteration": 2,
+      "termination": "budget_exhausted",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "wall_seconds": 329.994,
+      "provider_seconds": {
+        "coder": 151.038,
+        "observer": 70.209
+      },
+      "new_tool_calls": {
+        "read_file": 8,
+        "patch_file": 7,
+        "exec": 10,
+        "search_files": 1
+      },
+      "new_rejected_tool_calls": {
+        "exec": 6,
+        "patch_file": 3
+      },
+      "tool_interval_seconds": {
+        "read_file": 0.0,
+        "patch_file": 78.846,
+        "search_files": 0.0,
+        "exec": 26.683
+      },
+      "report_sha256": "4601ed2ba5e9ad8cfd41f0666b1e71947393df1536a7f2d03372da585e19f5d0",
+      "trace_sha256": "7616666ef54ce74f60a99c9370ea5e18dfff38fdb4951e43c2bbf665e05507b6"
+    },
+    {
+      "iteration": 3,
+      "termination": "completed",
+      "task_requests": 19,
+      "wire_requests": 19,
+      "wall_seconds": 194.018,
+      "provider_seconds": {
+        "coder": 94.38999999999999,
+        "observer": 28.486
+      },
+      "new_tool_calls": {
+        "read_file": 2,
+        "patch_file": 1,
+        "exec": 11,
+        "done": 1
+      },
+      "new_rejected_tool_calls": {},
+      "tool_interval_seconds": {
+        "read_file": 0.0,
+        "patch_file": 3.741,
+        "exec": 64.994
+      },
+      "report_sha256": "c7ab2638047f72ba11ffdff92e4fbfea247d521c8b0d97515a50cdb2ec0c2549",
+      "trace_sha256": "e89e9bba6f1ab4084ea3b543add37fa89563d8552d6e50200f9871adcfaefdee"
+    }
+  ],
+  "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls are deduplicated by call ID across retained iteration history. Qualification is assessed separately."
+}

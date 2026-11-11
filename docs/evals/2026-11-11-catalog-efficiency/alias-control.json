@@ -1,0 +1,38 @@
+{
+  "external_calls": 0,
+  "source_edits": 0,
+  "condition": "Same sealed proof, same authored alias rows and summary; change only the native evaluator.",
+  "setup_error": [
+    {
+      "executor": "previous",
+      "binary_sha256": "2f719fe3be0f2a3134889cc0958bbabb0eae975905e66803c9087b1b6cf41e70",
+      "issue": "invalid type: map, expected a sequence",
+      "accepted": false,
+      "raw_response_unchanged": false
+    },
+    {
+      "executor": "check_reference",
+      "binary_sha256": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
+      "issue": "invalid type: map, expected a sequence",
+      "accepted": false,
+      "raw_response_unchanged": false
+    }
+  ],
+  "payload_sha256": "7f6ea7de6424cc44ea0ccb22c7aad88669bd7b86bbce5b6f4f852988ad1283a5",
+  "results": [
+    {
+      "executor": "previous",
+      "binary_sha256": "2f719fe3be0f2a3134889cc0958bbabb0eae975905e66803c9087b1b6cf41e70",
+      "issue": "Suggested done has invalid acceptance evidence: done.acceptance_evidence command must match a known successful verification command",
+      "accepted": false,
+      "authored_arguments_unchanged": true
+    },
+    {
+      "executor": "check_reference",
+      "binary_sha256": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
+      "issue": null,
+      "accepted": true,
+      "authored_arguments_unchanged": true
+    }
+  ]
+}
