@@ -2,6 +2,8 @@
 //! an exact echo of the current context; it never writes missing report prose.
 use serde_json::Value;
 
+pub(super) const SUMMARY_INSTRUCTIONS: &str = "Write your own nonempty final report: changes, full artifact paths, and remaining work. Write the following recorded outcome lines verbatim, each on its own line with its exact command. Commands in acceptance_evidence do not substitute for report text. Keep NOT RECORDED / NOT VERIFIED when shown. Do not copy the report-context JSON into your answer.";
+
 pub(super) fn authored<'a>(summary: &'a str, report: &Value) -> &'a str {
     let summary = summary.trim();
     if report["clauses"].as_array().is_none_or(Vec::is_empty) {
@@ -26,7 +28,7 @@ pub(super) fn authored<'a>(summary: &'a str, report: &Value) -> &'a str {
 }
 
 pub(super) fn guidance(report: &Value) -> String {
-    let mut text = "Write your own nonempty final report: changes, full artifact paths, and remaining work. Write the following recorded outcome lines verbatim, each on its own line with its exact command. Commands in acceptance_evidence do not substitute for report text. Keep NOT RECORDED / NOT VERIFIED when shown. Do not copy the report-context JSON into your answer.\n".to_string();
+    let mut text = format!("{SUMMARY_INSTRUCTIONS}\n");
     for (field, label) in [
         ("clauses", "Report requirements"),
         ("required_literals", "Required exact text"),

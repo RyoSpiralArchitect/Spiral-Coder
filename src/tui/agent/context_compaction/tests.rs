@@ -68,6 +68,74 @@ fn repeated_context_is_lossless_for_commands_unicode_and_literals() {
 }
 
 #[test]
+fn long_coder_task_references_the_human_message_and_keeps_pending_requirements() {
+    let command = format!("python3 -S check_{}", "x".repeat(600));
+    let task = format!(
+        "Repair src/a.rs.\n{}\n<task_requirements>\n{}\n</task_requirements>",
+        "Source and documentation must agree. 猫\n".repeat(55),
+        json!({"version":1,"requirements":[{"id":"repair","description":"Repair the source",
+            "artifacts":[{"path":"src/a.rs","kind":"source"}],"checks":[{"command":command}]}]})
+    );
+    let native = vec![
+        crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User),
+        crate::task_origin::user_message("Continue.", crate::task_origin::MessageOrigin::Runtime),
+    ];
+    let obligations = task_obligations::project(&native, None);
+    let full = json!(&obligations);
+    let compact = render_coder_obligations(&obligations, &task);
+    let view = decode(&serde_json::from_str(&compact).unwrap());
+    let original = &view["work_progress"]["original_human_task"];
+    assert_eq!(original["source"], "conversation_user_message");
+    assert!(task.starts_with(original["starts_with"].as_str().unwrap()));
+    assert_eq!(original["total_chars"], task.chars().count());
+    assert_eq!(coder(&native, None).0, native);
+    assert!(view["task_requirements"].get("pending").is_none());
+    assert_eq!(
+        view["task_requirements"]["requirements"],
+        full["task_requirements"]["requirements"],
+    );
+    assert_eq!(view["pending_exact_checks"], full["pending_exact_checks"]);
+    assert_eq!(json!(&obligations), full);
+
+    let mut distinct = full.clone();
+    distinct["task_requirements"]["pending"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("an ungrouped issue"));
+    let rendered = decode(&serde_json::from_str(&render_coder_obligations(&distinct, "")).unwrap());
+    assert_eq!(rendered, distinct);
+}
+
+#[test]
+fn observer_prompt_keeps_report_facts_with_one_copy_of_the_bound_guidance() {
+    let report = json!({"clauses":["Include paths and outcomes"],
+        "required_literals":["src/a.rs"],
+        "outcome_rows":[format!("Before: FAILED — {}", "exact check ".repeat(100))],
+        "check_facts":[{"command":"cargo test","passed":null}]});
+    let full = super::super::report_surface::guidance(&report);
+    let packet = json!({"task_obligations":{"final_answer":report},
+    "tool_argument_schemas":[{"name":"done","parameters":{"properties":{
+        "summary":{"type":"string","description":full},"completed_acceptance":{"type":"array"}
+    }}}]});
+    let view = super::super::current_evidence::observer_prompt_packet(&packet);
+    assert_eq!(view["task_obligations"], packet["task_obligations"]);
+    let pointer = "/tool_argument_schemas/0/parameters/properties/summary/description";
+    assert!(view
+        .pointer(pointer)
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .contains("task_obligations.final_answer"));
+    assert_eq!(packet.pointer(pointer), Some(&json!(full)));
+    let mut custom = packet;
+    *custom.pointer_mut(pointer).unwrap() = json!(format!("{full}\nUse custom guidance."));
+    assert_eq!(
+        super::super::current_evidence::observer_prompt_packet(&custom),
+        custom
+    );
+}
+
+#[test]
 fn long_iterations_compress_wire_history_without_changing_native_proof_or_resume() {
     let root = "Repair src/a.rs and document it.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test\n- cargo fmt --check\n</observer_benchmark_plan>";
     let mut native = vec![

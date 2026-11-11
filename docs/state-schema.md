@@ -273,6 +273,13 @@ Request context compression:
   from executable/citable check IDs and are never resolved in native arguments.
   Actual wire tool schemas, stored packets, authored replies and validation do
   not change. Observer payloads also omit JSON indentation.
+- For a long Coder task whose excerpt matches the human message in the request,
+  the obligations prompt points to that message by its opening text. The full
+  human message stays in the conversation. Both roles read pending items on
+  individual requirements when their aggregate list repeats those items exactly.
+  The general Observer prompt also uses `task_obligations.final_answer` as the
+  source for report facts when its advisory `done` description repeats that
+  guidance. The packet returned by the runtime retains the complete fields.
 - A new request recomputes its view from native state, including after an edit,
   task change or iteration resume. A compacted view is never saved back into the
   transcript, so repeated compression cannot turn a stale success into proof or

@@ -136,6 +136,33 @@ fn bind_summary_parameters(parameters: &mut Value, report: &Value) {
     }
 }
 
+/// The advisory prompt already carries the report context. Leave the actual
+/// schemas and any description from another source untouched.
+pub(super) fn compact_observer_summary(packet: &mut Value) {
+    let report = &packet["task_obligations"]["final_answer"];
+    if report["clauses"].as_array().is_none_or(Vec::is_empty) {
+        return;
+    }
+    let full = super::report_surface::guidance(report);
+    let Some(description) = packet
+        .get_mut("tool_argument_schemas")
+        .and_then(Value::as_array_mut)
+        .and_then(|schemas| schemas.iter_mut().find(|schema| schema["name"] == "done"))
+        .and_then(|done| done.pointer_mut("/parameters/properties/summary/description"))
+    else {
+        return;
+    };
+    if description.as_str() == Some(full.as_str()) {
+        let compact = format!(
+            "{} Read the requirements, exact literals, path categories, recorded outcomes, standalone lines, and check facts in task_obligations.final_answer. Follow its claim_guidance. When cite_current_verification_command is true, cite the current exact command in the report. Keep unknown counts unknown.",
+            super::report_surface::SUMMARY_INSTRUCTIONS,
+        );
+        if compact.len() < full.len() {
+            *description = json!(compact);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
