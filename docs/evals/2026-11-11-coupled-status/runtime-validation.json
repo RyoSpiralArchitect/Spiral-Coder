@@ -1,7 +1,7 @@
 {
-  "runtime_commit": "6e27841f62a73ceb534399ee57bd2392b3ee558d",
-  "full_check_log_sha256": "f8adeb86856b406d4de13a188830672e7da5beeaa1971c47553e7d1e7b0f870e",
-  "rust_main_passed": 1161,
+  "runtime_commit": "014d05a5cf74f483eda18ae06ee6306db69ff4e0",
+  "full_check_log_sha256": "acd226420d700ceadeaeb9234adff55d6f4c67f159e014f9cd786f88b1ee55b7",
+  "rust_main_passed": 1162,
   "rust_ignored": 2,
   "integration": 6,
   "tui_replay": 20,
@@ -10,5 +10,5 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S8 fresh-allowance restart and UTF-8-safe Observer diagnostic digests"
+  "phase": "S9 current shared Coder allowance distinguished from one-tool-per-response"
 }

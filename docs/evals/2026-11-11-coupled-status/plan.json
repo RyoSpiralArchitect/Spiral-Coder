@@ -1,17 +1,17 @@
 {
   "task": "coupled-status",
   "issue": 82,
-  "run": "S8",
-  "created_at": "2026-11-11T15:14:23.877196+00:00",
+  "run": "S9",
+  "created_at": "2026-11-11T15:24:57.844584+00:00",
   "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
-  "runtime_commit": "6e27841f62a73ceb534399ee57bd2392b3ee558d",
-  "binary_sha256": "a54311181f9a5bacbab69b8776e254e1695b29645caaac8fb1dcee72eba78436",
-  "declaration_sha256": "4e1a90f5f3c729effc97c1f69e090697eeb7d4d18c42c8e8fcf0845e7616779e",
+  "runtime_commit": "014d05a5cf74f483eda18ae06ee6306db69ff4e0",
+  "binary_sha256": "cabd4383e3895a67349b8fa649ee91c03273f2f2e6e998d1b0be5db940ae41b7",
+  "declaration_sha256": "9d3903e4fc3e8937360919983c290e1e50ba85849518beb0b954749cb1f3b711",
   "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
   "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
   "prompt_sha256": "fc0e79451a4e8b9586c1aef3d4688c8263be5d1048de7b2f5a22061296add9be",
   "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
-  "preflight_sha256": "199f31a776d8dc8a93c7ff5a6d50f5d50fb5c42f3eb1f6450257ca0f336f5a91",
+  "preflight_sha256": "f073f9cc2e464d563c01e48aab904e5c8c7a13518895f9ecb3fbf526339c516d",
   "iterations": 6,
   "maximum_task_requests": 192,
   "maximum_wire_requests": 216,
@@ -33,7 +33,7 @@
   "additional_native_checks": [],
   "preserve_original_guide": false,
   "external_calls_at_pin": 0,
-  "condition": "Fresh same baseline, exact inputs and six-round cap as S7; executor additionally preserves UTF-8 boundaries in Observer diagnostic digests after the retained S7 panic. S7 did not reach restart evaluation; no capability gain is inferred from crash recovery. No seed or operator steering",
+  "condition": "Fresh same baseline, exact inputs and six-round cap as S8; executor names the one-tool limit per-response and renders current shared Coder allowance on every next-action contract. No phase, tool, completion, approval or no-progress gate changes. Descriptive comparison only; no seed or operator steering",
   "main_merge_required_before_run": true,
   "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
   "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
@@ -52,7 +52,7 @@
     "protected_paths",
     "visible_fixture_paths"
   ],
-  "previous_blocked_receipt_sha256": "7c43b755a8398f23b8b2c9fcac96d9674da8ac5ecf7ad3a6bcbe586b35ff626d",
+  "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
   "matched_s3_fields": [
     "baseline_commit",
     "baseline_inventory",
@@ -80,6 +80,13 @@
     "visible_fixture_paths"
   ],
   "matched_s7_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "matched_s8_fields": [
     "baseline_commit",
     "baseline_inventory",
     "inputs_inventory",
