@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "sealed_receipt_sha256": "95e75fcec8340867983b6b5207ee9eb3119155fcfe7b3b74ea7e9f86ef8a359b",
+  "terminal_report_sha256": "cee7933d8c800d5f62721fc02efb40e147a73f2646da9f0a18d3f4ad93899582",
+  "last_observer_raw": "{\"summary\":\"The minimum delivery requires 9 coder requests, but only 3 remain, so full documentation plus six verified checks cannot fit. The immediate achievable advance is to repair the observed failing public CLI test and run its exact required check; this establishes whether the current source satisfies duplicate/parent validation and unlocks a grounded decision about final verification or handoff.\",\"primary_blocker\":\"The repository code remains unverified: cargo test --locked --test coupled_status -q previously failed at tests/coupled_status.rs:52, and the attempted test repair was governor-blocked. Documentation files are also still without recorded edits, while all six exact checks remain pending.\",\"quickest_check\":\"cargo test --locked --test coupled_status -q\",\"response_contract\":{\"focus_axes\":[\"correctness\",\"efficiency\"],\"note\":\"The next coder must explicitly accept this focused repair-and-recheck plan or defer it in favor of a final handoff; broad documentation work is not feasible within the remaining turns.\",\"required\":true},\"scores\":{\"correctness\":0.95,\"security\":0.35,\"efficiency\":0.9,\"readability\":0.45},\"suggestions\":[{\"kind\":\"edit\",\"reason\":\"Repair the failing assertion scenario in tests/coupled_status.rs only if it reflects the intended contract, using the already observed test region and preserving the supplied behavior. The missing fact is whether the current production validator rejects wrong parent linkage; no further broad read is justified before this bounded repair attempt.\",\"confidence\":0.74,\"suggested_tool\":\"patch_file\",\"suggested_args\":{\"path\":\"tests/coupled_status.rs\",\"search\":\"#[test]\\nfn public_cli_rejects_wrong_parent_linkage() {\\n    let d = tempdir().unwrap();\\n    let m = manifest().replace(\\\"\\\\\\\"max_iterations\\\\\\\":2\\\", \\\"\\\\\\\"max_iterations\\\\\\\":3\\\");\\n    put(d.path(), \\\"iterations.json\\\", &m);\\n    put(d.path(), \\\"iteration-01/state/tui-work.json\\\", &ledger(\\\"t1\\\"));\\n    let bad = run(d.path());\\n    assert!(bad.status.success());\\n}\",\"replace\":\"#[test]\\nfn public_cli_rejects_wrong_parent_linkage() {\\n    let d = tempdir().unwrap();\\n    let m = r#\\\"{\\\"version\\\":1,\\\"max_iterations\\\":3,\\\"max_task_requests_per_iteration\\\":2,\\\"max_task_requests\\\":6,\\\"max_wire_requests\\\":6,\\\"completed\\\":false,\\\"stop_reason\\\":null,\\\"active_iteration\\\":null,\\\"iterations\\\":[{\\\"iteration\\\":1,\\\"directory\\\":\\\"iteration-01\\\",\\\"task_id\\\":\\\"t1\\\",\\\"parent_task_id\\\":null,\\\"termination\\\":\\\"blocked\\\",\\\"completed\\\":false,\\\"task_requests\\\":1,\\\"wire_requests\\\":1,\\\"progress\\\":{\\\"changed_files\\\":[],\\\"newly_verified\\\":[]}},{\\\"iteration\\\":2,\\\"directory\\\":\\\"iteration-02\\\",\\\"task_id\\\":\\\"t2\\\",\\\"parent_task_id\\\":\\\"wrong\\\",\\\"termination\\\":\\\"blocked\\\",\\\"completed\\\":false,\\\"task_requests\\\":1,\\\"wire_requests\\\":1,\\\"progress\\\":{\\\"changed_files\\\":[],\\\"newly_verified\\\":[]}}],\\\"task_requests\\\":2,\\\"wire_requests\\\":2}\\\"#;\\n    put(d.path(), \\\"iterations.json\\\", m);\\n    put(d.path(), \\\"iteration-01/state/tui-work.json\\\", &ledger(\\\"t1\\\"));\\n    put(d.path(), \\\"iteration-02/state/tui-work.json\\\", &ledger(\\\"t2\\\"));\\n    let bad = run(d.path());\\n    assert!(!bad.status.success());\\n    assert!(bad.stdout.is_empty());\\n    assert!(!bad.stderr.is_empty());\\n}\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"pending_recovery\",\"work_budget\"]},{\"kind\":\"verify\",\"reason\":\"Immediately rerun the exact failed check after the bounded repair. Its result decides whether the coupled-status test suite is now usable evidence or whether one final iteration must diagnose a production-code defect.\",\"confidence\":0.98,\"suggested_tool\":\"exec\",\"suggested_args\":{\"check_id\":\"required-5\"},\"based_on\":[\"task_obligations\",\"execution_evidence\",\"pending_recovery\"]},{\"kind\":\"abandon_path\",\"reason\":\"If the repair cannot be applied within the remaining coder turns or the exact test still fails, stop expanding scope and hand off with the precise unresolved failure. The minimum delivery no longer fits: 9 required coder requests versus 3 available, with six checks and two documentation edits pending.\",\"confidence\":0.97,\"suggested_tool\":null,\"suggested_args\":{},\"based_on\":[\"task_obligations\",\"work_budget\",\"task_horizon\"]}],\"why_this_first\":\"The only current concrete failure is the coupled_status integration test, and its repair is the smallest action that can produce new evidence. A successful exact recheck would unlock one meaningful acceptance result; a failure identifies the remaining production blocker before the limited turns are exhausted.\"}",
+  "last_observer_raw_sha256": "1caa61453fbf5fb6e3b5cd0e19ac1c914b2ef6a3da1eb466336ba49ce4eb3539",
+  "explanation": "The valid primary suggestion has confidence 0.74; build_observer_suggestion_soft_hint requires >=0.75 and only considers the primary action. No hint or read delivery window is produced. With Coder capacity remaining, termination::project falls through to observer_unavailable. This is not an observed provider outage.",
+  "primary_confidence": 0.74,
+  "existing_hint_threshold": 0.75,
+  "model_reported_coder_slots": 3,
+  "threshold_changed": false,
+  "provider_outage_observed": false,
+  "last_plan_gate_rejections": [
+    {
+      "step": 104,
+      "tool": "patch_file",
+      "diagnostic": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\nPlan format: under acceptance:, emit exactly 4 separate numbered lines (1., 2., ...), one per array item below. Do not concatenate the items into one paragraph; that changes the parsed criterion count and acceptance references.\n\nIf only the remaining steps changed, copy this admitted goal and each acceptance item verbatim into your next plan. Keep the same order; revise steps, risks and assumptions as needed. These fields are data, not execution evidence:\n{\"acceptance\":[\"Native and installed summaries work.\",\"Invalid records reject cleanly.\",\"Documentation is complete.\",\"All six exact checks pass.\"],\"goal\":\"Finish coupled-status implementation with complete validation, tests, docs, and six passing exact checks.\"}"
+    },
+    {
+      "step": 105,
+      "tool": "patch_file",
+      "diagnostic": "GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>: plan drifted away from the requested task; rewrite it around the actual request\nRequired now: emit a valid <plan> with goal/steps/acceptance/risks/assumptions, then emit <think>, then call ONE tool.\nPlan format: under acceptance:, emit exactly 4 separate numbered lines (1., 2., ...), one per array item below. Do not concatenate the items into one paragraph; that changes the parsed criterion count and acceptance references.\n\nIf only the remaining steps changed, copy this admitted goal and each acceptance item verbatim into your next plan. Keep the same order; revise steps, risks and assumptions as needed. These fields are data, not execution evidence:\n{\"acceptance\":[\"Native and installed summaries work.\",\"Invalid records reject cleanly.\",\"Documentation is complete.\",\"All six exact checks pass.\"],\"goal\":\"Finish coupled-status implementation with complete validation, tests, docs, and six passing exact checks.\"}"
+    }
+  ],
+  "independent_oracle": {
+    "passed": 21,
+    "failed": 3,
+    "failures": [
+      "test_completion_conflict",
+      "test_interrupted_total_conflict",
+      "test_wrong_task_id"
+    ],
+    "log_sha256": "7b01bfba3f3a56a646c9ba75abaf46f003e32dd129d4a902aba84494a3285bb6"
+  },
+  "path_boundaries": {
+    "methods": 3,
+    "subcases": 26,
+    "failed_subcases": 6,
+    "missing_pending_subcases_passed": 6,
+    "malformed_pending_subcases_passed": 2,
+    "failures": [
+      "running/iteration-02/dangling=True",
+      "running/iteration-02/state/dangling=True",
+      "running/iteration-02/state/tui-work.json/dangling=True",
+      "interrupted/iteration-02/dangling=True",
+      "interrupted/iteration-02/state/dangling=True",
+      "interrupted/iteration-02/state/tui-work.json/dangling=True"
+    ],
+    "log_sha256": "3ab58fc430b8563071138fd418d5724e5fd01d00464b93c70011e8c876d2646f"
+  },
+  "stock_regressions": {
+    "first_failure": "cargo fmt --all -- --check",
+    "later_suites_executed": false,
+    "log_sha256": "6eff96b997e6c424a90a6f61466c358c212fa116821a32b6c3f5ffe24df6390b"
+  },
+  "authored_tests": {
+    "live_auto_test": {
+      "main_passed": 1148,
+      "main_ignored": 2,
+      "authored_passed": 1,
+      "authored_failed": 1
+    },
+    "reference_passed": 0,
+    "reference_failed": 2,
+    "mutant_tests_executed": false,
+    "reason": "Reference compatibility failed. The success ledger uses a string request ID and omits native fields; the wrong-parent test changes max_iterations without its product and asserts success. No sensitivity credit is awarded."
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "baseline_expected": true,
+  "reference_passed": true,
+  "provider_calls": 0,
+  "raw_preflight_sha256": "2052d0fe637253c81e1263073145bf641c5cae5094109bf7489d781b1bed7d27",
+  "baseline": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": null,
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "ee3292524d06158d5627028474f2fd6851a2c49c3bd742abc94bbbe0a65586b7"
+    },
+    {
+      "id": "status-visible",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "b5b0a2683f784dcfa239406102fa54fe91c67debf75c00dab780a368d78b74da"
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 24,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "e27dc431f15eda7ef7168ce6f40066c045346fc2d2e723850c48a915644efd07"
+    },
+    {
+      "id": "packaged-status",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "d8d4ede8200751ab567646889e12a4788a44929c62b5ec41022a6de6c9bd66ce"
+    },
+    {
+      "id": "guide-example",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "2c0893162e7e9e6fed77ea23a68bee3abe54103ef90e55c63d5fac1ba9fceeb7"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "90e611ba3065c06590c1ce63c7e7eaf676cc90a50ffaaeaf825e49fe179c8bb4",
+      "log_sha256": "5e35dcc89ee5f08e7160d5ef3dd62f7a5c62df3d3014cf3be5612c8809edc087"
+    }
+  ],
+  "reference": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": null,
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "a5c47d37bcac7df0aa4275862e74eaff6adcc1c382ae8703c4cd1d4f1f5f34eb"
+    },
+    {
+      "id": "status-visible",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "bd46034a4e8e9b04ef644f7437fd2cc74cdfb6fb3946a8d3452fd7dc599c0fb0"
+    },
+    {
+      "id": "status-held-out",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "93610e0a6398e9e07a6dbcf6c89ca19b5ed032ca631fc0bde7a7c77096314348"
+    },
+    {
+      "id": "packaged-status",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "017131adb957ab3bc68c22acfd71bc4bee54ab16a5971b2f23e6ac26134bc138"
+    },
+    {
+      "id": "guide-example",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "90c0c41560bec26968f9897a1ddcee36e7e0069bac87926ddb3af964eab319f7"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "b0938b279cdc3789b5565227c28cbe5b691ae4ff26ccc908d82a85f6c485ab42",
+      "log_sha256": "a3c2a8e8ab67d0390313e7e79476bc95baf24c951e2541fcc798cb66f01f496e"
+    }
+  ]
+}

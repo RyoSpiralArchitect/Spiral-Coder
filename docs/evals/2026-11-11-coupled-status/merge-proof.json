@@ -1,0 +1,8 @@
+{
+  "pr": 81,
+  "merged_commit": "8e3cecf058ad439eaa45da148d31b93b1c50f7e3",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "identical_tree": "7a23c40f7957c4741d8c69e43684131356470b59",
+  "issue_49": "closed",
+  "plan_sha256": "5e9c5d0e9f72f5cc2595cac386e5f12f83a0f67c56303902be94ca1f8eb1b8c8"
+}

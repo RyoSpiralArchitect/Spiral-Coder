@@ -1,0 +1,20 @@
+{
+  "stage": "cli_argument_validation",
+  "qualified": false,
+  "external_provider_calls": 0,
+  "native_actions": 0,
+  "process": {
+    "exit_code": 2,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 0.394,
+    "finished_at": "2026-11-11T12:35:23.915012+00:00",
+    "redacted_files": [],
+    "patch_exit_code": 0
+  },
+  "run_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "stderr": "error: invalid value '6' for '--iterations <ITERATIONS>': 6 is not in 1..=4\n\nFor more information, try '--help'.\n",
+  "cause": "Operator declared six iterations without checking the current CLI maximum of four.",
+  "next_condition": "Support an explicit maximum of eight in both parser and runtime guard, keep the same six-iteration task budget, use a fresh output directory and freeze the new executor."
+}

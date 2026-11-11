@@ -1,0 +1,73 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S11",
+  "created_at": "2026-11-11T16:34:53.300589+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "900e1357831d73c2e9e8397aca34dbe836a306f4",
+  "binary_sha256": "7e5853218e83d94e525f7786527a4df70fc72400079d64a9cad72e53c554ea1c",
+  "declaration_sha256": "ed57ceb8112e0cca4bf6343c3d28443b232ff8c9e5b2a0200368768c35c7a56f",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "baf4375c978abc9f6fc66e6e250aeab46cb278e65b23b82dded616489aa1cc97",
+  "spec_sha256": "b480aca2df12e3983f47e54c9a20debf7caa778d8b9476a0099b16580c36e774",
+  "preflight_sha256": "9c15d71e6fb450bc294960d1ce332c7fe4a0ff2590bf3c00d55d20ad13c5914a",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Original source baseline plus declared protected test-only config environment isolation. New public 26-subcase path boundary matrix and sixth exact native check; public-CLI authored tests must pass a valid reference and detect four advertised controlled faults. Stronger condition, not a matched comparison. Original 24-case oracle, original visible check and caps unchanged. No seed or operator steering.",
+  "main_merge_required_before_run": true,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
+  "input_changes": [
+    "audit_reference.rs",
+    "baseline/src/config.rs",
+    "baseline/src/config/env_test_support.rs",
+    "prompt.txt",
+    "spec.json",
+    "status_paths.py"
+  ],
+  "previous_completed_receipt_sha256": "9ec02865eea565af630a6027793612adbd34a421c4f4e8e97d89630a88a5313e",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [
+    "scripts/status_paths.py",
+    "src/config.rs",
+    "src/config/env_test_support.rs"
+  ],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "308e7f06f1234221d212bb054db32e632263083c6e5a3b52f64c5cdad5ebf351",
+      "thin-control": "c871de0c980d6b32d4a8d3ddd7098ab850806bb822502d1163f61ee7f421132d",
+      "s10-control": "7bfb25b5b0e159807c14d5cabee4cd20347ce601d9a6539b294d0bfbb40451e3"
+    }
+  }
+}

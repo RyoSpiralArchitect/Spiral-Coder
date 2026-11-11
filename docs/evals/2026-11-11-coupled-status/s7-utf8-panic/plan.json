@@ -1,0 +1,84 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S7",
+  "created_at": "2026-11-11T15:07:54.396472+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "3b48c73f80810b2a8b91254b21a3a94032ee5900",
+  "binary_sha256": "c06e4bf126a79b4f673ff0e5cfed8385102269973ef93e7d477d17eeef2de9e7",
+  "declaration_sha256": "75a6260cf95bd80118a0d92eae0726a7c9c959c09e33fad2643662f321cdb672",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "fc0e79451a4e8b9586c1aef3d4688c8263be5d1048de7b2f5a22061296add9be",
+  "spec_sha256": "440638c03b462747aadd8fff681807d48413a7bc5e8157677515fd278466a09d",
+  "preflight_sha256": "ac2cc618aabf21e97b2ae17d719794ba597ea9eafddafe300d41b6bf4579ac24",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh original baseline and same prompt, reference, independent oracle and six-round cap as S6. Runtime sends a fresh-allowance continuation to child iterations; visible fixture diagnostics expose scenario, manifest and expected JSON without changing assertions. Two changes prevent matched causal attribution. No seed or operator steering",
+  "main_merge_required_before_run": true,
+  "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "matched_s1_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "matched_s2_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "previous_blocked_receipt_sha256": "5ff3ce68ceceaea9bfc9067afb2a4d47c324092604e37d11920caaa44c1fef8b",
+  "matched_s3_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "matched_s4_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "input_changes": [
+    "status_visible.py only: diagnostic context and unlimited assertion diff; identical five states and assertions; oracle, reference, prompt and spec unchanged"
+  ],
+  "matched_s5_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "inputs_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ],
+  "matched_s6_fields": [
+    "baseline_commit",
+    "protected_paths",
+    "visible_fixture_paths"
+  ]
+}

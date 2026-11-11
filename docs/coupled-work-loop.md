@@ -238,7 +238,7 @@ spiral --provider openai --model gpt-5.6-luna coupled-run \
   --coder-chunk-requests 8 --transport-repair-requests 4
 ```
 
-The default is one iteration. Values from two through four opt into a
+The default is one iteration. Values from two through eight opt into a
 chain. Start with a fresh output directory outside the workspace. The
 chain freezes the task text at launch and uses the same working files,
 native Coder session, validated historical Observer clarification and
@@ -249,13 +249,14 @@ lists the parent task IDs, per-iteration spend, totals and stop reason.
 While an iteration is running, its own ledger includes in-flight requests.
 
 A validated successful report stops the chain immediately. An exhausted
-iteration can advance when it recorded a new changed file or a newly
-verified declared command. It can also advance after the first reproduction of
+iteration or an accepted blocked report can advance when it recorded a new
+changed file or a newly verified declared command. It can also advance after the first reproduction of
 a declared pre-edit failing baseline at the task root. This route requires an
 observed failing test count and grants a single continuation for that
 command. Final verification and reporting still require a successful check
-after the edits. A user refusal, pending approval, early blocker,
-provider failure or an exhausted round without this progress ends the run.
+after the edits. An accepted blocked report need not consume the last unused
+Coder requests just to reach the next predeclared iteration. A user refusal,
+pending approval, provider failure or a round without this progress ends the run.
 An accepted incomplete report remains incomplete in its original record.
 An explicit `--seed-session FILE` still starts a newly budgeted invocation
 from an operator-selected native session. Supply the corresponding workspace
@@ -273,7 +274,11 @@ can require more turns. At the last shared opportunity the coupled driver
 can send the Coder to report if the Observer's reserved share has already
 been served. If the Observer's one repair of a rejected `done` is truncated
 or receives a recorded envelope transport rejection, the Coder can also use
-one report-only attempt when all native proof is current. After a structurally
+one report-only attempt when all native proof is current. A structurally rejected
+repair can take this route even when the first malformed envelope could not
+identify an intended `done`. Native proof and the absence of approval barriers
+admit the attempt; rejected Observer text supplies neither advice nor completion.
+After a structurally
 rejected Observer repair, the last request still available to Coder can also
 carry an honest blocked handoff. Requests reserved for Observer stay reserved.
 A blocked report
@@ -739,3 +744,20 @@ still help explain the code. It can only lead to a forced edit suggestion for
 a file on that list, grounded in observations from the current task.
 The native file tools also check the proposed path before executing a write.
 Required deliverables can be a subset of the allowed files.
+
+Plan-revision rejection feedback includes the admitted acceptance count and
+requires separate numbered lines. Joining all criteria into one paragraph changes
+the parsed references; the runtime does not silently split or accept that revision.
+
+Input-deserialization failures retain their concrete type/missing-field cause
+before wrapper traceback frames in bounded recovery diagnostics. Coder and
+Observer are directed to compare the failing input field with the parser
+declaration; input line/column coordinates never authorize a source edit or
+identify a field by guesswork. This does not change recovery or completion gates.
+
+Automatic child iterations begin with a runtime-origin message reporting their
+new native task allowance, available Coder share and Observer reserve. Earlier
+blocked reports remain historical evidence, not current budget exhaustion. The
+message asks for one grounded inspection, repair or exact check, while preserving
+current approval barriers and genuine external blockers. It creates no human
+task, tool action, progress receipt or extra allowance; no-progress still stops.

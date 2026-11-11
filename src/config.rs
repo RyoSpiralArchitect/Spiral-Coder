@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use crate::modes::Mode;
 use crate::personas;
 
+#[cfg(test)]
+mod env_test_support;
 pub(crate) mod model_catalog;
 
 #[derive(Clone, Debug, PartialEq, ValueEnum, Serialize, Deserialize)]
@@ -575,20 +577,6 @@ fn resolve_api_key_from_env(provider: &ProviderKind, base_url: &str) -> Option<S
 mod tests {
     use super::*;
 
-    fn with_env_var<T>(key: &str, value: Option<&str>, f: impl FnOnce() -> T) -> T {
-        let prev = std::env::var(key).ok();
-        match value {
-            Some(v) => unsafe { std::env::set_var(key, v) },
-            None => unsafe { std::env::remove_var(key) },
-        }
-        let out = f();
-        match prev {
-            Some(v) => unsafe { std::env::set_var(key, v) },
-            None => unsafe { std::env::remove_var(key) },
-        }
-        out
-    }
-
     #[test]
     fn detects_gemini_openai_compat_preset_from_base_url() {
         let cfg = RunConfig {
@@ -632,17 +620,21 @@ mod tests {
 
     #[test]
     fn resolve_api_key_uses_vendor_specific_env_for_gemini() {
-        with_env_var("GEMINI_API_KEY", Some("gem-test"), || {
-            with_env_var("GOOGLE_API_KEY", None, || {
-                with_env_var("OPENAI_API_KEY", None, || {
-                    let key = resolve_api_key_from_env(
-                        &ProviderKind::OpenAiCompatible,
-                        "https://generativelanguage.googleapis.com/v1beta/openai",
-                    );
-                    assert_eq!(key.as_deref(), Some("gem-test"));
-                })
-            })
-        });
+        if env_test_support::ran_in_child(
+            "config::tests::resolve_api_key_uses_vendor_specific_env_for_gemini",
+            &[
+                ("GEMINI_API_KEY", Some("gem-test")),
+                ("GOOGLE_API_KEY", None),
+                ("OPENAI_API_KEY", None),
+            ],
+        ) {
+            return;
+        }
+        let key = resolve_api_key_from_env(
+            &ProviderKind::OpenAiCompatible,
+            "https://generativelanguage.googleapis.com/v1beta/openai",
+        );
+        assert_eq!(key.as_deref(), Some("gem-test"));
     }
 
     #[test]
@@ -658,23 +650,27 @@ mod tests {
 
     #[test]
     fn resolve_honors_obs_provider_gemini_preset() {
-        with_env_var("SPIRAL_CODER_PROVIDER", Some("gemini"), || {
-            with_env_var("SPIRAL_CODER_BASE_URL", None, || {
-                with_env_var("GEMINI_API_KEY", Some("gem-test"), || {
-                    let cfg = PartialConfig::default()
-                        .resolve()
-                        .expect("resolve gemini preset");
-                    assert_eq!(cfg.provider, ProviderKind::OpenAiCompatible);
-                    assert_eq!(
-                        cfg.base_url,
-                        "https://generativelanguage.googleapis.com/v1beta/openai"
-                    );
-                    assert_eq!(cfg.model, "gemini-3.5-flash-lite");
-                    assert_eq!(cfg.chat_model, "gemini-3.5-flash-lite");
-                    assert_eq!(cfg.code_model, "gemini-3.5-flash-lite");
-                })
-            })
-        });
+        if env_test_support::ran_in_child(
+            "config::tests::resolve_honors_obs_provider_gemini_preset",
+            &[
+                ("SPIRAL_CODER_PROVIDER", Some("gemini")),
+                ("SPIRAL_CODER_BASE_URL", None),
+                ("GEMINI_API_KEY", Some("gem-test")),
+            ],
+        ) {
+            return;
+        }
+        let cfg = PartialConfig::default()
+            .resolve()
+            .expect("resolve gemini preset");
+        assert_eq!(cfg.provider, ProviderKind::OpenAiCompatible);
+        assert_eq!(
+            cfg.base_url,
+            "https://generativelanguage.googleapis.com/v1beta/openai"
+        );
+        assert_eq!(cfg.model, "gemini-3.5-flash-lite");
+        assert_eq!(cfg.chat_model, "gemini-3.5-flash-lite");
+        assert_eq!(cfg.code_model, "gemini-3.5-flash-lite");
     }
 
     #[test]

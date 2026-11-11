@@ -182,6 +182,11 @@ impl RecoveryFocus {
         let failing_tests =
             super::failure_diagnostics::failing_test_names(focus.diagnostic.as_str());
         let mut data = json!({"diagnostic":focus.diagnostic,"failed_check":focus.check});
+        if focus.diagnostic.contains("invalid type:")
+            || focus.diagnostic.contains("missing field `")
+        {
+            data["input_type_guidance"] = json!("Locate the exact failing input field in the fixture or serialized input and compare it with the parser declaration before editing. The reported line/column belongs to that input, not necessarily a source file. Do not infer a field name from the value alone or broaden unrelated field types. This diagnostic does not authorize extra paths or satisfy verification.");
+        }
         if !failing_tests.is_empty() {
             data["failing_tests"] = json!(failing_tests);
         }

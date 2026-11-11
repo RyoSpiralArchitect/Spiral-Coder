@@ -1,0 +1,66 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S13",
+  "created_at": "2026-11-11T19:35:52.507722+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "548b923718593557f210420c99cd73a261ebf1e6",
+  "binary_sha256": "abeefc4285f46f335e8e99ecce59ff8892e672ab72c29c625b88475eed5d168c",
+  "declaration_sha256": "e8b4f37406ff9fe48416bbd204953549353e914f6f84c8696f8c37652bc570f1",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "149c8ea0066cc18e8f421e0fce4f072b90e6b4b85f9fcf650b4e737db8c200e6",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Same source baseline, native fixtures, reference, original 24-case oracle, public boundary matrix, six native checks, four-fault audit and request/time caps as S12. Typed prompt now requires inspecting fixture cardinality and validating any positive scenario extension before one negative mutation. Runtime includes the post-S12 warning/panic diagnostic correction and suppresses old implementation guesses while current native recovery is unresolved. No seed or operator edits; combined condition, not matched causal evidence.",
+  "main_merge_required_before_run": true,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
+  "input_changes": [
+    "prompt.txt"
+  ],
+  "previous_completed_receipt_sha256": "9ec02865eea565af630a6027793612adbd34a421c4f4e8e97d89630a88a5313e",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "b548c1ac653782debe59c1e4f8b4901b73a72f344ac8fdcbaee334578c8c9791",
+      "thin-control": "c954b5c1212445298f1502b22a3af2c7d7a2e9b4fec0bbac999402bef5c0f9ef",
+      "s12-control": "a833f63c37904ff778fe6c93510ffc21b80c7d52f059e9ac1b341b1d591c5b72"
+    }
+  },
+  "previous_terminal_receipt_sha256": "b00a2b63556d86e4461fefe35bb34172de33c030e049fd258bb3ea55332d3825",
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+}

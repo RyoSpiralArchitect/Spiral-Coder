@@ -1,0 +1,412 @@
+{
+  "sealed_receipt_sha256": "3d74303bbae3a16342ebb5fcb1cce6140b8a0c473eef620b2b8938eaa657a7f9",
+  "manifest_sha256": "9f5ac961019e1ebb82a61ddfc873970b01ca450945d5661b23a898b611c517e9",
+  "completed": true,
+  "active_iteration_at_stop": null,
+  "by_role": {
+    "coder": {
+      "wire_requests": 100,
+      "task_requests": 86,
+      "statuses": {
+        "completed": 100
+      },
+      "estimated_input_tokens_total": 2648070,
+      "estimated_input_tokens_median": 27187.0,
+      "estimated_input_tokens_max": 33567,
+      "provider_usage_receipts": 0,
+      "provider_seconds": 440.331
+    },
+    "observer": {
+      "wire_requests": 28,
+      "task_requests": 28,
+      "statuses": {
+        "completed": 28
+      },
+      "estimated_input_tokens_total": 171722,
+      "estimated_input_tokens_median": 2022.5,
+      "estimated_input_tokens_max": 13509,
+      "provider_usage_receipts": 0,
+      "provider_seconds": 142.334
+    }
+  },
+  "rounds": [
+    {
+      "iteration": 1,
+      "termination": "blocked",
+      "native_wall_seconds": 235.756,
+      "by_role": {
+        "coder": {
+          "wire_requests": 26,
+          "task_requests": 24,
+          "statuses": {
+            "completed": 26
+          },
+          "estimated_input_tokens_total": 577888,
+          "estimated_input_tokens_median": 22259.0,
+          "estimated_input_tokens_max": 30492,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 131.101
+        },
+        "observer": {
+          "wire_requests": 8,
+          "task_requests": 8,
+          "statuses": {
+            "completed": 8
+          },
+          "estimated_input_tokens_total": 44065,
+          "estimated_input_tokens_median": 1797.0,
+          "estimated_input_tokens_max": 13210,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 40.372
+        }
+      },
+      "coder_context": {
+        "assemblies": 26,
+        "reduced_assemblies": 16,
+        "protected_overflows": 20,
+        "message_bytes_before_total": 2598880,
+        "message_bytes_after_total": 2126032,
+        "message_bytes_saved": 472848,
+        "message_bytes_before_max": 155180,
+        "message_bytes_after_max": 113292,
+        "largest_compacted_exchange_count": 14
+      },
+      "durable_work_matches": true,
+      "parent_link_matches": true,
+      "current_configuration_checks": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "transport_rejections": [
+        {
+          "request_id": 4,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 15,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ],
+      "native_messages": 69,
+      "native_session_bytes": 193922,
+      "tool_message_retention": null,
+      "pending_exact_checks": 4,
+      "session_sha256": "0cf108cd80335ac3c7a539cf128a98c8e3eff7b981f85ac7b49b64edfbf3489d",
+      "report_sha256": "0947c81884f27aa8c1adc8d800f80ae3f69d5d304812832833cc7094eb096299",
+      "trace_sha256": "4e85166e9aba865e70881c610e395cb77d98e90e3ffb8db4c595e1a6ac65bb2c"
+    },
+    {
+      "iteration": 2,
+      "termination": "budget_exhausted",
+      "native_wall_seconds": 306.167,
+      "by_role": {
+        "coder": {
+          "wire_requests": 28,
+          "task_requests": 24,
+          "statuses": {
+            "completed": 28
+          },
+          "estimated_input_tokens_total": 750012,
+          "estimated_input_tokens_median": 27002.0,
+          "estimated_input_tokens_max": 30087,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 124.564
+        },
+        "observer": {
+          "wire_requests": 8,
+          "task_requests": 8,
+          "statuses": {
+            "completed": 8
+          },
+          "estimated_input_tokens_total": 45413,
+          "estimated_input_tokens_median": 1780.5,
+          "estimated_input_tokens_max": 13509,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 38.865
+        }
+      },
+      "coder_context": {
+        "assemblies": 28,
+        "reduced_assemblies": 28,
+        "protected_overflows": 28,
+        "message_bytes_before_total": 5729133,
+        "message_bytes_after_total": 2787225,
+        "message_bytes_saved": 2941908,
+        "message_bytes_before_max": 250134,
+        "message_bytes_after_max": 111580,
+        "largest_compacted_exchange_count": 40
+      },
+      "durable_work_matches": true,
+      "parent_link_matches": true,
+      "current_configuration_checks": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "transport_rejections": [
+        {
+          "request_id": 0,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 1,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 4,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 8,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ],
+      "native_messages": 133,
+      "native_session_bytes": 331730,
+      "tool_message_retention": {
+        "call_messages": {
+          "previous": 26,
+          "retained_exactly": 26,
+          "current": 54
+        },
+        "result_messages": {
+          "previous": 26,
+          "retained_exactly": 26,
+          "current": 54
+        }
+      },
+      "pending_exact_checks": 4,
+      "session_sha256": "113cde63d491fbaf6a505d5ed58af314d30115a104501d3181d1a51658a99ebb",
+      "report_sha256": "d35bb18144c07a84c3325aa87d76df3757b2bba507796e50da885eb996ada96a",
+      "trace_sha256": "8d6e59cd84a68b3ea95e9eb3231c33275c325f31e9c7f40db8e6ab57932656a3"
+    },
+    {
+      "iteration": 3,
+      "termination": "blocked",
+      "native_wall_seconds": 180.245,
+      "by_role": {
+        "coder": {
+          "wire_requests": 28,
+          "task_requests": 24,
+          "statuses": {
+            "completed": 28
+          },
+          "estimated_input_tokens_total": 816795,
+          "estimated_input_tokens_median": 29117.0,
+          "estimated_input_tokens_max": 33567,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 115.115
+        },
+        "observer": {
+          "wire_requests": 8,
+          "task_requests": 8,
+          "statuses": {
+            "completed": 8
+          },
+          "estimated_input_tokens_total": 45745,
+          "estimated_input_tokens_median": 2022.5,
+          "estimated_input_tokens_max": 13399,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 42.565
+        }
+      },
+      "coder_context": {
+        "assemblies": 28,
+        "reduced_assemblies": 28,
+        "protected_overflows": 28,
+        "message_bytes_before_total": 8464818,
+        "message_bytes_after_total": 3060035,
+        "message_bytes_saved": 5404783,
+        "message_bytes_before_max": 349015,
+        "message_bytes_after_max": 125801,
+        "largest_compacted_exchange_count": 62
+      },
+      "durable_work_matches": true,
+      "parent_link_matches": true,
+      "current_configuration_checks": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "transport_rejections": [
+        {
+          "request_id": 4,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 11,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 15,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 28,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ],
+      "native_messages": 198,
+      "native_session_bytes": 469952,
+      "tool_message_retention": {
+        "call_messages": {
+          "previous": 54,
+          "retained_exactly": 54,
+          "current": 82
+        },
+        "result_messages": {
+          "previous": 54,
+          "retained_exactly": 54,
+          "current": 82
+        }
+      },
+      "pending_exact_checks": 2,
+      "session_sha256": "cc9ab3efb054935f7c880e7517570738edf4fea9272eb6760875d6ec8814552b",
+      "report_sha256": "63454a0d583fb8ee5fa2022fae22f5692d12864a3aaa902198c3916af9b99719",
+      "trace_sha256": "25b25a9973a4659bd479c3e59d374d1f3672023d9bce8ad83d775bc1c4a72f15"
+    },
+    {
+      "iteration": 4,
+      "termination": "completed",
+      "native_wall_seconds": 132.28,
+      "by_role": {
+        "coder": {
+          "wire_requests": 18,
+          "task_requests": 14,
+          "statuses": {
+            "completed": 18
+          },
+          "estimated_input_tokens_total": 503375,
+          "estimated_input_tokens_median": 27510.0,
+          "estimated_input_tokens_max": 32201,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 69.551
+        },
+        "observer": {
+          "wire_requests": 4,
+          "task_requests": 4,
+          "statuses": {
+            "completed": 4
+          },
+          "estimated_input_tokens_total": 36499,
+          "estimated_input_tokens_median": 10862.5,
+          "estimated_input_tokens_max": 12748,
+          "provider_usage_receipts": 0,
+          "provider_seconds": 20.532
+        }
+      },
+      "coder_context": {
+        "assemblies": 18,
+        "reduced_assemblies": 18,
+        "protected_overflows": 18,
+        "message_bytes_before_total": 6583875,
+        "message_bytes_after_total": 1865748,
+        "message_bytes_saved": 4718127,
+        "message_bytes_before_max": 382664,
+        "message_bytes_after_max": 120329,
+        "largest_compacted_exchange_count": 83
+      },
+      "durable_work_matches": true,
+      "parent_link_matches": true,
+      "current_configuration_checks": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "transport_rejections": [
+        {
+          "request_id": 0,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 3,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 15,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "request_id": 16,
+          "role": "coder",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ],
+      "native_messages": 240,
+      "native_session_bytes": 534042,
+      "tool_message_retention": {
+        "call_messages": {
+          "previous": 82,
+          "retained_exactly": 82,
+          "current": 100
+        },
+        "result_messages": {
+          "previous": 82,
+          "retained_exactly": 82,
+          "current": 100
+        }
+      },
+      "pending_exact_checks": 0,
+      "session_sha256": "c1f000d149dee6e5a628d52bcc4e8178490abe6687f6f61445852c1ac8e4f848",
+      "report_sha256": "e9707820c023998e0e860f9d293a9dab7de035c74ef11fffd8f5c179d2c52a37",
+      "trace_sha256": "215f6870f78c6ab270bb5e4ff773039697a241edea0bc9ea95845c638d21bb9b"
+    }
+  ],
+  "method": "Finalized native rounds only. Token estimates are serialized payload characters divided by four, rounded up. Coder byte telemetry measures message assembly before and after history projection and excludes tool schemas. Cross-round retention compares full tool message JSON values as multisets. Current configuration checks describe the executed ledger separately from the frozen assessor's verdict."
+}

@@ -16,7 +16,7 @@ enum Phase {
 pub(super) struct Contract {
     phase: Phase,
     coder_requests_remaining: Option<usize>,
-    max_native_tool_calls: usize,
+    max_native_tool_calls_per_response: usize,
     pending_exact_checks: Vec<String>,
     pending_artifact_paths: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -51,7 +51,7 @@ impl Contract {
         Self {
             phase: if report { Phase::Report } else { Phase::Work },
             coder_requests_remaining: remaining,
-            max_native_tool_calls: 1,
+            max_native_tool_calls_per_response: 1,
             pending_exact_checks: pending.to_vec(),
             pending_artifact_paths: requirements.pending_artifact_paths.clone(),
             required_recheck: None,
@@ -146,8 +146,14 @@ impl Contract {
             .filter(|_| self.phase == Phase::Work && self.required_recheck.is_none())
             .map(|command| format!("\nPrefer the pending formatting check `{command}` before the expensive final checks. If formatting needs an edit, finish it before collecting final proof; then every required check needs a current result. This is a suggested order."))
             .unwrap_or_default();
+        let allowance = match self.coder_requests_remaining {
+            Some(remaining) => format!(
+                "Current shared Coder allowance before this request: {remaining} model requests. "
+            ),
+            None => "No shared Coder allowance is specified by this contract. ".into(),
+        };
         format!(
-            "[Next action contract]\n{}\n{action}{format_hint}",
+            "[Next action contract]\n{}\n{allowance}max_native_tool_calls_per_response=1 limits each response, not the total remaining work. A Coder slice may yield to Observer while shared allowance remains. Use this current allowance instead of historical budget claims; the phase and offered tools still control this response.\n{action}{format_hint}",
             serde_json::to_string(self).expect("contract serializes")
         )
     }
@@ -189,6 +195,45 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn one_call_response_and_slice_do_not_mean_one_remaining_task_request() {
+        use crate::work_budget::{BudgetPolicy, WorkBudget};
+        let budget = WorkBudget::new("unfinished task", 32, None);
+        budget
+            .configure(BudgetPolicy {
+                observer_reserved_requests: 8,
+                transport_repair_limit: 4,
+            })
+            .unwrap();
+        for role in ["coder"; 6].into_iter().chain(["observer"; 3]) {
+            drop(budget.begin(role, &Value::Null).unwrap());
+        }
+        let slice = budget.with_observer_return(1);
+        assert_eq!(slice.slice_remaining("coder"), 1);
+        assert_eq!(slice.remaining_for("coder"), 18);
+        let before = serde_json::to_value(budget.snapshot()).unwrap();
+        let contract = Contract::project(
+            Some(slice.remaining_for("coder")),
+            &["test".into()],
+            &Status::default(),
+        );
+        assert_eq!(contract.phase, Phase::Work);
+        let wire = serde_json::to_value(&contract).unwrap();
+        assert_eq!(wire["coder_requests_remaining"], 18);
+        assert_eq!(wire["max_native_tool_calls_per_response"], 1);
+        assert!(wire.get("max_native_tool_calls").is_none());
+        assert!(contract.prompt().contains("18 model requests"));
+        let tools = json!([{"function":{"name":"exec"}}, {"function":{"name":"done"}}]);
+        assert_eq!(contract.tools(&tools), tools);
+        assert_eq!(serde_json::to_value(budget.snapshot()).unwrap(), before);
+        let mut declared = Status::default();
+        declared.declared = true;
+        assert_eq!(
+            Contract::project(Some(1), &[], &declared).phase,
+            Phase::Report
+        );
+    }
 
     #[test]
     fn formatting_preference_keeps_baseline_diagnosis_and_verification_gates() {

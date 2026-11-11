@@ -120,7 +120,14 @@ Observer separates attempted actions from successful results. Native results are
 matched to preceding tool calls once; a rejected edit cannot create a mutation
 anchor or satisfy a documentation follow-up. `execution_evidence` supplies the
 same positive write/exec and first automatic-test status checks used by Coder.
-Failed automatic tests preserve the write and its failure diagnostic. A passing
+Failed automatic tests preserve the write and its failure diagnostic. Exact
+successful Rust test-result lines are excluded from the bounded failure digest,
+even when their test names contain `failed` or `assertion`. Rust warning headers
+and their arrow locations cannot displace the failing test's diagnostic. A
+panic retains its location and one bounded following cause line, including
+fixture preconditions without an `error` keyword. Real compiler error locations
+and bare historical locations remain available. Display filtering
+changes neither the native exit status nor evidence decisions. A passing
 automatic test without a recorded command supplies no exact replay/eval proof.
 Replay/eval proof requires a successful result and the real CLI grammar for the
 expected spec; printed command names, help, status masking, another spec and
@@ -423,3 +430,24 @@ Current code:
 ## Coupled Coder/Observer task
 
 The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.
+
+A valid current Observer primary action below the unchanged 0.75 hint threshold
+is not forwarded or upgraded by choosing a secondary action. For a declared task
+with an admitted plan, native control may instead return one report-only Coder
+request from its remaining allowance. The request exposes only `done`; the
+Observer's tool, arguments and response contract are not delivered. Missing
+checks and artifacts remain pending, and unsupported completion still fails.
+Stale replies, malformed envelopes, approval barriers, exhausted budgets,
+already-blocked tasks and repeated closeout attempts cannot use this path.
+An accepted blocked report can reach the next predeclared iteration only through
+the existing progress/no-refusal rule. No progress still stops; caps never grow.
+
+
+Pending native recovery owns repair guidance as well as the initial diagnostic
+read. `task_harness` suppresses old implementation guesses/coercions until the
+correlated failure resolves, and progress feedback retains the failure's cause,
+location and exact check. The diagnostic may be in an authored test or a supplied
+test; the original scope and preservation gates still decide what can be edited.
+A read never grants completion proof, and unrelated successful checks do not
+clear the pending failure. This avoids sending an authored fixture failure back
+to an unrelated production module merely because that module was read earlier.

@@ -2,6 +2,14 @@
 use anyhow::Error;
 use reqwest::StatusCode;
 
+/// Called only when sending a request fails before any response headers arrive.
+/// reqwest classifies a peer closing an established connection as Request,
+/// rather than Connect. No response or tool call has been delivered at this point.
+/// The existing retry counter and a new ordinary task reservation still apply.
+pub(super) fn send_retryable(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_request()
+}
+
 pub(super) fn retryable(status: StatusCode, body: &str) -> bool {
     if !super::is_retryable_status(status) {
         return false;

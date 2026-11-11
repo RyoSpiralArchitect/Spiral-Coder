@@ -1,0 +1,18 @@
+{
+  "runtime_commit": "548b923718593557f210420c99cd73a261ebf1e6",
+  "phase": "S13 current failure routing and fixture-cardinality obligation",
+  "full_check_log_sha256": "a5225ab964bb00945e70346ecfb2452fe0e9b410afbedb761cf33b4dbf95e503",
+  "rust_main_passed": 1171,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "routing_red_log_sha256": "1aa5e55c8ab083832c5da67d0ed889976c1645ff34562aa0e88d1f59cd7eaf7f",
+  "routing_green_log_sha256": "3680f9cef12328fb22bf303721893a64d857778580f723a12066c892fe417854",
+  "initial_green_test_assumption_correction": "Successful read commands are legitimate current evidence, but not successful failed-check receipts.",
+  "initial_green_log_sha256": "47a53b8d7251b8808db708745489d3866435293926a4595541cab3f6317f5ae5"
+}

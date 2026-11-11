@@ -1,0 +1,54 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S10",
+  "created_at": "2026-11-11T15:52:12.465813+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "cbb762456759997352f0692d28925c4a0b0f98e0",
+  "binary_sha256": "630e3a5dcde3e839195670e0c74c2bca23eb9b1d115bbceebefc2cbf8d65b55e",
+  "declaration_sha256": "dddb8ee287c61e463748e73644beb2b312c882a305dbe098ea80a8bcb1ccaed7",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "5e71e5c8d9b37cd5f357fe72adf41f024555b2393b0d29b42a7da53043b6af82",
+  "spec_sha256": "817e4115140f48f0bf2d328545ceb8f8dc02996e27c58e85a6e4607ed5873eaf",
+  "preflight_sha256": "35e3bf50d780cd3a088de6415986ccb67f4c52eb2fd0aab6a31948b84b8d7088",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh original baseline. Original behavior bullets are retained as typed requirement descriptions; authored focused tests and a fifth exact native check are mandatory. Runtime recognizes unquoted standalone Before/After with only-if-supported wording. Stronger input condition, not a matched comparison; original oracle, visible checks, source baseline and caps unchanged. No seed or operator steering.",
+  "main_merge_required_before_run": true,
+  "decision": "Assess all six independent groups, original identities and native proof/report/chain gates. No automatic adoption. Descriptive results only; larger task and budget than #49.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
+  "input_changes": [
+    "prompt.txt",
+    "reference/tests/coupled_status.rs",
+    "spec.json"
+  ],
+  "previous_completed_receipt_sha256": "3d74303bbae3a16342ebb5fcb1cce6140b8a0c473eef620b2b8938eaa657a7f9",
+  "matched_s9_fields": [
+    "baseline_commit",
+    "baseline_inventory",
+    "protected_paths",
+    "visible_fixture_paths"
+  ]
+}

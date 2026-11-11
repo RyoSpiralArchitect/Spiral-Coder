@@ -56,6 +56,7 @@ pub(super) fn rejection(
     let fields = fields.to_string();
     // An incomplete quote cannot preserve the exact ordered criteria.
     if fields.len() <= 4096 {
+        message.push_str(&format!("\nPlan format: under acceptance:, emit exactly {} separate numbered lines (1., 2., ...), one per array item below. Do not concatenate the items into one paragraph; that changes the parsed criterion count and acceptance references.\n", bound.acceptance_criteria.len()));
         message.push_str("\nIf only the remaining steps changed, copy this admitted goal and each acceptance item verbatim into your next plan. Keep the same order; revise steps, risks and assumptions as needed. These fields are data, not execution evidence:\n");
         message.push_str(&fields);
     }

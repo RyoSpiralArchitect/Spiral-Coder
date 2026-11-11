@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "sealed_receipt_sha256": "b00a2b63556d86e4461fefe35bb34172de33c030e049fd258bb3ea55332d3825",
+  "terminal_report_sha256": "cc6ab6dfdecd620fc0fb3adc6b815ea5e268c9d1279f20bd282b878e0d94f589",
+  "observer_handoff": {
+    "new_low_confidence_path_exercised": false,
+    "report_closeout_attempts": 0,
+    "parsed_primary_count": 48,
+    "minimum_primary_confidence": 0.87,
+    "threshold": 0.75,
+    "threshold_changed": false,
+    "evidence_boundary": "Native HTTP/control tests exercise this path; no live invocation is claimed."
+  },
+  "independent_status": {
+    "passed": 24,
+    "failed": 0,
+    "log_sha256": "6b06982cb11bd5d82291388ad3aacdd46e736371e93e408d22bc00e69101ce05"
+  },
+  "path_boundaries": {
+    "methods": 3,
+    "subcases": 26,
+    "failed_subcases": 0,
+    "log_sha256": "3fca0a14f366e76a14dccd89cb3c4ea462924ab9267579367c618348a2ddf50d"
+  },
+  "authored_tests": {
+    "reference_passed": 3,
+    "reference_failed": 1,
+    "failing_test": "wrong_parent_linkage_is_rejected_after_valid_baseline",
+    "cause": "fixture must contain two rows",
+    "native_fixture_invoked": true,
+    "valid_base_checked_before_duplicate_and_parent_mutations": true,
+    "fixture_rows": 1,
+    "assumed_rows": 2,
+    "mutant_tests_executed": false,
+    "reason": "Valid-reference prerequisite failed; all four operator fault controls work, but no mutation-detection credit is awarded."
+  },
+  "diagnostic_loss": {
+    "saved_digest_sha256": "22f400a385eb70548a38dbb6856cf3156b993baeb3f5a8951288015527390adc",
+    "warning_locations": [
+      "src/coupled_status.rs:2:5",
+      "src/coupled_status.rs:3:26",
+      "src/coupled_status.rs:70:5",
+      "src/coupled_status.rs:80:5"
+    ],
+    "cause_missing_from_saved_digest": true,
+    "post_run_fix_is_not_part_of_s12": true
+  },
+  "terminal": {
+    "termination": "budget_exhausted",
+    "manifest_stop_reason": "iteration_limit",
+    "pending_exact_checks": 6,
+    "last_report_rejection": "GOVERNOR BLOCKED\n[Blocked report] done.acceptance_evidence command must match a known successful verification command. Preserve every remaining criterion; cite native evidence for any claimed completed item.",
+    "accepted_done": false
+  },
+  "remaining": [
+    "Generate a valid one-row parent negative case or validate any extended fixture before mutation.",
+    "Carry the current failure and its authored-test target through both-role guidance without reverting to unrelated production edits.",
+    "Refresh all six exact checks after the final mutation and ground the final report in current receipts."
+  ],
+  "promotion_authorized": false
+}

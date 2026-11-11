@@ -16,7 +16,9 @@ If the original task explicitly requests standalone `Before: FAILED` and
 `After: PASSED` lines and its declared baseline and final requirements have
 current proof, `final_answer.standalone_outcome_lines` gives both roles the
 exact lines to author. The native done gate checks individual lines in the
-summary. A blocked report can still describe pending work.
+summary. Explicit quoted, backtick-delimited and bare outcome labels are recognized,
+including the conditional wording `only if supported`; examples and negations do
+not create a report requirement. A blocked report can still describe pending work.
 An overlength `read_file` request reports its inclusive line count, the
 first legal window and the start of the remainder. Coder file reads and
 Observer repair feedback use the same bounds. The original request is
@@ -34,6 +36,13 @@ the narrow schema for ordinary access/path diagnosis without resolving the
 failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
+While a correlated recovery failure remains pending, module-discovery guesses
+from older reads cannot supply a replacement repair target or rewrite an
+observation into a different source read. Fix-stage guidance and observation
+stall feedback use the same pending failure, even after its required read.
+This adds no persisted field or edit authority. Actual successful checks resolve
+the existing recovery obligations before ordinary discovery hints resume.
+
 `report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
 explicit before/after test-result report clauses. Before is the last confirmed
 check before the first mutation; after is the latest check after the last
@@ -1274,6 +1283,14 @@ requests. Deterministic opening-brace repair makes no extra request and uses no
 transport credit. The hard wire ceiling is `request_limit + transport_repair_limit`;
 productive/task charges cannot exceed `request_limit`.
 
+Native streaming sends that fail before HTTP response headers record
+`status: send_failed`. reqwest request-stage connection closures, connect errors
+and timeouts can use the existing bounded provider retry loop. Each retry obtains
+a new ordinary task reservation; failed requests retain their IDs, durations and
+charges. This does not grant framing-repair credit or replay a partially received
+response. Builder errors and HTTP authentication/quota responses retain their
+separate failure policy.
+
 Independently of any shared budget, the Coder loop also grants bounded
 iteration relief for governor-blocked turns (`governor_signals.rs`). A
 `GOVERNOR BLOCKED` tool message earns back one iteration once any later
@@ -1290,7 +1307,10 @@ Observer opportunities (24/8 gives three Coder requests per Observer initially).
 Early verification failure still yields immediately. Successful completion may
 stop early; reservation does not promise a minimum number of useless requests.
 The derived next-action contract exposes `coder_requests_remaining`, excluding
-Observer-only slots. Coder slices do not force a premature terminal report merely
+Observer-only slots. `max_native_tool_calls_per_response=1` limits one response,
+not the task allowance. Every contract renders the current allowance explicitly;
+historical budget claims must not replace it. This projection spends no requests
+and does not change phase/tool, report or approval gates. Coder slices do not force a premature terminal report merely
 because their local ceiling is close. Transport credits do not increase task
 allowance, clear obligations or bypass a gate.
 
@@ -1623,6 +1643,12 @@ failure once, when the executed command at the task root has a failing
 unittest or libtest count. An ordinary nonzero exit or a repeated failure
 does not earn another iteration.
 A run with positive progress can still fail its acceptance checks.
+An accepted `blocked` termination with this fresh progress can advance even
+with unused Coder requests. It does not increase the declared number of
+iterations or transfer unused credit. Approval barriers/refusals, provider
+interruptions and no-progress rounds still stop; the prior blocked receipt
+remains incomplete. Other incomplete terminations still require exhausted
+Coder allowance to advance.
 
 A version-1 `iteration_handoff` on the original human message stores the
 source task ID, up to 600 characters of an accepted terminal Observer
@@ -1663,3 +1689,14 @@ preserves that text as the sole list member and records the wire recovery.
 The original response remains available. Evidence maps, multiple suggestions,
 required acknowledgements and executable suggestions retain their normal
 type checks.
+
+A coupled child iteration projects its newly created WorkState allowance into
+the runtime continuation message. It is not new persisted state or a human task;
+old blocked reports and parent-ledger protections remain unchanged.
+
+Low-confidence Observer handoff reuses the transient request's
+`pending_report_closeout` with reason `LowConfidence`; no new durable owner is
+introduced. Raw advice remains in the Observer report, while the Coder receives
+only a native report instruction. An authored, validated `blocked_report` remains
+the same-task continuation record. Native completion evidence, terminal status,
+iteration progress and approval barriers keep their existing authority.

@@ -9,6 +9,8 @@ mod termination;
 #[cfg(test)]
 mod tests;
 
+const MAX_ITERATIONS: u8 = 8;
+
 #[derive(clap::Args, Clone, Debug)]
 pub(crate) struct Args {
     #[arg(long)]
@@ -19,8 +21,8 @@ pub(crate) struct Args {
     pub out_dir: PathBuf,
     #[arg(long, default_value_t = 18)]
     pub max_requests: usize,
-    /// Maximum consecutive budgeted iterations of the same task (1..4).
-    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u8).range(1..=4))]
+    /// Maximum consecutive budgeted iterations of the same task (1..8).
+    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u8).range(1..=MAX_ITERATIONS as i64))]
     pub iterations: u8,
     /// Pure rejected framing/schema responses may spend this separate pool.
     #[arg(long, default_value_t = 0)]
@@ -119,8 +121,8 @@ async fn drain_observer_assist(
 
 pub(crate) async fn run(mut args: Args, common: crate::CommonArgs) -> Result<()> {
     anyhow::ensure!(
-        (1..=4).contains(&args.iterations),
-        "iterations must be 1..4"
+        (1..=MAX_ITERATIONS).contains(&args.iterations),
+        "iterations must be 1..{MAX_ITERATIONS}"
     );
     anyhow::ensure!(
         args.iterations == 1
@@ -280,10 +282,15 @@ async fn run_iteration(
             app.work_budget
                 .inherit_protections(parent, std::path::Path::new(&root))?;
         }
+        let continuation = if parent.is_some() {
+            iterations::restart_prompt(&app.work_budget.snapshot())
+        } else {
+            "Continue.".into()
+        };
         send_coder_input(
             &mut app,
             &coder_tx,
-            "Continue.".into(),
+            continuation,
             CoderInput::RuntimeContinuation,
         )
         .await;

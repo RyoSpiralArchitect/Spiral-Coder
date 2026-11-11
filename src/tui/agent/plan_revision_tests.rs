@@ -155,6 +155,10 @@ fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
         &contract,
     );
     assert_eq!(stage, None, "the refused check did not execute");
+    assert!(feedback.contains(&format!(
+        "exactly {} separate numbered lines",
+        accepted.acceptance_criteria.len()
+    )));
     for previous in [
         RecoveryStage::Diagnose,
         RecoveryStage::Fix,
@@ -210,4 +214,45 @@ fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
         governor_contract::invalid_plan_message("wrong shape")
     );
     assert_eq!(stage, Some(RecoveryStage::Diagnose));
+}
+
+#[test]
+fn recorded_flattened_acceptance_requires_numbered_boundaries() {
+    let sample: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/docs/evals/2026-11-11-coupled-status/s5-checklist/plan-format-rejection.json"
+    )))
+    .unwrap();
+    let proposed = sample["proposed"].as_str().unwrap();
+    let fields: serde_json::Value = serde_json::from_str(
+        sample["rejection"]
+            .as_str()
+            .unwrap()
+            .lines()
+            .last()
+            .unwrap(),
+    )
+    .unwrap();
+    let items: Vec<String> = serde_json::from_value(fields["acceptance"].clone()).unwrap();
+    let flat = parse_plan_block(proposed).unwrap();
+    assert_eq!(items.len(), 4);
+    assert_eq!(flat.acceptance_criteria.len(), 1);
+    let start = proposed.find("acceptance:").unwrap();
+    let end = start + proposed[start..].find("risks:").unwrap();
+    let numbered = items
+        .iter()
+        .enumerate()
+        .map(|(i, s)| format!("{}. {}", i + 1, s))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let corrected = format!(
+        "{}acceptance:\n{}\n{}",
+        &proposed[..start],
+        numbered,
+        &proposed[end..]
+    );
+    let restored = parse_plan_block(&corrected).unwrap();
+    assert_eq!(restored.goal, flat.goal);
+    assert_eq!(restored.steps, flat.steps);
+    assert_eq!(restored.acceptance_criteria, items);
 }

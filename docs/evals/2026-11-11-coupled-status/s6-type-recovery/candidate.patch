@@ -1,0 +1,165 @@
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..f8403ef 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'coupled-status', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..8163b5b
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,116 @@
++use anyhow::{anyhow, Context, Result};
++use clap::Args as ClapArgs;
++use serde_json::{json, Map, Value};
++use std::collections::HashSet;
++use std::fs;
++use std::path::{Path, PathBuf};
++
++#[derive(ClapArgs, Debug, Clone)]
++pub(crate) struct Args {
++    /// Existing coupled-run directory.
++    #[arg(long, value_name = "PATH")]
++    pub(crate) run_dir: PathBuf,
++}
++
++pub(crate) fn run(args: Args) -> Result<()> {
++    let value = summarize(&args.run_dir)?;
++    println!("{}", serde_json::to_string(&value)?);
++    Ok(())
++}
++
++fn summarize(root: &Path) -> Result<Value> {
++    let manifest_path = root.join("iterations.json");
++    reject_symlink_below(root, &manifest_path)?;
++    let manifest: Value = serde_json::from_slice(&fs::read(&manifest_path).context("read iterations.json")?)
++        .context("parse iterations.json")?;
++    let object = manifest.as_object().ok_or_else(|| anyhow!("manifest must be an object"))?;
++    if object.get("version").and_then(Value::as_u64) != Some(1) { return Err(anyhow!("unsupported manifest version")); }
++    let max_iterations = positive(object, "max_iterations")?;
++    let max_task = positive(object, "max_task_requests_per_iteration")?;
++    let max_total = positive(object, "max_task_requests")?;
++    let max_wire = positive(object, "max_wire_requests")?;
++    let product = max_iterations.checked_mul(max_task).ok_or_else(|| anyhow!("overflow"))?;
++    if max_total != product || max_wire < max_total { return Err(anyhow!("invalid limits")); }
++    let rows = object.get("iterations").and_then(Value::as_array).ok_or_else(|| anyhow!("missing iterations"))?;
++    if rows.len() as u64 > max_iterations { return Err(anyhow!("too many iterations")); }
++    let mut ids = HashSet::new();
++    let mut output_rows = Vec::new();
++    let mut task_used = 0u64;
++    let mut wire_used = 0u64;
++    let mut last_completed = false;
++    let mut previous: Option<String> = None;
++    for (index, row) in rows.iter().enumerate() {
++        let row = row.as_object().ok_or_else(|| anyhow!("invalid row"))?;
++        let iteration = index as u64 + 1;
++        if row.get("iteration").and_then(Value::as_u64) != Some(iteration) { return Err(anyhow!("row order")); }
++        let directory = row.get("directory").and_then(Value::as_str).ok_or_else(|| anyhow!("missing directory"))?;
++        if directory != format!("iteration-{iteration:02}") { return Err(anyhow!("invalid directory")); }
++        let task_id = nonempty(row, "task_id")?;
++        if !ids.insert(task_id.to_owned()) { return Err(anyhow!("duplicate task id")); }
++        if row.get("parent_task_id").and_then(Value::as_str).map(str::to_owned) != previous { return Err(anyhow!("invalid parent")); }
++        previous = Some(task_id.to_owned());
++        let ledger = read_ledger(root, directory)?;
++        let (tasks, wires, inflight) = counts(&ledger)?;
++        if tasks > max_task { return Err(anyhow!("task cap")); }
++        if row.get("task_requests").and_then(Value::as_u64) != Some(tasks) || row.get("wire_requests").and_then(Value::as_u64) != Some(wires) { return Err(anyhow!("count mismatch")); }
++        let termination = row.get("termination").and_then(Value::as_str).ok_or_else(|| anyhow!("missing termination"))?;
++        let completed = termination == "completed";
++        if row.get("completed").and_then(Value::as_bool) != Some(completed) { return Err(anyhow!("completed mismatch")); }
++        if completed && index + 1 != rows.len() { return Err(anyhow!("non-final completion")); }
++        last_completed = completed;
++        task_used = task_used.checked_add(tasks).ok_or_else(|| anyhow!("overflow"))?;
++        wire_used = wire_used.checked_add(wires).ok_or_else(|| anyhow!("overflow"))?;
++        let progress = row.get("progress").and_then(Value::as_object); output_rows.push(json!({"iteration": iteration, "task_id": task_id, "termination": termination, "task_requests": tasks, "wire_requests": wires, "changed_files": progress.and_then(|p| p.get("changed_files")).cloned().unwrap_or_else(|| json!([])), "newly_verified": progress.and_then(|p| p.get("newly_verified")).cloned().unwrap_or_else(|| json!([]))}));
++        let _ = inflight;
++    }
++    let active = object.get("active_iteration");
++    let interrupted = object.get("interrupted_iteration");
++    if active.is_some_and(|v| !v.is_null()) && interrupted.is_some_and(|v| !v.is_null()) { return Err(anyhow!("two pending iterations")); }
++    let pending_value = active.filter(|v| !v.is_null()).or_else(|| interrupted.filter(|v| !v.is_null()));
++    let mut pending = Value::Null;
++    let mut pending_unknown = false;
++    if let Some(p) = pending_value {
++        let interrupted_mode = interrupted.filter(|v| !v.is_null()).is_some();
++        let (directory, declared_task_id) = if let Some(s) = p.as_str() { (s.to_owned(), None) } else { let p = p.as_object().ok_or_else(|| anyhow!("invalid pending"))?; (p.get("directory").and_then(Value::as_str).ok_or_else(|| anyhow!("pending directory"))?.to_owned(), Some(nonempty(p, "task_id")?.to_owned())) };
++        let next = rows.len() as u64 + 1;
++        if directory != format!("iteration-{next:02}") || next > max_iterations { return Err(anyhow!("invalid pending directory")); }
++        let mut task_id = declared_task_id;
++        if task_id.is_none() { if let Some(ledger) = read_ledger_optional(root, &directory)? { task_id = ledger.get("task_id").and_then(Value::as_str).map(str::to_owned); } }
++        if let Some(ref id) = task_id { if ids.contains(id) { return Err(anyhow!("duplicate pending task")); } }
++        let interrupted_mode = interrupted.filter(|v| !v.is_null()).is_some();
++        let stop = object.get("stop_reason").and_then(Value::as_str);
++        if interrupted_mode && stop != Some("interrupted") { return Err(anyhow!("invalid interrupted stop")); }
++        if !interrupted_mode && stop.is_some() { return Err(anyhow!("active stop")); }
++        match read_ledger_optional(root, &directory)? {
++            None => pending_unknown = true,
++            Some(ledger) => { let (tasks, wires, inflight) = counts(&ledger)?; pending = json!({"directory": directory, "task_id": task_id, "task_requests": tasks, "wire_requests": wires, "in_flight_requests": inflight}); task_used = task_used.checked_add(tasks).ok_or_else(|| anyhow!("overflow"))?; wire_used = wire_used.checked_add(wires).ok_or_else(|| anyhow!("overflow"))?; }
++        }
++        if pending_unknown { pending = json!({"directory": directory, "task_id": task_id, "task_requests": null, "wire_requests": null, "in_flight_requests": null}); }
++    }
++    let stop_reason = object.get("stop_reason").and_then(Value::as_str);
++    let completed_manifest = stop_reason == Some("completed");
++    if object.get("completed").and_then(Value::as_bool) != Some(completed_manifest) { return Err(anyhow!("manifest completed mismatch")); }
++    if completed_manifest && (!last_completed || pending_value.is_some()) { return Err(anyhow!("invalid completed manifest")); }
++    if object.get("task_requests").and_then(Value::as_u64) != Some(task_used) && !pending_unknown { return Err(anyhow!("manifest task count")); }
++    if object.get("wire_requests").and_then(Value::as_u64) != Some(wire_used) && !pending_unknown { return Err(anyhow!("manifest wire count")); }
++    let status = if completed_manifest { "completed" } else if stop_reason.is_some() { "stopped" } else { "running" };
++    let task_total = if pending_unknown { None } else { Some(task_used) };
++    let wire_total = if pending_unknown { None } else { Some(wire_used) };
++    Ok(json!({"version": 1, "status": status, "stop_reason": stop_reason, "iterations": output_rows, "pending": pending, "requests": {"task_used": task_total, "wire_used": wire_total, "task_limit": max_total, "wire_limit": max_wire, "task_remaining": task_total.map(|x| max_total-x), "wire_remaining": wire_total.map(|x| max_wire-x)}}))
++}
++
++fn positive(obj: &Map<String, Value>, key: &str) -> Result<u64> { let n = obj.get(key).and_then(Value::as_u64).ok_or_else(|| anyhow!("missing {key}"))?; if n == 0 { Err(anyhow!("{key} must be positive")) } else { Ok(n) } }
++fn nonempty<'a>(obj: &'a Map<String, Value>, key: &str) -> Result<&'a str> { let s = obj.get(key).and_then(Value::as_str).ok_or_else(|| anyhow!("missing {key}"))?; if s.is_empty() { Err(anyhow!("empty {key}")) } else { Ok(s) } }
++fn reject_symlink_below(root: &Path, path: &Path) -> Result<()> {
++    let relative = path.strip_prefix(root).map_err(|_| anyhow!("invalid path"))?;
++    let mut current = root.to_path_buf();
++    for component in relative.components() {
++        current.push(component);
++        if fs::symlink_metadata(&current).map(|m| m.file_type().is_symlink()).unwrap_or(false) { return Err(anyhow!("symlink path")); }
++    }
++    Ok(())
++}
++fn reject_symlink(path: &Path) -> Result<()> { let mut current = PathBuf::new(); for component in path.components() { current.push(component); if fs::symlink_metadata(&current).map(|m| m.file_type().is_symlink()).unwrap_or(false) { return Err(anyhow!("symlink path")); } } Ok(()) }
++fn read_ledger(root: &Path, directory: &str) -> Result<Value> { read_ledger_optional(root, directory)?.ok_or_else(|| anyhow!("missing finalized ledger")) }
++fn read_ledger_optional(root: &Path, directory: &str) -> Result<Option<Value>> { let path = root.join(directory).join("state").join("tui-work.json"); reject_symlink_below(root, &path)?; match fs::read(&path) { Ok(bytes) => Ok(Some(serde_json::from_slice(&bytes).context("parse ledger")?)), Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None), Err(e) => Err(e.into()) } }
++fn counts(ledger: &Value) -> Result<(u64,u64,u64)> { let requests = ledger.get("requests").and_then(Value::as_array).ok_or_else(|| anyhow!("missing requests"))?; let mut ids = HashSet::new(); let mut tasks=0; let mut inflight=0; for (index, request) in requests.iter().enumerate() { let o=request.as_object().ok_or_else(|| anyhow!("invalid request"))?; let id = o.get("id").or_else(|| o.get("request_id")).or_else(|| o.get("requestId")).and_then(Value::as_str).filter(|s| !s.is_empty()).map(str::to_owned).unwrap_or_else(|| format!("#{}", index + 1)); if !ids.insert(id) { return Err(anyhow!("duplicate request id")); } if o.get("charge").and_then(Value::as_str).unwrap_or("task") == "task" { tasks+=1; } if o.get("status").and_then(Value::as_str)==Some("in_flight_or_interrupted") { inflight+=1; } } Ok((tasks, requests.len() as u64, inflight)) }
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..c08e1c4 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -3,6 +3,7 @@ mod approvals;
+ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
++mod coupled_status;
+ mod config;
+ mod eval_merge_gate;
+ mod exec;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Summarize a recorded coupled run without executing it
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +642,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,

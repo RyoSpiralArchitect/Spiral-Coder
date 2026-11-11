@@ -1,0 +1,46 @@
+{
+  "assists": [],
+  "persistence_revision": 11,
+  "policy": {
+    "observer_reserved_requests": 8,
+    "transport_repair_limit": 4
+  },
+  "protected_artifacts": {},
+  "request_limit": 32,
+  "requests": [
+    {
+      "charge": "task",
+      "duration_ms": 0,
+      "estimated_input_tokens": 1,
+      "id": 0,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "task",
+      "duration_ms": 0,
+      "estimated_input_tokens": 1,
+      "id": 1,
+      "provider_usage": null,
+      "role": "observer",
+      "status": "completed",
+      "transport_rejection": null
+    },
+    {
+      "charge": "transport",
+      "duration_ms": 0,
+      "estimated_input_tokens": 1,
+      "id": 2,
+      "provider_usage": null,
+      "role": "coder",
+      "status": "completed",
+      "transport_rejection": "native_arguments"
+    }
+  ],
+  "root": "fixture task",
+  "started_at_ms": 1,
+  "task_id": "native-fixture",
+  "tool_root": null
+}

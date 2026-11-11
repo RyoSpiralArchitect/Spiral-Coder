@@ -9,6 +9,13 @@ use std::collections::BTreeSet;
 use std::io::Write;
 use std::path::Path;
 
+pub(super) fn restart_prompt(work: &WorkState) -> String {
+    format!(
+        "[New iteration allowance]\nThis is a fresh, predeclared allowance for the SAME unfinished task: {} task requests, {} currently available to Coder, {} reserved for Observer. Prior blocked reports describe the previous iteration, not current budget exhaustion. Use the retained next step and current failure evidence to choose one concrete inspection, repair, or exact verification now. Do not repeat the old blocked report solely because the previous allowance ended. If a current approval barrier, user refusal, or genuine external blocker prevents work, report it honestly; no permission or completion rule is relaxed. The original task and acceptance conditions remain unchanged.",
+        work.request_limit, work.coder_remaining(), work.policy.observer_reserved_requests
+    )
+}
+
 pub(super) fn last_coder_report(app: &App) -> bool {
     let budget = app.work_budget.snapshot();
     if budget.request_limit.saturating_sub(budget.task_requests()) != 1
@@ -107,12 +114,15 @@ impl Receipt {
         if self.iteration_progress.user_refusal {
             return Some("user_refusal");
         }
-        if self.work.coder_remaining() != 0
-            || !matches!(
-                self.termination.as_str(),
-                "budget_exhausted" | "blocked" | "report_incomplete"
-            )
-        {
+        // Accepted incomplete work can use the next predeclared allowance
+        // without spending the last few requests just to exhaust this round.
+        let may_advance = self.termination == "blocked"
+            || (self.work.coder_remaining() == 0
+                && matches!(
+                    self.termination.as_str(),
+                    "budget_exhausted" | "report_incomplete"
+                ));
+        if !may_advance {
             return Some(&self.termination);
         }
         if self.iteration_progress.changed_files.is_empty()
@@ -125,6 +135,58 @@ impl Receipt {
             return Some("no_new_edit_or_verification");
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod continuation_tests {
+    use super::*;
+
+    fn receipt() -> Receipt {
+        Receipt {
+            completed: false,
+            termination: "blocked".into(),
+            work: crate::work_budget::WorkBudget::new("task", 32, None).snapshot(),
+            iteration_progress: Progress {
+                changed_files: BTreeSet::from(["source.rs".into()]),
+                ..Progress::default()
+            },
+        }
+    }
+
+    #[test]
+    fn early_blocked_continuation_needs_progress_and_no_approval_barrier() {
+        let mut r = receipt();
+        assert_ne!(r.work.coder_remaining(), 0);
+        assert_eq!(r.stop(), None);
+        r.iteration_progress.user_refusal = true;
+        assert_eq!(r.stop(), Some("user_refusal"));
+        r.iteration_progress = Progress::default();
+        assert_eq!(r.stop(), Some("no_new_edit_or_verification"));
+        r.iteration_progress.newly_verified.insert("test".into());
+        assert_eq!(r.stop(), None);
+        r.iteration_progress = Progress::default();
+        r.iteration_progress
+            .newly_reproduced_baselines
+            .insert("test".into());
+        assert_eq!(r.stop(), None);
+    }
+
+    #[test]
+    fn early_blocked_exception_does_not_resume_other_terminations_or_completion() {
+        let mut r = receipt();
+        for reason in [
+            "budget_exhausted",
+            "report_incomplete",
+            "observer_unavailable",
+            "interrupted",
+        ] {
+            r.termination = reason.into();
+            assert_eq!(r.stop(), Some(reason));
+        }
+        r.termination = "blocked".into();
+        r.completed = true;
+        assert_eq!(r.stop(), Some("completed"));
     }
 }
 

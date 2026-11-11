@@ -229,3 +229,36 @@ fn both_roles_keep_unedited_source_work_visible_beside_documentation_proof() {
         assert!(prompt.contains("name the concrete missing fact before proposing another read"));
     }
 }
+
+#[test]
+fn observer_digest_preserves_utf8_within_the_existing_byte_cap() {
+    for limit in [0_usize, 32, 220, 260, 320] {
+        let cap = limit.max(32);
+        for character in ["é", "診", "🐈"] {
+            for offset in 1..character.len() {
+                let prefix = "a".repeat(cap - 3 - offset);
+                let source = format!("{prefix}{}", character.repeat(cap));
+                assert_eq!(meta_digest_text(&source, limit, 2), format!("{prefix}..."));
+            }
+        }
+    }
+    assert_eq!(meta_digest_text(&"a".repeat(32), 32, 1), "a".repeat(32));
+    assert_eq!(meta_digest_text(&"a".repeat(33), 32, 1), format!("{}...", "a".repeat(29)));
+    assert_eq!(meta_digest_text("\r\n診断  \r\n\r\nnext\nignored", 32, 2), "診断\nnext");
+}
+
+#[test]
+fn observer_failure_packet_survives_unicode_at_the_digest_boundary() {
+    let (mut app, _root) = interaction_app();
+    // The 220-byte first-line digest used to truncate inside this multibyte marker.
+    let tool_result = format!("{}🐈 failed compiler diagnostic", "x".repeat(216));
+    app.coder.messages = vec![
+        msg(Role::User, "Repair the compilation failure"),
+        msg(Role::Tool, &tool_result),
+        msg(Role::Assistant, "[error] compilation failed"),
+    ];
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    assert_eq!(packet["recent_tool_results"][0]["first_line"], format!("{}...", "x".repeat(216)));
+    assert_eq!(packet["recent_tool_results"][0]["digest"], tool_result);
+    assert_eq!(packet["actual_outcome"], "[error] compilation failed");
+}

@@ -1,0 +1,14 @@
+{
+  "runtime_commit": "014d05a5cf74f483eda18ae06ee6306db69ff4e0",
+  "full_check_log_sha256": "acd226420d700ceadeaeb9234adff55d6f4c67f159e014f9cd786f88b1ee55b7",
+  "rust_main_passed": 1162,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "phase": "S9 current shared Coder allowance distinguished from one-tool-per-response"
+}

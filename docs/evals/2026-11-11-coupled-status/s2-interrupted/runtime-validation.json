@@ -1,0 +1,13 @@
+{
+  "runtime_commit": "77110da1411a240729fbccdf87d84c4be4b27ffd",
+  "full_check_log_sha256": "43633a709dcc72dbaff81e093536d89b4e0503b5236e1c4808e83111475427da",
+  "rust_main_passed": 1149,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true
+}

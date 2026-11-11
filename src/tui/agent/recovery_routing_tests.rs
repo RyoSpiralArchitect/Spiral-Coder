@@ -469,3 +469,102 @@ fn actual_pruning_preserves_the_success_that_resolved_a_different_check() {
         assert_eq!(resumed.stage, Some(RecoveryStage::Verify));
     }
 }
+
+#[test]
+fn current_authored_test_failure_suppresses_stale_implementation_guidance() {
+    use agent::task_harness::{self, ArtifactMode, TaskHarness, TaskLane};
+    let (root, mut focus, mut messages) = fixture();
+    std::fs::create_dir(root.path().join("src")).unwrap();
+    std::fs::create_dir(root.path().join("tests")).unwrap();
+    for (path, body) in [
+        ("src/main.rs", "mod parser;\nfn main() {}\n"),
+        ("src/parser.rs", "pub fn inspect() {}\n"),
+        ("tests/status.rs", "#[test]\nfn wrong_parent() {}\n"),
+    ] {
+        std::fs::write(root.path().join(path), body).unwrap();
+        read(&mut focus, &mut messages, root.path(), path);
+    }
+    let tc = call("new-test-failure", "exec", json!({"command":SECOND}));
+    record(&mut focus, &mut messages, root.path(), &tc,
+        &format!("FAILED (exit_code: 101)\ncwd: {}\nthread 'wrong_parent' panicked at tests/status.rs:2:1:\nfixture must contain two rows", root.path().display()));
+    let harness = TaskHarness {
+        lane: TaskLane::FixExisting,
+        artifact_mode: ArtifactMode::ExistingFiles,
+    };
+    for diagnosed in [false, true] {
+        if diagnosed {
+            read(&mut focus, &mut messages, root.path(), "tests/status.rs");
+        }
+        let resumed: Vec<Value> =
+            serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
+        assert!(
+            task_harness::infer_fix_existing_focus(&resumed).is_none(),
+            "a pending test failure must suppress old module guesses"
+        );
+        assert!(task_harness::fix_existing_target_hint(&resumed).is_none());
+        let hint = task_harness::build_fix_stage_progress_hint(
+            harness,
+            &resumed,
+            Some(RecoveryStage::Fix),
+            Some(SECOND),
+        )
+        .unwrap();
+        assert!(
+            hint.contains("tests/status.rs") && hint.contains("fixture must contain two rows"),
+            "{hint}"
+        );
+        assert!(!hint.contains("src/parser.rs"), "{hint}");
+        let search = call(
+            "search",
+            "search_files",
+            json!({"dir":"tests", "pattern":"fixture"}),
+        );
+        assert!(task_harness::coerce_fix_existing_tool_call(
+            harness,
+            &resumed,
+            &search,
+            Some(SECOND),
+            root.path().to_str()
+        )
+        .is_none());
+        let block = task_harness::build_progress_gate_block(
+            harness,
+            &search,
+            &resumed,
+            Some(RecoveryStage::Fix),
+            Some(SECOND),
+            Some(0),
+            0,
+        )
+        .unwrap();
+        assert!(
+            block.contains("tests/status.rs") && !block.contains("src/parser.rs"),
+            "{block}"
+        );
+        let shared = agent::task_obligations::project(&resumed, Some(SECOND));
+        assert!(shared
+            .pending_recovery
+            .iter()
+            .any(|h| h.contains("tests/status.rs") && h.contains("fixture must contain two rows")));
+        assert!(
+            !shared
+                .current_commands
+                .iter()
+                .any(|c| c == FIRST || c == SECOND),
+            "diagnosis cannot create check evidence"
+        );
+    }
+    // Only actual successes of both unresolved checks remove the reservation.
+    for (id, command) in [("clear-old", FIRST), ("clear-test", SECOND)] {
+        let tc = call(id, "exec", json!({"command":command}));
+        record(
+            &mut focus,
+            &mut messages,
+            root.path(),
+            &tc,
+            &format!("OK (exit_code: 0)\ncwd: {}", root.path().display()),
+        );
+    }
+    assert!(!focus.is_pending());
+    assert!(task_harness::infer_fix_existing_focus(&messages).is_some());
+}

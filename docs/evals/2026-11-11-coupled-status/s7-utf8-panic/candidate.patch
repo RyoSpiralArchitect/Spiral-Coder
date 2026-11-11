@@ -1,0 +1,14 @@
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..74370d1 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -99,6 +99,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect a native coupled run without providers or tools
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 

@@ -1,0 +1,20 @@
+{
+  "reproducer": "A native mocked chain records an edit, accepts an incomplete done, and gets Observer diagnosis with two Coder requests left. Before: one blocked round. After: resume once, retain edit and validated Observer note, link separate task ledgers; no-progress second round stops.",
+  "controls": [
+    "approval barriers stop even with fresh progress",
+    "early non-blocked terminations still stop",
+    "completed report still stops",
+    "fresh edit, exact-check or first baseline reproduction can advance",
+    "existing exhausted iteration path and finite caps preserved"
+  ],
+  "coupled_runtime_tests": {
+    "passed": 41,
+    "failed": 0
+  },
+  "initial_test_fixture_failure": "The first mock did not match blocked-terminal Observer diagnosis; corrected before the native red/green comparison.",
+  "logs": {
+    "early-blocked-before.log": "2a702da977aa09d56e0faf031b1d5acb29b4fa937c403b406dca63f123d619e2",
+    "early-blocked-before-fixed-mock.log": "2cc2b0d4c2cfacd9f1574bb5481a013090651443d3a4b86b7de04530ed05a386",
+    "early-blocked-after.log": "f1b307aea1cadff7b331a1bb8fef68788bba340e83d7b4584b8e02a89c43b87c"
+  }
+}

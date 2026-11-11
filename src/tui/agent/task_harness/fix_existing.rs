@@ -11,6 +11,13 @@ pub(crate) fn coerce_fix_existing_tool_call(
     {
         return None;
     }
+    if super::super::recovery_focus::RecoveryFocus::from_messages(messages, tool_root, test_cmd)
+        .is_pending()
+    {
+        // Native failure ownership precedes discovery guesses from old reads.
+        // Keep the authored action for the ordinary recovery/scope gates.
+        return None;
+    }
 
     let wants_verify_exec = tc.name == "exec"
         && parse_exec_command_from_args(tc.arguments.as_str())
@@ -360,6 +367,12 @@ pub(crate) fn build_fix_stage_progress_hint(
         return None;
     }
 
+    if let Some(hint) =
+        super::super::recovery_focus::RecoveryFocus::from_messages(messages, None, test_cmd).hint()
+    {
+        return Some(hint);
+    }
+
     let history = observation_history(messages);
     let threshold = match harness.artifact_mode {
         ArtifactMode::ExistingFiles => {
@@ -461,6 +474,10 @@ pub(crate) enum FixExistingFocus {
 }
 
 pub(crate) fn infer_fix_existing_focus(messages: &[Value]) -> Option<FixExistingFocus> {
+    if super::super::recovery_focus::RecoveryFocus::from_messages(messages, None, None).is_pending()
+    {
+        return None;
+    }
     let scope = super::super::explicit_edit_scope::Scope::parse(
         crate::task_origin::root_user_text(messages),
     );

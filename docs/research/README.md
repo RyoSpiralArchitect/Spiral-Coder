@@ -16,6 +16,7 @@ useful edit and verify it. Separate contexts, tool execution and an authored
 | Work on recovery and tool behavior | [Model-independent recovery](../model-independent-recovery.md), [follow-up edits](../followup-edit-safety.md), [file tools](../file-tools.md) |
 | Understand what counts as completion | [Task requirements](../task-requirements.md), [evaluation contract](../evaluation.md) |
 | Run bounded cross-family self-dogfood | [Runner and frozen contracts](../self-dogfood.md), [task catalog](../../benchmarks/self-dogfood-v1/README.md) |
+| Extend Spiral-Coder through a longer coupled run | [Read-only status task](../../benchmarks/self-dogfood-v2/coupled-status/README.md), [frozen runs and limits](../evals/2026-11-11-coupled-status/README.md) |
 | Reproduce ordinary runtime examples | [Benchmark examples](../examples/README.md) |
 | Practice a small complete coding loop | [Boolean settings and JSONL examples](../../benchmarks/examples-v1/README.md) |
 | Try larger repository maintenance tasks | [CLI selection and JSON replay extension](../../benchmarks/coding-v1/README.md#repository-maintenance-with-the-practical-pair-budget) |
@@ -29,7 +30,16 @@ Coder message bytes by 38.8% and Observer prompt bytes by 26.4–30.4%, preservi
 native evidence projections. One saved-state Luna reporting continuation finishes
 in one request. The [fresh R24 run](../evals/2026-11-11-context-compression/long-run/README.md)
 completes the catalog repair in two iterations and 70 wires, with six independent
-groups passing and one frozen ledger gate failed.
+groups passing and one frozen ledger gate failed. The subsequent
+[fresh R25 run](../evals/2026-11-11-context-compression/r25/README.md) passes all
+frozen chain and independent gates in three iterations (73 task requests,
+80 wires); #49 is closed on that bounded result.
+
+The next [coupled-status task](../../benchmarks/self-dogfood-v2/coupled-status/README.md)
+adds a read-only command, durable interrupted-budget accounting, npm routing and
+a measured guide. Its six-iteration envelope is a harder task under a larger
+budget, not a matched comparison with #49. The [readout](../evals/2026-11-11-coupled-status/README.md)
+retains failed launches, provider interruption and incomplete candidates.
 
 The [CLI continuity follow-up](../evals/2026-10-31-cli-continuity/README.md)
 retains edit-diagnosis provenance across continuation, with newer-failure controls

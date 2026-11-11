@@ -1,0 +1,14 @@
+{
+  "runtime_commit": "3b48c73f80810b2a8b91254b21a3a94032ee5900",
+  "full_check_log_sha256": "fe6a99be33f1b1963810187ad53d39748545a995222bc218b105606594c3db64",
+  "rust_main_passed": 1159,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "phase": "S7 fresh-allowance restart and pending-scenario visible diagnostics"
+}

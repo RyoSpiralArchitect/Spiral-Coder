@@ -8,16 +8,42 @@ fn sse(content: serde_json::Value) -> String {
 #[tokio::test]
 async fn headless_output_limit_handoff_uses_the_same_one_report_consumer() {
     for valid in [true, false] {
-        headless_case(valid, "", "length").await;
+        headless_case(valid, "", "length", None).await;
     }
 }
 
 #[tokio::test]
 async fn a_transport_rejected_done_repair_returns_to_coder_for_one_native_report() {
-    headless_case(true, r#"{"summary":"first","summary":"duplicate"}"#, "stop").await;
+    headless_case(
+        true,
+        r#"{"summary":"first","summary":"duplicate"}"#,
+        "stop",
+        None,
+    )
+    .await;
 }
 
-async fn headless_case(valid: bool, repair_text: &str, finish_reason: &str) {
+#[tokio::test]
+async fn duplicate_keys_in_both_observer_answers_leave_one_native_report_with_all_proof() {
+    // Neither rejected payload can supply a trusted suggested action, including
+    // the repair's claim that `done` is appropriate. Only native proof can.
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../../tests/fixtures/observer-report-closeout/duplicate-pair.json"
+    ))
+    .unwrap();
+    let first = fixture["responses"][0].as_str().unwrap();
+    let repair = fixture["responses"][1].as_str().unwrap();
+    for valid in [true, false] {
+        headless_case(valid, repair, "stop", Some(first)).await;
+    }
+}
+
+async fn headless_case(
+    valid: bool,
+    repair_text: &str,
+    finish_reason: &str,
+    initial_raw: Option<&str>,
+) {
     let coder = MockServer::start();
     let observer = MockServer::start();
     let initial = coder.mock(|when, then| {
@@ -45,7 +71,7 @@ async fn headless_case(valid: bool, repair_text: &str, finish_reason: &str) {
         if finish_reason == "stop" {
             args["completed_acceptance"] = json!("expected an array");
         }
-        let raw=json!({"summary":"Report retained proof","suggestions":[{"kind":"done","confidence":0.95,"suggested_tool":"done","suggested_args":args}]}).to_string();
+        let raw=initial_raw.map(str::to_owned).unwrap_or_else(||json!({"summary":"Report retained proof","suggestions":[{"kind":"done","confidence":0.95,"suggested_tool":"done","suggested_args":args}]}).to_string());
         then.status(200).header("content-type", "text/event-stream").body(sse(json!({"choices":[{"delta":{"content":raw},"finish_reason":"stop"}]})));
     });
     let limited = observer.mock(|when, then| {

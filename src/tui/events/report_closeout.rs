@@ -1,11 +1,12 @@
-//! Admission to one final authored report after a transport-rejected Observer
-//! done repair. No advice, acceptance mapping or completion is synthesized.
+//! Admission to one final authored report from native proof/budget or uncertain
+//! Observer advice. No action, acceptance mapping or completion is synthesized.
 use super::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Reason {
     Verified,
     LastCoderRequest,
+    LowConfidence,
 }
 
 pub(super) fn ready(app: &App, reason: Reason) -> bool {
@@ -22,6 +23,15 @@ pub(super) fn ready(app: &App, reason: Reason) -> bool {
     };
     let obligations =
         agent::task_obligations::project(&session.messages, app.project_test_cmd.as_deref());
+    if reason == Reason::LowConfidence {
+        return obligations.task_requirements.declared
+            && !obligations.acceptance_criteria.is_empty()
+            && !agent::evidence_packet::project(
+                &session.messages,
+                app.project_test_cmd.as_deref(),
+            )
+            .has_approval_barrier();
+    }
     if reason == Reason::LastCoderRequest {
         let remaining = app.work_budget.remaining_for("coder");
         return remaining == 1
@@ -45,4 +55,6 @@ pub(super) fn ready(app: &App, reason: Reason) -> bool {
         && obligations.required_diagnostic_read.is_none()
         && !obligations.acceptance_criteria.is_empty()
         && !obligations.current_commands.is_empty()
+        && !agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref())
+            .has_approval_barrier()
 }
