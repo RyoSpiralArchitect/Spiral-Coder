@@ -87,7 +87,9 @@ test('actual Gemini App retries a rejected flat done and keeps native check head
         assert.equal(quietFailure.status, 1);
         assert.match(quietFailure.stdout, /__SPIRAL_CODER_PWD__=/);
       }
-      return json({ ok: true, cwd: '/workspace', exit_code: 0, stdout: '', stderr: turn === 1 ? 'Ran 1 test\nOK' : '' });
+      const stdout = turn === 1 ? 'ordinary test output\n'.repeat(24) : '';
+      const stderr = turn === 1 ? 'Ran 1 test (test result: ok)\nOK' : '';
+      return json({ ok: true, cwd: '/workspace', exit_code: 0, stdout, stderr });
     }
     if (url === '/api/chat_tools_stream') {
       turn++;
@@ -119,7 +121,9 @@ test('actual Gemini App retries a rejected flat done and keeps native check head
   assert.ok(work.messages.some(m => m.tool_calls?.some(call => call.id === 'native-6' && call.function.arguments.includes('@unit'))));
   const receipt = work.messages.find(m => m.tool_call_id === 'native-1')?.content;
   assert.match(receipt, /^OK \(exit_code: 0\) \[pruned \d+L\]\nduration_ms: 0\ncwd: \/workspace(?:\ncwd_after: [^\n]+)?$/);
-  assert.ok(calls[1].body.messages.some(m => m.tool_call_id === 'native-1' && m.content.includes('stderr: Ran 1 test')), 'preserve recent successful unittest output in native proof');
+  const recentReceipt = calls[1].body.messages.find(m => m.tool_call_id === 'native-1')?.content;
+  assert.match(recentReceipt, /\[history digest — kept \d+\/\d+ lines, \d+ chars\]/);
+  assert.match(recentReceipt, /stderr: Ran 1 test/, 'preserve recent successful unittest output in native proof');
   assert.ok(app.requests.filter(r => r.url === '/api/observer_action').every(r => r.body.packet.coder_base_url === google));
 });
 

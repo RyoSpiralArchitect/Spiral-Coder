@@ -6341,14 +6341,16 @@
           if (!isPrunableToolSuccess(content)) continue;
           const lines = content.split("\n");
           if (lines.length <= 2 || / \[pruned \d+L\]$/.test(lines[0])) continue;
-          let end = 1;
+          const headers = [`${lines[0]} [pruned ${lines.length}L]`];
           if (lines[0] === "OK (exit_code: 0)") {
+            const digest = /^\[history digest — kept \d+\/\d+ lines, \d+ chars\]$/;
+            const start = digest.test(lines[1]) ? 2 : 1;
+            let end = start;
             if (/^duration_ms: \d+$/.test(lines[end])) end++;
             if (lines[end]?.startsWith("cwd: ")) end++;
             if (lines[end]?.startsWith("cwd_after: ")) end++;
+            headers.push(...lines.slice(start, end));
           }
-          const headers = lines.slice(0, end);
-          headers[0] += ` [pruned ${lines.length}L]`;
           msgs[idx] = { ...msgs[idx], content: headers.join("\n") };
         }
       };
