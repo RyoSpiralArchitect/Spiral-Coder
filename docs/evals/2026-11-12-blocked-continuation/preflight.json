@@ -1,0 +1,212 @@
+{
+  "baseline_expected": true,
+  "reference_passed": true,
+  "provider_calls": 0,
+  "raw_preflight_sha256": "cbf8f79bfa780b1509e423b330e1ad83cade2f15e64ddef903721f7dcf3222d1",
+  "baseline": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": null,
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "a75b1c8cdf7377fae8181e37bc9c57bd26d5866f3cdefd148b1f6b7c33f9d294"
+    },
+    {
+      "id": "status-visible",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "98a53df9776e295c8a21f9803f33b834243d0ca77cd405abdfa5936acb7b3346"
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 24,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "620d3e2c958aba6a42275bc52d4967e21a5fdb6e009698c575aeefb51e910f69"
+    },
+    {
+      "id": "packaged-status",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "64f47a8d75f6fcf3be10bb93dea3b4ac2e9e1875b9e38a026195a89261c88f56"
+    },
+    {
+      "id": "guide-example",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "723a7e3d8620bea1a8dfe2fbacaeada7a065dff751b81bf1652fb268761b6e5e"
+    },
+    {
+      "id": "status-paths",
+      "passed": false,
+      "exit_code": 1,
+      "expected_test_count_matches": false,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 0,
+        "failed": 3,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "96d92de9e0d8005248bd196dde91a2ebcf7eca07ea4226897948b32f172eddd3"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "889448a486805b8c1f6b21d42811ea2bc936898a4b1f156318fd0a70b04253b7",
+      "log_sha256": "151f58ae26deeac0cb849038dad804abc6d58f3461193640505f2d3469783a13"
+    }
+  ],
+  "reference": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": null,
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "ce16fe531e00952849a24f2638aa237747dbcce41e060556d26939d6862b2779"
+    },
+    {
+      "id": "status-visible",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "4b1ee7f4697c3361a7f6a1f348e1cebbf4b78e2582638002535c97eb1839d78e"
+    },
+    {
+      "id": "status-held-out",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "8ed1f8aef5cb0f32afbf0a521eb911286c743fbbd9b97d94d7ee73222626ca93"
+    },
+    {
+      "id": "packaged-status",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "6880f563b5520dbc4fc2ad7e7def276a89ceb91c7416ea703981c8c331dcb709"
+    },
+    {
+      "id": "guide-example",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "414c6c27ffd79024f0a622b0453bc7ef3f3f49f67307b6f1b513990aa38184af"
+    },
+    {
+      "id": "status-paths",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": false,
+      "baseline_failure_matches": false,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "786fcaf31c390d7de831de683f08752efcebebf260b400939c90e4888dfaed7c"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "exit_code": 0,
+      "expected_test_count_matches": true,
+      "baseline_test_count_matches": true,
+      "baseline_failure_matches": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "candidate_binary_sha256": "188cfe7aadf61c69196b5c2ee3b86f54d98b88a172f3584bc831d60cfba1d6be",
+      "log_sha256": "9cb02cb8f3d5f1c447f55ac53e3aeb67fd773d0d1187cef9261a93e6e3fda6e1"
+    }
+  ]
+}
