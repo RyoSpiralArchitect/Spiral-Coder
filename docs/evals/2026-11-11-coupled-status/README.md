@@ -61,3 +61,12 @@ documents and a native done. Independent cases are 18/24, six invalid-record
 checks fail, and the external standalone-line report requirement also fails.
 Visible, npm, guide and original regressions pass. **Still unqualified and not
 adopted; #82 remains open.** [S9 delivery progress and remaining gates](s9-shared-allowance/README.md).
+
+S10 retains original behavior bullets as typed requirements and requires the
+requested focused tests plus a fifth exact native check. The report recognizer
+now covers the task's unquoted standalone Before/After instruction. Four rounds
+reach native done in 985.451 seconds (103 task / 115 wires), with all five current
+checks and a correctly shaped report. Independent cases reach **23/24**, including
+all six S9 rejection failures; a missing active ledger file still fails. The
+original Gemini environment test independently fails, so stock checks also fail.
+**Unqualified, not adopted, #82 open.** [S10 evidence and limits](s10-validation-obligations/README.md).

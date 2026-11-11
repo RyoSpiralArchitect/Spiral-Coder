@@ -1,0 +1,106 @@
+{
+  "condition": "diagnostic only; archived S10 candidate test binary, two original config tests, 20 declared repetitions; not qualification retry",
+  "binary_sha256": "d29ab88ac34a8fe6210838205c6becea22371b10fec2fd3129ccd37b1b3fcfa4",
+  "trials": [
+    {
+      "trial": 0,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 1,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 2,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 3,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 4,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 5,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 6,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 7,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 8,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 9,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 10,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 11,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 12,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 13,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 14,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 15,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 16,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 17,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 18,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    },
+    {
+      "trial": 19,
+      "exit_code": 0,
+      "log_sha256": "4823ccd27390062f1566c173f2fd295520a34dd5b15dd0d7bc74d881721f9bf9"
+    }
+  ]
+}

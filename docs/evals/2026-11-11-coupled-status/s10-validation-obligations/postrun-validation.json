@@ -1,0 +1,116 @@
+{
+  "condition": "Post-run host test isolation, not a S10 candidate requalification; same test names and assertions; each parent launches an exact child with private environment",
+  "binary_sha256": "8293dcdae5886b0658c7b6ce4240e5f6dd63c6bbd15cecdf7ff6fd343622a03b",
+  "trials": [
+    {
+      "trial": 0,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 1,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 2,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 3,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 4,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 5,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 6,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 7,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 8,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 9,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 10,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 11,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 12,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 13,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 14,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 15,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 16,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 17,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 18,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    },
+    {
+      "trial": 19,
+      "exit_code": 0,
+      "log_sha256": "09e5bdb791a208cf527c3c8ccc842cb39b18aa962612a818ac87e32f2f470756"
+    }
+  ],
+  "full_check_log_sha256": "dea844506edbecaa30f8e50e7583f4f541ea7d370457ea3a749f27d924c0062f",
+  "rust_main_passed": 1164,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true
+}
