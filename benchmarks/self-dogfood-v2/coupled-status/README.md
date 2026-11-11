@@ -156,3 +156,15 @@ evidence gates still decide admissible actions. Once the relevant checks actuall
 succeed, ordinary implementation discovery resumes. S13 combines this runtime
 change, the post-S12 diagnostic correction and a stronger prompt; it is not a
 matched causal comparison.
+
+
+## Reference correction after the PR #83 fork review
+
+The operator reference now checks known finalized sums against the declared caps
+before an absent pending ledger makes total usage unknown. A missing suffix cannot
+hide a known wire-budget violation. A new operator-only native CLI regression
+covers active/interrupted missing-ledger cases: at-cap finalized usage remains
+valid with null total/remaining fields, but one additional known wire is rejected.
+The original 24-case oracle, public fixtures, fault definitions and live budgets
+are unchanged. This correction applies to newly prepared runs; S1–S13 frozen
+references, receipts and qualification results are retained without rerating.

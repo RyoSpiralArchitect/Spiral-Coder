@@ -94,6 +94,8 @@ pub(crate) fn run(args: StatusArgs) -> Result<()> {
             "task_requests":t,"wire_requests":w,"changed_files":r.progress.changed_files,"newly_verified":r.progress.newly_verified}));
     }
     ensure!(!m.completed || m.iterations.last().is_some_and(|r| r.completed), "missing completed row");
+    // Unknown pending usage cannot erase a known finalized-budget violation.
+    ensure!(tasks <= m.max_task_requests && wires <= m.max_wire_requests, "finalized budget exceeded");
     let mut total_t = Some(tasks);
     let mut total_w = Some(wires);
     let pending = if let Some(directory) = pending_dir {

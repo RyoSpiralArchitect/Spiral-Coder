@@ -58,3 +58,30 @@ fn rejects_symlinked_ledger_with_valid_contents() {
     let path=root.join("iteration-01/state/tui-work.json"); let outside=tmp.path().join("outside.json"); fs::rename(&path,&outside).unwrap();
     std::os::unix::fs::symlink(&outside,&path).unwrap(); invoke(&root,false);
 }
+
+#[test]
+fn unknown_pending_usage_does_not_hide_finalized_wire_overflow() {
+    for state in ["running", "unknown"] {
+        let tmp=tempfile::tempdir().unwrap(); fixture(tmp.path(),state);
+        if state=="running" { fs::remove_file(tmp.path().join("iteration-02/state/tui-work.json")).unwrap(); }
+        let manifest=tmp.path().join("iterations.json");
+        let ledger=tmp.path().join("iteration-01/state/tui-work.json");
+        let mut m=read(&manifest); let mut w=read(&ledger);
+        m["max_iterations"]=json!(2); m["max_task_requests_per_iteration"]=json!(2);
+        m["max_task_requests"]=json!(4); m["max_wire_requests"]=json!(4);
+        let mut transport=w["requests"][2].clone(); transport["id"]=json!(3);
+        w["requests"].as_array_mut().unwrap().push(transport.clone());
+        m["iterations"][0]["wire_requests"]=json!(4);
+        if state=="running" { m["wire_requests"]=json!(4); }
+        put(&manifest,&m); put(&ledger,&w);
+        // Known finalized usage exactly at the cap is valid; the unknown
+        // pending suffix still makes total usage and remaining allowance null.
+        let value=invoke(tmp.path(),true);
+        assert!(value["requests"]["wire_used"].is_null());
+        assert!(value["requests"]["wire_remaining"].is_null());
+        transport["id"]=json!(4); w["requests"].as_array_mut().unwrap().push(transport);
+        m["iterations"][0]["wire_requests"]=json!(5);
+        if state=="running" { m["wire_requests"]=json!(5); }
+        put(&manifest,&m); put(&ledger,&w); invoke(tmp.path(),false);
+    }
+}
