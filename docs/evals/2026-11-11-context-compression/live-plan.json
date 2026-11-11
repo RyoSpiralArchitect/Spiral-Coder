@@ -1,0 +1,31 @@
+{
+  "condition": "One saved-state continuation of the same Luna report probe. Same seed bytes, task, canonical workspace and inventory, pair, sampling and 2-request cap as the previous report probe; only the runtime changes. Preserve the first outcome. This is not a fresh original-task qualification or proof of whole-task speedup.",
+  "runtime_commit": "626cc02497fc9bed4f602850c2e1eb4d0df02cc4",
+  "previous_report_sha256": "20f34558bafc8f9023fd22fd7ec68c1157a81d4c3d084a63ff8a88d850f9c7fd",
+  "max_task_requests": 2,
+  "max_wire_requests": 2,
+  "observer_reserved_requests": 1,
+  "transport_repair_requests": 0,
+  "wall_seconds": 210,
+  "external_calls_at_pin": 0,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "temperature": 0,
+      "max_tokens": 32768
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "temperature": 0.2,
+      "max_tokens": 8192
+    }
+  },
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+  "prompt_sha256": "b493932e70c53b7b5d4a04c431151a16a6b191eb418e0240b365cb6c68a7a0e3",
+  "candidate_inventory_sha256": "35b1b3fd1fc2eceac414aae61cf44de240a2e3c236636bb8100a970e3288d595",
+  "layout_sha256": "3d1bf20e611fc208b70b41eb0d719523e13189939e64cff89842dc060c4b8176",
+  "binary_sha256": "6639e73ceadcd48622b2bd84dc1cb79566db917fcf922ffaec05e67842c1b699",
+  "runner_sha256": "108bf25dde13ec999e21ac292d085143fe69211beee6f746723b78a09264c560"
+}
