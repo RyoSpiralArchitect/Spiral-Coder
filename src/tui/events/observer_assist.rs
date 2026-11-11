@@ -263,10 +263,12 @@ pub(crate) fn build_tui_next_action_prompt(
             "fallback":{"type":"string"}
         }
     });
+    let mut view = agent::current_evidence::observer_prompt_packet(packet);
+    view["task_horizon"] = crate::observer_action::strategy::general_horizon(packet);
     format!(
         "This is intervention mode, not critique.\n\
 Tool calls, code changes, and diff application are forbidden.\n\
-Compare minimum_delivery.minimum_coder_requests with next_coder_requests. When little slack remains, name the missing fact before asking for a read. Favor a grounded edit or exact check when permitted. When the minimum no longer fits, identify one achievable advance and what the next iteration must finish. Use the task horizon to weigh the original objective, unfinished deliverables, pending checks and remaining Coder turns. In summary or why_this_first, connect one immediate action to what it unlocks. Where the next step depends on a result, name that decision in the reason.\n\
+Compare task_obligations.minimum_delivery.minimum_coder_requests with work_budget.next_coder_requests. When little slack remains, name the missing fact before asking for a read. Favor a grounded edit or exact check when permitted. When the minimum no longer fits, identify one achievable advance and what the next iteration must finish. Use task_obligations, work_budget and task_horizon to weigh the objective, unfinished deliverables, pending checks and remaining turns. In summary or why_this_first, connect one immediate action to what it unlocks. Where the next step depends on a result, name that decision in the reason.\n\
 Write all free-text explanations in {lang_name}. Keep enum values, tool names, and file paths in English.\n\
 Return JSON only. No markdown. No backticks. No prose outside JSON.\n\n\
 Output JSON Schema (return an instance, not this schema):\n\
@@ -312,7 +314,7 @@ stuck packet:\n\
 {}\n\
 </packet>",
         schema,
-        agent::context_compaction::render(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view })
+        agent::context_compaction::render(&view)
     )
 }
 

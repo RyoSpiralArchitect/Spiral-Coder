@@ -256,8 +256,10 @@ Request context compression:
   Human, runtime and system messages remain intact. Signed, ambiguous and
   incomplete exchanges are retained. Eligible exchanges from earlier human tasks
   have a separate digest before the current task root. Each digest displays up
-  to twelve historical action excerpts and counts omitted entries. Native
-  actions from the current task establish its execution and completion proof.
+  to twelve historical action excerpts and counts omitted entries. A recognized
+  outdated read in the current task contributes its file and range header.
+  Native actions from the current task establish its execution and completion
+  proof.
 - The target is soft: mandatory context can exceed it. `context_compaction`
   telemetry records version, role, before/after serialized message bytes,
   target bytes, compacted exchanges/messages, omitted historical entries and
@@ -273,13 +275,17 @@ Request context compression:
   from executable/citable check IDs and are never resolved in native arguments.
   Actual wire tool schemas, stored packets, authored replies and validation do
   not change. Observer payloads also omit JSON indentation.
-- For a long Coder task whose excerpt matches the human message in the request,
-  the obligations prompt points to that message by its opening text. The full
-  human message stays in the conversation. Both roles read pending items on
-  individual requirements when their aggregate list repeats those items exactly.
-  The general Observer prompt also uses `task_obligations.final_answer` as the
-  source for report facts when its advisory `done` description repeats that
-  guidance. The packet returned by the runtime retains the complete fields.
+- The Coder obligations prompt can point to the full human message by its
+  opening text when exactly one user-role message matches. An ambiguous opening
+  keeps the native excerpt. Both roles read pending items on individual
+  requirements when their aggregate list repeats those items exactly.
+- The general Observer prompt carries strategy, handoff and budget fields in
+  the obligations and budget objects. Its task horizon retains the delivery-fit
+  result and the bounded summaries. Diagnosis and handoff carry a standalone
+  horizon. The general prompt takes report facts from
+  `task_obligations.final_answer` and can omit large advisory `done` command
+  enums when the native binder reproduces every choice from the displayed
+  obligations. The runtime returns the full packet to validators and callers.
 - A new request recomputes its view from native state, including after an edit,
   task change or iteration resume. A compacted view is never saved back into the
   transcript, so repeated compression cannot turn a stale success into proof or

@@ -154,12 +154,75 @@ pub(super) fn compact_observer_summary(packet: &mut Value) {
     };
     if description.as_str() == Some(full.as_str()) {
         let compact = format!(
-            "{} Read the requirements, exact literals, path categories, recorded outcomes, standalone lines, and check facts in task_obligations.final_answer. Follow its claim_guidance. When cite_current_verification_command is true, cite the current exact command in the report. Keep unknown counts unknown.",
+            "{} Use task_obligations.final_answer for clauses, required_literals, path_categories, outcome_rows and check_facts. Copy standalone_outcome_lines verbatim, each on its own line. Follow claim_guidance. When cite_current_verification_command is true, cite that exact command. Keep unknown counts unknown.",
             super::report_surface::SUMMARY_INSTRUCTIONS,
         );
         if compact.len() < full.len() {
             *description = json!(compact);
         }
+    }
+}
+
+/// The general Observer can select from current_commands and citable_checks
+/// directly. Omit a large enum only when the native binder reproduces it.
+pub(super) fn compact_observer_command_choices(packet: &mut Value) {
+    const ITEMS: &str = "/properties/acceptance_evidence/items";
+    const COMMAND: &str = "/properties/acceptance_evidence/items/properties/command";
+    let Some(index) = packet["tool_argument_schemas"]
+        .as_array()
+        .and_then(|schemas| schemas.iter().position(|schema| schema["name"] == "done"))
+    else {
+        return;
+    };
+    let parameters = &packet["tool_argument_schemas"][index]["parameters"];
+    let Some(items) = parameters.pointer(ITEMS) else {
+        return;
+    };
+    let (path, shape) = match items["type"].as_str() {
+        Some("object") => (COMMAND, "object"),
+        Some("string")
+            if items["description"].as_str().is_some_and(|description| {
+                description.contains("<criterion reference> | <verification command>")
+            }) =>
+        {
+            (ITEMS, "string")
+        }
+        _ => return,
+    };
+    let Some(choices) = parameters.pointer(path).and_then(|node| node.get("enum")) else {
+        return;
+    };
+    if !choices.is_array() || choices.to_string().len() < 512 {
+        return;
+    }
+    let obligations = &packet["task_obligations"];
+    let Some(references) = obligations["acceptance_criteria"].as_array() else {
+        return;
+    };
+    let references = references
+        .iter()
+        .filter_map(|criterion| criterion["reference"].as_str().map(str::to_owned))
+        .collect::<Vec<_>>();
+    let Ok(commands) =
+        serde_json::from_value::<Vec<String>>(obligations["current_commands"].clone())
+    else {
+        return;
+    };
+    let checks = match obligations.get("citable_checks") {
+        Some(value) => match serde_json::from_value(value.clone()) {
+            Ok(checks) => checks,
+            Err(_) => return,
+        },
+        None => Vec::new(),
+    };
+    let mut expected = json!({"properties":{"acceptance_evidence":{"items":{"type":shape}}}});
+    bind_parameters(&mut expected, &references, &commands, &checks);
+    if expected.pointer(path).and_then(|node| node.get("enum")) == Some(choices) {
+        packet["tool_argument_schemas"][index]["parameters"]
+            .pointer_mut(path)
+            .and_then(Value::as_object_mut)
+            .expect("the compared enum belongs to a schema object")
+            .remove("enum");
     }
 }
 
@@ -174,6 +237,68 @@ mod tests {
             acceptance_criteria: vec!["Behavior is correct".into(), "Docs explain behavior".into()],
             risks: "regressions".into(),
             assumptions: "fixture exists".into(),
+        }
+    }
+
+    #[test]
+    fn observer_command_choices_reuse_exact_native_lists_in_both_shapes() {
+        let current_commands = vec![
+            format!("python3 check_{}", "a".repeat(640)),
+            "cargo test -q".to_owned(),
+        ];
+        let checks = vec![super::super::check_catalog::Check {
+            id: "unit".into(),
+            command: current_commands[1].clone(),
+        }];
+        let criteria = acceptance_report::criteria(Some(&plan()));
+        for (base, path) in [
+            (
+                "https://api.example",
+                "/properties/acceptance_evidence/items/properties/command",
+            ),
+            (
+                "https://generativelanguage.googleapis.com/v1beta/openai",
+                "/properties/acceptance_evidence/items",
+            ),
+        ] {
+            let mut schemas = super::super::super::suggestion::tool_schemas_for(base);
+            let done = schemas
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|s| s["name"] == "done")
+                .unwrap();
+            bind_parameters(
+                &mut done["parameters"],
+                &["acceptance 1".into(), "acceptance 2".into()],
+                &current_commands,
+                &checks,
+            );
+            let parameters = done["parameters"].clone();
+            let packet = json!({"task_obligations":{"acceptance_criteria":criteria,"current_commands":current_commands,
+                "citable_checks":checks},"tool_argument_schemas":[done]});
+            let mut compact = packet.clone();
+            compact_observer_command_choices(&mut compact);
+            let mut expected = parameters;
+            expected
+                .pointer_mut(path)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove("enum");
+            assert_eq!(compact["tool_argument_schemas"][0]["parameters"], expected);
+            assert_eq!(compact["task_obligations"], packet["task_obligations"]);
+            let mut custom = packet;
+            let items = custom["tool_argument_schemas"][0]["parameters"]
+                .pointer_mut(path)
+                .unwrap();
+            items["enum"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!("a custom choice"));
+            let before = custom.clone();
+            compact_observer_command_choices(&mut custom);
+            assert_eq!(custom, before);
         }
     }
 

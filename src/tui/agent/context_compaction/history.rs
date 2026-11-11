@@ -51,11 +51,26 @@ fn target_excerpt(arguments: &Value) -> String {
 
 fn entry(action: &evidence_packet::ActionEvidence) -> Value {
     // Full arguments (patches/source/commands) stay in the native transcript.
+    let excerpt = action.result.as_deref().map(|result| {
+        let header = result.lines().next().unwrap_or(result);
+        let outdated_read = action.tool == "read_file"
+            && action.executed == Some(true)
+            && matches!(
+                action.freshness,
+                Freshness::Superseded | Freshness::BeforeMutation
+            )
+            && action.arguments["path"].as_str().is_some_and(|path| {
+                crate::file_tools::read_range::header_counts(path, header).is_some()
+            });
+        // Keep the receipt identity and bounds. File text from an old read
+        // competes with current observations and has no proof value here.
+        failure_diagnostics::failure_excerpt(if outdated_read { header } else { result }, 360)
+    });
     json!({"call_id":action.call_id, "tool":action.tool,
         "target_excerpt":target_excerpt(&action.arguments),
         "executed":action.executed,"succeeded":action.succeeded,
         "freshness":action.freshness,"result_step":action.result_step,
-        "result_excerpt":action.result.as_deref().map(|s| failure_diagnostics::failure_excerpt(s, 360))})
+        "result_excerpt":excerpt})
 }
 
 fn approval_output(result: &str) -> bool {

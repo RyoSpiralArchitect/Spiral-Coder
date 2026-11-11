@@ -82,7 +82,7 @@ fn long_coder_task_references_the_human_message_and_keeps_pending_requirements()
     ];
     let obligations = task_obligations::project(&native, None);
     let full = json!(&obligations);
-    let compact = render_coder_obligations(&obligations, &task);
+    let compact = render_coder_obligations(&obligations, &native);
     let view = decode(&serde_json::from_str(&compact).unwrap());
     let original = &view["work_progress"]["original_human_task"];
     assert_eq!(original["source"], "conversation_user_message");
@@ -97,12 +97,38 @@ fn long_coder_task_references_the_human_message_and_keeps_pending_requirements()
     assert_eq!(view["pending_exact_checks"], full["pending_exact_checks"]);
     assert_eq!(json!(&obligations), full);
 
+    let repeated_prefix: String = task.chars().take(200).collect();
+    for ambiguous in [
+        [
+            crate::task_origin::user_message(
+                format!("{repeated_prefix} Earlier requirements."),
+                crate::task_origin::MessageOrigin::User,
+            ),
+            native[0].clone(),
+        ],
+        [
+            native[0].clone(),
+            crate::task_origin::user_message(
+                format!("{repeated_prefix} Runtime feedback."),
+                crate::task_origin::MessageOrigin::Runtime,
+            ),
+        ],
+    ] {
+        let compact = render_coder_obligations(&obligations, &ambiguous);
+        let view = decode(&serde_json::from_str(&compact).unwrap());
+        assert_eq!(
+            view["work_progress"]["original_human_task"],
+            full["work_progress"]["original_human_task"]
+        );
+    }
+
     let mut distinct = full.clone();
     distinct["task_requirements"]["pending"]
         .as_array_mut()
         .unwrap()
         .push(json!("an ungrouped issue"));
-    let rendered = decode(&serde_json::from_str(&render_coder_obligations(&distinct, "")).unwrap());
+    let rendered =
+        decode(&serde_json::from_str(&render_coder_obligations(&distinct, &[])).unwrap());
     assert_eq!(rendered, distinct);
 }
 
@@ -199,6 +225,50 @@ fn long_iterations_compress_wire_history_without_changing_native_proof_or_resume
         let mut wire = crate::agent_session::AgentSession::new(None, None, None, None, projected);
         assert_eq!(wire.repair_for_resume(), None);
     }
+}
+
+#[test]
+fn old_reads_keep_their_header_and_diagnostics_keep_their_excerpts() {
+    let mut messages = vec![json!({"role":"user","content":"Repair src/a.rs."})];
+    add_edits(&mut messages, 0, 18);
+    exchange(
+        &mut messages,
+        "old-read",
+        "read_file",
+        json!({"path":"src/a.rs"}),
+        "[src/a.rs] (1 lines, 16 bytes)\nold source bytes",
+    );
+    exchange(
+        &mut messages,
+        "missing",
+        "read_file",
+        json!({"path":"src/missing.rs"}),
+        "ERROR: file not found",
+    );
+    add_edits(&mut messages, 18, 9);
+    let (wire, metrics) = coder(&messages, None);
+    assert!(metrics.compacted_exchanges > 0);
+    let historical = wire
+        .iter()
+        .find_map(|m| {
+            m["content"]
+                .as_str()?
+                .strip_prefix("[Historical context projection]\n")
+        })
+        .unwrap();
+    let view = decode(&serde_json::from_str(historical).unwrap());
+    let rows = view["last_historical_actions"].as_array().unwrap();
+    for (id, output) in [
+        ("old-read", "[src/a.rs] (1 lines, 16 bytes)"),
+        ("missing", "ERROR: file not found"),
+    ] {
+        assert_eq!(
+            rows.iter().find(|row| row["call_id"] == id).unwrap()["result_excerpt"],
+            output
+        );
+    }
+    assert!(messages.iter().any(|m| m["tool_call_id"] == "old-read"
+        && m["content"].as_str().unwrap().ends_with("old source bytes")));
 }
 
 #[test]

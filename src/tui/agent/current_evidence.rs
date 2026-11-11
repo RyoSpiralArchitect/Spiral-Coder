@@ -142,6 +142,7 @@ pub(crate) fn observer_prompt_packet(packet: &Value) -> Value {
         super::context_compaction::remove_repeated_pending_items(obligations);
     }
     super::acceptance_schema::compact_observer_summary(&mut packet);
+    super::acceptance_schema::compact_observer_command_choices(&mut packet);
     let Some(actions) = packet["execution_evidence"]["actions"].as_array() else {
         return packet;
     };
