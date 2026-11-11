@@ -7,7 +7,7 @@
   "candidate_inventory_sha256": "35b1b3fd1fc2eceac414aae61cf44de240a2e3c236636bb8100a970e3288d595",
   "layout_sha256": "480bc06386c05077391ce5ab39e50156eafb828bce71de2f188e31c64ca83853",
   "binary_sha256": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
-  "runtime_commit": "17ee4e6",
+  "runtime_commit": "17ee4e6295a7c99c20021cd8484d3e80cea95587",
   "max_task_requests": 2,
   "max_wire_requests": 2,
   "observer_reserved_requests": 1,
