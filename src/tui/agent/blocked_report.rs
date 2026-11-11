@@ -206,7 +206,11 @@ mod tests {
             assumptions: "fixture available".into(),
         };
         let mut report = work.clone();
-        report.steps = vec!["Report incomplete work".into()];
+        report.steps = vec![
+            "Report incomplete work".into(),
+            "List unmet checks".into(),
+            "End the report".into(),
+        ];
         let reflection = |action: &str| {
             format!("<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: previous approach failed\nstrategy_change: abandon\nnext_minimal_action: {action}\n</reflect>")
         };
@@ -257,6 +261,14 @@ mod tests {
             restored.messages, messages,
             "projection must not erase the terminal receipt"
         );
+        let strategy =
+            serde_json::to_value(super::super::strategy_memory::project(&restored.messages))
+                .unwrap();
+        assert_eq!(
+            strategy["planned_steps"],
+            json!(work.steps),
+            "both roles must see the work plan, not the terminal report plan"
+        );
         let mut compacted = restored.messages.clone();
         // Put work anchors beyond the recent window, leaving the report later.
         compacted.splice(
@@ -281,6 +293,11 @@ mod tests {
                 .chosen_strategy
                 .as_deref(),
             Some("Inspect the failing parser branch")
+        );
+        assert_eq!(
+            serde_json::to_value(super::super::strategy_memory::project(&compacted)).unwrap()
+                ["planned_steps"],
+            json!(work.steps)
         );
         for result in [
             json!({"role":"tool","tool_call_id":"other","content":"OK: blocked","blocked_report":{}}),

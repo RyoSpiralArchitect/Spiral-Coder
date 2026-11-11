@@ -82,7 +82,10 @@ pub(super) fn project(messages: &[Value]) -> Option<View> {
     }
     let plan = task
         .iter()
+        .enumerate()
         .rev()
+        .filter(|(index, _)| !super::blocked_report::is_accepted_closeout(task, *index))
+        .map(|(_, message)| message)
         .filter(|m| m["role"] == "assistant")
         .filter_map(|m| serde_json::from_value::<PlanBlock>(m.get("accepted_plan")?.clone()).ok())
         .find(|plan| validate_plan(plan).is_ok());
