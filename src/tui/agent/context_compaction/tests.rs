@@ -68,6 +68,100 @@ fn repeated_context_is_lossless_for_commands_unicode_and_literals() {
 }
 
 #[test]
+fn long_coder_task_references_the_human_message_and_keeps_pending_requirements() {
+    let command = format!("python3 -S check_{}", "x".repeat(600));
+    let task = format!(
+        "Repair src/a.rs.\n{}\n<task_requirements>\n{}\n</task_requirements>",
+        "Source and documentation must agree. 猫\n".repeat(55),
+        json!({"version":1,"requirements":[{"id":"repair","description":"Repair the source",
+            "artifacts":[{"path":"src/a.rs","kind":"source"}],"checks":[{"command":command}]}]})
+    );
+    let native = vec![
+        crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User),
+        crate::task_origin::user_message("Continue.", crate::task_origin::MessageOrigin::Runtime),
+    ];
+    let obligations = task_obligations::project(&native, None);
+    let full = json!(&obligations);
+    let compact = render_coder_obligations(&obligations, &native);
+    let view = decode(&serde_json::from_str(&compact).unwrap());
+    let original = &view["work_progress"]["original_human_task"];
+    assert_eq!(original["source"], "conversation_user_message");
+    assert!(task.starts_with(original["starts_with"].as_str().unwrap()));
+    assert_eq!(original["total_chars"], task.chars().count());
+    assert_eq!(coder(&native, None).0, native);
+    assert!(view["task_requirements"].get("pending").is_none());
+    assert_eq!(
+        view["task_requirements"]["requirements"],
+        full["task_requirements"]["requirements"],
+    );
+    assert_eq!(view["pending_exact_checks"], full["pending_exact_checks"]);
+    assert_eq!(json!(&obligations), full);
+
+    let repeated_prefix: String = task.chars().take(200).collect();
+    for ambiguous in [
+        [
+            crate::task_origin::user_message(
+                format!("{repeated_prefix} Earlier requirements."),
+                crate::task_origin::MessageOrigin::User,
+            ),
+            native[0].clone(),
+        ],
+        [
+            native[0].clone(),
+            crate::task_origin::user_message(
+                format!("{repeated_prefix} Runtime feedback."),
+                crate::task_origin::MessageOrigin::Runtime,
+            ),
+        ],
+    ] {
+        let compact = render_coder_obligations(&obligations, &ambiguous);
+        let view = decode(&serde_json::from_str(&compact).unwrap());
+        assert_eq!(
+            view["work_progress"]["original_human_task"],
+            full["work_progress"]["original_human_task"]
+        );
+    }
+
+    let mut distinct = full.clone();
+    distinct["task_requirements"]["pending"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("an ungrouped issue"));
+    let rendered =
+        decode(&serde_json::from_str(&render_coder_obligations(&distinct, &[])).unwrap());
+    assert_eq!(rendered, distinct);
+}
+
+#[test]
+fn observer_prompt_keeps_report_facts_with_one_copy_of_the_bound_guidance() {
+    let report = json!({"clauses":["Include paths and outcomes"],
+        "required_literals":["src/a.rs"],
+        "outcome_rows":[format!("Before: FAILED — {}", "exact check ".repeat(100))],
+        "check_facts":[{"command":"cargo test","passed":null}]});
+    let full = super::super::report_surface::guidance(&report);
+    let packet = json!({"task_obligations":{"final_answer":report},
+    "tool_argument_schemas":[{"name":"done","parameters":{"properties":{
+        "summary":{"type":"string","description":full},"completed_acceptance":{"type":"array"}
+    }}}]});
+    let view = super::super::current_evidence::observer_prompt_packet(&packet);
+    assert_eq!(view["task_obligations"], packet["task_obligations"]);
+    let pointer = "/tool_argument_schemas/0/parameters/properties/summary/description";
+    assert!(view
+        .pointer(pointer)
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .contains("task_obligations.final_answer"));
+    assert_eq!(packet.pointer(pointer), Some(&json!(full)));
+    let mut custom = packet;
+    *custom.pointer_mut(pointer).unwrap() = json!(format!("{full}\nUse custom guidance."));
+    assert_eq!(
+        super::super::current_evidence::observer_prompt_packet(&custom),
+        custom
+    );
+}
+
+#[test]
 fn long_iterations_compress_wire_history_without_changing_native_proof_or_resume() {
     let root = "Repair src/a.rs and document it.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test\n- cargo fmt --check\n</observer_benchmark_plan>";
     let mut native = vec![
@@ -131,6 +225,79 @@ fn long_iterations_compress_wire_history_without_changing_native_proof_or_resume
         let mut wire = crate::agent_session::AgentSession::new(None, None, None, None, projected);
         assert_eq!(wire.repair_for_resume(), None);
     }
+}
+
+#[test]
+fn old_reads_keep_their_header_and_diagnostics_keep_their_excerpts() {
+    let mut messages = vec![json!({"role":"user","content":"Repair src/a.rs."})];
+    add_edits(&mut messages, 0, 18);
+    exchange(
+        &mut messages,
+        "old-read",
+        "read_file",
+        json!({"path":"src/a.rs"}),
+        "[src/a.rs] (1 lines, 16 bytes)\nold source bytes",
+    );
+    exchange(
+        &mut messages,
+        "missing",
+        "read_file",
+        json!({"path":"src/missing.rs"}),
+        "ERROR: file not found",
+    );
+    let range = json!({"path":"src/a.rs","start_line":4,"end_line":6});
+    let wrong_range =
+        "[src/a.rs] (12 lines, 80 bytes) [range: lines 5-6; partial file]\nrange diagnostic";
+    let unknown = "[src/a.rs] (12 lines, 80 bytes) [legacy status]\nlegacy diagnostic";
+    exchange(
+        &mut messages,
+        "bad-range",
+        "read_file",
+        range.clone(),
+        wrong_range,
+    );
+    exchange(
+        &mut messages,
+        "legacy",
+        "read_file",
+        json!({"path":"src/a.rs"}),
+        unknown,
+    );
+    let range_header = "[src/a.rs] (12 lines, 80 bytes) [range: lines 4-6; partial file]";
+    exchange(
+        &mut messages,
+        "valid-range",
+        "read_file",
+        range,
+        &format!("{range_header}\nold range text"),
+    );
+    add_edits(&mut messages, 18, 9);
+    let (wire, metrics) = coder(&messages, None);
+    assert!(metrics.compacted_exchanges > 0);
+    let historical = wire
+        .iter()
+        .find_map(|m| {
+            m["content"]
+                .as_str()?
+                .strip_prefix("[Historical context projection]\n")
+        })
+        .unwrap();
+    let view = decode(&serde_json::from_str(historical).unwrap());
+    let rows = view["last_historical_actions"].as_array().unwrap();
+    for (id, output) in [
+        ("old-read", "[src/a.rs] (1 lines, 16 bytes)"),
+        ("missing", "ERROR: file not found"),
+        ("bad-range", wrong_range),
+        ("legacy", unknown),
+        ("valid-range", range_header),
+    ] {
+        assert_eq!(
+            rows.iter().find(|row| row["call_id"] == id).unwrap()["result_excerpt"],
+            output
+        );
+    }
+    assert!(messages.iter().any(|m| m["tool_call_id"] == "old-read"
+        && m["content"].as_str().unwrap().ends_with("old source bytes")));
 }
 
 #[test]

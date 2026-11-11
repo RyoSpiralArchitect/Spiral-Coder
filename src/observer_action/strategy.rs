@@ -72,6 +72,27 @@ pub(crate) fn horizon(packet: &Value) -> Value {
     })
 }
 
+/// General prompts already carry the full obligations and budget alongside
+/// this view. Diagnosis and handoff prompts depend on the standalone horizon.
+pub(crate) fn general_horizon(packet: &Value) -> Value {
+    let mut view = horizon(packet);
+    let fields = view.as_object_mut().expect("task horizon is an object");
+    for field in [
+        "human_objective_excerpt",
+        "strategy_memory",
+        "previous_iteration_observer",
+        "previous_blocked_report",
+        "minimum_delivery",
+        "shared_task_requests_left",
+        "coder_task_requests_left",
+        "next_coder_requests",
+        "next_coder_turn",
+    ] {
+        fields.remove(field);
+    }
+    view
+}
+
 pub(super) fn needs_handoff(packet: &Value) -> bool {
     let turn = &packet["work_budget"]["next_coder_turn"];
     let o = &packet["task_obligations"];
@@ -136,6 +157,18 @@ mod tests {
         assert_eq!(
             view["declared_paths_without_edit_receipts"]["items"],
             json!(["guide.md"])
+        );
+        let mut projected_budget = packet["work_budget"].clone();
+        let obligations = task_obligations::project(&messages, None);
+        project_budget(&mut projected_budget, Some(&obligations), true);
+        packet["work_budget"] = projected_budget;
+        let general = general_horizon(&packet);
+        assert!(general.get("strategy_memory").is_none());
+        assert!(general.get("next_coder_requests").is_none());
+        assert_eq!(general["delivery_fits_known_slots"], true);
+        assert_eq!(
+            general["declared_paths_without_edit_receipts"],
+            view["declared_paths_without_edit_receipts"]
         );
         for diagnostic in [false, true] {
             if diagnostic {

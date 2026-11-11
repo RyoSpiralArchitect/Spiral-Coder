@@ -263,10 +263,12 @@ pub(crate) fn build_tui_next_action_prompt(
             "fallback":{"type":"string"}
         }
     });
+    let mut view = agent::current_evidence::observer_prompt_packet(packet);
+    view["task_horizon"] = crate::observer_action::strategy::general_horizon(packet);
     format!(
         "This is intervention mode, not critique.\n\
 Tool calls, code changes, and diff application are forbidden.\n\
-Compare minimum_delivery.minimum_coder_requests with next_coder_requests. When little slack remains, name the missing fact before asking for a read. Favor a grounded edit or exact check when permitted. When the minimum no longer fits, identify one achievable advance and what the next iteration must finish. Use the task horizon to weigh the original objective, unfinished deliverables, pending checks and remaining Coder turns. In summary or why_this_first, connect one immediate action to what it unlocks. Where the next step depends on a result, name that decision in the reason.\n\
+Compare task_obligations.minimum_delivery.minimum_coder_requests with work_budget.next_coder_requests. When little slack remains, name the missing fact before asking for a read. Favor a grounded edit or exact check when permitted. When the minimum no longer fits, identify one achievable advance and what the next iteration must finish. Use task_obligations, work_budget and task_horizon to weigh the objective, unfinished deliverables, pending checks and remaining turns. In summary or why_this_first, connect one immediate action to what it unlocks. Where the next step depends on a result, name that decision in the reason.\n\
 Write all free-text explanations in {lang_name}. Keep enum values, tool names, and file paths in English.\n\
 Return JSON only. No markdown. No backticks. No prose outside JSON.\n\n\
 Output JSON Schema (return an instance, not this schema):\n\
@@ -276,7 +278,7 @@ Rules:\n\
 - Mention exact files, commands, or symbols when possible.\n\
 - task_obligations is projected from the original task and native results. Its explicit artifact_scope.target_files takes precedence over a heuristic intent_anchor.target. referenced_subjects are mentioned as data, not assumed source-edit or read dependencies. Do not widen scope.\n\
 - task_obligations.work_progress preserves the original human task separately from declared proof requirements. Compare the original task and acceptance_criteria with native_file_edits, pending checks and last_done_claims before saying that only documentation or verification remains. A documentation-only requirement does not erase a source repair. A zero edit count is no recorded native file write, not proof the workspace is unchanged; exec can mutate files. Successful writes and old tests do not prove semantic repair.\n\
-- Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
+- Read pending items within each task requirement. Choose from the actual remaining obligation: repair the artifact if needed, run a pending exact check, or author the final report once the other obligations are satisfied. Do not default to read_file.\n\
 - When work_progress shows repeated observations without an edit or exec, name the concrete missing fact before proposing another read. Use the current exact region if it supports a small repair; otherwise obtain only the missing region or use no-tool clarification. A returned read is not necessarily successful diagnosis and does not authorize an invented patch.\n\
 - If task_obligations.diagnostic_patch is present, weigh the saved proposal against the current goal. A suggested read is for diagnosis. A suggested patch requires a new Coder call and fresh checks.\n\
 - If task_obligations.required_diagnostic_read is non-null, the next tool action must read_file that exact path. This failure location can differ from the source to repair. Do not suggest another read, edit, or check until it is observed. A no-tool clarification is allowed when uncertain.\n\
@@ -312,7 +314,7 @@ stuck packet:\n\
 {}\n\
 </packet>",
         schema,
-        agent::context_compaction::render(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view })
+        agent::context_compaction::render(&view)
     )
 }
 

@@ -1,0 +1,27 @@
+{
+  "first_assessment_sha256": "312fa15f5bfdd040b7196b4ee1608dd12f49db8520e25a123f151fc1d89fbdee",
+  "first_failed_gates": [
+    "patch_replays_all_files"
+  ],
+  "correction": "Verifier copies originally inherited umask 077; reran the unchanged sealed candidate under 022. Guide check retried with required spiral-coder basename. No additional model calls or candidate edits.",
+  "first_prepare": {
+    "baseline_commit": "55351155d73675605e478e0518cc09279ae02b80",
+    "runtime_commit": "737b3958714b4c78f3df91534089847fdc310869",
+    "provider_calls": 0,
+    "declaration_sha256": "97c212663c4c69f930243641fad2efed96ca0e74e9af969f45751e9b6b379550"
+  },
+  "matched_assessment_sha256": "8850c11d2e6005bdb21469f773a067703fcd994833c4956f2b609e754c425349",
+  "guide_sha256": "ec5650340f915eccf5215999ac064ffad40548f9e5a5e0cdf5c3a7d3b4f920fa",
+  "source_check_log_sha256": "a174a229c300264916a52b6e010c4af54cc0cef5a860757753ae0d772ed2f633",
+  "source_validation": {
+    "rust_main": 1148,
+    "rust_ignored": 2,
+    "integration": 6,
+    "tui_replay": 20,
+    "python": 97,
+    "web": 80,
+    "npm": 5,
+    "repo_map": 14,
+    "lite_smoke": true
+  }
+}

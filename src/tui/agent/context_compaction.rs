@@ -4,13 +4,22 @@ use serde::Serialize;
 use serde_json::Value;
 
 mod history;
+mod obligations;
 #[cfg(test)]
 mod tests;
 mod text_pool;
 
+pub(super) use obligations::remove_repeated_pending_items;
 pub(crate) use text_pool::render;
 
 const TARGET_BYTES: usize = 64 * 1024;
+
+pub(super) fn render_coder_obligations(obligations: &impl Serialize, messages: &[Value]) -> String {
+    let mut view = serde_json::to_value(obligations).expect("task projection serializes");
+    obligations::reference_human_task(&mut view, messages);
+    remove_repeated_pending_items(&mut view);
+    render(&view)
+}
 
 #[derive(Debug, Serialize)]
 pub(crate) struct Metrics {

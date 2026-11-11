@@ -49,13 +49,47 @@ fn target_excerpt(arguments: &Value) -> String {
     truncate_output(identity, 180)
 }
 
+fn matches_read_header(arguments: &Value, header: &str) -> bool {
+    use crate::file_tools::read_range::{header_counts, matches_range_header, ReadRequest};
+    let Ok(request) = serde_json::from_value::<ReadRequest>(arguments.clone()) else {
+        return false;
+    };
+    let Some((lines, _, suffix)) = header_counts(&request.path, header) else {
+        return false;
+    };
+    if suffix.is_empty() {
+        // A range may use the plain header when it covers the complete file.
+        return !request.is_range()
+            || (lines > 0
+                && request
+                    .bounds()
+                    .is_ok_and(|(start, end)| start == 1 && end >= lines));
+    }
+    // Ambiguous, cache-wrapped and legacy-pruned outputs keep the usual
+    // excerpt. A bare range header must agree with the native request.
+    !suffix.contains(" [pruned ") && matches_range_header(&arguments.to_string(), header)
+}
+
 fn entry(action: &evidence_packet::ActionEvidence) -> Value {
     // Full arguments (patches/source/commands) stay in the native transcript.
+    let excerpt = action.result.as_deref().map(|result| {
+        let header = result.lines().next().unwrap_or(result);
+        let outdated_read = action.tool == "read_file"
+            && action.executed == Some(true)
+            && matches!(
+                action.freshness,
+                Freshness::Superseded | Freshness::BeforeMutation
+            )
+            && matches_read_header(&action.arguments, header);
+        // Keep the receipt identity and bounds. File text from an old read
+        // competes with current observations and has no proof value here.
+        failure_diagnostics::failure_excerpt(if outdated_read { header } else { result }, 360)
+    });
     json!({"call_id":action.call_id, "tool":action.tool,
         "target_excerpt":target_excerpt(&action.arguments),
         "executed":action.executed,"succeeded":action.succeeded,
         "freshness":action.freshness,"result_step":action.result_step,
-        "result_excerpt":action.result.as_deref().map(|s| failure_diagnostics::failure_excerpt(s, 360))})
+        "result_excerpt":excerpt})
 }
 
 fn approval_output(result: &str) -> bool {
