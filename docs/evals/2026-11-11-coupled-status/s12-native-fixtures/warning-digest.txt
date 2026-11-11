@@ -1,0 +1,11 @@
+OK: wrote 'docs/coupled-status.md' (41 lines, 1874 bytes)
+[history digest — kept 10/39 lines, 1599 chars]
+[auto-test] ✗ FAILED (exit 101)
+--> src/coupled_status.rs:2:5
+--> src/coupled_status.rs:3:26
+--> src/coupled_status.rs:70:5
+--> src/coupled_status.rs:80:5
+[hash] before=30406ea523c53def after=46af8fe6a27d4250
+test result: ok. 1148 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 2.23s
+running 4 tests
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.27s

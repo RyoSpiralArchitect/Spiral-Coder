@@ -98,5 +98,13 @@ mutation credit. [S12 controls](s12-sensitivity-controls.json). Both roles retai
 the new obligation through context projection. The full local suite passes
 1,169 Rust main tests plus two ignored, six integration cases and 20 TUI replays,
 with Python, web, npm, repo-map and Lite smoke checks passing. This is a newly
-pinned combined condition, not a matched causal comparison. Provider calls have
-not started at this prospective commit; the first terminal will be retained.
+pinned combined condition, not a matched causal comparison. The first terminal is now retained: six rounds, 1,837.266 seconds, 192 task /
+213 wire requests, stopped at the iteration limit. **All 24 original cases and
+26 path subcases pass**, as do the visible, npm and guide checks. The generated
+tests use the native helper but one assumes two fixture rows where only one
+exists: three pass / one fails on both candidate and valid reference, so no
+fault-detection credit is awarded. Stock checks fail there, final exact proof is
+stale and the final report is rejected. All Observer primaries are at least
+0.87, so the new low-confidence path has deterministic coverage but no live
+invocation. **Still unqualified, not adopted, #82 open.**
+[S12 evidence and post-run diagnostic correction](s12-native-fixtures/README.md).

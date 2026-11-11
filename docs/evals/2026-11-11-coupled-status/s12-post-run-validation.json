@@ -1,0 +1,40 @@
+{
+  "basis_run": "S12",
+  "sealed_receipt_sha256": "b00a2b63556d86e4461fefe35bb34172de33c030e049fd258bb3ea55332d3825",
+  "frozen_runtime_commit": "ba0ad867d444fffde6c5f82f054ad9b21f966e90",
+  "post_run_source_sha256": "af96def44da253cf436f29d44deb4c7a41b868a8102113c8626fb7c18a1880d7",
+  "change": "Exclude Rust warning locations from bounded error digests; retain a panic location and immediate cause through pruning and recovery summaries. Native failure status and all evidence gates unchanged.",
+  "reproducer": "Minimal native automatic-output and history-pruning test based on S12 warning-only digest and independently observed authored-test panic. Not a provider replay.",
+  "red": {
+    "exit_code": 101,
+    "passed": 0,
+    "failed": 1,
+    "log_sha256": "1efda6ce5fe4e6991f7ed60e1ee84195b341c13b55b47560c8e4896256710145"
+  },
+  "green": {
+    "passed": 15,
+    "failed": 0,
+    "log_sha256": "82e04f969cb042bc849f1aa03a5e36109e0a5a9ae648081de29c0fc3e30f1033"
+  },
+  "test_development": {
+    "empty_exact_selection_not_counted_sha256": "c989c8272cf3214620573b7ce179a3a00662ef24ad45944dfb750eb443d4f1a9",
+    "initial_green_test_header_mismatch_sha256": "1e335c57ca6893a0d7a103d387aae28acb352eddaec230c113103464a0d73b97",
+    "header_correction": "The shared pruning helper produces a patch_file result; the native outcome assertion now uses that tool identity."
+  },
+  "full_check": {
+    "exit_code": 0,
+    "log_sha256": "9722834b8f9d3cdd2130298ad67ab55c60627c5a9ae7e91dd553555eb05c10aa",
+    "rust_main_passed": 1170,
+    "rust_ignored": 2,
+    "integration": 6,
+    "tui_replay": 20,
+    "python": 97,
+    "web": 80,
+    "npm": 5,
+    "repo_map": 14,
+    "lite_smoke": true
+  },
+  "provider_calls_after_fix": 0,
+  "s12_rerated": false,
+  "candidate_adopted": false
+}

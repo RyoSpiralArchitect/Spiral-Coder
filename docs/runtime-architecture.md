@@ -122,7 +122,11 @@ anchor or satisfy a documentation follow-up. `execution_evidence` supplies the
 same positive write/exec and first automatic-test status checks used by Coder.
 Failed automatic tests preserve the write and its failure diagnostic. Exact
 successful Rust test-result lines are excluded from the bounded failure digest,
-even when their test names contain `failed` or `assertion`. Display filtering
+even when their test names contain `failed` or `assertion`. Rust warning headers
+and their arrow locations cannot displace the failing test's diagnostic. A
+panic retains its location and one bounded following cause line, including
+fixture preconditions without an `error` keyword. Real compiler error locations
+and bare historical locations remain available. Display filtering
 changes neither the native exit status nor evidence decisions. A passing
 automatic test without a recorded command supplies no exact replay/eval proof.
 Replay/eval proof requires a successful result and the real CLI grammar for the

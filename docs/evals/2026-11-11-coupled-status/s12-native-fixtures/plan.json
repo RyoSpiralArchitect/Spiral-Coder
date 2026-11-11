@@ -1,0 +1,73 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S12",
+  "created_at": "2026-11-11T17:42:23.581324+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "ba0ad867d444fffde6c5f82f054ad9b21f966e90",
+  "binary_sha256": "43008cc01b803137b3810d6c2aa497b09c4fafc617fade8523604ebab4a59580",
+  "declaration_sha256": "19de48e0a19467c04ab71746c5950050b8a54ab2e9486e83940acfb379488d82",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "9aca3ccb7a652c9600e03ba07fb9235b1942042bcf0f4fa8881cce010b40909c",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "410d0a6b9296ab7e9ec7b9ccd6b9f0a8c3aac38435f46348a664700c4d480824",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Original feature-free baseline plus the existing protected test-only config isolation. Native WorkBudget persistence generates the public work ledger fixture; a new typed test obligation requires a valid unchanged fixture before single-invariant negative mutations. Runtime returns valid low-confidence Observer replies to one native report-only Coder request without accepting advice or changing the 0.75 threshold. No new request allowance. Original 24-case oracle, visible check, 26-subcase path matrix, six native checks, four sensitivity faults and all caps unchanged. New combined condition, not a matched causal comparison. No seed or operator steering",
+  "main_merge_required_before_run": true,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_failed_launch_receipt_sha256": "014cdf2924e61b2899450d8f718438636ecd5c81b6a8f120497725b0a75048a0",
+  "previous_interrupted_receipt_sha256": "459850b48c9008e91685eb0ae87ba89b4f872662e3cd171e7a17d5a7d1beb4a7",
+  "previous_blocked_receipt_sha256": "d6b4256ea711a335be61a6804960025f32bd9385b4ac2b04e5872fb692a95474",
+  "input_changes": [
+    "native_work.json",
+    "prompt.txt",
+    "reference/tests/coupled_status.rs",
+    "spec.json",
+    "status_fixture.py"
+  ],
+  "previous_completed_receipt_sha256": "9ec02865eea565af630a6027793612adbd34a421c4f4e8e97d89630a88a5313e",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [
+    "scripts/native_work.json",
+    "scripts/status_fixture.py"
+  ],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "f216338f3861851de67e5cfe5cab1587977f59270d41dad8f4655987c4a1565c",
+      "thin-control": "6e8cb29941b2d45e9d7240a585b98967de7b945ea8e37a85a9eea53db8f01fb7",
+      "s11-control": "36327795cdea87b5cccc9d342926975c84eb11f6ef3b0e3de331bc9045e62104"
+    }
+  },
+  "previous_terminal_receipt_sha256": "95e75fcec8340867983b6b5207ee9eb3119155fcfe7b3b74ea7e9f86ef8a359b",
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+}

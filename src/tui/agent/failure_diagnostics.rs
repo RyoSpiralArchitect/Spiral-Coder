@@ -95,6 +95,15 @@ fn unittest_case(line: &str) -> Option<&str> {
     (case.contains(" (") && case.ends_with(')')).then_some(line)
 }
 
+fn rust_warning_header(line: &str) -> bool {
+    let header = if line.starts_with("test_") {
+        line.split_once(") ... ").map_or(line, |(_, rest)| rest)
+    } else {
+        line
+    };
+    header.starts_with("warning: ") || header.starts_with("warning[")
+}
+
 /// Display identities only. Even a native failing command can print arbitrary
 /// test-owned text; these names never establish that a case passed or was fixed.
 pub(super) fn unittest_cases(body: &str) -> Vec<String> {
@@ -151,7 +160,26 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
         let source = bounded_source(source);
         let mut last_python_frame = None;
         let mut named_test = false;
+        let mut rust_warning = false;
+        let mut pending_panic_cause = false;
         for line in source.lines().map(str::trim) {
+            if pending_panic_cause && !line.is_empty() {
+                // Rust panic messages need not contain "error" or "assertion".
+                // Retain one bounded cause line, including fixture preconditions.
+                push_line(&mut lines, line);
+                pending_panic_cause = false;
+                continue;
+            }
+            if rust_warning_header(line) {
+                rust_warning = true;
+                continue;
+            }
+            if line.is_empty() || line.starts_with("error") || line.starts_with("Error") {
+                rust_warning = false;
+            }
+            if rust_warning && line.starts_with("--> ") {
+                continue;
+            }
             // Successful Rust test identities can contain "failed" and
             // "assertion". They are not failure causes and must not consume
             // the compact diagnostic's slots. This is display filtering only.
@@ -176,6 +204,11 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
             }
             let low = line.to_ascii_lowercase();
             let exception = python_exception(line);
+            let rust_panic = line.starts_with("thread '") && line.contains(" panicked at ");
+            if rust_panic {
+                rust_warning = false;
+                pending_panic_cause = true;
+            }
             // The named failing case is more useful than a generic Traceback
             // header in the four-line compact diagnostic. Keep its innermost
             // frame and exception together when callers share one assertion.
@@ -191,7 +224,7 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
             if exception
                 || input_type_cause(line)
                 || line.starts_with("--> ")
-                || (line.starts_with("thread '") && line.contains(" panicked at "))
+                || rust_panic
                 || [
                     "error[e",
                     "error: ",
@@ -418,6 +451,49 @@ mod tests {
         );
         assert!(!summary.contains("Traceback"));
         assert!(summary.chars().count() <= 512);
+    }
+
+    #[test]
+    fn rust_warning_locations_cannot_hide_the_panic_cause_after_compaction() {
+        // S12's saved automatic-test digest retained these four warning
+        // locations and lost the authored test's actual failure.
+        let warnings = concat!(
+            "warning: unused import: `clap::Args as ClapArgs`\n --> src/coupled_status.rs:2:5\n\n",
+            "warning: unused import: `Serialize`\n --> src/coupled_status.rs:3:26\n\n",
+            "warning: fields are never read\n --> src/coupled_status.rs:70:5\n\n",
+            "warning: field is never read\n --> src/coupled_status.rs:80:5\n\n"
+        );
+        let failure = format!(
+            "thread 'wrong_parent_linkage_is_rejected_after_valid_baseline' (123) panicked at tests/coupled_status.rs:85:25:\nfixture must contain two rows\n{}",
+            "cleanup output\n".repeat(300)
+        );
+        let output = automatic_test_output(&failure, warnings, 101, "/work");
+        let retained = compact_and_prune(&output);
+        let summary = recovery_summary(&retained, Some("automatic check failed"));
+        for text in [&retained, &summary] {
+            assert!(text.contains("tests/coupled_status.rs:85:25"), "{text}");
+            assert!(text.contains("fixture must contain two rows"), "{text}");
+            assert!(!text.contains("--> src/coupled_status.rs:"), "{text}");
+        }
+        assert_eq!(
+            auto_test_outcome("patch_file", &retained),
+            AutoTestOutcome::Failed
+        );
+
+        // A warning cannot swallow a following compiler error location, and
+        // a historical bare location remains useful when its header was lost.
+        for raw in [
+            "warning: unused import\n --> src/unused.rs:1:1\nerror[E0308]: mismatched types\n --> src/real.rs:5:9\n",
+            "--> src/real.rs:5:9\n",
+        ] {
+            let digest = error_digest("", raw).unwrap();
+            assert!(digest.contains("--> src/real.rs:5:9"), "{digest}");
+            assert!(!digest.contains("src/unused.rs"), "{digest}");
+        }
+        let python = "test_case (tests.Fixture.test_case) ... warning: unused import\n --> src/unused.rs:1:1\n\nFAIL: test_case (tests.Fixture.test_case)\n  File \"tests/fixture.py\", line 8, in test_case\nAssertionError: expected native data\n";
+        let digest = error_digest("", python).unwrap();
+        assert!(!digest.contains("src/unused.rs"), "{digest}");
+        assert!(digest.contains("AssertionError: expected native data"));
     }
 
     #[test]
