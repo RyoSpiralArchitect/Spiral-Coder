@@ -15,6 +15,11 @@
     "done": 2,
     "patch_file": 8
   },
+  "observed_failure_markers": {
+    "overlong_read": 3,
+    "compile_failure": 3,
+    "recovery_gate": 9
+  },
   "tool_interval_seconds": {
     "exec": 109.213,
     "read_file": 0.001,
@@ -113,5 +118,5 @@
       "trace_sha256": "e89e9bba6f1ab4084ea3b543add37fa89563d8552d6e50200f9871adcfaefdee"
     }
   ],
-  "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls are deduplicated by call ID across retained iteration history. Qualification is assessed separately."
+  "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls and failure markers are deduplicated by call ID across retained iteration history; a result may contain multiple markers and pruned results may omit a marker. Qualification is assessed separately."
 }

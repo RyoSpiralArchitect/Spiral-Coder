@@ -53,3 +53,10 @@ separate operator acceptance task on the same working source.
 [R22 on merged main](../../../docs/evals/2026-11-11-catalog-on-main/README.md)
 reached an authored report in iteration three and passed all six independent
 groups. Its frozen reporting and transport eligibility gates remain failed.
+
+The [R23 efficiency comparison](../../../docs/evals/2026-11-11-catalog-efficiency/README.md)
+retains two saved-state report probes and a fresh original-tree run. Check IDs
+reduce evidence retyping, while the fresh run spends 96 task requests and 106
+wires and ends before final proof. All six independent groups pass. The trace
+separates late artifact delivery, repeated builds and report validation, and
+preserves a guide diagnostic control for a future run.

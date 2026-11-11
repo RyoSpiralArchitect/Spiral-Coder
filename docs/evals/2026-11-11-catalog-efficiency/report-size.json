@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "condition": "literal_commands",
+      "input_token_estimate": 38576,
+      "authored_evidence_command_bytes": 2072,
+      "completed": false,
+      "wire_requests": 2
+    },
+    {
+      "condition": "check_references",
+      "input_token_estimate": 38746,
+      "authored_evidence_command_bytes": 44,
+      "completed": false,
+      "wire_requests": 2
+    }
+  ],
+  "interpretation": "Command-field bytes only, not billed tokens or total input size. Whole-context input estimates increased slightly. Both reporting probes exhausted the same two-wire cap without completion."
+}

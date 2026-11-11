@@ -13,7 +13,7 @@ def load(path):
 def profile(run):
     manifest = load(run / "iterations.json")
     rounds, seen = [], set()
-    all_tools, all_intervals = Counter(), Counter()
+    all_tools, all_intervals, failures = Counter(), Counter(), Counter()
     for item in manifest["iterations"]:
         folder = run / item["directory"]
         report = load(folder / "report.json")
@@ -29,6 +29,17 @@ def profile(run):
             tools[action["tool"]] += 1
             if action["executed"] is False:
                 rejected[action["tool"]] += 1
+            result = action.get("result") or ""
+            for name, marker in [
+                ("overlong_read", "read at most 200 lines per call"),
+                ("ambiguous_diff", "old block not unique"),
+                ("plan_gate", "[Plan Gate]"),
+                ("recovery_gate", "[Recovery Gate]"),
+                ("compile_failure", "could not compile"),
+                ("report_feedback", "Missing from the final answer:"),
+            ]:
+                if marker in result:
+                    failures[name] += 1
         trace_file = folder / "trace.jsonl"
         trace = [json.loads(line) for line in trace_file.read_text().splitlines()]
         intervals = Counter()
@@ -62,9 +73,10 @@ def profile(run):
         "native_round_wall_seconds": sum(r["wall_seconds"] for r in rounds),
         "provider_seconds": sum(sum(r["provider_seconds"].values()) for r in rounds),
         "tool_calls": dict(all_tools),
+        "observed_failure_markers": dict(failures),
         "tool_interval_seconds": dict(all_intervals),
         "rounds": rounds,
-        "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls are deduplicated by call ID across retained iteration history. Qualification is assessed separately.",
+        "interpretation": "Provider durations are recorded request intervals, not token cost. Tool intervals span tool_call to the next agent iteration or outcome and include local overhead. They are timing estimates, not isolated CPU measurements. Tool calls and failure markers are deduplicated by call ID across retained iteration history; a result may contain multiple markers and pruned results may omit a marker. Qualification is assessed separately.",
     }
 
 

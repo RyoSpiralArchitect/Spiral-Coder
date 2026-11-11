@@ -1,0 +1,143 @@
+{
+  "frozen_results_sha256": "80c18c2d7733152c7dd8bb3c479fb731d98d111f1f9401ab9934b1bf289e62ef",
+  "frozen_result_unchanged": true,
+  "current_policy_diagnostic_only": true,
+  "rounds": [
+    {
+      "iteration": 1,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": false,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 32,
+      "wire_requests": 34,
+      "transport": [
+        {
+          "id": 21,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 26,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": false,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 32,
+      "wire_requests": 36,
+      "transport": [
+        {
+          "id": 12,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 13,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 14,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 15,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "same_durable_work": true,
+      "parent_link": true,
+      "frozen_assessor_ledger_verified": false,
+      "current_coupled_bench_configuration": {
+        "roles_match": true,
+        "same_model_flag": true,
+        "both_roles_called": true,
+        "role_counts_match": true,
+        "known_roles_and_charges": true,
+        "native_policy_match": true,
+        "coder_chunk_match": true,
+        "bounded_requests": true,
+        "observer_reservation": true,
+        "transport_eligibility": true
+      },
+      "task_requests": 32,
+      "wire_requests": 36,
+      "transport": [
+        {
+          "id": 0,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 6,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 17,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        },
+        {
+          "id": 32,
+          "role": "coder",
+          "status": "completed",
+          "reason": "governor_block",
+          "correlated_trace": true
+        }
+      ]
+    }
+  ]
+}
