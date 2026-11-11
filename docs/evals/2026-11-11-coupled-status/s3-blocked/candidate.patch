@@ -1,0 +1,93 @@
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..f8403ef 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'coupled-status', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..5ecfed2
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,40 @@
++use anyhow::{Context, Result};
++use std::path::Path;
++
++/// Read-only coupled-run status entry point.
++pub fn run(run_dir: &Path) -> Result<()> {
++    let path = run_dir.join("iterations.json");
++    let bytes = std::fs::read(&path).with_context(|| format!("failed to read {}", path.display()))?;
++    let value: serde_json::Value = serde_json::from_slice(&bytes)
++        .with_context(|| format!("invalid JSON in {}", path.display()))?;
++    let object = value
++        .as_object()
++        .ok_or_else(|| anyhow::anyhow!("iterations manifest must be an object"))?;
++    if object.get("version").and_then(serde_json::Value::as_u64) != Some(1) {
++        anyhow::bail!("unsupported iterations manifest version");
++    }
++    let summary = serde_json::json!({
++        "version": 1,
++        "status": if object.get("completed").and_then(serde_json::Value::as_bool).unwrap_or(false) {
++            "completed"
++        } else if object.get("stop_reason").is_some_and(|v| !v.is_null()) {
++            "stopped"
++        } else {
++            "running"
++        },
++        "stop_reason": object.get("stop_reason").cloned().unwrap_or(serde_json::Value::Null),
++        "completed": object.get("completed").cloned().unwrap_or(serde_json::Value::Bool(false)),
++        "iterations": object.get("iterations").cloned().unwrap_or_else(|| serde_json::json!([])),
++        "pending": serde_json::Value::Null,
++        "requests": serde_json::json!({
++            "task_used": object.get("task_requests").cloned().unwrap_or(serde_json::Value::Null),
++            "wire_used": object.get("wire_requests").cloned().unwrap_or(serde_json::Value::Null),
++            "task_limit": object.get("max_task_requests").cloned().unwrap_or(serde_json::Value::Null),
++            "wire_limit": object.get("max_wire_requests").cloned().unwrap_or(serde_json::Value::Null),
++            "task_remaining": serde_json::Value::Null,
++            "wire_remaining": serde_json::Value::Null
++        })
++    });
++    println!("{}", serde_json::to_string(&summary)?);
++    Ok(())
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..2c35d38 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,6 +4,7 @@ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
+ mod config;
++mod coupled_status;
+ mod eval_merge_gate;
+ mod exec;
+ mod execution_evidence;
+@@ -99,6 +100,13 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Summarize a native multi-iteration coupled run without executing it
++    CoupledStatus {
++        /// Existing coupled-run directory
++        #[arg(long, value_name = "PATH")]
++        run_dir: PathBuf,
++    },
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +646,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus { run_dir }) => coupled_status::run(&run_dir),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,

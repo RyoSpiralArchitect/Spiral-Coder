@@ -7,7 +7,11 @@ and a measured usage guide. The first launch S1 stopped before any provider call
 
 S2 then stopped after 20 real requests on a pre-response connection closure. Its incomplete patch and independent failure are [retained](s2-interrupted/README.md).
 
-S3 starts fresh with the same task and six-iteration envelope, using the bounded send-recovery correction. [Reproducer and controls](send-recovery.json)
+S3 reached an accepted blocked report after 30 task requests / 31 wires, but the scheduler stopped with two Coder requests unused. Its build passes; behavioral and documentation gates fail. [Retained S3](s3-blocked/README.md)
+
+The executor now permits fresh progress from an accepted blocked report to use the next predeclared iteration. Approval barriers, no progress, errors and completion still stop. [Native red/green controls](early-blocked-recovery.json) · [Send-recovery controls](send-recovery.json)
+
+S4 will use the same original task, baseline and six-iteration envelope after local validation of the continuation correction.
 
 [Plan](plan.json) pins the full candidate source at PR #81's
 `7ad8be4`, the separate executor revision, exact binary, frozen input/driver declaration and wrapper hashes.

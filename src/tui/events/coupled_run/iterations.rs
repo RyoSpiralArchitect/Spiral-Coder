@@ -107,12 +107,15 @@ impl Receipt {
         if self.iteration_progress.user_refusal {
             return Some("user_refusal");
         }
-        if self.work.coder_remaining() != 0
-            || !matches!(
-                self.termination.as_str(),
-                "budget_exhausted" | "blocked" | "report_incomplete"
-            )
-        {
+        // Accepted incomplete work can use the next predeclared allowance
+        // without spending the last few requests just to exhaust this round.
+        let may_advance = self.termination == "blocked"
+            || (self.work.coder_remaining() == 0
+                && matches!(
+                    self.termination.as_str(),
+                    "budget_exhausted" | "report_incomplete"
+                ));
+        if !may_advance {
             return Some(&self.termination);
         }
         if self.iteration_progress.changed_files.is_empty()
@@ -125,6 +128,58 @@ impl Receipt {
             return Some("no_new_edit_or_verification");
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod continuation_tests {
+    use super::*;
+
+    fn receipt() -> Receipt {
+        Receipt {
+            completed: false,
+            termination: "blocked".into(),
+            work: crate::work_budget::WorkBudget::new("task", 32, None).snapshot(),
+            iteration_progress: Progress {
+                changed_files: BTreeSet::from(["source.rs".into()]),
+                ..Progress::default()
+            },
+        }
+    }
+
+    #[test]
+    fn early_blocked_continuation_needs_progress_and_no_approval_barrier() {
+        let mut r = receipt();
+        assert_ne!(r.work.coder_remaining(), 0);
+        assert_eq!(r.stop(), None);
+        r.iteration_progress.user_refusal = true;
+        assert_eq!(r.stop(), Some("user_refusal"));
+        r.iteration_progress = Progress::default();
+        assert_eq!(r.stop(), Some("no_new_edit_or_verification"));
+        r.iteration_progress.newly_verified.insert("test".into());
+        assert_eq!(r.stop(), None);
+        r.iteration_progress = Progress::default();
+        r.iteration_progress
+            .newly_reproduced_baselines
+            .insert("test".into());
+        assert_eq!(r.stop(), None);
+    }
+
+    #[test]
+    fn early_blocked_exception_does_not_resume_other_terminations_or_completion() {
+        let mut r = receipt();
+        for reason in [
+            "budget_exhausted",
+            "report_incomplete",
+            "observer_unavailable",
+            "interrupted",
+        ] {
+            r.termination = reason.into();
+            assert_eq!(r.stop(), Some(reason));
+        }
+        r.termination = "blocked".into();
+        r.completed = true;
+        assert_eq!(r.stop(), Some("completed"));
     }
 }
 

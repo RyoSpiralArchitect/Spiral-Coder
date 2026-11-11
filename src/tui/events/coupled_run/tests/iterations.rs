@@ -38,13 +38,46 @@ fn iteration_cli_keeps_a_finite_explicit_upper_bound() {
 
 #[tokio::test]
 async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its_budget() {
+    iteration_case(FirstRound::Exhausted).await;
+}
+
+#[tokio::test]
+async fn a_progressed_early_blocked_round_resumes_and_no_progress_still_stops() {
+    iteration_case(FirstRound::Blocked).await;
+}
+
+#[derive(Clone, Copy)]
+enum FirstRound {
+    Exhausted,
+    Blocked,
+}
+
+async fn iteration_case(first: FirstRound) {
     let server = MockServer::start();
+    let blocked_args = json!({"summary":"The greeting was edited, but independent verification remains unfinished.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[],"next_steps":"Inspect guide.md and verify the greeting before reporting completion."});
+    let blocked_text = "<impact>\nchanged: guide.md greeting\nprogress: edit recorded\nremaining_gap: verification\n</impact>\n<think>\ngoal: Update the greeting in guide.md\nstep: 2\ntool: done\nrisk: inaccurate claims\ndoubt: verification unfinished\nnext: hand off verification\nverify: inspect guide.md\n</think>";
     let coder_first = server.mock(|when,then| {
         when.method(POST).path("/chat/completions").matches(|r| {
             let v:Value=serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
             v["tools"].is_array() && !v.to_string().contains("observed-edit") && !v.to_string().contains("carry-greeting-forward")
         });
         then.status(200).header("content-type","text/event-stream").body(response("patch_file","observed-edit",json!({"path":"guide.md","search":"old","replace":"hello"}),"<evidence>\ntarget_files: 1) guide.md\ntarget_symbols: 1) greeting\nevidence: The retained read shows old in guide.md.\nopen_questions: none\nnext_probe: patch guide.md\n</evidence>\n<think>\ngoal: Update the greeting in guide.md\nstep: 1\ntool: patch_file\nrisk: stale anchor\ndoubt: none\nnext: replace the old greeting\nverify: inspect guide.md\n</think>"));
+    });
+    let early_blocked = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            v["tools"].is_array()
+                && v.to_string().contains("observed-edit")
+                && !v.to_string().contains("carry-greeting-forward")
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(response(
+                "done",
+                "early-blocked",
+                blocked_args.clone(),
+                blocked_text,
+            ));
     });
     let resumed = server.mock(|when, then| {
         when.method(POST).path("/chat/completions").matches(|r| {
@@ -55,15 +88,20 @@ async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its
         });
         then.status(200)
             .header("content-type", "text/event-stream")
-            .body(response(
-                "",
-                "",
-                json!({}),
-                "The current proof is incomplete.",
-            ));
+            .body(match first {
+                FirstRound::Exhausted => {
+                    response("", "", json!({}), "The current proof is incomplete.")
+                }
+                FirstRound::Blocked => {
+                    response("done", "still-blocked", blocked_args.clone(), blocked_text)
+                }
+            });
     });
     let observer=server.mock(|when,then| {
-        when.method(POST).path("/chat/completions").body_contains("Write a handoff");
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let v:Value=serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            !v["tools"].is_array()
+        });
         then.status(200).header("content-type","text/event-stream").body(response("","",json!({}),
             &json!({"summary":"The edit was recorded.","suggestions":[{"kind":"clarify","suggested_tool":null,"suggested_args":{},"reason":"carry-greeting-forward","confidence":0.9}]}).to_string()));
     });
@@ -101,7 +139,10 @@ async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its
         "--out-dir",
         output.to_str().unwrap(),
         "--max-requests",
-        "2",
+        match first {
+            FirstRound::Exhausted => "2",
+            FirstRound::Blocked => "5",
+        },
         "--observer-reserved-requests",
         "1",
         "--iterations",
@@ -122,9 +163,21 @@ async fn a_new_iteration_keeps_the_edit_and_validated_observer_note_but_owns_its
     );
     assert_eq!(manifest["stop_reason"], "no_new_edit_or_verification");
     assert_eq!(manifest["max_iterations"], 6);
-    assert_eq!(manifest["max_task_requests"], 12);
-    assert_eq!(manifest["max_wire_requests"], 12);
-    assert_eq!(manifest["wire_requests"], 4);
+    let (limit, spent) = match first {
+        FirstRound::Exhausted => (12, 4),
+        FirstRound::Blocked => (30, 5),
+    };
+    assert_eq!(manifest["max_task_requests"], limit);
+    assert_eq!(manifest["max_wire_requests"], limit);
+    assert_eq!(manifest["wire_requests"], spent);
+    if matches!(first, FirstRound::Blocked) {
+        assert_eq!(manifest["iterations"][0]["termination"], "blocked");
+        assert_eq!(manifest["iterations"][0]["task_requests"], 3);
+        assert_eq!(manifest["completed"], false);
+        early_blocked.assert_hits(1);
+    } else {
+        early_blocked.assert_hits(0);
+    }
     assert_eq!(
         manifest["iterations"][1]["parent_task_id"],
         manifest["iterations"][0]["task_id"]

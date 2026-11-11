@@ -1631,6 +1631,12 @@ failure once, when the executed command at the task root has a failing
 unittest or libtest count. An ordinary nonzero exit or a repeated failure
 does not earn another iteration.
 A run with positive progress can still fail its acceptance checks.
+An accepted `blocked` termination with this fresh progress can advance even
+with unused Coder requests. It does not increase the declared number of
+iterations or transfer unused credit. Approval barriers/refusals, provider
+interruptions and no-progress rounds still stop; the prior blocked receipt
+remains incomplete. Other incomplete terminations still require exhausted
+Coder allowance to advance.
 
 A version-1 `iteration_handoff` on the original human message stores the
 source task ID, up to 600 characters of an accepted terminal Observer
