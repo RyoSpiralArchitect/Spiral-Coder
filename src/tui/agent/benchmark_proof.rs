@@ -79,6 +79,7 @@ fn exec_invalidates_proof(command: &str, required: &[String], test_cmd: Option<&
 }
 
 /// Keep proof and invalidation exchanges together when the message window shrinks.
+#[cfg(test)]
 pub(super) fn protected_call_ids(messages: &[Value]) -> BTreeSet<String> {
     let root_user_text = crate::task_origin::root_user_text(messages);
     let required = required_commands(root_user_text);

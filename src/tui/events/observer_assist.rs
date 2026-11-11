@@ -310,8 +310,8 @@ stuck packet:\n\
 <packet>\n\
 {}\n\
 </packet>",
-        serde_json::to_string_pretty(&schema).unwrap_or_else(|_| "{}".to_string()),
-        serde_json::to_string_pretty(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view }).unwrap_or_else(|_| "{}".to_string())
+        schema,
+        agent::context_compaction::render(&{ let mut view = agent::current_evidence::observer_prompt_packet(packet); view["task_horizon"] = crate::observer_action::strategy::horizon(packet); view })
     )
 }
 

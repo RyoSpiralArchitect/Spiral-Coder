@@ -490,6 +490,9 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
         &final_handoff::report_context(&root_user_text, &messages, test_cmd.as_deref()),
     );
     msgs_for_call.push(json!({"role":"system", "content":next_action.prompt()}));
+    let (msgs_for_call, compaction) =
+        context_compaction::coder(&msgs_for_call, test_cmd.as_deref());
+    emit_telemetry_event(&tx, "context_compaction", json!(compaction)).await;
     AssemblyOut {
         messages: msgs_for_call,
         tools: tools_clone,

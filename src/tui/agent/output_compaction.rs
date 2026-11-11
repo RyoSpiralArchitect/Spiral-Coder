@@ -130,6 +130,7 @@ pub(crate) fn extract_error_digest(stdout: &str, stderr: &str) -> Option<String>
 
 /// Returns true if a tool result can safely be pruned (= it was a success).
 /// Failures are never pruned because they are critical context for recovery.
+#[cfg(test)]
 pub(crate) fn is_prunable_tool_result(content: &str) -> bool {
     let c = content.trim_start();
     // exec success
@@ -253,6 +254,7 @@ pub(crate) fn compact_success_tool_result_for_history(tool_name: &str, content: 
 /// compact summary, preserving the first automatic-test status if present.
 /// Each collapsed result saves ~200-2000 tokens.
 /// Only the content field is modified; tool_call_id stays intact.
+#[cfg(test)] // old saved histories remain valid; live requests use context_compaction
 pub(crate) fn prune_old_tool_results(messages: &mut Vec<serde_json::Value>) {
     let tool_indices: Vec<usize> = messages
         .iter()
@@ -341,6 +343,7 @@ pub(crate) fn assistant_message_is_compactable(msg: &serde_json::Value) -> bool 
         || parse_evidence_block(trimmed).is_some()
 }
 
+#[cfg(test)]
 pub(crate) fn summarize_assistant_message(msg: &serde_json::Value) -> Option<String> {
     let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
     let trimmed = content.trim();
@@ -411,6 +414,7 @@ pub(crate) fn summarize_assistant_message(msg: &serde_json::Value) -> Option<Str
     ))
 }
 
+#[cfg(test)]
 pub(crate) fn prune_old_assistant_messages(messages: &mut Vec<serde_json::Value>) {
     let assistant_indices: Vec<usize> = messages
         .iter()

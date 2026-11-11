@@ -236,12 +236,9 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             observer_handoff = Some(failure);
             break;
         }
-        // ── Prune old tool results before sending to save context tokens ───
-        prune_old_tool_results(&mut messages);
-        prune_old_assistant_messages(&mut messages);
-        prune_message_window_with_context(&mut messages, &exec_verification_context);
-        // Re-seed deltas on the post-prune transcript so removed history can
-        // never cancel a new blocked/executed turn in the next measurement.
+        // Keep native exchanges intact across iterations. Only the provider
+        // projection is compacted; recovery and proof never consume a summary.
+        strategy_memory::retain_for_resume(&mut messages);
         prev_blocked_turns = count_governor_blocked_tool_turns(&messages);
         prev_executed_turns = count_executed_tool_turns(&messages);
         emit_telemetry_event(

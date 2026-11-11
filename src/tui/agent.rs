@@ -6,8 +6,8 @@
 ///      before every tool call (~50 tokens).  Prevents wrong-direction errors.
 ///   2. Tool output truncation  — stdout > 1500 chars / stderr > 600 chars are trimmed.
 ///      This is the single largest token-saver on long runs.
-///   3. Context pruning  — tool results older than KEEP_RECENT_TOOL_TURNS are collapsed
-///      to their first line.  Keeps the context window from exploding across sessions.
+///   3. Context projection — old exchanges are compressed for provider requests;
+///      native history remains intact for recovery, proof and session resume.
 ///   4. Error classification  — on exit_code != 0, `classify_error()` identifies the
 ///      error type (env/syntax/path/dep/network/logic) and injects a targeted recovery
 ///      hint before the generic diagnosis protocol.
@@ -57,6 +57,7 @@ mod check_catalog;
 #[cfg(test)]
 mod check_catalog_tests;
 mod closeout;
+pub(crate) mod context_compaction;
 pub(crate) mod current_evidence;
 mod deferred_edit;
 mod done_gate;
@@ -88,6 +89,7 @@ mod implied_actions;
 mod json_fields;
 mod loop_setup;
 mod memory;
+#[cfg(test)] // legacy session-pruning regression coverage
 mod message_window;
 mod meta_harness;
 mod native_arguments;
@@ -213,6 +215,7 @@ use self::memory::{
 };
 #[cfg(test)]
 use self::message_window::prune_message_window;
+#[cfg(test)]
 use self::message_window::prune_message_window_with_context;
 use self::meta_harness::MetaHarness;
 use self::output_compaction::*;

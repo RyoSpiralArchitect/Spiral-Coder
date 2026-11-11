@@ -19,6 +19,7 @@ fn successful_reset(
 }
 
 /// Pruning older successful exchanges must not resurrect preceding failures.
+#[cfg(test)]
 pub(super) fn protected_reset_call_id(
     messages: &[Value],
     context: &ExecVerificationContext<'_>,

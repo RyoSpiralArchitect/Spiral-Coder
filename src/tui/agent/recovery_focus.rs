@@ -76,6 +76,13 @@ pub(crate) struct DiagnosticRead {
 }
 
 impl RecoveryFocus {
+    pub(super) fn unresolved_checks(&self) -> impl Iterator<Item = &str> {
+        self.pending
+            .iter()
+            .chain(&self.deferred)
+            .map(|f| f.check.as_str())
+    }
+
     pub(super) fn required_read(&self) -> Option<DiagnosticRead> {
         let focus = self.pending.as_ref().filter(|_| self.requires_read())?;
         Some(DiagnosticRead {

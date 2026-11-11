@@ -1,0 +1,59 @@
+{
+  "external_provider_calls": 0,
+  "tool_execution": false,
+  "seed_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+  "task_sha256": "b493932e70c53b7b5d4a04c431151a16a6b191eb418e0240b365cb6c68a7a0e3",
+  "binaries": {
+    "old": "d8e27bcd51fcde1b577c168a2f38d63d81b964f5bb080f4d6326980ae7d29ceb",
+    "new": "6639e73ceadcd48622b2bd84dc1cb79566db917fcf922ffaec05e67842c1b699"
+  },
+  "coder": {
+    "old": {
+      "process_exit_code": 1,
+      "payload_bytes": 155118,
+      "messages_bytes": 146737,
+      "message_count": 168,
+      "tools_sha256": "aa4a3dec2a7c4a14e09176655244ba2e9387e4769befa001803afc7eaf83eaf2",
+      "capture_sha256": "4efbc1869e8f6b4b8aeea9238154721c4787d21abfe3156e1054bc49ac5ee3e8"
+    },
+    "new": {
+      "process_exit_code": 1,
+      "payload_bytes": 98153,
+      "messages_bytes": 89772,
+      "message_count": 67,
+      "tools_sha256": "aa4a3dec2a7c4a14e09176655244ba2e9387e4769befa001803afc7eaf83eaf2",
+      "capture_sha256": "77009000b1e1265b54ee5c53b4c00c11de2b22809c4694cae1a2363806dbac91"
+    }
+  },
+  "observer": [
+    {
+      "session_sha256": "b07fbe9dfe1132a5b381fb77ff93550f148bb8511d775ec6b6b602f14410344f",
+      "messages": 157,
+      "old_prompt_bytes": 62164,
+      "new_prompt_bytes": 43256,
+      "native_packet_equal": true
+    },
+    {
+      "session_sha256": "88942ac18bf4bb4cbe16458bc688f11c31d2d02f00a5d7c00859de91f750718d",
+      "messages": 66,
+      "old_prompt_bytes": 67607,
+      "new_prompt_bytes": 49154,
+      "native_packet_equal": true
+    },
+    {
+      "session_sha256": "88c1d21b527681770deecc123c7d2f6755f5336d3eeaf97930f2032fb5eb2948",
+      "messages": 129,
+      "old_prompt_bytes": 70857,
+      "new_prompt_bytes": 51813,
+      "native_packet_equal": true
+    },
+    {
+      "session_sha256": "7a189f41d1221dce3f921c91daa6a0b7edb2e71bd7b0ca8085715d2d544ad4c2",
+      "messages": 192,
+      "old_prompt_bytes": 68744,
+      "new_prompt_bytes": 50619,
+      "native_packet_equal": true
+    }
+  ],
+  "candidate_unchanged": true
+}

@@ -241,6 +241,43 @@ Resume repair:
 - Repair changes history, not the filesystem: interrupted tools may have already
   produced side effects. A missing result is not evidence that an action failed.
 
+Request context compression:
+
+- `src/tui/agent/context_compaction/` owns disposable provider projections, not
+  persistent state. New Coder turns retain native messages in `AgentSession`;
+  recovery, approval, evidence, requirement checks, budget accounting and Observer
+  validation always read those original messages. Previously shortened sessions
+  remain loadable; omitted historical bytes are not reconstructed or certified.
+- Above a 64 KiB metadata-free serialized-message target, the Coder projection
+  replaces eligible old complete exchanges with a labelled historical digest.
+  It keeps the last eight tool turns and sixteen messages, current observations
+  and check receipts, unresolved diagnostic checks, recovery transitions, held
+  proposals, approval refusals, latest structured anchors and admitted plan.
+  Human, runtime and system messages remain intact. Signed, ambiguous and
+  incomplete exchanges are retained. At most twelve historical action excerpts
+  are shown, with counts for omitted entries; excerpts are not executable calls,
+  current file contents, authorization or completion proof.
+- The target is soft: mandatory context can exceed it. `context_compaction`
+  telemetry records version, role, before/after serialized message bytes,
+  target bytes, compacted exchanges/messages, omitted historical entries and
+  protected overflow. These counts exclude tool schemas and are not billed
+  tokens. Compaction adds no provider calls or task-budget allowance.
+- Coder shared obligations and all three next-action Observer modes (general,
+  diagnosis and continuation handoff) use the same `shared_text_v1` encoding
+  when it is smaller. Repeated strings of at least 256 bytes are stored once in
+  `texts`; single-key `{"$context_text":"t1"}` objects in `value` refer to the
+  exact string. A source tag collision disables encoding. No string is shortened
+  by this encoding. The prompt instructs the model to expand references before
+  copying literal commands or report requirements. These references are distinct
+  from executable/citable check IDs and are never resolved in native arguments.
+  Actual wire tool schemas, stored packets, authored replies and validation do
+  not change. Observer payloads also omit JSON indentation.
+- A new request recomputes its view from native state, including after an edit,
+  task change or iteration resume. A compacted view is never saved back into the
+  transcript, so repeated compression cannot turn a stale success into proof or
+  permanently erase an unfinished obligation. Full retained history can still
+  grow on disk; this is a request-context policy, not a storage quota.
+
 Provider tool continuation:
 
 - Native and Web streaming share `src/streaming/tool_calls.rs`. Tool indices keep
@@ -250,8 +287,8 @@ Provider tool continuation:
 - `src/streaming/provider_metadata.rs` owns this opaque metadata. Normal and
   governor-blocked assistant exchanges serialize it unchanged. Session save/load
   and resume repair preserve it on retained complete exchanges; assistant text
-  compaction skips signed turns. Whole-exchange window pruning remains bounded
-  by the existing retention rules.
+  compaction skips signed turns. Request-only history projection retains signed
+  exchanges in full, including their correlated results.
 - Gemini tool requests use `tool_choice: "auto"` so the model can emit the
   required plan/think/evidence text alongside a call. Other compatible providers
   retain `required`; no governor gate is waived.
