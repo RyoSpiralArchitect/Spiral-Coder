@@ -25,6 +25,14 @@ Keep CLI wiring in src/main.rs small, behavior in src/coupled_status.rs, and doc
 
 All existing tests, fixtures, manifests, lockfiles, CI, provider configuration, visible checks and execution settings are protected. Do not inspect external probes/reference repairs, change the scheduler, perform network operations, or edit files outside the list. Do not run scripts/check-local.sh in this candidate; the independent verifier runs it on a disposable copy. Build artifacts belong in the provided CARGO_TARGET_DIR.
 
+Execution checklist (the behavior contract above remains authoritative):
+- Before implementing, read scripts/status_fixture.py as well as scripts/status_visible.py. The visible check covers examples, not the full behavior contract.
+- Keep the admitted goal and acceptance items verbatim when revising a plan. Change only the remaining steps, risks and assumptions; a new phase does not require rewriting the objective.
+- Maintain a checklist for every validation rule above, including negative cases. Add focused tests in tests/coupled_status.rs for contradictory completed/active records, duplicate request IDs, and symlinks at each component of finalized and pending ledger paths. Also cover absent pending ledgers and omitted native charge defaults. Run these tests while implementing. A passing visible example does not establish these rejection rules.
+- Reuse native WorkState where useful. Validate before printing any success JSON. Check every request ID for uniqueness, and each manifest/ledger path component for symlinks before reading it.
+- docs/state-schema.md is append-only for this task. Read its final lines and use a unique end-of-file anchor to append the new section. Do not rewrite, summarize, reformat or replace any existing paragraph. Verify its original content is retained with git diff before the final checks. Write the new guide separately using the measured fixture JSON.
+- After the final edit, run all four exact checks separately, then author done immediately from those receipts. Do not spend remaining turns re-reading unchanged source or rewriting an already accepted plan. Missing semantic checks remain unfinished even when all visible checks are green.
+
 Acceptance:
 1. Native and installed coupled-status produce the specified read-only summary and handle unknown usage honestly.
 2. Validation rejects inconsistent records without outputting success JSON; all existing behavior stays intact.
