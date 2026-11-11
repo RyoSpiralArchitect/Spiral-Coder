@@ -1298,7 +1298,10 @@ Observer opportunities (24/8 gives three Coder requests per Observer initially).
 Early verification failure still yields immediately. Successful completion may
 stop early; reservation does not promise a minimum number of useless requests.
 The derived next-action contract exposes `coder_requests_remaining`, excluding
-Observer-only slots. Coder slices do not force a premature terminal report merely
+Observer-only slots. `max_native_tool_calls_per_response=1` limits one response,
+not the task allowance. Every contract renders the current allowance explicitly;
+historical budget claims must not replace it. This projection spends no requests
+and does not change phase/tool, report or approval gates. Coder slices do not force a premature terminal report merely
 because their local ceiling is close. Transport credits do not increase task
 allowance, clear obligations or bypass a gate.
 

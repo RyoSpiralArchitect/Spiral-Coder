@@ -48,3 +48,8 @@ UTF-8 character and panics after nine requests. This is an executor failure;
 no conclusion about the intended two changes is possible from this run.
 [Preserved panic, pending ledger and incomplete patch](s7-utf8-panic/README.md).
 The UTF-8 correction has a failing-before/passing-after native reproducer.
+
+S8 survives the digest path and resumes actual reads/checks in round 2, but makes
+no further edit and stops after 41 task / 47 wires. Independent cases are 2/24,
+not an improvement. Its final explanation mistakes remaining allowance as one
+call despite 18 Coder requests left. [S8 failure and evidence](s8-restart/README.md).

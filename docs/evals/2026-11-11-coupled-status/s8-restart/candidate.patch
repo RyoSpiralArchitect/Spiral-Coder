@@ -1,0 +1,86 @@
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..f8403ef 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'coupled-status', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..cfa5a71
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,37 @@
++use anyhow::{bail, Result};
++use clap::Args as ClapArgs;
++use serde_json::json;
++use std::path::PathBuf;
++
++#[derive(ClapArgs, Debug)]
++pub struct Args {
++    /// Native coupled-run directory containing iterations.json.
++    #[arg(long)]
++    pub run_dir: PathBuf,
++}
++
++pub fn run(args: Args) -> Result<()> {
++    let manifest = args.run_dir.join("iterations.json");
++    if !manifest.is_file() {
++        bail!("missing iterations manifest: {}", manifest.display());
++    }
++    let value: serde_json::Value = serde_json::from_slice(&std::fs::read(&manifest)?)?;
++    if value.get("version") != Some(&json!(1)) {
++        bail!("unsupported iterations manifest version");
++    }
++    println!("{}", json!({
++        "status": "running",
++        "iterations": [],
++        "pending": null,
++        "requests": {
++            "task_used": 0,
++            "wire_used": 0,
++            "task_limit": value.get("max_task_requests").cloned().unwrap_or(json!(0)),
++            "wire_limit": value.get("max_wire_requests").cloned().unwrap_or(json!(0)),
++            "task_remaining": value.get("max_task_requests").cloned().unwrap_or(json!(0)),
++            "wire_remaining": value.get("max_wire_requests").cloned().unwrap_or(json!(0))
++        },
++        "progress": []
++    }));
++    Ok(())
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..790f23d 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -3,6 +3,7 @@ mod approvals;
+ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
++mod coupled_status;
+ mod config;
+ mod eval_merge_gate;
+ mod exec;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect a native coupled run without executing it
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +642,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,
