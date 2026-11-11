@@ -50,3 +50,24 @@ both active and interrupted missing-ledger cases. Existing assertions, original
 oracle cases and fault definitions are preserved. Historical runs are not
 rerated and no candidate is adopted. The separate review validation receipt
 records binary red/green and preflight/audit results.
+
+## Fix recheck
+
+The same reviewer rechecked `df2f3bc..1264a9d` with project-local context hidden
+and restored immediately afterwards. This is a fix recheck, not a second
+independent full review.
+
+> No actionable remaining findings in the fix recheck (`df2f3bc..1264a9d`).
+> The P2 is resolved.
+
+The reviewer confirmed the finalized guard precedes unknown projection, known
+pending usage still reaches the existing aggregate check, both at-cap and
+overflow states are covered, and source/receipt hashes are consistent. Red and
+green test hashes differ only because one is raw and one rustfmt-formatted.
+The recheck was read-only source/receipt inspection, with no Cargo, provider
+calls or shared-target access; raw execution logs were not independently
+verified. The operator's binary runs are recorded separately in
+[the validation receipt](pr83-review-validation.json).
+
+Stateful annotation: accepted; no additional code change was needed. The
+reference correction does not qualify S13 or close #82.
