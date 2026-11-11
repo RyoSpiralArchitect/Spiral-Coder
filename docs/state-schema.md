@@ -36,6 +36,13 @@ the narrow schema for ordinary access/path diagnosis without resolving the
 failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
+While a correlated recovery failure remains pending, module-discovery guesses
+from older reads cannot supply a replacement repair target or rewrite an
+observation into a different source read. Fix-stage guidance and observation
+stall feedback use the same pending failure, even after its required read.
+This adds no persisted field or edit authority. Actual successful checks resolve
+the existing recovery obligations before ordinary discovery hints resume.
+
 `report_outcomes.rs` derives `final_answer.outcome_rows` only for recognized,
 explicit before/after test-result report clauses. Before is the last confirmed
 check before the first mutation; after is the latest check after the last

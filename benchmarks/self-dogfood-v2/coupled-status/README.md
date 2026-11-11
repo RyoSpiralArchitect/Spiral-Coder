@@ -138,3 +138,21 @@ before mutating one field. The helper also accepts `running`, `interrupted`,
 original visible and independent cases. Operator reference tests exercise this
 CLI entry before any live run. No candidate assertions or implementation are
 supplied by the helper.
+
+
+## S13 fixture shape and current failure guidance
+
+The typed test obligation explicitly requires inspecting row/request cardinality
+before indexing. The unchanged completed helper contains one finalized row. Any
+extended positive scenario must itself succeed before one negative mutation;
+cloning records just to bypass a setup panic is not test repair. No fixture,
+reference, oracle, threshold, sensitivity fault, check or budget is weakened.
+
+The executor suppresses stale implementation guesses while a correlated native
+failure remains pending. Shared failure guidance retains its current location,
+cause and exact check after diagnosis and resume. A diagnostic location is not
+edit permission: original scope, supplied-test preservation, recovery and final
+evidence gates still decide admissible actions. Once the relevant checks actually
+succeed, ordinary implementation discovery resumes. S13 combines this runtime
+change, the post-S12 diagnostic correction and a stronger prompt; it is not a
+matched causal comparison.

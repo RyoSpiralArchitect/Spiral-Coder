@@ -160,6 +160,13 @@ pub(in super::super) fn build_progress_gate_block(
         return None;
     }
 
+    if let Some(hint) =
+        super::super::recovery_focus::RecoveryFocus::from_messages(messages, None, test_cmd).hint()
+    {
+        return Some(format!(
+            "[Progress Gate]\n{attempted_line}\nThis observation does not resolve the current failure. {escalation}\n{hint}\nChoose a bounded action that addresses that failure within the original task scope. The diagnostic location is not permission to edit a supplied test."
+        ));
+    }
     let fix_focus = infer_fix_existing_focus(messages);
     if let Some(FixExistingFocus::ReadImplementation(path)) = fix_focus.as_ref() {
         return Some(format!(

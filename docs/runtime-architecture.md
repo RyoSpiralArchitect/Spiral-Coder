@@ -441,3 +441,13 @@ Stale replies, malformed envelopes, approval barriers, exhausted budgets,
 already-blocked tasks and repeated closeout attempts cannot use this path.
 An accepted blocked report can reach the next predeclared iteration only through
 the existing progress/no-refusal rule. No progress still stops; caps never grow.
+
+
+Pending native recovery owns repair guidance as well as the initial diagnostic
+read. `task_harness` suppresses old implementation guesses/coercions until the
+correlated failure resolves, and progress feedback retains the failure's cause,
+location and exact check. The diagnostic may be in an authored test or a supplied
+test; the original scope and preservation gates still decide what can be edited.
+A read never grants completion proof, and unrelated successful checks do not
+clear the pending failure. This avoids sending an authored fixture failure back
+to an unrelated production module merely because that module was read earlier.
