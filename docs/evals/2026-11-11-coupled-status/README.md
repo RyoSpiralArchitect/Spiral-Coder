@@ -23,7 +23,7 @@ Limits are six iterations, 192 task requests, 216 wires and 3,600 seconds.
 The original baseline contains no solution or new benchmark/reference files.
 
 [Preflight](preflight.json) records the required missing-command baseline
-failures and all seven passing S11 reference groups (six in S1–S10). The visible check, 24 independent
+failures and all seven passing S12 reference groups (six in S1–S10). The visible check, 24 independent
 cases, real assembled npm entry, guide check and all stock regressions were
 executed without provider calls. The separate reference can read the real
 R25 chain and recover its 73 task requests and 80 wires.
@@ -86,3 +86,17 @@ visible check and provider budgets are unchanged. The first terminal is now reta
 and the chain stops when the primary Observer action at confidence 0.74 cannot
 produce a hint under the existing 0.75 threshold. This is not an API outage.
 **Unqualified, not adopted, #82 open.** [S11 evidence](s11-path-boundaries/README.md).
+
+
+S12 pins the native work-ledger fixture and explicit valid-base, single-invariant
+CLI-test obligation. The executor adds one report-only return for a current valid
+Observer primary below 0.75; the advice is never adopted and all completion,
+approval, progress and request-cap gates remain. Reference preflight passes all
+seven groups. Reference-authored tests detect four faults, the thin control
+misses three, and unchanged S11 tests fail both valid-reference cases before any
+mutation credit. [S12 controls](s12-sensitivity-controls.json). Both roles retain
+the new obligation through context projection. The full local suite passes
+1,169 Rust main tests plus two ignored, six integration cases and 20 TUI replays,
+with Python, web, npm, repo-map and Lite smoke checks passing. This is a newly
+pinned combined condition, not a matched causal comparison. Provider calls have
+not started at this prospective commit; the first terminal will be retained.
