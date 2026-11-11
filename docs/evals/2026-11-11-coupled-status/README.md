@@ -5,7 +5,9 @@ The [benchmark contract](../../../benchmarks/self-dogfood-v2/coupled-status/READ
 adds read-only native run inspection, honest unknown pending usage, npm routing
 and a measured usage guide. The first launch S1 stopped before any provider calls at the old four-iteration CLI limit. [Original launch and correction](s1-launch/README.md)
 
-The next prospective condition is S2, using the same task and six-iteration envelope with an executor that accepts up to eight explicitly budgeted iterations.
+S2 then stopped after 20 real requests on a pre-response connection closure. Its incomplete patch and independent failure are [retained](s2-interrupted/README.md).
+
+S3 starts fresh with the same task and six-iteration envelope, using the bounded send-recovery correction. [Reproducer and controls](send-recovery.json)
 
 [Plan](plan.json) pins the full candidate source at PR #81's
 `7ad8be4`, the separate executor revision, exact binary, frozen input/driver declaration and wrapper hashes.
