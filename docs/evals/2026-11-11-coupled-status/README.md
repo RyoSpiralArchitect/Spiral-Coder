@@ -80,4 +80,9 @@ authored tests fail on the valid typed reference because their success fixture
 omits native required fields, so no mutation detection is credited. This is
 diagnostic evidence, not a rerating of S10. [Sensitivity controls](s11-sensitivity-controls.json).
 The new condition is not a matched comparison; the original 24 cases, original
-visible check and provider budgets are unchanged. The live result is pending.
+visible check and provider budgets are unchanged. The first terminal is now retained: four rounds, 1,120.588 seconds, 124 task /
+137 wires. Missing pending paths pass; six dangling-link subcases and three of
+24 original cases fail. Authored tests fail on the reference, docs are missing,
+and the chain stops when the primary Observer action at confidence 0.74 cannot
+produce a hint under the existing 0.75 threshold. This is not an API outage.
+**Unqualified, not adopted, #82 open.** [S11 evidence](s11-path-boundaries/README.md).

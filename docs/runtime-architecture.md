@@ -120,7 +120,10 @@ Observer separates attempted actions from successful results. Native results are
 matched to preceding tool calls once; a rejected edit cannot create a mutation
 anchor or satisfy a documentation follow-up. `execution_evidence` supplies the
 same positive write/exec and first automatic-test status checks used by Coder.
-Failed automatic tests preserve the write and its failure diagnostic. A passing
+Failed automatic tests preserve the write and its failure diagnostic. Exact
+successful Rust test-result lines are excluded from the bounded failure digest,
+even when their test names contain `failed` or `assertion`. Display filtering
+changes neither the native exit status nor evidence decisions. A passing
 automatic test without a recorded command supplies no exact replay/eval proof.
 Replay/eval proof requires a successful result and the real CLI grammar for the
 expected spec; printed command names, help, status masking, another spec and

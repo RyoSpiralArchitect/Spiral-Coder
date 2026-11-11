@@ -152,6 +152,16 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
         let mut last_python_frame = None;
         let mut named_test = false;
         for line in source.lines().map(str::trim) {
+            // Successful Rust test identities can contain "failed" and
+            // "assertion". They are not failure causes and must not consume
+            // the compact diagnostic's slots. This is display filtering only.
+            if line
+                .strip_prefix("test ")
+                .and_then(|name| name.strip_suffix(" ... ok"))
+                .is_some_and(|name| !name.is_empty() && !name.chars().any(char::is_whitespace))
+            {
+                continue;
+            }
             if unittest_case(line).is_some() {
                 push_line(&mut lines, line);
                 last_python_frame = None;
@@ -408,6 +418,42 @@ mod tests {
         );
         assert!(!summary.contains("Traceback"));
         assert!(summary.chars().count() <= 512);
+    }
+
+    #[test]
+    fn passing_test_names_cannot_crowd_out_actual_assertion_after_compaction() {
+        // These three successful test lines polluted the four-line S11 digest.
+        let passing = concat!(
+            "test tui::agent::failure_diagnostics::tests::pending_recovery_keeps_failed_assertion_evidence_after_output_pruning ... ok\n",
+            "test tui::agent::tool_result_history_tests::failed_auto_test_without_error_prefix_keeps_assertion_before_diff ... ok\n",
+            "test tui_replay::tests::failed_observer_parse_diagnostic_names_input_and_preserves_failed_assertion ... ok\n"
+        );
+        let output = format!(
+            "{passing}thread 'public_cli_rejects_wrong_parent_linkage' (2433346) panicked at tests/coupled_status.rs:52:5:\nassertion failed: bad.status.success()\n{}",
+            "cleanup output\n".repeat(300)
+        );
+        let digest = error_digest(&output, "").unwrap();
+        assert!(!digest.contains(" ... ok"), "{digest}");
+        let retained = compact_and_prune(&automatic_test_output(&output, "", 101, "/work"));
+        let summary = recovery_summary(&retained, None);
+        for text in [&retained, &summary] {
+            assert!(text.contains("tests/coupled_status.rs:52:5"), "{text}");
+            assert!(
+                text.contains("assertion failed: bad.status.success()"),
+                "{text}"
+            );
+            assert!(!text.contains(" ... ok"), "{text}");
+        }
+        assert_eq!(
+            auto_test_outcome("patch_file", &retained),
+            AutoTestOutcome::Failed
+        );
+        // Exclude only a complete successful Rust test record, not an assertion
+        // message that happens to end in those same words.
+        let real = "assertion failed: test result was ... ok";
+        assert!(error_digest(real, "").unwrap().contains(real));
+        let failure = "test tests::failed_assertion ... FAILED";
+        assert!(error_digest(failure, "").unwrap().contains(failure));
     }
 
     #[test]
