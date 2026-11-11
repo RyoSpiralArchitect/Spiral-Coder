@@ -50,9 +50,8 @@ pub(super) fn mark(
             // Use the runtime location header, never a cwd printed in stdout.
             // Selection IDs label a command; they are not distinct executions.
             let cwd = a
-                .result
+                .exec_cwd
                 .as_deref()
-                .and_then(crate::execution_evidence::exec_cwd)
                 .or_else(|| a.arguments["cwd"].as_str());
             serde_json::json!({"command":a.arguments["command"], "cwd":cwd})
         } else {

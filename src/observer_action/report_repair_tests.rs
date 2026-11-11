@@ -35,7 +35,7 @@ pub(crate) fn rejected_report() -> Vec<Value> {
     );
     let args = done_args();
     assert_eq!(
-        agent::evidence_packet::acceptance_issue(&messages, &args, Some(CHECK)),
+        agent::evidence_packet::acceptance_issue(&messages, &args, Some(CHECK), None),
         None
     );
     let issue = agent::evidence_packet::report_issue(&messages, "Fixed.", Some(CHECK)).unwrap();

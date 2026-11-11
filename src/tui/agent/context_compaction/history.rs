@@ -1,7 +1,7 @@
 use super::super::{current_evidence::Freshness, evidence_packet, *};
 use super::Metrics;
 use serde_json::{json, Value};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 const RECENT_EXCHANGES: usize = 8;
 const RECENT_MESSAGES: usize = 16;
@@ -41,18 +41,53 @@ fn exchange_end(
     (pending.is_empty() && messages.get(end).is_none_or(|m| m["role"] != "tool")).then_some(end)
 }
 
+fn target_excerpt(arguments: &Value) -> String {
+    let identity = arguments["path"]
+        .as_str()
+        .or_else(|| arguments["command"].as_str())
+        .unwrap_or("");
+    truncate_output(identity, 180)
+}
+
 fn entry(action: &evidence_packet::ActionEvidence) -> Value {
     // Full arguments (patches/source/commands) stay in the native transcript.
-    // This historical excerpt is deliberately not an executable tool call.
-    let identity = action.arguments["path"]
-        .as_str()
-        .or_else(|| action.arguments["command"].as_str())
-        .unwrap_or("");
     json!({"call_id":action.call_id, "tool":action.tool,
-        "target_excerpt":truncate_output(identity, 180),
+        "target_excerpt":target_excerpt(&action.arguments),
         "executed":action.executed,"succeeded":action.succeeded,
         "freshness":action.freshness,"result_step":action.result_step,
         "result_excerpt":action.result.as_deref().map(|s| failure_diagnostics::failure_excerpt(s, 360))})
+}
+
+fn approval_output(result: &str) -> bool {
+    result.starts_with("REJECTED BY USER") || result.starts_with("Awaiting approval")
+}
+
+#[derive(Default)]
+struct Digest {
+    removed: BTreeSet<usize>,
+    entries: VecDeque<Value>,
+    totals: BTreeMap<String, usize>,
+    exchanges: usize,
+    omitted: usize,
+}
+
+impl Digest {
+    fn record(&mut self, key: String, action: Value) {
+        *self.totals.entry(key).or_default() += 1;
+        if self.entries.len() == HISTORY_ENTRIES {
+            self.entries.pop_front();
+            self.omitted += 1;
+        }
+        self.entries.push_back(action);
+    }
+
+    fn render(&self, instruction: &str) -> Value {
+        let digest = json!({"historical_only":true,
+            "instruction":instruction, "compacted_exchanges":self.exchanges,
+            "omitted_older_entries":self.omitted,"tool_execution_status_counts":self.totals,
+            "last_historical_actions":self.entries});
+        json!({"role":"assistant","content":format!("[Historical context projection]\n{}", super::render(&digest))})
+    }
 }
 
 pub(super) fn project(
@@ -95,9 +130,7 @@ pub(super) fn project(
             .iter()
             .filter(|a| {
                 a.freshness == Freshness::Current
-                    || a.result.as_deref().is_some_and(|s| {
-                        s.starts_with("REJECTED BY USER") || s.starts_with("Awaiting approval")
-                    })
+                    || a.result.as_deref().is_some_and(approval_output)
             })
             .map(|a| a.call_id.clone()),
     );
@@ -120,9 +153,6 @@ pub(super) fn project(
             anchors.insert(i);
         }
     }
-    let exchanges: Vec<_> = (current_start..messages.len())
-        .filter_map(|start| exchange_end(messages, start, &counts).map(|end| (start, end)))
-        .collect();
     // Signed/incomplete groups also occupy the recent window. Do not count
     // only eligible groups, which would retain an accidental unbounded tail.
     let recent_call_start = messages
@@ -134,66 +164,98 @@ pub(super) fn project(
         .last()
         .map_or(0, |(i, _)| i);
     let recent_start = recent_call_start.min(messages.len().saturating_sub(RECENT_MESSAGES));
-    let mut removed = BTreeSet::new();
-    let mut history = Vec::new();
-    let mut totals = BTreeMap::<String, usize>::new();
-    for (start, end) in exchanges {
+    let mut prior = Digest::default();
+    let mut current = Digest::default();
+    for start in 0..recent_start {
+        let Some(end) = exchange_end(messages, start, &counts) else {
+            continue;
+        };
         let calls = messages[start]["tool_calls"].as_array().unwrap();
-        if end > recent_start
-            || anchors.range(start..end).next().is_some()
-            || calls.iter().any(|c| {
-                protected.contains(c["id"].as_str().unwrap())
-                    || !actions.contains_key(c["id"].as_str().unwrap())
-            })
-        {
+        if end > recent_start || anchors.range(start..end).next().is_some() {
             continue;
         }
-        for call in calls {
-            let action = actions[call["id"].as_str().unwrap()];
-            *totals
-                .entry(format!(
-                    "{}:{:?}:{:?}",
-                    action.tool, action.executed, action.succeeded
-                ))
-                .or_default() += 1;
-            history.push(entry(action));
-        }
-        removed.extend(start..end);
-        metrics.compacted_exchanges += 1;
+        let digest = if end <= current_start {
+            let results = &messages[start + 1..end];
+            if results
+                .iter()
+                .any(|m| approval_output(m["content"].as_str().unwrap()))
+            {
+                continue;
+            }
+            // Earlier tasks have their own evidence scope. Quote their tool
+            // results as history without assigning current proof or freshness.
+            for result in results {
+                let id = result["tool_call_id"].as_str().unwrap();
+                let call = calls.iter().find(|c| c["id"] == id).unwrap();
+                let tool = call["function"]["name"].as_str().unwrap();
+                let args: Value = call["function"]["arguments"]
+                    .as_str()
+                    .and_then(|s| serde_json::from_str(s).ok())
+                    .unwrap_or(Value::Null);
+                prior.record(format!("{tool}:previous_task"), json!({
+                    "call_id":id,"tool":tool,"task_scope":"previous_task",
+                    "target_excerpt":target_excerpt(&args),
+                    "result_excerpt":failure_diagnostics::failure_excerpt(result["content"].as_str().unwrap(), 360)
+                }));
+            }
+            &mut prior
+        } else if start >= current_start {
+            if calls.iter().any(|c| {
+                protected.contains(c["id"].as_str().unwrap())
+                    || !actions.contains_key(c["id"].as_str().unwrap())
+            }) {
+                continue;
+            }
+            for call in calls {
+                let action = actions[call["id"].as_str().unwrap()];
+                current.record(
+                    format!(
+                        "{}:{:?}:{:?}",
+                        action.tool, action.executed, action.succeeded
+                    ),
+                    entry(action),
+                );
+            }
+            &mut current
+        } else {
+            continue;
+        };
+        digest.removed.extend(start..end);
+        digest.exchanges += 1;
     }
-    if removed.is_empty() {
+    if prior.exchanges + current.exchanges == 0 {
         return messages.to_vec();
     }
     // Older model preambles are replaceable only when the native parser knows
     // their block format. Human/runtime/system/unknown prose stays intact.
-    for (i, msg) in messages
-        .iter()
-        .enumerate()
-        .take(recent_start)
-        .skip(current_start)
-    {
-        if msg["tool_calls"].as_array().is_none_or(Vec::is_empty)
+    for (i, msg) in messages.iter().enumerate().take(recent_start) {
+        let digest = if i < current_start {
+            &mut prior
+        } else {
+            &mut current
+        };
+        if digest.exchanges > 0
+            && msg["tool_calls"].as_array().is_none_or(Vec::is_empty)
             && !anchors.contains(&i)
             && assistant_message_is_compactable(msg)
         {
-            removed.insert(i);
+            digest.removed.insert(i);
         }
     }
-    metrics.compacted_messages = removed.len();
-    metrics.omitted_history_entries = history.len().saturating_sub(HISTORY_ENTRIES);
-    let recent = history.split_off(metrics.omitted_history_entries);
-    let digest = json!({"historical_only":true,
-        "instruction":"Compressed historical exchanges, not current file contents, executable arguments, approval or proof. Native history is retained. Use current task obligations, pending recovery, the admitted plan and recent unabridged exchanges for the next action. Reread a file when fresh content is needed. Success here describes the recorded tool status, not task completion.",
-        "compacted_exchanges":metrics.compacted_exchanges,
-        "omitted_older_entries":metrics.omitted_history_entries,
-        "tool_execution_status_counts":totals,"last_historical_actions":recent});
-    let first = *removed.first().unwrap();
+    metrics.compacted_exchanges = prior.exchanges + current.exchanges;
+    metrics.compacted_messages = prior.removed.len() + current.removed.len();
+    metrics.omitted_history_entries = prior.omitted + current.omitted;
+    let prior_first = prior.removed.first().copied();
+    let current_first = current.removed.first().copied();
     let mut out = Vec::new();
     for (i, message) in messages.iter().enumerate() {
-        if i == first {
-            out.push(json!({"role":"assistant","content":format!("[Historical context projection]\n{}", super::render(&digest))}));
+        if Some(i) == prior_first {
+            out.push(prior.render("These compressed exchanges belong to earlier user tasks. Use the current task's native results and obligations for proof and the next action."));
         }
-        if !removed.contains(&i) {
+        if Some(i) == current_first {
+            out.push(current.render("Compressed historical exchanges, not current file contents, executable arguments, approval or proof. Native history is retained. Use current task obligations, pending recovery, the admitted plan and recent unabridged exchanges for the next action. Reread a file when fresh content is needed. Success here describes the recorded tool status, not task completion."));
+        }
+        if !prior.removed.contains(&i) && !current.removed.contains(&i) {
             out.push(message.clone());
         }
     }

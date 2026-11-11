@@ -8,9 +8,30 @@ pub(crate) fn exec_may_have_run(content: &str) -> bool {
 }
 
 /// The runtime inserts this header immediately after the first status or hint
-/// line. A cwd printed later by the process does not identify the execution.
+/// line. Older successful history digests inserted their marker before it.
 pub(crate) fn exec_cwd(content: &str) -> Option<&str> {
-    content.lines().nth(1)?.strip_prefix("cwd: ")
+    let mut headers = content.lines().skip(1);
+    let mut line = headers.next()?;
+    if exec_succeeded(content) && history_digest_marker(line) {
+        line = headers.next()?;
+    }
+    line.strip_prefix("cwd: ").filter(|cwd| !cwd.is_empty())
+}
+
+fn history_digest_marker(line: &str) -> bool {
+    let Some((counts, chars)) = line
+        .strip_prefix("[history digest — kept ")
+        .and_then(|s| s.strip_suffix(" chars]"))
+        .and_then(|s| s.split_once(" lines, "))
+    else {
+        return false;
+    };
+    let Some((kept, total)) = counts.split_once('/') else {
+        return false;
+    };
+    [kept, total, chars]
+        .into_iter()
+        .all(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
 }
 
 /// Trust only the runtime status header, optionally compacted by output pruning.
@@ -157,6 +178,30 @@ pub(crate) fn auto_test_succeeded(name: &str, content: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cwd_uses_the_native_header_including_legacy_history_digests() {
+        assert_eq!(
+            exec_cwd("OK (exit_code: 0)\ncwd: /work  root"),
+            Some("/work  root")
+        );
+        assert_eq!(
+            exec_cwd(
+                "OK (exit_code: 0)\n[history digest — kept 9/12 lines, 341 chars]\ncwd: /work"
+            ),
+            Some("/work"),
+        );
+        assert_eq!(
+            exec_cwd("OK (exit_code: 0)\nstdout:\ncwd: /unrelated"),
+            None
+        );
+        assert_eq!(
+            exec_cwd(
+                "OK (exit_code: 0)\n[history digest — kept x/12 lines, 341 chars]\ncwd: /unrelated"
+            ),
+            None,
+        );
+    }
 
     #[test]
     fn runtime_rejections_are_not_execution_but_failure_and_timeout_may_be() {

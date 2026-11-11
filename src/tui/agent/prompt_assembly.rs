@@ -479,11 +479,16 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
     {
         msgs_for_call.push(json!({"role":"system", "content":prompt}));
     }
+    let acceptance = acceptance_report::CurrentEvidence::from_native(
+        messages,
+        test_cmd.as_deref(),
+        tool_root_abs.as_deref(),
+    );
     acceptance_schema::bind(
         &mut tools_clone,
         active_plan.as_ref(),
-        &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
-        &root_user_text,
+        &acceptance.commands,
+        &acceptance.citable_checks,
     );
     acceptance_schema::bind_summary(
         &mut tools_clone,

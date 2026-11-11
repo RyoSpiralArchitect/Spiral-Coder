@@ -5,7 +5,12 @@ use serde_json::{json, Value};
 
 const MAX_ENUM_BYTES: usize = 16_384;
 
-pub(super) fn bind(tools: &mut Value, plan: Option<&PlanBlock>, commands: &[String], root: &str) {
+pub(super) fn bind(
+    tools: &mut Value,
+    plan: Option<&PlanBlock>,
+    commands: &[String],
+    checks: &[super::check_catalog::Check],
+) {
     let references: Vec<String> = acceptance_report::criteria(plan)
         .iter()
         .filter_map(|c| c["reference"].as_str().map(str::to_owned))
@@ -24,7 +29,7 @@ pub(super) fn bind(tools: &mut Value, plan: Option<&PlanBlock>, commands: &[Stri
         &mut done["function"]["parameters"],
         &references,
         commands,
-        &acceptance_report::citable_checks(root, commands),
+        checks,
     );
 }
 
@@ -184,7 +189,7 @@ mod tests {
             "https://generativelanguage.googleapis.com/v1beta/openai",
         ] {
             let mut tools = json!([super::super::done_tool_def(base)]);
-            bind(&mut tools, Some(&plan()), &[command.clone()], "");
+            bind(&mut tools, Some(&plan()), &[command.clone()], &[]);
             let props = &tools[0]["function"]["parameters"]["properties"];
             assert_eq!(
                 props["completed_acceptance"]["items"]["enum"],
@@ -221,11 +226,11 @@ mod tests {
             "https://generativelanguage.googleapis.com"
         )]);
         let mut tools = original.clone();
-        bind(&mut tools, None, &["check".into()], "");
+        bind(&mut tools, None, &["check".into()], &[]);
         assert_eq!(tools, original);
         for commands in [vec![], vec!["x".repeat(MAX_ENUM_BYTES)]] {
             let mut tools = original.clone();
-            bind(&mut tools, Some(&plan()), &commands, "");
+            bind(&mut tools, Some(&plan()), &commands, &[]);
             assert!(
                 tools[0]["function"]["parameters"]["properties"]["acceptance_evidence"]["items"]
                     .get("enum")

@@ -70,13 +70,26 @@ impl TaskObligations {
 }
 
 pub(crate) fn project(messages: &[Value], test_cmd: Option<&str>) -> TaskObligations {
-    project_at(messages, test_cmd, None)
+    project_advisory(messages, test_cmd, None)
 }
 
 pub(crate) fn project_at(
     messages: &[Value],
     test_cmd: Option<&str>,
     workspace: Option<&str>,
+) -> TaskObligations {
+    let mut obligations = project_advisory(messages, test_cmd, workspace);
+    obligations.diagnostic_patch =
+        workspace.and_then(|root| super::deferred_edit::diagnosis::project(messages, root));
+    obligations
+}
+
+/// Project native receipts with an execution root for citations. The root in an
+/// advisory packet is a comparison value and never a path to open here.
+pub(crate) fn project_advisory(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+    tool_root: Option<&str>,
 ) -> TaskObligations {
     let root = crate::task_origin::root_user_text(messages);
     let evidence = evidence_packet::project(messages, test_cmd);
@@ -93,8 +106,9 @@ pub(crate) fn project_at(
         .collect();
     let task_requirements = super::requirement_proof::project(messages, test_cmd);
     let required = task_harness::benchmark_proof::required_commands(root);
-    let current_commands = super::acceptance_report::current_commands(messages, test_cmd);
-    let citable_checks = super::acceptance_report::citable_checks(root, &current_commands);
+    let acceptance = super::acceptance_report::CurrentEvidence::from_packet(
+        messages, test_cmd, tool_root, &evidence,
+    );
     TaskObligations {
         minimum_delivery: task_requirements
             .delivery_floor(&required, &evidence.pending_exact_checks),
@@ -104,8 +118,7 @@ pub(crate) fn project_at(
             .map(|a| serde_json::json!({"call_id":a.call_id, "summary":a.arguments["summary"].as_str().map(|v| v.chars().take(600).collect::<String>()),
                 "next_steps":a.arguments["next_steps"].as_str().map(|v| v.chars().take(800).collect::<String>())})),
         strategy_memory: super::strategy_memory::project(messages),
-        diagnostic_patch: workspace
-            .and_then(|root| super::deferred_edit::diagnosis::project(messages, root)),
+        diagnostic_patch: None,
         deferred_edit: if pending_recovery.is_empty() {
             super::deferred_edit::project(messages)
         } else {
@@ -116,6 +129,7 @@ pub(crate) fn project_at(
             messages,
             test_cmd,
             &evidence,
+            tool_root,
             !pending_recovery.is_empty(),
         ),
         repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
@@ -133,8 +147,8 @@ pub(crate) fn project_at(
         required_diagnostic_read: focus.required_read(),
         pending_recovery,
         acceptance_criteria: super::acceptance_report::criteria(plan.as_ref()),
-        current_commands,
-        citable_checks,
+        current_commands: acceptance.commands,
+        citable_checks: acceptance.citable_checks,
         task_requirements,
     }
 }

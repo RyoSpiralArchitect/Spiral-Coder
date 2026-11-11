@@ -37,15 +37,19 @@ fn observer_done_vocabulary_matches_coder_in_tui_and_browser_without_rewriting_e
     let fixture: serde_json::Value = serde_json::from_str(include_str!("../../tests/fixtures/plan-revision/observer-incomplete-evidence.json")).unwrap();
     let raw = fixture["raw"].as_str().unwrap();
     let (mut app, _root) = closeout_app();
+    let workspace = app.tool_root.clone().unwrap();
     let session = app.coder_session.as_mut().unwrap();
     session.messages[1]["accepted_plan"] = fixture["accepted_plan"].clone();
+    let check = session.messages.iter_mut()
+        .find(|m| m["tool_call_id"] == "current-check").unwrap();
+    check["content"] = json!(format!("OK (exit_code: 0)\ncwd: {workspace}"));
     let messages = session.messages.clone();
     let tui = replay_observer_next_action_case(&mut app,"last-fail","incomplete_task",raw).unwrap();
     assert!(tui.pending_observer_hint.is_none());
     assert_eq!(tui.observer_raw_response, raw);
     assert!(tui.observer_repair_prompt.unwrap().contains("exactly once"));
     let browser = crate::observer_action::evaluate(crate::observer_action::Request {
-        packet:json!({"task_obligations":{"acceptance_criteria":[{"reference":"invented"}]},"tool_argument_schemas":[{"name":"done","parameters":{}}]}),messages,test_command:Some(CLOSEOUT_CHECK.into()),lang:"en".into(),reason:"incomplete_task".into(),response:Some(raw.into()),final_summary:None,repair_native:false,
+        packet:json!({"tool_root":workspace,"task_obligations":{"acceptance_criteria":[{"reference":"invented"}]},"tool_argument_schemas":[{"name":"done","parameters":{}}]}),messages,test_command:Some(CLOSEOUT_CHECK.into()),lang:"en".into(),reason:"incomplete_task".into(),response:Some(raw.into()),final_summary:None,repair_native:false,
     });
     assert!(browser.issue.unwrap().contains("exactly once"));
     let done = |packet: &serde_json::Value| packet["tool_argument_schemas"].as_array().unwrap().iter().find(|s| s["name"]=="done").unwrap()["parameters"].clone();

@@ -695,6 +695,7 @@ This is the LAST model call for this run.\n\
             blocked_plan.as_ref().or(active_plan.as_ref()),
             &messages,
             test_cmd.as_deref(),
+            tool_root_abs.as_deref(),
             &observation_evidence,
         ) {
             let call = &tool_calls[0];

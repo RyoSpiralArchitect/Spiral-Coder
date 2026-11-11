@@ -254,9 +254,10 @@ Request context compression:
   and check receipts, unresolved diagnostic checks, recovery transitions, held
   proposals, approval refusals, latest structured anchors and admitted plan.
   Human, runtime and system messages remain intact. Signed, ambiguous and
-  incomplete exchanges are retained. At most twelve historical action excerpts
-  are shown, with counts for omitted entries; excerpts are not executable calls,
-  current file contents, authorization or completion proof.
+  incomplete exchanges are retained. Eligible exchanges from earlier human tasks
+  have a separate digest before the current task root. Each digest displays up
+  to twelve historical action excerpts and counts omitted entries. Native
+  actions from the current task establish its execution and completion proof.
 - The target is soft: mandatory context can exceed it. `context_compaction`
   telemetry records version, role, before/after serialized message bytes,
   target bytes, compacted exchanges/messages, omitted historical entries and
@@ -1191,7 +1192,11 @@ gates remain mandatory. Legacy automatic summaries are separate from authored
 `done` and cannot satisfy an explicit authored-report requirement.
 
 `TaskObligations.citable_checks` contains the current task's declared check IDs
-whose exact commands have current successful native receipts. An evidence row
+whose latest native execution at `tool_root` is a current success. The runtime
+keeps the execution directory in the receipt header when shortening its
+display. It also reads that header in older digested receipts. An ambiguous
+later execution directory withholds the ID until a root-scoped receipt exists.
+An evidence row
 can use `command: "@required-1"` to select that original command. Coder,
 Observer and blocked-report validation resolve the same table while retaining
 the authored arguments and criterion mapping. A failed rerun, later mutation

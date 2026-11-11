@@ -193,9 +193,18 @@ pub(crate) fn compact_success_tool_result_for_history(tool_name: &str, content: 
         }
     }
 
+    let mut digest_index = 1;
     if tool_name == "exec" {
-        for line in lines.iter().skip(1).take(3) {
-            push_unique_tool_line(&mut kept, &mut seen, line);
+        for (index, line) in lines.iter().skip(1).take(3).enumerate() {
+            if index == 0 && line.starts_with("cwd: ") {
+                // The native execution directory is proof identity. Preserve
+                // spaces and the complete path before bounding display lines.
+                kept.push((*line).to_owned());
+                seen.insert((*line).to_owned());
+                digest_index = 2;
+            } else {
+                push_unique_tool_line(&mut kept, &mut seen, line);
+            }
         }
     }
 
@@ -238,7 +247,7 @@ pub(crate) fn compact_success_tool_result_for_history(tool_name: &str, content: 
     let total_lines = lines.len();
     if kept_lines < total_lines {
         kept.insert(
-            1.min(kept.len()),
+            digest_index.min(kept.len()),
             format!(
                 "[history digest — kept {}/{} lines, {} chars]",
                 kept_lines,

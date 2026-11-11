@@ -893,6 +893,7 @@
     },
     {
       "id": "observer-cites-verified-check-reference",
+      "tool_root": "/workspace",
       "prompt": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>",
       "tags": [
         "tui",
@@ -936,7 +937,7 @@
         {
           "role": "tool",
           "tool_call_id": "verified-check",
-          "content": "OK (exit_code: 0)"
+          "content": "OK (exit_code: 0)\ncwd: /workspace"
         }
       ],
       "coder_messages": [
@@ -991,6 +992,7 @@
     },
     {
       "id": "observer-rejects-failed-check-reference",
+      "tool_root": "/workspace",
       "prompt": "Verify source.py.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test -q\n</observer_benchmark_plan>",
       "tags": [
         "tui",
@@ -1023,7 +1025,7 @@
           "role": "assistant",
           "tool_calls": [
             {
-              "id": "verified-check",
+              "id": "previous-pass",
               "function": {
                 "name": "exec",
                 "arguments": "{\"command\": \"cargo test -q\"}"
@@ -1033,8 +1035,25 @@
         },
         {
           "role": "tool",
-          "tool_call_id": "verified-check",
-          "content": "FAILED (exit_code: 1)"
+          "tool_call_id": "previous-pass",
+          "content": "OK (exit_code: 0)\n[history digest — kept 10/16 lines, 950 chars]\ncwd: /workspace\nstdout:\nchecks passed"
+        },
+        {
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "id": "failed-rerun",
+              "function": {
+                "name": "exec",
+                "arguments": "{\"command\": \"cargo test -q\"}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "failed-rerun",
+          "content": "FAILED (exit_code: 1)\ncwd: /workspace"
         }
       ],
       "coder_messages": [

@@ -134,6 +134,72 @@ fn long_iterations_compress_wire_history_without_changing_native_proof_or_resume
 }
 
 #[test]
+fn new_human_task_compresses_earlier_reads_without_importing_old_proof() {
+    let mut messages = vec![json!({"role":"user","content":"Inspect the previous version."})];
+    exchange(
+        &mut messages,
+        "old-check",
+        "exec",
+        json!({"command":"cargo test"}),
+        "OK (exit_code: 0)\ncwd: /work",
+    );
+    exchange(
+        &mut messages,
+        "signed",
+        "read_file",
+        json!({"path":"signed.rs"}),
+        "[signed.rs] (1 line)\nsource",
+    );
+    messages[3]["tool_calls"][0]["extra_content"] =
+        json!({"google":{"thought_signature":"opaque"}});
+    exchange(
+        &mut messages,
+        "refused",
+        "write_file",
+        json!({"path":"keep.rs"}),
+        "REJECTED BY USER: keep this file",
+    );
+    let protected = messages[3..7].to_vec();
+    let output = format!(
+        "[old.rs] (100 lines)\n{}",
+        "earlier source line with details ".repeat(256)
+    );
+    for i in 0..28 {
+        exchange(
+            &mut messages,
+            &format!("old-read-{i}"),
+            "read_file",
+            json!({"path":"old.rs"}),
+            &output,
+        );
+    }
+    let request = crate::task_origin::user_message(
+        "Verify the new version.\n<observer_benchmark_plan>\nrequired_checks:\n- cargo test\n</observer_benchmark_plan>",
+        crate::task_origin::MessageOrigin::User,
+    );
+    messages.push(request.clone());
+    let evidence = json!(evidence_packet::project(&messages, None));
+    assert_eq!(evidence["pending_exact_checks"], json!(["cargo test"]));
+    let (wire, metrics) = coder(&messages, None);
+    assert!(metrics.compacted_exchanges >= 20, "{metrics:?}");
+    assert!(
+        metrics.after_bytes < metrics.before_bytes / 2,
+        "{metrics:?}"
+    );
+    assert_eq!(wire.last(), Some(&request));
+    assert!(protected.iter().all(|m| wire.contains(m)));
+    assert!(wire.iter().any(|m| {
+        m["content"]
+            .as_str()
+            .is_some_and(|s| s.contains("earlier user tasks"))
+    }));
+    assert!(!wire.iter().any(|m| m["tool_call_id"] == "old-read-0"));
+    assert_eq!(json!(evidence_packet::project(&messages, None)), evidence);
+    let mut resumed = crate::agent_session::AgentSession::new(None, None, None, None, wire);
+    assert_eq!(resumed.repair_for_resume(), None);
+}
+
+#[test]
 fn signed_malformed_denied_and_current_exchanges_survive_pressure_verbatim() {
     let mut messages = vec![json!({"role":"user","content":"Fix src/a.rs"})];
     exchange(
@@ -248,8 +314,7 @@ fn observer_modes_and_coder_share_reversible_context_without_changing_validation
     // A dictionary tag is never accepted as an executable/evidence command.
     assert!(super::super::acceptance_report::resolve_evidence(
         &json!([{"criterion":"acceptance 1","command":"@t1"}]),
-        &root,
-        &[]
+        &super::super::acceptance_report::CurrentEvidence::from_native(&messages, None, None),
     )
     .is_err());
 }

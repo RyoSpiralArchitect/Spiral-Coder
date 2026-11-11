@@ -17,6 +17,7 @@ pub(super) fn prepare(
     plan: Option<&PlanBlock>,
     messages: &[Value],
     test_cmd: Option<&str>,
+    tool_root: Option<&str>,
     observation: &ObservationEvidence,
 ) -> Option<Result<BlockedReport>> {
     let [call] = calls else { return None };
@@ -43,18 +44,16 @@ pub(super) fn prepare(
         );
         let completed = parse_string_list_arg(&args["completed_acceptance"]);
         let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
-        let commands = acceptance_report::current_commands(messages, test_cmd);
-        let evidence = acceptance_report::resolve_evidence(
-            &args["acceptance_evidence"],
-            crate::task_origin::root_user_text(messages),
-            &commands,
-        )?;
+        let acceptance =
+            acceptance_report::CurrentEvidence::from_native(messages, test_cmd, tool_root);
+        let evidence =
+            acceptance_report::resolve_evidence(&args["acceptance_evidence"], &acceptance)?;
         validate_done_acceptance(
             plan,
             &completed,
             &remaining_acceptance,
             &evidence,
-            &commands,
+            &acceptance.commands,
             observation,
         )?;
         let obligations = task_obligations::project(messages, test_cmd);
@@ -137,6 +136,7 @@ mod tests {
             Some(&plan),
             &messages,
             None,
+            None,
             &ObservationEvidence::default(),
         )
         .unwrap()
@@ -150,6 +150,7 @@ mod tests {
             Some(&plan),
             &messages,
             None,
+            None,
             &ObservationEvidence::default()
         )
         .unwrap()
@@ -160,6 +161,7 @@ mod tests {
             &[call(done)],
             Some(&plan),
             &messages,
+            None,
             None,
             &ObservationEvidence::default()
         )
@@ -198,6 +200,7 @@ mod tests {
             &[call],
             Some(&plan),
             &messages,
+            None,
             None,
             &ObservationEvidence::default(),
         )
@@ -254,6 +257,7 @@ mod tests {
             &[call],
             Some(&plan),
             &messages,
+            None,
             None,
             &ObservationEvidence::default(),
         )
