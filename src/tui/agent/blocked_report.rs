@@ -43,12 +43,18 @@ pub(super) fn prepare(
         );
         let completed = parse_string_list_arg(&args["completed_acceptance"]);
         let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
+        let commands = acceptance_report::current_commands(messages, test_cmd);
+        let evidence = acceptance_report::resolve_evidence(
+            &args["acceptance_evidence"],
+            crate::task_origin::root_user_text(messages),
+            &commands,
+        )?;
         validate_done_acceptance(
             plan,
             &completed,
             &remaining_acceptance,
-            &acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]),
-            &acceptance_report::current_commands(messages, test_cmd),
+            &evidence,
+            &commands,
             observation,
         )?;
         let obligations = task_obligations::project(messages, test_cmd);

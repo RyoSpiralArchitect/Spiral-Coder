@@ -483,6 +483,7 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
         &mut tools_clone,
         active_plan.as_ref(),
         &acceptance_report::current_commands(&messages, test_cmd.as_deref()),
+        &root_user_text,
     );
     acceptance_schema::bind_summary(
         &mut tools_clone,

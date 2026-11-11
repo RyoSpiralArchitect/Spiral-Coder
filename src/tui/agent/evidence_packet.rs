@@ -238,9 +238,19 @@ pub(crate) fn acceptance_issue(
 ) -> Option<String> {
     let messages = crate::task_origin::current_task_messages(messages);
     let plan = super::plan_resume::latest_valid(messages, |plan| validate_plan(plan).is_ok());
-    let rows =
-        super::acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
     let commands = super::acceptance_report::current_commands(messages, test_cmd);
+    let rows = match super::acceptance_report::resolve_evidence(
+        &args["acceptance_evidence"],
+        crate::task_origin::root_user_text(messages),
+        &commands,
+    ) {
+        Ok(rows) => rows,
+        Err(error) => {
+            return Some(format!(
+                "Suggested done has invalid acceptance evidence: {error}"
+            ))
+        }
+    };
     let observations = collect_observation_evidence(messages);
     // Advice may precede Coder's first valid plan. Check its citations now, but
     // leave plan admission to the real done gate on the ensuing Coder turn.

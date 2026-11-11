@@ -1155,6 +1155,15 @@ that an arbitrary criterion is satisfied; the independent task/verification
 gates remain mandatory. Legacy automatic summaries are separate from authored
 `done` and cannot satisfy an explicit authored-report requirement.
 
+`TaskObligations.citable_checks` contains the current task's declared check IDs
+whose exact commands have current successful native receipts. An evidence row
+can use `command: "@required-1"` to select that original command. Coder,
+Observer and blocked-report validation resolve the same table while retaining
+the authored arguments and criterion mapping. A failed rerun, later mutation
+or new human task changes which checks are citable. A literal successful
+command beginning with `@` keeps its literal meaning. Requested command names
+in the summary still require their full text.
+
 `agent/acceptance_schema.rs` binds the same criterion references, current exact
 commands and final-summary guidance to both the Coder function schema and the
 Observer's `tool_argument_schemas`, including Google's flat evidence rows.
@@ -1306,6 +1315,12 @@ Current-evidence identity uses the exact command and runtime execution directory
 so a newer failed direct call or another ID for that command supersedes an older
 success. Observer assist receipts correlate the selected ID with the resolved
 call even when approval is refused or pending; correlation never grants execution.
+
+The next-action contract can expose a `preferred_verification` for a pending
+`cargo fmt --all -- --check` or `cargo fmt -- --check`. It is offered after
+baseline reproduction and artifact edits, ahead of expensive final checks.
+Diagnosis, an exact recovery recheck and reporting take priority. This ordering
+is advisory, and every declared check retains its own proof requirement.
 
 Catalogs are derived state, not a new persisted authority. Provider-signed
 arguments cannot be rewritten: Google endpoints keep the existing full-command

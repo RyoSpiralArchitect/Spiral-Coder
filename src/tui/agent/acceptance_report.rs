@@ -1,6 +1,44 @@
 //! Lossless handoff for authored completion: stable criterion references plus
 //! currently citable native receipts. Never guess which criterion a check proves.
 use super::*;
+use anyhow::Context;
+
+#[cfg(test)]
+#[path = "acceptance_report/check_reference_tests.rs"]
+mod check_reference_tests;
+
+/// Offer only declared checks with a currently citable native result.
+pub(super) fn citable_checks(root: &str, commands: &[String]) -> Vec<check_catalog::Check> {
+    check_catalog::Catalog::from_root(root)
+        .checks
+        .into_iter()
+        .filter(|check| commands.contains(&check.command))
+        .collect()
+}
+
+/// An explicit @check-id selects the original successful command. The authored
+/// criterion mapping and provider arguments remain intact.
+pub(super) fn resolve_evidence(
+    value: &serde_json::Value,
+    root: &str,
+    commands: &[String],
+) -> Result<Vec<DoneAcceptanceEvidence>> {
+    let mut rows = parse_done_acceptance_evidence(value);
+    let checks = citable_checks(root, commands);
+    for row in &mut rows {
+        // A real command beginning with @ keeps its existing literal meaning.
+        if commands.contains(&row.command) {
+            continue;
+        }
+        if let Some(id) = row.command.strip_prefix('@') {
+            let check = checks.iter().find(|check| check.id == id).with_context(|| {
+                format!("Acceptance check reference @{id} has no current successful receipt in this task")
+            })?;
+            row.command.clone_from(&check.command);
+        }
+    }
+    Ok(rows)
+}
 
 /// Parse `done.acceptance_evidence` rows. Object rows
 /// (`{"criterion": ..., "command": ...}`) are the canonical contract; flat
@@ -113,8 +151,8 @@ pub(super) fn current_commands(
     commands
 }
 
-pub(super) fn hint(plan: Option<&PlanBlock>, commands: &[String]) -> String {
-    format!("\n[Authored acceptance mapping]\nKeep your own completed/remaining decisions and map evidence to the exact criterion reference below. Supply exactly one evidence row for each completed criterion, using a current command exactly as recorded. Do not invent a shorter shell command. If one criterion needs multiple checks, describe that in summary and cite the decisive recorded check; all required exact checks remain independently enforced. The runtime will not reassign evidence or silently move a criterion to remaining. Repair this report using retained proof; do not rerun passed checks just to repair its format.\n{}\n", json!({"criteria":criteria(plan),"current_commands":commands}))
+pub(super) fn hint(plan: Option<&PlanBlock>, commands: &[String], root: &str) -> String {
+    format!("\n[Authored acceptance mapping]\nKeep your own completed/remaining decisions and map evidence to the exact criterion reference below. Supply exactly one evidence row for each completed criterion, using a current command exactly as recorded or @<id> from citable_checks. For example, command=\"@required-1\" selects that check's current successful receipt. Do not invent a shorter shell command. If one criterion needs multiple checks, describe that in summary and cite the decisive recorded check; all required exact checks remain independently enforced. Repair this report using retained proof; do not rerun passed checks just to repair its format.\n{}\n", json!({"criteria":criteria(plan),"current_commands":commands,"citable_checks":citable_checks(root, commands)}))
 }
 
 #[cfg(test)]

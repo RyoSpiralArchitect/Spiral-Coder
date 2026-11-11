@@ -65,8 +65,6 @@ Required now: run `{command}`.\n{verification_status}"
     let summary = report_surface::authored(args["summary"].as_str().unwrap_or(""), &report);
     let completed_acceptance = parse_string_list_arg(&args["completed_acceptance"]);
     let remaining_acceptance = parse_string_list_arg(&args["remaining_acceptance"]);
-    let acceptance_evidence =
-        acceptance_report::parse_done_acceptance_evidence(&args["acceptance_evidence"]);
     let next_steps = args["next_steps"].as_str().unwrap_or("").trim();
     let done_plan = ctx
         .validated_plan_for_turn
@@ -83,14 +81,21 @@ Required now: run `{command}`.\n{verification_status}"
         Vec::new()
     };
 
-    let evidence_rows = match validate_done_acceptance(
-        done_plan,
-        &completed_acceptance,
-        &remaining_acceptance,
-        &acceptance_evidence,
+    let evidence_rows = match acceptance_report::resolve_evidence(
+        &args["acceptance_evidence"],
+        ctx.root_user_text,
         &known_acceptance_commands,
-        ctx.observation_evidence,
-    ) {
+    )
+    .and_then(|rows| {
+        validate_done_acceptance(
+            done_plan,
+            &completed_acceptance,
+            &remaining_acceptance,
+            &rows,
+            &known_acceptance_commands,
+            ctx.observation_evidence,
+        )
+    }) {
         Ok(rows) => rows,
         Err(e) => {
             *ctx.state = AgentState::Recovery;
@@ -113,7 +118,7 @@ Required now: run `{command}`.\n{verification_status}"
                 "{}{}{}",
                 governor_contract::done_invalid_acceptance_message(&e.to_string()),
                 hint,
-                acceptance_report::hint(done_plan, &known_acceptance_commands)
+                acceptance_report::hint(done_plan, &known_acceptance_commands, ctx.root_user_text)
             );
             emit_governor_block(ctx.governor_emit(), block, tc, None).await;
             return Ok(ToolFlow::Continue);
