@@ -1,6 +1,6 @@
 {
-  "runtime_commit": "cbb762456759997352f0692d28925c4a0b0f98e0",
-  "full_check_log_sha256": "2729c4868f1df519ba599a09777dabc179c1eade96a6765273d193dd364f3fbd",
+  "runtime_commit": "900e1357831d73c2e9e8397aca34dbe836a306f4",
+  "full_check_log_sha256": "c3600022aed86b96454c9e27635b2762a6c1ba49eb3c5f0e0158feb6bf742b0b",
   "rust_main_passed": 1164,
   "rust_ignored": 2,
   "integration": 6,
@@ -10,11 +10,5 @@
   "npm": 5,
   "repo_map": 14,
   "lite_smoke": true,
-  "phase": "S10 bare standalone report labels and retained task-derived validation obligations",
-  "report_reproducer": {
-    "old_code_passed": false,
-    "red_log_sha256": "d372d8a57afa04e21c8224a3fa8fda4d4b64f2c0dec99aa2263cc7da5c7bca10",
-    "green_log_sha256": "acc9968e678ceb2950efddfdfe63eb8e5e4998d957f40ec7fcd39e790061ec8d",
-    "raw_s9_summary_replayed": true
-  }
+  "phase": "S11 full local checks, explicit test-only baseline isolation and public path matrix"
 }

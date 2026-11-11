@@ -23,7 +23,7 @@ Limits are six iterations, 192 task requests, 216 wires and 3,600 seconds.
 The original baseline contains no solution or new benchmark/reference files.
 
 [Preflight](preflight.json) records the required missing-command baseline
-failures and all six passing reference groups. The visible check, 24 independent
+failures and all seven passing S11 reference groups (six in S1–S10). The visible check, 24 independent
 cases, real assembled npm entry, guide check and all stock regressions were
 executed without provider calls. The separate reference can read the real
 R25 chain and recover its 73 task requests and 80 wires.
@@ -70,3 +70,14 @@ checks and a correctly shaped report. Independent cases reach **23/24**, includi
 all six S9 rejection failures; a missing active ledger file still fails. The
 original Gemini environment test independently fails, so stock checks also fail.
 **Unqualified, not adopted, #82 open.** [S10 evidence and limits](s10-validation-obligations/README.md).
+
+S11 is prospectively pinned with an explicit test-only baseline correction, a
+public 26-subcase path matrix, six exact checks and a separate authored-test
+sensitivity gate. Before provider calls, a valid reference passes all seven
+independent groups. Operator reference tests detect all four advertised faults;
+a thin valid-state control misses three and fails the audit. S10's unchanged
+authored tests fail on the valid typed reference because their success fixture
+omits native required fields, so no mutation detection is credited. This is
+diagnostic evidence, not a rerating of S10. [Sensitivity controls](s11-sensitivity-controls.json).
+The new condition is not a matched comparison; the original 24 cases, original
+visible check and provider budgets are unchanged. The live result is pending.
