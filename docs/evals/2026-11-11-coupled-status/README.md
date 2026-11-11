@@ -53,3 +53,11 @@ S8 survives the digest path and resumes actual reads/checks in round 2, but make
 no further edit and stops after 41 task / 47 wires. Independent cases are 2/24,
 not an improvement. Its final explanation mistakes remaining allowance as one
 call despite 18 Coder requests left. [S8 failure and evidence](s8-restart/README.md).
+
+S9 explicitly separates per-response tool cardinality from current shared Coder
+allowance. Four rounds reach the first native completed chain in this series:
+855.001 seconds, 114 task / 128 wires, all four current exact checks, required
+documents and a native done. Independent cases are 18/24, six invalid-record
+checks fail, and the external standalone-line report requirement also fails.
+Visible, npm, guide and original regressions pass. **Still unqualified and not
+adopted; #82 remains open.** [S9 delivery progress and remaining gates](s9-shared-allowance/README.md).
