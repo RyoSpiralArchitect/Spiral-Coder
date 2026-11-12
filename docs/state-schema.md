@@ -1779,8 +1779,11 @@ recovery snapshots and the exact-check ledger retain their separate ownership.
 The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
-root. Live and restored recovery require the same preceding failure/read
-cycles and matching command. For an observed difference, the native
+root. When up to eight named subtests of that method fail, the view includes
+`subtest_failures`. The runner samples the first observed failure and binds
+the reported count to the receipt. Live and restored recovery require the
+same preceding failure/read cycles and matching command. For an observed
+difference, the native
 `recovery_focus.comparison.frame` receipt retains the final output frame
 from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing

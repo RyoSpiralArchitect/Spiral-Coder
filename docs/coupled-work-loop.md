@@ -613,6 +613,11 @@ steps, risks and assumptions. For an exact accepted exec, `think.next` may
 reference `@observer`. Native diagnosis, approval and verification continue
 to govern the call.
 
+When a repeated unittest failure comes from several named subtests of one
+localized method, Observer can pass a focused comparison of the first
+observed failure. The comparison records how many subtests failed and leaves
+the original exact check due after repair.
+
 When a native Coder write creates a Rust source, the next Cargo checks can
 report whether a particular target's compiler inputs listed it. Both roles
 receive the same per-file observation, including after a role handoff or session
