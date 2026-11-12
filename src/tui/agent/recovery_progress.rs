@@ -20,7 +20,6 @@ pub(super) fn survives(
     }
     let mut related_failure = false;
     let mut progress_after_failure = false;
-    let mut failed_check_output = None;
     let resolved = resolved_failures(messages, root);
     for (index, (tc, message)) in correlated_results(messages).enumerate() {
         if resolved.contains(&index) {
@@ -42,11 +41,9 @@ pub(super) fn survives(
         if exec_failed || auto_failed || file_failed {
             if exec_failed
                 && progress_after_failure
-                && failed_check_output.is_some_and(|earlier| {
-                    diagnostic_followup::retained_comparison(pending, earlier, &tc, output, root)
-                })
+                && related_failure
+                && focus.retained_comparison(messages, &tc, message, root)
             {
-                failed_check_output = None;
                 continue;
             }
             related_failure = if exec_failed {
@@ -63,10 +60,6 @@ pub(super) fn survives(
                     .as_deref()
                     == Some(pending.path.as_str())
             };
-            failed_check_output = (exec_failed
-                && related_failure
-                && owned_check(&tc, message, root).as_deref() == Some(pending.check.as_str()))
-            .then_some(output);
             progress_after_failure = false;
         } else if (tc.name == "read_file"
             && argument_path(&tc)

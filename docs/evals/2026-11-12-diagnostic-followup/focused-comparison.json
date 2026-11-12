@@ -1,0 +1,78 @@
+{
+  "plan_sha256": "fed6d037eb13ce0fc88f7dafdd4051deb5307d719cdc1e06f1d36273d8fe396f",
+  "runtime_commit": "318d00a32b5a5d3fb0180e4d3f31464b9a744b1b",
+  "binary_sha256": "590b65a44648445c7ecd2f862c09f8147247fa43e1a3cf0553fa13c487f46f36",
+  "seed_sha256": "81c42a159a8cdc9a75d804879d645d39a6c19b71a8d92f65e71ba8ef76b3f96e",
+  "previous_report_sha256": "3f6fd7d54842a623017de258cf3d586bc26a79fcfe909d9ef46de671c5023943",
+  "candidate_inventory_sha256": "be25aea0c452edc8ff16a9d94649a7586efdaaa7e616586025f2a1e5a169bab3",
+  "protocol": {
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "task_requests": 12,
+    "wire_requests": 16,
+    "observer_reserve": 4,
+    "transport_repairs": 4,
+    "coder_slice": 4,
+    "wall_seconds": 240,
+    "timeout_seconds": 90,
+    "coder_max_tokens": 32768,
+    "observer_max_tokens": 8192,
+    "coder_temperature": 0
+  },
+  "offline": {
+    "provider_calls": 0,
+    "test_exit_code": 1,
+    "case": "scripts.status_visible.StatusVisible.test_status_summarizes_completed_and_interrupted_records",
+    "required_read_at_154": true,
+    "comparison_after_157": true,
+    "pending_exact_checks": 6,
+    "stdout_sha256": "d74634d41c071d3c36924ba238d7a8ae8427bf74c804b8f6d34d5b57b241745a",
+    "projection_sha256": "2dd51b8758e6382cc1f2a107db5696c39bcbd5b5197810016539318a50d29691",
+    "candidate_unchanged": true
+  },
+  "live": {
+    "report_sha256": "24174cfcdc5a8513c7c68294358101261313abe6f486d1e29890c3c58f3d4b69",
+    "trace_sha256": "5f79f79d46d663d6d20c567e384cbfa87dd938f5976d9e6f4d470a56126c3824",
+    "handoff_read_call_id": "call_hQeobM6hqirAQcJ23ZH35QIk",
+    "handoff_elapsed_ms": 5810,
+    "comparison_call_id": "call_L613a6LqTeW3UniYi1OWYM53",
+    "comparison_elapsed_ms": 27188,
+    "comparison_exact_suggestion_executed": true,
+    "test_exit_code": 1,
+    "observed_field_differences": {
+      "task_remaining": {
+        "actual": 190,
+        "expected": 189
+      },
+      "task_used": {
+        "actual": 2,
+        "expected": 3
+      },
+      "wire_remaining": {
+        "actual": 213,
+        "expected": 211
+      },
+      "wire_used": {
+        "actual": 3,
+        "expected": 5
+      }
+    },
+    "next_recovery_stage": "fix",
+    "next_patch_outcome": "unchanged",
+    "native_candidate_changes": [],
+    "plan_gate_rejections": 7,
+    "pending_exact_checks": [
+      "cargo fmt --all -- --check",
+      "python3 -S -m unittest -v scripts.status_visible",
+      "python3 -S -m unittest -v scripts.status_guide",
+      "cargo test --locked --bin spiral-coder -q",
+      "cargo test --locked --test coupled_status -q",
+      "python3 -S -m unittest -v scripts.status_paths"
+    ],
+    "terminal": "blocked",
+    "wire_requests": 16,
+    "task_requests": 12,
+    "transport_requests": 4,
+    "wall_seconds": 123.474
+  }
+}

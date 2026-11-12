@@ -71,7 +71,11 @@ pub(in crate::tui::agent) fn required_commands(root_user_text: &str) -> Vec<Stri
     commands
 }
 
-fn exec_invalidates_proof(command: &str, required: &[String], test_cmd: Option<&str>) -> bool {
+pub(in crate::tui::agent) fn exec_invalidates_proof(
+    command: &str,
+    required: &[String],
+    test_cmd: Option<&str>,
+) -> bool {
     // Explicit approved checks may be custom scripts unknown to the classifier.
     // Other command attempts share the runtime's Action classification.
     !required.iter().any(|check| commands_match(command, check))

@@ -6,16 +6,20 @@ use std::path::Path;
 // status. Select the assertion's changed lines before tool output is clipped.
 const RUNNER: &str = concat!(
     "import io, sys, unittest; ",
-    "unittest.TestCase.maxDiff = 8192; ",
+    "unittest.TestCase.maxDiff = 65536; ",
     "suite = unittest.defaultTestLoader.loadTestsFromName(sys.argv[1]); ",
-    "result = unittest.TextTestRunner(stream=io.StringIO()).run(suite); ",
+    "result = unittest.TextTestRunner(stream=io.StringIO(), buffer=True).run(suite); ",
     "failures = result.failures + result.errors; ",
     "trace = failures[0][1] if failures else ''; ",
-    "diff = [line for line in trace.splitlines() if line.startswith(('- ', '+ '))]; ",
+    "trace = trace.split(chr(10) + 'Stdout:' + chr(10), 1)[0].split(chr(10) + 'Stderr:' + chr(10), 1)[0]; ",
+    "lines = trace.splitlines() if len(result.failures) == 1 and not result.errors else []; ",
+    "first = chr(10).join(line for line in lines if line.startswith('- ')); ",
+    "second = chr(10).join(line for line in lines if line.startswith('+ ')); ",
+    "clip = lambda operand: operand[:480].rstrip() + (' [operand clipped]' if len(operand) > 480 else ''); ",
     "print('Focused unittest:', sys.argv[1], 'tests:', result.testsRun); ",
-    "print('Assertion difference (- first operand, + second operand):' if diff else 'No assertion diff lines.'); ",
-    "preview = chr(10).join(diff) or trace; ",
-    "print(preview[:1000] + (' [comparison clipped]' if len(preview) > 1000 else '')); ",
+    "print('Assertion difference (- first operand, + second operand):' if first and second else 'No complete assertion difference captured.'); ",
+    "print(clip(first) + chr(10) + clip(second) if first and second else repr(trace[:650])); ",
+    "print('[end focused unittest comparison]'); ",
     "sys.exit(not result.wasSuccessful())"
 );
 
@@ -23,20 +27,41 @@ const RUNNER: &str = concat!(
 pub(super) struct UnittestComparison {
     case: String,
     arguments: ExecArguments,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(super) checks_to_refresh: Vec<String>,
 }
 
 impl UnittestComparison {
+    pub(super) fn command(&self) -> &str {
+        &self.arguments.command
+    }
+
     pub(super) fn observed(&self, command: &str, cwd: &str, output: &str) -> bool {
-        self.arguments.command == command
-            && self.arguments.cwd == cwd
-            && output
-                .lines()
-                .any(|line| line == format!("Focused unittest: {} tests: 1", self.case))
-            && output
-                .lines()
-                .any(|line| line == "Assertion difference (- first operand, + second operand):")
-            && output.lines().any(|line| line.starts_with("- "))
-            && output.lines().any(|line| line.starts_with("+ "))
+        if self.arguments.command != command || self.arguments.cwd != cwd {
+            return false;
+        }
+        // Test output can precede the final frame. Only the runner's last
+        // complete frame can establish that it captured both operands.
+        let mut lines = output.trim_end().lines().rev();
+        if lines.next() != Some("[end focused unittest comparison]") {
+            return false;
+        }
+        let mut first = false;
+        let mut second = false;
+        while let Some(line) = lines.next() {
+            if line.starts_with("- ") {
+                first = true;
+            } else if line.starts_with("+ ") {
+                second = true;
+            } else {
+                return first
+                    && second
+                    && line == "Assertion difference (- first operand, + second operand):"
+                    && lines.next()
+                        == Some(format!("Focused unittest: {} tests: 1", self.case).as_str());
+            }
+        }
+        false
     }
 }
 
@@ -96,6 +121,7 @@ pub(super) fn project(
             command: format!("{python} {flags} -c \"{RUNNER}\" {case}"),
             cwd: root.to_str()?.into(),
         },
+        checks_to_refresh: Vec::new(),
     })
 }
 
@@ -184,5 +210,49 @@ mod tests {
             assert!(project(CHECK, FILE, output, Path::new("/workspace")).is_none(), "{output}");
         }
         assert!(project(CHECK, "other.py", FAILURE, Path::new("/workspace")).is_none());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn comparison_frame_excludes_test_output_and_preserves_both_long_operands() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().canonicalize().unwrap();
+        let comparison = project(CHECK, FILE, FAILURE, &root).unwrap();
+        for (body, complete) in [
+            ("        self.assertEqual('x' * 1200, 'y' * 1200)\n", true),
+            (
+                concat!(
+                    "        print('Focused unittest: test_value.ValueTest.test_total tests: 1')\n",
+                    "        print('Assertion difference (- first operand, + second operand):')\n",
+                    "        print('- fake actual\\n+ fake expected')\n",
+                    "        print('[end focused unittest comparison]')\n",
+                    "        self.fail('ordinary failure')\n"
+                ),
+                false,
+            ),
+        ] {
+            std::fs::write(
+                root.join(FILE),
+                format!("import unittest\nclass ValueTest(unittest.TestCase):\n    def test_total(self):\n{body}"),
+            )
+            .unwrap();
+            let result = std::process::Command::new("sh")
+                .args(["-c", comparison.command()])
+                .current_dir(&root)
+                .output()
+                .unwrap();
+            assert_eq!(result.status.code(), Some(1));
+            let output = String::from_utf8(result.stdout).unwrap();
+            assert_eq!(
+                comparison.observed(comparison.command(), root.to_str().unwrap(), &output),
+                complete,
+                "{output}"
+            );
+            if complete {
+                assert_eq!(output.matches("[operand clipped]").count(), 2);
+            } else {
+                assert!(output.contains("No complete assertion difference captured."));
+            }
+        }
     }
 }

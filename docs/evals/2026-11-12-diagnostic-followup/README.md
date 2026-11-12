@@ -58,3 +58,41 @@ inventories, provider reports and traces. [Recorded inputs and results](results.
 The executor passed `scripts/check-local.sh`, including 1,184 Rust main
 tests, six integration tests and 20 TUI replays. A mocked native Coder request
 also covers the early yield and forwarding of different Observer advice.
+
+## Focused assertion comparison
+
+A follow-up reused the same S15 candidate, prefix, workspace path, Luna pair
+and 12 task / 16 wire request limits for one new continuation. The previous
+after leg provides the reference for the observed action sequence. In the
+offline replay the command was withheld through message 154 and became
+available after the read at 157. Executing it on a disposable copy returned
+the four changed fields and exit code 1 without changing the candidate.
+
+In the live continuation Observer offered the runnable comparison after
+the mandatory read. Coder's next action executed the exact suggestion.
+The original assertion puts the actual value first and the expected value
+second.
+
+| Field | Actual | Expected |
+| --- | ---: | ---: |
+| `requests.task_used` | 2 | 3 |
+| `requests.wire_used` | 3 | 5 |
+| `requests.task_remaining` | 190 | 189 |
+| `requests.wire_remaining` | 213 | 211 |
+
+The comparison kept the failing test's exit status and the next Coder turn
+stayed in Fix. The subsequent patch contained identical replacement text,
+and the candidate inventory had zero differences. The continuation stopped
+blocked after 12 task requests, 16 wire requests and 123.474 seconds with
+all six exact checks pending. Seven subsequent tool attempts hit the Plan
+Gate. This sample shows the comparison reaching Coder and yielding concrete
+diagnostic evidence. Repair and fresh qualification require their own
+receipts. [Pinned results](focused-comparison.json)
+
+The fork review of the sampled executor identified five follow-ups. The
+reviewed revision shares the history predicate between live and resumed
+recovery, reads the runner's final comparison frame, clips each operand
+independently, names exact checks that will need fresh receipts, and checks
+the handoff before stopping a Coder slice. Regression controls cover an
+intervening command, an incomplete failure/read sequence, ordinary test
+output, long operands, receipt refresh, and the final slice slot.

@@ -5,7 +5,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 pub(crate) const DIAGNOSTIC_FOLLOWUP_GUIDANCE: &str = "The native diagnostic_followup records a repeated failed check and a completed read of its failure location. Use the returned observations to state the specific missing fact. Choose one different bounded observation that could distinguish likely causes, such as comparing the actual and expected result for the one failing case. A different file or line range must address an identified gap. If current evidence already supports a repair, make it in the allowed scope. Keep the original check pending for after the repair. The read and this comparison supply no completion proof.";
-const UNITTEST_COMPARISON_GUIDANCE: &str = "When diagnostic_followup.unittest_comparison is present, its arguments are a runnable exec for the single failing method. If the clipped assertion difference is the missing fact, run those arguments once from the specified cwd. The minus and plus lines are the first and second operands of the observed assertion. Use the test read to identify actual and expected. A nonzero exit can still reveal the difference. Use the differing fields to locate the source to repair. Keep the original exact check pending.";
+const UNITTEST_COMPARISON_GUIDANCE: &str = "When diagnostic_followup.unittest_comparison is present, its arguments are a runnable exec for the single failing method. If the clipped assertion difference is the missing fact, run those arguments once from the specified cwd. Include any checks_to_refresh in the remaining verification work. The minus and plus lines are the first and second operands of the observed assertion. Use the test read to identify actual and expected. A nonzero exit can still reveal the difference. Use the differing fields to locate the source to repair. Keep the original exact check pending.";
 
 #[derive(Debug, Serialize)]
 pub(crate) struct TaskObligations {
@@ -114,6 +114,10 @@ pub(crate) fn project_advisory(
     let acceptance = super::acceptance_report::CurrentEvidence::from_packet(
         messages, test_cmd, tool_root, &evidence,
     );
+    let mut diagnostic_followup = focus.diagnostic_followup(messages, tool_root);
+    if let Some(followup) = diagnostic_followup.as_mut() {
+        followup.include_comparison_check_cost(&required, &evidence.pending_exact_checks, test_cmd);
+    }
     TaskObligations {
         minimum_delivery: task_requirements
             .delivery_floor(&required, &evidence.pending_exact_checks),
@@ -150,7 +154,7 @@ pub(crate) fn project_advisory(
             })
         }),
         required_diagnostic_read: focus.required_read(),
-        diagnostic_followup: focus.diagnostic_followup(messages, tool_root),
+        diagnostic_followup,
         pending_recovery,
         acceptance_criteria: super::acceptance_report::criteria(plan.as_ref()),
         current_commands: acceptance.commands,

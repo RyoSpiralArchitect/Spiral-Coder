@@ -471,9 +471,11 @@ For a clipped Python unittest assertion, a simple module, class or method
 check can supply a ready `exec` comparison when the retained failure names one
 method in the diagnosed file. Observer can forward the exact arguments to
 Coder. The command runs that method and keeps the assertion's changed lines
-and the test exit status. Operand order comes from the assertion. An executed
-comparison with both operands preserves the completed diagnosis for the
-original failure. Its result leaves the original exact check pending.
+and the test exit status. The runner bounds each operand separately and marks
+incomplete output. Live execution and resume use the same history
+predicate before preserving the completed diagnosis for a captured
+difference. The existing execution ledger expires current exact checks
+when this command runs. The advice includes those checks as follow-up work.
 
 ## Resuming after an incomplete closeout
 

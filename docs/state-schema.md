@@ -1747,9 +1747,11 @@ recovery snapshots and the exact-check ledger retain their separate ownership.
 The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
-root. Live and restored recovery recognize the comparison only from the
-matching command and retained operand difference. The comparison remains
-an observation of the unresolved check.
+root. Live and restored recovery require the same preceding failure/read
+cycles, matching command and final comparison frame. The optional
+`checks_to_refresh` list describes current exact checks that the existing
+ledger would reopen after this execution. The comparison remains an
+observation of the unresolved check.
 
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a

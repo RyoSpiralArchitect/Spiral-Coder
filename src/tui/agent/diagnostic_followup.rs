@@ -27,6 +27,27 @@ impl DiagnosticFollowup {
         self.unittest_comparison.is_some()
     }
 
+    pub(in crate::tui::agent) fn include_comparison_check_cost(
+        &mut self,
+        required: &[String],
+        pending: &[String],
+        test_cmd: Option<&str>,
+    ) {
+        if let Some(comparison) = self.unittest_comparison.as_mut() {
+            if crate::tui::agent::task_harness::benchmark_proof::exec_invalidates_proof(
+                comparison.command(),
+                required,
+                test_cmd,
+            ) {
+                comparison.checks_to_refresh = required
+                    .iter()
+                    .filter(|check| !pending.contains(check))
+                    .cloned()
+                    .collect();
+            }
+        }
+    }
+
     pub(in crate::tui::agent) fn observed_comparison(
         &self,
         command: &str,
@@ -41,30 +62,6 @@ impl DiagnosticFollowup {
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
         self.matching_failures == 2 && self.first_read_just_returned
     }
-}
-
-pub(super) fn retained_comparison(
-    failure: &FailureFocus,
-    failure_output: &str,
-    call: &ToolCallData,
-    result: &str,
-    root: Option<&str>,
-) -> bool {
-    let (Some(root), Some(cwd)) = (root, exec_cwd(result)) else {
-        return false;
-    };
-    cwd == root
-        && super::super::parse_exit_code_from_tool_text(result) == Some(1)
-        && super::super::parse_exec_command_from_args(&call.arguments).is_some_and(|command| {
-            command.contains("Focused unittest:")
-                && unittest_comparison::project(
-                    &failure.check,
-                    &failure.path,
-                    failure_output,
-                    Path::new(root),
-                )
-                .is_some_and(|comparison| comparison.observed(&command, cwd, result))
-        })
 }
 
 struct Read<'a> {
@@ -82,6 +79,38 @@ struct Cycle<'a> {
 }
 
 impl RecoveryFocus {
+    pub(super) fn retained_comparison(
+        &self,
+        messages: &[Value],
+        call: &ToolCallData,
+        message: &Value,
+        root: Option<&str>,
+    ) -> bool {
+        let Some(command) = super::super::parse_exec_command_from_args(&call.arguments)
+            .filter(|command| command.contains("Focused unittest:"))
+        else {
+            return false;
+        };
+        let result = message["content"].as_str().unwrap_or_default();
+        let Some(cwd) = exec_cwd(result).filter(|cwd| Some(*cwd) == root) else {
+            return false;
+        };
+        if super::super::parse_exit_code_from_tool_text(result) != Some(1) {
+            return false;
+        }
+        let Some((_, stdout)) = result.split_once("\nstdout (tail):\n") else {
+            return false;
+        };
+        let stdout = stdout
+            .split_once("\nstderr:\n")
+            .map_or(stdout, |(out, _)| out);
+        messages
+            .iter()
+            .position(|candidate| std::ptr::eq(candidate, message))
+            .and_then(|index| self.diagnostic_followup(&messages[..index], root))
+            .is_some_and(|followup| followup.observed_comparison(&command, cwd, stdout))
+    }
+
     pub(in crate::tui::agent) fn diagnostic_followup(
         &self,
         messages: &[Value],

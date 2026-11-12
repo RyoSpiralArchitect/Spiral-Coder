@@ -170,7 +170,15 @@ fn changed_read_content_ends_the_comparison() {
 #[cfg(unix)]
 #[test]
 fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
+    const OTHER_CHECK: &str = "cargo test --locked --bin spiral-coder -q";
     let mut trace = Trace::new();
+    trace.messages[0]["content"] = json!(format!("{TASK}\nAlso run exactly: {OTHER_CHECK}"));
+    trace.append(
+        "passing-check",
+        "exec",
+        json!({"command":OTHER_CHECK}),
+        format!("OK (exit_code: 0)\ncwd: {}", trace.path.display()),
+    );
     std::fs::write(
         trace.path.join(FILE),
         "import unittest\n\nclass Check(unittest.TestCase):\n    def test_value(self):\n        self.assertEqual({'used': 2}, {'used': 3})\n",
@@ -187,8 +195,21 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
         trace.read(read);
     }
     let followup = trace.view().unwrap();
-    let view = serde_json::to_value(&followup).unwrap();
-    let args = &view["unittest_comparison"]["arguments"];
+    let view = serde_json::to_value(agent::task_obligations::project_advisory(
+        &trace.messages,
+        Some(CHECK),
+        trace.root(),
+    ))
+    .unwrap();
+    let followup_view = &view["diagnostic_followup"];
+    assert_eq!(
+        followup_view["unittest_comparison"]["checks_to_refresh"],
+        json!([OTHER_CHECK]),
+        "required={}, pending={}",
+        view["required_exact_checks"],
+        view["pending_exact_checks"]
+    );
+    let args = &followup_view["unittest_comparison"]["arguments"];
     let command = args["command"].as_str().unwrap();
     let root = trace.root().unwrap();
     let process = std::process::Command::new("sh")
@@ -217,11 +238,36 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
         trace.view().is_none(),
         "an executed comparison consumes the offer"
     );
-    assert_eq!(
+    let pending =
         agent::task_obligations::project_advisory(&trace.messages, Some(CHECK), trace.root())
-            .pending_exact_checks,
-        vec![CHECK]
+            .pending_exact_checks;
+    assert_eq!(pending, vec![CHECK, OTHER_CHECK]);
+
+    // Replaying a command after just one cycle cannot preserve diagnosis,
+    // even when the comparison output is identical.
+    let one_cycle: Vec<_> = trace
+        .messages
+        .iter()
+        .filter(|message| {
+            !["f1", "r1"]
+                .iter()
+                .any(|id| message["tool_call_id"] == *id || message["tool_calls"][0]["id"] == *id)
+        })
+        .cloned()
+        .collect();
+    let focus = RecoveryFocus::from_messages(&one_cycle, trace.root(), Some(CHECK));
+    assert!(!focus.progress_survives(&one_cycle, trace.root(), Some(CHECK)));
+
+    let comparison = trace.messages.split_off(trace.messages.len() - 2);
+    trace.append(
+        "intervening-process",
+        "exec",
+        json!({"command":"git status --short"}),
+        format!("OK (exit_code: 0)\ncwd: {}", trace.path.display()),
     );
+    trace.messages.extend(comparison);
+    let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
+    assert!(!focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
 }
 
 #[tokio::test]
@@ -281,14 +327,14 @@ async fn repeated_diagnosis_returns_before_another_coder_call_and_forwards_a_dif
     };
     let result = crate::work_budget::scope(
         Some(crate::work_budget::Context {
-            budget: budget.with_observer_return(4),
+            budget: budget.with_observer_return(1),
             role: "coder",
         }),
         Box::pin(agent::run_agentic_json(
             start,
             &cfg,
             Some(root),
-            4,
+            1,
             tx,
             None,
             None,
