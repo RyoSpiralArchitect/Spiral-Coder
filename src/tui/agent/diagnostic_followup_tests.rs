@@ -120,6 +120,22 @@ fn repeated_diagnosis_projects_only_the_current_read_backed_failure() {
 }
 
 #[test]
+fn comparison_ignores_padding_only_before_the_clipped_assertion_operator() {
+    let original = "AssertionError: {left} != {right}\n[... output omitted ...]\n!= {'used': None}\n\nRan 3 tests in 10.158s\n\nFAILED (failures=3)";
+    let padded = original
+        .replace("\n!= ", "\n != ")
+        .replace("10.158s", "1.581s");
+    assert_eq!(comparable_output(original), comparable_output(&padded));
+    for changed in [
+        padded.replace("'used': None", "'used': 3"),
+        padded.replace("[... output omitted ...]", "Assertion context:"),
+        padded.replace("\n != ", "\n   different operand "),
+    ] {
+        assert_ne!(comparable_output(original), comparable_output(&changed));
+    }
+}
+
+#[test]
 fn other_processes_and_edits_break_the_comparison_but_refusals_do_not_count() {
     for (tool, arguments, output) in [
         (
