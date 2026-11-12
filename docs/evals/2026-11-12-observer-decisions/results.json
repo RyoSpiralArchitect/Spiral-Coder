@@ -1,0 +1,188 @@
+{
+  "plan_sha256": "4babcb1f4d8df5737d73bc88f30e46593abc78c00c86b37e49c28ede6807c856",
+  "provider_calls": 6,
+  "tools_executed": 0,
+  "rows": [
+    {
+      "case": "implementation-gap",
+      "condition": "after",
+      "success": true,
+      "native_issue": null,
+      "hint_forwarded": true,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 15250,
+        "completion_tokens": 638,
+        "total_tokens": 15888,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 15247,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 245,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 10.653,
+      "raw_sha256": "9a30816558084e77def242e2277796b569d09363788792f2bab9dd7a27c7c339",
+      "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=87, path=scripts/status_fixture.py, start_line=50)\nWhy: The latest required check failed because the command returned the manifest-shaped object rather than the protected summary. The retained read of scripts/status_fixture.py was truncated before the expected() definition, so it does not establish the exact output fields, pending representation, or state-specific values needed for a concrete patch. Read only lines 50-87; the result will determine whether the next action is a focused implementation edit or a further bounded source-schema read. This is better than rerunning the same failed check or inventing a serializer from the truncated failure output.\n</observer_advisory>",
+      "response_record_sha256": "37fb3115fa56845a3d78ed333784b0850f6e7ebc17dc056ee56ea508e86a56b0"
+    },
+    {
+      "case": "implementation-gap",
+      "condition": "before",
+      "success": true,
+      "native_issue": null,
+      "hint_forwarded": true,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 14568,
+        "completion_tokens": 719,
+        "total_tokens": 15287,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 14565,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 303,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 10.25,
+      "raw_sha256": "fee8905af412ea58fd46a826413471d63c7c9b14df33666a06c9e069c7934c2c",
+      "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=100, path=scripts/status_fixture.py, start_line=75)\nWhy: The concrete missing fact is the complete fixture-shaped output expected by scripts.status_fixture.expected; the current source only serializes the manifest, and the visible failure proves the schema is wrong. Read only the expected-output region before authorizing a focused source repair.\n</observer_advisory>",
+      "response_record_sha256": "399bda7d3d247ea4d4421466fc47341a30442b7875c16357f0a2eb6568e6a879"
+    },
+    {
+      "case": "mandatory-diagnosis",
+      "condition": "after",
+      "success": true,
+      "native_issue": "invalid type: string \"Accept this diagnostic read now; defer edits and reruns until its result is available.\", expected a boolean",
+      "hint_forwarded": false,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 2027,
+        "completion_tokens": 467,
+        "total_tokens": 2494,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 2024,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 110,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 6.71,
+      "raw_sha256": "79b222c19fe9b3f63fcc6506a3380e19a2b60808b9eb82d60a8721d3ac122ca3",
+      "hint": null,
+      "response_record_sha256": "7a02ed04bc6c7c0e05b4b97c8db3912e4b6d36d7ad7e554d9a2597958340a8a6"
+    },
+    {
+      "case": "mandatory-diagnosis",
+      "condition": "before",
+      "success": true,
+      "native_issue": "invalid type: string \"Accept this diagnostic read as the immediate next action; do not override or defer it.\", expected a boolean",
+      "hint_forwarded": false,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 1315,
+        "completion_tokens": 460,
+        "total_tokens": 1775,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 1312,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 103,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 7.809,
+      "raw_sha256": "cad9dab8963e8515f8d2834c2eb4d3f7febf547241c476525787fc7862944ea2",
+      "hint": null,
+      "response_record_sha256": "dfee462732646123d0c00fa8225908bc7a2b9d6b4b7ab8f93c1166e6d1a651ee"
+    },
+    {
+      "case": "plan-admission",
+      "condition": "after",
+      "success": true,
+      "native_issue": null,
+      "hint_forwarded": true,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 12583,
+        "completion_tokens": 704,
+        "total_tokens": 13287,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 12580,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 172,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 9.934,
+      "raw_sha256": "40d49399ea12847b9976629d3f766d599f3bc30d0ac3b8741c7f62652b7a77ef",
+      "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nWhy: First emit a valid plan with goal: \"Complete coupled-status implementation, artifacts, and all mandated verification.\" and acceptance lines exactly: \"1. Read-only native/npm summaries with honest pending usage.\" \"2. Strict rejection and preserved commands.\" \"3. Documentation and public-CLI coverage.\" \"4. All six checks pass.\" Then emit think and make this one tool call. This is better than rerunning the failed check because the latest failure already identifies the unimplemented branch, while the current source after the prior mutation is unknown; reading it supplies the exact implementation region needed for a targeted repair. The goal remains \"Complete coupled-status implementation, artifacts, and all mandated verification.\" Acceptance remains \"Read-only native/npm summaries with honest pending usage.\", \"Strict rejection and preserved commands.\", \"Documentation and public-CLI coverage.\", and \"All six checks pass.\"\n</observer_advisory>",
+      "response_record_sha256": "c99f19b10878ec567791438231b9e27a0f664adfc685fbaac0070c19f07f32e9"
+    },
+    {
+      "case": "plan-admission",
+      "condition": "before",
+      "success": true,
+      "native_issue": null,
+      "hint_forwarded": true,
+      "format_recovery": null,
+      "provider_usage": {
+        "prompt_tokens": 11835,
+        "completion_tokens": 623,
+        "total_tokens": 12458,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 11832,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 159,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      },
+      "wall_seconds": 10.778,
+      "raw_sha256": "d1d5d7ee6ffc58b3281a5c1385a5d7ec44ab6b2e942eb8038e5da9f2d758bb38",
+      "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nWhy: The missing fact is the current implementation of src/coupled_status.rs: the last observed check proves the placeholder still fails, but the current source region has not been freshly observed after the failed verification. Read it first to identify the smallest supported repair before editing; this also satisfies the governor's required next action.\n</observer_advisory>",
+      "response_record_sha256": "28300210147d79928889ae713515daba49b9b705ed6dd032f79bed277d9f2051"
+    }
+  ],
+  "wall_seconds": 56.156,
+  "provider_usage_total": {
+    "prompt_tokens": 57578,
+    "completion_tokens": 3611,
+    "total_tokens": 61189
+  },
+  "field_definitions": {
+    "success": "Provider HTTP response received; does not imply native acceptance or task success.",
+    "hint_forwarded": "Local native parser/validator produced the soft hint; no Coder consumed it.",
+    "raw_sha256": "SHA256 of raw model message.content UTF-8, not the enclosing response record."
+  },
+  "qualified": null,
+  "coder_continuations": 0
+}

@@ -31,7 +31,7 @@ async fn uncertain_observer_primary_returns_one_report_without_adopting_advice()
         let (obs_tx,mut obs_rx)=mpsc::channel(128);
         send_next_action_assist(&mut app,&obs_tx,"last-fail","incomplete_task").await;
         closeout_drain(&mut app,&mut obs_rx,PaneId::Observer).await;
-        assert!(app.pending_observer_hint.is_none() && app.pending_observer_contract.is_none());
+        assert!(app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none());
         if outcome=="stale" { app.coder_session.as_mut().unwrap().messages.push(json!({"role":"user","content":"A different task"})); }
         let (tx,mut rx)=mpsc::channel(128);
         assert_eq!(observer_request::maybe_report_closeout(&mut app,&tx).await,outcome!="stale", "{outcome}");

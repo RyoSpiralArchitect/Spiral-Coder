@@ -1700,3 +1700,45 @@ introduced. Raw advice remains in the Observer report, while the Coder receives
 only a native report instruction. An authored, validated `blocked_report` remains
 the same-task continuation record. Native completion evidence, terminal status,
 iteration progress and approval barriers keep their existing authority.
+
+## Resuming after an incomplete closeout
+
+An accepted native `done` call with an `OK: blocked` result and nonempty
+`blocked_report.remaining_acceptance` is retained as historical reporting.
+Its assistant turn does not replace the resumable work plan, last work
+reflection, working-memory strategy or shared strategy summary for either role. These projections require the matching
+call ID and adjacent native result; rejected, unmatched and text-only reports
+do not qualify. Earlier work strategies, failed-check recovery, approval
+barriers, outstanding obligations and the full terminal transcript remain.
+Compaction protects the admitted plan associated with a closeout. When no
+validated work plan survives, the runtime can revalidate that admitted plan
+for tool admission and retain its acceptance references for both roles. This
+plan stays tied to the original closeout even after a successful resumed read.
+No new persisted state, budget, progress credit or completion exception is added.
+
+## Observer intervention decision brief
+
+The Observer prompt derives a bounded brief from native execution receipts before
+compaction: the last six proposed actions retain executed/succeeded/freshness
+separately, with an explicit omission count. Only the latest unexecuted native
+governor rejection can identify a current admission barrier. Complete goal and
+acceptance fields quoted by a native Plan Gate rejection can be copied verbatim;
+truncated or malformed fields stay unknown. Historical gate messages or strings
+printed by executed commands do not become current admission instructions.
+
+The TUI and headless path project `previous_assist_outcome` from the latest
+assist in the current work ledger. This prompt-only view retains the decision,
+bounded target, read range, counts and suggested-action outcome. The most
+recent retained matching call is selected by native result order and retains its
+execution disposition and freshness. Correlation uses exact tool arguments
+or the native check-ID expansion. Missing and ambiguous matches remain
+unknown. The current task owns the work ledger. The same receipt format covers
+consumed soft advice and advice that asks for an explicit response.
+
+General, diagnostic and handoff prompts all ask for a concise decision rationale
+using existing fields: missing fact, consequence of the next observation, a
+plausible alternative and remaining capacity. Explanatory placeholders must not
+be offered as executable patch bytes. This is advisory guidance, not a semantic
+validator or permission expansion. Existing diagnosis, recheck, approval,
+confidence and completion gates remain unchanged. No new persisted state or
+provider request is introduced.

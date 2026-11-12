@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "kind": "prospective prompt-only Observer pilot; no candidate edits or Coder continuation",
+  "model": "gpt-5.6-luna",
+  "runtime_before": "6a3861d7f01b665cbcdb9a32661101cc84b52732",
+  "runtime_after": "9801b0468c286d173e7e17aa9e0ce226bd701ebb",
+  "binary_before_sha256": "ee28d1038dbe7405af30e2c5d1d56c0264e1403b93c60569c9e7c1ef93c2d617",
+  "binary_after_sha256": "949f3e8c6673d72a73614c6a94424c7066a7d1e40e8e88821c75c2d170d7472d",
+  "runner_sha256": "af8f3352c7124b211889d64567cc583c3c89cdeda19fd04373e18e6676cf672e",
+  "maximum_provider_calls": 6,
+  "max_completion_tokens": 4096,
+  "wall_seconds": 600,
+  "retry_limit": 0,
+  "external_calls_at_pin": 0,
+  "temperature": "omitted for both conditions",
+  "format": "json_object in all cases; strict production diagnostic schema not exercised",
+  "order": [
+    [
+      "plan-admission",
+      "before"
+    ],
+    [
+      "plan-admission",
+      "after"
+    ],
+    [
+      "implementation-gap",
+      "after"
+    ],
+    [
+      "implementation-gap",
+      "before"
+    ],
+    [
+      "mandatory-diagnosis",
+      "before"
+    ],
+    [
+      "mandatory-diagnosis",
+      "after"
+    ]
+  ],
+  "system": "You are Observer in next-action assist mode.\nConsider the task objective, retained history, outstanding evidence and remaining requests.\nRecommend one feasible next step or a handoff for a future continuation.\n\n[Language]\nEnglish. Write your response in English.",
+  "cases": [
+    {
+      "case": "plan-admission",
+      "source_iteration": 5,
+      "inclusive_message_index": 259,
+      "source_session_sha256": "b3eb70512dad94861ca833ad262f06b80cf92dffaaddfefbd63fb7d7a69476d2",
+      "request_sha256": "aaf775a30da76c6bdc204cfab47236dc92c7bcf7a70c8ee73656db37a241545c",
+      "prompt_before_sha256": "b6e499bd85351596a4c5bc6b595ee9c28ba626e0754b28b04e5ed18c1034307b",
+      "required_read": null
+    },
+    {
+      "case": "implementation-gap",
+      "source_iteration": 4,
+      "inclusive_message_index": 200,
+      "source_session_sha256": "5a045984763ef2c06962f76bb9a06e46e7608a4a8b9db1705a2412ed7d95e446",
+      "request_sha256": "1f3b55d337489896e5d422a30e018054581fbd8e936d54aec461581b0fd5fdf5",
+      "prompt_before_sha256": "8aef3db567ac0386deac632aa138f62ba8d17f4c18cebb7dc48e782ea68916a4",
+      "required_read": null
+    },
+    {
+      "case": "mandatory-diagnosis",
+      "source_iteration": 2,
+      "inclusive_message_index": 119,
+      "source_session_sha256": "f38aaab2b1ab1fc2b50e52b1ec5634cda06df56bf4e557452956e0adfce0bb5d",
+      "request_sha256": "fde0a57f7819ba3a275a03a5f003473c1c59e149705bc94b8534b12e21ed7c4b",
+      "prompt_before_sha256": "47a95bd887460035c0718a374f9df3bce7ee67ba06b4761aa9d5ab87ae89880e",
+      "required_read": {
+        "failed_check": "python3 -S -m unittest -v scripts.status_visible",
+        "path": "scripts/status_visible.py"
+      }
+    }
+  ],
+  "prepared_sha256": {
+    "plan-admission.before": "78914aacc347c92bde8ac0690cb14fc011611a7d8196599dfd48e1af57e241fe",
+    "plan-admission.after": "a43195df1668f2850690e971468cc986644870d588c738ee97d2c12aa7f0858c",
+    "implementation-gap.before": "4ae6af7f6b53eff8f1f80c4fd08b98cffbaad7169f87f5634a496c2cbd666972",
+    "implementation-gap.after": "d3869e4e071c0f9aa6cbdd65134c2ef9e94ae785fc3ae099536e3903abf39ac9",
+    "mandatory-diagnosis.before": "84b6082d2ba4f1b54b8e7ce7d6f467576e790991025106d0dca55373ce13b8fd",
+    "mandatory-diagnosis.after": "947d24938012659526aa88a1c69523d27c802bd7c7c05a6f1e14d88c5699eb5e"
+  },
+  "manual_quality_questions": {
+    "plan-admission": [
+      "Does the advice identify admission as the immediate blocker?",
+      "Does it preserve the exact admitted goal and all acceptance items before another read?"
+    ],
+    "implementation-gap": [
+      "Does any edit contain complete implementation bytes rather than explanatory placeholders?",
+      "If observation is chosen, is the missing fact and resulting next decision specific?"
+    ],
+    "mandatory-diagnosis": [
+      "Does it preserve the required read path without proposing an edit?",
+      "Does it name what comparison the read informs?"
+    ]
+  },
+  "interpretation": "Native validation/forwarding and semantic quality are separate. One paired sample per saved case is descriptive, unblinded and not statistical or end-to-end evidence. No response is executed; no success-rate or request-saving claim."
+}

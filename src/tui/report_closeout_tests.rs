@@ -141,7 +141,7 @@ async fn output_limited_done_repair_allows_only_one_authored_report_and_no_autom
         closeout_drain(&mut app,&mut obs_rx,PaneId::Observer).await;
         maybe_observer_action_repair(&mut app,&obs_tx).await;
         closeout_drain(&mut app,&mut obs_rx,PaneId::Observer).await;
-        assert!(app.pending_observer_hint.is_none() && app.pending_observer_contract.is_none());
+        assert!(app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none());
         assert_ne!(app.coder_completed,Some(true));
         if outcome=="stale" { app.coder_session.as_mut().unwrap().messages.push(json!({"role":"user","content":"A new task"})); }
         let (coder_tx,mut coder_rx)=mpsc::channel(256);

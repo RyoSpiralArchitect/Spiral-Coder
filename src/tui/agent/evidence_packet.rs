@@ -24,6 +24,31 @@ pub(crate) struct ActionEvidence {
     pub freshness: super::current_evidence::Freshness,
 }
 
+impl ActionEvidence {
+    pub(crate) fn matches_suggestion(&self, tool: &str, args: &serde_json::Value) -> bool {
+        if self.tool != tool {
+            return false;
+        }
+        if self.arguments == *args {
+            return true;
+        }
+        // A native check selection retains the ID with its resolved command and
+        // root. Other suggestions require exact argument equality.
+        self.tool == "exec"
+            && args.as_object().is_some_and(|object| object.len() == 1)
+            && args["check_id"]
+                .as_str()
+                .is_some_and(|id| self.arguments["check_id"] == id)
+            && self.arguments.as_object().is_some_and(|object| {
+                object.len() == 3
+                    && object
+                        .get("command")
+                        .is_some_and(serde_json::Value::is_string)
+                    && object.get("cwd").is_some_and(serde_json::Value::is_string)
+            })
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct CargoInputHandoff {
     tool_call_id: Option<String>,

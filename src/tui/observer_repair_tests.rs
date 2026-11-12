@@ -237,14 +237,14 @@ async fn observer_repair_round_trip_is_bounded_and_uses_the_real_transport_and_c
         send_next_action_assist(&mut app, &tx, "last-fail", "missing_verification").await;
         finish_response(&mut app, &mut rx).await;
         assert!(app.pending_observer_hint.is_none());
-        assert!(app.pending_observer_contract.is_none());
+        assert!(app.pending_observer_advice.is_none());
         maybe_observer_action_repair(&mut app, &tx).await;
         finish_response(&mut app, &mut rx).await;
         for _ in 0..3 { maybe_observer_action_repair(&mut app, &tx).await; }
         first.assert_hits(1);
         repair.assert_hits(1);
         assert_eq!(app.pending_observer_hint.is_some(), repaired);
-        assert_eq!(app.pending_observer_contract.is_some(), repaired);
+        assert_eq!(app.pending_observer_advice.is_some(), repaired);
         assert!(app.observer_assist_request.as_ref().unwrap().pending_repair.is_none());
         let assistants: Vec<_> = app.observer.messages.iter().filter(|m| m.role == Role::Assistant).collect();
         assert_eq!(assistants.len(), 2);
@@ -291,7 +291,7 @@ async fn observer_repair_and_pending_advice_expire_when_coder_context_changes() 
     let anchor = intent::apply_intent_update(app.coder_intent_anchor.as_ref(), intent::normalize_intent_update(new_goal, app.coder_intent_anchor.as_ref()), new_goal);
     observer_request::prepare_coder_continuation(&mut app, &anchor);
     assert!(app.pending_observer_hint.is_none());
-    assert!(app.pending_observer_contract.is_none());
+    assert!(app.pending_observer_advice.is_none());
 }
 
 #[tokio::test]
@@ -309,7 +309,7 @@ async fn observer_completed_advice_is_scoped_and_cancel_clears_pending_repair() 
     maybe_observer_action_repair(&mut app, &tx).await;
     observer_request::prepare_coder_continuation(&mut app, &same);
     assert!(app.pending_observer_hint.is_none(), "tick must not lose the scope stamp while keeping stale advice");
-    assert!(app.pending_observer_contract.is_none());
+    assert!(app.pending_observer_advice.is_none());
 
     replay_observer_next_action_case(&mut app, "last-fail", "missing_verification", &repair_response_missing_tool()).unwrap();
     app.focus = Focus::Right;

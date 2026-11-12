@@ -27,7 +27,7 @@ pub(super) struct ImpactGateCtx<'a> {
     pub impact_required: &'a mut Option<String>,
     pub working_mem: &'a mut WorkingMemory,
     pub assumption_ledger: &'a mut AssumptionLedger,
-    pub active_plan: &'a mut Option<PlanBlock>,
+    pub active_plan: &'a mut ActivePlan,
     pub intent_required_verification: &'a mut VerificationLevel,
     pub required_verification: &'a mut VerificationLevel,
     pub recovery: &'a mut RecoveryGovernor,
@@ -65,7 +65,7 @@ pub(super) async fn enforce_impact(
             )
             .is_ok()
         })
-        .or_else(|| ctx.active_plan.clone())
+        .or_else(|| ctx.active_plan.as_ref().cloned())
         .or_else(|| {
             let [tc] = tool_calls else {
                 return None;

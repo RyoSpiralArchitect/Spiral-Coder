@@ -1,0 +1,67 @@
+{
+  "kind": "unblinded descriptive assessment of one paired sample per frozen case",
+  "plan_admission": {
+    "before": "Names unfinished product code, repeats the blocked read, and misses admission repair.",
+    "after": "Distinguishes unexecuted native plan blockage from product work and includes admitted goal and every acceptance item in the forwarded primary reason.",
+    "exact_fields_in_forwarded_hint": {
+      "before": {
+        "goal": false,
+        "acceptance": [
+          false,
+          false,
+          false,
+          false
+        ]
+      },
+      "after": {
+        "goal": true,
+        "acceptance": [
+          true,
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    "limitation": "The after response calls this missing plan format rather than explicitly diagnosing the changed goal word. It also repeats the acceptance text twice. The suggested plan was not consumed or executed by a Coder."
+  },
+  "implementation_gap": {
+    "before_read": [
+      75,
+      100
+    ],
+    "after_read": [
+      50,
+      87
+    ],
+    "expected_function_lines": [
+      62,
+      78
+    ],
+    "fixture_repo_path": "benchmarks/self-dogfood-v2/coupled-status/status_fixture.py",
+    "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+    "fixture_identical_to_s14_input": true,
+    "before": "Names the missing output schema, but the proposed slice starts inside the final requests object and misses the function header and most output fields.",
+    "after": "Names the missing schema and why the prior truncated observation is insufficient. The proposed slice contains the complete expected() function; the forwarded reason branches between an edit and a further bounded schema read.",
+    "placeholder_comparison": "Not observed: both sampled replies propose a read, neither an executable patch. No causal placeholder-prevention claim."
+  },
+  "mandatory_diagnosis": {
+    "both_choose_required_read": true,
+    "both_propose_edit": false,
+    "before": "Names the required file and failed test, without a specific assertion comparison.",
+    "after": "Names comparing the failed assertion with implementation and a result-dependent next action, but the alternatives remain generic.",
+    "native_forwarding_before": false,
+    "native_forwarding_after": false,
+    "cause": "Both responses use string response_contract.required instead of boolean; suggestions is an object and based_on a string. Both fail unchanged native validation.",
+    "transport_limitation": "Frozen pilot uses json_object for all six replies; production diagnostic mode uses strict JSON schema. These rejections are not evidence of production strict-schema failure."
+  },
+  "limitations": [
+    "No Coder action, candidate change, continuation, complete repair, success-rate or request-saving measurement.",
+    "One paired sample per case, no retries, unblinded manual assessment; model variance is uncontrolled.",
+    "Budget snapshot standardized to 12 total / 9 Coder remaining, not reconstructed historical allowance.",
+    "Previous-assist outcome is null; receipt-chain adaptation was not tested.",
+    "The brief adds prompt tokens; API totals are reported and net efficiency is unestablished.",
+    "Placeholder avoidance is guidance, not a new semantic validator."
+  ],
+  "next_probe": "Freeze a new coupled Luna/Luna continuation using production response formats; check whether the exact plan prerequisite reaches the Coder, clears admission, and leads to a verified edit within unchanged gates."
+}

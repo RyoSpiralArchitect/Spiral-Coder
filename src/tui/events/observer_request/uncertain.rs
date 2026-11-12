@@ -111,7 +111,7 @@ mod tests {
             );
             if case == "low" {
                 assert!(
-                    app.pending_observer_hint.is_none() && app.pending_observer_contract.is_none()
+                    app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none()
                 );
             }
             if case == "threshold" {

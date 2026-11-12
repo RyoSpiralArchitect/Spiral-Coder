@@ -2,6 +2,8 @@
 use super::{agent::evidence_packet::ActionEvidence, suggestion::ObserverSuggestion};
 use crate::work_budget::SuggestedActionReceipt;
 
+pub(super) mod finalize;
+
 pub(super) fn project(
     primary: Option<&ObserverSuggestion>,
     actions: &[&ActionEvidence],
@@ -17,11 +19,7 @@ pub(super) fn project(
     let matches: Vec<_> = actions
         .iter()
         .copied()
-        .filter(|action| {
-            action.tool == tool
-                && (action.arguments == primary.suggested_args
-                    || resolved_check_matches(action, &primary.suggested_args))
-        })
+        .filter(|action| action.matches_suggestion(tool, &primary.suggested_args))
         .collect();
     let executed_matches: Vec<_> = matches
         .iter()
@@ -64,23 +62,6 @@ pub(super) fn project(
         executed,
         succeeded,
     })
-}
-
-// A resolved native selection records the ID plus its runtime-resolved command
-// and root. This is one defined normalization, not arbitrary subset matching.
-fn resolved_check_matches(action: &ActionEvidence, proposed: &serde_json::Value) -> bool {
-    action.tool == "exec"
-        && proposed.as_object().is_some_and(|args| args.len() == 1)
-        && proposed["check_id"]
-            .as_str()
-            .is_some_and(|id| action.arguments["check_id"] == id)
-        && action.arguments.as_object().is_some_and(|args| {
-            args.len() == 3
-                && args
-                    .get("command")
-                    .is_some_and(serde_json::Value::is_string)
-                && args.get("cwd").is_some_and(serde_json::Value::is_string)
-        })
 }
 
 #[cfg(test)]

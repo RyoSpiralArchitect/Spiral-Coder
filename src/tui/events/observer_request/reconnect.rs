@@ -34,7 +34,7 @@ pub(in super::super) fn on_error(app: &mut App) -> bool {
         return false;
     };
     app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
+    app.pending_observer_advice = None;
     app.last_observer_suggestion = None;
     request.pending_report_closeout = None;
     request.pending_repair = None;

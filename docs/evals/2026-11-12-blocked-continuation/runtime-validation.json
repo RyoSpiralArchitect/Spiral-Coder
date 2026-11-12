@@ -1,0 +1,17 @@
+{
+  "runtime_commit": "84a56edf1c5c9e50a75fc9f206137e522d7f27c3",
+  "full_check_log_sha256": "6ed944811911b553f2c04a08101748a4c8f8bab8aab22dfa03a7e3ba0ca22305",
+  "rust_main_passed": 1173,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "resume_red_log_sha256": "6661f542f7b3d9d67a80bc96e943f905539c68174ef7acfc7464a1ee5725907b",
+  "resume_green_log_sha256": "df5932acfd9c7469f329c0acdeec07c9d2b87c25ecc121749d6c2840dd786754",
+  "initial_full_check_log_sha256": "66dde7633f16e50f64fefe8048fddea8316b48286a8133eac82b14e4925097c5",
+  "initial_test_correction": "A terminal done intentionally changes the latest-action Observer handoff trigger; restored that existing test and added a distinct native HTTP blocked-resume test."
+}

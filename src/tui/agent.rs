@@ -104,6 +104,7 @@ mod outcome;
 mod output_compaction;
 mod plan_governor;
 mod plan_resume;
+use plan_resume::ActivePlan;
 mod plan_revision;
 #[cfg(test)]
 mod plan_revision_tests;

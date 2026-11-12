@@ -16,7 +16,7 @@ pub(crate) struct Closeout<'a> {
     pub(crate) cur_cwd: &'a Option<String>,
     pub(crate) autosaver: &'a Option<Arc<crate::agent_session::SessionAutoSaver>>,
     pub(crate) test_cmd: Option<&'a str>,
-    pub(crate) active_plan: &'a mut Option<PlanBlock>,
+    pub(crate) active_plan: &'a mut ActivePlan,
     pub(crate) working_mem: &'a mut WorkingMemory,
     pub(crate) assumption_ledger: &'a mut AssumptionLedger,
     pub(crate) observation_evidence: &'a ObservationEvidence,

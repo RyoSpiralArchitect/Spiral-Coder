@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 pub(crate) mod diagnostic;
+pub(crate) mod intervention;
 pub(crate) mod strategy;
 
 #[cfg(test)]

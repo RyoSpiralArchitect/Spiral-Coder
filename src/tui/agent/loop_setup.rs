@@ -206,7 +206,7 @@ pub(super) struct LoopSetup<'a> {
     pub(super) latent_plan: Option<LatentPlanBuffer>,
     pub(super) realize_metrics: RealizeMetrics,
     pub(super) messages: Vec<serde_json::Value>,
-    pub(super) active_plan: Option<PlanBlock>,
+    pub(super) active_plan: ActivePlan,
     pub(super) path_required_verification: VerificationLevel,
     pub(super) required_verification: VerificationLevel,
     pub(super) last_reflection: Option<ReflectionBlock>,
@@ -348,7 +348,7 @@ impl<'a> LoopSetup<'a> {
                 json!({"role":"system","content": read_only_task_addon()}),
             );
         }
-        let active_plan = plan_resume::latest_valid(&messages, |plan| {
+        let active_plan = plan_resume::restore(&messages, |plan| {
             validate_plan_for_task_contract(
                 plan,
                 root_read_only,
@@ -369,8 +369,8 @@ impl<'a> LoopSetup<'a> {
         let last_reflection = last_reflection_from_messages(&messages);
         let working_mem = WorkingMemory::from_messages(&messages, test_cmd);
         let mut assumption_ledger = AssumptionLedger::from_messages(&messages, &working_mem);
-        if let Some(plan) = active_plan.as_ref() {
-            assumption_ledger.sync_to_plan(plan);
+        if let Some(work) = active_plan.work() {
+            assumption_ledger.sync_to_plan(work);
         }
         assumption_ledger.refresh_confirmations(&working_mem);
         let mut observation_evidence = collect_observation_evidence(&messages);

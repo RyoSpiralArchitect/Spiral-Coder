@@ -64,7 +64,7 @@ async fn blocked_tui_uses_the_last_observer_slot_for_terminal_diagnosis() {
     request.assert_hits(1);
     assert!(app.last_observer_suggestion.is_some());
     assert!(app.pending_observer_hint.is_none());
-    assert!(app.pending_observer_contract.is_none());
+    assert!(app.pending_observer_advice.is_none());
     assert_eq!(app.coder_session.as_ref().unwrap().messages, session_before);
     assert_eq!(app.coder_completed, Some(false));
     assert!(!app.coder.streaming);

@@ -16,10 +16,59 @@ pub(super) fn latest_valid(
     messages: &[Value],
     validate: impl Fn(&PlanBlock) -> bool,
 ) -> Option<PlanBlock> {
-    crate::task_origin::current_task_messages(messages)
-        .iter()
-        .rev()
-        .find_map(|message| from_message(message).filter(&validate))
+    match restore(messages, validate) {
+        ActivePlan::Missing => None,
+        ActivePlan::Work(plan) | ActivePlan::CloseoutOnly(plan) => Some(plan),
+    }
+}
+
+pub(crate) enum ActivePlan {
+    Missing,
+    Work(PlanBlock),
+    CloseoutOnly(PlanBlock),
+}
+
+impl ActivePlan {
+    pub(super) fn as_ref(&self) -> Option<&PlanBlock> {
+        match self {
+            Self::Missing => None,
+            Self::Work(plan) | Self::CloseoutOnly(plan) => Some(plan),
+        }
+    }
+
+    pub(super) fn work(&self) -> Option<&PlanBlock> {
+        match self {
+            Self::Work(plan) => Some(plan),
+            _ => None,
+        }
+    }
+
+    pub(super) fn is_none(&self) -> bool {
+        matches!(self, Self::Missing)
+    }
+
+    pub(super) fn is_closeout_only(&self) -> bool {
+        matches!(self, Self::CloseoutOnly(_))
+    }
+}
+
+pub(super) fn restore(messages: &[Value], validate: impl Fn(&PlanBlock) -> bool) -> ActivePlan {
+    let task = crate::task_origin::current_task_messages(messages);
+    let mut closeout = None;
+    for (index, message) in task.iter().enumerate().rev() {
+        if super::blocked_report::is_accepted_closeout(task, index) {
+            if closeout.is_none() {
+                closeout = serde_json::from_value(message["accepted_plan"].clone())
+                    .ok()
+                    .filter(&validate);
+            }
+        } else if let Some(plan) = from_message(message).filter(&validate) {
+            return ActivePlan::Work(plan);
+        }
+    }
+    // A closeout can supply the task's first natively admitted plan. Keep its
+    // acceptance and admission when there is no earlier validated work plan.
+    closeout.map_or(ActivePlan::Missing, ActivePlan::CloseoutOnly)
 }
 
 #[cfg(test)]
@@ -27,6 +76,45 @@ mod tests {
     use super::*;
     use crate::task_origin::{user_message, MessageOrigin};
     use serde_json::json;
+
+    #[test]
+    fn only_admitted_plan_survives_an_accepted_blocked_closeout_and_pruning() {
+        let plan = PlanBlock {
+            goal: "Repair fixture.txt".into(),
+            steps: vec![
+                "Report incomplete work".into(),
+                "List pending checks".into(),
+            ],
+            acceptance_criteria: vec!["cargo test -q passes".into()],
+            risks: "regression".into(),
+            assumptions: "fixture exists".into(),
+        };
+        let mut messages = vec![
+            user_message(
+                "Repair fixture.txt. Run exactly: cargo test -q",
+                MessageOrigin::User,
+            ),
+            json!({"role":"assistant","accepted_plan":plan,
+                "tool_calls":[{"id":"closeout","function":{"name":"done","arguments":"{}"}}]}),
+            json!({"role":"tool","tool_call_id":"closeout","content":"OK: blocked",
+                "blocked_report":{"remaining_acceptance":["acceptance 1"]}}),
+        ];
+        for _ in 0..70 {
+            messages.push(json!({"role":"assistant","content":"Work remains pending."}));
+        }
+        super::super::message_window::prune_message_window(&mut messages);
+        let restored = restore(&messages, |p| super::super::validate_plan(p).is_ok());
+        assert!(restored.is_closeout_only());
+        let admitted = restored
+            .as_ref()
+            .expect("the only admitted plan remains available");
+        assert_eq!(admitted.goal, plan.goal);
+        assert_eq!(admitted.acceptance_criteria, plan.acceptance_criteria);
+        assert_eq!(
+            super::super::task_obligations::project(&messages, None).acceptance_criteria,
+            super::super::acceptance_report::criteria(Some(&plan)),
+        );
+    }
 
     #[test]
     fn local_plan_survives_session_and_pruning_but_not_a_new_task_or_provider_wire() {

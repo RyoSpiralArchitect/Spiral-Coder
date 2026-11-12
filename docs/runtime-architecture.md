@@ -451,3 +451,46 @@ test; the original scope and preservation gates still decide what can be edited.
 A read never grants completion proof, and unrelated successful checks do not
 clear the pending failure. This avoids sending an authored fixture failure back
 to an unrelated production module merely because that module was read earlier.
+
+## Resuming after an incomplete closeout
+
+An accepted native `done` call with an `OK: blocked` result and nonempty
+`blocked_report.remaining_acceptance` is retained as historical reporting.
+Its assistant turn does not replace the resumable work plan, last work
+reflection, working-memory strategy or shared strategy summary for either role. These projections require the matching
+call ID and adjacent native result; rejected, unmatched and text-only reports
+do not qualify. Earlier work strategies, failed-check recovery, approval
+barriers, outstanding obligations and the full terminal transcript remain.
+If the closeout holds the only validated native plan, its goal and acceptance
+are available for plan admission and reporting after resume. A tool turn that
+inherits this plan uses it for validation. Work plan snapshots, step labels
+and strategy recall resume when the Coder supplies a validated work plan.
+No new persisted state, budget, progress credit or completion exception is added.
+
+## Observer intervention decision brief
+
+The Observer prompt derives a bounded brief from native execution receipts before
+compaction: the last six proposed actions retain executed/succeeded/freshness
+separately, with an explicit omission count. Only the latest unexecuted native
+governor rejection can identify a current admission barrier. Complete goal and
+acceptance fields quoted by a native Plan Gate rejection can be copied verbatim;
+truncated or malformed fields stay unknown. Historical gate messages or strings
+printed by executed commands do not become current admission instructions.
+
+The brief uses the current native work ledger's last recorded assist and the
+retained calls matched to its exact suggestion. It gives Observer the Coder
+decision, read window, execution outcome and latest retained matching result.
+Observer can tell whether a repeated read needs a prerequisite, a missing region
+or a different action after an observation. Ambiguous repeated call IDs leave
+the latest matching result unknown. Recent attempts identify approval refusal,
+pending approval and governor rejection even when there is no prior assist.
+Consumed advice records execution whether or not its response contract calls
+for an explicit Coder decision.
+
+General, diagnostic and handoff prompts all ask for a concise decision rationale
+using existing fields: missing fact, consequence of the next observation, a
+plausible alternative and remaining capacity. Explanatory placeholders must not
+be offered as executable patch bytes. This is advisory guidance, not a semantic
+validator or permission expansion. Existing diagnosis, recheck, approval,
+confidence and completion gates remain unchanged. No new persisted state or
+provider request is introduced.

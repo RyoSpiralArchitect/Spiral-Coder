@@ -97,7 +97,10 @@ pub(super) async fn send_coder_input_with_window(
     let intent_anchor_message = intent::render_intent_anchor(&intent_anchor);
     observer_request::prepare_coder_continuation(app, &intent_anchor);
     let observer_soft_hint = app.pending_observer_hint.take();
-    let observer_contract = app.pending_observer_contract.take();
+    let observer_advice = app.pending_observer_advice.take();
+    let observer_contract = observer_advice
+        .as_ref()
+        .and_then(build_observer_response_contract);
     if intent_anchor.requires_human_confirmation {
         app.coder.push_tool(
             "[intent] ambiguous update detected; keeping current scope until clarified."
@@ -119,9 +122,6 @@ pub(super) async fn send_coder_input_with_window(
                 .to_string(),
         );
     }
-    app.active_observer_contract = observer_contract.clone();
-    app.active_observer_first_tool = None;
-
     // Expand @file references: read files and collect system messages to inject.
     let at_refs = parse_at_refs(&text);
     let mut at_ref_messages: Vec<ChatMessage> = Vec::new();
@@ -249,7 +249,7 @@ pub(super) async fn send_coder_input_with_window(
         app.coder.push_tool("Shared task budget exhausted; completion is unconfirmed. Remaining checks and the final report stay pending.".into());
         app.coder.finish_stream();
         app.pending_observer_hint = None;
-        app.active_observer_contract = None;
+        app.active_observer_advice = None;
         return;
     }
     let suggested = if app.work_budget.snapshot().policy.observer_reserved_requests > 0 {
@@ -277,6 +277,8 @@ pub(super) async fn send_coder_input_with_window(
         app.work_budget.clone()
     };
     app.coder_completed = None;
+    app.active_observer_advice = observer_advice;
+    app.active_observer_first_tool = None;
     app.active_observer_start = app
         .coder_session
         .as_ref()
@@ -289,7 +291,7 @@ pub(super) async fn send_coder_input_with_window(
         })
         .unwrap_or_default();
     app.active_assist_id = app
-        .active_observer_contract
+        .active_observer_advice
         .as_ref()
         .map(|_| app.observer_generation);
 

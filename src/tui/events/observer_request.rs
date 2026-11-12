@@ -114,7 +114,7 @@ fn request_is_current(app: &App) -> bool {
 pub(super) fn prepare_coder_continuation(app: &mut App, anchor: &intent::IntentAnchor) {
     if !anchor.last_update_no_op || !request_is_current(app) {
         app.pending_observer_hint = None;
-        app.pending_observer_contract = None;
+        app.pending_observer_advice = None;
     }
     if app.observer_next_action_mode {
         if let Some(task) = app.observer_task.take() {
@@ -131,7 +131,7 @@ pub(super) fn prepare_coder_continuation(app: &mut App, anchor: &intent::IntentA
 pub(super) fn discard_pending_assist(app: &mut App) {
     app.observer_assist_request = None;
     app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
+    app.pending_observer_advice = None;
 }
 
 pub(super) async fn maybe_observer_action_repair(app: &mut App, tx: &mpsc::Sender<RequestEvent>) {
@@ -207,7 +207,7 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         Some(coder_remaining),
     );
     app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
+    app.pending_observer_advice = None;
     if let Some(recovery) = suggestion::framing_recovery(&raw) {
         app.observer.push_tool(format!("(next-action) JSON envelope framing recovered: {recovery:?}; authored values and raw response retained; normal action and evidence gates apply."));
     }
@@ -311,7 +311,7 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
                     .is_some_and(|r| r.terminal_diagnosis)
         }) {
             app.pending_observer_hint = Some(hint);
-            app.pending_observer_contract = build_observer_response_contract(parsed);
+            app.pending_observer_advice = Some(parsed.clone());
             app.coder.push_tool("(observer suggestion) queued an advisory next step for the next coder continuation.".to_string());
         }
         uncertain::queue_report(app, parsed);
@@ -405,7 +405,7 @@ async fn start_request(
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
     app.pending_observer_hint = None;
-    app.pending_observer_contract = None;
+    app.pending_observer_advice = None;
     app.ignore_observer_tokens = false;
     app.observer_loop_retry_budget = 0;
     app.observer_loop_pending = None;

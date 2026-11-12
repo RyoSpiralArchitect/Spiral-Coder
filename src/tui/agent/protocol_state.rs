@@ -650,7 +650,10 @@ impl WorkingMemory {
         let mut pending: std::collections::HashMap<String, PendingToolIntent> =
             std::collections::HashMap::new();
 
-        for msg in messages {
+        for (index, msg) in messages.iter().enumerate() {
+            if super::blocked_report::is_accepted_closeout(messages, index) {
+                continue;
+            }
             let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("");
 
             if role == "assistant" {

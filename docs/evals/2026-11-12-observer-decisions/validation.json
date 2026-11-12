@@ -1,0 +1,19 @@
+{
+  "rust_main_passed": 1176,
+  "rust_ignored": 2,
+  "integration": 6,
+  "tui_replay": 20,
+  "python": 97,
+  "web": 80,
+  "npm": 5,
+  "repo_map": 14,
+  "lite_smoke": true,
+  "full_log_sha256": "18289c9db6a9420b15c2205f14b11dc52c935d5925ad6d6d9c7bc683d4c1dc7d",
+  "footer_red_log_sha256": "aa151d3a606a813a9607311cf7135c67f38f4421a709697ea1771a8f92019fd4",
+  "preflight_note": "Before provider calls, real native audit suffix caused complete-JSON extraction to fail. Added suffix regression (1 pass / 2 fail), then parse the complete native JSON line only; clipped or malformed lines remain unknown. Initial launch without a plan stopped before key loading or any provider request.",
+  "cases_same_native_packet": true,
+  "only_prompt_prefix_changed": true,
+  "final_wording_note": "After the full suite, clarified that critical rationale must appear in forwarded primary reason; final focused tests 3/3 and binary build pass.",
+  "final_focused_log_sha256": "63fa35e317e26692bfbd428fdf515a3c77ec5f282e9c76f9c4931a0d2d1bd1f5",
+  "final_build_log_sha256": "45173f618642a742d9f41367f2dca29069f1da8bc20abaf5ba52ed6f1c683d9c"
+}

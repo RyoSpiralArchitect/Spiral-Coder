@@ -89,7 +89,7 @@ pub(super) struct PlanThinkCtx<'a> {
     pub pending_system_hint: &'a mut Option<String>,
     pub working_mem: &'a mut WorkingMemory,
     pub assumption_ledger: &'a mut AssumptionLedger,
-    pub active_plan: &'a mut Option<PlanBlock>,
+    pub active_plan: &'a mut ActivePlan,
     pub intent_required_verification: &'a mut VerificationLevel,
     pub required_verification: &'a mut VerificationLevel,
     pub last_verify_ok_step: &'a mut Option<usize>,
@@ -141,6 +141,7 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
     let validated_plan_for_turn: Option<PlanBlock>;
     let validated_think_for_turn: Option<ThinkBlock>;
     let mut used_general_plan_rescue = false;
+    let inherited_closeout = parsed_plan.is_none() && active_plan.is_closeout_only();
     let candidate_plan = match parsed_plan.as_ref() {
         Some(plan) => {
             if let Err(e) = validate_plan_for_task_contract(
@@ -153,7 +154,7 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                 if matches!(cfg.provider, ProviderKind::Mistral) {
                     if let Some(repaired) = repair_mistral_plan_for_tool_turn(
                         Some(plan),
-                        active_plan.as_ref(),
+                        active_plan.work(),
                         tc,
                         &root_user_text,
                         root_read_only,
@@ -1085,7 +1086,9 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         }
     }
 
-    validated_plan_for_turn = Some(candidate_plan.clone());
+    // The old plan can validate the tool turn without becoming its work plan.
+    // Adoption, step labels and accepted_plan snapshots need a work plan.
+    validated_plan_for_turn = (!inherited_closeout).then_some(candidate_plan);
     validated_think_for_turn = Some(think.clone());
     Ok(PlanThinkOut {
         flow: PlanThinkFlow::Validated,
