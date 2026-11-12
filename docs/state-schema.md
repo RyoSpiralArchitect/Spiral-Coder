@@ -1261,6 +1261,10 @@ links each path to its original requirement IDs and latest recorded native
 edit. It includes complete descriptions of test-only requirements within a
 shared text budget. Both roles can use this view after all structural
 obligations pass. The view adds no persisted state or coverage receipt.
+An Observer reply with a path-only edit for a declared test can be projected
+to `clarify` when the Coder has an eligible work turn. The response marks
+`test_recipe_retained` and the TUI keeps the raw envelope. The delivered
+advice carries the original reason and confidence with empty tool arguments.
 
 `agent/observation_stall.rs` derives bounded duplicate-read pressure from the
 current task's native exchanges. Its counters are reconstructed across runtime

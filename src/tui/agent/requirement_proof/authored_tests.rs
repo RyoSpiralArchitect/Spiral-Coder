@@ -14,6 +14,13 @@ pub(crate) struct AuthoredTests {
     test_only_requirements: Vec<TestRequirement>,
 }
 
+impl AuthoredTests {
+    pub(in crate::tui::agent) fn contains(&self, path: &str) -> bool {
+        let path = path.trim_start_matches("./");
+        self.targets.iter().any(|target| target.path == path)
+    }
+}
+
 #[derive(Debug, Serialize)]
 struct Target {
     path: String,

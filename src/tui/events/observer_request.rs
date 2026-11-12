@@ -194,9 +194,12 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         return;
     };
     let raw = app.observer.messages[idx].content.clone();
-    let parsed = suggestion::parse_observer_suggestion_envelope(&raw);
     let coder_remaining = app.work_budget.remaining_for("coder");
-    let issue = crate::observer_action::validation_issue_with_capacity(
+    let crate::observer_action::ResolvedAdvice {
+        envelope: parsed,
+        issue,
+        test_recipe_retained,
+    } = crate::observer_action::resolve_advice(
         &raw,
         app.coder_session
             .as_ref()
@@ -286,6 +289,9 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
         app.observer.messages[idx].raw_content = Some(raw);
         app.observer.messages[idx].content =
             suggestion::format_observer_suggestion_envelope(parsed);
+        if test_recipe_retained {
+            app.observer.push_tool("(next-action) The test edit supplied a path alone. Its explanation was retained as advice without a tool call.".into());
+        }
         let terminal = app
             .observer_assist_request
             .as_ref()

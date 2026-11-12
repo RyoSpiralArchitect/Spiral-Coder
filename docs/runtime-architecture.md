@@ -485,6 +485,10 @@ and assertion against the actual test code before beginning the final
 verification sweep. Observer can hand over a concrete scenario or a bounded
 read when a complete edit is unavailable. The existing exact checks still
 supply native proof, and an independent evaluation can measure test sensitivity.
+If an Observer edit supplies only a declared test path and an explanation,
+the native delivery layer can keep that explanation as no-tool advice during
+an eligible work turn. It preserves confidence and clears the tool and
+mandatory response contract. The raw response remains available for audit.
 
 ## Resuming after an incomplete closeout
 

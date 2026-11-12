@@ -54,6 +54,18 @@ pub(crate) enum CoderTurn {
 }
 
 impl TaskObligations {
+    pub(crate) fn can_offer_test_recipe(&self, path: &str, remaining: Option<usize>) -> bool {
+        self.required_diagnostic_read.is_none()
+            && self.required_recheck.is_none()
+            && self.report_repair.is_none()
+            && remaining.is_none_or(|requests| self.coder_turn(requests) == CoderTurn::Work)
+            && self
+                .task_requirements
+                .authored_tests
+                .as_ref()
+                .is_some_and(|tests| tests.contains(path))
+    }
+
     pub(crate) fn coder_turn(&self, remaining: usize) -> CoderTurn {
         if remaining == 0 {
             CoderTurn::Exhausted
