@@ -17,11 +17,12 @@ const RUNNER: &str = concat!(
     "second = chr(10).join(line[2:] for line in lines if line.startswith('+ ')); ",
     "offset = max(0, len(os.path.commonprefix((first, second))) - 64); ",
     "window = lambda operand: operand[offset:offset + 440].rstrip(); ",
-    "preview = lambda sign, operand: chr(10).join(sign + ' ' + line for line in window(operand).splitlines()) + (' [operand clipped]' if offset or len(operand) > 440 else ''); ",
+    "rows = lambda sign, operand: chr(10).join(sign + ' ' + line for line in window(operand).splitlines()); ",
+    "clip = lambda text, operand: text[:440].rstrip() + (' [operand clipped]' if offset or len(operand) > 440 or len(text) > 440 else ''); ",
     "complete = first and second and window(first) != window(second); ",
     "print('Focused unittest:', sys.argv[1], 'tests:', result.testsRun); ",
     "print('Assertion difference (- first operand, + second operand):' if complete else 'No complete assertion difference captured.'); ",
-    "print(preview('-', first) + chr(10) + preview('+', second) if complete else repr(trace[:650])); ",
+    "print(clip(rows('-', first), first) + chr(10) + clip(rows('+', second), second) if complete else repr(trace[:650])); ",
     "print('[end focused unittest comparison]'); ",
     "sys.exit(not result.wasSuccessful())"
 );
@@ -233,10 +234,14 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         let root = temp.path().canonicalize().unwrap();
         let comparison = project(CHECK, FILE, FAILURE, &root).unwrap();
-        for (body, complete) in [
+        for (body, expected) in [
             (
                 "        self.assertEqual('x' * 1200 + 'actual', 'x' * 1200 + 'expected')\n",
-                true,
+                Some(("actual", "expected")),
+            ),
+            (
+                "        self.assertEqual('a\\n' * 250, 'b\\n' * 250)\n",
+                Some(("- a", "+ b")),
             ),
             (
                 concat!(
@@ -246,7 +251,7 @@ mod tests {
                     "        print('[end focused unittest comparison]')\n",
                     "        self.fail('ordinary failure')\n"
                 ),
-                false,
+                None,
             ),
         ] {
             std::fs::write(
@@ -265,13 +270,14 @@ mod tests {
                 comparison
                     .observed_frame(comparison.command(), root.to_str().unwrap(), &output)
                     .is_some(),
-                complete,
+                expected.is_some(),
                 "{output}"
             );
-            if complete {
+            if let Some((first, second)) = expected {
                 assert_eq!(output.matches("[operand clipped]").count(), 2);
+                assert!(output.chars().count() < 1400, "{output}");
                 assert!(
-                    output.contains("actual") && output.contains("expected"),
+                    output.contains(first) && output.contains(second),
                     "{output}"
                 );
             } else {

@@ -106,3 +106,4 @@ A second read of the fixes found two remaining cases. The native recovery
 receipt now carries the observed frame across resume, even when the test
 prints a stream delimiter. Long operands preserve a window around the
 first difference, including a difference after a long common prefix.
+The output cap includes line prefixes so multiline operands fit as well.
