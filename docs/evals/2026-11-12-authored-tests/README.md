@@ -137,3 +137,44 @@ iteration. Archive inventories matched before and after each call.
 The runtime passed `scripts/check-local.sh`, including 1,194 Rust main tests,
 six integration tests, and 20 TUI replays. Fresh #82 qualification remains
 open. [Archive and validation receipts](closeout-results.json)
+
+## Admitted plans and focused comparisons
+
+The retained S18 guide comparison was rejected when Coder rewrote the
+admitted task goal to describe the immediate diagnosis. A model-free replay
+used the same Observer advice, Coder plan and tool call in both runtimes,
+with `think.next: @observer` selecting the exact supplied exec. The old
+runtime rejected the plan. The updated runtime preserved its original goal
+and acceptance criteria, executed the comparison and captured both assertion
+operands. It kept the original check pending and reopened two receipts under
+the existing freshness rules. Changing a criterion or the execution directory
+still caused rejection. A control using only a short command prefix retained
+the goal but hit the existing assumption gate. [Replay receipts](observer-continuation-results.json)
+
+S19 used that runtime in a fresh Luna/Luna run with the original prompt,
+baseline, limits and independent checks. It finished in six rounds after
+181 task and 196 wire requests in 1,568.927 seconds. All six exact checks
+passed after the last edit, and the authored completion report was accepted.
+In round four, Coder used `@observer` for the exact integration test proposed
+by Observer. The correlated call executed and passed. Plan-goal restoration
+was exercised in replay. [Fresh run receipts](observer-continuation-results.json)
+
+The independent path suite passed. The held-out score was 22/24, with
+failures for contradictory completion and an incorrect ledger task ID.
+The authored tests detected missing pending data and incorrect parent linkage.
+The other two injected faults survived. The duplicate-ID case changed the
+request count as well as the ID. The candidate preserved its path scope and
+the sealed patch replayed. Fresh qualification remains open.
+[Independent assessment](observer-continuation-results.json)
+
+The later grouped comparison change was tested on the sealed fifth-round
+history. Before its required read and after its repair, the comparator
+stayed absent. After the read, the updated runtime recognized three failed
+subtests of one method, despite a space at the clipped assertion boundary.
+On a disposable copy with the final one-line repair reversed, the focused
+method returned exit 1 and showed recorded task/wire usage of 2/3 against
+expected null values. The original path check remained pending and the
+candidate inventory matched before and after the comparison. This replay
+used no provider requests. The final runtime passed the local suite with
+1,200 Rust main tests, six integration tests and 20 TUI replays.
+[Grouped replay and validation receipts](observer-continuation-results.json)
