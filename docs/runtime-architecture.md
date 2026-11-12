@@ -461,6 +461,9 @@ reflection, working-memory strategy or shared strategy summary for either role. 
 call ID and adjacent native result; rejected, unmatched and text-only reports
 do not qualify. Earlier work strategies, failed-check recovery, approval
 barriers, outstanding obligations and the full terminal transcript remain.
+If the closeout holds the only validated native plan, its goal and acceptance
+are available for plan admission and reporting after resume. Its reflection and
+assumptions do not become the work strategy.
 No new persisted state, budget, progress credit or completion exception is added.
 
 ## Observer intervention decision brief
@@ -477,8 +480,11 @@ The brief uses the current native work ledger's last recorded assist and the
 retained calls matched to its exact suggestion. It gives Observer the Coder
 decision, read window, execution outcome and latest retained matching result.
 Observer can tell whether a repeated read needs a prerequisite, a missing region
-or a different action after an observation. Approval refusal and pending
-approval are distinct from a governor rejection.
+or a different action after an observation. Ambiguous repeated call IDs leave
+the latest matching result unknown. Recent attempts identify approval refusal,
+pending approval and governor rejection even when there is no prior assist.
+Consumed advice records execution whether or not its response contract calls
+for an explicit Coder decision.
 
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a

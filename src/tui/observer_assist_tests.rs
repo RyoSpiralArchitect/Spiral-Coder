@@ -103,7 +103,7 @@ fn observer_edit_advisory_does_not_execute_or_grant_proof() {
     assert!(result.pending_observer_hint.is_some());
     assert_eq!(std::fs::read_to_string(root.path().join("artifact.txt")).unwrap(), "before");
     assert!(app.coder_governor.is_none());
-    assert!(app.active_observer_contract.is_none());
+    assert!(app.active_observer_advice.is_none());
 }
 
 #[test]
@@ -253,13 +253,48 @@ fn observer_can_distinguish_accepted_advice_from_its_blocked_exact_read() {
         json!({"role":"tool","tool_call_id":"alternate","content":"[src/parser.rs] (90 lines, 2000 bytes)\nObserved content."}),
     ]);
     app.coder_session = Some(crate::agent_session::AgentSession::new(
-        None, None, None, None, messages,
+        None, None, None, None, messages.clone(),
     ));
     let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
     let prompt = build_tui_next_action_prompt(&packet, "en", "stalled");
     let later: serde_json::Value = serde_json::from_str(prompt.lines().nth(1).unwrap()).unwrap();
     assert!(later["immediate_admission_block"].is_null());
     assert_eq!(later["previous_assist_outcome"], brief["previous_assist_outcome"]);
+
+    // Provider IDs can repeat in a later response. Even with the same tool name,
+    // an ambiguous ID cannot bind a later read to the original advice.
+    let len = messages.len();
+    messages[len - 2]["tool_calls"][0]["id"] = json!("advised");
+    messages[len - 1]["tool_call_id"] = json!("advised");
+    app.coder_session = Some(crate::agent_session::AgentSession::new(
+        None, None, None, None, messages,
+    ));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    assert_eq!(packet["previous_assist_outcome"]["suggestion_executed"], false);
+    assert!(packet["previous_assist_outcome"]["latest_retained_match"].is_null());
+}
+
+#[test]
+fn observer_sees_pending_approval_outside_a_previous_assist() {
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let messages = vec![
+        json!({"role":"user","content":"Inspect the workspace."}),
+        json!({"role":"assistant","tool_calls":[
+            {"id":"pending","function":{"name":"exec","arguments":"{\"command\":\"git status --short\"}"}}
+        ]}),
+        json!({"role":"tool","tool_call_id":"pending","content":"Awaiting approval"}),
+    ];
+    app.coder_session = Some(crate::agent_session::AgentSession::new(
+        None, None, None, None, messages,
+    ));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let prompt = build_tui_next_action_prompt(&packet, "en", "stalled");
+    let brief: serde_json::Value = serde_json::from_str(prompt.lines().nth(1).unwrap()).unwrap();
+    assert!(brief["previous_assist_outcome"].is_null());
+    assert!(brief["immediate_admission_block"].is_null());
+    assert_eq!(brief["recent_attempts"][0]["disposition"], "awaiting_approval");
+    assert!(brief["recent_attempts"][0]["succeeded"].is_null());
 }
 
 #[test]

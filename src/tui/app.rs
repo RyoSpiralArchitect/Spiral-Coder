@@ -190,8 +190,8 @@ pub struct App {
     /// Pending advisory-only Observer suggestion for the next Coder continuation turn.
     pub pending_observer_hint: Option<String>,
     pub(crate) report_closeout_attempted: bool,
-    /// Pending Observer contract for the next Coder continuation turn.
-    pub pending_observer_contract: Option<ObserverSuggestionEnvelope>,
+    /// Validated Observer advice queued for the next Coder continuation.
+    pub pending_observer_advice: Option<ObserverSuggestionEnvelope>,
     pub coder_max_iters: Option<usize>,
     pub quit: bool,
 
@@ -211,9 +211,9 @@ pub struct App {
     pub coder_intent_anchor: Option<IntentAnchor>,
     /// Latest structured next-action suggestion emitted by the Observer.
     pub last_observer_suggestion: Option<ObserverSuggestionEnvelope>,
-    /// Active Observer contract currently being answered by the Coder turn.
-    pub active_observer_contract: Option<ObserverSuggestionEnvelope>,
-    /// First tool action observed while an Observer contract is active.
+    /// Observer advice delivered to the current Coder continuation.
+    pub active_observer_advice: Option<ObserverSuggestionEnvelope>,
+    /// First tool action observed after the advice was delivered.
     pub active_observer_first_tool: Option<(String, String)>,
     /// Running task handles used for Ctrl+K cancellation.
     pub(crate) coder_chunk_reserve: usize,
@@ -314,7 +314,7 @@ impl App {
             pending_auto_fix: None,
             pending_observer_hint: None,
             report_closeout_attempted: false,
-            pending_observer_contract: None,
+            pending_observer_advice: None,
             coder_max_iters,
             quit: false,
             tick_count: 0,
@@ -324,7 +324,7 @@ impl App {
             coder_realize_state: None,
             coder_intent_anchor: None,
             last_observer_suggestion: None,
-            active_observer_contract: None,
+            active_observer_advice: None,
             active_observer_first_tool: None,
             coder_chunk_reserve: 3,
             coder_chunk_requests: None,

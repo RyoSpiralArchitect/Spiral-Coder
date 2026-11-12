@@ -348,7 +348,7 @@ impl<'a> LoopSetup<'a> {
                 json!({"role":"system","content": read_only_task_addon()}),
             );
         }
-        let active_plan = plan_resume::latest_valid(&messages, |plan| {
+        let restored_plan = plan_resume::restore(&messages, |plan| {
             validate_plan_for_task_contract(
                 plan,
                 root_read_only,
@@ -358,7 +358,7 @@ impl<'a> LoopSetup<'a> {
             )
             .is_ok()
         });
-        if let Some(plan) = active_plan.as_ref() {
+        if let Some(plan) = restored_plan.as_ref().map(|r| &r.plan) {
             if let Some(level) = verification_level_from_plan(plan) {
                 intent_required_verification = level;
             }
@@ -369,9 +369,10 @@ impl<'a> LoopSetup<'a> {
         let last_reflection = last_reflection_from_messages(&messages);
         let working_mem = WorkingMemory::from_messages(&messages, test_cmd);
         let mut assumption_ledger = AssumptionLedger::from_messages(&messages, &working_mem);
-        if let Some(plan) = active_plan.as_ref() {
-            assumption_ledger.sync_to_plan(plan);
+        if let Some(work) = restored_plan.as_ref().filter(|r| !r.closeout_only) {
+            assumption_ledger.sync_to_plan(&work.plan);
         }
+        let active_plan = restored_plan.map(|r| r.plan);
         assumption_ledger.refresh_confirmations(&working_mem);
         let mut observation_evidence = collect_observation_evidence(&messages);
         observation_evidence.merge_session_cache(start.observation_cache.as_ref());

@@ -99,12 +99,14 @@ pub(super) fn prune_message_window_with_context(
         }
     }
     protected.extend(messages.len().saturating_sub(KEEP_RECENT_MESSAGE_WINDOW)..messages.len());
-    if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(idx, msg)| {
-        !super::blocked_report::is_accepted_closeout(messages, *idx)
-            && msg.get("accepted_plan").is_some_and(|plan| !plan.is_null())
-            && super::plan_resume::from_message(msg).is_some()
-    }) {
-        protected.insert(idx);
+    for closeout in [false, true] {
+        if let Some((idx, _)) = messages.iter().enumerate().rev().find(|(idx, msg)| {
+            msg.get("accepted_plan").is_some_and(|plan| !plan.is_null())
+                && super::blocked_report::is_accepted_closeout(messages, *idx) == closeout
+                && super::plan_resume::from_message(msg).is_some()
+        }) {
+            protected.insert(idx);
+        }
     }
     let anchors: &[fn(&str) -> bool] = &[
         |content| parse_plan_block(content).is_some(),

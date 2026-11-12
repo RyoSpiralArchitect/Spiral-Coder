@@ -114,7 +114,8 @@ pub(super) fn change_root(app: &mut App) {
     app.coder_completed = None;
     app.coder_yield_reason = None;
     app.report_closeout_attempted = false;
-    app.active_observer_contract = None;
+    app.active_observer_advice = None;
+    app.active_observer_first_tool = None;
     app.active_assist_id = None;
     app.project_stack_label = None;
     app.project_test_cmd = None;

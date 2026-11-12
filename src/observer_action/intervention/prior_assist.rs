@@ -1,21 +1,10 @@
 //! Summarize the last native assist without replaying its patch or command.
-use super::{governor_block, read_lines, target};
+use super::{disposition, read_lines, target, Disposition};
 use crate::{
     tui::agent::{current_evidence::Freshness, evidence_packet::ActionEvidence},
     work_budget::AssistReceipt,
 };
 use serde::Serialize;
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "snake_case")]
-enum Disposition {
-    Executed,
-    PlanGate,
-    OtherGovernor,
-    UserRefusal,
-    AwaitingApproval,
-    Unconfirmed,
-}
 
 #[derive(Debug, Serialize)]
 struct RetainedMatch<'a> {
@@ -48,14 +37,17 @@ pub(crate) fn previous_assist<'a>(
     let latest = actions
         .iter()
         .filter(|a| {
-            a.tool == suggested.tool
-                && suggested.matching_call_ids.contains(&a.call_id)
+            suggested.matching_call_ids.contains(&a.call_id)
                 && receipt.call_ids.contains(&a.call_id)
+                && a.matches_suggestion(&suggested.tool, &suggested.arguments)
+                && !(suggested.executed == Some(false) && a.executed == Some(true))
+                // IDs are unique within a provider response, not a session.
+                && actions.iter().filter(|row| row.call_id == a.call_id).take(2).count() == 1
         })
         .max_by_key(|a| a.result_step)
         .map(|a| RetainedMatch {
             call_id: &a.call_id,
-            disposition: disposition(a),
+            disposition: disposition(a.executed, a.result.as_deref()),
             succeeded: a.succeeded,
             freshness: &a.freshness,
         });
@@ -70,20 +62,4 @@ pub(crate) fn previous_assist<'a>(
         suggestion_succeeded: suggested.succeeded,
         latest_retained_match: latest,
     })
-}
-
-fn disposition(action: &ActionEvidence) -> Disposition {
-    match (action.executed, action.result.as_deref()) {
-        (Some(true), _) => Disposition::Executed,
-        (Some(false), Some(s)) if s.starts_with("REJECTED BY USER") => Disposition::UserRefusal,
-        (Some(false), Some(s)) if s.starts_with("Awaiting approval") => {
-            Disposition::AwaitingApproval
-        }
-        (Some(false), Some(s)) => match governor_block(s) {
-            Some("plan") => Disposition::PlanGate,
-            Some(_) => Disposition::OtherGovernor,
-            None => Disposition::Unconfirmed,
-        },
-        _ => Disposition::Unconfirmed,
-    }
 }

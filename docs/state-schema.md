@@ -1710,6 +1710,9 @@ reflection, working-memory strategy or shared strategy summary for either role. 
 call ID and adjacent native result; rejected, unmatched and text-only reports
 do not qualify. Earlier work strategies, failed-check recovery, approval
 barriers, outstanding obligations and the full terminal transcript remain.
+Compaction protects the admitted plan associated with a closeout. When no
+validated work plan survives, the runtime can revalidate that admitted plan
+for tool admission and retain its acceptance references for both roles.
 No new persisted state, budget, progress credit or completion exception is added.
 
 ## Observer intervention decision brief
@@ -1726,8 +1729,10 @@ The TUI and headless path project `previous_assist_outcome` from the latest
 assist in the current work ledger. This prompt-only view retains the decision,
 bounded target, read range, counts and suggested-action outcome. The most
 recent retained matching call is selected by native result order and retains its
-execution disposition and freshness. A missing call remains unknown. The
-current task owns the work ledger and its persisted receipt format.
+execution disposition and freshness. Correlation uses exact tool arguments
+or the native check-ID expansion. Missing and ambiguous matches remain
+unknown. The current task owns the work ledger. The same receipt format covers
+consumed soft advice and advice that asks for an explicit response.
 
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a

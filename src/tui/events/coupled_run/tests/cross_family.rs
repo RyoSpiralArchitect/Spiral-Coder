@@ -54,7 +54,7 @@ async fn assert_cross_family_run(observer_max_tokens: Option<u32>, repair: bool)
             .json_body_partial(json!({"max_tokens":effective_observer_max,"temperature":0.2}).to_string());
         if repair { when.body_contains("[Observer action repair:"); }
         let advice = json!({"summary":"Finish from retained native proof now.",
-            "primary_blocker":"missing_verification", "response_contract":{"required":true,"focus_axes":["correctness"]},
+            "primary_blocker":"missing_verification", "response_contract":{"required":repair,"focus_axes":["correctness"]},
             "suggestions":[{"kind":"done","reason":"Finish from retained native proof now.","confidence":0.95,"suggested_tool":"done","suggested_args":done_args,"based_on":["execution_evidence"]}]});
         then.status(200).header("content-type", "text/event-stream")
             .body(sse(json!({"choices":[{"delta":{"content":advice.to_string()},"finish_reason":"stop"}]})));
@@ -65,7 +65,10 @@ async fn assert_cross_family_run(observer_max_tokens: Option<u32>, repair: bool)
             .body_contains("gpt-5.6-luna")
             .body_contains("retained-read")
             .body_contains("Finish from retained native proof now.");
-        let content = "<think>\ngoal: report inspection\nstep: 2\ntool: done\nrisk: none\ndoubt: none\nnext: report retained evidence\nverify: prior native read\n</think>\n[Observer response]\ndecision: accept\nreason: native evidence is already available";
+        let mut content = "<think>\ngoal: report inspection\nstep: 2\ntool: done\nrisk: none\ndoubt: none\nnext: report retained evidence\nverify: prior native read\n</think>".to_string();
+        if repair {
+            content.push_str("\n[Observer response]\ndecision: accept\nreason: native evidence is already available");
+        }
         then.status(200).header("content-type", "text/event-stream")
             .body(sse(json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"final-report","type":"function","function":{"name":"done","arguments":done_args.to_string()}}]},"finish_reason":"stop"}]})));
     });
@@ -156,6 +159,17 @@ async fn assert_cross_family_run(observer_max_tokens: Option<u32>, repair: bool)
     let report: serde_json::Value =
         serde_json::from_slice(&std::fs::read(output.join("report.json")).unwrap()).unwrap();
     assert_eq!(report["completed"], true, "{report:#}");
+    let assists = report["work"]["assists"].as_array().unwrap();
+    assert_eq!(
+        assists.len(),
+        1,
+        "both explicit and soft advice earn an execution receipt"
+    );
+    assert_eq!(
+        assists[0]["suggestion_execution"]["matching_call_ids"],
+        json!(["final-report"])
+    );
+    assert_eq!(assists[0]["suggestion_execution"]["executed"], true);
     assert_eq!(report["same_model_both_roles"], false);
     assert_eq!(report["coder_chunk_requests"], 4);
     assert_eq!(
