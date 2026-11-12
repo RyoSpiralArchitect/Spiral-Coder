@@ -77,3 +77,63 @@ test artifact to evaluate from either continuation.
 Final local validation passed 1,191 Rust main tests, six integration tests,
 20 TUI replays and the remaining checks in `scripts/check-local.sh`.
 [Replay and live receipts](results.json)
+
+## Shared requirements and rejected Observer repair
+
+Both roles receive complete behavioral descriptions linked to test artifacts
+within the existing 4 KiB description budget. Dedicated test requirements take
+priority. This keeps the required source decision and the corresponding public
+assertion visible during closeout. A nonunique edit followed by a target read
+also carries guidance for a uniquely anchored retry.
+
+Three sealed session prefixes showed the shared parent-link rule at closeout
+and the specific edit guidance after the target read. The same six pending
+checks survived the earlier failed edit. In a second replay, both executors
+received the exact malformed Observer answers from the earlier test-only run.
+The new executor returned one Coder slice within its original allowance and
+then requested Observer again. Both replays used zero external provider calls.
+[Replay receipts](closeout-results.json)
+
+S18 was a fresh unseeded Luna/Luna run with the same original task, limits and
+oracles. It reached the six-round cap after 192 task and 210 wire requests
+in 1,894.667 seconds. All 24 held-out cases passed, including first-row parent
+linkage. Six of seven independent groups passed. The protected path suite
+still rejected the candidate on three dangling pending-link cases. Formatting
+was the last mutation, and the final report recorded all six checks as pending
+after it. The authored tests detected one of the four faults. The first terminal
+result remains sealed and is unqualified.
+[Fresh run receipts](closeout-results.json)
+
+### Assisted test-only continuations
+
+Two further Luna/Luna runs edited only the test file of the sealed S16
+implementation. Each retained the six exact checks and earned an accepted
+native report.
+
+| Outcome | Test authoring | Test-design repair |
+| --- | ---: | ---: |
+| Task / wire requests | 21 / 21 | 15 / 15 |
+| Wall seconds | 173.931 | 121.965 |
+| Current exact checks | 6 / 6 | 6 / 6 |
+| Independent groups | 7 / 7 on readback | 7 / 7 |
+| Authored-test sensitivity | 3 / 4 | 4 / 4 |
+
+The first test suite detected missing pending data, symlink acceptance, and
+incorrect parent linkage. Its duplicate-request test changed the request
+count as well as the ID, so count validation rejected the input even with the
+duplicate-ID fault enabled. The repair assigned an existing ID to a second
+existing request while preserving counts and charges. The symlink test uses a
+Unix guard and exercises ledger files. Directory-component coverage remains
+in the protected path suite. Both test patches replayed to the exact final
+bytes. The initial assisted assessment omitted the frozen baseline test
+identity list. A readback with that list and the same candidate passed all
+seven groups. The initial evaluation receipt remains in the results.
+[Assisted run receipts](closeout-results.json)
+
+The final assisted CLI read three actual archived runs with credentials
+absent from the process environment. It reproduced the durable request
+counts for completed S16, stopped S18, and S7 with a recorded active
+iteration. Archive inventories matched before and after each call.
+The runtime passed `scripts/check-local.sh`, including 1,194 Rust main tests,
+six integration tests, and 20 TUI replays. Fresh #82 qualification remains
+open. [Archive and validation receipts](closeout-results.json)
