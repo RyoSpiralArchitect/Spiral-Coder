@@ -1271,6 +1271,14 @@ to `clarify` when the Coder has an eligible work turn. The response marks
 `test_recipe_retained` and the TUI keeps the raw envelope. The delivered
 advice carries the original reason and confidence with empty tool arguments.
 
+A native Observer observation is scoped to the first Coder response after
+delivery. It binds the accepted tool and exact arguments in memory. A plan
+revision can preserve the admitted goal only with matching acceptance
+criteria and ordinary plan validation. The accepted plan is retained in the
+existing `accepted_plan` history. The raw Coder text and the
+`observer_plan_goal_retained` event preserve the disposition separately from
+the subsequent native tool result.
+
 `agent/observation_stall.rs` derives bounded duplicate-read pressure from the
 current task's native exchanges. Its counters are reconstructed across runtime
 handoffs and reset at a new human task or an actual command/edit attempt. They

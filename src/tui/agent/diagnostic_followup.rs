@@ -39,6 +39,12 @@ impl DiagnosticFollowup {
         self.unittest_comparison.is_some()
     }
 
+    pub(in crate::tui::agent) fn matches_unittest_comparison(&self, args: &Value) -> bool {
+        self.unittest_comparison
+            .as_ref()
+            .is_some_and(|comparison| comparison.matches_arguments(args))
+    }
+
     pub(in crate::tui::agent) fn include_comparison_check_cost(
         &mut self,
         required: &[String],

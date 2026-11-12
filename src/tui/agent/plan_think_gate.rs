@@ -64,6 +64,7 @@ pub(super) struct PlanThinkCtx<'a> {
     pub assistant_text_clean: &'a String,
     pub parsed_plan: &'a Option<PlanBlock>,
     pub parsed_think: &'a Option<ThinkBlock>,
+    pub observer_observation: Option<&'a observer_continuation::Observation>,
     pub compat_last_think: &'a Option<ThinkBlock>,
     pub root_user_text: &'a str,
     pub test_cmd: &'a Option<String>,
@@ -107,6 +108,9 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
     let assistant_text_clean = ctx.assistant_text_clean;
     let parsed_plan = ctx.parsed_plan;
     let parsed_think = ctx.parsed_think;
+    let observer_observation = ctx
+        .observer_observation
+        .filter(|observation| observation.matches_accepted_call(tc, assistant_text));
     let compat_last_think = ctx.compat_last_think;
     let root_user_text = ctx.root_user_text;
     let test_cmd = ctx.test_cmd;
@@ -151,7 +155,38 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                 &instruction_resolver,
                 &*messages,
             ) {
-                if matches!(cfg.provider, ProviderKind::Mistral) {
+                let retained = observer_observation
+                    .filter(|_| {
+                        e.to_string() == governor_contract::task_contract_plan_drift_message()
+                    })
+                    .and_then(|_| active_plan.work())
+                    .and_then(|active| {
+                        plan_revision::preserve_goal_for_observation(
+                            plan,
+                            active,
+                            messages,
+                            task_contract,
+                        )
+                    })
+                    .filter(|plan| {
+                        validate_plan_for_task_contract(
+                            plan,
+                            root_read_only,
+                            task_contract,
+                            instruction_resolver,
+                            messages,
+                        )
+                        .is_ok()
+                    });
+                if let Some(retained) = retained {
+                    emit_telemetry_event(
+                        tx,
+                        "observer_plan_goal_retained",
+                        json!({"call_id":tc.id,"tool":tc.name}),
+                    )
+                    .await;
+                    retained
+                } else if matches!(cfg.provider, ProviderKind::Mistral) {
                     if let Some(repaired) = repair_mistral_plan_for_tool_turn(
                         Some(plan),
                         active_plan.work(),
@@ -808,6 +843,14 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
             .await;
     }
 
+    let resolved_think = observer_observation
+        .and_then(observer_continuation::Observation::command)
+        .filter(|_| think.next == "@observer")
+        .map(|command| ThinkBlock {
+            next: command.into(),
+            ..think.clone()
+        });
+    let think = resolved_think.as_ref().unwrap_or(think);
     if let Err(e) = validate_think(think, &candidate_plan, tc) {
         *state = AgentState::Recovery;
         recovery.stage = Some(RecoveryStage::Diagnose);

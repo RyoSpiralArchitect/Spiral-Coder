@@ -40,6 +40,10 @@ impl UnittestComparison {
         &self.arguments.command
     }
 
+    pub(super) fn matches_arguments(&self, args: &serde_json::Value) -> bool {
+        serde_json::to_value(&self.arguments).is_ok_and(|expected| expected == *args)
+    }
+
     pub(super) fn observed_frame<'a>(
         &self,
         command: &str,

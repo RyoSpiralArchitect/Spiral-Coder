@@ -98,6 +98,22 @@ pub(super) async fn send_coder_input_with_window(
     observer_request::prepare_coder_continuation(app, &intent_anchor);
     let observer_soft_hint = app.pending_observer_hint.take();
     let observer_advice = app.pending_observer_advice.take();
+    let observation = if input != CoderInput::ReportCloseout && intent_anchor.last_update_no_op {
+        observer_advice.as_ref().and_then(|advice| {
+            agent::observer_continuation::Observation::from_advice(
+                advice,
+                app.coder_session.as_ref()?,
+                app.project_test_cmd.as_deref(),
+                tool_root.as_deref()?,
+            )
+        })
+    } else {
+        None
+    };
+    let observer_soft_hint = observer_soft_hint.map(|hint| match &observation {
+        Some(action) => format!("{hint}\n\n{}", action.guidance()),
+        None => hint,
+    });
     let observer_contract = observer_advice
         .as_ref()
         .and_then(build_observer_response_contract);
@@ -309,19 +325,22 @@ pub(super) async fn send_coder_input_with_window(
             let approver = crate::approvals::AutoApprover;
             // The agent future is large; keep it out of nested request/driver
             // futures so another handoff does not exhaust the worker stack.
-            match Box::pin(agent::run_agentic_json(
-                start,
-                &cfg,
-                tool_root.as_deref(),
-                max_iters,
-                tx.clone(),
-                project_context,
-                agents_md,
-                test_cmd,
-                false,
-                Some(realize_preset),
-                autosaver,
-                &approver,
+            match Box::pin(agent::observer_continuation::scope(
+                observation,
+                agent::run_agentic_json(
+                    start,
+                    &cfg,
+                    tool_root.as_deref(),
+                    max_iters,
+                    tx.clone(),
+                    project_context,
+                    agents_md,
+                    test_cmd,
+                    false,
+                    Some(realize_preset),
+                    autosaver,
+                    &approver,
+                ),
             ))
             .await
             {
