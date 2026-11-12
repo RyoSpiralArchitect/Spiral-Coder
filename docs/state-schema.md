@@ -1184,6 +1184,9 @@ share this projection; display-packet fields cannot replace native requirements.
 unresolved edit's diagnostic/repair requirement. It derives from the existing
 correlated recovery snapshots and edit history, and is shared by both roles.
 Reading the target advances diagnosis but does not remove the repair obligation.
+For a nonunique edit anchor, the native failure and subsequent target read
+derive guidance for one uniquely anchored edit from current content. This
+guidance survives session restoration through the same correlated history.
 On continuation, completed localized diagnosis may advance a generic restored
 `Diagnose` phase only when the latest actual failure belongs to that same check
 or target and is followed by the corresponding read/repair. A different newer
@@ -1258,9 +1261,11 @@ store; see [Observer work progress](observer-work-progress.md).
 
 For a task with declared test artifacts, `task_requirements.authored_tests`
 links each path to its original requirement IDs and latest recorded native
-edit. It includes complete descriptions of test-only requirements within a
-shared text budget. Both roles can use this view after all structural
-obligations pass. The view adds no persisted state or coverage receipt.
+edit. It retains complete descriptions of test-only requirements first, then
+requirements shared with other artifacts, within one 4 KiB description budget.
+Both roles can use the shared rules to compare source decisions with public
+test assertions after the structural obligations pass. The view adds no
+persisted state or coverage receipt.
 An Observer reply with a path-only edit for a declared test can be projected
 to `clarify` when the Coder has an eligible work turn. The response marks
 `test_recipe_retained` and the TUI keeps the raw envelope. The delivered
@@ -1350,6 +1355,14 @@ distinguishes `completed`, `blocked`, `budget_exhausted`, `observer_unavailable`
 and `interrupted`; provider errors from either pane reach `report.error` and a
 nonzero driver exit. A body interrupted after HTTP 200 is recorded as
 `stream_interrupted`, not a completed response. Unused budgets remain unused.
+
+For an unfinished declared task, the headless driver can give Coder one
+ordinary work slice per iteration after a completed Observer schema repair is
+rejected. The current request and wire receipt must match, Coder must have a
+work allowance, and native work must be outstanding. Preservation, approval
+and terminal barriers still apply. `observer_repair_returned_work` links the
+return to the rejected Observer request. The raw reply remains in the Observer
+transcript, and the Coder slice uses the ordinary request ledger and gates.
 
 `self_dogfood/measurement.py` derives development-only milestones from sealed
 native receipts and independent test summaries. Missing measurements are

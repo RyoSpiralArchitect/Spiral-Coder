@@ -168,7 +168,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
     let test_guidance = if packet["task_obligations"]["task_requirements"]["authored_tests"]
         .is_object()
     {
-        "Review the linked requirements in task_requirements.authored_tests before suggesting a final check sweep. Use the actual test code to assess the named cases. If a required case is missing, put its fixture or inputs, expected control behavior, isolated variant, and observable assertion in the primary reason. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. An authored test file and passing counts establish activity. Coverage claims need the corresponding test behavior. Follow the current diagnosis, recheck, or report-only obligation first.\n"
+        "Review task_requirements.authored_tests before suggesting a final check sweep. Match a shared_requirements rule to the implementation branch and the public test that exercises its boundary. If the source or assertion omits a case, put its fixture, successful control, isolated variant and expected observation in the primary reason. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. If a nonunique edit failed and its target was already read, propose a uniquely anchored edit or describe exactly where to place the new case. Coverage claims need the corresponding test behavior. Follow the current diagnosis, recheck, or report-only obligation first.\n"
     } else {
         ""
     };

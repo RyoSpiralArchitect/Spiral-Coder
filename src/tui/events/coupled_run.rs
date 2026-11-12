@@ -303,6 +303,7 @@ async fn run_iteration(
     )?;
     // Provider/consumer failures still need the budget, session and failure receipt.
     let outcome: Result<()> = async {
+        let mut returned_after_rejected_repair = false;
         while app.coder.streaming {
             drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
             if app.coder_completed == Some(true)
@@ -341,8 +342,25 @@ async fn run_iteration(
             if let Some(args) = &window {
                 trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;
             }
-            if blocked || (app.pending_observer_hint.is_none() && window.is_none()) || app.work_budget.remaining_for("coder") == 0 {
+            if blocked || app.work_budget.remaining_for("coder") == 0 {
                 break;
+            }
+            if app.pending_observer_hint.is_none() && window.is_none() {
+                if returned_after_rejected_repair {
+                    break;
+                }
+                let Some(request_id) = observer_request::rejected_repair_work_return(&app) else {
+                    break;
+                };
+                returned_after_rejected_repair = true;
+                trace.event("observer_repair_returned_work", json!({"observer_request_id":request_id,"remaining_coder":app.work_budget.remaining_for("coder")}))?;
+                send_coder_input(
+                    &mut app,
+                    &coder_tx,
+                    "The Observer's response repair did not provide usable advice. Use this work slice to advance one outstanding native obligation from current evidence. Follow any required diagnostic read or recheck first. After a failed edit, use the exact target observation to change the edit strategy. Keep all remaining checks and approvals in force.".into(),
+                    CoderInput::RuntimeContinuation,
+                ).await;
+                continue;
             }
             super::coder_run::send_coder_input_with_window(&mut app, &coder_tx,"Continue.".into(),CoderInput::RuntimeContinuation,window).await;
         }

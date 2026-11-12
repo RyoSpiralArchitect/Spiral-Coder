@@ -12,6 +12,8 @@ pub(crate) struct AuthoredTests {
     targets: Vec<Target>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     test_only_requirements: Vec<TestRequirement>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    shared_requirements: Vec<TestRequirement>,
 }
 
 impl AuthoredTests {
@@ -36,8 +38,7 @@ struct TestRequirement {
 
 pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option<AuthoredTests> {
     let mut by_path: BTreeMap<&str, Vec<String>> = BTreeMap::new();
-    let mut test_only_requirements = Vec::new();
-    let mut description_budget = MAX_DESCRIPTION_BYTES;
+    let mut linked = Vec::new();
     for requirement in &contract.requirements {
         let paths: BTreeSet<_> = requirement
             .artifacts
@@ -54,21 +55,35 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
                 .or_default()
                 .push(requirement.id.clone());
         }
-        if requirement
+        let test_only = requirement
             .artifacts
             .iter()
-            .all(|artifact| matches!(artifact.kind, ArtifactKind::Test))
-            && requirement.description.len() <= description_budget
-        {
-            description_budget -= requirement.description.len();
-            test_only_requirements.push(TestRequirement {
-                id: requirement.id.clone(),
-                description: requirement.description.clone(),
-            });
-        }
+            .all(|artifact| matches!(artifact.kind, ArtifactKind::Test));
+        linked.push((requirement, test_only));
     }
     if by_path.is_empty() {
         return None;
+    }
+    // Preserve dedicated test scenarios first, then carry the behavioral rules
+    // that the same test is expected to exercise against its paired artifacts.
+    linked.sort_by_key(|(_, test_only)| !test_only);
+    let mut description_budget = MAX_DESCRIPTION_BYTES;
+    let mut test_only_requirements = Vec::new();
+    let mut shared_requirements = Vec::new();
+    for (requirement, test_only) in linked {
+        let Some(remaining) = description_budget.checked_sub(requirement.description.len()) else {
+            continue;
+        };
+        description_budget = remaining;
+        let target = if test_only {
+            &mut test_only_requirements
+        } else {
+            &mut shared_requirements
+        };
+        target.push(TestRequirement {
+            id: requirement.id.clone(),
+            description: requirement.description.clone(),
+        });
     }
     let targets = by_path
         .into_iter()
@@ -94,6 +109,7 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
     Some(AuthoredTests {
         targets,
         test_only_requirements,
+        shared_requirements,
     })
 }
 
@@ -104,6 +120,7 @@ mod tests {
 
     const DESCRIPTION: &str =
         "From a valid control, change the parent field and assert the public error.";
+    const SHARED_RULE: &str = "The first ledger row must have a null parent.";
 
     fn result(messages: &mut Vec<Value>, id: &str, tool: &str, args: Value, body: &str) {
         messages.extend([
@@ -119,7 +136,7 @@ mod tests {
         let task = format!(
             "Implement and test the ledger.\n<task_requirements>\n{}\n</task_requirements>",
             json!({"version":1,"requirements":[
-                {"id":"ledger","description":"Check the public ledger behavior.",
+                {"id":"ledger","description":SHARED_RULE,
                  "artifacts":[{"path":"src/ledger.rs","kind":"source"},{"path":path,"kind":"test"}],
                  "checks":[{"command":check}]},
                 {"id":"parent","description":DESCRIPTION,
@@ -176,8 +193,12 @@ mod tests {
             authored["test_only_requirements"],
             json!([{"id":"parent","description":DESCRIPTION}])
         );
+        assert_eq!(
+            authored["shared_requirements"],
+            json!([{"id":"ledger","description":SHARED_RULE}])
+        );
         let coder = task_obligations::prompt(&messages, None, Some("/workspace")).unwrap();
-        assert!(coder.contains(DESCRIPTION) && coder.contains("compare the actual test code"));
+        assert!(coder.contains(DESCRIPTION) && coder.contains(SHARED_RULE));
         let observer = crate::tui::events::observer_assist::build_tui_next_action_prompt(
             &json!({"task_obligations":view,"work_budget":{"next_coder_turn":"work","next_coder_requests":8}}),
             "en",
@@ -185,7 +206,37 @@ mod tests {
         );
         assert!(
             observer.contains(DESCRIPTION)
+                && observer.contains(SHARED_RULE)
                 && observer.contains("no-tool clarify with the case recipe")
+        );
+    }
+
+    #[test]
+    fn shared_text_budget_prioritizes_complete_test_only_cases() {
+        let large = "x".repeat(super::MAX_DESCRIPTION_BYTES);
+        let contract = serde_json::from_value(json!({"version":1,"requirements":[
+            {"id":"large","description":large,"artifacts":[
+                {"kind":"source","path":"src/ledger.rs"},{"kind":"test","path":"tests/ledger.rs"}
+            ],"checks":[]},
+            {"id":"parent","description":DESCRIPTION,
+             "artifacts":[{"kind":"test","path":"tests/ledger.rs"}],"checks":[]},
+            {"id":"root","description":SHARED_RULE,"artifacts":[
+                {"kind":"source","path":"src/ledger.rs"},{"kind":"test","path":"tests/ledger.rs"}
+            ],"checks":[]}
+        ]}))
+        .unwrap();
+        let value = serde_json::to_value(super::project(&contract, &[]).unwrap()).unwrap();
+        assert_eq!(
+            value["targets"][0]["requirement_ids"],
+            json!(["large", "parent", "root"])
+        );
+        assert_eq!(
+            value["test_only_requirements"],
+            json!([{"id":"parent","description":DESCRIPTION}])
+        );
+        assert_eq!(
+            value["shared_requirements"],
+            json!([{"id":"root","description":SHARED_RULE}])
         );
     }
 }

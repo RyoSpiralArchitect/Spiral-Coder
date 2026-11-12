@@ -344,6 +344,12 @@ enforces this boundary without modifying or refunding the durable task limit.
 The option does not force an Observer call after successful early completion,
 nor guarantee that advice, verification or repair fits the remaining budget.
 
+After a completed schema repair is rejected, `coupled-run` can return one
+ordinary Coder slice per iteration to continue a declared task with outstanding
+native work. Required diagnosis and rechecks still take precedence. The next
+Coder yield returns to the ordinary Observer rhythm and each request uses its
+original role allowance.
+
 The interactive TUI selects the next Observer intervention from the typed
 `CoderYieldReason::VerificationFailure` outcome, even with auto-observe disabled
 and no failure keyword in the displayed Coder text. This transient reason clears
@@ -611,6 +617,12 @@ repeated observations and authored acceptance claims to both roles. A docs/check
 requirement does not stand in for the source behavior requested by the human.
 [Observation pressure](observation-progress.md) bounds identical repeated reads
 without forcing an edit or overriding required diagnosis.
+
+For declared test artifacts, both roles can match shared behavior requirements
+to a source decision and its public test before the final checks. Case recipes
+retain their fixture, control, changed condition and expected assertion.
+When a patch anchor matches several places, the next action can use unique
+context from a current target read to make one small edit.
 
 Assist receipts retain their legacy continuation-wide execution fields and add
 `suggestion_execution`: the proposed tool/arguments, exact matching native call

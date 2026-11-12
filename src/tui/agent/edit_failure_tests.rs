@@ -34,6 +34,40 @@ fn record(messages: &mut Vec<Value>, call: &ToolCallData, output: &str) {
 }
 
 #[test]
+fn native_nonunique_diff_preserves_an_actionable_repair_after_read_and_resume() {
+    let dir = tempfile::tempdir().unwrap();
+    let base = dir.path().to_str().unwrap();
+    let path = "sample.txt";
+    let original = "first section\nanchor\nsecond section\nanchor\n";
+    std::fs::write(dir.path().join(path), original).unwrap();
+    let diff = "@@\n anchor\n+insertion\n*** End Patch\n";
+    let (output, failed) = crate::file_tools::tool_apply_diff(path, diff, Some(base));
+    assert!(failed && output.contains("old block not unique (2 matches)"));
+    let mut messages =
+        vec![json!({"role":"user","content":"Add an insertion to the second section"})];
+    let edit = call("apply_diff", json!({"path":path,"diff":diff}));
+    record(&mut messages, &edit, &output);
+    assert!(restore(&messages)
+        .diagnostic_hint()
+        .unwrap()
+        .contains("Read this exact target"));
+    let (output, failed) = crate::file_tools::tool_read_file(path, Some(base));
+    assert!(!failed);
+    record(
+        &mut messages,
+        &call("read_file", json!({"path":path})),
+        &output,
+    );
+    let hint = restore(&messages).diagnostic_hint().unwrap();
+    assert!(hint.contains("one unique block with that same block plus the addition"));
+    assert!(hint.contains("omit patch trailers"));
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join(path)).unwrap(),
+        original
+    );
+}
+
+#[test]
 fn failed_json_edit_read_retry_preserves_recovery_gate_and_resume() {
     let dir = tempfile::tempdir().unwrap();
     let base = dir.path().to_str().unwrap();
