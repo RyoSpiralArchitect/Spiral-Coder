@@ -1712,7 +1712,8 @@ do not qualify. Earlier work strategies, failed-check recovery, approval
 barriers, outstanding obligations and the full terminal transcript remain.
 Compaction protects the admitted plan associated with a closeout. When no
 validated work plan survives, the runtime can revalidate that admitted plan
-for tool admission and retain its acceptance references for both roles.
+for tool admission and retain its acceptance references for both roles. This
+plan stays tied to the original closeout even after a successful resumed read.
 No new persisted state, budget, progress credit or completion exception is added.
 
 ## Observer intervention decision brief

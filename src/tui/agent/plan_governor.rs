@@ -4,7 +4,7 @@ pub(crate) fn adopt_valid_plan(
     plan: &PlanBlock,
     working_mem: &mut WorkingMemory,
     assumption_ledger: &mut AssumptionLedger,
-    active_plan: &mut Option<PlanBlock>,
+    active_plan: &mut ActivePlan,
     intent_required_verification: &mut VerificationLevel,
     path_required_verification: VerificationLevel,
     required_verification: &mut VerificationLevel,
@@ -26,7 +26,7 @@ pub(crate) fn adopt_valid_plan(
             last_behavioral_verify_ok_step,
         );
     }
-    *active_plan = Some(plan.clone());
+    *active_plan = ActivePlan::Work(plan.clone());
 }
 
 pub(crate) fn last_impact_step_from_messages(messages: &[serde_json::Value]) -> Option<usize> {

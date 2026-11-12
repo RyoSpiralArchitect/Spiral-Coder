@@ -52,7 +52,7 @@ pub(super) struct ToolDispatchCtx<'a> {
     pub(super) validated_plan_for_turn: &'a Option<PlanBlock>,
     pub(super) root_read_only: bool,
     pub(super) task_harness: TaskHarness,
-    pub(super) active_plan: &'a Option<PlanBlock>,
+    pub(super) active_plan: &'a ActivePlan,
     pub(super) iter: usize,
     pub(super) max_iters: usize,
     pub(super) this_step: usize,

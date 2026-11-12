@@ -47,7 +47,7 @@ pub(super) struct NoToolCtx<'a> {
     pub pending_system_hint: &'a mut Option<String>,
     pub working_mem: &'a mut WorkingMemory,
     pub assumption_ledger: &'a mut AssumptionLedger,
-    pub active_plan: &'a mut Option<PlanBlock>,
+    pub active_plan: &'a mut ActivePlan,
     pub latent_plan: &'a mut Option<LatentPlanBuffer>,
     pub realize_metrics: &'a mut RealizeMetrics,
     pub task_outcome: &'a mut outcome::TaskOutcome,
@@ -200,7 +200,7 @@ pub(super) async fn handle_no_tool_call(ctx: &mut NoToolCtx<'_>) -> Result<NoToo
                 return Ok(NoToolFlow::Continue);
             }
         } else if latent_plan.is_none() {
-            if let (Some(active), Some(think)) = (active_plan.as_ref(), parsed_think.as_ref()) {
+            if let (Some(active), Some(think)) = (active_plan.work(), parsed_think.as_ref()) {
                 let defer_score = latent_intent_defer_score(&assistant_text_clean, think);
                 if defer_score >= realize_cfg.defer_threshold {
                     let latest_intent = Some(think_intent_summary(think));

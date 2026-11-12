@@ -36,7 +36,7 @@ pub(super) struct AssemblyCtx<'a> {
     pub harness_evolution_path: &'a Option<std::path::PathBuf>,
     pub progress_state: &'a Option<crate::progress_state::RepoProgressState>,
     pub progress_context: &'a crate::progress_state::ProgressSaveContext,
-    pub active_plan: &'a Option<PlanBlock>,
+    pub active_plan: &'a ActivePlan,
     pub edit_failures: &'a EditFailureMemory,
     pub mem: &'a FailureMemory,
     pub assumption_ledger: &'a AssumptionLedger,
@@ -448,7 +448,7 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
     if let Some(reason) = impact_required.as_ref() {
         msgs_for_call.push(json!({
             "role": "system",
-            "content": build_impact_prompt(reason, active_plan.as_ref(), &working_mem),
+            "content": build_impact_prompt(reason, active_plan.work(), &working_mem),
         }));
     }
 

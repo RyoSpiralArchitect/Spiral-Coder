@@ -16,18 +16,43 @@ pub(super) fn latest_valid(
     messages: &[Value],
     validate: impl Fn(&PlanBlock) -> bool,
 ) -> Option<PlanBlock> {
-    restore(messages, validate).map(|r| r.plan)
+    match restore(messages, validate) {
+        ActivePlan::Missing => None,
+        ActivePlan::Work(plan) | ActivePlan::CloseoutOnly(plan) => Some(plan),
+    }
 }
 
-pub(super) struct RestoredPlan {
-    pub(super) plan: PlanBlock,
-    pub(super) closeout_only: bool,
+pub(crate) enum ActivePlan {
+    Missing,
+    Work(PlanBlock),
+    CloseoutOnly(PlanBlock),
 }
 
-pub(super) fn restore(
-    messages: &[Value],
-    validate: impl Fn(&PlanBlock) -> bool,
-) -> Option<RestoredPlan> {
+impl ActivePlan {
+    pub(super) fn as_ref(&self) -> Option<&PlanBlock> {
+        match self {
+            Self::Missing => None,
+            Self::Work(plan) | Self::CloseoutOnly(plan) => Some(plan),
+        }
+    }
+
+    pub(super) fn work(&self) -> Option<&PlanBlock> {
+        match self {
+            Self::Work(plan) => Some(plan),
+            _ => None,
+        }
+    }
+
+    pub(super) fn is_none(&self) -> bool {
+        matches!(self, Self::Missing)
+    }
+
+    pub(super) fn is_closeout_only(&self) -> bool {
+        matches!(self, Self::CloseoutOnly(_))
+    }
+}
+
+pub(super) fn restore(messages: &[Value], validate: impl Fn(&PlanBlock) -> bool) -> ActivePlan {
     let task = crate::task_origin::current_task_messages(messages);
     let mut closeout = None;
     for (index, message) in task.iter().enumerate().rev() {
@@ -38,18 +63,12 @@ pub(super) fn restore(
                     .filter(&validate);
             }
         } else if let Some(plan) = from_message(message).filter(&validate) {
-            return Some(RestoredPlan {
-                plan,
-                closeout_only: false,
-            });
+            return ActivePlan::Work(plan);
         }
     }
     // A closeout can supply the task's first natively admitted plan. Keep its
     // acceptance and admission when there is no earlier validated work plan.
-    closeout.map(|plan| RestoredPlan {
-        plan,
-        closeout_only: true,
-    })
+    closeout.map_or(ActivePlan::Missing, ActivePlan::CloseoutOnly)
 }
 
 #[cfg(test)]
@@ -84,11 +103,13 @@ mod tests {
             messages.push(json!({"role":"assistant","content":"Work remains pending."}));
         }
         super::super::message_window::prune_message_window(&mut messages);
-        let restored = restore(&messages, |p| super::super::validate_plan(p).is_ok())
+        let restored = restore(&messages, |p| super::super::validate_plan(p).is_ok());
+        assert!(restored.is_closeout_only());
+        let admitted = restored
+            .as_ref()
             .expect("the only admitted plan remains available");
-        assert!(restored.closeout_only);
-        assert_eq!(restored.plan.goal, plan.goal);
-        assert_eq!(restored.plan.acceptance_criteria, plan.acceptance_criteria);
+        assert_eq!(admitted.goal, plan.goal);
+        assert_eq!(admitted.acceptance_criteria, plan.acceptance_criteria);
         assert_eq!(
             super::super::task_obligations::project(&messages, None).acceptance_criteria,
             super::super::acceptance_report::criteria(Some(&plan)),

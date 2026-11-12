@@ -462,8 +462,9 @@ call ID and adjacent native result; rejected, unmatched and text-only reports
 do not qualify. Earlier work strategies, failed-check recovery, approval
 barriers, outstanding obligations and the full terminal transcript remain.
 If the closeout holds the only validated native plan, its goal and acceptance
-are available for plan admission and reporting after resume. Its reflection and
-assumptions do not become the work strategy.
+are available for plan admission and reporting after resume. A tool turn that
+inherits this plan uses it for validation. Work plan snapshots, step labels
+and strategy recall resume when the Coder supplies a validated work plan.
 No new persisted state, budget, progress credit or completion exception is added.
 
 ## Observer intervention decision brief

@@ -122,6 +122,15 @@ mod tests {
 
     #[tokio::test]
     async fn restored_blocked_report_can_execute_diagnosis_without_closeout_strategy_hint() {
+        assert_restored_read(true).await;
+    }
+
+    #[tokio::test]
+    async fn closeout_only_plan_admits_a_read_without_becoming_its_work_plan() {
+        assert_restored_read(false).await;
+    }
+
+    async fn assert_restored_read(earlier_work_plan: bool) {
         use clap::Parser;
         use httpmock::prelude::*;
         let server = MockServer::start();
@@ -148,17 +157,26 @@ mod tests {
         ])
         .unwrap();
         let cfg = cli.common.to_partial_config().resolve().unwrap();
-        let messages = vec![
-            json!({"role":"user","content":"Repair fixture.txt. Run exactly: cargo test -q"}),
+        let mut messages =
+            vec![json!({"role":"user","content":"Repair fixture.txt. Run exactly: cargo test -q"})];
+        if earlier_work_plan {
+            messages.extend([
             json!({"role":"assistant","accepted_plan":{"goal":"Repair fixture.txt","steps":["Read fixture.txt","Repair and test"],"acceptance_criteria":["cargo test -q passes"],"risks":"regression","assumptions":"fixture exists"},"tool_calls":[{"id":"failed","function":{"name":"exec","arguments":"{\"command\":\"cargo test -q\"}"}}]}),
             json!({"role":"tool","tool_call_id":"failed","content":"FAILED (exit_code: 1)"}),
-            json!({"role":"assistant","content":"<reflect>\nlast_outcome: partial\ngoal_delta: same\nwrong_assumption: allowance ended\nstrategy_change: abandon\nnext_minimal_action: report incomplete work\n</reflect>","tool_calls":[{"id":"terminal","function":{"name":"done","arguments":"{}"}}]}),
+            ]);
+        }
+        let mut closeout = json!({"role":"assistant","content":"<reflect>\nlast_outcome: partial\ngoal_delta: same\nwrong_assumption: allowance ended\nstrategy_change: abandon\nnext_minimal_action: report incomplete work\n</reflect>","tool_calls":[{"id":"terminal","function":{"name":"done","arguments":"{}"}}]});
+        if !earlier_work_plan {
+            closeout["accepted_plan"] = json!({"goal":"Repair fixture.txt","steps":["Report incomplete work","List pending checks"],"acceptance_criteria":["cargo test -q passes"],"risks":"regression","assumptions":"fixture exists"});
+        }
+        messages.extend([
+            closeout,
             json!({"role":"tool","tool_call_id":"terminal","content":"OK: blocked","blocked_report":{"remaining_acceptance":["acceptance 1"],"next_steps":"read fixture.txt"}}),
             crate::task_origin::user_message(
                 "Continue with a fresh allowance",
                 crate::task_origin::MessageOrigin::Runtime,
             ),
-        ];
+        ]);
         let start = AgenticStartState {
             messages,
             checkpoint: None,
@@ -191,9 +209,27 @@ mod tests {
                 .as_str()
                 .is_some_and(|s| s.contains("broken parser"))));
         assert!(!outcome::TaskOutcome::default().completed(&result.messages));
-        assert!(task_obligations::project(&result.messages, None)
-            .pending_exact_checks
-            .contains(&"cargo test -q".into()));
+        if earlier_work_plan {
+            assert!(task_obligations::project(&result.messages, None)
+                .pending_exact_checks
+                .contains(&"cargo test -q".into()));
+        } else {
+            let read = result
+                .messages
+                .iter()
+                .find(|m| m["tool_calls"][0]["id"] == "diagnosis")
+                .unwrap();
+            assert!(
+                read["accepted_plan"].is_null(),
+                "the read inherited admission only"
+            );
+            let resumed = plan_resume::restore(&result.messages, |p| validate_plan(p).is_ok());
+            assert!(resumed.is_closeout_only());
+            assert_eq!(
+                resumed.as_ref().unwrap().acceptance_criteria,
+                vec!["cargo test -q passes"]
+            );
+        }
     }
 
     #[test]
