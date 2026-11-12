@@ -1,0 +1,207 @@
+{
+  "plan-admission.before": {
+    "issue": null,
+    "envelope": {
+      "summary": "The task is incomplete and has no request slack: 9 minimum coder requests remain and 9 are available. The immediate blocker is the unimplemented coupled-status summary, followed by two required artifact edits and six exact checks.",
+      "primary_blocker": "Repo code is still incomplete: python3 -S -m unittest -v scripts.status_visible failed because coupled-status summary construction returned an error. docs/state-schema.md and tests/coupled_status.rs also lack recorded edits, and all six required checks remain pending.",
+      "scores": {
+        "correctness": 0.98,
+        "security": 0.86,
+        "efficiency": 0.92,
+        "readability": 0.8
+      },
+      "response_contract": {
+        "required": true,
+        "focus_axes": [
+          "correctness",
+          "efficiency"
+        ],
+        "note": "The next coder turn must accept or explicitly override this read-first plan; override only if current execution evidence already contains the complete current source and a precise supported edit."
+      },
+      "suggestions": [
+        {
+          "kind": "read",
+          "reason": "The missing fact is the current implementation of src/coupled_status.rs: the last observed check proves the placeholder still fails, but the current source region has not been freshly observed after the failed verification. Read it first to identify the smallest supported repair before editing; this also satisfies the governor's required next action.",
+          "confidence": 0.99,
+          "suggested_tool": "read_file",
+          "suggested_args": {
+            "end_line": 200,
+            "path": "src/coupled_status.rs",
+            "start_line": 1
+          },
+          "based_on": [
+            "task_obligations",
+            "execution_evidence",
+            "latest_action_feedback",
+            "work_budget"
+          ]
+        }
+      ],
+      "quickest_check": "Read src/coupled_status.rs before making the smallest repair; then rerun the exact failed check.",
+      "why_this_first": "Confirming the current source branch unlocks a targeted implementation instead of another repeated observation or invented patch. With no budget slack, the next coder turn must start from this fact and then preserve enough requests for the two missing artifacts and all six mandated checks.",
+      "fallback": "If the source is still only a placeholder or the full validation contract cannot fit in the remaining nine requests, implement the smallest fixture-compatible summary and strict validation needed to make the visible check pass, add the two required artifact edits, and leave the next iteration to finish any remaining exact checks and coverage."
+    },
+    "format_recovery": null,
+    "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nWhy: The missing fact is the current implementation of src/coupled_status.rs: the last observed check proves the placeholder still fails, but the current source region has not been freshly observed after the failed verification. Read it first to identify the smallest supported repair before editing; this also satisfies the governor's required next action.\n</observer_advisory>",
+    "response_contract": "<observer_response_contract required=\"true\" source=\"external_observer\">\n[Observer response contract]\nOn this coder turn, explicitly address the latest high-confidence observer suggestion before finishing.\nChoose one: accept | override | defer.\nIf you accept, follow this next step: read_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nIf you override, justify the divergence briefly and keep scope narrow.\nIf you defer, explain what missing evidence blocks action.\nIn your next <plan> or visible planning text, name how you will handle this Observer input.\nFocus axes: correctness, efficiency\nNote: The next coder turn must accept or explicitly override this read-first plan; override only if current execution evidence already contains the complete current source and a precise supported edit.\nSuggested plain-text block:\n[Observer response]\ndecision: accept|override|defer\nreason: short justification\n</observer_response_contract>",
+    "completion_issue": null
+  },
+  "plan-admission.after": {
+    "issue": null,
+    "envelope": {
+      "summary": "Satisfy the native plan gate, then inspect the current coupled-status implementation before making the smallest evidence-based repair.",
+      "primary_blocker": "Instruction/harness blocker: the last read was not executed because the required plan format was missing. The product blocker remains the failed visible check caused by the unimplemented summary construction.",
+      "scores": {
+        "correctness": 0.94,
+        "security": 0.8,
+        "efficiency": 0.86,
+        "readability": 0.84
+      },
+      "response_contract": {
+        "required": true,
+        "focus_axes": [
+          "correctness",
+          "readability"
+        ],
+        "note": "Override only if the current source already contains a complete implementation; otherwise defer further checks until the failing logic is repaired."
+      },
+      "suggestions": [
+        {
+          "kind": "read",
+          "reason": "First emit a valid plan with goal: \"Complete coupled-status implementation, artifacts, and all mandated verification.\" and acceptance lines exactly: \"1. Read-only native/npm summaries with honest pending usage.\" \"2. Strict rejection and preserved commands.\" \"3. Documentation and public-CLI coverage.\" \"4. All six checks pass.\" Then emit think and make this one tool call. This is better than rerunning the failed check because the latest failure already identifies the unimplemented branch, while the current source after the prior mutation is unknown; reading it supplies the exact implementation region needed for a targeted repair. The goal remains \"Complete coupled-status implementation, artifacts, and all mandated verification.\" Acceptance remains \"Read-only native/npm summaries with honest pending usage.\", \"Strict rejection and preserved commands.\", \"Documentation and public-CLI coverage.\", and \"All six checks pass.\"",
+          "confidence": 0.98,
+          "suggested_tool": "read_file",
+          "suggested_args": {
+            "end_line": 200,
+            "path": "src/coupled_status.rs",
+            "start_line": 1
+          },
+          "based_on": [
+            "latest_action_feedback",
+            "execution_evidence",
+            "pending_recovery",
+            "task_obligations"
+          ]
+        }
+      ],
+      "quickest_check": "Read src/coupled_status.rs after emitting the admitted plan, then repair and rerun the exact visible check.",
+      "why_this_first": "The prior read never executed due to the plan gate, and the only current failure is the visible command still returning the explicit unimplemented error. Observing the current source is the narrowest unlock for a supported repair; rerunning tests or formatting first would not resolve that known blocker.",
+      "fallback": "If the file shows only partial or unsupported logic, inspect the specific missing schema/fixture region next rather than inventing a patch; once repaired, rerun python3 -S -m unittest -v scripts.status_visible before the other five exact checks."
+    },
+    "format_recovery": null,
+    "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nWhy: First emit a valid plan with goal: \"Complete coupled-status implementation, artifacts, and all mandated verification.\" and acceptance lines exactly: \"1. Read-only native/npm summaries with honest pending usage.\" \"2. Strict rejection and preserved commands.\" \"3. Documentation and public-CLI coverage.\" \"4. All six checks pass.\" Then emit think and make this one tool call. This is better than rerunning the failed check because the latest failure already identifies the unimplemented branch, while the current source after the prior mutation is unknown; reading it supplies the exact implementation region needed for a targeted repair. The goal remains \"Complete coupled-status implementation, artifacts, and all mandated verification.\" Acceptance remains \"Read-only native/npm summaries with honest pending usage.\", \"Strict rejection and preserved commands.\", \"Documentation and public-CLI coverage.\", and \"All six checks pass.\"\n</observer_advisory>",
+    "response_contract": "<observer_response_contract required=\"true\" source=\"external_observer\">\n[Observer response contract]\nOn this coder turn, explicitly address the latest high-confidence observer suggestion before finishing.\nChoose one: accept | override | defer.\nIf you accept, follow this next step: read_file(end_line=200, path=src/coupled_status.rs, start_line=1)\nIf you override, justify the divergence briefly and keep scope narrow.\nIf you defer, explain what missing evidence blocks action.\nIn your next <plan> or visible planning text, name how you will handle this Observer input.\nFocus axes: correctness, readability\nNote: Override only if the current source already contains a complete implementation; otherwise defer further checks until the failing logic is repaired.\nSuggested plain-text block:\n[Observer response]\ndecision: accept|override|defer\nreason: short justification\n</observer_response_contract>",
+    "completion_issue": null
+  },
+  "implementation-gap.after": {
+    "issue": null,
+    "envelope": {
+      "summary": "The visible contract is still failing because src/coupled_status.rs emits the raw manifest instead of the required summary; first obtain the missing exact expected schema before the next repair.",
+      "primary_blocker": "Repo code: src/coupled_status.rs has only version validation and raw manifest serialization, so it cannot satisfy the protected summary contract or strict validation requirements.",
+      "scores": {
+        "correctness": 0.92,
+        "security": 0.78,
+        "efficiency": 0.86,
+        "readability": 0.8
+      },
+      "response_contract": {
+        "required": true,
+        "focus_axes": [
+          "correctness",
+          "security"
+        ],
+        "note": "Override only if the exact expected schema is already available from another current observation; otherwise defer editing until this bounded diagnostic read is observed."
+      },
+      "suggestions": [
+        {
+          "kind": "read",
+          "reason": "The latest required check failed because the command returned the manifest-shaped object rather than the protected summary. The retained read of scripts/status_fixture.py was truncated before the expected() definition, so it does not establish the exact output fields, pending representation, or state-specific values needed for a concrete patch. Read only lines 50-87; the result will determine whether the next action is a focused implementation edit or a further bounded source-schema read. This is better than rerunning the same failed check or inventing a serializer from the truncated failure output.",
+          "confidence": 0.98,
+          "suggested_tool": "read_file",
+          "suggested_args": {
+            "end_line": 87,
+            "path": "scripts/status_fixture.py",
+            "start_line": 50
+          },
+          "based_on": [
+            "task_obligations",
+            "execution_evidence",
+            "recent_tool_results",
+            "failure_kind"
+          ]
+        }
+      ],
+      "quickest_check": "Read scripts/status_fixture.py lines 50-87 to capture the exact expected output shape and fixture states before patching.",
+      "why_this_first": "One exact fixture region supplies the missing contract needed to repair the current repo-code blocker without guessing; rerunning verification before that repair cannot make progress.",
+      "fallback": ""
+    },
+    "format_recovery": null,
+    "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=87, path=scripts/status_fixture.py, start_line=50)\nWhy: The latest required check failed because the command returned the manifest-shaped object rather than the protected summary. The retained read of scripts/status_fixture.py was truncated before the expected() definition, so it does not establish the exact output fields, pending representation, or state-specific values needed for a concrete patch. Read only lines 50-87; the result will determine whether the next action is a focused implementation edit or a further bounded source-schema read. This is better than rerunning the same failed check or inventing a serializer from the truncated failure output.\n</observer_advisory>",
+    "response_contract": "<observer_response_contract required=\"true\" source=\"external_observer\">\n[Observer response contract]\nOn this coder turn, explicitly address the latest high-confidence observer suggestion before finishing.\nChoose one: accept | override | defer.\nIf you accept, follow this next step: read_file(end_line=87, path=scripts/status_fixture.py, start_line=50)\nIf you override, justify the divergence briefly and keep scope narrow.\nIf you defer, explain what missing evidence blocks action.\nIn your next <plan> or visible planning text, name how you will handle this Observer input.\nFocus axes: correctness, security\nNote: Override only if the exact expected schema is already available from another current observation; otherwise defer editing until this bounded diagnostic read is observed.\nSuggested plain-text block:\n[Observer response]\ndecision: accept|override|defer\nreason: short justification\n</observer_response_contract>",
+    "completion_issue": null
+  },
+  "implementation-gap.before": {
+    "issue": null,
+    "envelope": {
+      "summary": "No slack remains beyond the nine required coder requests, and the implementation still fails the protected visible contract. First obtain the exact expected summary schema, then make one targeted repair in src/coupled_status.rs before spending requests on the six mandated checks.",
+      "primary_blocker": "Repo code is incomplete: src/coupled_status.rs emits the raw manifest instead of the required normalized summary, and the visible check still fails. The exact expected output shape is the missing fact needed for the smallest safe repair.",
+      "scores": {
+        "correctness": 0.98,
+        "security": 0.72,
+        "efficiency": 0.94,
+        "readability": 0.8
+      },
+      "response_contract": {
+        "required": true,
+        "focus_axes": [
+          "correctness",
+          "readability"
+        ],
+        "note": "The next coder turn must accept or explicitly override this narrow schema read; override is acceptable only if the complete expected output is already available from another current source."
+      },
+      "suggestions": [
+        {
+          "kind": "read",
+          "reason": "The concrete missing fact is the complete fixture-shaped output expected by scripts.status_fixture.expected; the current source only serializes the manifest, and the visible failure proves the schema is wrong. Read only the expected-output region before authorizing a focused source repair.",
+          "confidence": 0.98,
+          "suggested_tool": "read_file",
+          "suggested_args": {
+            "end_line": 100,
+            "path": "scripts/status_fixture.py",
+            "start_line": 75
+          },
+          "based_on": [
+            "task_obligations",
+            "execution_evidence",
+            "work_budget",
+            "task_horizon",
+            "failure_kind"
+          ]
+        }
+      ],
+      "quickest_check": "Diagnostic read: scripts/status_fixture.py lines 75-100 to capture the exact expected summary shape.",
+      "why_this_first": "Capturing the exact fixture schema unlocks a bounded repair of src/coupled_status.rs; after that repair succeeds, the remaining coder requests can be allocated to artifact completion and the six exact checks rather than repeated diagnosis.",
+      "fallback": "If the expected region is unavailable or incomplete, stop requesting broad reads and have the next coder report that the exact output contract is unavailable before attempting any patch."
+    },
+    "format_recovery": null,
+    "hint": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=100, path=scripts/status_fixture.py, start_line=75)\nWhy: The concrete missing fact is the complete fixture-shaped output expected by scripts.status_fixture.expected; the current source only serializes the manifest, and the visible failure proves the schema is wrong. Read only the expected-output region before authorizing a focused source repair.\n</observer_advisory>",
+    "response_contract": "<observer_response_contract required=\"true\" source=\"external_observer\">\n[Observer response contract]\nOn this coder turn, explicitly address the latest high-confidence observer suggestion before finishing.\nChoose one: accept | override | defer.\nIf you accept, follow this next step: read_file(end_line=100, path=scripts/status_fixture.py, start_line=75)\nIf you override, justify the divergence briefly and keep scope narrow.\nIf you defer, explain what missing evidence blocks action.\nIn your next <plan> or visible planning text, name how you will handle this Observer input.\nFocus axes: correctness, readability\nNote: The next coder turn must accept or explicitly override this narrow schema read; override is acceptable only if the complete expected output is already available from another current source.\nSuggested plain-text block:\n[Observer response]\ndecision: accept|override|defer\nreason: short justification\n</observer_response_contract>",
+    "completion_issue": null
+  },
+  "mandatory-diagnosis.before": {
+    "issue": "invalid type: string \"Accept this diagnostic read as the immediate next action; do not override or defer it.\", expected a boolean",
+    "envelope": null,
+    "format_recovery": null,
+    "hint": null,
+    "response_contract": null,
+    "completion_issue": null
+  },
+  "mandatory-diagnosis.after": {
+    "issue": "invalid type: string \"Accept this diagnostic read now; defer edits and reruns until its result is available.\", expected a boolean",
+    "envelope": null,
+    "format_recovery": null,
+    "hint": null,
+    "response_contract": null,
+    "completion_issue": null
+  }
+}
