@@ -321,17 +321,17 @@ async fn run_iteration(
                 .iter()
                 .rposition(|m| m.role == Role::Assistant && m.complete)
                 .context("no completed Coder response")?;
-            send_next_action_assist(
-                &mut app,
-                &observer_tx,
-                &format!("msg:coder-{idx}"),
-                if blocked {
-                    "blocked_terminal_diagnosis"
-                } else {
-                    "incomplete_task"
-                },
-            )
-            .await;
+            let reason = if blocked {
+                "blocked_terminal_diagnosis"
+            } else if app.coder_yield_reason
+                == Some(super::super::coder_yield::CoderYieldReason::DiagnosticFollowup)
+            {
+                "diagnostic_followup"
+            } else {
+                "incomplete_task"
+            };
+            send_next_action_assist(&mut app, &observer_tx, &format!("msg:coder-{idx}"), reason)
+                .await;
             drain_observer_assist(&mut app, &observer_tx, &mut observer_rx, &trace).await?;
             if !blocked && observer_request::maybe_report_closeout(&mut app, &coder_tx).await {
                 continue;

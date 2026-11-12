@@ -4,6 +4,8 @@ use super::{evidence_packet, final_handoff, task_harness};
 use serde::Serialize;
 use serde_json::Value;
 
+pub(crate) const DIAGNOSTIC_FOLLOWUP_GUIDANCE: &str = "The native diagnostic_followup records a repeated failed check and a completed read of its failure location. Use the returned observations to state the specific missing fact. Choose one different bounded observation that could distinguish likely causes, such as comparing the actual and expected result for the one failing case. A different file or line range must address an identified gap. If current evidence already supports a repair, make it in the allowed scope. Keep the original check pending for after the repair. The read and this comparison supply no completion proof.";
+
 #[derive(Debug, Serialize)]
 pub(crate) struct TaskObligations {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -28,6 +30,8 @@ pub(crate) struct TaskObligations {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub required_recheck: Option<String>,
     pub required_diagnostic_read: Option<super::recovery_focus::DiagnosticRead>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_followup: Option<super::recovery_focus::DiagnosticFollowup>,
     pub acceptance_criteria: Vec<Value>,
     pub current_commands: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -145,6 +149,7 @@ pub(crate) fn project_advisory(
             })
         }),
         required_diagnostic_read: focus.required_read(),
+        diagnostic_followup: focus.diagnostic_followup(messages, tool_root),
         pending_recovery,
         acceptance_criteria: super::acceptance_report::criteria(plan.as_ref()),
         current_commands: acceptance.commands,
@@ -186,10 +191,15 @@ pub(crate) fn prompt(
             .as_ref()
             .and_then(|view| view.standalone_prompt());
     }
-    Some(format!(
+    let mut prompt = format!(
         "[Shared task obligations]\nwork_progress preserves the original human task separately from declared native proof obligations. Its edit/observation counts are native activity, not a workspace diff or semantic completion. Read the original task and acceptance_criteria before concluding that only documentation or a check remains; an explicit documentation requirement does not replace the requested source repair. If observations repeat without an edit, identify the missing fact and the bounded next action instead of treating another read as progress. When only pending steps change, retain the accepted goal and acceptance criteria verbatim; steps and observed progress are not new task requirements or completion proof. previous_blocked_report records the Coder’s last accepted incomplete report. With a fresh budget, act on the first grounded outstanding step instead of repeating that report. iteration_handoff is a historical Observer explanation. Compare its future action with the current source and native obligations before choosing one new call. Use strategy_memory to recall the admitted plan and past approaches. A diagnostic_patch links your earlier held proposal to a fresh target read. Follow its suggested read before reconsidering the patch as a new call. Keep the other deliverables and exact checks in view. task_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow required_diagnostic_read first: read_file its exact path, even when the likely source to fix is different. This diagnoses the failure and does not authorize changing the supplied test. Follow pending_recovery before starting more checks. Include every final_answer.outcome_rows entry verbatim on its own line in done.summary; these report the recorded before/after checks, including unverified states. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly or use @<id> from citable_checks in acceptance_evidence.command, one row per completed criterion. A check reference selects its exact current successful command. Keep full command names in the authored summary when requested; decide which receipt supports each criterion. Put required_literals exactly in done.summary, with their original case.\n{}",
         super::context_compaction::render_coder_obligations(&obligations, messages)
-    ))
+    );
+    if obligations.diagnostic_followup.is_some() {
+        prompt.push_str("\n");
+        prompt.push_str(DIAGNOSTIC_FOLLOWUP_GUIDANCE);
+    }
+    Some(prompt)
 }
 
 #[cfg(test)]

@@ -64,6 +64,8 @@ struct Brief<'a> {
     next_coder_requests: &'a Value,
     next_coder_turn: &'a Value,
     previous_assist_outcome: &'a Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    diagnostic_followup: Option<&'a Value>,
 }
 
 fn target(args: &Value) -> Option<&str> {
@@ -135,6 +137,9 @@ fn project(packet: &Value) -> Brief<'_> {
         next_coder_requests: &packet["work_budget"]["next_coder_requests"],
         next_coder_turn: &packet["work_budget"]["next_coder_turn"],
         previous_assist_outcome: &packet["previous_assist_outcome"],
+        diagnostic_followup: packet["task_obligations"]
+            .get("diagnostic_followup")
+            .filter(|value| value.is_object()),
     }
 }
 
@@ -145,7 +150,13 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
-    format!("[Observer decision brief]\n{}\n{follow_up}\
+    let after_diagnosis = brief.diagnostic_followup.map_or(String::new(), |_| {
+        format!(
+            "{} Put the missing fact and the result-dependent decision in the primary suggestion reason. Explain why the completed read is insufficient.\n",
+            crate::tui::agent::task_obligations::DIAGNOSTIC_FOLLOWUP_GUIDANCE
+        )
+    });
+    format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder. Summary or why_this_first alone may not reach the Coder; avoid a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\
 For an information gap, name the specific missing fact, why retained observations do not answer it, and what different result would change the next action. Consider a different feasible route when the previous suggestion did not execute or made no progress. Explain why the chosen action is better than one plausible alternative, using current evidence and remaining requests; do not infer success from acceptance of advice. A repeated read is justified only by a changed/stale target or a specific missing region. Preserve required_diagnostic_read and required_recheck precedence.\n\

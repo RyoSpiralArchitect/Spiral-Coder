@@ -279,6 +279,9 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
     if let Some(fields) = view.as_object_mut() {
         fields.remove("previous_assist_outcome");
     }
+    if let Some(obligations) = view["task_obligations"].as_object_mut() {
+        obligations.remove("diagnostic_followup");
+    }
     view["task_horizon"] = crate::observer_action::strategy::general_horizon(packet);
     format!(
         "This is intervention mode, not critique.\n\

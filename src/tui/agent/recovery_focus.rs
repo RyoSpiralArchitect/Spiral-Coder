@@ -16,6 +16,8 @@ use crate::task_scope::relative_path;
 
 #[path = "baseline_failure.rs"]
 mod baseline_failure;
+#[path = "diagnostic_followup.rs"]
+mod diagnostic_followup;
 #[path = "recovery_location.rs"]
 mod recovery_location;
 #[path = "recovery_obligations.rs"]
@@ -25,6 +27,7 @@ mod recovery_progress;
 #[path = "recovery_snapshot.rs"]
 mod recovery_snapshot;
 
+pub(crate) use diagnostic_followup::DiagnosticFollowup;
 use recovery_location::*;
 use recovery_snapshot::correlated_results;
 pub(super) use recovery_snapshot::protected_call_ids;

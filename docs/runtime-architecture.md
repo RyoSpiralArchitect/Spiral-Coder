@@ -452,6 +452,21 @@ A read never grants completion proof, and unrelated successful checks do not
 clear the pending failure. This avoids sending an authored fixture failure back
 to an unrelated production module merely because that module was read earlier.
 
+### Follow up after a repeated diagnosis
+
+Two runs of the same failed check in the workspace root can return equivalent
+retained failure output. When both required reads also return the same result
+and no other process or edit intervenes, the coupled Coder slice can yield
+after the second read. The early return requires room for an Observer request
+and subsequent Coder work. Later repetitions of that retained sequence reuse
+the same diagnostic context.
+
+Both roles receive the failed check, the two failure calls and the completed
+read. Observer can use the existing general advice contract to identify one
+missing fact and choose a bounded comparison or a supported edit. A new
+observation informs the repair and the exact failed check supplies proof after
+the repair.
+
 ## Resuming after an incomplete closeout
 
 An accepted native `done` call with an `OK: blocked` result and nonempty

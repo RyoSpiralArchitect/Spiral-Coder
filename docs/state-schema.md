@@ -1735,6 +1735,15 @@ or the native check-ID expansion. Missing and ambiguous matches remain
 unknown. The current task owns the work ledger. The same receipt format covers
 consumed soft advice and advice that asks for an explicit response.
 
+The optional `task_obligations.diagnostic_followup` view derives from
+correlated version 2 recovery snapshots and their native results. It identifies
+the latest two comparable failures of the exact check at the workspace root
+and the completed diagnostic read. Comparison retains the check output and
+read result, apart from the elapsed time in a recognized unittest footer.
+An intervening executed process or edit, different output, unresolved read or
+missing receipt ends the comparison. The value is prompt context. Existing
+recovery snapshots and the exact-check ledger retain their separate ownership.
+
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
 plausible alternative and remaining capacity. Explanatory placeholders must not

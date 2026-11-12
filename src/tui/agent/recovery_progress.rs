@@ -177,7 +177,12 @@ fn resolved_failures(messages: &[Value], root: Option<&str>) -> std::collections
 
 /// Require a native read header for the correlated argument's exact path. File
 /// contents, another target's header, refusals and stale reads are not proof.
-fn successful_read(tc: &ToolCallData, output: &str, path: &str, root: Option<&str>) -> bool {
+pub(super) fn successful_read(
+    tc: &ToolCallData,
+    output: &str,
+    path: &str,
+    root: Option<&str>,
+) -> bool {
     let Some((read_path, details)) = output
         .lines()
         .next()
