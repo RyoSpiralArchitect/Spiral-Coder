@@ -1255,6 +1255,13 @@ persistent state is added. See [file-read ranges](file-read-ranges.md).
 the original human task, native edit/command counts, repeated observations and
 authored done claims distinct from completion proof. It adds no persistent
 store; see [Observer work progress](observer-work-progress.md).
+
+For a task with declared test artifacts, `task_requirements.authored_tests`
+links each path to its original requirement IDs and latest recorded native
+edit. It includes complete descriptions of test-only requirements within a
+shared text budget. Both roles can use this view after all structural
+obligations pass. The view adds no persisted state or coverage receipt.
+
 `agent/observation_stall.rs` derives bounded duplicate-read pressure from the
 current task's native exchanges. Its counters are reconstructed across runtime
 handoffs and reset at a new human task or an actual command/edit attempt. They
