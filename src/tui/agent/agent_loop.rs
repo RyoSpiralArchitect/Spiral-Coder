@@ -220,11 +220,6 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         let iter_allowance = max_iters
             .saturating_add(repair_extensions)
             .saturating_add(governor_block_iter_relief(&messages));
-        if iter >= iter_allowance
-            || crate::work_budget::current().is_some_and(|c| c.budget.slice_remaining("coder") == 0)
-        {
-            break;
-        }
         if let Some(failure) = observer_handoff::newly_executed(
             &messages,
             test_cmd.as_deref(),
@@ -233,7 +228,24 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         ) {
             emit_telemetry_event(&tx, "observer_verification_handoff", json!(&failure)).await;
             let _ = tx.send(StreamToken::Delta("\n[agent] New verification failure; returning to Observer with the same task and remaining budget.\n".into())).await;
-            observer_handoff = Some(failure);
+            observer_handoff = Some(crate::tui::coder_yield::CoderYieldReason::VerificationFailure);
+            break;
+        }
+        if let Some(followup) = observer_handoff::after_repeated_diagnosis(
+            &recovery.focus,
+            &messages,
+            tool_root_abs.as_deref(),
+            initial_handoff_steps,
+            step_seq,
+        ) {
+            emit_telemetry_event(&tx, "observer_diagnostic_followup", json!(&followup)).await;
+            let _ = tx.send(StreamToken::Delta("\n[agent] The same failure recurred and its location has been read. Returning to Observer for a different next step.\n".into())).await;
+            observer_handoff = Some(crate::tui::coder_yield::CoderYieldReason::DiagnosticFollowup);
+            break;
+        }
+        if iter >= iter_allowance
+            || crate::work_budget::current().is_some_and(|c| c.budget.slice_remaining("coder") == 0)
+        {
             break;
         }
         // Keep native exchanges intact across iterations. Only the provider
@@ -1501,7 +1513,7 @@ Execute this minimal action instead: {}",
         tx: &tx,
         messages: &mut messages,
         task_outcome: &mut task_outcome,
-        observer_handoff: &observer_handoff,
+        observer_handoff,
         blocked_terminal,
         state,
         root_user_text: &root_user_text,

@@ -1,0 +1,256 @@
+{
+  "kind": "paired_assisted_continuation",
+  "issue": 82,
+  "plan_sha256": "a5cee242b6a5d07132f05df06b3aed0b1d7364c009f17b00256cf2f5536a71e7",
+  "plan_pinned_at": "2026-11-12T07:01:06.298430+00:00",
+  "source": {
+    "s15_session_sha256": "e6461a54a82314b48a047e49b7bad036f8b0c87e70e37b1f449ff63906052a81",
+    "s15_receipt_sha256": "4f4d7697ab3a92c8402d901679922aa0e6d2cfb770c0bca82e9e20d8b70dc10a",
+    "candidate_inventory_sha256": "be25aea0c452edc8ff16a9d94649a7586efdaaa7e616586025f2a1e5a169bab3",
+    "inclusive_message_index": 154,
+    "seed_sha256": "81c42a159a8cdc9a75d804879d645d39a6c19b71a8d92f65e71ba8ef76b3f96e",
+    "task_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5"
+  },
+  "protocol": {
+    "order": [
+      "before",
+      "after"
+    ],
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "task_requests": 12,
+    "wire_requests": 16,
+    "observer_reserve": 4,
+    "transport_repairs": 4,
+    "coder_slice": 4,
+    "wall_seconds": 240,
+    "timeout_seconds": 90,
+    "coder_max_tokens": 32768,
+    "observer_max_tokens": 8192,
+    "coder_temperature": 0,
+    "failed_check": "python3 -S -m unittest -v scripts.status_visible",
+    "provider_calls_at_pin": 0
+  },
+  "offline_projection": {
+    "sha256": "0c5986093bee6fbf06c7411899036681b929b9a82936523fee23db505f6f959e",
+    "provider_calls": 0,
+    "before": [
+      {
+        "prefix": "first-read",
+        "inclusive_message_index": 138,
+        "required_diagnostic_read": null,
+        "matching_failures_in_followup": null,
+        "alternate_advice_forwarded": true,
+        "pending_required_checks": 6
+      },
+      {
+        "prefix": "second-failure",
+        "inclusive_message_index": 154,
+        "required_diagnostic_read": {
+          "failed_check": "python3 -S -m unittest -v scripts.status_visible",
+          "path": "scripts/status_visible.py"
+        },
+        "matching_failures_in_followup": null,
+        "alternate_advice_forwarded": false,
+        "pending_required_checks": 6
+      },
+      {
+        "prefix": "second-read",
+        "inclusive_message_index": 157,
+        "required_diagnostic_read": null,
+        "matching_failures_in_followup": null,
+        "alternate_advice_forwarded": true,
+        "pending_required_checks": 6
+      }
+    ],
+    "after": [
+      {
+        "prefix": "first-read",
+        "inclusive_message_index": 138,
+        "required_diagnostic_read": null,
+        "matching_failures_in_followup": null,
+        "alternate_advice_forwarded": true,
+        "pending_required_checks": 6
+      },
+      {
+        "prefix": "second-failure",
+        "inclusive_message_index": 154,
+        "required_diagnostic_read": {
+          "failed_check": "python3 -S -m unittest -v scripts.status_visible",
+          "path": "scripts/status_visible.py"
+        },
+        "matching_failures_in_followup": null,
+        "alternate_advice_forwarded": false,
+        "pending_required_checks": 6
+      },
+      {
+        "prefix": "second-read",
+        "inclusive_message_index": 157,
+        "required_diagnostic_read": null,
+        "matching_failures_in_followup": 2,
+        "alternate_advice_forwarded": true,
+        "pending_required_checks": 6
+      }
+    ]
+  },
+  "live": {
+    "before": {
+      "executor_commit": "862c16e6ca8801337b3dc84880b4f6f5908e2db0",
+      "executor_sha256": "a6f1ff65656af708e77a51050ccdb954b7b1be4c5422b0feb72f3ae7d80117c5",
+      "report_sha256": "cb1746000bbf41904a80fafcc8ea86e4ccac7eaec605e5fd27a224d00595e4fa",
+      "trace_sha256": "644e2e15f37c7028d7b13c7806b15d431c0f8006c574a365726614d80cda610c",
+      "termination": "blocked",
+      "wall_seconds": 131.544,
+      "exit_code": 0,
+      "timed_out": false,
+      "task_requests": 12,
+      "transport_requests": 1,
+      "wire_requests": 13,
+      "role_wire_requests": {
+        "coder": 9,
+        "observer": 4
+      },
+      "initial_request_roles": [
+        "coder",
+        "coder",
+        "coder"
+      ],
+      "diagnostic_followup": null,
+      "first_observer_advice": {
+        "arguments": {
+          "end_line": 200,
+          "path": "scripts/status_fixture.py",
+          "start_line": 1
+        },
+        "executed": true,
+        "matching_call_ids": [
+          "call_9afbGdAQJuxkljcZaIn4Ahzx"
+        ],
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      "first_fixture_read": {
+        "call_id": "call_9afbGdAQJuxkljcZaIn4Ahzx",
+        "arguments": {
+          "end_line": 200,
+          "path": "scripts/status_fixture.py",
+          "start_line": 1
+        }
+      },
+      "executed_checks": [
+        {
+          "call_id": "call_aDRYQ3GYgOuY7JJuW2pAX50W",
+          "command": "cargo test --locked --bin spiral-coder -q",
+          "check_id": "required-4",
+          "succeeded": true
+        },
+        {
+          "call_id": "call_hSFNEiuNWqm7k9t0j3j6ljZv",
+          "command": "python3 -S -m unittest -v scripts.status_visible",
+          "check_id": "required-2",
+          "succeeded": false
+        }
+      ],
+      "final_candidate_changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "newly_verified": [],
+      "pending_exact_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ]
+    },
+    "after": {
+      "executor_commit": "4c780ffcead8f7bed4066f78b684dc5f9632156a",
+      "executor_sha256": "f8201439f2cede17ba4e56718c7d99daf9dacfbc195aaddccb8632fcda965cb8",
+      "report_sha256": "3f6fd7d54842a623017de258cf3d586bc26a79fcfe909d9ef46de671c5023943",
+      "trace_sha256": "6494f39e07af377926e30e598c0ddaaa9aa745c854208d7c68a7a124f9240bc0",
+      "termination": "blocked",
+      "wall_seconds": 124.731,
+      "exit_code": 0,
+      "timed_out": false,
+      "task_requests": 12,
+      "transport_requests": 2,
+      "wire_requests": 14,
+      "role_wire_requests": {
+        "coder": 10,
+        "observer": 4
+      },
+      "initial_request_roles": [
+        "coder",
+        "observer",
+        "coder"
+      ],
+      "diagnostic_followup": {
+        "earlier_failure_call_id": "call_Py42g9FKkesqHGguFQqih3kI",
+        "latest_failure_call_id": "call_Sqa4rUguo9eF8OZZ66ROk5Il",
+        "diagnostic_read_call_id": "call_HOnOlj5C1whLfIUYJFYdOASS",
+        "matching_failures": 2,
+        "failed_check": "python3 -S -m unittest -v scripts.status_visible",
+        "failure_path": "scripts/status_visible.py",
+        "elapsed_ms": 5775,
+        "observer_request_id": 1
+      },
+      "first_observer_advice": {
+        "arguments": {
+          "end_line": 160,
+          "path": "scripts/status_fixture.py",
+          "start_line": 80
+        },
+        "executed": false,
+        "matching_call_ids": [],
+        "succeeded": null,
+        "tool": "read_file"
+      },
+      "first_fixture_read": {
+        "call_id": "call_ECAolRrzTRhmY4cX2jjCjf28",
+        "arguments": {
+          "end_line": 87,
+          "path": "scripts/status_fixture.py",
+          "start_line": 60
+        }
+      },
+      "executed_checks": [
+        {
+          "call_id": "call_RiBfCvwtBOJzTBm89pCfJPkc",
+          "command": "python3 -S -m unittest -v scripts.status_visible",
+          "check_id": "required-2",
+          "succeeded": false
+        },
+        {
+          "call_id": "call_PIztRQYaNvtdnSBApdDjjS1Z",
+          "command": "cargo test 2>&1",
+          "check_id": null,
+          "succeeded": true
+        }
+      ],
+      "final_candidate_changed_paths": [],
+      "newly_verified": [],
+      "pending_exact_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ]
+    }
+  },
+  "local_validation": {
+    "command": "scripts/check-local.sh",
+    "log_sha256": "4dc6b1476085ccbbc80c6d49e8d1dbbb928ca2b1317b5d37a5cfaa63a4040836",
+    "rust_main_pass": 1184,
+    "rust_main_ignored": 2,
+    "rust_integration_pass": 6,
+    "tui_replay_pass": 20,
+    "python_pass": 97,
+    "web_pass": 80,
+    "npm_pass": 5,
+    "repo_map_pass": 14,
+    "lite_smoke": "pass"
+  }
+}

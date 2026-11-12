@@ -452,6 +452,31 @@ A read never grants completion proof, and unrelated successful checks do not
 clear the pending failure. This avoids sending an authored fixture failure back
 to an unrelated production module merely because that module was read earlier.
 
+### Follow up after a repeated diagnosis
+
+Two runs of the same failed check in the workspace root can return equivalent
+retained failure output. When both required reads also return the same result
+and no other process or edit intervenes, the coupled Coder slice can yield
+after the second read. The early return requires room for an Observer request
+and subsequent Coder work. Later repetitions of that retained sequence reuse
+the same diagnostic context.
+
+Both roles receive the failed check, the two failure calls and the completed
+read. Observer can use the existing general advice contract to identify one
+missing fact and choose a bounded comparison or a supported edit. A new
+observation informs the repair and the exact failed check supplies proof after
+the repair.
+
+For a clipped Python unittest assertion, a simple module, class or method
+check can supply a ready `exec` comparison when the retained failure names one
+method in the diagnosed file. Observer can forward the exact arguments to
+Coder. The command runs that method and keeps the assertion's changed lines
+and the test exit status. The runner bounds each operand around the first
+differing span and marks incomplete output. Live execution and resume use
+the same history predicate and a native observation receipt before
+preserving the completed diagnosis. The execution ledger expires current exact checks
+when this command runs. The advice includes those checks as follow-up work.
+
 ## Resuming after an incomplete closeout
 
 An accepted native `done` call with an `OK: blocked` result and nonempty

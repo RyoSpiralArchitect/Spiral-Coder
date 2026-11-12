@@ -39,6 +39,13 @@ pub(super) fn survives(
                 .next()
                 .is_some_and(|line| line.starts_with("ERROR"));
         if exec_failed || auto_failed || file_failed {
+            if exec_failed
+                && progress_after_failure
+                && related_failure
+                && focus.retained_comparison(messages, &tc, message, root)
+            {
+                continue;
+            }
             related_failure = if exec_failed {
                 super::super::parse_exec_command_from_args(&tc.arguments)
                     .is_some_and(|command| focus.check_matches(&command))
@@ -177,7 +184,12 @@ fn resolved_failures(messages: &[Value], root: Option<&str>) -> std::collections
 
 /// Require a native read header for the correlated argument's exact path. File
 /// contents, another target's header, refusals and stale reads are not proof.
-fn successful_read(tc: &ToolCallData, output: &str, path: &str, root: Option<&str>) -> bool {
+pub(super) fn successful_read(
+    tc: &ToolCallData,
+    output: &str,
+    path: &str,
+    root: Option<&str>,
+) -> bool {
     let Some((read_path, details)) = output
         .lines()
         .next()

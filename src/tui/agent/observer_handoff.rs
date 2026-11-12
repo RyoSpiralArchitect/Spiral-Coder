@@ -119,6 +119,28 @@ pub(super) fn newly_executed(
     latest(messages, configured)
 }
 
+pub(super) fn after_repeated_diagnosis(
+    focus: &super::recovery_focus::RecoveryFocus,
+    messages: &[Value],
+    root: Option<&str>,
+    initial_steps: usize,
+    current_steps: usize,
+) -> Option<super::recovery_focus::DiagnosticFollowup> {
+    if current_steps <= initial_steps
+        || !crate::work_budget::current().is_some_and(|context| {
+            context.role == "coder"
+                && context.budget.can_return_to_observer()
+                && context.budget.remaining_for("observer") >= 3
+                && context.budget.remaining_for("coder") >= 2
+        })
+    {
+        return None;
+    }
+    focus
+        .diagnostic_followup(messages, root)
+        .filter(|followup| followup.should_yield())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -285,6 +285,21 @@ Do NOT run the exact same command again without a material change.",
             exit_code
         };
 
+    // A focused comparison deliberately keeps the test's failing exit code.
+    // The observed diff advances diagnosis for the original check only.
+    let comparison_receipt = if effective_exit_code == 1
+        && !escaped_tool_root
+        && command.contains("Focused unittest:")
+    {
+        ctx.recovery
+            .focus
+            .diagnostic_followup(ctx.messages, ctx.tool_root_abs.as_deref())
+            .and_then(|followup| followup.observed_comparison(&command, &cwd_used_label, &stdout))
+    } else {
+        None
+    };
+    let observed_comparison = comparison_receipt.is_some();
+
     let tool_output = if effective_exit_code == 0 {
         let base = build_ok_tool_output(&stdout);
         inject_cwd(&base, &cwd_line, note.as_deref())
@@ -330,14 +345,18 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
     };
     let cargo_inputs =
         cargo_input_probe.map(|p| p.finish(effective_exit_code == 0, &stdout, &stderr));
-    ctx.messages.push(report_counts::capture(
+    let message = report_counts::capture(
         CargoInputReceipt::attach(
             cargo_inputs,
             ctx.recovery.focus.tool_message(tc, history_tool_output),
         ),
         &stdout,
         &stderr,
-    ));
+    );
+    ctx.messages.push(match comparison_receipt {
+        Some(receipt) => receipt.attach(message),
+        None => message,
+    });
     *ctx.last_exec_step = Some(ctx.this_step);
     ctx.autosave().await;
 
@@ -391,11 +410,15 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
             .on_tool_result(&command, &stdout, &stderr, effective_exit_code)
     };
 
-    ctx.recovery.on_exec_result(
-        exec_kind,
-        verify_level,
-        effective_exit_code == 0 && !escaped_tool_root,
-    );
+    if observed_comparison {
+        hint = Some("The focused comparison captured the differing assertion operands. Use the changed values and the test source to choose the next source read or minimal fix. The original exact check is still pending.".into());
+    } else {
+        ctx.recovery.on_exec_result(
+            exec_kind,
+            verify_level,
+            effective_exit_code == 0 && !escaped_tool_root,
+        );
+    }
 
     if effective_exit_code == 0 && !escaped_tool_root {
         if ctx.recovery.stage == Some(RecoveryStage::Fix) {
@@ -419,7 +442,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         AgentState::Planning
     };
 
-    if effective_exit_code != 0 || ctx.mem.repeated_failure_or_stall() {
+    if !observed_comparison && (effective_exit_code != 0 || ctx.mem.repeated_failure_or_stall()) {
         let default_reason = if effective_exit_code != 0 {
             let class_ctx = error_class_hint(&ctx.mem.last_error_class);
             if class_ctx.is_empty() {

@@ -242,7 +242,7 @@ pub(super) struct LoopSetup<'a> {
     pub(super) first_action_deadline: usize,
     pub(super) max_iters: usize,
     pub(super) initial_handoff_steps: usize,
-    pub(super) observer_handoff: Option<observer_handoff::Failure>,
+    pub(super) observer_handoff: Option<crate::tui::coder_yield::CoderYieldReason>,
     pub(super) blocked_terminal: bool,
     pub(super) repair_extensions: usize,
     pub(super) repair_iterations: usize,

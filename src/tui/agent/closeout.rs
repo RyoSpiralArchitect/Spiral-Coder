@@ -7,7 +7,7 @@ pub(crate) struct Closeout<'a> {
     pub(crate) tx: &'a mpsc::Sender<StreamToken>,
     pub(crate) messages: &'a mut Vec<serde_json::Value>,
     pub(crate) task_outcome: &'a mut outcome::TaskOutcome,
-    pub(crate) observer_handoff: &'a Option<observer_handoff::Failure>,
+    pub(crate) observer_handoff: Option<crate::tui::coder_yield::CoderYieldReason>,
     pub(crate) blocked_terminal: bool,
     pub(crate) state: AgentState,
     pub(crate) root_user_text: &'a str,
@@ -136,7 +136,7 @@ pub(crate) async fn run_closeout(c: Closeout<'_>) -> AgenticEndState {
         json!({
             "completed": !c.blocked_terminal && c.observer_handoff.is_none() && c.task_outcome.completed(c.messages),
             "state": format!("{:?}", c.state).to_ascii_lowercase(),
-            "yield_reason": if c.blocked_terminal { Some(super::super::coder_yield::CoderYieldReason::Blocked) } else { c.observer_handoff.as_ref().map(|_| super::super::coder_yield::CoderYieldReason::VerificationFailure) },
+            "yield_reason": if c.blocked_terminal { Some(super::super::coder_yield::CoderYieldReason::Blocked) } else { c.observer_handoff },
         }),
     )
     .await;
