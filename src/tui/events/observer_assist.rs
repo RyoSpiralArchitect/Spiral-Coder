@@ -218,6 +218,14 @@ pub(crate) fn build_tui_next_action_prompt(
     lang: &str,
     reason_hint: &str,
 ) -> String {
+    format!(
+        "{}\n{}",
+        crate::observer_action::intervention::prompt(packet),
+        build_next_action_body(packet, lang, reason_hint)
+    )
+}
+
+fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &str) -> String {
     let lang_name = match lang {
         "fr" => "French",
         "en" => "English",

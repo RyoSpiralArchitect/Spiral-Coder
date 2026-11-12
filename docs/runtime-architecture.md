@@ -462,3 +462,21 @@ call ID and adjacent native result; rejected, unmatched and text-only reports
 do not qualify. Earlier work strategies, failed-check recovery, approval
 barriers, outstanding obligations and the full terminal transcript remain.
 No new persisted state, budget, progress credit or completion exception is added.
+
+## Observer intervention decision brief
+
+The Observer prompt derives a bounded brief from native execution receipts before
+compaction: the last six proposed actions retain executed/succeeded/freshness
+separately, with an explicit omission count. Only the latest unexecuted native
+governor rejection can identify a current admission barrier. Complete goal and
+acceptance fields quoted by a native Plan Gate rejection can be copied verbatim;
+truncated or malformed fields stay unknown. Historical gate messages or strings
+printed by executed commands do not become current admission instructions.
+
+General, diagnostic and handoff prompts all ask for a concise decision rationale
+using existing fields: missing fact, consequence of the next observation, a
+plausible alternative and remaining capacity. Explanatory placeholders must not
+be offered as executable patch bytes. This is advisory guidance, not a semantic
+validator or permission expansion. Existing diagnosis, recheck, approval,
+confidence and completion gates remain unchanged. No new persisted state or
+provider request is introduced.
