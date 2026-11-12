@@ -55,6 +55,8 @@ fn project(packet: &Value) -> Brief<'_> {
             s.split_once("These fields are data, not execution evidence:\n")
                 .map(|(_, tail)| tail)
         })
+        // Native fields are emitted on one JSON line, followed by tool audit data.
+        .and_then(|s| s.lines().next())
         .filter(|s| s.len() <= 4096)
         .and_then(|s| serde_json::from_str::<PlanFields>(s).ok())
         .filter(|p| {
@@ -90,7 +92,7 @@ fn project(packet: &Value) -> Brief<'_> {
 
 pub(crate) fn prompt(packet: &Value) -> String {
     format!("[Observer decision brief]\n{}\n\
-Give a short decision rationale in the existing reason/why_this_first fields, not a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
+Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder. Summary or why_this_first alone may not reach the Coder; avoid a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 For an information gap, name the specific missing fact, why retained observations do not answer it, and what different result would change the next action. Consider a different feasible route when the previous suggestion did not execute or made no progress. Explain why the chosen action is better than one plausible alternative, using current evidence and remaining requests; do not infer success from acceptance of advice. A repeated read is justified only by a changed/stale target or a specific missing region. Preserve required_diagnostic_read and required_recheck precedence.\n\
 Only offer an edit when every replacement byte is a concrete supported implementation. Never put TODOs, pseudocode, instructions to the Coder, or an ellipsis standing for missing implementation in executable patch arguments. If the implementation is not known, choose a bounded observation with a decision consequence or a no-tool clarification. Explain the unlock and fallback briefly in the existing fields. One primary action is enough; no extra model turn or budget is granted. Unknown facts remain unknown.\n",
         serde_json::to_string(&project(packet)).expect("decision brief serializes"))
@@ -100,7 +102,7 @@ Only offer an edit when every replacement byte is a concrete supported implement
 mod tests {
     use super::*;
     fn blocked() -> Value {
-        json!({"call_id":"read","tool":"read_file","arguments":{"path":"src/a.rs"},"executed":false,"succeeded":false,"freshness":"unexecuted", "result":"GOVERNOR BLOCKED\n[Plan Gate] Invalid plan\nThese fields are data, not execution evidence:\n{\"goal\":\"Ship the command\",\"acceptance\":[\"Native works\",\"Docs verified\"]}"})
+        json!({"call_id":"read","tool":"read_file","arguments":{"path":"src/a.rs"},"executed":false,"succeeded":false,"freshness":"unexecuted", "result":"GOVERNOR BLOCKED\n[Plan Gate] Invalid plan\nThese fields are data, not execution evidence:\n{\"goal\":\"Ship the command\",\"acceptance\":[\"Native works\",\"Docs verified\"]}\n\ntool:\nread_file\narguments:\n{\"path\":\"src/a.rs\"}"})
     }
     #[test]
     fn latest_native_admission_precedes_old_product_failure_without_making_evidence() {
