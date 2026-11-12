@@ -287,16 +287,18 @@ Do NOT run the exact same command again without a material change.",
 
     // A focused comparison deliberately keeps the test's failing exit code.
     // The observed diff advances diagnosis for the original check only.
-    let observed_comparison = effective_exit_code == 1
+    let comparison_receipt = if effective_exit_code == 1
         && !escaped_tool_root
         && command.contains("Focused unittest:")
-        && ctx
-            .recovery
+    {
+        ctx.recovery
             .focus
             .diagnostic_followup(ctx.messages, ctx.tool_root_abs.as_deref())
-            .is_some_and(|followup| {
-                followup.observed_comparison(&command, &cwd_used_label, &stdout)
-            });
+            .and_then(|followup| followup.observed_comparison(&command, &cwd_used_label, &stdout))
+    } else {
+        None
+    };
+    let observed_comparison = comparison_receipt.is_some();
 
     let tool_output = if effective_exit_code == 0 {
         let base = build_ok_tool_output(&stdout);
@@ -343,14 +345,18 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
     };
     let cargo_inputs =
         cargo_input_probe.map(|p| p.finish(effective_exit_code == 0, &stdout, &stderr));
-    ctx.messages.push(report_counts::capture(
+    let message = report_counts::capture(
         CargoInputReceipt::attach(
             cargo_inputs,
             ctx.recovery.focus.tool_message(tc, history_tool_output),
         ),
         &stdout,
         &stderr,
-    ));
+    );
+    ctx.messages.push(match comparison_receipt {
+        Some(receipt) => receipt.attach(message),
+        None => message,
+    });
     *ctx.last_exec_step = Some(ctx.this_step);
     ctx.autosave().await;
 

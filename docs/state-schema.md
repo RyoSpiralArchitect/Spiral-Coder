@@ -1748,7 +1748,9 @@ The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
 root. Live and restored recovery require the same preceding failure/read
-cycles, matching command and final comparison frame. The optional
+cycles and matching command. For an observed difference, the native
+`recovery_focus.comparison.frame` receipt retains the final output frame
+from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing
 ledger would reopen after this execution. The comparison remains an
 observation of the unresolved check.

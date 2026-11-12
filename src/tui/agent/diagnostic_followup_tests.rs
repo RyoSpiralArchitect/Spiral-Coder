@@ -218,12 +218,21 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
         .output()
         .unwrap();
     assert_eq!(process.status.code(), Some(1));
-    let stdout = String::from_utf8(process.stdout).unwrap();
+    let stdout = format!(
+        "ordinary test output\nstderr:\n{}",
+        String::from_utf8(process.stdout).unwrap()
+    );
     assert!(stdout.contains("- {'used': 2}"));
     assert!(stdout.contains("+ {'used': 3}"));
-    assert!(followup.observed_comparison(command, root, &stdout));
-    assert!(!followup.observed_comparison(command, "/other", &stdout));
-    assert!(!followup.observed_comparison(command, root, "unrelated failure"));
+    let receipt = followup
+        .observed_comparison(command, root, &stdout)
+        .unwrap();
+    assert!(followup
+        .observed_comparison(command, "/other", &stdout)
+        .is_none());
+    assert!(followup
+        .observed_comparison(command, root, "unrelated failure")
+        .is_none());
 
     let body = agent::inject_cwd(
         &agent::build_failed_tool_output(&stdout, "", 1),
@@ -232,8 +241,17 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
     );
     trace.append("comparison", "exec", args.clone(), body);
     let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
+    assert!(!focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
+    let comparison_result = trace.messages.pop().unwrap();
+    trace.messages.push(receipt.attach(comparison_result));
+    let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
     assert!(focus.observed() && focus.check_matches(CHECK));
     assert!(focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
+    assert!(crate::task_origin::provider_messages(&trace.messages)
+        .last()
+        .unwrap()
+        .get(METADATA_KEY)
+        .is_none());
     assert!(
         trace.view().is_none(),
         "an executed comparison consumes the offer"

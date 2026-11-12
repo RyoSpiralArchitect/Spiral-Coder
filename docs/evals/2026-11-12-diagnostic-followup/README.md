@@ -96,3 +96,13 @@ independently, names exact checks that will need fresh receipts, and checks
 the handoff before stopping a Coder slice. Regression controls cover an
 intervening command, an incomplete failure/read sequence, ordinary test
 output, long operands, receipt refresh, and the final slice slot.
+
+One new Luna continuation on the first review revision executed the
+framed comparison and returned the same four fields. It stopped blocked
+with six checks pending after 11 task requests, 13 wire requests and
+114.945 seconds. [Recorded comparison call](focused-comparison.json)
+
+A second read of the fixes found two remaining cases. The native recovery
+receipt now carries the observed frame across resume, even when the test
+prints a stream delimiter. Long operands preserve a window around the
+first difference, including a difference after a long common prefix.

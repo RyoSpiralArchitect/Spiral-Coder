@@ -22,6 +22,18 @@ pub(crate) struct DiagnosticFollowup {
     first_read_just_returned: bool,
 }
 
+#[derive(Debug, Serialize)]
+pub(in crate::tui::agent) struct ComparisonReceipt<'a> {
+    frame: &'a str,
+}
+
+impl ComparisonReceipt<'_> {
+    pub(in crate::tui::agent) fn attach(&self, mut message: Value) -> Value {
+        message[METADATA_KEY]["comparison"] = json!(self);
+        message
+    }
+}
+
 impl DiagnosticFollowup {
     pub(in crate::tui::agent) fn has_unittest_comparison(&self) -> bool {
         self.unittest_comparison.is_some()
@@ -48,15 +60,17 @@ impl DiagnosticFollowup {
         }
     }
 
-    pub(in crate::tui::agent) fn observed_comparison(
+    pub(in crate::tui::agent) fn observed_comparison<'a>(
         &self,
         command: &str,
         cwd: &str,
-        output: &str,
-    ) -> bool {
-        self.unittest_comparison
-            .as_ref()
-            .is_some_and(|comparison| comparison.observed(command, cwd, output))
+        output: &'a str,
+    ) -> Option<ComparisonReceipt<'a>> {
+        let frame = self
+            .unittest_comparison
+            .as_ref()?
+            .observed_frame(command, cwd, output)?;
+        Some(ComparisonReceipt { frame })
     }
 
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
@@ -98,17 +112,25 @@ impl RecoveryFocus {
         if super::super::parse_exit_code_from_tool_text(result) != Some(1) {
             return false;
         }
-        let Some((_, stdout)) = result.split_once("\nstdout (tail):\n") else {
+        let Some(frame) = message[METADATA_KEY]["comparison"]["frame"]
+            .as_str()
+            .filter(|frame| result.contains(frame))
+        else {
             return false;
         };
-        let stdout = stdout
-            .split_once("\nstderr:\n")
-            .map_or(stdout, |(out, _)| out);
+        if !self
+            .pending
+            .as_ref()
+            .is_some_and(|pending| matches_snapshot(message, pending, Observation::Observed))
+        {
+            return false;
+        }
         messages
             .iter()
             .position(|candidate| std::ptr::eq(candidate, message))
             .and_then(|index| self.diagnostic_followup(&messages[..index], root))
-            .is_some_and(|followup| followup.observed_comparison(&command, cwd, stdout))
+            .and_then(|followup| followup.observed_comparison(&command, cwd, frame))
+            .is_some()
     }
 
     pub(in crate::tui::agent) fn diagnostic_followup(

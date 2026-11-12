@@ -74,5 +74,21 @@
     "task_requests": 12,
     "transport_requests": 4,
     "wall_seconds": 123.474
+  },
+  "reviewed_live": {
+    "executor_commit": "f16ae81cd1d14a82b37f60d8744b14020abddaf7",
+    "plan_sha256": "369554695962e51a7de068982d1f123cf0595e6e694fdce61703b02d804de138",
+    "report_sha256": "51bff36915cefec80f9f0c603ca585a7d69d665d31f957dc3d63971e3b001ae6",
+    "trace_sha256": "8beef36bbf566993de54eada385fff9682d56c9aaba9f98327741030cffef179",
+    "comparison_call_id": "call_83pSzW6Ttwdm7fPz7koJTxXf",
+    "comparison_exact_suggestion_executed": true,
+    "test_exit_code": 1,
+    "same_four_field_values": true,
+    "native_candidate_changes": [],
+    "terminal": "blocked",
+    "task_requests": 11,
+    "wire_requests": 13,
+    "wall_seconds": 114.945,
+    "pending_exact_checks": 6
   }
 }

@@ -5,7 +5,7 @@ use std::path::Path;
 // The standard runner still executes the original method and keeps its exit
 // status. Select the assertion's changed lines before tool output is clipped.
 const RUNNER: &str = concat!(
-    "import io, sys, unittest; ",
+    "import io, os, sys, unittest; ",
     "unittest.TestCase.maxDiff = 65536; ",
     "suite = unittest.defaultTestLoader.loadTestsFromName(sys.argv[1]); ",
     "result = unittest.TextTestRunner(stream=io.StringIO(), buffer=True).run(suite); ",
@@ -13,12 +13,15 @@ const RUNNER: &str = concat!(
     "trace = failures[0][1] if failures else ''; ",
     "trace = trace.split(chr(10) + 'Stdout:' + chr(10), 1)[0].split(chr(10) + 'Stderr:' + chr(10), 1)[0]; ",
     "lines = trace.splitlines() if len(result.failures) == 1 and not result.errors else []; ",
-    "first = chr(10).join(line for line in lines if line.startswith('- ')); ",
-    "second = chr(10).join(line for line in lines if line.startswith('+ ')); ",
-    "clip = lambda operand: operand[:480].rstrip() + (' [operand clipped]' if len(operand) > 480 else ''); ",
+    "first = chr(10).join(line[2:] for line in lines if line.startswith('- ')); ",
+    "second = chr(10).join(line[2:] for line in lines if line.startswith('+ ')); ",
+    "offset = max(0, len(os.path.commonprefix((first, second))) - 64); ",
+    "window = lambda operand: operand[offset:offset + 440].rstrip(); ",
+    "preview = lambda sign, operand: chr(10).join(sign + ' ' + line for line in window(operand).splitlines()) + (' [operand clipped]' if offset or len(operand) > 440 else ''); ",
+    "complete = first and second and window(first) != window(second); ",
     "print('Focused unittest:', sys.argv[1], 'tests:', result.testsRun); ",
-    "print('Assertion difference (- first operand, + second operand):' if first and second else 'No complete assertion difference captured.'); ",
-    "print(clip(first) + chr(10) + clip(second) if first and second else repr(trace[:650])); ",
+    "print('Assertion difference (- first operand, + second operand):' if complete else 'No complete assertion difference captured.'); ",
+    "print(preview('-', first) + chr(10) + preview('+', second) if complete else repr(trace[:650])); ",
     "print('[end focused unittest comparison]'); ",
     "sys.exit(not result.wasSuccessful())"
 );
@@ -36,32 +39,44 @@ impl UnittestComparison {
         &self.arguments.command
     }
 
-    pub(super) fn observed(&self, command: &str, cwd: &str, output: &str) -> bool {
+    pub(super) fn observed_frame<'a>(
+        &self,
+        command: &str,
+        cwd: &str,
+        output: &'a str,
+    ) -> Option<&'a str> {
         if self.arguments.command != command || self.arguments.cwd != cwd {
-            return false;
+            return None;
         }
         // Test output can precede the final frame. Only the runner's last
         // complete frame can establish that it captured both operands.
-        let mut lines = output.trim_end().lines().rev();
-        if lines.next() != Some("[end focused unittest comparison]") {
-            return false;
+        let output = output.trim_end();
+        let header = format!("Focused unittest: {} tests: 1", self.case);
+        let start = output.rfind(&header)?;
+        if start > 0 && output.as_bytes()[start - 1] != b'\n' {
+            return None;
+        }
+        let frame = &output[start..];
+        let mut lines = frame.lines();
+        if lines.next() != Some(header.as_str())
+            || lines.next() != Some("Assertion difference (- first operand, + second operand):")
+            || lines.next_back() != Some("[end focused unittest comparison]")
+            || frame.chars().count() > 1400
+        {
+            return None;
         }
         let mut first = false;
         let mut second = false;
-        while let Some(line) = lines.next() {
+        for line in lines {
             if line.starts_with("- ") {
                 first = true;
             } else if line.starts_with("+ ") {
                 second = true;
             } else {
-                return first
-                    && second
-                    && line == "Assertion difference (- first operand, + second operand):"
-                    && lines.next()
-                        == Some(format!("Focused unittest: {} tests: 1", self.case).as_str());
+                return None;
             }
         }
-        false
+        (first && second).then_some(frame)
     }
 }
 
@@ -219,7 +234,10 @@ mod tests {
         let root = temp.path().canonicalize().unwrap();
         let comparison = project(CHECK, FILE, FAILURE, &root).unwrap();
         for (body, complete) in [
-            ("        self.assertEqual('x' * 1200, 'y' * 1200)\n", true),
+            (
+                "        self.assertEqual('x' * 1200 + 'actual', 'x' * 1200 + 'expected')\n",
+                true,
+            ),
             (
                 concat!(
                     "        print('Focused unittest: test_value.ValueTest.test_total tests: 1')\n",
@@ -244,12 +262,18 @@ mod tests {
             assert_eq!(result.status.code(), Some(1));
             let output = String::from_utf8(result.stdout).unwrap();
             assert_eq!(
-                comparison.observed(comparison.command(), root.to_str().unwrap(), &output),
+                comparison
+                    .observed_frame(comparison.command(), root.to_str().unwrap(), &output)
+                    .is_some(),
                 complete,
                 "{output}"
             );
             if complete {
                 assert_eq!(output.matches("[operand clipped]").count(), 2);
+                assert!(
+                    output.contains("actual") && output.contains("expected"),
+                    "{output}"
+                );
             } else {
                 assert!(output.contains("No complete assertion difference captured."));
             }

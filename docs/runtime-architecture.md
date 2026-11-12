@@ -471,10 +471,10 @@ For a clipped Python unittest assertion, a simple module, class or method
 check can supply a ready `exec` comparison when the retained failure names one
 method in the diagnosed file. Observer can forward the exact arguments to
 Coder. The command runs that method and keeps the assertion's changed lines
-and the test exit status. The runner bounds each operand separately and marks
-incomplete output. Live execution and resume use the same history
-predicate before preserving the completed diagnosis for a captured
-difference. The existing execution ledger expires current exact checks
+and the test exit status. The runner bounds each operand around the first
+differing span and marks incomplete output. Live execution and resume use
+the same history predicate and a native observation receipt before
+preserving the completed diagnosis. The execution ledger expires current exact checks
 when this command runs. The advice includes those checks as follow-up work.
 
 ## Resuming after an incomplete closeout
