@@ -1829,12 +1829,6 @@ fn finalize_active_observer_contract(app: &mut App) {
             "(observer contract) coder deferred the latest observer suggestion."
         }
     };
-    app.last_observer_contract_outcome = Some(format!(
-        "{} focus={} blocker={}",
-        decision.label(),
-        focus,
-        env.primary_blocker
-    ));
     if let Some(session) = app.coder_session.as_ref() {
         let evidence =
             agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref());
@@ -1871,7 +1865,6 @@ fn finalize_active_observer_contract(app: &mut App) {
             pending_exact_checks: evidence.pending_exact_checks,
             suggestion_execution,
         };
-        app.last_observer_contract_outcome = serde_json::to_string(&receipt).ok();
         if let Err(error) = app.work_budget.record_assist(receipt) {
             app.coder
                 .push_tool(format!("Could not save assist receipt: {error}"));
@@ -3312,10 +3305,6 @@ mod tests {
         handle_coder_token(StreamToken::Done, &mut app);
 
         assert!(app.active_observer_contract.is_none());
-        assert_eq!(
-            app.last_observer_contract_outcome.as_deref(),
-            Some("accept focus=security blocker=missing_concrete_next_step")
-        );
         assert!(app.coder.messages.iter().any(|m| {
             matches!(m.role, Role::Tool)
                 && m.content

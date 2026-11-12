@@ -1722,6 +1722,13 @@ acceptance fields quoted by a native Plan Gate rejection can be copied verbatim;
 truncated or malformed fields stay unknown. Historical gate messages or strings
 printed by executed commands do not become current admission instructions.
 
+The TUI and headless path project `previous_assist_outcome` from the latest
+assist in the current work ledger. This prompt-only view retains the decision,
+bounded target, read range, counts and suggested-action outcome. The most
+recent retained matching call is selected by native result order and retains its
+execution disposition and freshness. A missing call remains unknown. The
+current task owns the work ledger and its persisted receipt format.
+
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
 plausible alternative and remaining capacity. Explanatory placeholders must not

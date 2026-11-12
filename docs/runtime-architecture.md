@@ -473,6 +473,13 @@ acceptance fields quoted by a native Plan Gate rejection can be copied verbatim;
 truncated or malformed fields stay unknown. Historical gate messages or strings
 printed by executed commands do not become current admission instructions.
 
+The brief uses the current native work ledger's last recorded assist and the
+retained calls matched to its exact suggestion. It gives Observer the Coder
+decision, read window, execution outcome and latest retained matching result.
+Observer can tell whether a repeated read needs a prerequisite, a missing region
+or a different action after an observation. Approval refusal and pending
+approval are distinct from a governor rejection.
+
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
 plausible alternative and remaining capacity. Explanatory placeholders must not

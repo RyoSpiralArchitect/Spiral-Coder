@@ -196,6 +196,73 @@ fn both_observer_surfaces_use_current_native_receipts_over_stale_display_data() 
 }
 
 #[test]
+fn observer_can_distinguish_accepted_advice_from_its_blocked_exact_read() {
+    use crate::work_budget::{AssistReceipt, SuggestedActionReceipt};
+
+    let (mut app, _root) = interaction_app();
+    seed_observer_failure(&mut app);
+    let task = "Repair the parser.";
+    let args = json!({"path":"src/parser.rs","start_line":50,"end_line":87});
+    let mut messages = vec![
+        json!({"role":"user","content":task}),
+        json!({"role":"assistant","tool_calls":[
+            {"id":"advised","function":{"name":"read_file","arguments":args.to_string()}}
+        ]}),
+        json!({"role":"tool","tool_call_id":"advised","content":"GOVERNOR BLOCKED\n\n[Plan Gate] Invalid <plan>."}),
+    ];
+    app.work_budget = crate::work_budget::WorkBudget::new(task, 32, None);
+    let receipt = AssistReceipt {
+        assist_id: 7,
+        continuation_id: 8,
+        decision: "accept".into(),
+        call_ids: vec!["advised".into()],
+        executed: false,
+        succeeded: Some(false),
+        completed: Some(false),
+        pending_exact_checks: vec![],
+        suggestion_execution: Some(SuggestedActionReceipt {
+            tool: "read_file".into(),
+            arguments: args,
+            matching_call_ids: vec!["advised".into()],
+            executed: Some(false),
+            succeeded: Some(false),
+        }),
+    };
+    app.work_budget.record_assist(receipt).unwrap();
+    app.coder_session = Some(crate::agent_session::AgentSession::new(
+        None, None, None, None, messages.clone(),
+    ));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let prompt = build_tui_next_action_prompt(&packet, "en", "stalled");
+    let brief: serde_json::Value = serde_json::from_str(prompt.lines().nth(1).unwrap()).unwrap();
+    assert_eq!(brief["immediate_admission_block"], "plan");
+    assert_eq!(brief["previous_assist_outcome"], json!({
+        "assist_id":7, "decision":"accept", "tool":"read_file", "target":"src/parser.rs",
+        "read_lines":[50,87], "exact_matching_calls":1, "suggestion_executed":false,
+        "suggestion_succeeded":false,
+        "latest_retained_match":{"call_id":"advised","disposition":"plan_gate","succeeded":false,"freshness":"unexecuted"}
+    }));
+    assert_eq!(prompt.matches("\"previous_assist_outcome\":").count(), 1);
+
+    // A different successful read makes the previous gate historical without
+    // retroactively executing the exact Observer recommendation.
+    messages.extend([
+        json!({"role":"assistant","tool_calls":[
+            {"id":"alternate","function":{"name":"read_file","arguments":"{\"path\":\"src/parser.rs\",\"start_line\":75,\"end_line\":100}"}}
+        ]}),
+        json!({"role":"tool","tool_call_id":"alternate","content":"[src/parser.rs] (90 lines, 2000 bytes)\nObserved content."}),
+    ]);
+    app.coder_session = Some(crate::agent_session::AgentSession::new(
+        None, None, None, None, messages,
+    ));
+    let packet = build_tui_meta_failure_packet_for_selector(&app, "last-fail").unwrap();
+    let prompt = build_tui_next_action_prompt(&packet, "en", "stalled");
+    let later: serde_json::Value = serde_json::from_str(prompt.lines().nth(1).unwrap()).unwrap();
+    assert!(later["immediate_admission_block"].is_null());
+    assert_eq!(later["previous_assist_outcome"], brief["previous_assist_outcome"]);
+}
+
+#[test]
 fn both_roles_keep_unedited_source_work_visible_beside_documentation_proof() {
     let (mut app, _root) = interaction_app();
     seed_observer_failure(&mut app);

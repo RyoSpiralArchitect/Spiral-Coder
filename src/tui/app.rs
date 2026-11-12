@@ -215,9 +215,6 @@ pub struct App {
     pub active_observer_contract: Option<ObserverSuggestionEnvelope>,
     /// First tool action observed while an Observer contract is active.
     pub active_observer_first_tool: Option<(String, String)>,
-    /// Latest Observer contract outcome recorded from a Coder turn.
-    pub last_observer_contract_outcome: Option<String>,
-
     /// Running task handles used for Ctrl+K cancellation.
     pub(crate) coder_chunk_reserve: usize,
     pub(crate) coder_chunk_requests: Option<usize>,
@@ -329,7 +326,6 @@ impl App {
             last_observer_suggestion: None,
             active_observer_contract: None,
             active_observer_first_tool: None,
-            last_observer_contract_outcome: None,
             coder_chunk_reserve: 3,
             coder_chunk_requests: None,
             observer_assist_max_tokens: None,

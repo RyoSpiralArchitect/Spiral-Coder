@@ -110,7 +110,11 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     });
     let native_actions = execution.as_ref().map(|e| &e.actions);
 
-    let mut budget = crate::observer_action::strategy::native_budget(&app.work_budget.snapshot());
+    let work = app.work_budget.snapshot();
+    let previous_assist = native_actions.and_then(|actions| {
+        crate::observer_action::intervention::previous_assist(work.assists.last(), actions)
+    });
+    let mut budget = crate::observer_action::strategy::native_budget(&work);
     crate::observer_action::strategy::project_budget(&mut budget, obligations.as_ref(), true);
     Ok(json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
@@ -140,7 +144,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
         "execution_evidence": execution,
         "task_obligations": obligations,
         "artifact_guidance": app.coder_session.as_ref().and_then(|s| agent::evidence_packet::artifact_guidance(&s.messages)),
-        "previous_assist_outcome": app.last_observer_contract_outcome,
+        "previous_assist_outcome": previous_assist,
         "work_budget": budget,
         "artifact_preservation_issue": app.work_budget.preservation_issue(),
         "recent_tool_results": recent_tool_results,
@@ -272,6 +276,9 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
         }
     });
     let mut view = agent::current_evidence::observer_prompt_packet(packet);
+    if let Some(fields) = view.as_object_mut() {
+        fields.remove("previous_assist_outcome");
+    }
     view["task_horizon"] = crate::observer_action::strategy::general_horizon(packet);
     format!(
         "This is intervention mode, not critique.\n\

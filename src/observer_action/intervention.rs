@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
 
+mod prior_assist;
+pub(crate) use prior_assist::previous_assist;
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct PlanFields {
@@ -16,7 +19,9 @@ struct PlanFields {
 struct Attempt<'a> {
     call_id: &'a Value,
     tool: &'a Value,
-    target: Option<String>,
+    target: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    read_lines: Option<[u64; 2]>,
     executed: &'a Value,
     succeeded: &'a Value,
     freshness: &'a Value,
@@ -33,20 +38,34 @@ struct Brief<'a> {
     previous_assist_outcome: &'a Value,
 }
 
+fn target(args: &Value) -> Option<&str> {
+    ["path", "command", "check_id", "dir", "pattern"]
+        .into_iter()
+        .find_map(|key| args[key].as_str())
+        .filter(|s| s.len() <= 240)
+}
+
+fn read_lines(tool: &str, args: &Value) -> Option<[u64; 2]> {
+    (tool == "read_file").then_some(())?;
+    Some([args["start_line"].as_u64()?, args["end_line"].as_u64()?])
+}
+
+fn governor_block(result: &str) -> Option<&'static str> {
+    let header = result.strip_prefix("GOVERNOR BLOCKED")?.trim_start();
+    Some(if header.starts_with("[Plan Gate]") {
+        "plan"
+    } else {
+        "other_governor"
+    })
+}
+
 fn project(packet: &Value) -> Brief<'_> {
     let actions = packet["execution_evidence"]["actions"].as_array();
     let latest = actions.and_then(|a| a.last());
     let feedback = latest
         .filter(|a| a["executed"] == false)
-        .and_then(|a| a["result"].as_str())
-        .filter(|s| s.starts_with("GOVERNOR BLOCKED"));
-    let block = feedback.map(|s| {
-        if s.contains("[Plan Gate]") {
-            "plan"
-        } else {
-            "other_governor"
-        }
-    });
+        .and_then(|a| a["result"].as_str());
+    let block = feedback.and_then(governor_block);
     // The native plan rejection supplies complete fields after this delimiter.
     // A clipped/malformed quote stays unknown; never reconstruct partial criteria.
     let fields = feedback
@@ -74,10 +93,10 @@ fn project(packet: &Value) -> Brief<'_> {
             .map(|a| Attempt {
                 call_id: &a["call_id"],
                 tool: &a["tool"],
-                target: a["arguments"]["path"]
+                target: target(&a["arguments"]),
+                read_lines: a["tool"]
                     .as_str()
-                    .or(a["arguments"]["command"].as_str())
-                    .map(|s| s.chars().take(240).collect()),
+                    .and_then(|tool| read_lines(tool, &a["arguments"])),
                 executed: &a["executed"],
                 succeeded: &a["succeeded"],
                 freshness: &a["freshness"],
@@ -91,11 +110,17 @@ fn project(packet: &Value) -> Brief<'_> {
 }
 
 pub(crate) fn prompt(packet: &Value) -> String {
-    format!("[Observer decision brief]\n{}\n\
+    let brief = project(packet);
+    let follow_up = if brief.previous_assist_outcome.is_object() {
+        "Use previous_assist_outcome to choose what changes this time. A Coder decision records intent. Check the exact suggestion's matched calls and latest retained result. If it was blocked before execution, address the current prerequisite before retrying; respect approval refusals and pending approval. If there was no exact match, consider why the Coder took a different route and use its actual evidence. If the action ran, identify what its result resolved and which different action now advances the task. A missing retained result is unknown. Name the changed condition, missing region, or prerequisite in the primary reason before recommending the same action again.\n"
+    } else {
+        ""
+    };
+    format!("[Observer decision brief]\n{}\n{follow_up}\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder. Summary or why_this_first alone may not reach the Coder; avoid a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 For an information gap, name the specific missing fact, why retained observations do not answer it, and what different result would change the next action. Consider a different feasible route when the previous suggestion did not execute or made no progress. Explain why the chosen action is better than one plausible alternative, using current evidence and remaining requests; do not infer success from acceptance of advice. A repeated read is justified only by a changed/stale target or a specific missing region. Preserve required_diagnostic_read and required_recheck precedence.\n\
 Only offer an edit when every replacement byte is a concrete supported implementation. Never put TODOs, pseudocode, instructions to the Coder, or an ellipsis standing for missing implementation in executable patch arguments. If the implementation is not known, choose a bounded observation with a decision consequence or a no-tool clarification. Explain the unlock and fallback briefly in the existing fields. One primary action is enough; no extra model turn or budget is granted. Unknown facts remain unknown.\n",
-        serde_json::to_string(&project(packet)).expect("decision brief serializes"))
+        serde_json::to_string(&brief).expect("decision brief serializes"))
 }
 
 #[cfg(test)]
