@@ -285,6 +285,19 @@ Do NOT run the exact same command again without a material change.",
             exit_code
         };
 
+    // A focused comparison deliberately keeps the test's failing exit code.
+    // The observed diff advances diagnosis for the original check only.
+    let observed_comparison = effective_exit_code == 1
+        && !escaped_tool_root
+        && command.contains("Focused unittest:")
+        && ctx
+            .recovery
+            .focus
+            .diagnostic_followup(ctx.messages, ctx.tool_root_abs.as_deref())
+            .is_some_and(|followup| {
+                followup.observed_comparison(&command, &cwd_used_label, &stdout)
+            });
+
     let tool_output = if effective_exit_code == 0 {
         let base = build_ok_tool_output(&stdout);
         inject_cwd(&base, &cwd_line, note.as_deref())
@@ -391,11 +404,15 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
             .on_tool_result(&command, &stdout, &stderr, effective_exit_code)
     };
 
-    ctx.recovery.on_exec_result(
-        exec_kind,
-        verify_level,
-        effective_exit_code == 0 && !escaped_tool_root,
-    );
+    if observed_comparison {
+        hint = Some("The focused comparison captured the differing assertion operands. Use the changed values and the test source to choose the next source read or minimal fix. The original exact check is still pending.".into());
+    } else {
+        ctx.recovery.on_exec_result(
+            exec_kind,
+            verify_level,
+            effective_exit_code == 0 && !escaped_tool_root,
+        );
+    }
 
     if effective_exit_code == 0 && !escaped_tool_root {
         if ctx.recovery.stage == Some(RecoveryStage::Fix) {
@@ -419,7 +436,7 @@ Action: re-run from tool_root, avoid `cd ..` / absolute paths, and verify `pwd` 
         AgentState::Planning
     };
 
-    if effective_exit_code != 0 || ctx.mem.repeated_failure_or_stall() {
+    if !observed_comparison && (effective_exit_code != 0 || ctx.mem.repeated_failure_or_stall()) {
         let default_reason = if effective_exit_code != 0 {
             let class_ctx = error_class_hint(&ctx.mem.last_error_class);
             if class_ctx.is_empty() {

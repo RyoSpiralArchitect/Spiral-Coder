@@ -467,6 +467,14 @@ missing fact and choose a bounded comparison or a supported edit. A new
 observation informs the repair and the exact failed check supplies proof after
 the repair.
 
+For a clipped Python unittest assertion, a simple module, class or method
+check can supply a ready `exec` comparison when the retained failure names one
+method in the diagnosed file. Observer can forward the exact arguments to
+Coder. The command runs that method and keeps the assertion's changed lines
+and the test exit status. Operand order comes from the assertion. An executed
+comparison with both operands preserves the completed diagnosis for the
+original failure. Its result leaves the original exact check pending.
+
 ## Resuming after an incomplete closeout
 
 An accepted native `done` call with an `OK: blocked` result and nonempty

@@ -1744,6 +1744,13 @@ An intervening executed process or edit, different output, unresolved read or
 missing receipt ends the comparison. The value is prompt context. Existing
 recovery snapshots and the exact-check ledger retain their separate ownership.
 
+The view can include `unittest_comparison.case` and
+`unittest_comparison.arguments` for a single localized method in clipped
+unittest output. The arguments use the existing `exec` schema and workspace
+root. Live and restored recovery recognize the comparison only from the
+matching command and retained operand difference. The comparison remains
+an observation of the unresolved check.
+
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
 plausible alternative and remaining capacity. Explanatory placeholders must not

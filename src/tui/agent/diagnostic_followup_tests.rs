@@ -167,6 +167,63 @@ fn changed_read_content_ends_the_comparison() {
     }
 }
 
+#[cfg(unix)]
+#[test]
+fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
+    let mut trace = Trace::new();
+    std::fs::write(
+        trace.path.join(FILE),
+        "import unittest\n\nclass Check(unittest.TestCase):\n    def test_value(self):\n        self.assertEqual({'used': 2}, {'used': 3})\n",
+    )
+    .unwrap();
+    for (failure, read) in [("f1", "r1"), ("f2", "r2")] {
+        trace.fail(failure, 2, "0.01");
+        let result = &mut trace.messages.last_mut().unwrap()["content"];
+        *result = json!(format!(
+            "{}\n[... output omitted ...]",
+            result.as_str().unwrap()
+        ));
+        assert!(trace.view().is_none());
+        trace.read(read);
+    }
+    let followup = trace.view().unwrap();
+    let view = serde_json::to_value(&followup).unwrap();
+    let args = &view["unittest_comparison"]["arguments"];
+    let command = args["command"].as_str().unwrap();
+    let root = trace.root().unwrap();
+    let process = std::process::Command::new("sh")
+        .args(["-c", command])
+        .current_dir(root)
+        .output()
+        .unwrap();
+    assert_eq!(process.status.code(), Some(1));
+    let stdout = String::from_utf8(process.stdout).unwrap();
+    assert!(stdout.contains("- {'used': 2}"));
+    assert!(stdout.contains("+ {'used': 3}"));
+    assert!(followup.observed_comparison(command, root, &stdout));
+    assert!(!followup.observed_comparison(command, "/other", &stdout));
+    assert!(!followup.observed_comparison(command, root, "unrelated failure"));
+
+    let body = agent::inject_cwd(
+        &agent::build_failed_tool_output(&stdout, "", 1),
+        &format!("cwd: {root}"),
+        None,
+    );
+    trace.append("comparison", "exec", args.clone(), body);
+    let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
+    assert!(focus.observed() && focus.check_matches(CHECK));
+    assert!(focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
+    assert!(
+        trace.view().is_none(),
+        "an executed comparison consumes the offer"
+    );
+    assert_eq!(
+        agent::task_obligations::project_advisory(&trace.messages, Some(CHECK), trace.root())
+            .pending_exact_checks,
+        vec![CHECK]
+    );
+}
+
 #[tokio::test]
 async fn repeated_diagnosis_returns_before_another_coder_call_and_forwards_a_different_read() {
     use agent::RealizePreset;

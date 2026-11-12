@@ -156,7 +156,16 @@ pub(crate) fn prompt(packet: &Value) -> String {
             crate::tui::agent::task_obligations::DIAGNOSTIC_FOLLOWUP_GUIDANCE
         )
     });
-    format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}\
+    let comparison = if brief
+        .diagnostic_followup
+        .and_then(|view| view.get("unittest_comparison"))
+        .is_some_and(Value::is_object)
+    {
+        "If the missing fact is the clipped assertion difference, offer the ready diagnostic_followup.unittest_comparison.arguments as the primary suggestion with kind=verify and suggested_tool=exec. Copy the complete arguments exactly. Name the specific result-dependent repair decision in the reason. The command runs only the reported failing method and emits its comparison lines even when the test fails. A new fixture read is useful only if the runnable comparison or retained evidence cannot answer the missing fact. Keep native plan admission, approvals and exact-check obligations in force.\n"
+    } else {
+        ""
+    };
+    format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder. Summary or why_this_first alone may not reach the Coder; avoid a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\
 For an information gap, name the specific missing fact, why retained observations do not answer it, and what different result would change the next action. Consider a different feasible route when the previous suggestion did not execute or made no progress. Explain why the chosen action is better than one plausible alternative, using current evidence and remaining requests; do not infer success from acceptance of advice. A repeated read is justified only by a changed/stale target or a specific missing region. Preserve required_diagnostic_read and required_recheck precedence.\n\

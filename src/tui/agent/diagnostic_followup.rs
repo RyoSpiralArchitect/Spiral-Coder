@@ -2,6 +2,9 @@
 use super::*;
 use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome};
 
+#[path = "diagnostic_followup/unittest_comparison.rs"]
+mod unittest_comparison;
+
 const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
 
 #[derive(Debug, Serialize)]
@@ -13,14 +16,55 @@ pub(crate) struct DiagnosticFollowup {
     diagnostic_read_call_id: String,
     matching_failures: usize,
     diagnostic: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    unittest_comparison: Option<unittest_comparison::UnittestComparison>,
     #[serde(skip)]
     first_read_just_returned: bool,
 }
 
 impl DiagnosticFollowup {
+    pub(in crate::tui::agent) fn has_unittest_comparison(&self) -> bool {
+        self.unittest_comparison.is_some()
+    }
+
+    pub(in crate::tui::agent) fn observed_comparison(
+        &self,
+        command: &str,
+        cwd: &str,
+        output: &str,
+    ) -> bool {
+        self.unittest_comparison
+            .as_ref()
+            .is_some_and(|comparison| comparison.observed(command, cwd, output))
+    }
+
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
         self.matching_failures == 2 && self.first_read_just_returned
     }
+}
+
+pub(super) fn retained_comparison(
+    failure: &FailureFocus,
+    failure_output: &str,
+    call: &ToolCallData,
+    result: &str,
+    root: Option<&str>,
+) -> bool {
+    let (Some(root), Some(cwd)) = (root, exec_cwd(result)) else {
+        return false;
+    };
+    cwd == root
+        && super::super::parse_exit_code_from_tool_text(result) == Some(1)
+        && super::super::parse_exec_command_from_args(&call.arguments).is_some_and(|command| {
+            command.contains("Focused unittest:")
+                && unittest_comparison::project(
+                    &failure.check,
+                    &failure.path,
+                    failure_output,
+                    Path::new(root),
+                )
+                .is_some_and(|comparison| comparison.observed(&command, cwd, result))
+        })
 }
 
 struct Read<'a> {
@@ -126,6 +170,12 @@ impl RecoveryFocus {
             diagnostic_read_call_id: cycle.first_read?.call_id,
             matching_failures: cycle.matching_failures,
             diagnostic: focus.diagnostic.clone(),
+            unittest_comparison: unittest_comparison::project(
+                &focus.check,
+                &focus.path,
+                &cycle.output,
+                root,
+            ),
             first_read_just_returned,
         })
     }
