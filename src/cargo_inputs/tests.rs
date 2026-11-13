@@ -151,7 +151,7 @@ fn stale_runner_and_unrelated_depfile_rules_cannot_supply_membership() {
     );
     let future = SystemTime::now() + std::time::Duration::from_secs(1);
     let t = Target::UnitTest {
-        deps: deps.clone(),
+        profile: root.join("target/debug"),
         bin: None,
         merged: true,
         started: future,
@@ -159,7 +159,7 @@ fn stale_runner_and_unrelated_depfile_rules_cannot_supply_membership() {
     };
     assert!(t.inputs(&root, &banner, "").is_none());
     let t = Target::UnitTest {
-        deps,
+        profile: root.join("target/debug"),
         bin: None,
         merged: false,
         started: SystemTime::UNIX_EPOCH,
@@ -172,4 +172,60 @@ fn stale_runner_and_unrelated_depfile_rules_cannot_supply_membership() {
     )
     .unwrap();
     assert!(dependencies(&exe, &root).is_none());
+}
+
+#[test]
+fn observed_unit_runner_must_belong_to_the_profile_and_build_unit() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    let profile = root.join("target/debug");
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::write(root.join("src/main.rs"), "").unwrap();
+    let hash = "0123456789abcdef";
+    let exe = format!("fixture_bin-{hash}{}", std::env::consts::EXE_SUFFIX);
+    for (relative, observed) in [
+        ("target/debug/deps".to_string(), true),
+        (
+            format!("target/debug/build/fixture-package/{hash}/out"),
+            true,
+        ),
+        (
+            "target/debug/build/fixture-package/0000000000000000/out".into(),
+            false,
+        ),
+        (
+            format!("target/debug/build/fixture-package/{hash}/other"),
+            false,
+        ),
+        (
+            format!("target/release/build/fixture-package/{hash}/out"),
+            false,
+        ),
+    ] {
+        let directory = root.join(relative);
+        fs::create_dir_all(&directory).unwrap();
+        let executable = directory.join(&exe);
+        fs::write(&executable, "").unwrap();
+        fs::write(
+            executable.with_extension("d"),
+            format!("{}: src/main.rs\n", executable.display()),
+        )
+        .unwrap();
+        let target = Target::UnitTest {
+            profile: profile.clone(),
+            bin: Some("fixture-bin".into()),
+            merged: false,
+            started: SystemTime::UNIX_EPOCH,
+            finished_banner: "Finished `test` profile ",
+        };
+        let stderr = format!(
+            "Finished `test` profile [unoptimized]\nRunning unittests src/main.rs ({})\n",
+            executable.display()
+        );
+        assert_eq!(
+            target.inputs(&root, "", &stderr).is_some(),
+            observed,
+            "{executable:?}"
+        );
+    }
 }
