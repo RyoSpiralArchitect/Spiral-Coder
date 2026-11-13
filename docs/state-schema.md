@@ -1184,6 +1184,9 @@ share this projection; display-packet fields cannot replace native requirements.
 unresolved edit's diagnostic/repair requirement. It derives from the existing
 correlated recovery snapshots and edit history, and is shared by both roles.
 Reading the target advances diagnosis but does not remove the repair obligation.
+For a nonunique edit anchor, the native failure and subsequent target read
+derive guidance for one uniquely anchored edit from current content. This
+guidance survives session restoration through the same correlated history.
 On continuation, completed localized diagnosis may advance a generic restored
 `Diagnose` phase only when the latest actual failure belongs to that same check
 or target and is followed by the corresponding read/repair. A different newer
@@ -1255,6 +1258,34 @@ persistent state is added. See [file-read ranges](file-read-ranges.md).
 the original human task, native edit/command counts, repeated observations and
 authored done claims distinct from completion proof. It adds no persistent
 store; see [Observer work progress](observer-work-progress.md).
+
+For a task with declared test artifacts, `task_requirements.authored_tests`
+links each path to its original requirement IDs and latest recorded native
+edit. It retains complete descriptions of test-only requirements first, then
+requirements shared with other artifacts, within one 4 KiB description budget.
+Both roles can use the shared rules to compare source decisions with public
+test assertions after the structural obligations pass. The view adds no
+persisted state or coverage receipt.
+
+For one declared test file, `authored_tests.review_source` carries up to
+8 KiB of quoted source from a correlated complete native read or successful
+full write. A later edit whose resulting bytes were not observed, an
+incomplete read of that file, or an executed workspace action clears the
+view. Recognized verification runs retain the recorded revision. The
+projection opens no files and supplies no test coverage or edit authority.
+An Observer reply with a path-only edit for a declared test can be projected
+to `clarify` when the Coder has an eligible work turn. The response marks
+`test_recipe_retained` and the TUI keeps the raw envelope. The delivered
+advice carries the original reason and confidence with empty tool arguments.
+
+A native Observer observation is scoped to the first Coder response after
+delivery. It binds the accepted tool and exact arguments in memory. A plan
+revision can preserve the admitted goal only with matching acceptance
+criteria and ordinary plan validation. The accepted plan is retained in the
+existing `accepted_plan` history. The raw Coder text and the
+`observer_plan_goal_retained` event preserve the disposition separately from
+the subsequent native tool result.
+
 `agent/observation_stall.rs` derives bounded duplicate-read pressure from the
 current task's native exchanges. Its counters are reconstructed across runtime
 handoffs and reset at a new human task or an actual command/edit attempt. They
@@ -1339,6 +1370,14 @@ distinguishes `completed`, `blocked`, `budget_exhausted`, `observer_unavailable`
 and `interrupted`; provider errors from either pane reach `report.error` and a
 nonzero driver exit. A body interrupted after HTTP 200 is recorded as
 `stream_interrupted`, not a completed response. Unused budgets remain unused.
+
+For an unfinished declared task, the headless driver can give Coder one
+ordinary work slice per iteration after a completed Observer schema repair is
+rejected. The current request and wire receipt must match, Coder must have a
+work allowance, and native work must be outstanding. Preservation, approval
+and terminal barriers still apply. `observer_repair_returned_work` links the
+return to the rejected Observer request. The raw reply remains in the Observer
+transcript, and the Coder slice uses the ordinary request ledger and gates.
 
 `self_dogfood/measurement.py` derives development-only milestones from sealed
 native receipts and independent test summaries. Missing measurements are
@@ -1738,8 +1777,9 @@ consumed soft advice and advice that asks for an explicit response.
 The optional `task_obligations.diagnostic_followup` view derives from
 correlated version 2 recovery snapshots and their native results. It identifies
 the latest two comparable failures of the exact check at the workspace root
-and the completed diagnostic read. Comparison retains the check output and
-read result, apart from the elapsed time in a recognized unittest footer.
+and the completed diagnostic read. Comparison normalizes the elapsed time in
+a recognized unittest footer and padding before an assertion operator at the
+clipped output boundary. The remaining check output and read result must match.
 An intervening executed process or edit, different output, unresolved read or
 missing receipt ends the comparison. The value is prompt context. Existing
 recovery snapshots and the exact-check ledger retain their separate ownership.
@@ -1747,8 +1787,11 @@ recovery snapshots and the exact-check ledger retain their separate ownership.
 The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
-root. Live and restored recovery require the same preceding failure/read
-cycles and matching command. For an observed difference, the native
+root. When up to eight named subtests of that method fail, the view includes
+`subtest_failures`. The runner samples the first observed failure and binds
+the reported count to the receipt. Live and restored recovery require the
+same preceding failure/read cycles and matching command. For an observed
+difference, the native
 `recovery_focus.comparison.frame` receipt retains the final output frame
 from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing

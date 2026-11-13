@@ -1,0 +1,314 @@
+{
+  "runtime_commit": "acbb302993b43166dac73c81695cf93b39d6069f",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "plan_sha256": "c9f9d0fe47fec13126aa81912fd8584dd517782f1a490c1afb1f7dfd654d2058",
+  "binary_sha256": "34e7c4717d774d4350ed8ca39ae669372bc30efe1f869242f5b1497856ab0343",
+  "same_inputs_as_s16": true,
+  "protocol": {
+    "roles": {
+      "coder": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      },
+      "observer": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    },
+    "iterations": 6,
+    "maximum_task_requests": 192,
+    "maximum_wire_requests": 216,
+    "total_wall_seconds": 3600
+  },
+  "replay": {
+    "source_session_sha256": "ad8f4d42cc6b8a490902b78c2d47a9a0618b8c9ead29b4c17871a6325f4d0a45",
+    "provider_calls": 0,
+    "binaries": {
+      "before": "58172d203d17616f372d125fc936a1b83de61f250bf97a4642d113a2f1469bb8",
+      "after": "34e7c4717d774d4350ed8ca39ae669372bc30efe1f869242f5b1497856ab0343"
+    },
+    "prefixes": {
+      "before_write": {
+        "inclusive_message_index": 195,
+        "required_exact_checks": 6,
+        "pending_exact_checks": 5,
+        "pending_structural_items": 30,
+        "test_path": "tests/coupled_status.rs",
+        "last_test_edit_call_id": null,
+        "test_only_requirement_id": "native-tests",
+        "source_requirements_equal": true
+      },
+      "after_write": {
+        "inclusive_message_index": 198,
+        "required_exact_checks": 6,
+        "pending_exact_checks": 6,
+        "pending_structural_items": 22,
+        "test_path": "tests/coupled_status.rs",
+        "last_test_edit_call_id": "call_ME7FvtIrOVptKTIfaxelJwuk",
+        "test_only_requirement_id": "native-tests",
+        "source_requirements_equal": true
+      },
+      "checks_passed": {
+        "inclusive_message_index": 223,
+        "required_exact_checks": 6,
+        "pending_exact_checks": 0,
+        "pending_structural_items": 0,
+        "test_path": "tests/coupled_status.rs",
+        "last_test_edit_call_id": "call_ME7FvtIrOVptKTIfaxelJwuk",
+        "test_only_requirement_id": "native-tests",
+        "source_requirements_equal": true
+      }
+    }
+  },
+  "fresh_run": {
+    "S16": {
+      "qualified": false,
+      "native_completed": true,
+      "stop_reason": "completed",
+      "task_requests": 114,
+      "wire_requests": 127,
+      "wall_seconds": 1039.17,
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "test_summary": null
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "status-held-out": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 24,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "status-paths": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          }
+        }
+      },
+      "gates_failed": [
+        "authored_test_sensitivity"
+      ],
+      "report_fields": {
+        "changed_paths_named": true,
+        "commands_named": true,
+        "before_failed": true,
+        "after_passed": true
+      },
+      "receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "round_count": 4,
+      "final_current_exact_checks": 6,
+      "authored_test_faults_detected": {
+        "missing_pending": false,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      }
+    },
+    "S17": {
+      "qualified": false,
+      "native_completed": true,
+      "stop_reason": "completed",
+      "task_requests": 159,
+      "wire_requests": 174,
+      "wall_seconds": 1617.084,
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "test_summary": null
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "status-held-out": {
+          "passed": false,
+          "executed": true,
+          "test_summary": {
+            "passed": 23,
+            "failed": 1,
+            "ignored": 0
+          }
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "status-paths": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          }
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          }
+        }
+      },
+      "gates_failed": [
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "report_fields": {
+        "changed_paths_named": true,
+        "commands_named": true,
+        "before_failed": true,
+        "after_passed": true
+      },
+      "receipt_sha256": "328a4198886a31f2e452fcd66d76fddc4e443d75b489cf0d7657226ab75d9da9",
+      "round_count": 5,
+      "final_current_exact_checks": 6,
+      "authored_test_faults_detected": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": true,
+        "parent_link": false
+      },
+      "native_test_names": [
+        "protected_fixture_states_match_public_cli",
+        "malformed_pending_ledger_is_rejected_after_successful_baseline",
+        "duplicate_numeric_request_id_is_rejected_after_successful_baseline",
+        "absent_pending_ledger_reports_unknown_usage"
+      ],
+      "held_out_failure": "The first finalized row with a non-null parent task ID was accepted.",
+      "sensitivity_sha256": "1612254c67909ec5738748660abb02db1f81f8f22e51f2909a50e70b5e1cf14e",
+      "assessment_sha256": "b880007b31a793d75f04e00988c27bdf87dbd7b570a496e8d586d8bebb03d078"
+    }
+  },
+  "test_only_continuations": {
+    "shared_inputs": {
+      "source_candidate_inventory_sha256": "f82a5e2cfb874332994f5bc63afe5fce68dceffcea3b3e168e1ec0515e73327c",
+      "prompt_sha256": "2775fffb3aa9d42560a6466faa28c42531136eaf94b7d29feee58b4ce75279b3",
+      "source_run": "r16",
+      "model": "gpt-5.6-luna",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "observer_reserve": 8,
+      "transport_repairs": 4,
+      "coder_slice": 8,
+      "wall_seconds": 600
+    },
+    "same_workspace_path": true,
+    "path_only_edit_replay": {
+      "source_report_sha256": "3ceed12ebd8d2a55a61d2a1c57c7c72fea0e8f9533261ce7b239f5ee681a2996",
+      "source_session_sha256": "7702378db42da963f71e8c884948ff586c5a9afd4e7fed863b76ec14d4f11770",
+      "inclusive_message_index": 9,
+      "provider_calls": 0,
+      "before_issue": "suggested_args for patch_file must satisfy its available_tools schema, with nonempty path/command/pattern/search/diff fields",
+      "after_test_recipe_retained": true,
+      "authored_confidence": 0.92,
+      "delivered_confidence": 0.92,
+      "delivered_tool": null,
+      "mandatory_response": false,
+      "unchanged_pending_checks": 6
+    },
+    "runs": [
+      {
+        "executor_commit": "acbb302993b43166dac73c81695cf93b39d6069f",
+        "plan_sha256": "cbe9224eb3e876254d7b159146aa68e09bc81183b4032a5a401c027f08f5f681",
+        "report_sha256": "3ceed12ebd8d2a55a61d2a1c57c7c72fea0e8f9533261ce7b239f5ee681a2996",
+        "termination": "blocked",
+        "test_recipe_retained": false,
+        "task_requests": 6,
+        "wire_requests": 6,
+        "wall_seconds": 33.702,
+        "changed_paths": [],
+        "pending_exact_checks": 6,
+        "terminal_feedback": "Path-only edit rejected. The repair stayed below the existing forwarding threshold."
+      },
+      {
+        "executor_commit": "152d7ae6eee39bdafc74a1ff1d84ab48ae2f2d04",
+        "plan_sha256": "55ca0f97e585d9e2758351d67e8ddb732bcbb21d705df1b4d726c6640e27c955",
+        "report_sha256": "a42b45aa95931db5514fceaa9b18746a3234f2012b78401947ef16132726866c",
+        "termination": "observer_unavailable",
+        "test_recipe_retained": true,
+        "task_requests": 7,
+        "wire_requests": 11,
+        "wall_seconds": 93.779,
+        "changed_paths": [],
+        "pending_exact_checks": 6,
+        "terminal_feedback": "The delivered case recipe preceded a nonunique patch rejection. Later Observer replies failed envelope validation."
+      }
+    ]
+  },
+  "local_validation": {
+    "command": "bash scripts/check-local.sh",
+    "runtime_commit": "152d7ae6eee39bdafc74a1ff1d84ab48ae2f2d04",
+    "rust_main_passed": 1191,
+    "rust_main_ignored": 2,
+    "rust_integrations": 6,
+    "tui_replays": 20,
+    "log_sha256": "998d1d81b6fb75b5f03129ba919e06140d04c005e394ba290ee758b5c3215e28"
+  }
+}

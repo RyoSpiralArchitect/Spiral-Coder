@@ -128,6 +128,47 @@ fn eight_real_steps_still_fail_and_inline_lists_remain_supported() {
 }
 
 #[test]
+fn observation_restores_the_admitted_goal_with_authored_steps_and_acceptance() {
+    let root = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/benchmarks/examples-v1/cases/event-summary/task.txt"
+    ));
+    let contract = derive_task_contract(root, false, true, VerificationLevel::Behavioral);
+    let resolver = InstructionResolver::new(root, false, false);
+    let previous: PlanBlock = serde_json::from_value(live()["previous_plan"].clone()).unwrap();
+    let mut proposal = parse_plan_block(live()["pending_steps_text"].as_str().unwrap()).unwrap();
+    proposal.goal = "Inspect the immediate error and collect the comparison".into();
+    let messages = [
+        json!({"role":"user","content":root}),
+        json!({"role":"assistant","accepted_plan":previous}),
+    ];
+    assert!(
+        validate_plan_for_task_contract(&proposal, false, &contract, &resolver, &messages).is_err()
+    );
+    let restored =
+        plan_revision::preserve_goal_for_observation(&proposal, &previous, &messages, &contract)
+            .unwrap();
+    assert_eq!(restored.goal, previous.goal);
+    assert_eq!(restored.steps, proposal.steps);
+    assert_eq!(restored.risks, proposal.risks);
+    assert_eq!(restored.assumptions, proposal.assumptions);
+    assert_eq!(restored.acceptance_criteria, proposal.acceptance_criteria);
+    validate_plan_for_task_contract(&restored, false, &contract, &resolver, &messages).unwrap();
+    assert!(plan_revision::preserve_goal_for_observation(
+        &proposal,
+        &previous,
+        &messages[..1],
+        &contract,
+    )
+    .is_none());
+    proposal.acceptance_criteria[0] = "A different criterion".into();
+    assert!(plan_revision::preserve_goal_for_observation(
+        &proposal, &previous, &messages, &contract,
+    )
+    .is_none());
+}
+
+#[test]
 fn real_search_rejection_quotes_only_the_bound_objective_for_a_fresh_attempt() {
     let sample: serde_json::Value = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),

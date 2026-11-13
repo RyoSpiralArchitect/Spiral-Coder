@@ -344,6 +344,12 @@ enforces this boundary without modifying or refunding the durable task limit.
 The option does not force an Observer call after successful early completion,
 nor guarantee that advice, verification or repair fits the remaining budget.
 
+After a completed schema repair is rejected, `coupled-run` can return one
+ordinary Coder slice per iteration to continue a declared task with outstanding
+native work. Required diagnosis and rechecks still take precedence. The next
+Coder yield returns to the ordinary Observer rhythm and each request uses its
+original role allowance.
+
 The interactive TUI selects the next Observer intervention from the typed
 `CoderYieldReason::VerificationFailure` outcome, even with auto-observe disabled
 and no failure keyword in the displayed Coder text. This transient reason clears
@@ -598,6 +604,20 @@ benchmark's strict scope inventory. Normal interactive TUI storage is unchanged.
 
 ## Shared progress and action-level assistance
 
+On the first Coder response after a current Observer handoff, a bounded read,
+pending exact check or native focused comparison can carry the admitted plan
+forward. Coder explicitly accepts the suggestion and makes the exact native
+call. If revised goal wording caused task drift and the acceptance criteria
+match, the runtime restores the admitted goal and validates the authored
+steps, risks and assumptions. For an exact accepted exec, `think.next` may
+reference `@observer`. Native diagnosis, approval and verification continue
+to govern the call.
+
+When a repeated unittest failure comes from several named subtests of one
+localized method, Observer can pass a focused comparison of the first
+observed failure. The comparison records how many subtests failed and leaves
+the original exact check due after repair.
+
 When a native Coder write creates a Rust source, the next Cargo checks can
 report whether a particular target's compiler inputs listed it. Both roles
 receive the same per-file observation, including after a role handoff or session
@@ -611,6 +631,16 @@ repeated observations and authored acceptance claims to both roles. A docs/check
 requirement does not stand in for the source behavior requested by the human.
 [Observation pressure](observation-progress.md) bounds identical repeated reads
 without forcing an edit or overriding required diagnosis.
+
+For declared test artifacts, both roles can match shared behavior requirements
+to a source decision and its public test before the final checks. Case recipes
+retain their fixture, control, changed condition and expected assertion.
+The latest bounded test-source observation lets both roles see whether another
+validation rule could cause the same rejection. For a uniqueness test, replace
+one existing value and preserve the record count. For a path-type test,
+change only the chosen component of a valid temporary fixture.
+When a patch anchor matches several places, the next action can use unique
+context from a current target read to make one small edit.
 
 Assist receipts retain their legacy continuation-wide execution fields and add
 `suggestion_execution`: the proposed tool/arguments, exact matching native call

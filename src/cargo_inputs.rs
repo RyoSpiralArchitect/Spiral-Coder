@@ -147,7 +147,7 @@ pub(crate) fn render_for_coder(message: &mut Value) {
 
 enum Target {
     UnitTest {
-        deps: PathBuf,
+        profile: PathBuf,
         bin: Option<String>,
         merged: bool,
         started: SystemTime,
@@ -254,7 +254,7 @@ fn target(verb: &str, mut args: Vec<&str>, cwd: &Path) -> Option<Target> {
     let profile_dir = cwd.join(target_dir).join(profile);
     match verb {
         "test" => Some(Target::UnitTest {
-            deps: profile_dir.join("deps"),
+            profile: profile_dir,
             bin,
             merged,
             started: SystemTime::now(),
@@ -336,7 +336,7 @@ impl Target {
                 (executable, "src/main.rs", label)
             }
             Self::UnitTest {
-                deps,
+                profile,
                 bin,
                 merged,
                 started,
@@ -360,9 +360,6 @@ impl Target {
                     return None;
                 }
                 let executable = fs::canonicalize(candidate).ok()?;
-                if executable.parent()? != fs::canonicalize(deps).ok()? {
-                    return None;
-                }
                 // A cached sidecar and a line printed by a test cannot establish a fresh observation.
                 if stamp(&executable.with_extension("d"))?.0 <= started {
                     return None;
@@ -371,6 +368,7 @@ impl Target {
                 if hash.len() != 16
                     || !hash.bytes().all(|c| c.is_ascii_hexdigit())
                     || bin.is_some_and(|b| b.replace('-', "_") != name)
+                    || !unit_test_in_profile(&executable, &fs::canonicalize(profile).ok()?, hash)
                 {
                     return None;
                 }
@@ -385,6 +383,20 @@ impl Target {
         inputs
             .contains(&cwd.join(entry).canonicalize().ok()?)
             .then_some((label, inputs))
+    }
+}
+
+fn unit_test_in_profile(executable: &Path, profile: &Path, hash: &str) -> bool {
+    let Ok(path) = executable.strip_prefix(profile) else {
+        return false;
+    };
+    let parts: Vec<_> = path.components().collect();
+    match parts.as_slice() {
+        [Component::Normal(deps), Component::Normal(_)] => *deps == "deps",
+        [Component::Normal(build), Component::Normal(_), Component::Normal(unit), Component::Normal(out), Component::Normal(_)] => {
+            *build == "build" && *unit == hash && *out == "out"
+        }
+        _ => false,
     }
 }
 

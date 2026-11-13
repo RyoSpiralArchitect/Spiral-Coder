@@ -22,12 +22,23 @@ pub(super) async fn episode(
     reserved: usize,
     repair: usize,
 ) -> serde_json::Value {
+    episode_with_prompt(coder, observer, cap, reserved, repair, "Repair engine.rs so answer returns 42, preserving all checks. Final report must describe the repair and actual verification.").await
+}
+
+async fn episode_with_prompt(
+    coder: &MockServer,
+    observer: &MockServer,
+    cap: usize,
+    reserved: usize,
+    repair: usize,
+    task: &str,
+) -> serde_json::Value {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("workspace");
     std::fs::create_dir(&root).unwrap();
     std::fs::write(root.join("engine.rs"), "fn answer() -> i32 { 0 }\n").unwrap();
     let prompt = dir.path().join("prompt.txt");
-    std::fs::write(&prompt, "Repair engine.rs so answer returns 42, preserving all checks. Final report must describe the repair and actual verification.").unwrap();
+    std::fs::write(&prompt, task).unwrap();
     let output = dir.path().join("run");
     let cli = crate::Cli::try_parse_from([
         "spiral-coder",
@@ -79,6 +90,63 @@ pub(super) async fn episode(
         serde_json::from_slice(&std::fs::read(output.join("report.json")).unwrap()).unwrap();
     assert_eq!(outcome.is_err(), report["error"].is_string());
     report
+}
+
+#[tokio::test]
+async fn malformed_observer_repair_returns_one_work_slice_with_original_obligations() {
+    let coder = MockServer::start();
+    let observer = MockServer::start();
+    const RETURN_PROMPT: &str = "The Observer's response repair did not provide usable advice.";
+    let initial = coder.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains(RETURN_PROMPT)
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work remains unfinished.", None));
+    });
+    let resumed = coder.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains(RETURN_PROMPT)
+            .body_contains("cargo test --locked --test ledger");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work still needs its native checks.", None));
+    });
+    let rejected = observer.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse(r#"{"summary":"rejected","summary":"duplicate"}"#, None));
+    });
+    let task = r#"Repair engine.rs and verify the result.
+<task_requirements>
+{"version":1,"requirements":[{"id":"ledger","description":"Check the repaired answer","artifacts":[{"path":"engine.rs","kind":"source"}],"checks":[{"command":"cargo test --locked --test ledger"}]}]}
+</task_requirements>"#;
+    let report = episode_with_prompt(&coder, &observer, 20, 4, 2, task).await;
+    assert!(initial.hits() > 0 && resumed.hits() > 0);
+    rejected.assert_hits(4);
+    assert_eq!(report["termination"], "observer_unavailable");
+    assert_eq!(
+        report["execution"]["pending_exact_checks"],
+        json!(["cargo test --locked --test ledger"])
+    );
+    assert_eq!(report["work"]["assists"], json!([]));
+    let requests = report["work"]["requests"].as_array().unwrap();
+    let roles: Vec<_> = requests
+        .iter()
+        .map(|row| row["role"].as_str().unwrap())
+        .collect();
+    assert!(roles.ends_with(&["coder", "observer", "observer"]));
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|row| row["charge"] == "transport")
+            .count(),
+        2
+    );
+    assert!(requests.len() <= 22);
 }
 
 #[tokio::test]

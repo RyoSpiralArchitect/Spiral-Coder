@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 pub(crate) mod diagnostic;
 pub(crate) mod intervention;
 pub(crate) mod strategy;
+mod test_recipe;
 
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]
@@ -38,6 +39,7 @@ pub(crate) struct Response {
     pub issue: Option<String>,
     pub envelope: Option<suggestion::ObserverSuggestionEnvelope>,
     pub format_recovery: Option<suggestion::FramingRecovery>,
+    pub test_recipe_retained: bool,
     pub hint: Option<String>,
     pub response_contract: Option<String>,
     pub repair_prompt: Option<String>,
@@ -69,6 +71,49 @@ pub(crate) fn validation_issue(
 }
 
 pub(crate) fn validation_issue_with_capacity(
+    raw: &str,
+    messages: &[Value],
+    test_command: Option<&str>,
+    tool_root: Option<&str>,
+    remaining: Option<usize>,
+) -> Option<String> {
+    resolve_advice(raw, messages, test_command, tool_root, remaining).issue
+}
+
+pub(crate) struct ResolvedAdvice {
+    pub envelope: Option<suggestion::ObserverSuggestionEnvelope>,
+    pub issue: Option<String>,
+    pub test_recipe_retained: bool,
+}
+
+pub(crate) fn resolve_advice(
+    raw: &str,
+    messages: &[Value],
+    test_command: Option<&str>,
+    tool_root: Option<&str>,
+    remaining: Option<usize>,
+) -> ResolvedAdvice {
+    let mut envelope = suggestion::parse_observer_suggestion_envelope(raw);
+    let test_recipe_retained = envelope.as_mut().is_some_and(|env| {
+        test_recipe::keep_as_advice(env, messages, test_command, tool_root, remaining)
+    });
+    let advisory = test_recipe_retained
+        .then(|| serde_json::to_string(&envelope).expect("test advisory serializes"));
+    let issue = validate_advice(
+        advisory.as_deref().unwrap_or(raw),
+        messages,
+        test_command,
+        tool_root,
+        remaining,
+    );
+    ResolvedAdvice {
+        envelope,
+        issue,
+        test_recipe_retained,
+    }
+}
+
+fn validate_advice(
     raw: &str,
     messages: &[Value],
     test_command: Option<&str>,
@@ -225,19 +270,26 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
         &request.lang,
         &request.reason,
     );
-    let envelope = request
-        .response
-        .as_deref()
-        .and_then(suggestion::parse_observer_suggestion_envelope);
-    let issue = request.response.as_deref().and_then(|raw| {
-        validation_issue_with_capacity(
-            raw,
-            &request.messages,
-            request.test_command.as_deref(),
-            tool_root.as_deref(),
-            next_coder,
-        )
-    });
+    let ResolvedAdvice {
+        envelope,
+        issue,
+        test_recipe_retained,
+    } = request.response.as_deref().map_or(
+        ResolvedAdvice {
+            envelope: None,
+            issue: None,
+            test_recipe_retained: false,
+        },
+        |raw| {
+            resolve_advice(
+                raw,
+                &request.messages,
+                request.test_command.as_deref(),
+                tool_root.as_deref(),
+                next_coder,
+            )
+        },
+    );
     let hint = if issue.is_none() && next_coder != Some(0) {
         envelope
             .as_ref()
@@ -266,6 +318,7 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
             .response
             .as_deref()
             .and_then(suggestion::framing_recovery),
+        test_recipe_retained,
         hint,
         response_contract,
         repair_prompt,

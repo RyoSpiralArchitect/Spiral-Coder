@@ -39,6 +39,12 @@ impl DiagnosticFollowup {
         self.unittest_comparison.is_some()
     }
 
+    pub(in crate::tui::agent) fn matches_unittest_comparison(&self, args: &Value) -> bool {
+        self.unittest_comparison
+            .as_ref()
+            .is_some_and(|comparison| comparison.matches_arguments(args))
+    }
+
     pub(in crate::tui::agent) fn include_comparison_check_cost(
         &mut self,
         required: &[String],
@@ -251,9 +257,21 @@ fn comparable_output(output: &str) -> Option<String> {
     }
     let mut lines = output.lines().peekable();
     let mut body = String::with_capacity(output.len());
+    let mut clipped = false;
+    let unittest_failure = output
+        .lines()
+        .any(|line| line.starts_with("FAILED (failures="));
     while let Some(line) = lines.next() {
-        // Unittest prints elapsed time just before the final status. Preserve
-        // its test count and every other line of the retained result.
+        // A duration can shift the start of the clipped tail by one byte.
+        // Discard padding before the comparison operator at that boundary.
+        let tail = line.trim_start_matches(' ');
+        let line = if clipped && unittest_failure && tail.starts_with("!= ") {
+            tail
+        } else {
+            line
+        };
+        clipped = line == "[... output omitted ...]";
+        // Unittest prints elapsed time just before the final status.
         let stable = unittest_timing_prefix(line).filter(|_| {
             let mut rest = lines.clone();
             rest.next() == Some("") && rest.next().is_some_and(|line| line.starts_with("FAILED ("))

@@ -66,6 +66,7 @@ pub(super) struct EditFailureMemory {
     last_attempt: Option<(String, Value)>,
     repeated_attempts: usize,
     read_since_failure: bool,
+    nonunique_anchor: bool,
 }
 
 impl EditFailureMemory {
@@ -149,6 +150,17 @@ impl EditFailureMemory {
         }
         self.failures = self.failures.saturating_add(1);
         self.read_since_failure = false;
+        self.nonunique_anchor = match name {
+            "patch_file" => {
+                header.starts_with("ERROR: search string found ")
+                    && header.ends_with(" — must be unique.")
+            }
+            "apply_diff" => {
+                header.contains("old block not unique (")
+                    && header.contains("matches) — add more context lines")
+            }
+            _ => false,
+        };
         let args = serde_json::from_str(arguments)
             .unwrap_or_else(|_| Value::String(arguments.to_string()));
         let attempt = (name.to_string(), args);
@@ -201,10 +213,10 @@ impl EditFailureMemory {
     pub(super) fn diagnostic_hint(&self) -> Option<String> {
         let (_, args) = self.last_attempt.as_ref()?;
         let path = args.get("path")?.as_str()?;
-        let next = if self.read_since_failure {
-            "The target has been read since the failed edit. Repair using that exact content."
-        } else {
-            "Read this exact target before repairing it; pwd/listing/search cannot inspect the failed edit."
+        let next = match (self.read_since_failure, self.nonunique_anchor) {
+            (true, true) => "A target read followed the nonunique edit. If it shows the edit site, use its exact surrounding lines to anchor one edit at a unique occurrence. For an insertion, patch_file can replace one unique block with that same block plus the addition. For apply_diff, include the distinguishing context in each @@ hunk and omit patch trailers. If more context is needed, read only the missing lines.",
+            (true, false) => "The target has been read since the failed edit. Repair using that exact content.",
+            (false, _) => "Read this exact target before repairing it; pwd/listing/search cannot inspect the failed edit.",
         };
         Some(format!(
             "[Pending edit failure] Target path (quoted data): {}. {next} Preserve unrelated content, then run the required checks. A read alone does not resolve the failure.",
