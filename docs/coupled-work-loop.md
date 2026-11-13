@@ -635,6 +635,10 @@ without forcing an edit or overriding required diagnosis.
 For declared test artifacts, both roles can match shared behavior requirements
 to a source decision and its public test before the final checks. Case recipes
 retain their fixture, control, changed condition and expected assertion.
+The latest bounded test-source observation lets both roles see whether another
+validation rule could cause the same rejection. For a uniqueness test, replace
+one existing value and preserve the record count. For a path-type test,
+change only the chosen component of a valid temporary fixture.
 When a patch anchor matches several places, the next action can use unique
 context from a current target read to make one small edit.
 

@@ -1266,6 +1266,13 @@ requirements shared with other artifacts, within one 4 KiB description budget.
 Both roles can use the shared rules to compare source decisions with public
 test assertions after the structural obligations pass. The view adds no
 persisted state or coverage receipt.
+
+For one declared test file, `authored_tests.review_source` carries up to
+8 KiB of quoted source from a correlated complete native read or successful
+full write. A later edit whose resulting bytes were not observed, an
+incomplete read of that file, or an executed workspace action clears the
+view. Recognized verification runs retain the recorded revision. The
+projection opens no files and supplies no test coverage or edit authority.
 An Observer reply with a path-only edit for a declared test can be projected
 to `clarify` when the Coder has an eligible work turn. The response marks
 `test_recipe_retained` and the TUI keeps the raw envelope. The delivered

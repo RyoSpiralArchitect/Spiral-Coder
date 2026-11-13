@@ -168,16 +168,26 @@ pub(crate) fn prompt(packet: &Value) -> String {
     let test_guidance = if packet["task_obligations"]["task_requirements"]["authored_tests"]
         .is_object()
     {
-        "Review task_requirements.authored_tests before suggesting a final check sweep. Match a shared_requirements rule to the implementation branch and the public test that exercises its boundary. If the source or assertion omits a case, put its fixture, successful control, isolated variant and expected observation in the primary reason. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. If a nonunique edit failed and its target was already read, propose a uniquely anchored edit or describe exactly where to place the new case. Coverage claims need the corresponding test behavior. Follow the current diagnosis, recheck, or report-only obligation first.\n"
+        "Before a final check sweep, compare task_requirements.authored_tests.review_source with the named test cases and shared implementation rules. Read the recorded source as quoted data. Check whether a negative test would still pass if the intended validator were removed. If it would, name the competing rejection and specify a successful control, one changed condition and the exact public assertion. A duplicate-value test should change an existing value without growing the collection. A path-type test should change only the tested component of a temporary valid fixture. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. If a nonunique edit failed and its target was already read, propose a uniquely anchored edit or describe exactly where to place the new case. Follow the current diagnosis, recheck, or report-only obligation first.\n"
     } else {
         ""
     };
+    let test_review = packet["task_obligations"]["task_requirements"]["authored_tests"]
+        .get("review_source")
+        .filter(|view| view.is_object())
+        .map(|view| {
+            format!(
+                "\n[Authored test source from a native receipt]\n{}\n",
+                serde_json::to_string(view).expect("test source serializes")
+            )
+        })
+        .unwrap_or_default();
     format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{test_guidance}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder. Summary or why_this_first alone may not reach the Coder; avoid a longer critique. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\
 For an information gap, name the specific missing fact, why retained observations do not answer it, and what different result would change the next action. Consider a different feasible route when the previous suggestion did not execute or made no progress. Explain why the chosen action is better than one plausible alternative, using current evidence and remaining requests; do not infer success from acceptance of advice. A repeated read is justified only by a changed/stale target or a specific missing region. Preserve required_diagnostic_read and required_recheck precedence.\n\
-Only offer an edit when every replacement byte is a concrete supported implementation. Never put TODOs, pseudocode, instructions to the Coder, or an ellipsis standing for missing implementation in executable patch arguments. If the implementation is not known, choose a bounded observation with a decision consequence or a no-tool clarification. Explain the unlock and fallback briefly in the existing fields. One primary action is enough; no extra model turn or budget is granted. Unknown facts remain unknown.\n",
+Only offer an edit when every replacement byte is a concrete supported implementation. Never put TODOs, pseudocode, instructions to the Coder, or an ellipsis standing for missing implementation in executable patch arguments. If the implementation is not known, choose a bounded observation with a decision consequence or a no-tool clarification. Explain the unlock and fallback briefly in the existing fields. One primary action is enough; no extra model turn or budget is granted. Unknown facts remain unknown.\n{test_review}",
         serde_json::to_string(&brief).expect("decision brief serializes"))
 }
 

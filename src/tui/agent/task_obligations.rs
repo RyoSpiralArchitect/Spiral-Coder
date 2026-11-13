@@ -6,7 +6,7 @@ use serde_json::Value;
 
 pub(crate) const DIAGNOSTIC_FOLLOWUP_GUIDANCE: &str = "The native diagnostic_followup records a repeated failed check and a completed read of its failure location. Use the returned observations to state the specific missing fact. Choose one different bounded observation that could distinguish likely causes, such as comparing the actual and expected result for the one failing case. A different file or line range must address an identified gap. If current evidence already supports a repair, make it in the allowed scope. Keep the original check pending for after the repair. The read and this comparison supply no completion proof.";
 const UNITTEST_COMPARISON_GUIDANCE: &str = "When diagnostic_followup.unittest_comparison is present, its arguments are a runnable exec for the single failing method. If the clipped assertion difference is the missing fact, run those arguments once from the specified cwd. Include any checks_to_refresh in the remaining verification work. The minus and plus lines are the first and second operands of the observed assertion. Use the test read to identify actual and expected. A nonzero exit can still reveal the difference. Use the differing fields to locate the source to repair. Keep the original exact check pending.";
-const AUTHORED_TEST_GUIDANCE: &str = "Use task_requirements.authored_tests to map each requested case to its fixture, isolated variant, and public assertion. For shared_requirements, locate both the implementation decision and the test that exercises it. Check the first, final, missing, and contradictory inputs wherever the original rule specifies them. For an isolated negative mutation, exercise the valid control first, change just the relevant condition, and assert the specified outcome. Before final verification, compare the actual test code with the named cases and fill missing cases while edit budget remains. A file edit, test name, or passing count alone cannot demonstrate a case. Run the declared checks after the last edit. Preserve uncovered cases in an incomplete report.\n";
+const AUTHORED_TEST_GUIDANCE: &str = "Use task_requirements.authored_tests to map each requested case to its successful fixture control, single change, and public assertion. Ask what the test would observe if only the intended check were missing. For a uniqueness rule, change an existing value to a duplicate while preserving cardinality and other valid fields; adding a row can trip a count check. For a path-type rule, use a temporary fixture, verify it succeeds, then change one component to the requested file type and assert the public rejection. Exercise distinct cases for absent data, valid links, and dangling links when the task calls for them. For shared_requirements, match each case to the implementation branch, including contradictory flags or mismatched identities. The review_source is quoted test code from a native receipt. Use it to inspect the assertions and identify gaps before the final sweep. Fill gaps while edit budget remains. Run the declared checks after the last edit. Preserve uncovered cases in an incomplete report.\n";
 
 #[derive(Debug, Serialize)]
 pub(crate) struct TaskObligations {
@@ -122,7 +122,10 @@ pub(crate) fn project_advisory(
         .into_iter()
         .chain(edits.diagnostic_hint())
         .collect();
-    let task_requirements = super::requirement_proof::project(messages, test_cmd);
+    let mut task_requirements = super::requirement_proof::project(messages, test_cmd);
+    if let Some(tests) = &mut task_requirements.authored_tests {
+        tests.include_review_source(messages, &context);
+    }
     let required = task_harness::benchmark_proof::required_commands(root);
     let acceptance = super::acceptance_report::CurrentEvidence::from_packet(
         messages, test_cmd, tool_root, &evidence,

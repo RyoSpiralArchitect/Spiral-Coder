@@ -5,6 +5,8 @@ use crate::tui::agent::evidence_packet::ActionEvidence;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod review_source;
+
 const MAX_DESCRIPTION_BYTES: usize = 4096;
 
 #[derive(Debug, Serialize)]
@@ -14,12 +16,22 @@ pub(crate) struct AuthoredTests {
     test_only_requirements: Vec<TestRequirement>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     shared_requirements: Vec<TestRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    review_source: Option<review_source::ReviewSource>,
 }
 
 impl AuthoredTests {
     pub(in crate::tui::agent) fn contains(&self, path: &str) -> bool {
         let path = path.trim_start_matches("./");
         self.targets.iter().any(|target| target.path == path)
+    }
+
+    pub(in crate::tui::agent) fn include_review_source(
+        &mut self,
+        messages: &[serde_json::Value],
+        context: &crate::tui::agent::exec_verification::ExecVerificationContext<'_>,
+    ) {
+        self.review_source = review_source::project(self, messages, context);
     }
 }
 
@@ -110,6 +122,7 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         targets,
         test_only_requirements,
         shared_requirements,
+        review_source: None,
     })
 }
 
@@ -209,6 +222,115 @@ mod tests {
                 && observer.contains(SHARED_RULE)
                 && observer.contains("no-tool clarify with the case recipe")
         );
+    }
+
+    #[test]
+    fn native_test_bytes_reach_both_roles_and_expire_after_unobserved_changes() {
+        const PATH: &str = "tests/ledger.rs";
+        const CHECK: &str = "cargo test --locked --test ledger";
+        const SOURCE: &str = "fn sample() { assert_eq!(requests.len(), count); }\n";
+        let task = format!(
+            "Add a ledger test.\n<task_requirements>\n{}\n</task_requirements>",
+            json!({"version":1,"requirements":[{"id":"ledger","description":DESCRIPTION,
+                "artifacts":[{"path":PATH,"kind":"test"}],"checks":[{"command":CHECK}]}]})
+        );
+        let mut messages = vec![json!({"role":"user","content":task})];
+        let view = |messages: &[Value]| {
+            serde_json::to_value(task_obligations::project_advisory(
+                messages,
+                None,
+                Some("/workspace"),
+            ))
+            .unwrap()
+        };
+        let authored = |messages: &[Value]| {
+            view(messages)["task_requirements"]["authored_tests"]["review_source"].clone()
+        };
+        result(
+            &mut messages,
+            "write",
+            "write_file",
+            json!({"path":PATH,"content":SOURCE}),
+            &format!(
+                "OK: wrote '{PATH}' (1 lines, {} bytes)\n[auto-test] ✓ PASSED",
+                SOURCE.len()
+            ),
+        );
+        assert_eq!(
+            authored(&messages),
+            json!({"path":PATH,"call_id":"write","origin":"write","source":SOURCE})
+        );
+        result(
+            &mut messages,
+            "verify",
+            "exec",
+            json!({"command":CHECK}),
+            "OK (exit_code: 0)\ncwd: /workspace",
+        );
+        assert_eq!(authored(&messages)["call_id"], "write");
+        let packet =
+            json!({"task_obligations":view(&messages), "work_budget":{"next_coder_turn":"work"}});
+        let observer = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+            &packet,
+            "en",
+            "incomplete_task",
+        );
+        let coder = task_obligations::prompt(&messages, None, Some("/workspace")).unwrap();
+        assert_eq!(
+            observer
+                .matches("[Authored test source from a native receipt]")
+                .count(),
+            1
+        );
+        assert!(observer.contains("assert_eq!(requests.len(), count)"));
+        assert!(coder.contains("assert_eq!(requests.len(), count)"));
+        assert_eq!(view(&messages)["pending_exact_checks"], json!([]));
+        result(
+            &mut messages,
+            "blocked",
+            "patch_file",
+            json!({"path":PATH,"search":SOURCE,"replace":""}),
+            "GOVERNOR BLOCKED",
+        );
+        assert_eq!(authored(&messages)["call_id"], "write");
+        result(
+            &mut messages,
+            "edit",
+            "patch_file",
+            json!({"path":PATH,"search":SOURCE,"replace":"after\n"}),
+            &format!("OK: patched '{PATH}'"),
+        );
+        assert!(authored(&messages).is_null());
+        result(
+            &mut messages,
+            "partial",
+            "read_file",
+            json!({"path":PATH,"start_line":2,"end_line":2}),
+            &format!("[{PATH}] (3 lines, 100 bytes) [range: lines 2-2; partial file]\nafter\n"),
+        );
+        assert!(authored(&messages).is_null());
+        result(
+            &mut messages,
+            "read",
+            "read_file",
+            json!({"path":PATH}),
+            &format!("[{PATH}] (1 lines, 6 bytes)\nafter\n"),
+        );
+        assert_eq!(
+            authored(&messages),
+            json!({"path":PATH,"call_id":"read","origin":"read","source":"after\n"})
+        );
+        let mut switched = messages.clone();
+        switched.push(json!({"role":"user","content":"Start another task."}));
+        assert!(authored(&switched).is_null());
+        result(
+            &mut messages,
+            "command",
+            "exec",
+            json!({"command":"cargo fmt --all"}),
+            "FAILED (exit_code: 1)\ncwd: /workspace",
+        );
+        assert!(authored(&messages).is_null());
     }
 
     #[test]
