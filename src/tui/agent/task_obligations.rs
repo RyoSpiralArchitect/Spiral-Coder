@@ -124,7 +124,7 @@ pub(crate) fn project_advisory(
         .collect();
     let mut task_requirements = super::requirement_proof::project(messages, test_cmd);
     if let Some(tests) = &mut task_requirements.authored_tests {
-        tests.include_review_source(messages, &context);
+        tests.include_review_source(messages, &context, tool_root);
     }
     let required = task_harness::benchmark_proof::required_commands(root);
     let acceptance = super::acceptance_report::CurrentEvidence::from_packet(

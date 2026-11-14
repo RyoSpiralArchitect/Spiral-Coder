@@ -30,8 +30,9 @@ impl AuthoredTests {
         &mut self,
         messages: &[serde_json::Value],
         context: &crate::tui::agent::exec_verification::ExecVerificationContext<'_>,
+        tool_root: Option<&str>,
     ) {
-        self.review_source = review_source::project(self, messages, context);
+        self.review_source = review_source::project(self, messages, context, tool_root);
     }
 }
 
@@ -309,17 +310,70 @@ mod tests {
             &format!("[{PATH}] (3 lines, 100 bytes) [range: lines 2-2; partial file]\nafter\n"),
         );
         assert!(authored(&messages).is_null());
+        let rendered_before = format!("[{PATH}] (1 lines, 6 bytes)\nafter\n");
         result(
             &mut messages,
             "read",
             "read_file",
             json!({"path":PATH}),
-            &format!("[{PATH}] (1 lines, 6 bytes)\nafter\n"),
+            &rendered_before,
         );
         assert_eq!(
             authored(&messages),
             json!({"path":PATH,"call_id":"read","origin":"read","source":"after\n"})
         );
+        use crate::tui::agent::verification::{fmt_hash, hash_text};
+        let fingerprint = |source: &str| fmt_hash(hash_text(source));
+        let absolute = format!("/workspace/{PATH}");
+        let args = json!({"path":absolute,"search":"after","replace":"latest"});
+        let patch_header = format!("OK: patched '{absolute}' (+0 lines, 1 total)");
+        let before = fingerprint("after\n");
+        let after = fingerprint("latest\n");
+        let bad = fingerprint("different\n");
+        for hashes in [
+            String::new(),
+            format!("[hash] before={bad} after={after}"),
+            format!("[hash] before={before} after={bad}"),
+            format!("[hash] before={before} after={after}\n[hash] before={before} after={bad}"),
+        ] {
+            let mut uncertain = messages.clone();
+            result(
+                &mut uncertain,
+                "unconfirmed",
+                "patch_file",
+                args.clone(),
+                &format!("{patch_header}\n{hashes}"),
+            );
+            assert!(authored(&uncertain).is_null(), "{hashes}");
+        }
+        result(
+            &mut messages,
+            "confirmed",
+            "patch_file",
+            args,
+            &format!(
+                "{patch_header}\n[hash] before={} after={after}",
+                fingerprint(&rendered_before)
+            ),
+        );
+        assert_eq!(
+            authored(&messages),
+            json!({"path":PATH,"call_id":"confirmed","origin":"reconstructed_edit","source":"latest\n"})
+        );
+        let diff = "@@\n-latest\n+final";
+        result(
+            &mut messages,
+            "diff",
+            "apply_diff",
+            json!({"path":PATH,"diff":diff}),
+            &format!(
+                "OK: applied 1/1 hunk(s) to '{PATH}'\n[hash] before={after} after={}",
+                fingerprint("final\n")
+            ),
+        );
+        assert_eq!(authored(&messages)["source"], "final\n");
+        assert_eq!(authored(&messages)["call_id"], "diff");
+        assert_eq!(view(&messages)["pending_exact_checks"], json!([CHECK]));
         let mut switched = messages.clone();
         switched.push(json!({"role":"user","content":"Start another task."}));
         assert!(authored(&switched).is_null());

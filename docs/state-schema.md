@@ -1269,7 +1269,10 @@ persisted state or coverage receipt.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
-full write. A later edit whose resulting bytes were not observed, an
+full write. A successful native patch or diff can carry a reconstructed revision
+when the full prior revision is known and the replay matches both edit
+fingerprints. The origin is `reconstructed_edit`. These existing fingerprints
+exclude trailing whitespace and serve as review context. An unconfirmed edit, an
 incomplete read of that file, or an executed workspace action clears the
 view. Recognized verification runs retain the recorded revision. The
 projection opens no files and supplies no test coverage or edit authority.
