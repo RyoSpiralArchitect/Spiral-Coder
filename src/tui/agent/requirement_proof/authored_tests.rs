@@ -361,4 +361,118 @@ mod tests {
             json!([{"id":"root","description":SHARED_RULE}])
         );
     }
+
+    #[test]
+    fn frozen_status_rules_survive_final_closeout_and_source_mutation() {
+        let task = include_str!("../../../../benchmarks/self-dogfood-v2/coupled-status/prompt.txt");
+        let contract = super::super::parse(task).unwrap().unwrap();
+        let mut messages = vec![json!({"role":"user","content":task})];
+        let checks = &contract.requirements[0].checks;
+        for check in checks.iter().filter(|check| check.baseline_failure) {
+            result(&mut messages, "baseline", "exec", json!({"command":check.command}),
+                "FAILED (exit_code: 1)\ncwd: /workspace\nAssertionError: coupled-status command missing from --help");
+        }
+        for (i, artifact) in contract.requirements[0].artifacts.iter().enumerate() {
+            let path = &artifact.path;
+            let (tool, args, receipt) = if path == "docs/state-schema.md" {
+                (
+                    "patch_file",
+                    json!({"path":path,"search":"old\n","replace":"old\nfixture\n"}),
+                    format!("OK: patched '{path}'"),
+                )
+            } else {
+                (
+                    "write_file",
+                    json!({"path":path,"content":"fixture\n"}),
+                    format!("OK: wrote '{path}' (1 lines, 8 bytes)"),
+                )
+            };
+            result(&mut messages, &format!("edit-{i}"), tool, args, &receipt);
+        }
+        for (i, check) in checks.iter().enumerate() {
+            result(
+                &mut messages,
+                &format!("check-{i}"),
+                "exec",
+                json!({"command":check.command}),
+                "OK (exit_code: 0)\ncwd: /workspace",
+            );
+        }
+        for mutated in [false, true] {
+            if mutated {
+                result(
+                    &mut messages,
+                    "source-repair",
+                    "patch_file",
+                    json!({"path":"src/coupled_status.rs","search":"fixture\n","replace":"repaired\n"}),
+                    "OK: patched 'src/coupled_status.rs'",
+                );
+            }
+            let view = serde_json::to_value(task_obligations::project_advisory(
+                &messages,
+                None,
+                Some("/workspace"),
+            ))
+            .unwrap();
+            let expected_checks: Vec<_> =
+                checks.iter().map(|check| check.command.clone()).collect();
+            assert_eq!(
+                view["pending_exact_checks"],
+                if mutated {
+                    json!(expected_checks)
+                } else {
+                    json!([])
+                }
+            );
+            assert_eq!(
+                view["task_requirements"]["pending"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty(),
+                !mutated
+            );
+            let authored = &view["task_requirements"]["authored_tests"];
+            assert_eq!(
+                authored["targets"][0]["requirement_ids"],
+                json!([
+                    "status",
+                    "behavior-1",
+                    "behavior-2",
+                    "behavior-3",
+                    "behavior-4",
+                    "behavior-5",
+                    "behavior-6",
+                    "behavior-7",
+                    "native-tests"
+                ])
+            );
+            let coder = task_obligations::prompt(&messages, None, Some("/workspace")).unwrap();
+            let observer = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+                &json!({"task_obligations":view,"work_budget":{"next_coder_turn":"work","next_coder_requests":8}}),
+                "en",
+                "incomplete_task",
+            );
+            for id in ["behavior-3", "behavior-4", "behavior-6", "native-tests"] {
+                let original = contract.requirements.iter().find(|r| r.id == id).unwrap();
+                let key = if id == "native-tests" {
+                    "test_only_requirements"
+                } else {
+                    "shared_requirements"
+                };
+                let row = authored[key]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|r| r["id"] == id)
+                    .unwrap();
+                assert_eq!(row["description"], original.description);
+                for prompt in [&coder, &observer] {
+                    assert!(
+                        prompt.contains(id) && prompt.contains(&original.description),
+                        "missing {id}, mutated={mutated}"
+                    );
+                }
+            }
+        }
+    }
 }

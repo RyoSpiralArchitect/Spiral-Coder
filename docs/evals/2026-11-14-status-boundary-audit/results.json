@@ -1,0 +1,939 @@
+{
+  "version": 1,
+  "audited_at": "2026-11-14T10:31:19.847136+09:00",
+  "head_commit": "5177c3a3497c85c129488a386224a2314ec69a12",
+  "provider_calls": 0,
+  "github_writes": false,
+  "runtime_tests": [
+    {
+      "command": "cargo test --locked --bin spiral-coder authored_tests::tests:: -- --nocapture",
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "log_key": "runtime/authored-tests.log",
+      "log_sha256": "a2d4850cac88f815076ba9ffbe3efa103d652cc4f701857db54ca757d6b49a3b"
+    },
+    {
+      "command": "cargo test --locked --bin spiral-coder status_validation_rules_and_required_test_survive_shared_projection -- --nocapture",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log_key": "runtime/context-compaction.log",
+      "log_sha256": "8d2a9871094e09612f3892934c0c1ba976c85e3124c15514adb7a86d58dbe461"
+    }
+  ],
+  "runtime_compile_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_TARGET_DIR": "external isolated target-runtime",
+    "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+    "cargo": "cargo 1.100.0 (3acc79c0c 2026-11-05)"
+  },
+  "format_check": {
+    "command": "cargo fmt --all -- --check",
+    "exit_code": 0
+  },
+  "additional_boundary_controls": {
+    "test_methods": 5,
+    "accepted_control_invocations": 25,
+    "rejection_cases": 17,
+    "cli_invocations_per_full_suite": 42
+  },
+  "reference_replay": {
+    "version": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "archived_candidate_replay": false,
+    "fresh_qualification": false,
+    "historical_outcomes_rerated": false,
+    "passed": true,
+    "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+    "pinned_pr_head": "5177c3a3497c85c129488a386224a2314ec69a12",
+    "environment": {
+      "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+      "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+      "credential_variables_removed": true,
+      "fault_unset_for_reference": true,
+      "target_dir": "/workspace/scratch/612778da359d/target-reference",
+      "bytecode_writes_disabled": true,
+      "cargo": "cargo 1.100.0 (3acc79c0c 2026-11-05)",
+      "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+      "git-head": "5177c3a3497c85c129488a386224a2314ec69a12"
+    },
+    "input_sha256": {
+      "benchmarks/self-dogfood-v2/coupled-status/README.md": "4011058a426331b9e4bac18bb1087e97fe72e674bca6d3149e6c35de9149c942",
+      "benchmarks/self-dogfood-v2/coupled-status/luna-luna.json": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+      "benchmarks/self-dogfood-v2/coupled-status/materialize.py": "e0c059c8890d8ab3320c56b97467438149724db441d63cda06ec3814ed250c21",
+      "benchmarks/self-dogfood-v2/coupled-status/native_work.json": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+      "benchmarks/self-dogfood-v2/coupled-status/packaged_status.py": "fb4cec467ccb3804272bba5729d94139c7ef28ba1c3c23edc7dd14eab09f3b84",
+      "benchmarks/self-dogfood-v2/coupled-status/prompt.txt": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+      "benchmarks/self-dogfood-v2/coupled-status/reference.rs": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "benchmarks/self-dogfood-v2/coupled-status/reference_tests.rs": "992b75526b4cc06dd05de3f724c670fe02b8e5d4a7f2a130cdfac254bd30411c",
+      "benchmarks/self-dogfood-v2/coupled-status/status_fixture.py": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+      "benchmarks/self-dogfood-v2/coupled-status/status_guide.py": "8cb033b4d2a6f65b4645e163e4cab0eb2d7861d053fcb43eae124ae70cdb4701",
+      "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py": "865ad08d02fecb88f4417ef999a94216cd0f4bf26a4516073597f51963f1ab95",
+      "benchmarks/self-dogfood-v2/coupled-status/status_paths.py": "5bea2af22e86820a04553c90c3325144a2c539f1b9345a9d159ab7fe25801016",
+      "benchmarks/self-dogfood-v2/coupled-status/status_visible.py": "f623d32244e2701e3eb62eb7006cd87c82739610ebc884fff97bd8d26f0039c6",
+      "benchmarks/self-dogfood-v2/coupled-status/stock_checks.py": "1af78be999db0ea01611c1a3a20b9a69f0d1a1efd6e293a3be87c6fb6bc8246e",
+      "benchmarks/self-dogfood-v2/coupled-status/test_sensitivity.py": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+      "docs/evals/2026-11-11-coupled-status/assess-s11.py": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+      "docs/evals/2026-11-11-coupled-status/assess.py": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+      "docs/evals/2026-11-11-coupled-status/test_sensitivity-s11.py": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+      "docs/evals/2026-11-12-authored-tests/README.md": "e241a4ebd8ba3c7e95c26152ddb671c4d553bc46a71a73697e457388123d83c3",
+      "docs/evals/2026-11-12-authored-tests/closeout-results.json": "3db5850a05b0a8fa7b4d62bec614dfb2cb2d83d99fa9de208f82644882c34a4c",
+      "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json": "276518f739a5d2b7d06d30ada4a1820c742c52d0942f8ae21d3e17c4b7fbf221",
+      "docs/evals/2026-11-12-authored-tests/results.json": "b580b1ad32f5cf91ee188571ed81e9542e08d78a4373dc62874e1a7050ef39fe",
+      "docs/evals/2026-11-14-status-boundary-audit/provenance.json": "b21a3cb72914a2226716984489db3f9bad77f2eb6d7f9e3b0e0d6612b4889bc5",
+      "docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py": "d93b52e8e39e8734fdfd7cce00118800af8404d8351f792495bd7dc3348f5ba5",
+      "docs/evals/2026-11-14-status-boundary-audit/replay_reference.py": "61a0ceab251f374ad3f770c2546294dbd3a53c39d671e56e43e9c4c8aa427082",
+      "scripts/self_dogfood/contracts.py": "c06556ba7e121aa94363c8024e54226a069c19b6f4386a9915d65fc80707341d",
+      "src/config.rs": "e0faa4368cfded589923ed6eb989ef5ef12be00600d432ec0cd36abcc0446766",
+      "src/config/env_test_support.rs": "16902a05d3563b28b28805f35a162d7995e79135e0f2ce2c78b3e397500a7c39"
+    },
+    "setup_adaptation": "Frozen status_paths setUpClass build is hoisted into one locked build; original test methods are unchanged.",
+    "repair_exemplar_scope": "Posthoc standalone mutants -> frozen reference, not patches of original S16-S19 candidates.",
+    "standalone_repair_exemplars_compiled": false,
+    "executions": [
+      {
+        "label": "cargo",
+        "argv": [
+          "cargo",
+          "--version"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/Spiral-Coder",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.165,
+        "stdout": {
+          "path": "logs/cargo.stdout.log",
+          "sha256": "d62bac2223cd9bd1a54c0ccd82d4084b7d1d60044855e2f6a1b49f4f77e6f41c"
+        },
+        "stderr": {
+          "path": "logs/cargo.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "label": "rustc",
+        "argv": [
+          "rustc",
+          "--version"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/Spiral-Coder",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.165,
+        "stdout": {
+          "path": "logs/rustc.stdout.log",
+          "sha256": "56625f11cb9e645f8e638a6bcdf0565a20a8724585b537b8548886789b9f77be"
+        },
+        "stderr": {
+          "path": "logs/rustc.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "label": "git-head",
+        "argv": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/Spiral-Coder",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.005,
+        "stdout": {
+          "path": "logs/git-head.stdout.log",
+          "sha256": "0bdaf07e486a0eeb868eb717bfc943062c879f9b1520ccb1669e7d0775bc0dc6"
+        },
+        "stderr": {
+          "path": "logs/git-head.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "label": "build",
+        "argv": [
+          "cargo",
+          "build",
+          "--locked",
+          "--bin",
+          "spiral-coder"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 85.662,
+        "stdout": {
+          "path": "logs/build.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/build.stderr.log",
+          "sha256": "30b1a53218397a91ea53b147d45c9950c11970b939989c2abea5ebf0805a1a4b"
+        }
+      },
+      {
+        "label": "oracle-reference",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "oracle",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/oracle-reference.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.899,
+        "stdout": {
+          "path": "logs/oracle-reference.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/oracle-reference.stderr.log",
+          "sha256": "f9cb581ac5797b514124c9d211462156a77603190198a069b70bd31af4cb1862"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusOracle.test_active_without_ledger",
+            "StatusOracle.test_bad_json",
+            "StatusOracle.test_budget_overflow",
+            "StatusOracle.test_completed",
+            "StatusOracle.test_completion_conflict",
+            "StatusOracle.test_directory",
+            "StatusOracle.test_duplicate_request_ids",
+            "StatusOracle.test_duplicate_task_id",
+            "StatusOracle.test_final_ledger_symlink",
+            "StatusOracle.test_inflight_is_counted",
+            "StatusOracle.test_interrupted",
+            "StatusOracle.test_interrupted_total_conflict",
+            "StatusOracle.test_missing_final_ledger",
+            "StatusOracle.test_old_default_charge",
+            "StatusOracle.test_pending_malformed",
+            "StatusOracle.test_running",
+            "StatusOracle.test_stop",
+            "StatusOracle.test_two_rounds",
+            "StatusOracle.test_unknown",
+            "StatusOracle.test_version",
+            "StatusOracle.test_wrong_counts",
+            "StatusOracle.test_wrong_parent",
+            "StatusOracle.test_wrong_task_id",
+            "StatusOracle.test_wrong_total"
+          ],
+          "tests_run": 24,
+          "failures": [],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": true
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "oracle-first_parent",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "oracle",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/oracle-first_parent.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "first_parent",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.517,
+        "stdout": {
+          "path": "logs/oracle-first_parent.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/oracle-first_parent.stderr.log",
+          "sha256": "bf478e4622761f8ac0ce1c765720ec38c077408013c39d03e5b078020a35d33a"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusOracle.test_active_without_ledger",
+            "StatusOracle.test_bad_json",
+            "StatusOracle.test_budget_overflow",
+            "StatusOracle.test_completed",
+            "StatusOracle.test_completion_conflict",
+            "StatusOracle.test_directory",
+            "StatusOracle.test_duplicate_request_ids",
+            "StatusOracle.test_duplicate_task_id",
+            "StatusOracle.test_final_ledger_symlink",
+            "StatusOracle.test_inflight_is_counted",
+            "StatusOracle.test_interrupted",
+            "StatusOracle.test_interrupted_total_conflict",
+            "StatusOracle.test_missing_final_ledger",
+            "StatusOracle.test_old_default_charge",
+            "StatusOracle.test_pending_malformed",
+            "StatusOracle.test_running",
+            "StatusOracle.test_stop",
+            "StatusOracle.test_two_rounds",
+            "StatusOracle.test_unknown",
+            "StatusOracle.test_version",
+            "StatusOracle.test_wrong_counts",
+            "StatusOracle.test_wrong_parent",
+            "StatusOracle.test_wrong_task_id",
+            "StatusOracle.test_wrong_total"
+          ],
+          "tests_run": 24,
+          "failures": [
+            {
+              "id": "StatusOracle.test_wrong_parent",
+              "label": "status_oracle.StatusOracle.test_wrong_parent"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "oracle-ledger_task_id",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "oracle",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/oracle-ledger_task_id.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "ledger_task_id",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.516,
+        "stdout": {
+          "path": "logs/oracle-ledger_task_id.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/oracle-ledger_task_id.stderr.log",
+          "sha256": "4409c2cb5ed8d86645c6f6876e70a4004954a7c4dc77f189995bd41decbb45ab"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusOracle.test_active_without_ledger",
+            "StatusOracle.test_bad_json",
+            "StatusOracle.test_budget_overflow",
+            "StatusOracle.test_completed",
+            "StatusOracle.test_completion_conflict",
+            "StatusOracle.test_directory",
+            "StatusOracle.test_duplicate_request_ids",
+            "StatusOracle.test_duplicate_task_id",
+            "StatusOracle.test_final_ledger_symlink",
+            "StatusOracle.test_inflight_is_counted",
+            "StatusOracle.test_interrupted",
+            "StatusOracle.test_interrupted_total_conflict",
+            "StatusOracle.test_missing_final_ledger",
+            "StatusOracle.test_old_default_charge",
+            "StatusOracle.test_pending_malformed",
+            "StatusOracle.test_running",
+            "StatusOracle.test_stop",
+            "StatusOracle.test_two_rounds",
+            "StatusOracle.test_unknown",
+            "StatusOracle.test_version",
+            "StatusOracle.test_wrong_counts",
+            "StatusOracle.test_wrong_parent",
+            "StatusOracle.test_wrong_task_id",
+            "StatusOracle.test_wrong_total"
+          ],
+          "tests_run": 24,
+          "failures": [
+            {
+              "id": "StatusOracle.test_wrong_task_id",
+              "label": "status_oracle.StatusOracle.test_wrong_task_id"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "oracle-completed_active",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "oracle",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/oracle-completed_active.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "completed_active",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.567,
+        "stdout": {
+          "path": "logs/oracle-completed_active.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/oracle-completed_active.stderr.log",
+          "sha256": "17b920f5f7c4ef7ca73ca8c608b101faf65e0c89c2544e0a039e5dc0b61a7d74"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusOracle.test_active_without_ledger",
+            "StatusOracle.test_bad_json",
+            "StatusOracle.test_budget_overflow",
+            "StatusOracle.test_completed",
+            "StatusOracle.test_completion_conflict",
+            "StatusOracle.test_directory",
+            "StatusOracle.test_duplicate_request_ids",
+            "StatusOracle.test_duplicate_task_id",
+            "StatusOracle.test_final_ledger_symlink",
+            "StatusOracle.test_inflight_is_counted",
+            "StatusOracle.test_interrupted",
+            "StatusOracle.test_interrupted_total_conflict",
+            "StatusOracle.test_missing_final_ledger",
+            "StatusOracle.test_old_default_charge",
+            "StatusOracle.test_pending_malformed",
+            "StatusOracle.test_running",
+            "StatusOracle.test_stop",
+            "StatusOracle.test_two_rounds",
+            "StatusOracle.test_unknown",
+            "StatusOracle.test_version",
+            "StatusOracle.test_wrong_counts",
+            "StatusOracle.test_wrong_parent",
+            "StatusOracle.test_wrong_task_id",
+            "StatusOracle.test_wrong_total"
+          ],
+          "tests_run": 24,
+          "failures": [
+            {
+              "id": "StatusOracle.test_completion_conflict",
+              "label": "status_oracle.StatusOracle.test_completion_conflict"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "paths-reference",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "paths",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_paths.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/paths-reference.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.799,
+        "stdout": {
+          "path": "logs/paths-reference.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/paths-reference.stderr.log",
+          "sha256": "d2e42ec6d7caf8afa1154f32ef3e544501c80609cfa2f5521c263dad09eed390"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusPaths.test_malformed_existing_pending_is_rejected",
+            "StatusPaths.test_missing_pending_components_are_unknown",
+            "StatusPaths.test_symlink_components_even_dangling_are_rejected"
+          ],
+          "tests_run": 3,
+          "failures": [],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": true
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "paths-dangling_pending",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "paths",
+          "/workspace/scratch/612778da359d/Spiral-Coder/benchmarks/self-dogfood-v2/coupled-status/status_paths.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/paths-dangling_pending.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "dangling_pending",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.368,
+        "stdout": {
+          "path": "logs/paths-dangling_pending.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/paths-dangling_pending.stderr.log",
+          "sha256": "d889653a82ff6257a2b12e77bd7bba97901ffebbb96e0398376f7b80ef37645a"
+        },
+        "tests": {
+          "test_ids": [
+            "StatusPaths.test_malformed_existing_pending_is_rejected",
+            "StatusPaths.test_missing_pending_components_are_unknown",
+            "StatusPaths.test_symlink_components_even_dangling_are_rejected"
+          ],
+          "tests_run": 3,
+          "failures": [
+            {
+              "id": "StatusPaths.test_symlink_components_even_dangling_are_rejected",
+              "label": "scripts.status_paths.StatusPaths.test_symlink_components_even_dangling_are_rejected (case='running/iteration-02/dangling=True')"
+            },
+            {
+              "id": "StatusPaths.test_symlink_components_even_dangling_are_rejected",
+              "label": "scripts.status_paths.StatusPaths.test_symlink_components_even_dangling_are_rejected (case='running/iteration-02/state/dangling=True')"
+            },
+            {
+              "id": "StatusPaths.test_symlink_components_even_dangling_are_rejected",
+              "label": "scripts.status_paths.StatusPaths.test_symlink_components_even_dangling_are_rejected (case='running/iteration-02/state/tui-work.json/dangling=True')"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-reference",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-reference.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": null,
+        "exit_code": 0,
+        "timed_out": false,
+        "wall_seconds": 0.616,
+        "stdout": {
+          "path": "logs/boundaries-reference.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-reference.stderr.log",
+          "sha256": "5aad8da1e0e389a4d55639805c3024fc416c3bf87d0c68801bfc463c62001ec1"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": true
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-first_parent",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-first_parent.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "first_parent",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.567,
+        "stdout": {
+          "path": "logs/boundaries-first_parent.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-first_parent.stderr.log",
+          "sha256": "bc719893f9063153c61e113a0fd3b5468883c2716d400513c02f5113bf6db412"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [
+            {
+              "id": "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_first_and_later_parent_linkage (position='first')"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-ledger_task_id",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-ledger_task_id.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "ledger_task_id",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.952,
+        "stdout": {
+          "path": "logs/boundaries-ledger_task_id.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-ledger_task_id.stderr.log",
+          "sha256": "546d4f6ecc286f9eb93cb4be4d04aaf643ff7ab99bbf03d9fcb53ccc3417d9ce"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [
+            {
+              "id": "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-completed_active",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-completed_active.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "completed_active",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.466,
+        "stdout": {
+          "path": "logs/boundaries-completed_active.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-completed_active.stderr.log",
+          "sha256": "bf64073e05028579ae414c39b3f87f7ca92020536e7af07d5c41d01a04a0f7fa"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [
+            {
+              "id": "BoundaryDiagnostics.test_completion_relations",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_completion_relations (case='active')"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-dangling_pending",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-dangling_pending.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "dangling_pending",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.465,
+        "stdout": {
+          "path": "logs/boundaries-dangling_pending.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-dangling_pending.stderr.log",
+          "sha256": "a5c92c05eb43f214f90d216b099a7ddd031131fef4c8763e6269ab941af93f67"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='running', component='iteration-02')"
+            },
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='running', component='iteration-02/state')"
+            },
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='running', component='iteration-02/state/tui-work.json')"
+            },
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='unknown', component='iteration-02')"
+            },
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='unknown', component='iteration-02/state')"
+            },
+            {
+              "id": "BoundaryDiagnostics.test_pending_absence_and_dangling_components",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_pending_absence_and_dangling_components (state='unknown', component='iteration-02/state/tui-work.json')"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      },
+      {
+        "label": "boundaries-duplicate_request",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-B",
+          "-S",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/run_unittest.py",
+          "boundaries",
+          "/workspace/scratch/612778da359d/Spiral-Coder/docs/evals/2026-11-14-status-boundary-audit/test_boundaries.py",
+          "/workspace/scratch/612778da359d/target-reference/debug/spiral-coder",
+          "/workspace/scratch/612778da359d/pr86-reference-replay/boundaries-duplicate_request.json"
+        ],
+        "cwd": "/workspace/scratch/612778da359d/pr86-reference-replay/workspace",
+        "fault": "duplicate_request",
+        "exit_code": 1,
+        "timed_out": false,
+        "wall_seconds": 0.517,
+        "stdout": {
+          "path": "logs/boundaries-duplicate_request.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "logs/boundaries-duplicate_request.stderr.log",
+          "sha256": "5dfdb6d2152d70c54d29814a79222f0ee4cdb12e56df3bf7dcd5fdec56123daf"
+        },
+        "tests": {
+          "test_ids": [
+            "BoundaryDiagnostics.test_completion_relations",
+            "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+            "BoundaryDiagnostics.test_first_and_later_parent_linkage",
+            "BoundaryDiagnostics.test_ledger_identity_with_unchanged_counts",
+            "BoundaryDiagnostics.test_pending_absence_and_dangling_components"
+          ],
+          "tests_run": 5,
+          "failures": [
+            {
+              "id": "BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges",
+              "label": "status_boundary_diagnostics.BoundaryDiagnostics.test_duplicate_id_preserves_counts_and_charges"
+            }
+          ],
+          "errors": [],
+          "skips": [],
+          "expected_failures": 0,
+          "unexpected_successes": 0,
+          "successful": false
+        },
+        "expected_outcome_observed": true
+      }
+    ],
+    "repair_exemplars": {
+      "first_parent": {
+        "source": "repair-exemplars/first_parent.mutant.rs",
+        "source_sha256": "fda7cd67e23d720ffc70a0fd03cf83acff949ab38ae231ce4d526ccd7a628e1d",
+        "patch": "repair-exemplars/first_parent.repair.patch",
+        "patch_sha256": "7e9bdc768a6451daff5af44f693900abf29fc9f3cee3011d4cfcc1ddb4d79111",
+        "compound_fault": false
+      },
+      "ledger_task_id": {
+        "source": "repair-exemplars/ledger_task_id.mutant.rs",
+        "source_sha256": "ad291e796cd0a188d40ddade93f30c6712928994d3a7f0724651f942c3a6f4fc",
+        "patch": "repair-exemplars/ledger_task_id.repair.patch",
+        "patch_sha256": "e59572257711379b811e95e039190d80ca23e4b15c0e5422a35535d5873ea95c",
+        "compound_fault": false
+      },
+      "completed_active": {
+        "source": "repair-exemplars/completed_active.mutant.rs",
+        "source_sha256": "14183ce124f31a32e7062bf0c1f84f5f7a7a1bada83bfb847a46c422a59fdf9c",
+        "patch": "repair-exemplars/completed_active.repair.patch",
+        "patch_sha256": "afe2694480b0212b697e417331e5b29733c710caea07bacbfedeeb5a7b8b5b8a",
+        "compound_fault": true
+      },
+      "dangling_pending": {
+        "source": "repair-exemplars/dangling_pending.mutant.rs",
+        "source_sha256": "1e3d1ca7e764542c51b6293bedb6ecc6f55e21d0234c927ebff9732e9224b2cf",
+        "patch": "repair-exemplars/dangling_pending.repair.patch",
+        "patch_sha256": "66e56cdcf5bda372dbeb8ce7f3bb1c32b58e9aa88bd45f266d90f7dac7a5a013",
+        "compound_fault": false
+      },
+      "duplicate_request": {
+        "source": "repair-exemplars/duplicate_request.mutant.rs",
+        "source_sha256": "ed2ace3d845b79774165a9b9ea880db84ac04ded66e635383205e3572547b7ad",
+        "patch": "repair-exemplars/duplicate_request.repair.patch",
+        "patch_sha256": "6d521af01a76909aaf4cdaa590ce118f03e87f630647fe3f6dc2ebd340d6fbd8",
+        "compound_fault": false
+      }
+    },
+    "raw_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+    "instrumented_sha256": "66aca92b38c6c0000b7ce42a522733c422bb8663044ad354df3f72072735c3a2",
+    "binary_sha256": "f37654958c904f21b5a74f605705dfaa514a39b0e561bf264c8258043efb0f92",
+    "original_and_current_inputs_unchanged": true
+  },
+  "repair_patch_application": [
+    {
+      "fault": "first_parent",
+      "apply_check_exit_code": 0,
+      "apply_exit_code": 0,
+      "restored_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "exact_frozen_reference_bytes": true,
+      "scope": "posthoc standalone mutant; original candidate unavailable"
+    },
+    {
+      "fault": "ledger_task_id",
+      "apply_check_exit_code": 0,
+      "apply_exit_code": 0,
+      "restored_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "exact_frozen_reference_bytes": true,
+      "scope": "posthoc standalone mutant; original candidate unavailable"
+    },
+    {
+      "fault": "completed_active",
+      "apply_check_exit_code": 0,
+      "apply_exit_code": 0,
+      "restored_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "exact_frozen_reference_bytes": true,
+      "scope": "posthoc standalone mutant; original candidate unavailable"
+    },
+    {
+      "fault": "dangling_pending",
+      "apply_check_exit_code": 0,
+      "apply_exit_code": 0,
+      "restored_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "exact_frozen_reference_bytes": true,
+      "scope": "posthoc standalone mutant; original candidate unavailable"
+    },
+    {
+      "fault": "duplicate_request",
+      "apply_check_exit_code": 0,
+      "apply_exit_code": 0,
+      "restored_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "exact_frozen_reference_bytes": true,
+      "scope": "posthoc standalone mutant; original candidate unavailable"
+    }
+  ],
+  "receipts_file": "receipt-files.json",
+  "receipts_sha256": "5410badf2a259c0577ed5ba7ab9c8012b4652499a88d6445f45b0e87377628c0",
+  "not_executed": [
+    "exact S16-S19 candidate replay or repair",
+    "new model/provider run",
+    "full check-local.sh qualification",
+    "full Rust test suite",
+    "original archived Rust identity-list comparison"
+  ],
+  "historical_evaluations_unchanged": true
+}
