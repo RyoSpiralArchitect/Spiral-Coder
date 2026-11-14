@@ -285,6 +285,8 @@ mod tests {
         );
         assert!(observer.contains("assert_eq!(requests.len(), count)"));
         assert!(coder.contains("assert_eq!(requests.len(), count)"));
+        assert!(observer.contains("preserve the recorded path"));
+        assert!(coder.contains("preserve its recorded path"));
         assert_eq!(view(&messages)["pending_exact_checks"], json!([]));
         result(
             &mut messages,
