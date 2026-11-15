@@ -133,6 +133,73 @@ async fn failed_sends_stop_at_the_existing_retry_cap_with_budget_left() {
 }
 
 #[tokio::test]
+async fn a_silent_endpoint_cannot_multiply_timeouts_across_retries_and_urls() {
+    // The server accepts each POST and never answers; every attempt burns
+    // its timeout. Without a shared deadline, fallback URLs × retries would
+    // hold one wire request in-flight for ~20x timeout_seconds.
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    let finished = Arc::new(AtomicBool::new(false));
+    let done = finished.clone();
+    let server = std::thread::spawn(move || {
+        let mut held = Vec::new();
+        while !done.load(Ordering::SeqCst) {
+            match listener.accept() {
+                Ok((socket, _)) => held.push(socket),
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    std::thread::sleep(Duration::from_millis(2));
+                }
+                Err(e) => panic!("{e}"),
+            }
+        }
+        held
+    });
+    let cli = crate::Cli::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--model",
+        "offline",
+        "--base-url",
+        &url,
+        "--api-key",
+        "offline",
+        "--timeout-seconds",
+        "2",
+    ])
+    .unwrap();
+    let cfg = cli.common.to_partial_config().resolve().unwrap();
+    let budget = crate::work_budget::WorkBudget::new("task", 32, None);
+    let (tx, _rx) = mpsc::channel(128);
+    let started = std::time::Instant::now();
+    let result = crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: budget.clone(),
+            role: "coder",
+        }),
+        stream_openai_compat_json(
+            &reqwest::Client::new(),
+            &cfg,
+            &[json!({"role":"user","content":"inspect"})],
+            None,
+            tx,
+        ),
+    )
+    .await;
+    let elapsed = started.elapsed();
+    finished.store(true, Ordering::SeqCst);
+    server.join().unwrap();
+    assert!(result.is_err());
+    // Shared budget is one attempt-timeout plus the retry backoff chain;
+    // stay far below the retry×fallback multiplication this guard replaced.
+    assert!(
+        elapsed < Duration::from_secs(15),
+        "one in-flight request ran {elapsed:?} on a dead route"
+    );
+}
+
+#[tokio::test]
 async fn invalid_request_construction_is_not_a_connection_retry() {
     let error = reqwest::Client::new()
         .post("not a URL")

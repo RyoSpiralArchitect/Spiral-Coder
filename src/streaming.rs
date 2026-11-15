@@ -142,6 +142,48 @@ fn retry_after_duration(headers: &reqwest::header::HeaderMap) -> Option<Duration
     Some(Duration::from_secs(secs.min(15)))
 }
 
+/// One logical provider request may span endpoint fallbacks and connect
+/// retries. Each attempt is bounded by `timeout_seconds`, but without an
+/// overall cap a dead route multiplies that bound across URLs and retries
+/// (~20min of in-flight silence). The whole attempt set shares one
+/// wall-clock deadline: one full attempt plus the retry backoff chain, so
+/// fast-failing endpoints keep their retries while a silent route cannot
+/// multiply the per-attempt timeout.
+#[derive(Clone, Copy)]
+struct RequestDeadline {
+    deadline: std::time::Instant,
+}
+
+impl RequestDeadline {
+    fn start(cfg: &RunConfig, max_retries: usize) -> Self {
+        let backoff: Duration = (0..max_retries)
+            .map(|attempt| backoff_delay(&cfg.provider, None, attempt, None))
+            .sum();
+        Self {
+            deadline: std::time::Instant::now()
+                + Duration::from_secs(cfg.timeout_seconds)
+                + backoff,
+        }
+    }
+
+    fn remaining(&self) -> Duration {
+        self.deadline
+            .saturating_duration_since(std::time::Instant::now())
+    }
+
+    /// Per-attempt timeout for the next send, or `None` when the shared
+    /// budget is already spent.
+    fn attempt_timeout(&self, cfg: &RunConfig) -> Option<Duration> {
+        let remaining = self.remaining();
+        (!remaining.is_zero()).then(|| remaining.min(Duration::from_secs(cfg.timeout_seconds)))
+    }
+
+    /// Retry backoff capped by the remaining shared budget.
+    async fn sleep(&self, delay: Duration) {
+        tokio::time::sleep(delay.min(self.remaining())).await;
+    }
+}
+
 fn max_connect_retries(provider: &ProviderKind) -> usize {
     match provider {
         // Mistral commonly returns bursty 429s during eval runs; a slightly deeper budget
@@ -417,6 +459,7 @@ async fn stream_chat(
     let mut request_meter: Option<accounting::RequestMeter> = None;
 
     let max_connect_retries = max_connect_retries(&cfg.provider);
+    let deadline = RequestDeadline::start(cfg, max_connect_retries);
 
     for url in stream_chat_urls_for_base_url(&cfg.base_url) {
         let proxy_hint = if cfg!(target_os = "windows") {
@@ -429,10 +472,17 @@ async fn stream_chat(
         let mut payload_try = payload.clone();
         let mut attempt: usize = 0;
         loop {
+            let Some(attempt_timeout) = deadline.attempt_timeout(cfg) else {
+                return Err(last_err.unwrap_or_else(|| {
+                    anyhow!(
+                        "{label} request deadline exceeded across retries and endpoint fallbacks"
+                    )
+                }));
+            };
             let mut req = client
                 .post(&url)
                 .header("Content-Type", "application/json")
-                .timeout(Duration::from_secs(cfg.timeout_seconds))
+                .timeout(attempt_timeout)
                 .json(&payload_try);
             if let Some(key) = &cfg.api_key {
                 req = req.bearer_auth(key);
@@ -457,7 +507,7 @@ async fn stream_chat(
                         let d = backoff_delay(&cfg.provider, None, attempt, None);
                         emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
                         attempt = attempt.saturating_add(1);
-                        tokio::time::sleep(d).await;
+                        deadline.sleep(d).await;
                         continue;
                     }
                     return Err(err);
@@ -496,7 +546,7 @@ async fn stream_chat(
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);
-                tokio::time::sleep(d).await;
+                deadline.sleep(d).await;
                 continue;
             }
 
@@ -514,7 +564,7 @@ async fn stream_chat(
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);
-                tokio::time::sleep(d).await;
+                deadline.sleep(d).await;
                 continue;
             }
 
@@ -543,10 +593,15 @@ async fn stream_chat(
         // No tools on completions endpoint.
         let mut attempt: usize = 0;
         loop {
+            let Some(attempt_timeout) = deadline.attempt_timeout(cfg) else {
+                return Err(anyhow!(
+                    "{label} request deadline exceeded across retries and endpoint fallbacks"
+                ));
+            };
             let mut req = client
                 .post(&url)
                 .header("Content-Type", "application/json")
-                .timeout(Duration::from_secs(cfg.timeout_seconds))
+                .timeout(attempt_timeout)
                 .json(&comp_payload);
             if let Some(key) = &cfg.api_key {
                 req = req.bearer_auth(key);
@@ -569,7 +624,7 @@ async fn stream_chat(
                         let d = backoff_delay(&cfg.provider, None, attempt, None);
                         emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
                         attempt = attempt.saturating_add(1);
-                        tokio::time::sleep(d).await;
+                        deadline.sleep(d).await;
                         continue;
                     }
                     return Err(anyhow!(e).context("request failed"));
@@ -601,7 +656,7 @@ async fn stream_chat(
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);
-                tokio::time::sleep(d).await;
+                deadline.sleep(d).await;
                 continue;
             }
 
@@ -609,7 +664,7 @@ async fn stream_chat(
                 let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
                 emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
                 attempt = attempt.saturating_add(1);
-                tokio::time::sleep(d).await;
+                deadline.sleep(d).await;
                 continue;
             }
 
@@ -765,9 +820,15 @@ pub async fn stream_anthropic(
     apply_model_compat(&mut payload, cfg);
 
     let max_connect_retries = max_connect_retries(&cfg.provider);
+    let deadline = RequestDeadline::start(cfg, max_connect_retries);
     let mut attempt: usize = 0;
     let mut request_meter: Option<accounting::RequestMeter> = None;
     let resp = loop {
+        let Some(attempt_timeout) = deadline.attempt_timeout(cfg) else {
+            return Err(anyhow!(
+                "Anthropic request deadline exceeded across retries"
+            ));
+        };
         drop(request_meter.take());
         request_meter = Some(accounting::RequestMeter::begin(&payload, &tx).await?);
         let r = client
@@ -779,7 +840,7 @@ pub async fn stream_anthropic(
             )
             .header("Accept", "text/event-stream")
             .header("Content-Type", "application/json")
-            .timeout(Duration::from_secs(cfg.timeout_seconds))
+            .timeout(attempt_timeout)
             .json(&payload)
             .send()
             .await;
@@ -794,7 +855,7 @@ pub async fn stream_anthropic(
                     let d = backoff_delay(&cfg.provider, None, attempt, None);
                     emit_retry_telemetry(&tx, &cfg.provider, None, attempt, d, &url).await;
                     attempt = attempt.saturating_add(1);
-                    tokio::time::sleep(d).await;
+                    deadline.sleep(d).await;
                     continue;
                 }
                 return Err(anyhow!(e).context("request failed"));
@@ -815,7 +876,7 @@ pub async fn stream_anthropic(
             let d = backoff_delay(&cfg.provider, Some(status), attempt, ra);
             emit_retry_telemetry(&tx, &cfg.provider, Some(status), attempt, d, &url).await;
             attempt = attempt.saturating_add(1);
-            tokio::time::sleep(d).await;
+            deadline.sleep(d).await;
             continue;
         }
 
