@@ -68,9 +68,13 @@ pub(crate) fn working_memory_facts_for_exec(
     facts
 }
 
+/// File-tool failures arrive as `ERROR: ...` or `ERROR <verb> ...`; both
+/// formats deny success evidence. Successful results carry a bracketed
+/// header (`[path]`, `[search_files: ...]`, `OK:`), so an `error` prefix
+/// cannot appear on a real success.
 pub(crate) fn non_exec_tool_succeeded(content: &str) -> bool {
     let low = content.to_ascii_lowercase();
-    !low.starts_with("error:")
+    !low.starts_with("error")
         && !low.starts_with("ok: unchanged ")
         && !low.contains("rejected by user")
         && !low.contains("governor blocked")
@@ -607,5 +611,30 @@ pub(crate) fn parse_string_list_arg(value: &serde_json::Value) -> Vec<String> {
             .collect(),
         serde_json::Value::String(s) => parse_plan_items(s),
         _ => Vec::new(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::non_exec_tool_succeeded;
+
+    #[test]
+    fn capitalized_file_tool_failures_deny_success_evidence() {
+        for content in [
+            "ERROR reading 'src/cli.rs': No such file or directory (os error 2)",
+            "ERROR writing temp file: disk full",
+            "ERROR creating parent directories: permission denied",
+            "ERROR finalizing write to 'src/lib.rs': os error 1",
+            "ERROR: preservation check blocked write",
+        ] {
+            assert!(!non_exec_tool_succeeded(content), "{content}");
+        }
+        for content in [
+            "[src/cli.rs] (10 lines, 200 bytes) use a;",
+            "[search_files: 'x' — 3 match(es)] src/a.rs",
+            "OK: wrote 'src/lib.rs' (120 bytes)",
+        ] {
+            assert!(non_exec_tool_succeeded(content), "{content}");
+        }
     }
 }
