@@ -4,6 +4,7 @@ mod artifact_preservation;
 mod cargo_inputs;
 mod chatbot;
 mod config;
+mod coupled_status;
 mod eval_merge_gate;
 mod exec;
 mod execution_evidence;
@@ -98,6 +99,10 @@ enum Command {
 
     /// Run one bounded Coder/Observer task through the native TUI execution loop
     CoupledRun(tui::events::coupled_run::Args),
+
+    /// Read-only status of a coupled-run output directory; reconciles the
+    /// manifest with per-round request ledgers without provider calls
+    CoupledStatus(coupled_status::Args),
 
     /// Print an internal manifest / parity / replay inventory for this repo
     Inventory(InventoryArgs),
@@ -446,6 +451,10 @@ const INVENTORY_CLI_COMMANDS: &[(&str, &str)] = &[
         "inspect runtime eval merge readiness and rollback preview",
     ),
     ("tui-replay", "deterministic TUI stuck-case replay"),
+    (
+        "coupled-status",
+        "read-only coupled-run manifest/ledger reconciliation",
+    ),
     ("inventory", "repo/runtime manifest and parity surfaces"),
     (
         "promote-harness",
@@ -638,6 +647,7 @@ async fn main() -> Result<()> {
         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
+        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
         Some(Command::Inventory(args)) => run_inventory(args).await,
