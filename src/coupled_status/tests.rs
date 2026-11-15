@@ -175,6 +175,17 @@ fn active_iteration_ledger_is_not_a_pending_mismatch() {
 }
 
 #[test]
+fn active_iteration_without_ledger_is_not_an_issue() {
+    let dir = tempfile::tempdir().unwrap();
+    // A live round that has not persisted its ledger yet must not be flagged.
+    std::fs::create_dir_all(dir.path().join("iteration-01")).unwrap();
+    let inspected = inspect_iteration(dir.path(), "iteration-01", ManifestEntry::Active).unwrap();
+    assert_eq!(inspected["active"], true);
+    assert_eq!(inspected["reconciled"], true);
+    assert_eq!(inspected["issues"], json!([]));
+}
+
+#[test]
 fn corrupt_ledger_is_unreadable_unknown_not_fatal() {
     let dir = tempfile::tempdir().unwrap();
     let round = dir.path().join("iteration-01");

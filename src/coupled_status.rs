@@ -263,7 +263,7 @@ fn inspect_iteration(run_dir: &Path, directory: &str, entry: ManifestEntry) -> R
         );
     }
     match &ledger {
-        LedgerLoad::Missing if round.is_dir() => issues.push(format!(
+        LedgerLoad::Missing if round.is_dir() && !entry.active() => issues.push(format!(
             "{directory}: no state/tui-work.json or report.json work snapshot"
         )),
         LedgerLoad::Unreadable { source, error } => issues.push(format!(
@@ -284,6 +284,7 @@ fn inspect_iteration(run_dir: &Path, directory: &str, entry: ManifestEntry) -> R
             "completed": null,
             "task_requests": null,
             "wire_requests": null,
+            "progress": null,
             "manifest_row": false,
         }),
     };
@@ -518,7 +519,7 @@ pub(crate) fn run(args: Args) -> Result<()> {
         "totals": {
             "task_requests": all_ledgers.then_some(task_total),
             "wire_requests": all_ledgers.then_some(wire_total),
-            "pending_requests": pending_total,
+            "pending_requests": all_ledgers.then_some(pending_total),
         },
         "qualification": {
             "recorded_complete": recorded_complete,
