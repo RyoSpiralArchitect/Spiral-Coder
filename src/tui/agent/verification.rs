@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "assertion_message.rs"]
+mod assertion_message;
+
 /// Classifies the kind of error from stderr/stdout so that targeted recovery
 /// hints can be injected before the generic diagnosis protocol.
 #[derive(Debug, Clone, PartialEq)]
@@ -21,8 +24,16 @@ impl Default for ErrorClass {
 
 pub(super) fn classify_error(stderr: &str, stdout: &str) -> ErrorClass {
     let combined = format!("{stderr}\n{stdout}");
-    let low = combined.to_ascii_lowercase();
+    // A failed assertion's message quotes the program under test. Its words are
+    // the behavior under check, not the runner's own path, syntax or network.
+    let (asserted, rest) = assertion_message::without_assertion_messages(&combined);
+    match classify_keywords(&rest.to_ascii_lowercase()) {
+        ErrorClass::Unknown if asserted => ErrorClass::Logic,
+        class => class,
+    }
+}
 
+fn classify_keywords(low: &str) -> ErrorClass {
     if low.contains("command not found")
         || low.contains("is not recognized as the name")
         || low.contains("is not recognized as an internal")

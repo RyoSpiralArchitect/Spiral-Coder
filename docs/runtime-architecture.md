@@ -214,8 +214,19 @@ Fix-existing focus inference prefers a module file that was actually read (e.g.
 The separate new-repo scaffold
 policy retains the recovery gate's existing missing-artifact creation allowance.
 
+The failed-command classifier (`verification::classify_error`) picks the
+environment, syntax, path, dependency, network or logic hint shown before the
+diagnosis protocol. A failed assertion's message quotes the program under test,
+so keywords inside it (for example its `No such file or directory` stderr or a
+`parse error` it reported) do not select a runner path or syntax class:
+`assertion_message.rs` removes Python/Node/pytest `AssertionError` and Rust
+assertion messages up to the next blank line or report structure, and a failure
+with no other evidence becomes a logic failure. Genuine `FileNotFoundError`,
+`SyntaxError` or missing-command output outside an assertion keeps its class.
+
 Current code:
-- `src/tui/agent.rs` (AgentState + error classifier)
+- `src/tui/agent.rs` (AgentState)
+- `src/tui/agent/verification.rs`, `src/tui/agent/assertion_message.rs` (error classifier)
 - `src/tui/agent/failure_memory.rs` (shared live/resume repetition state + stuck hints)
 - `src/tui/agent/reflection_action.rs` (execution-relevant action identity for reflection alignment)
 - `src/tui/agent/progress_gate.rs` (evidence-aware observation and baseline-check pressure)
