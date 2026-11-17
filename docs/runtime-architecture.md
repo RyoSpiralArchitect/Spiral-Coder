@@ -468,6 +468,12 @@ test; the original scope and preservation gates still decide what can be edited.
 A read never grants completion proof, and unrelated successful checks do not
 clear the pending failure. This avoids sending an authored fixture failure back
 to an unrelated production module merely because that module was read earlier.
+Symmetrically, an unrelated successful check does not revoke a diagnosis already
+made for the pending failure. An `unlocalized` or `unavailable` focus has no
+exact location left to read and never becomes `observed`; once a diagnostic
+result has moved it to the fix stage, a different check passing keeps that
+stage instead of returning to diagnose. A failure still re-opens diagnosis, and
+an `awaiting_read` focus still requires its exact read.
 
 ### Follow up after a repeated diagnosis
 

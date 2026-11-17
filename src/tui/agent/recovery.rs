@@ -243,7 +243,19 @@ Required now: {}",
             return;
         }
         if kind == ExecKind::Verify && self.focus.is_pending() {
-            self.stage = Some(self.pending_stage());
+            // A different check passing neither repairs nor re-opens the pending
+            // failure. A focus with no exact location left to read never becomes
+            // `observed`, so keep a diagnosis already made for it instead of
+            // demanding a new one after every unrelated pass.
+            let pending = self.pending_stage();
+            let keep_diagnosis = self.stage == Some(RecoveryStage::Fix)
+                && pending == RecoveryStage::Diagnose
+                && !self.focus.requires_read();
+            self.stage = Some(if keep_diagnosis {
+                RecoveryStage::Fix
+            } else {
+                pending
+            });
             return;
         }
         match (self.stage, kind) {

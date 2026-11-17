@@ -966,3 +966,75 @@ fn correlated_range_read_advances_diagnosis_and_survives_resume() {
     assert!(restored.observed());
     assert!(restored.progress_survives(&messages, root.path().to_str(), Some(CHECK)));
 }
+
+fn s25_visible_failure(observation: Observation, location: LocationEvidence) -> RecoveryGovernor {
+    // Sealed S25 round 6: the protected visible check failed, its last confirmed
+    // path is the test file, and the current location is unknown.
+    RecoveryGovernor {
+        stage: Some(RecoveryStage::Diagnose),
+        required_verification: VerificationLevel::Behavioral,
+        focus: RecoveryFocus {
+            pending: Some(FailureFocus {
+                path: "scripts/status_visible.py".into(),
+                diagnostic: "FAIL: test_status_summarizes_completed_and_interrupted_records (scripts.status_visible.StatusVisible.test_status_summarizes_completed_and_interrupted_records)".into(),
+                check: "python3 -S -m unittest -v scripts.status_visible".into(),
+                observation,
+                location,
+            }),
+            deferred: Vec::new(),
+        },
+    }
+}
+
+#[test]
+fn an_unrelated_passing_check_keeps_the_diagnosis_of_an_unlocalized_failure() {
+    let rerun = call(
+        "visible",
+        "exec",
+        json!({"command":"python3 -S -m unittest -v scripts.status_visible"}),
+    );
+    for observation in [Observation::Unlocalized, Observation::Unavailable] {
+        let mut g = s25_visible_failure(observation, LocationEvidence::LastConfirmed);
+        // A diagnostic read of the implementation reaches the fix stage.
+        g.on_diagnostic_result(true);
+        assert_eq!(g.stage, Some(RecoveryStage::Fix));
+        // `cargo test --bin` then passes. The visible failure is still pending,
+        // and the diagnosis already made for it stands.
+        g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
+        assert!(g.focus.is_pending());
+        assert_eq!(g.stage, Some(RecoveryStage::Fix), "{observation:?}");
+        assert_eq!(
+            g.maybe_block_tool(
+                &rerun,
+                None,
+                agent::TaskHarness::infer("Implement coupled-status", false),
+                false
+            ),
+            None
+        );
+        // A failure still re-opens diagnosis.
+        g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), false);
+        assert_eq!(g.stage, Some(RecoveryStage::Diagnose));
+    }
+}
+
+#[test]
+fn unrelated_passing_checks_keep_the_existing_stage_rules_elsewhere() {
+    // No diagnosis yet: an unrelated pass does not grant one.
+    let mut g = s25_visible_failure(Observation::Unlocalized, LocationEvidence::LastConfirmed);
+    g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
+    assert_eq!(g.stage, Some(RecoveryStage::Diagnose));
+    // An exact location still has to be read.
+    let mut g = s25_visible_failure(Observation::AwaitingRead, LocationEvidence::Current);
+    g.stage = Some(RecoveryStage::Fix);
+    g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
+    assert_eq!(g.stage, Some(RecoveryStage::Diagnose));
+    // An observed location keeps fix; an attempted repair still needs its own check.
+    let mut g = s25_visible_failure(Observation::Observed, LocationEvidence::Current);
+    g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
+    assert_eq!(g.stage, Some(RecoveryStage::Fix));
+    let mut g = s25_visible_failure(Observation::RepairAttempted, LocationEvidence::Current);
+    g.stage = Some(RecoveryStage::Fix);
+    g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
+    assert_eq!(g.stage, Some(RecoveryStage::Verify));
+}
