@@ -1,0 +1,46 @@
+{
+  "source": "S23 iteration-06 sealed session (run receipt 729709b1\u2026)",
+  "admitted_plan": {
+    "acceptance_criteria": [
+      "Native/npm summaries are read-only and honest.",
+      "Invalid records fail cleanly.",
+      "Documentation, authored tests, and all checks pass."
+    ],
+    "alignment_anchor": {
+      "acceptance_criteria": [
+        "Native/npm summaries are read-only and honest.",
+        "Invalid records fail cleanly.",
+        "Documentation, authored tests, and all checks pass."
+      ],
+      "assumptions": "Existing edits and protected fixtures are authoritative.",
+      "goal": "Finish coupled-status, required artifacts, strict validation, and all exact checks.",
+      "risks": "Guide may still expose source accounting mismatch; pending checks may fail.",
+      "steps": [
+        "Run the required guide check.",
+        "Run integration and path checks.",
+        "Report verified outcomes."
+      ]
+    },
+    "assumptions": "Retained native evidence is authoritative and no further edit or verification call is available.",
+    "goal": "Finish coupled-status, required artifacts, strict validation, and all exact checks.",
+    "risks": "The guide accounting mismatch remains unresolved; five exact checks lack current receipts.",
+    "steps": [
+      "Repair request counting from native ledger evidence.",
+      "Run required checks separately.",
+      "Report only verified criteria."
+    ]
+  },
+  "drifted_plans": [
+    "goal: Finish coupled-status strict validation, required artifacts, and exact verification.\nsteps: 1) Inspect and repair the remaining directory predicate. 2) Add tests/docs and complete validation. 3) Run all six exact checks and report measured results.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Current predicate may still contain an indexing or prefix bug; remaining work exceeds the available slice.\nassumptions: Native fixture schema remains authoritative.",
+    "goal: Complete coupled-status artifacts and strict validation, then pass all six exact checks.\nsteps: 1) Inspect current parser and fixture schemas. 2) Add focused public-CLI tests and required documentation. 3) Complete missing validation only where evidence shows gaps. 4) Run each remaining exact check separately and report.\nacceptance: 1) Native/npm summaries are read-only and honest. 2) Invalid records fail cleanly. 3) Documentation, authored tests, and all checks pass.\nrisks: Existing parser may omit hidden path and linkage rules; authored tests may expose schema mismatches.\nassumptions: Protected fixture helpers and native ledgers remain authoritative.",
+    "goal: Finish coupled-status validation, measured documentation, tests, and all exact checks.\nsteps: 1) Diagnose guide failure. 2) Patch measured example and missing validation/tests if needed. 3) Run each pending exact check separately. 4) Report only verified outcomes.\nacceptance: 1) Native/npm summaries are read-only and honest. 2) Invalid records fail cleanly. 3) Documentation, authored tests, and all checks pass.\nrisks: Guide example mismatch; parser may still miss strict path and ledger rules.\nassumptions: Existing source artifacts and visible-check receipt remain usable.",
+    "goal: Finish coupled-status, strict validation, authored tests, documentation, and all exact checks.\nsteps: 1) Repair guide/source mismatch. 2) Complete validation and authored tests if still missing. 3) Run all six exact checks separately. 4) Report verified acceptance only.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Source output still differs from fixture; strict path validation may be incomplete.\nassumptions: The exact guide check is the authoritative next diagnostic.",
+    "goal: Finish coupled-status and obtain trustworthy exact verification.\nsteps: 1) Verify the repaired guide/example. 2) Run remaining integration and path checks. 3) Report any unresolved strict-parser gaps honestly.\nacceptance: 1) Guide and native output agree. 2) Integration/path checks pass. 3) No unsupported completion claim.\nrisks: Source accounting may still mismatch the fixture; authored integration coverage may remain incomplete.\nassumptions: Existing edits are the candidate state and protected fixtures are authoritative.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance: 1) Native/npm summaries are read-only and honest. 2) Invalid records fail cleanly. 3) Documentation, authored tests, and all checks pass.\nrisks: Accounting schema may differ from inferred fields; remaining checks may expose strict-validation gaps.\nassumptions: Native fixture request arrays are authoritative.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Ledger accounting may remain on a stale source path; pending checks may expose strict-validation gaps.\nassumptions: Native fixture request arrays are authoritative, and current source is the implementation under test.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Accounting may still use the wrong ledger field; remaining checks may expose unresolved validation gaps.\nassumptions: Native fixture request arrays are authoritative and the current source is the tested implementation.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Accounting remains wrong; pending exact checks may fail.\nassumptions: Current source and protected fixtures are authoritative.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: The known accounting mismatch may persist; remaining checks may expose strict-validation gaps.\nassumptions: Protected fixture expectations and current source are authoritative.",
+    "goal: Finish coupled-status strict accounting and obtain required verification receipts.\nsteps: 1) Repair request counting from native ledger evidence. 2) Run required checks separately. 3) Report only verified criteria.\nacceptance:\n1. Native/npm summaries are read-only and honest.\n2. Invalid records fail cleanly.\n3. Documentation, authored tests, and all checks pass.\nrisks: Accounting remains wrong; pending checks may expose strict-validation gaps.\nassumptions: Protected fixtures and current source are authoritative."
+  ]
+}

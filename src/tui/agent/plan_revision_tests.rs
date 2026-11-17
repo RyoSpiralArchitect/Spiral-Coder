@@ -297,3 +297,122 @@ fn recorded_flattened_acceptance_requires_numbered_boundaries() {
     assert_eq!(restored.steps, flat.steps);
     assert_eq!(restored.acceptance_criteria, items);
 }
+
+/// The sealed fixture keeps each plan body without its tags.
+fn sealed_plan(text: &serde_json::Value) -> PlanBlock {
+    parse_plan_block(&format!("<plan>\n{}\n</plan>", text.as_str().unwrap())).unwrap()
+}
+
+#[test]
+fn sealed_s23_reworded_goals_resume_the_admitted_obligations_when_acceptance_survives() {
+    let root = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/benchmarks/self-dogfood-v2/coupled-status/prompt.txt"
+    ));
+    let sample: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/plan-revision/s23-admitted-acceptance.json"
+    )))
+    .unwrap();
+    let contract = derive_task_contract(root, false, true, VerificationLevel::Behavioral);
+    let resolver = InstructionResolver::new(root, false, false);
+    let admitted: PlanBlock = serde_json::from_value(sample["admitted_plan"].clone()).unwrap();
+    let messages = [
+        json!({"role":"user","content":root}),
+        json!({"role":"assistant","accepted_plan":sample["admitted_plan"]}),
+    ];
+    let (mut restored, mut refused) = (0, 0);
+    for text in sample["drifted_plans"].as_array().unwrap() {
+        let proposal = sealed_plan(text);
+        // Every sealed proposal was rejected as drift.
+        assert!(
+            validate_plan_for_task_contract(&proposal, false, &contract, &resolver, &messages)
+                .is_err()
+        );
+        match plan_revision::preserve_admitted_obligations(
+            &proposal, &admitted, &messages, &contract,
+        ) {
+            Some(plan) => {
+                restored += 1;
+                assert_eq!(plan.goal, admitted.goal);
+                assert_eq!(plan.acceptance_criteria, admitted.acceptance_criteria);
+                assert_eq!(plan.steps, proposal.steps);
+                assert_eq!(plan.risks, proposal.risks);
+                assert_eq!(plan.assumptions, proposal.assumptions);
+                validate_plan_for_task_contract(&plan, false, &contract, &resolver, &messages)
+                    .unwrap();
+            }
+            None => {
+                refused += 1;
+                assert_ne!(proposal.acceptance_criteria, admitted.acceptance_criteria);
+            }
+        }
+    }
+    assert!(restored >= 8, "restored {restored}, refused {refused}");
+    assert!(refused >= 1, "a reworded acceptance must stay rejected");
+
+    let mut proposal = sealed_plan(&sample["drifted_plans"][0]);
+    // No admitted plan in this task, a changed or reordered criterion, or an
+    // unchanged plan is never repaired.
+    assert!(plan_revision::preserve_admitted_obligations(
+        &proposal,
+        &admitted,
+        &messages[..1],
+        &contract
+    )
+    .is_none());
+    proposal.acceptance_criteria.swap(0, 1);
+    assert!(plan_revision::preserve_admitted_obligations(
+        &proposal, &admitted, &messages, &contract
+    )
+    .is_none());
+    assert!(plan_revision::preserve_admitted_obligations(
+        &admitted, &admitted, &messages, &contract
+    )
+    .is_none());
+}
+
+#[test]
+fn one_line_enumerated_acceptance_resumes_only_when_every_item_matches_in_order() {
+    let root = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/benchmarks/self-dogfood-v2/coupled-status/prompt.txt"
+    ));
+    let sample: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/plan-revision/s23-admitted-acceptance.json"
+    )))
+    .unwrap();
+    let contract = derive_task_contract(root, false, true, VerificationLevel::Behavioral);
+    let admitted: PlanBlock = serde_json::from_value(sample["admitted_plan"].clone()).unwrap();
+    let messages = [
+        json!({"role":"user","content":root}),
+        json!({"role":"assistant","accepted_plan":sample["admitted_plan"]}),
+    ];
+    let mut proposal = admitted.clone();
+    proposal.goal = "Finish the remaining coupled-status checks.".into();
+    for (separator, style) in [(") ", ")"), (". ", ".")] {
+        let _ = separator;
+        proposal.acceptance_criteria = vec![admitted
+            .acceptance_criteria
+            .iter()
+            .enumerate()
+            .map(|(i, item)| format!("{}{style} {item}", i + 1))
+            .collect::<Vec<_>>()
+            .join(" ")];
+        let restored = plan_revision::preserve_admitted_obligations(
+            &proposal, &admitted, &messages, &contract,
+        )
+        .unwrap();
+        assert_eq!(restored.acceptance_criteria, admitted.acceptance_criteria);
+        assert_eq!(restored.goal, admitted.goal);
+    }
+    proposal.acceptance_criteria = vec![format!(
+        "1) {} 2) A different criterion",
+        admitted.acceptance_criteria[0]
+    )];
+    assert!(plan_revision::preserve_admitted_obligations(
+        &proposal, &admitted, &messages, &contract
+    )
+    .is_none());
+}
