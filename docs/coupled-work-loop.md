@@ -282,7 +282,10 @@ remains. Native proof and the absence of approval barriers
 admit the attempt; rejected Observer text supplies neither advice nor completion.
 After a structurally
 rejected Observer repair, the last request still available to Coder can also
-carry an honest blocked handoff. Requests reserved for Observer stay reserved.
+carry an honest blocked handoff. A valid Observer answer whose primary action is
+below the 0.75 forwarding threshold is not delivered. While native work remains on
+a work turn, the Coder keeps its own slice; the report-only request waits for the
+report turn. Requests reserved for Observer stay reserved.
 A blocked report
 must still retain the unfinished criteria. The [fresh two-iteration pilot](evals/2026-11-04-fresh-iterations/README.md)
 includes the actual first-round handoff, second-round verification and

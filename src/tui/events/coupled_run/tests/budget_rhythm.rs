@@ -207,6 +207,93 @@ async fn contract_invalid_observer_repair_returns_one_work_slice_without_transpo
 }
 
 #[tokio::test]
+async fn low_confidence_observer_action_returns_work_until_the_report_turn() {
+    // Sealed S28 round 3: a valid answer whose primary action (a placeholder
+    // test file, confidence 0.70) is below the forwarding threshold, with a
+    // 0.99 verify behind it. The report-only closeout ended the iteration after
+    // 9 of 32 task requests.
+    let coder = MockServer::start();
+    let observer = MockServer::start();
+    const RETURN_PROMPT: &str =
+        "The Observer's primary action was below the confidence threshold and was not adopted.";
+    const REPORT_PROMPTS: [&str; 2] = [
+        "Use one report-only request",
+        "Use your last turn for the native done report",
+    ];
+    fn body(r: &HttpMockRequest) -> String {
+        String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).into_owned()
+    }
+    let initial = coder.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let b = body(r);
+            !b.contains(RETURN_PROMPT) && !REPORT_PROMPTS.iter().any(|p| b.contains(p))
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work remains unfinished.", None));
+    });
+    let resumed = coder.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let b = body(r);
+            b.contains(RETURN_PROMPT) && !REPORT_PROMPTS.iter().any(|p| b.contains(p))
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work still needs its native checks.", None));
+    });
+    let reported = coder.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .matches(|r| REPORT_PROMPTS.iter().any(|p| body(r).contains(p)));
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("[BLOCKED] engine.rs and its exact check remain.", None));
+    });
+    let uncertain = json!({"summary":"The repaired source is still missing; author it, then run the exact check.",
+        "primary_blocker":"The required artifact has no recorded edit.",
+        "suggestions":[
+            {"kind":"edit","reason":"Create the missing artifact.","confidence":0.70,
+             "suggested_tool":"write_file","suggested_args":{"path":"engine.rs","content":"// Author the complete repair here."}},
+            {"kind":"verify","reason":"Run the exact declared check after the edit.","confidence":0.99,
+             "suggested_tool":"exec","suggested_args":{"check_id":"required-1"}}]})
+    .to_string();
+    let advised = observer.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse(&uncertain, None));
+    });
+    let task = r#"Repair engine.rs and verify the result.
+<task_requirements>
+{"version":1,"requirements":[{"id":"ledger","description":"Check the repaired answer","artifacts":[{"path":"engine.rs","kind":"source"}],"checks":[{"command":"cargo test --locked --test ledger"}]}]}
+</task_requirements>"#;
+    let report = episode_with_prompt(&coder, &observer, 20, 4, 2, task).await;
+    let requests = report["work"]["requests"].as_array().unwrap();
+    let coder_tasks = requests
+        .iter()
+        .filter(|row| row["role"] == "coder" && row["charge"] == "task")
+        .count();
+    // Before: the first uncertain answer queued the report-only request, and
+    // the iteration closed after 4 + 1 Coder requests. Now the Coder keeps its
+    // whole allowance; its last request is the native report turn of its own
+    // contract, and every reserved Observer opportunity is still served.
+    initial.assert_hits(4);
+    resumed.assert_hits(12);
+    reported.assert_hits(0);
+    advised.assert_hits(4);
+    assert_eq!(coder_tasks, 16, "{requests:?}");
+    assert_eq!(report["termination"], "budget_exhausted");
+    assert_eq!(
+        report["execution"]["pending_exact_checks"],
+        json!(["cargo test --locked --test ledger"])
+    );
+    // The uncertain advice itself is never delivered.
+    let delivered = report["coder_display"].to_string();
+    assert!(!delivered.contains("Author the complete repair here"));
+    assert!(!delivered.contains("observer_advisory"));
+}
+
+#[tokio::test]
 async fn reservation_drives_eight_observer_interventions_without_coder_borrowing() {
     let coder = MockServer::start();
     let observer = MockServer::start();

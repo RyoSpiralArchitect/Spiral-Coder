@@ -1408,6 +1408,16 @@ and terminal barriers still apply. `observer_repair_returned_work` links the
 return to the rejected Observer request. The raw reply remains in the Observer
 transcript, and the Coder slice uses the ordinary request ledger and gates.
 
+A valid current Observer answer whose primary action is below the 0.75
+forwarding threshold gets the same kind of return while native work remains on a
+Coder work turn. Its advice is still not delivered, and a high-confidence
+secondary action does not change that. `observer_low_confidence_returned_work`
+links the return to that Observer request. Each such slice spends the Coder's own
+allowance and ends at the next Observer opportunity, so the ordinary caps bound
+it. The low-confidence report-only request is kept for the report turn or for a
+task with no native work left; before this rule it closed the iteration with
+unused allowance (S28 round 3 ended after 9 of 32 task requests).
+
 `self_dogfood/measurement.py` derives development-only milestones from sealed
 native receipts and independent test summaries. Missing measurements are
 `not_evaluated`, unsuccessful ones `not_observed`. Reproduction requires the exact pre-edit command plus the frozen failing-test identity

@@ -346,6 +346,16 @@ async fn run_iteration(
                 break;
             }
             if app.pending_observer_hint.is_none() && window.is_none() {
+                if let Some(request_id) = observer_request::low_confidence_work_return(&app) {
+                    trace.event("observer_low_confidence_returned_work", json!({"observer_request_id":request_id,"remaining_coder":app.work_budget.remaining_for("coder")}))?;
+                    send_coder_input(
+                        &mut app,
+                        &coder_tx,
+                        "The Observer's primary action was below the confidence threshold and was not adopted. Use this work slice to advance one outstanding native obligation from current evidence. Follow any required diagnostic read or recheck first. Keep all remaining checks and approvals in force.".into(),
+                        CoderInput::RuntimeContinuation,
+                    ).await;
+                    continue;
+                }
                 if returned_after_rejected_repair {
                     break;
                 }
