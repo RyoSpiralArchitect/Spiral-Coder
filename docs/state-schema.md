@@ -1273,7 +1273,9 @@ completion claim of a task that passes every other gate receives one
 requirement ID with a bounded description beside the test functions recognized
 in the current file (Rust `#[test]`/`#[tokio::test]`, Python `def test…`,
 JavaScript `test(`/`it(`). The review requires Coder allowance for one edit,
-every declared check and the report; otherwise `done` proceeds unreviewed. It
+every declared check and the report; otherwise `done` proceeds unreviewed. A
+report-only closeout counts as no further allowance: it offers only `done`
+within one wire attempt, so its report is never traded for a review. It
 is a governor block without a recovery stage, and its marker in the current
 task's tool results is the only state: a second `done` proceeds. It adds no
 completion evidence, pass condition or coverage claim.
@@ -1484,9 +1486,14 @@ and the declared task assigns it a report-only turn. A completed, structurally
 rejected Observer repair may then hand that request back for an authored
 blocked report, even with outstanding proof. An unresolved approval or user
 refusal blocks this route. Each mode is rechecked at consumption.
-The current repair must have exactly one matching Observer receipt. A normal
-semantic rejection, an unclassified response, stale context, blocked terminal
-diagnosis, missing evidence or a provider error ends this path.
+The current repair must have exactly one matching Observer receipt. A completed
+repair that is rejected semantically (a parsed action the native gates refuse,
+such as a `done` whose report fails the standalone outcome lines) admits the
+same verified report-only attempt: when every native obligation is current,
+only the authored report remains, and the rejected text supplies no advice or
+proof. The last-request blocked handoff still requires a structurally rejected
+repair. An unclassified response, stale context, blocked terminal diagnosis,
+missing evidence or a provider error ends this path.
 
 `ObserverAssistRequest` owns the transient pending handoff. Consumption rechecks
 native obligations and clears the request. `App.report_closeout_attempted`

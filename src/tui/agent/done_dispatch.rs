@@ -219,8 +219,15 @@ Required now: run `{command}`.\n{verification_status}"
     // requirements linked to an authored test beside its current tests once. This
     // is not a failure, so the agent state stays as it is for direct test edits.
     if remaining_acceptance.is_empty() && !ctx.root_read_only {
-        let coder_remaining =
-            crate::work_budget::current().map(|c| c.budget.remaining_for("coder"));
+        // A report-only closeout offers only `done` within one wire attempt, so the
+        // Coder could neither edit tests nor resubmit: there is no room to review.
+        let coder_remaining = crate::work_budget::current().map(|c| {
+            if c.budget.is_report_closeout() {
+                0
+            } else {
+                c.budget.remaining_for("coder")
+            }
+        });
         if let Some(review) = requirement_proof::test_closeout(
             ctx.messages,
             ctx.tool_root_abs.as_deref(),
