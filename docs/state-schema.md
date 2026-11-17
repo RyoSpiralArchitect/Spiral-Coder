@@ -1534,8 +1534,11 @@ Observer raw responses and rejections stay intact. This does not manufacture
 valid advice, evidence rows or a final answer. Only a fresh model-authored `done`
 passing every existing gate completes the task. A rejected/empty report records
 `termination: "report_incomplete"` and a provider failure remains interrupted; no automatic second
-closeout is started. Resume requires explicit continuation and does not restore
-an in-flight closeout or grant new budget.
+closeout is started within the iteration. In a predeclared chain, that iteration
+can advance under the same progress rule as an accepted blocked report: the
+closeout was its final Coder turn, although the rejected attempt is charged as
+transport and the ledger can still show Coder allowance. Resume requires explicit
+continuation and does not restore an in-flight closeout or grant new budget.
 
 OpenAI-compatible streams (including Mistral and Gemini) retain provider output
 termination in the existing request `status`: `output_limited` for `length`,
