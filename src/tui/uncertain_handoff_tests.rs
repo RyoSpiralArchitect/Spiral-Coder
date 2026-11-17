@@ -1,7 +1,48 @@
 #[tokio::test]
-async fn uncertain_observer_primary_returns_one_report_without_adopting_advice() {
+async fn uncertain_observer_primary_with_native_work_left_closes_nothing_and_adopts_nothing() {
     use httpmock::prelude::*;
+    // Sealed answer: a valid edit below the forwarding threshold while declared
+    // work is still outstanding on a Coder work turn.
     let fixture: serde_json::Value = serde_json::from_str(include_str!("../../tests/fixtures/observer-report-closeout/low-confidence.json")).unwrap();
+    let server = MockServer::start();
+    let (mut app, root) = closeout_app();
+    std::fs::write(root.path().join("source.py"), "original").unwrap();
+    for cfg in [&mut app.coder_cfg, &mut app.observer_cfg] {
+        cfg.base_url = server.base_url(); cfg.api_key = Some("offline".into()); cfg.timeout_seconds = 3;
+    }
+    // Declared but unfinished work: the last successful exact check is absent.
+    app.coder_session.as_mut().unwrap().messages.truncate(6);
+    let observer = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| !serde_json::from_slice::<serde_json::Value>(r.body.as_deref().unwrap()).unwrap()["tools"].is_array());
+        let reply=json!({"choices":[{"delta":{"content":fixture["raw"]},"finish_reason":"stop"}]});
+        then.status(200).header("content-type","text/event-stream").body(format!("data: {reply}\n\ndata: [DONE]\n\n"));
+    });
+    let coder = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| serde_json::from_slice::<serde_json::Value>(r.body.as_deref().unwrap()).unwrap()["tools"].is_array());
+        then.status(500);
+    });
+    let (obs_tx,mut obs_rx)=mpsc::channel(128);
+    send_next_action_assist(&mut app,&obs_tx,"last-fail","incomplete_task").await;
+    closeout_drain(&mut app,&mut obs_rx,PaneId::Observer).await;
+    assert!(app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none());
+    // No report-only request closes the task; the headless driver returns a
+    // work slice instead (`low_confidence_work_return`).
+    let (tx,_rx)=mpsc::channel(128);
+    assert!(!observer_request::maybe_report_closeout(&mut app,&tx).await);
+    observer.assert_hits(1); coder.assert_hits(0);
+    assert!(!app.report_closeout_attempted);
+    assert_eq!(std::fs::read_to_string(root.path().join("source.py")).unwrap(),"original");
+    let work=app.work_budget.snapshot();
+    assert_eq!(work.requests.len(),1);
+    assert!(work.assists.is_empty());
+}
+
+#[tokio::test]
+async fn uncertain_observer_primary_at_the_report_turn_returns_one_report_without_adopting_advice() {
+    use httpmock::prelude::*;
+    // At the report turn the Observer contract admits only `done` or a no-tool
+    // clarification; a valid one below the threshold keeps the report-only request.
+    let uncertain = json!({"summary":"Unfinished work remains.","suggestions":[{"kind":"clarify","reason":"Hand off the exact check.","confidence":0.74,"suggested_tool":null,"suggested_args":{}}]}).to_string();
     for outcome in ["blocked", "unsupported_done", "mutation", "stale"] {
         let server = MockServer::start();
         let (mut app, root) = closeout_app();
@@ -9,18 +50,20 @@ async fn uncertain_observer_primary_returns_one_report_without_adopting_advice()
         for cfg in [&mut app.coder_cfg, &mut app.observer_cfg] {
             cfg.base_url = server.base_url(); cfg.api_key = Some("offline".into()); cfg.timeout_seconds = 3;
         }
-        // Declared but unfinished work: the last successful exact check is absent.
+        // Declared but unfinished work, and only the Coder's report turn left
+        // after the Observer request.
         app.coder_session.as_mut().unwrap().messages.truncate(6);
+        let goal = app.coder_session.as_ref().unwrap().messages[0]["content"].as_str().unwrap().to_owned();
+        app.work_budget = crate::work_budget::WorkBudget::new(&goal, 2, None);
         let observer = server.mock(|when, then| {
             when.method(POST).path("/chat/completions").matches(|r| !serde_json::from_slice::<serde_json::Value>(r.body.as_deref().unwrap()).unwrap()["tools"].is_array());
-            let reply=json!({"choices":[{"delta":{"content":fixture["raw"]},"finish_reason":"stop"}]});
+            let reply=json!({"choices":[{"delta":{"content":uncertain},"finish_reason":"stop"}]});
             then.status(200).header("content-type","text/event-stream").body(format!("data: {reply}\n\ndata: [DONE]\n\n"));
         });
         let coder = server.mock(|when, then| {
             when.method(POST).path("/chat/completions").body_contains("one report-only request").matches(|r| {
                 let body:serde_json::Value=serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
                 body["tools"].as_array().is_some_and(|t| t.len()==1 && t[0]["function"]["name"]=="done")
-                    && !body.to_string().contains("public_cli_rejects_wrong_parent_linkage")
             });
             let mut args=json!({"summary":"handoff-ready. Verification remains unfinished.","completed_acceptance":[],"remaining_acceptance":["acceptance 1","acceptance 2","acceptance 3","acceptance 4"],"acceptance_evidence":[],"next_steps":"Run the declared Python check on source.py and docs/usage.md."});
             if outcome=="unsupported_done" { args=closeout_args(); }

@@ -7,7 +7,9 @@ mod uncertain;
 mod work_return;
 pub(super) use delivery::take_delivery_window;
 pub(super) mod reconnect;
-pub(super) use work_return::rejected_repair_work_return;
+pub(super) use work_return::{
+    low_confidence_work_return, native_work_remains, rejected_repair_work_return,
+};
 
 #[derive(Debug)]
 pub(crate) struct ObserverAssistRequest {

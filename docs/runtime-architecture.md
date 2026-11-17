@@ -449,15 +449,19 @@ Current code:
 The [coupled work-loop contract](coupled-work-loop.md) documents native same-task continuation, generation isolation, joint request budgets, artifact preservation, and browser approval feedback. Its integrated pilot is versioned separately from the historical runtime suite.
 
 A valid current Observer primary action below the unchanged 0.75 hint threshold
-is not forwarded or upgraded by choosing a secondary action. For a declared task
-with an admitted plan, native control may instead return one report-only Coder
-request from its remaining allowance. The request exposes only `done`; the
-Observer's tool, arguments and response contract are not delivered. Missing
-checks and artifacts remain pending, and unsupported completion still fails.
-Stale replies, malformed envelopes, approval barriers, exhausted budgets,
-already-blocked tasks and repeated closeout attempts cannot use this path.
-An accepted blocked report can reach the next predeclared iteration only through
-the existing progress/no-refusal rule. No progress still stops; caps never grow.
+is not forwarded or upgraded by choosing a secondary action. While native work
+remains on a Coder work turn (an outstanding artifact, exact check or diagnostic
+read), the headless driver returns the Coder an ordinary work slice without the
+advice, so the iteration keeps its remaining allowance. At the report turn, or
+when no native work is left, a declared task with an admitted plan may instead
+receive one report-only Coder request from its remaining allowance. The request
+exposes only `done`; the Observer's tool, arguments and response contract are not
+delivered. Missing checks and artifacts remain pending, and unsupported
+completion still fails. Stale replies, malformed envelopes, approval barriers,
+exhausted budgets, already-blocked tasks and repeated closeout attempts cannot use
+this path. An accepted blocked report can reach the next predeclared iteration
+only through the existing progress/no-refusal rule. No progress still stops; caps
+never grow.
 
 
 Pending native recovery owns repair guidance as well as the initial diagnostic

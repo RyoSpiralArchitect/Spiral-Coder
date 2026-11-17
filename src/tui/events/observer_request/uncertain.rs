@@ -34,6 +34,8 @@ mod tests {
     fn report_handoff_preserves_threshold_terminal_and_approval_boundaries() {
         for case in [
             "low",
+            "low_report_turn",
+            "low_no_work",
             "threshold",
             "terminal",
             "stale",
@@ -48,7 +50,10 @@ mod tests {
         ] {
             let (mut app, _root) = crate::tui::events::tests::interaction_app();
             let mut messages = crate::tui::events::tests::closeout_messages();
-            messages.truncate(6);
+            // A pending exact check is native work; "low_no_work" keeps it current.
+            if case != "low_no_work" {
+                messages.truncate(6);
+            }
             if case == "undeclared" {
                 messages[0]["content"] = json!("An ordinary task");
             }
@@ -63,7 +68,11 @@ mod tests {
             ));
             app.work_budget = crate::work_budget::WorkBudget::new(
                 "task",
-                if case == "spent" { 0 } else { 10 },
+                match case {
+                    "spent" => 0,
+                    "low_report_turn" => 1,
+                    _ => 10,
+                },
                 None,
             );
             app.report_closeout_attempted = case == "attempted";
@@ -91,6 +100,9 @@ mod tests {
             }
             let raw = if case == "malformed" {
                 r#"{"summary":"a","summary":"duplicate"}"#.to_owned()
+            } else if case == "low_report_turn" {
+                // The report turn admits only `done` or a no-tool clarification.
+                json!({"summary":"Uncertain","suggestions":[{"kind":"clarify","reason":"Preserve the unfinished check.","confidence":0.74,"suggested_tool":null,"suggested_args":{}}]}).to_string()
             } else {
                 json!({"summary":"Uncertain","suggestions":[{"kind":"read","confidence":if case=="threshold" {0.75} else {0.74},"suggested_tool":"read_file","suggested_args":{"path":"source.py"}}]}).to_string()
             };
@@ -103,13 +115,15 @@ mod tests {
                 .observer_assist_request
                 .as_ref()
                 .and_then(|r| r.pending_report_closeout);
+            // With native work left on a work turn ("low"), the headless loop
+            // returns the Coder its own slice instead of closing the iteration.
             assert_eq!(
                 queued.is_some(),
-                case == "low",
+                matches!(case, "low_report_turn" | "low_no_work"),
                 "{case}: {:?}",
                 app.observer.messages
             );
-            if case == "low" {
+            if case.starts_with("low") {
                 assert!(
                     app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none()
                 );

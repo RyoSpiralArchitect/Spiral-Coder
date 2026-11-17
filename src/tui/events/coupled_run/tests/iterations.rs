@@ -207,14 +207,24 @@ async fn iteration_case(first: FirstRound) {
     assert_eq!(manifest["max_iterations"], 6);
     let (limit, spent) = match first {
         FirstRound::Exhausted => (12, 4),
-        FirstRound::Blocked | FirstRound::Uncertain => (30, 5),
+        FirstRound::Blocked => (30, 5),
+        // The uncertain answer returns the Coder a work slice; its own blocked
+        // report then receives the terminal diagnosis and its one repair.
+        FirstRound::Uncertain => (30, 7),
     };
     assert_eq!(manifest["max_task_requests"], limit);
     assert_eq!(manifest["max_wire_requests"], limit);
     assert_eq!(manifest["wire_requests"], spent);
     if matches!(first, FirstRound::Blocked | FirstRound::Uncertain) {
         assert_eq!(manifest["iterations"][0]["termination"], "blocked");
-        assert_eq!(manifest["iterations"][0]["task_requests"], 3);
+        assert_eq!(
+            manifest["iterations"][0]["task_requests"],
+            if matches!(first, FirstRound::Uncertain) {
+                5
+            } else {
+                3
+            }
+        );
         assert_eq!(manifest["completed"], false);
         early_blocked.assert_hits(1);
     } else {
@@ -237,8 +247,19 @@ async fn iteration_case(first: FirstRound) {
             &std::fs::read(output.join("iteration-01/report.json")).unwrap(),
         )
         .unwrap();
-        assert_eq!(report["report_closeout_attempted"], true);
-        assert_eq!(report["work"]["requests"][2]["purpose"], "report_closeout");
+        // With native work left on a work turn, the uncertain answer no longer
+        // closes the iteration with a report-only request: the Coder keeps its
+        // slice and hands off progress in its own blocked report.
+        assert_eq!(report["report_closeout_attempted"], false);
+        assert_eq!(report["work"]["requests"][2]["role"], "coder");
+        assert!(report["work"]["requests"][2]["purpose"].is_null());
+        let trace = std::fs::read_to_string(output.join("iteration-01/trace.jsonl")).unwrap();
+        assert_eq!(
+            trace
+                .matches("observer_low_confidence_returned_work")
+                .count(),
+            1
+        );
         assert_eq!(report["work"]["assists"], json!([]));
         assert!(report["execution"]["pending_exact_checks"]
             .as_array()
@@ -247,7 +268,11 @@ async fn iteration_case(first: FirstRound) {
     }
     coder_first.assert_hits(1);
     resumed.assert_hits(1);
-    observer.assert_hits(2);
+    observer.assert_hits(if matches!(first, FirstRound::Uncertain) {
+        4
+    } else {
+        2
+    });
 }
 
 #[test]

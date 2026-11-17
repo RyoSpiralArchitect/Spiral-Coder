@@ -24,8 +24,17 @@ pub(super) fn ready(app: &App, reason: Reason) -> bool {
     let obligations =
         agent::task_obligations::project(&session.messages, app.project_test_cmd.as_deref());
     if reason == Reason::LowConfidence {
+        // While native work remains on a work turn, the headless loop returns
+        // the Coder its own slice instead (`low_confidence_work_return`): a
+        // report-only request here would close the iteration and forfeit the
+        // rest of its allowance.
         return obligations.task_requirements.declared
             && !obligations.acceptance_criteria.is_empty()
+            && !super::observer_request::native_work_remains(
+                &session.messages,
+                app.project_test_cmd.as_deref(),
+                app.work_budget.remaining_for("coder"),
+            )
             && !agent::evidence_packet::project(
                 &session.messages,
                 app.project_test_cmd.as_deref(),
