@@ -1270,15 +1270,30 @@ persisted state or coverage receipt.
 When a declared test file is linked to two or more requirements, the first
 completion claim of a task that passes every other gate receives one
 `[Authored-test closeout]` review instead of acceptance. It lists each linked
-requirement ID with a bounded description beside the test functions recognized
-in the current file (Rust `#[test]`/`#[tokio::test]`, Python `def test…`,
-JavaScript `test(`/`it(`). The review requires Coder allowance for one edit,
-every declared check and the report; otherwise `done` proceeds unreviewed. A
-report-only closeout counts as no further allowance: it offers only `done`
-within one wire attempt, so its report is never traded for a review. It
-is a governor block without a recovery stage, and its marker in the current
-task's tool results is the only state: a second `done` proceeds. It adds no
-completion evidence, pass condition or coverage claim.
+requirement ID with its whole description (up to 1,200 characters) beside the
+test functions recognized in the current file (Rust `#[test]`/`#[tokio::test]`,
+Python `def test…`, JavaScript `test(`/`it(`). S28's review clipped each
+description at 160 characters, which cut the sentence naming the fault families
+the tests had to cover. The review asks the Coder to map every case each
+requirement names to a test function or `none`, add focused tests for the
+`none` cases (first those a requirement explicitly asks tests to cover), rerun
+every declared check, and report the final map in
+`done.summary` under a `Test coverage:` line, one `- <id>: ...` line per linked
+requirement with test functions in backticks. The review requires Coder
+allowance for one edit, every declared check and the report; otherwise `done`
+proceeds unreviewed. A report-only closeout counts as no further allowance: it
+offers only `done` within one wire attempt, so its report is never traded for a
+review. It is a governor block without a recovery stage, and its marker in the
+current task's tool results is the only state.
+
+After the review, the first completion claim whose map is absent, lacks a line
+for a linked requirement, has a line that names no test and does not say `none`,
+or names a function that is not a current test receives one
+`[Test coverage map]` return listing those problems and the current test
+functions. It is skipped when the Coder has no allowance left to answer,
+including a report-only closeout. The next `done` proceeds. The map is the
+Coder's own claim: only its shape and the existence of named tests are checked.
+Neither step adds completion evidence, a pass condition or a coverage receipt.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful

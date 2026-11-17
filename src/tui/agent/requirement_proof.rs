@@ -573,6 +573,21 @@ pub(super) fn test_closeout(
     test_closeout::review(&contract, messages, tool_root, coder_remaining)
 }
 
+/// After that review, the first completion claim must carry the requested
+/// `Test coverage:` map (see `test_closeout::coverage`).
+pub(super) fn test_coverage(
+    messages: &[Value],
+    tool_root: Option<&str>,
+    summary: &str,
+    coder_remaining: Option<usize>,
+) -> Option<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
+    let contract = parse(crate::task_origin::root_user_text(messages))
+        .ok()
+        .flatten()?;
+    test_closeout::coverage(&contract, messages, tool_root, summary, coder_remaining)
+}
+
 pub(super) fn issue(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
     let status = project(messages, test_cmd);
     (!status.pending.is_empty()).then(|| format!("[Requirement Gate]\n{}\nRequirements come from the original task, not your plan. Run required failing baselines before editing. Use native file tools for declared artifacts, then execute each exact check after the last edit. A passing old test or a claimed plan criterion cannot replace these receipts.", status.pending.join("\n")))

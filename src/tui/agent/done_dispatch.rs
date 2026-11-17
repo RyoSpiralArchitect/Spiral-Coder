@@ -248,6 +248,28 @@ Required now: run `{command}`.\n{verification_status}"
             *ctx.pending_system_hint = Some(review);
             return Ok(ToolFlow::Continue);
         }
+        // After that review, the completion claim carries the requested map once.
+        if let Some(block) = requirement_proof::test_coverage(
+            ctx.messages,
+            ctx.tool_root_abs.as_deref(),
+            summary,
+            coder_remaining,
+        ) {
+            ctx.messages.push(json!({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": format!("GOVERNOR BLOCKED\n\n{block}"),
+            }));
+            ctx.autosave().await;
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!(
+                    "[RESULT] GOVERNOR BLOCK\n{block}\n"
+                )))
+                .await;
+            *ctx.pending_system_hint = Some(block);
+            return Ok(ToolFlow::Continue);
+        }
     }
 
     ctx.task_outcome.accept_done(&remaining_acceptance);
