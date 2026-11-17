@@ -58,8 +58,9 @@ its 32 task requests.
 
 The run still completed with 62 task requests to spare, so this did not decide
 S28. Across S20–S28 it is the only low-confidence closeout; the other
-report-only requests came at the last Coder request. A separate change keeps
-the Coder's slice in this situation while native work remains.
+report-only requests came at the last Coder request.
+[#100](https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/100) keeps the
+Coder's slice in this situation while native work remains.
 
 ## S20–S28
 
