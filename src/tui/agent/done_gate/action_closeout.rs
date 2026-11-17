@@ -627,6 +627,7 @@ pub(crate) fn maybe_build_verified_action_auto_final_answer(
     let (completed_acceptance, remaining_acceptance, acceptance_evidence) =
         rescue_invalid_done_payload_for_verified_action(
             Some(plan),
+            messages,
             known_commands,
             observation_evidence,
             required_verification,
@@ -690,6 +691,7 @@ pub(crate) fn maybe_build_verified_action_auto_final_answer(
 
 pub(crate) fn rescue_invalid_done_payload_for_verified_action(
     plan: Option<&PlanBlock>,
+    messages: &[serde_json::Value],
     known_commands: &[String],
     observation_evidence: &ObservationEvidence,
     required_verification: VerificationLevel,
@@ -701,6 +703,16 @@ pub(crate) fn rescue_invalid_done_payload_for_verified_action(
     let last_mutation = last_mutation_step.unwrap_or(0);
     let last_verify_ok = last_verify_ok_step.unwrap_or(0);
     if last_mutation == 0 || last_verify_ok < last_mutation {
+        return None;
+    }
+    // An exec classified as Action counts as a mutation because it may have
+    // written files. Auto-finalizing on that alone can certify a done report
+    // for a run that only inspected. Require concrete mutation evidence — a
+    // successful file-tool change or an inferred scaffold — before composing
+    // an unauthored done; the model-authored done path remains available.
+    if collect_successful_mutation_commands(messages).is_empty()
+        && inferred_repo_scaffold_artifacts(messages).is_none()
+    {
         return None;
     }
 

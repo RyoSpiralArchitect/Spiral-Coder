@@ -450,8 +450,16 @@ fn rescue_invalid_done_payload_for_verified_action_repairs_smoke_acceptance() {
         resolutions: Vec::new(),
     };
 
+    let messages = vec![
+        json!({"role":"assistant","tool_calls":[{
+            "id":"w1","type":"function",
+            "function":{"name":"write_file","arguments":"{\"path\":\"src/lib.rs\",\"content\":\"fix\"}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"w1","content":"OK: wrote 'src/lib.rs' (3 bytes)"}),
+    ];
     let (completed, remaining, evidence) = rescue_invalid_done_payload_for_verified_action(
         Some(&plan),
+        &messages,
         &[
             "read_file(path=src/lib.rs)".to_string(),
             "cargo test 2>&1".to_string(),
@@ -813,8 +821,16 @@ fn rescue_invalid_done_payload_for_verified_action_uses_file_specific_artifact_p
     };
     let verify_command = "SDL_VIDEODRIVER=dummy python3 -m unittest -q 2>&1";
 
+    let messages = vec![
+        json!({"role":"assistant","tool_calls":[{
+            "id":"w1","type":"function",
+            "function":{"name":"write_file","arguments":"{\"path\":\"maze_game_pygame/game.py\",\"content\":\"x\"}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"w1","content":"OK: wrote 'maze_game_pygame/game.py' (1 bytes)"}),
+    ];
     let (_, _, evidence) = rescue_invalid_done_payload_for_verified_action(
         Some(&plan),
+        &messages,
         &[
             "write_file(path=maze_game_pygame/game.py)".to_string(),
             "write_file(path=maze_game_pygame/main.py)".to_string(),
@@ -1058,4 +1074,54 @@ fn maybe_build_verified_action_closeout_text_waits_for_required_followups() {
     );
 
     assert!(final_text.is_none());
+}
+
+#[test]
+fn rescue_refuses_auto_finalize_without_mutation_evidence() {
+    // Reproduces the observed coupled-run false done: only inspection
+    // commands ran (one Action-classified exec + reads), cargo test passed
+    // on an unmodified tree, and a failed read_file must not become
+    // observation evidence. No file-tool mutation exists, so the unauthored
+    // rescue must stay silent even though mutation/verify steps line up.
+    let plan = PlanBlock {
+        goal: "Implement and verify coupled-status.".to_string(),
+        steps: vec![
+            "inspect".to_string(),
+            "create".to_string(),
+            "verify".to_string(),
+        ],
+        acceptance_criteria: vec![
+            "JSON and missing-manifest behavior pass".to_string(),
+            "Routing/docs exist".to_string(),
+            "cargo tests pass".to_string(),
+        ],
+        risks: "none".to_string(),
+        assumptions: "none".to_string(),
+    };
+    let messages = vec![
+        json!({"role":"assistant","tool_calls":[{
+            "id":"r1","type":"function",
+            "function":{"name":"read_file","arguments":"{\"path\":\"src/cli.rs\",\"start_line\":1,\"end_line\":200}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"r1","content":"ERROR reading 'src/cli.rs': No such file or directory (os error 2)"}),
+        json!({"role":"assistant","tool_calls":[{
+            "id":"e1","type":"function",
+            "function":{"name":"exec","arguments":"{\"command\":\"cargo test 2>&1\"}"}
+        }]}),
+        json!({"role":"tool","tool_call_id":"e1","content":"OK (exit_code: 0)"}),
+    ];
+    let evidence = collect_observation_evidence(&messages);
+    // The failed read leaves no observation evidence behind.
+    assert!(evidence.reads.is_empty());
+    assert!(rescue_invalid_done_payload_for_verified_action(
+        Some(&plan),
+        &messages,
+        &["cargo test 2>&1".to_string()],
+        &evidence,
+        VerificationLevel::Behavioral,
+        Some("cargo test 2>&1"),
+        Some(1),
+        Some(2),
+    )
+    .is_none());
 }
