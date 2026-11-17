@@ -1269,10 +1269,15 @@ persisted state or coverage receipt.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
-full write. A later edit whose resulting bytes were not observed, an
+full write. A successful native patch or diff can carry a reconstructed revision
+when the full prior revision is known and the replay matches both edit
+fingerprints. The origin is `reconstructed_edit`. These existing fingerprints
+exclude trailing whitespace and serve as review context. An unconfirmed edit, an
 incomplete read of that file, or an executed workspace action clears the
 view. Recognized verification runs retain the recorded revision. The
 projection opens no files and supplies no test coverage or edit authority.
+Test design guidance asks both roles to preserve declared path names when
+exercising filesystem type validation, so a naming rule cannot mask the fault.
 An Observer reply with a path-only edit for a declared test can be projected
 to `clarify` when the Coder has an eligible work turn. The response marks
 `test_recipe_retained` and the TUI keeps the raw envelope. The delivered
