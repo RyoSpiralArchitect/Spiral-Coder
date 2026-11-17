@@ -1,0 +1,760 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-14",
+  "repository": "RyoSpiralArchitect/Spiral-Coder",
+  "refs": {
+    "pull_request": 86,
+    "pull_request_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/pull/86",
+    "issue": 82,
+    "issue_url": "https://github.com/RyoSpiralArchitect/Spiral-Coder/issues/82",
+    "pr_head_ref": "codex/test-authoring-20261112",
+    "pr_head_commit": "5177c3a3497c85c129488a386224a2314ec69a12",
+    "pr_base_ref": "main",
+    "pr_base_commit": "77934ed7c39bde72d1a67b71760df2dc0d12e667",
+    "experiment_baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+    "metadata_observation": "GitHub get_pr_info/fetch_issue: PR open, draft, unmerged; issue open at audit start."
+  },
+  "scope": {
+    "kind": "source_and_record_provenance",
+    "provider_calls": 0,
+    "github_writes": false,
+    "archived_candidate_bytes_available": false,
+    "exact_archived_candidate_replay": "not_run_missing_archived_artifacts",
+    "fresh_model_run": "not_run",
+    "reference_and_synthetic_boundary_replay": "reported_separately; no execution result is claimed by this manifest",
+    "historical_outcomes_rerated": false,
+    "independent_evaluator_modified": false,
+    "original_test_ids_modified": false
+  },
+  "availability_evidence": {
+    "inspected_pr_tree": "5177c3a3497c85c129488a386224a2314ec69a12",
+    "candidate_source_paths_absent": [
+      "src/coupled_status.rs",
+      "tests/coupled_status.rs"
+    ],
+    "authored_test_eval_directory_files": [
+      "docs/evals/2026-11-12-authored-tests/README.md",
+      "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+      "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json",
+      "docs/evals/2026-11-12-authored-tests/results.json"
+    ],
+    "git_history_search": "git log --all -- src/coupled_status.rs tests/coupled_status.rs returned no entries in the fetched branch history.",
+    "conclusion": "Public receipts contain candidate patch/inventory hashes, not the sealed S16-S19 implementation and authored-test bytes."
+  },
+  "historical_runs": {
+    "S16": {
+      "source": {
+        "path": "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+        "json_pointer": "/fresh_runs/S16"
+      },
+      "candidate_patch_sha256": "376af06a08e66c168c0330399d55acf8f3ada0fa4e668f5e8445c4218e3abe34",
+      "sealed_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 4,
+      "task_requests": 114,
+      "wire_requests": 127,
+      "wall_seconds": 1039.17,
+      "held_out": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      },
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "sensitivity": {
+        "missing_pending": false,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "authored_test_sensitivity"
+      ],
+      "candidate_source_available_in_inspected_git_tree": false,
+      "exact_archived_replay": "not_run_missing_archived_artifacts"
+    },
+    "S17": {
+      "source": {
+        "path": "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+        "json_pointer": "/fresh_runs/S17"
+      },
+      "candidate_patch_sha256": "8383fc2a8ffc14125123c0291a227bccaa7329ce9ff12e780f68090b18e29b69",
+      "sealed_receipt_sha256": "328a4198886a31f2e452fcd66d76fddc4e443d75b489cf0d7657226ab75d9da9",
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 5,
+      "task_requests": 159,
+      "wire_requests": 174,
+      "wall_seconds": 1617.084,
+      "held_out": {
+        "passed": 23,
+        "failed": 1,
+        "ignored": 0
+      },
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": false,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      },
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": true,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "candidate_source_available_in_inspected_git_tree": false,
+      "exact_archived_replay": "not_run_missing_archived_artifacts",
+      "reported_failure": {
+        "evaluator_id": "StatusOracle.test_wrong_parent",
+        "detail": "First finalized row accepted a non-null incorrect parent.",
+        "source": {
+          "path": "docs/evals/2026-11-12-authored-tests/results.json",
+          "json_pointer": "/fresh_run/S17/held_out_failure"
+        }
+      },
+      "published_native_test_names": [
+        "protected_fixture_states_match_public_cli",
+        "malformed_pending_ledger_is_rejected_after_successful_baseline",
+        "duplicate_numeric_request_id_is_rejected_after_successful_baseline",
+        "absent_pending_ledger_reports_unknown_usage"
+      ]
+    },
+    "S18": {
+      "source": {
+        "path": "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+        "json_pointer": "/fresh_runs/S18"
+      },
+      "candidate_patch_sha256": "b2b98a9e6ae217971a073b65f2a1c85c5e4998daf7268b9b21f6c6147c021e03",
+      "sealed_receipt_sha256": "16d7c0c290a836f331e26ecab030c0c8b8a3f20c7408219c87c000b3183d4bd7",
+      "qualified": false,
+      "native_completed": false,
+      "accepted_done": false,
+      "stop_reason": "iteration_limit",
+      "rounds": 6,
+      "task_requests": 192,
+      "wire_requests": 210,
+      "wall_seconds": 1894.667,
+      "held_out": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": false,
+        "stock-regressions": true
+      },
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": false,
+        "python3 -S -m unittest -v scripts.status_visible": false,
+        "python3 -S -m unittest -v scripts.status_guide": false,
+        "cargo test --locked --bin spiral-coder -q": false,
+        "cargo test --locked --test coupled_status -q": false,
+        "python3 -S -m unittest -v scripts.status_paths": false
+      },
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "authored_report",
+        "native_completed",
+        "accepted_done",
+        "no_remaining_acceptance",
+        "fresh_native_checks",
+        "no_pending_checks",
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "candidate_source_available_in_inspected_git_tree": false,
+      "exact_archived_replay": "not_run_missing_archived_artifacts",
+      "reported_failure": {
+        "evaluator_id": "StatusPaths.test_symlink_components_even_dangling_are_rejected",
+        "subtest_failures": 3,
+        "exact_subtest_labels_available": false,
+        "detail": "Three dangling pending-link cases were reported; original per-subtest log bytes are unavailable.",
+        "source": {
+          "path": "docs/evals/2026-11-12-authored-tests/README.md",
+          "section": "Shared requirements and rejected Observer repair"
+        }
+      },
+      "freshness_interpretation": "The final formatting mutation left all six native exact checks pending/stale; false current_exact_checks does not mean all six commands executed and failed. The later independent held-out assessment passed 24/24 while status-paths failed."
+    },
+    "S19": {
+      "source": {
+        "path": "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json",
+        "json_pointer": "/fresh_runs/S19"
+      },
+      "candidate_patch_sha256": "a0a636caa2aa0c7a410abe81d8cbeff5811b5c5ddd25f941d6513a2c10cf00c4",
+      "sealed_receipt_sha256": "b63406ed7a20af77900ec594fa670aa4873c81a654caccd49abac52d5b25537f",
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 6,
+      "task_requests": 181,
+      "wire_requests": 196,
+      "wall_seconds": 1568.927,
+      "held_out": {
+        "passed": 22,
+        "failed": 2,
+        "ignored": 0
+      },
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": false,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      },
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": true
+      },
+      "failed_gates": [
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "candidate_source_available_in_inspected_git_tree": false,
+      "exact_archived_replay": "not_run_missing_archived_artifacts",
+      "reported_failure": {
+        "evaluator_ids": [
+          "StatusOracle.test_completion_conflict",
+          "StatusOracle.test_wrong_task_id"
+        ],
+        "source": {
+          "path": "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json",
+          "json_pointer": "/independent_s19_findings/failed_held_out_cases"
+        }
+      }
+    }
+  },
+  "assisted_s16": {
+    "classification": "assisted test-only continuations of saved S16; not fresh generalization",
+    "source": {
+      "path": "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+      "json_pointer": "/assisted"
+    },
+    "initial_test_only_result": {
+      "kind": "assisted test-only continuation",
+      "source_run": "r16",
+      "runtime_commit": "55febcbb2bb7ba31730ad0a9bd976dfcedbefa9f",
+      "plan_sha256": "5b0217086a6756f939a6640cb9acc51ec085f0ae22877322cd4f3750a4811418",
+      "sealed_source_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "test_patch_sha256": "e1c952c8b11075c8cc3b32de0d39e8c4f6e1b50c87908ee76d6ed21868b43488",
+      "authored_test_sha256": "68bc79a0b9e46499f73e31d9c838bc03fa840583a7c0587c32e138bb9a3b2de4",
+      "termination": "completed",
+      "native_completed": true,
+      "pending_exact_checks": [],
+      "task_requests": 21,
+      "wire_requests": 21,
+      "wall_seconds": 173.931,
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": false
+      },
+      "reference_compatible": true,
+      "detected_faults": {
+        "missing_pending": true,
+        "symlink": true,
+        "duplicate_request": false,
+        "parent_link": true
+      }
+    },
+    "initial_result_readback": {
+      "source_first_result_sha256": "55f7f945a019d1aca2e1a7549ac30c9775ff56e997c01ce27deed2fc2d5cd658",
+      "baseline_identities_sha256": "d38da826fbaed71abb0d11222b389cd00b27d9b34cacfbb30942e051803cb880",
+      "candidate_inventory_sha256": "4c67680f13aff5237e829fd19b0d46040b20941091b65ee2bd279318cb2e4c20",
+      "provider_calls": 0,
+      "groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      }
+    },
+    "test_design_repair": {
+      "kind": "assisted test-design repair",
+      "source_run": "r16",
+      "runtime_commit": "55febcbb2bb7ba31730ad0a9bd976dfcedbefa9f",
+      "plan_sha256": "66f5c9b96b1df2222f2e708a1076947bf8d471bf82e09202cee75dd45389952f",
+      "sealed_source_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "test_patch_sha256": "4de286654b369dba3dd5c87238cc63e7c536fbf69b4005c916e848950a5dbc1d",
+      "authored_test_sha256": "9d39fbb98c6ca0ced63faa629caf63c4160a6b05f657d5855e95347ed3de577e",
+      "termination": "completed",
+      "native_completed": true,
+      "pending_exact_checks": [],
+      "task_requests": 15,
+      "wire_requests": 15,
+      "wall_seconds": 121.965,
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      },
+      "reference_compatible": true,
+      "detected_faults": {
+        "missing_pending": true,
+        "symlink": true,
+        "duplicate_request": true,
+        "parent_link": true
+      }
+    },
+    "preservation_note": "The first stock-regressions failure is retained; readback supplied the missing original Rust identity list and passed on the same candidate."
+  },
+  "separate_s19_grouped_replay": {
+    "source": {
+      "path": "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json",
+      "json_pointer": "/grouped_subtest_replay"
+    },
+    "original_id": "scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown",
+    "reported_subtest_failures": 3,
+    "classification": "Historical replay on a disposable S19 copy with its final one-line repair reversed. It is neither the S18 dangling-link failure nor a final S19 path-suite failure.",
+    "candidate_source_available": false,
+    "reexecuted_by_this_manifest": false
+  },
+  "invariant_mapping": [
+    {
+      "boundary": "parent_link",
+      "requirement_ids": [
+        "behavior-3",
+        "native-tests"
+      ],
+      "original_evaluator_ids": [
+        "StatusOracle.test_wrong_parent"
+      ],
+      "evaluator_source": "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+      "reference_source": "benchmarks/self-dogfood-v2/coupled-status/reference.rs",
+      "reference_anchor": "r.parent_task_id.as_deref() == parent",
+      "invariant": "The first finalized parent is null; each later parent equals the preceding finalized task ID.",
+      "historical_run": "S17",
+      "missed_path": "The published S17 authored test names do not include a wrong-parent negative case; the parent_link sensitivity mutant survived.",
+      "candidate_root_cause": "not_verified_without_original_candidate_source"
+    },
+    {
+      "boundary": "ledger_task_id",
+      "requirement_ids": [
+        "behavior-3",
+        "native-tests"
+      ],
+      "original_evaluator_ids": [
+        "StatusOracle.test_wrong_task_id"
+      ],
+      "evaluator_source": "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+      "reference_source": "benchmarks/self-dogfood-v2/coupled-status/reference.rs",
+      "reference_anchor": "task == r.task_id",
+      "invariant": "Every finalized ledger task_id equals the corresponding manifest row task_id; matching request counts alone is insufficient.",
+      "historical_run": "S19",
+      "missed_path": "The four frozen sensitivity fault families omit ledger task-ID mismatch; the independent held-out case detected it.",
+      "candidate_root_cause": "not_verified_without_original_candidate_source"
+    },
+    {
+      "boundary": "contradictory_completion",
+      "requirement_ids": [
+        "behavior-3",
+        "behavior-4",
+        "native-tests"
+      ],
+      "original_evaluator_ids": [
+        "StatusOracle.test_completion_conflict"
+      ],
+      "evaluator_source": "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+      "reference_source": "benchmarks/self-dogfood-v2/coupled-status/reference.rs",
+      "reference_anchor": "completed run has pending iteration",
+      "invariant": "Completed manifests have no active/interrupted iteration, completed stop_reason, and a completed last row; row completed agrees with termination and only the final row may complete.",
+      "historical_run": "S19",
+      "observed_mutation": "Add active_iteration=iteration-02 to an otherwise completed fixture.",
+      "missed_path": "The four frozen sensitivity fault families omit completion conflict; the independent held-out case detected it.",
+      "candidate_root_cause": "not_verified_without_original_candidate_source"
+    },
+    {
+      "boundary": "dangling_pending_link",
+      "requirement_ids": [
+        "behavior-4",
+        "behavior-6",
+        "native-tests"
+      ],
+      "original_evaluator_ids": [
+        "StatusPaths.test_symlink_components_even_dangling_are_rejected"
+      ],
+      "neighboring_control_ids": [
+        "StatusPaths.test_missing_pending_components_are_unknown",
+        "StatusPaths.test_malformed_existing_pending_is_rejected"
+      ],
+      "evaluator_source": "benchmarks/self-dogfood-v2/coupled-status/status_paths.py",
+      "reference_source": "benchmarks/self-dogfood-v2/coupled-status/reference.rs",
+      "reference_anchor": "std::fs::symlink_metadata(&path)",
+      "invariant": "Reject live and dangling symlinks in every existing ledger-path component before treating a missing pending suffix as unknown.",
+      "historical_run": "S18",
+      "missed_path": "The 24 held-out cases do not cover dangling pending directory/state/file links; the separate protected path suite detected them.",
+      "candidate_root_cause": "not_verified_without_original_candidate_source"
+    }
+  ],
+  "original_contract": {
+    "requirement_source": "benchmarks/self-dogfood-v2/coupled-status/prompt.txt",
+    "requirement_ids": [
+      "status",
+      "behavior-1",
+      "behavior-2",
+      "behavior-3",
+      "behavior-4",
+      "behavior-5",
+      "behavior-6",
+      "behavior-7",
+      "native-tests"
+    ],
+    "mapped_requirements": {
+      "behavior-3": {
+        "description": "Validate positive max_iterations and max_task_requests_per_iteration, their checked product equals max_task_requests, max_wire_requests >= max_task_requests, row count <= max_iterations, row order 1..N and exact directories iteration-01, iteration-02, etc. Require unique nonempty task IDs and exact parent_task_id linkage starting with null. Each row's task ID and counts must match its ledger and task count must not exceed max_task_requests_per_iteration. Row completed must equal termination==completed; only the last row can be completed, and only in a completed manifest. A completed manifest requires a completed last row, stop_reason=completed, and no active or interrupted iteration. Manifest completed must equal stop_reason==completed.",
+        "artifacts": [
+          {
+            "path": "src/coupled_status.rs",
+            "kind": "source"
+          },
+          {
+            "path": "tests/coupled_status.rs",
+            "kind": "test"
+          }
+        ],
+        "checks": [
+          {
+            "command": "cargo test --locked --test coupled_status -q"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.status_paths"
+          }
+        ]
+      },
+      "behavior-4": {
+        "description": "A pending iteration may be named by active_iteration or interrupted_iteration.directory, never both. Its directory must be iteration-N+1 within max_iterations; a pending task ID must be new. Active requires null stop_reason; interrupted requires stop_reason=interrupted. Its ledger is read at the same relative path. Missing pending ledger is valid and means unknown usage, represented by null, never zero. An existing malformed pending ledger is an error. In-flight count is the number of requests with status=in_flight_or_interrupted.",
+        "artifacts": [
+          {
+            "path": "src/coupled_status.rs",
+            "kind": "source"
+          },
+          {
+            "path": "tests/coupled_status.rs",
+            "kind": "test"
+          }
+        ],
+        "checks": [
+          {
+            "command": "cargo test --locked --test coupled_status -q"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.status_paths"
+          }
+        ]
+      },
+      "behavior-6": {
+        "description": "Reject malformed JSON, unsupported versions, missing finalized ledgers, mismatched counts/links, traversal directories, and any symlink below the run directory on a manifest/ledger path. Return nonzero with nonempty stderr and empty stdout. A caller-supplied run directory itself may resolve normally. For success, stdout must contain exactly one JSON object with the exact fields shown by scripts.status_fixture.expected; array order and progress string order are preserved. No extra fields. status is completed for a completed record, stopped when a stop_reason exists, otherwise running. This is recorded native status, never independent qualification or promotion authorization.",
+        "artifacts": [
+          {
+            "path": "src/coupled_status.rs",
+            "kind": "source"
+          },
+          {
+            "path": "tests/coupled_status.rs",
+            "kind": "test"
+          }
+        ],
+        "checks": [
+          {
+            "command": "cargo test --locked --test coupled_status -q"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.status_paths"
+          }
+        ]
+      },
+      "native-tests": {
+        "description": "Author public-CLI tests using protected scripts.status_fixture.make, whose ledger is generated by the native durable writer. Preserve numeric request IDs and all native fields. Inspect fixture cardinality before indexing; the completed helper has one finalized row. Establish a successful unchanged baseline before each single-invariant negative mutation, including after any positive-scenario extension. A setup panic is a broken test, not detected behavior; repair the authored fixture without weakening its intended assertion or the protected checks. Cover missing pending components, dangling symlinks, duplicate request IDs and actual wrong parent linkage; never simulate parent failure by changing limits. Reference compatibility and four-fault sensitivity are required; test names and counts alone are not coverage.",
+        "artifacts": [
+          {
+            "path": "tests/coupled_status.rs",
+            "kind": "test"
+          }
+        ],
+        "checks": [
+          {
+            "command": "cargo test --locked --test coupled_status -q"
+          },
+          {
+            "command": "python3 -S -m unittest -v scripts.status_paths"
+          }
+        ]
+      }
+    },
+    "spec_source": "benchmarks/self-dogfood-v2/coupled-status/luna-luna.json",
+    "independent_group_ids": [
+      "candidate-build",
+      "status-visible",
+      "status-held-out",
+      "packaged-status",
+      "guide-example",
+      "status-paths",
+      "stock-regressions"
+    ],
+    "exact_native_commands": [
+      "cargo fmt --all -- --check",
+      "python3 -S -m unittest -v scripts.status_visible",
+      "python3 -S -m unittest -v scripts.status_guide",
+      "cargo test --locked --bin spiral-coder -q",
+      "cargo test --locked --test coupled_status -q",
+      "python3 -S -m unittest -v scripts.status_paths"
+    ],
+    "oracle_source": "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py",
+    "oracle_ids": [
+      "StatusOracle.test_completed",
+      "StatusOracle.test_running",
+      "StatusOracle.test_interrupted",
+      "StatusOracle.test_unknown",
+      "StatusOracle.test_stop",
+      "StatusOracle.test_bad_json",
+      "StatusOracle.test_version",
+      "StatusOracle.test_missing_final_ledger",
+      "StatusOracle.test_wrong_task_id",
+      "StatusOracle.test_wrong_counts",
+      "StatusOracle.test_wrong_total",
+      "StatusOracle.test_wrong_parent",
+      "StatusOracle.test_directory",
+      "StatusOracle.test_final_ledger_symlink",
+      "StatusOracle.test_completion_conflict",
+      "StatusOracle.test_budget_overflow",
+      "StatusOracle.test_inflight_is_counted",
+      "StatusOracle.test_old_default_charge",
+      "StatusOracle.test_active_without_ledger",
+      "StatusOracle.test_pending_malformed",
+      "StatusOracle.test_two_rounds",
+      "StatusOracle.test_duplicate_request_ids",
+      "StatusOracle.test_duplicate_task_id",
+      "StatusOracle.test_interrupted_total_conflict"
+    ],
+    "path_suite_source": "benchmarks/self-dogfood-v2/coupled-status/status_paths.py",
+    "path_suite_ids": [
+      "StatusPaths.test_missing_pending_components_are_unknown",
+      "StatusPaths.test_malformed_existing_pending_is_rejected",
+      "StatusPaths.test_symlink_components_even_dangling_are_rejected"
+    ],
+    "sensitivity_source": "benchmarks/self-dogfood-v2/coupled-status/test_sensitivity.py",
+    "sensitivity_fault_ids": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "sensitivity_scope": "Authored tests are transplanted onto an instrumented operator reference; this does not exercise the candidate implementation."
+  },
+  "original_rust_test_identities": {
+    "sha256": "d38da826fbaed71abb0d11222b389cd00b27d9b34cacfbb30942e051803cb880",
+    "source": {
+      "path": "docs/evals/2026-11-12-authored-tests/closeout-results.json",
+      "json_pointer": "/assisted/first_independent_readback/baseline_identities_sha256"
+    },
+    "consumer_source": "benchmarks/self-dogfood-v2/coupled-status/stock_checks.py",
+    "known_filename": "rust-tests.json",
+    "bytes_available": false,
+    "regeneration_is_not_original_identity_evidence": true
+  },
+  "required_artifacts_for_exact_archived_replay": [
+    {
+      "artifact": "Original candidate.patch for each selected run",
+      "verification": "Must match historical_runs.<run>.candidate_patch_sha256; do not substitute a reconstruction."
+    },
+    {
+      "artifact": "Original prepared baseline and declared overlays",
+      "verification": "Use recorded baseline commit plus exact config isolation and protected fixture overlays; a fresh checkout alone is insufficient."
+    },
+    {
+      "artifact": "Original predeclared.json, plan, frozen inputs and frozen driver tree",
+      "verification": "Verify declaration, plan and driver/input digests before executing any assessor."
+    },
+    {
+      "artifact": "Original sealed receipt, candidate-inventory.json and process.json",
+      "verification": "Bind the restored bytes to the recorded terminal outcome and inventory."
+    },
+    {
+      "artifact": "Original rust-tests.json identity/status list",
+      "verification": "Must match original_rust_test_identities.sha256; retain original identity/status entries."
+    },
+    {
+      "artifact": "Original iteration manifest and per-iteration report/work ledgers",
+      "verification": "Needed for original chain, budget, accepted-done and check-freshness gates; preserve original receipts."
+    },
+    {
+      "artifact": "Original authored tests and assisted test-only patches when auditing assisted S16",
+      "verification": "Verify recorded test-patch and authored-test hashes; keep implementation and assisted-test provenance separate."
+    },
+    {
+      "artifact": "Original evaluation logs when exact historical failure labels are required",
+      "verification": "Verify recorded independent_checks log_sha256; aggregated counts do not recover missing log bytes."
+    }
+  ],
+  "original_file_inventory": {
+    "commit": "5177c3a3497c85c129488a386224a2314ec69a12",
+    "algorithm": "sha256",
+    "scope": "All tracked files in the coupled-status benchmark and authored-test evaluation directory, plus original assessor wrappers.",
+    "files": {
+      "benchmarks/self-dogfood-v2/coupled-status/README.md": {
+        "sha256": "4011058a426331b9e4bac18bb1087e97fe72e674bca6d3149e6c35de9149c942",
+        "size_bytes": 10546
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/luna-luna.json": {
+        "sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+        "size_bytes": 5910
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/materialize.py": {
+        "sha256": "e0c059c8890d8ab3320c56b97467438149724db441d63cda06ec3814ed250c21",
+        "size_bytes": 4172
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/native_work.json": {
+        "sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+        "size_bytes": 1013
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/packaged_status.py": {
+        "sha256": "fb4cec467ccb3804272bba5729d94139c7ef28ba1c3c23edc7dd14eab09f3b84",
+        "size_bytes": 1620
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/prompt.txt": {
+        "sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+        "size_bytes": 20244
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/reference.rs": {
+        "sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+        "size_bytes": 7659
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/reference_tests.rs": {
+        "sha256": "992b75526b4cc06dd05de3f724c670fe02b8e5d4a7f2a130cdfac254bd30411c",
+        "size_bytes": 4853
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/status_fixture.py": {
+        "sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+        "size_bytes": 4812
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/status_guide.py": {
+        "sha256": "8cb033b4d2a6f65b4645e163e4cab0eb2d7861d053fcb43eae124ae70cdb4701",
+        "size_bytes": 1351
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/status_oracle.py": {
+        "sha256": "865ad08d02fecb88f4417ef999a94216cd0f4bf26a4516073597f51963f1ab95",
+        "size_bytes": 6291
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/status_paths.py": {
+        "sha256": "5bea2af22e86820a04553c90c3325144a2c539f1b9345a9d159ab7fe25801016",
+        "size_bytes": 4258
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/status_visible.py": {
+        "sha256": "f623d32244e2701e3eb62eb7006cd87c82739610ebc884fff97bd8d26f0039c6",
+        "size_bytes": 2231
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/stock_checks.py": {
+        "sha256": "1af78be999db0ea01611c1a3a20b9a69f0d1a1efd6e293a3be87c6fb6bc8246e",
+        "size_bytes": 1437
+      },
+      "benchmarks/self-dogfood-v2/coupled-status/test_sensitivity.py": {
+        "sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+        "size_bytes": 8489
+      },
+      "docs/evals/2026-11-11-coupled-status/assess-s11.py": {
+        "sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+        "size_bytes": 1755
+      },
+      "docs/evals/2026-11-11-coupled-status/assess.py": {
+        "sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+        "size_bytes": 8581
+      },
+      "docs/evals/2026-11-11-coupled-status/test_sensitivity-s11.py": {
+        "sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+        "size_bytes": 8489
+      },
+      "docs/evals/2026-11-12-authored-tests/README.md": {
+        "sha256": "e241a4ebd8ba3c7e95c26152ddb671c4d553bc46a71a73697e457388123d83c3",
+        "size_bytes": 10136
+      },
+      "docs/evals/2026-11-12-authored-tests/closeout-results.json": {
+        "sha256": "3db5850a05b0a8fa7b4d62bec614dfb2cb2d83d99fa9de208f82644882c34a4c",
+        "size_bytes": 18286
+      },
+      "docs/evals/2026-11-12-authored-tests/observer-continuation-results.json": {
+        "sha256": "276518f739a5d2b7d06d30ada4a1820c742c52d0942f8ae21d3e17c4b7fbf221",
+        "size_bytes": 16732
+      },
+      "docs/evals/2026-11-12-authored-tests/results.json": {
+        "sha256": "b580b1ad32f5cf91ee188571ed81e9542e08d78a4373dc62874e1a7050ef39fe",
+        "size_bytes": 9979
+      }
+    }
+  }
+}
