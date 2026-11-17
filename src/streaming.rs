@@ -6,12 +6,14 @@ use tokio::sync::mpsc;
 
 use crate::config::{ProviderKind, RunConfig};
 use crate::types::ChatMessage;
+use request_deadline::RequestDeadline;
 
 mod accounting;
 mod completion;
 #[cfg(test)]
 mod completion_tests;
 pub(crate) mod provider_metadata;
+mod request_deadline;
 pub(crate) mod request_guard;
 mod retry_policy;
 #[cfg(test)]
@@ -140,48 +142,6 @@ fn retry_after_duration(headers: &reqwest::header::HeaderMap) -> Option<Duration
     let s = v.to_str().ok()?.trim();
     let secs: u64 = s.parse().ok()?;
     Some(Duration::from_secs(secs.min(15)))
-}
-
-/// One logical provider request may span endpoint fallbacks and connect
-/// retries. Each attempt is bounded by `timeout_seconds`, but without an
-/// overall cap a dead route multiplies that bound across URLs and retries
-/// (~20min of in-flight silence). The whole attempt set shares one
-/// wall-clock deadline: one full attempt plus the retry backoff chain, so
-/// fast-failing endpoints keep their retries while a silent route cannot
-/// multiply the per-attempt timeout.
-#[derive(Clone, Copy)]
-struct RequestDeadline {
-    deadline: std::time::Instant,
-}
-
-impl RequestDeadline {
-    fn start(cfg: &RunConfig, max_retries: usize) -> Self {
-        let backoff: Duration = (0..max_retries)
-            .map(|attempt| backoff_delay(&cfg.provider, None, attempt, None))
-            .sum();
-        Self {
-            deadline: std::time::Instant::now()
-                + Duration::from_secs(cfg.timeout_seconds)
-                + backoff,
-        }
-    }
-
-    fn remaining(&self) -> Duration {
-        self.deadline
-            .saturating_duration_since(std::time::Instant::now())
-    }
-
-    /// Per-attempt timeout for the next send, or `None` when the shared
-    /// budget is already spent.
-    fn attempt_timeout(&self, cfg: &RunConfig) -> Option<Duration> {
-        let remaining = self.remaining();
-        (!remaining.is_zero()).then(|| remaining.min(Duration::from_secs(cfg.timeout_seconds)))
-    }
-
-    /// Retry backoff capped by the remaining shared budget.
-    async fn sleep(&self, delay: Duration) {
-        tokio::time::sleep(delay.min(self.remaining())).await;
-    }
 }
 
 fn max_connect_retries(provider: &ProviderKind) -> usize {
