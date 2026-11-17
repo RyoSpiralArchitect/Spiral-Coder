@@ -1302,6 +1302,14 @@ existing `accepted_plan` history. The raw Coder text and the
 `observer_plan_goal_retained` event preserve the disposition separately from
 the subsequent native tool result.
 
+An unguided plan revision rejected only as drift resumes the admitted goal and
+criteria when its acceptance equals the admitted acceptance: verbatim, or the
+same items enumerated on one line in sequence (`1) …` or `1. …`) when every
+item matches in order. Its own steps, risks and assumptions are kept, and the
+restored plan must pass ordinary plan validation. A changed, reordered or
+missing criterion is still rejected. The `plan_goal_retained` event records the
+disposition; nothing new is persisted beyond the existing `accepted_plan`.
+
 `agent/observation_stall.rs` derives bounded duplicate-read pressure from the
 current task's native exchanges. Its counters are reconstructed across runtime
 handoffs and reset at a new human task or an actual command/edit attempt. They

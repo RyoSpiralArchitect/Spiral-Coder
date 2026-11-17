@@ -178,6 +178,30 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                         )
                         .is_ok()
                     });
+                // Unguided turns: the admitted acceptance survived and only the
+                // objective was reworded, so resume the admitted obligations.
+                let restored = (retained.is_none()
+                    && e.to_string() == governor_contract::task_contract_plan_drift_message())
+                .then(|| active_plan.work())
+                .flatten()
+                .and_then(|active| {
+                    plan_revision::preserve_admitted_obligations(
+                        plan,
+                        active,
+                        messages,
+                        task_contract,
+                    )
+                })
+                .filter(|plan| {
+                    validate_plan_for_task_contract(
+                        plan,
+                        root_read_only,
+                        task_contract,
+                        instruction_resolver,
+                        messages,
+                    )
+                    .is_ok()
+                });
                 if let Some(retained) = retained {
                     emit_telemetry_event(
                         tx,
@@ -186,6 +210,14 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     )
                     .await;
                     retained
+                } else if let Some(restored) = restored {
+                    emit_telemetry_event(
+                        tx,
+                        "plan_goal_retained",
+                        json!({"call_id":tc.id,"tool":tc.name}),
+                    )
+                    .await;
+                    restored
                 } else if matches!(cfg.provider, ProviderKind::Mistral) {
                     if let Some(repaired) = repair_mistral_plan_for_tool_turn(
                         Some(plan),

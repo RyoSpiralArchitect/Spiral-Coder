@@ -93,6 +93,64 @@ pub(super) fn preserve_goal_for_observation(
     })
 }
 
+/// An unguided revision that keeps the admitted acceptance, verbatim or as the
+/// same items enumerated on one line, but rewords the objective resumes the
+/// natively admitted goal and criteria with its own steps, risks and
+/// assumptions. A changed, reordered or missing criterion is never repaired.
+pub(super) fn preserve_admitted_obligations(
+    proposed: &PlanBlock,
+    active: &PlanBlock,
+    messages: &[Value],
+    contract: &TaskContract,
+) -> Option<PlanBlock> {
+    let acceptance_kept = proposed.acceptance_criteria == active.acceptance_criteria
+        || matches!(
+            proposed.acceptance_criteria.as_slice(),
+            [single] if enumerated_items(single) == active.acceptance_criteria
+        );
+    if !acceptance_kept || same_obligations(proposed, active) {
+        return None;
+    }
+    let admitted = anchor(active, messages, contract)?;
+    Some(PlanBlock {
+        goal: admitted.goal,
+        acceptance_criteria: admitted.acceptance_criteria,
+        ..proposed.clone()
+    })
+}
+
+/// `1) a 2) b` or `1. a 2. b` on one line, numbered in sequence from one.
+fn enumerated_items(text: &str) -> Vec<String> {
+    let marker = |number: usize, text: &str| -> Option<usize> {
+        [format!("{number})"), format!("{number}.")]
+            .iter()
+            .find(|marker| text.starts_with(marker.as_str()))
+            .map(|marker| marker.len())
+    };
+    let mut items = Vec::new();
+    let mut rest = text.trim();
+    let mut number = 1;
+    while let Some(len) = marker(number, rest) {
+        let body = &rest[len..];
+        let next = [format!(" {})", number + 1), format!(" {}.", number + 1)]
+            .iter()
+            .filter_map(|next| body.find(next.as_str()))
+            .min();
+        match next {
+            Some(end) => {
+                items.push(body[..end].trim().to_string());
+                rest = body[end..].trim_start();
+            }
+            None => {
+                items.push(body.trim().to_string());
+                return items;
+            }
+        }
+        number += 1;
+    }
+    Vec::new()
+}
+
 pub(super) fn snapshot(
     plan: Option<&PlanBlock>,
     messages: &[Value],
