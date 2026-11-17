@@ -1,0 +1,568 @@
+{
+  "run": "S20",
+  "issue": 82,
+  "provider_calls": "live (gpt-5.6-luna, both roles)",
+  "run_receipt_sha256": "a620a79bc710c451de65a118be852c992f81b78fd4c22762938d634e7c960923",
+  "declaration_sha256": "ca0ba709851e0b1218c43446ac4da97d6a3ef36125afd323b57855d2f9495e5c",
+  "plan_sha256": "c7eb1a678eb96b58ad2776a2cab69ce9fd7e8be13e5f7919df0fb9bbf3625ed6",
+  "assessment_script": "docs/evals/2026-11-11-coupled-status/assess-s11.py",
+  "assessment": {
+    "plan_sha256": "c7eb1a678eb96b58ad2776a2cab69ce9fd7e8be13e5f7919df0fb9bbf3625ed6",
+    "declaration_sha256": "ca0ba709851e0b1218c43446ac4da97d6a3ef36125afd323b57855d2f9495e5c",
+    "sealed_receipt_sha256": "a620a79bc710c451de65a118be852c992f81b78fd4c22762938d634e7c960923",
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 502.101,
+      "finished_at": "2026-11-17T09:04:28.246438+00:00",
+      "redacted_files": [],
+      "patch_exit_code": 0
+    },
+    "manifest": {
+      "active_iteration": null,
+      "completed": false,
+      "iterations": [
+        {
+          "completed": false,
+          "directory": "iteration-01",
+          "iteration": 1,
+          "parent_task_id": null,
+          "progress": {
+            "changed_files": [
+              "src/coupled_status.rs",
+              "src/main.rs"
+            ],
+            "newly_reproduced_baselines": [
+              "python3 -S -m unittest -v scripts.status_visible"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794905766491-56854-1",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 34
+        },
+        {
+          "completed": false,
+          "directory": "iteration-02",
+          "iteration": 2,
+          "parent_task_id": "task-1794905766491-56854-1",
+          "progress": {
+            "changed_files": [
+              "docs/coupled-status.md",
+              "npm/spiral-coder/lib/launcher.cjs",
+              "src/coupled_status.rs",
+              "src/main.rs"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794905952077-56854-3",
+          "task_requests": 32,
+          "termination": "budget_exhausted",
+          "wire_requests": 36
+        },
+        {
+          "completed": false,
+          "directory": "iteration-03",
+          "iteration": 3,
+          "parent_task_id": "task-1794905952077-56854-3",
+          "progress": {
+            "changed_files": [
+              "docs/state-schema.md",
+              "tests/coupled_status.rs"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794906165073-56854-5",
+          "task_requests": 21,
+          "termination": "observer_unavailable",
+          "wire_requests": 25
+        }
+      ],
+      "max_iterations": 6,
+      "max_task_requests": 192,
+      "max_task_requests_per_iteration": 32,
+      "max_wire_requests": 216,
+      "stop_reason": "observer_unavailable",
+      "task_requests": 85,
+      "version": 1,
+      "wire_requests": 95
+    },
+    "rounds": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "src/coupled_status.rs",
+            "src/main.rs"
+          ],
+          "newly_reproduced_baselines": [
+            "python3 -S -m unittest -v scripts.status_visible"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794905766491-56854-1",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 34,
+        "roles": {
+          "coder": 25,
+          "observer": 9
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 34,
+          "task_requests": 32,
+          "transport_requests": 2,
+          "coder_task_requests": 23,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1794905766491-56854-1",
+        "progress": {
+          "changed_files": [
+            "docs/coupled-status.md",
+            "npm/spiral-coder/lib/launcher.cjs",
+            "src/coupled_status.rs",
+            "src/main.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794905952077-56854-3",
+        "task_requests": 32,
+        "termination": "budget_exhausted",
+        "wire_requests": 36,
+        "roles": {
+          "coder": 28,
+          "observer": 8
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 36,
+          "task_requests": 32,
+          "transport_requests": 4,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-03",
+        "iteration": 3,
+        "parent_task_id": "task-1794905952077-56854-3",
+        "progress": {
+          "changed_files": [
+            "docs/state-schema.md",
+            "tests/coupled_status.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794906165073-56854-5",
+        "task_requests": 21,
+        "termination": "observer_unavailable",
+        "wire_requests": 25,
+        "roles": {
+          "coder": 19,
+          "observer": 6
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 25,
+          "task_requests": 21,
+          "transport_requests": 4,
+          "coder_task_requests": 15,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      }
+    ],
+    "gates": {
+      "both_roles_completed_requests": true,
+      "native_reproduction": true,
+      "authored_report": false,
+      "regular_source_changes": true,
+      "patch_replays_all_files": true,
+      "sealed_input_and_output": true,
+      "sealed_candidate_matches": true,
+      "distinct_parent_linked_ledgers": true,
+      "bounded_chain": true,
+      "both_roles_called": true,
+      "native_completed": false,
+      "accepted_done": false,
+      "no_remaining_acceptance": false,
+      "native_edit": true,
+      "actual_edit": true,
+      "required_paths_changed": true,
+      "fresh_native_checks": false,
+      "no_pending_checks": false,
+      "strict_scope": true,
+      "original_protected_files_preserved": true,
+      "process_ok": true,
+      "no_secret_redactions": true,
+      "patch_retained": true,
+      "candidate_unchanged_by_assessor": true,
+      "independent_checks_passed": false,
+      "authored_test_sensitivity": false
+    },
+    "all_chain_gates_passed": false,
+    "qualified_within_original_single_round": false,
+    "promotion_authorized": false,
+    "changed_files": [
+      "docs/coupled-status.md",
+      "docs/state-schema.md",
+      "npm/spiral-coder/lib/launcher.cjs",
+      "src/coupled_status.rs",
+      "src/main.rs",
+      "tests/coupled_status.rs"
+    ],
+    "patch_sha256": "7d9b2214650d77151fc5d28913d9bfa21810ae6539373950c5b0a74ed5d61140",
+    "exact_native_calls": {
+      "cargo fmt --all -- --check": [],
+      "python3 -S -m unittest -v scripts.status_visible": [],
+      "python3 -S -m unittest -v scripts.status_guide": [],
+      "cargo test --locked --bin spiral-coder -q": [],
+      "cargo test --locked --test coupled_status -q": [],
+      "python3 -S -m unittest -v scripts.status_paths": []
+    },
+    "terminal_reports": [
+      {
+        "step": 24,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [],
+          "completed_acceptance": [],
+          "next_steps": "Continue by fixing the reported moved-ledger error in src/coupled_status.rs and adding Some(Command::CoupledStatus(args)) => coupled_status::run(args) to src/main.rs. Then complete launcher/docs/tests and run each exact command separately: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "[BLOCKED] Added partial coupled-status work in src/main.rs and src/coupled_status.rs. The parser still has a borrow-of-moved-value compiler error, the command lacks a dispatch arm, and npm/spiral-coder/lib/launcher.cjs, docs/coupled-status.md, docs/state-schema.md, and tests/coupled_status.rs were not completed. Required_literals: none. Before: FAILED and After: PASSED cannot be reported because the required after checks were not executed."
+        }
+      },
+      {
+        "step": 52,
+        "outcome": "GOVERNOR BLOCKED\n[Blocked report] done.acceptance_evidence must cover every completed acceptance criterion exactly once. Preserve every remaining criterion; cite native evidence for any claimed completed item.",
+        "args": {
+          "acceptance_evidence": [
+            {
+              "command": "python3 -S -m unittest -v scripts.status_visible",
+              "criterion": "acceptance 1"
+            },
+            {
+              "command": "write_file(content=# Coupled run status Use the native command to inspect an existing coupled run without making provider calls, running tools, or changing the run directory: ```t\u2026, path=docs/coupled-status.md)",
+              "criterion": "acceptance 3"
+            }
+          ],
+          "completed_acceptance": [],
+          "next_steps": "Append an ownership section to docs/state-schema.md at EOF without altering prior content; author tests/coupled_status.rs using scripts.status_fixture.make and public CLI assertions for missing pending components, malformed pending ledgers, symlink components including dangling links, duplicate request IDs, wrong parent linkage, omitted charge defaults, and contradictory manifests. Then run separately: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "[BLOCKED] Partial implementation exists in src/main.rs, src/coupled_status.rs, npm/spiral-coder/lib/launcher.cjs, and docs/coupled-status.md. The visible check passed after native dispatch and npm forwarding were repaired. The guide check then failed because docs/state-schema.md does not yet contain coupled-status ownership text. tests/coupled_status.rs was not authored, and the six required final checks were not all executed successfully after the last edits. No Before: FAILED or After: PASSED lines are reported because the required final evidence is incomplete."
+        }
+      }
+    ],
+    "report_fields": {
+      "changed_paths_named": false,
+      "commands_named": false,
+      "before_failed": false,
+      "after_passed": false
+    },
+    "independent_checks": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": null,
+        "log_sha256": "7a327cc00ce1f3fd3554cc3062bb252be8e694a2ca305f4ee09e3db481ed91f4",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "status-visible",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "6189d5461fa03dde3ae0a2c31e968dace9544094e1b3ac8f8bdd8276e8fe8e6e",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "status-held-out",
+        "passed": false,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 1,
+        "test_summary": {
+          "passed": 23,
+          "failed": 1,
+          "ignored": 0
+        },
+        "log_sha256": "9e64ee0d8b6614ca1ac34a7dbbffced2b06167e12f0d55a5288c3cd795651389",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "packaged-status",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "5ea79f74812fe1ec7537296bdd5b2a4e7b6a80b036949fb7c2efc241dd133bdf",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "guide-example",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "d33ed790482430b498baa579151aca06ac8351105d5fd34b7c987498b8b26d1a",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "status-paths",
+        "passed": false,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 1,
+        "test_summary": null,
+        "log_sha256": "29ef427bcb2d62c108aba9872018e57da168fc07977585636729807a325df431",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      },
+      {
+        "id": "stock-regressions",
+        "passed": false,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 1,
+        "test_summary": null,
+        "log_sha256": "ec48bf385bf9c002d03e40caac4f53a78c6fabd5614394c7b92c36b81f66ff67",
+        "candidate_binary_sha256": "2b9ed2bf355addce9e84628ad8ecc0a9f0b192dbaf171abda1750e3d30b11dd7"
+      }
+    ],
+    "test_sensitivity": {
+      "version": 1,
+      "provider_calls": 0,
+      "audit_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+      "declaration_sha256": "ca0ba709851e0b1218c43446ac4da97d6a3ef36125afd323b57855d2f9495e5c",
+      "tests_sha256": "66faed79950a6abd4b6fe3f711277e56f22c5a512a35e6b4e6ea765dce0fb979",
+      "raw_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "wall_limit_seconds": 600,
+      "faults": {
+        "missing_pending": {
+          "control_off": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "714c25d99cf76c9039904657baa0937e4135a9511f109b976901972e341705ba",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "db7567ea29489c4c0dca02e802c4ae5b6f49a0be7918e29f31cd79aa78bbb5d5",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.832,
+            "log_sha256": "9fccc61a423e6e45dd0799453b4ffbb99f0a4ae72ee0a08a8c4d9fe4bde8b093",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "symlink": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "6146a5843b5942d57b67c3c00c1936e69ee27503a84e5dbc5cd2f569cd5fc3b8",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.836,
+            "log_sha256": "9fccc61a423e6e45dd0799453b4ffbb99f0a4ae72ee0a08a8c4d9fe4bde8b093",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "duplicate_request": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "06866436155359e18ab9683f0f5c99d5714785bd1b750a9dc6925f8baf432718",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.866,
+            "log_sha256": "9fccc61a423e6e45dd0799453b4ffbb99f0a4ae72ee0a08a8c4d9fe4bde8b093",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "parent_link": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.013,
+            "log_sha256": "5ba50444b5a8fd801fbe0aac811b870760ba6cb54bd80f7abcd851f9de334f77",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.836,
+            "log_sha256": "7492141a43fe23a1cbc0509103c90d04cfdcb60892639df2f6ad80ca6c95c53a",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        }
+      },
+      "passed": false,
+      "promotion_authorized": false,
+      "instrumented_sha256": "bbbbc0fe9fa8dceb4143a51c0b5a7951990179857ca2bf59b2b522d7c763c916",
+      "reference_tests": {
+        "exit_code": 0,
+        "timed_out": false,
+        "output_limit": false,
+        "log_redactions": 0,
+        "wall_seconds": 10.435,
+        "log_sha256": "95793d1a8a2ee4d97c4f92e39eec37bed46c64077e4554ec30ad6114f98a25e9",
+        "test_summary": {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      "reference_tests_passed": true,
+      "binary_sha256": "0fec328502e5bdb8fb967a11ab7643ead288ebf8b6b80bb4e23089db8a7b9d2d",
+      "tests_unchanged": true,
+      "wall_seconds": 14.462
+    },
+    "all_extended_gates_passed": false
+  }
+}
