@@ -215,6 +215,34 @@ Required now: run `{command}`.\n{verification_status}"
         return Ok(ToolFlow::Continue);
     }
 
+    // Every gate passed. Before the first completion claim of a task, show the
+    // requirements linked to an authored test beside its current tests once. This
+    // is not a failure, so the agent state stays as it is for direct test edits.
+    if remaining_acceptance.is_empty() && !ctx.root_read_only {
+        let coder_remaining =
+            crate::work_budget::current().map(|c| c.budget.remaining_for("coder"));
+        if let Some(review) = requirement_proof::test_closeout(
+            ctx.messages,
+            ctx.tool_root_abs.as_deref(),
+            coder_remaining,
+        ) {
+            ctx.messages.push(json!({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": format!("GOVERNOR BLOCKED\n\n{review}"),
+            }));
+            ctx.autosave().await;
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!(
+                    "[RESULT] GOVERNOR BLOCK\n{review}\n"
+                )))
+                .await;
+            *ctx.pending_system_hint = Some(review);
+            return Ok(ToolFlow::Continue);
+        }
+    }
+
     ctx.task_outcome.accept_done(&remaining_acceptance);
 
     // Close out the tool call so session JSON remains valid on resume.

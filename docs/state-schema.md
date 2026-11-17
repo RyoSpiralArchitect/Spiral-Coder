@@ -1267,6 +1267,17 @@ Both roles can use the shared rules to compare source decisions with public
 test assertions after the structural obligations pass. The view adds no
 persisted state or coverage receipt.
 
+When a declared test file is linked to two or more requirements, the first
+completion claim of a task that passes every other gate receives one
+`[Authored-test closeout]` review instead of acceptance. It lists each linked
+requirement ID with a bounded description beside the test functions recognized
+in the current file (Rust `#[test]`/`#[tokio::test]`, Python `def test…`,
+JavaScript `test(`/`it(`). The review requires Coder allowance for one edit,
+every declared check and the report; otherwise `done` proceeds unreviewed. It
+is a governor block without a recovery stage, and its marker in the current
+task's tool results is the only state: a second `done` proceeds. It adds no
+completion evidence, pass condition or coverage claim.
+
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
 full write. A successful native patch or diff can carry a reconstructed revision
