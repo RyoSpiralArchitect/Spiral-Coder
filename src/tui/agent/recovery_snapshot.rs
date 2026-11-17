@@ -162,7 +162,7 @@ pub(in crate::tui::agent) fn validated_snapshot(message: &Value) -> Option<Recov
     Some(state)
 }
 
-pub(super) fn correlated_results(
+pub(in crate::tui::agent) fn correlated_results(
     messages: &[Value],
 ) -> impl Iterator<Item = (ToolCallData, &Value)> {
     let mut pending = BTreeMap::new();

@@ -281,6 +281,15 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
     }
     if let Some(obligations) = view["task_obligations"].as_object_mut() {
         obligations.remove("diagnostic_followup");
+        if let Some(source) = obligations
+            .get_mut("task_requirements")
+            .and_then(|requirements| requirements.get_mut("authored_tests"))
+            .and_then(|tests| tests.get_mut("review_source"))
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            // Keep the receipt identity while the decision brief carries its bytes.
+            source.remove("source");
+        }
     }
     view["task_horizon"] = crate::observer_action::strategy::general_horizon(packet);
     format!(
