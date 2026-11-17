@@ -31,6 +31,12 @@ pub(super) fn refuted_assumption_conflict(
             ) {
                 return None;
             }
+            // Recovery focus prescribes this formatter once the file reported by a
+            // failed formatter check has been read. Applying the formatter's diff
+            // acts on a refuted formatting premise; it does not rely on it.
+            if super::recovery_focus::is_prescribed_formatter(&command) {
+                return None;
+            }
             probe.push(' ');
             probe.push_str(command.as_str());
         }
@@ -289,6 +295,46 @@ mod tests {
             id: "next".into(),
             name: name.into(),
             arguments: args.to_string(),
+        }
+    }
+
+    #[test]
+    fn prescribed_formatter_repair_is_not_reuse_of_a_refuted_formatting_premise() {
+        // Sealed S20 round 3: rustfmt rejected the new test file, Coder read it,
+        // and recovery focus prescribed `formatter_for_check`, here `cargo fmt --all`.
+        let mut ledger = AssumptionLedger::default();
+        ledger.mark_refuted(
+            "The new test file was already formatter-compliant.",
+            Some("Read the exact test file before applying formatter repair."),
+        );
+        let think = ThinkBlock {
+            goal: "Apply the prescribed formatter repair to the diagnosed test file.".into(),
+            step: 1,
+            tool: "exec".into(),
+            risk: "Formatting may alter unrelated allowed Rust files.".into(),
+            doubt: "Existing source might also have pending formatting changes.".into(),
+            next: "Run cargo fmt --all.".into(),
+            verify: "Rust sources become formatter-compliant before exact checks.".into(),
+        };
+        let context = ExecVerificationContext::from_root(None, "");
+        for command in ["cargo fmt --all", "cargo fmt", "cargo  fmt   --all"] {
+            let tc = call("exec", json!({"command":command, "cwd":"/workspace"}));
+            assert!(
+                refuted_assumption_conflict(&ledger, &think, &tc, &context).is_none(),
+                "{command}"
+            );
+        }
+        // Other mutation commands with the same overlap keep their assumption check.
+        for command in [
+            "cargo fmt --all && git commit -am format",
+            "cargo fmt --all --verbose",
+            "python3 scripts/format_test_file.py",
+        ] {
+            let tc = call("exec", json!({"command":command, "cwd":"/workspace"}));
+            assert!(
+                refuted_assumption_conflict(&ledger, &think, &tc, &context).is_some(),
+                "{command}"
+            );
         }
     }
 

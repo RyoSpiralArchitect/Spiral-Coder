@@ -92,6 +92,17 @@ pub(super) fn formatter_for_check(command: &str) -> Option<&'static str> {
     }
 }
 
+/// Whether `command` is exactly a write-mode formatter that `formatter_for_check`
+/// prescribes after a failed formatter check. It applies the reported diff and
+/// relies on no premise about the files it formats.
+pub(in crate::tui::agent) fn is_prescribed_formatter(command: &str) -> bool {
+    let words = command
+        .split_ascii_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    !words.is_empty() && formatter_for_check(&format!("{words} --check")) == Some(words.as_str())
+}
+
 // Every rustfmt hunk describes a real formatting difference. Reading the first
 // reported workspace file supplies a diagnosis even when other files also differ.
 fn rustfmt_diff(

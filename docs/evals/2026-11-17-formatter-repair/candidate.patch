@@ -1,0 +1,428 @@
+diff --git a/docs/coupled-status.md b/docs/coupled-status.md
+new file mode 100644
+index 0000000..f1521b0
+--- /dev/null
++++ b/docs/coupled-status.md
+@@ -0,0 +1,35 @@
++# Coupled run status
++
++`coupled-status` is a read-only operator command for inspecting native coupled-run records. It never calls a provider, runs recorded tools, or requires API keys.
++
++## Usage
++
++From a checkout, run the native command:
++
++```text
++spiral-coder coupled-status --run-dir PATH
++```
++
++`PATH` is resolved relative to the caller's current working directory. The installed npm entry forwards the same command and arguments:
++
++```text
++npx spiral-coder coupled-status --run-dir PATH
++```
++
++The command reads `iterations.json` and durable `state/tui-work.json` ledgers. It does not infer usage from logs or report prose.
++
++## Accounting
++
++`wire_requests` counts every durable request in `requests`, including failed and in-flight attempts. `task_requests` counts requests charged to `task`; an omitted native `charge` uses the native task default. Pending spend is included once. The reported limits are the manifest limits.
++
++An interrupted iteration may have no ledger yet, or its ledger may be absent because the process stopped before durable state was written. In that case usage is unknown: pending counts and aggregate used/remaining values are `null`, never zero. Existing malformed ledgers are errors.
++
++## Recorded completion
++
++`status` describes the recorded native state: `completed` for a completed manifest, `stopped` when a stop reason exists, and `running` otherwise. This is an operational record, not independent verification, qualification, or promotion authorization.
++
++The following is the completed synthetic example produced by `scripts.status_fixture.make` and returned by `scripts.status_fixture.expected('completed')`:
++
++```json
++{"version":1,"status":"completed","stop_reason":"completed","iterations":[{"iteration":1,"task_id":"t1","termination":"completed","task_requests":2,"wire_requests":3,"changed_files":["src/a.rs"],"newly_verified":["cargo test -q"]}],"pending":null,"requests":{"task_used":2,"wire_used":3,"task_limit":192,"wire_limit":216,"task_remaining":190,"wire_remaining":213}}
++```
+diff --git a/docs/state-schema.md b/docs/state-schema.md
+index 269cc9d..04ce808 100644
+--- a/docs/state-schema.md
++++ b/docs/state-schema.md
+@@ -1663,3 +1663,7 @@ preserves that text as the sole list member and records the wire recovery.
+ The original response remains available. Evidence maps, multiple suggestions,
+ required acknowledgements and executable suggestions retain their normal
+ type checks.
++
++## Coupled-status ownership
++
++`src/coupled_status.rs` owns the read-only projection of native coupled-run records. It reads `iterations.json` and durable `state/tui-work.json` ledgers without changing persistence, invoking providers, or running recorded tools. Request counts come only from durable ledger requests: wire usage counts every request, while task usage follows the native task charge default. Pending interrupted usage remains nullable when its ledger is absent; it is never represented as zero. The command's completion status is a recorded manifest state and is not independent verification or promotion authorization.
+diff --git a/npm/spiral-coder/lib/launcher.cjs b/npm/spiral-coder/lib/launcher.cjs
+index cb34b47..f8403ef 100644
+--- a/npm/spiral-coder/lib/launcher.cjs
++++ b/npm/spiral-coder/lib/launcher.cjs
+@@ -11,7 +11,7 @@ const targets = Object.freeze({
+   'linux-x64': 'x86_64-unknown-linux-gnu',
+   'win32-x64': 'x86_64-pc-windows-msvc',
+ });
+-const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
++const commands = new Set(['chat', 'agent', 'eval', 'merge-gate', 'tui-replay', 'tui-replay-list', 'coupled-run', 'coupled-status', 'inventory', 'promote-harness', 'review', 'init', 'repl', 'serve', 'tui', 'list', 'help']);
+ 
+ function argumentsFor(alias, args, cwd) {
+   if (alias === 'spiral-coder' || ['--version', '-V'].includes(args[0])) return args;
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+new file mode 100644
+index 0000000..15ac69d
+--- /dev/null
++++ b/src/coupled_status.rs
+@@ -0,0 +1,205 @@
++use anyhow::{bail, Context, Result};
++use clap::Args as ClapArgs;
++use serde_json::{json, Value};
++use std::collections::HashSet;
++use std::fs;
++use std::path::{Component, Path, PathBuf};
++
++#[derive(ClapArgs, Debug, Clone)]
++pub struct Args {
++    #[arg(long)]
++    pub run_dir: PathBuf,
++}
++
++fn json_file(path: &Path) -> Result<Value> {
++    let bytes = fs::read(path).with_context(|| format!("read {}", path.display()))?;
++    serde_json::from_slice(&bytes).with_context(|| format!("parse {}", path.display()))
++}
++fn relative(root: &Path, name: &str) -> Result<PathBuf> {
++    let p = Path::new(name);
++    if p.is_absolute()
++        || p.components().any(|c| {
++            matches!(
++                c,
++                Component::ParentDir | Component::RootDir | Component::Prefix(_)
++            )
++        })
++    {
++        bail!("unsafe directory");
++    }
++    let mut cur = root.to_path_buf();
++    for c in p.components() {
++        cur.push(c.as_os_str());
++        match cur.symlink_metadata() {
++            Ok(meta) if meta.file_type().is_symlink() => bail!("symlink path"),
++            Ok(_) => {}
++            Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
++            Err(error) => return Err(error.into()),
++        }
++    }
++    Ok(cur)
++}
++fn num(v: &Value, key: &str) -> Result<u64> {
++    v.get(key)
++        .and_then(Value::as_u64)
++        .with_context(|| format!("missing {key}"))
++}
++fn ledger(path: &Path) -> Result<(String, u64, u64, u64)> {
++    let v = json_file(path)?;
++    let task = v
++        .get("task_id")
++        .and_then(Value::as_str)
++        .filter(|s| !s.is_empty())
++        .context("task_id")?
++        .to_owned();
++    let requests = v
++        .get("requests")
++        .and_then(Value::as_array)
++        .context("requests")?;
++    let mut ids = HashSet::new();
++    let mut task_n = 0;
++    let mut in_flight = 0;
++    for r in requests {
++        let id = num(r, "id")?;
++        if !ids.insert(id) {
++            bail!("duplicate request id");
++        }
++        if r.get("charge").and_then(Value::as_str).unwrap_or("task") == "task" {
++            task_n += 1;
++        }
++        if r.get("status").and_then(Value::as_str) == Some("in_flight_or_interrupted") {
++            in_flight += 1;
++        }
++    }
++    Ok((task, task_n, requests.len() as u64, in_flight))
++}
++pub fn run(args: Args) -> Result<()> {
++    let root = fs::canonicalize(&args.run_dir).context("run directory")?;
++    let m = json_file(&root.join("iterations.json"))?;
++    if num(&m, "version")? != 1 {
++        bail!("unsupported version");
++    }
++    let max_i = num(&m, "max_iterations")?;
++    let per = num(&m, "max_task_requests_per_iteration")?;
++    let max_t = num(&m, "max_task_requests")?;
++    let max_w = num(&m, "max_wire_requests")?;
++    if max_i == 0 || per == 0 || max_i.checked_mul(per) != Some(max_t) || max_w < max_t {
++        bail!("invalid limits");
++    }
++    let rows = m
++        .get("iterations")
++        .and_then(Value::as_array)
++        .context("iterations")?;
++    if rows.len() as u64 > max_i {
++        bail!("too many iterations");
++    }
++    let mut seen = HashSet::new();
++    let mut prior: Option<String> = None;
++    let mut total_t = 0;
++    let mut total_w = 0;
++    let mut output = Vec::new();
++    for (idx, row) in rows.iter().enumerate() {
++        let n = num(row, "iteration")?;
++        let dir = row
++            .get("directory")
++            .and_then(Value::as_str)
++            .context("directory")?;
++        if n != (idx + 1) as u64 || dir != format!("iteration-{:02}", n) {
++            bail!("row order");
++        }
++        let (task, t, w, _) = ledger(&relative(&root, &format!("{dir}/state/tui-work.json"))?)?;
++        if !seen.insert(task.clone()) || row.get("task_id").and_then(Value::as_str) != Some(&task) {
++            bail!("task identity");
++        }
++        let parent = row.get("parent_task_id");
++        if idx == 0 {
++            if !parent.is_some_and(Value::is_null) {
++                bail!("parent linkage");
++            }
++        } else if parent.and_then(Value::as_str) != prior.as_deref() {
++            bail!("parent linkage");
++        }
++        if t != num(row, "task_requests")? || w != num(row, "wire_requests")? || t > per {
++            bail!("ledger counts");
++        }
++        let term = row
++            .get("termination")
++            .and_then(Value::as_str)
++            .context("termination")?;
++        if row.get("completed").and_then(Value::as_bool) != Some(term == "completed") {
++            bail!("completed mismatch");
++        }
++        total_t += t;
++        total_w += w;
++        prior = Some(task.clone());
++        output.push(json!({"iteration":n,"task_id":task,"termination":term,"task_requests":t,"wire_requests":w,"changed_files":row["progress"]["changed_files"],"newly_verified":row["progress"]["newly_verified"]}));
++    }
++    let active = m.get("active_iteration").and_then(Value::as_str);
++    let interrupted = m.get("interrupted_iteration");
++    let manifest_t = m.get("task_requests").and_then(Value::as_u64);
++    let manifest_w = m.get("wire_requests").and_then(Value::as_u64);
++    if active.is_none() && interrupted.is_none() {
++        if manifest_t != Some(total_t) || manifest_w != Some(total_w) {
++            bail!("manifest totals");
++        }
++    }
++    if active.is_some() && interrupted.is_some() {
++        bail!("multiple pending iterations");
++    }
++    let mut pending = Value::Null;
++    let mut used_t = total_t;
++    let mut used_w = total_w;
++    let mut usage_unknown = false;
++    if let Some(dir) =
++        active.or_else(|| interrupted.and_then(|v| v.get("directory").and_then(Value::as_str)))
++    {
++        let path = relative(&root, &format!("{dir}/state/tui-work.json"))?;
++        if path.exists() {
++            let (task, t, w, inf) = ledger(&path)?;
++            if seen.contains(&task) {
++                bail!("duplicate task");
++            }
++            pending = json!({"directory":dir,"task_id":task,"task_requests":t,"wire_requests":w,"in_flight_requests":inf});
++            if active.is_some() || interrupted.is_some() {
++                used_t += t;
++                used_w += w;
++            }
++        } else {
++            pending = json!({"directory":dir,"task_id":null,"task_requests":null,"wire_requests":null,"in_flight_requests":null});
++            if interrupted.is_some() {
++                usage_unknown = true;
++            }
++        }
++    }
++    let stop = m.get("stop_reason").and_then(Value::as_str);
++    let status = if m.get("completed").and_then(Value::as_bool) == Some(true) {
++        "completed"
++    } else if stop.is_some() {
++        "stopped"
++    } else {
++        "running"
++    };
++    let task_used = if usage_unknown {
++        Value::Null
++    } else {
++        json!(used_t)
++    };
++    let wire_used = if usage_unknown {
++        Value::Null
++    } else {
++        json!(used_w)
++    };
++    let task_remaining = if usage_unknown {
++        Value::Null
++    } else {
++        json!(max_t.checked_sub(used_t))
++    };
++    let wire_remaining = if usage_unknown {
++        Value::Null
++    } else {
++        json!(max_w.checked_sub(used_w))
++    };
++    let result = json!({"version":1,"status":status,"stop_reason":stop,"iterations":output,"pending":pending,"requests":{"task_used":task_used,"wire_used":wire_used,"task_limit":max_t,"wire_limit":max_w,"task_remaining":task_remaining,"wire_remaining":wire_remaining}});
++    println!("{}", serde_json::to_string(&result)?);
++    Ok(())
++}
+diff --git a/src/main.rs b/src/main.rs
+index 4ea1fdc..79070c9 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,6 +4,7 @@ mod artifact_preservation;
+ mod cargo_inputs;
+ mod chatbot;
+ mod config;
++mod coupled_status;
+ mod eval_merge_gate;
+ mod exec;
+ mod execution_evidence;
+@@ -99,6 +100,9 @@ enum Command {
+     /// Run one bounded Coder/Observer task through the native TUI execution loop
+     CoupledRun(tui::events::coupled_run::Args),
+ 
++    /// Inspect native coupled-run iteration records without running tools or providers
++    CoupledStatus(coupled_status::Args),
++
+     /// Print an internal manifest / parity / replay inventory for this repo
+     Inventory(InventoryArgs),
+ 
+@@ -638,6 +642,7 @@ async fn main() -> Result<()> {
+         Some(Command::Eval(args)) => run_eval(args, cli.common).await,
+         Some(Command::MergeGate(args)) => run_merge_gate(args).await,
+         Some(Command::CoupledRun(args)) => tui::events::coupled_run::run(args, cli.common).await,
++        Some(Command::CoupledStatus(args)) => coupled_status::run(args),
+         Some(Command::TuiReplay(args)) => tui_replay::run(args, cli.common).await,
+         Some(Command::TuiReplayList(args)) => tui_replay::catalog::run(args),
+         Some(Command::Inventory(args)) => run_inventory(args).await,
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+new file mode 100644
+index 0000000..a5fd66e
+--- /dev/null
++++ b/tests/coupled_status.rs
+@@ -0,0 +1,115 @@
++use serde_json::{json, Value};
++use std::fs;
++use std::path::{Path, PathBuf};
++use std::process::{Command, Output};
++use tempfile::TempDir;
++
++fn fixture(state: &str) -> TempDir {
++    let root = tempfile::tempdir().unwrap();
++    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/status_fixture.py");
++    let status = Command::new("python3")
++        .args([
++            "-S",
++            script.to_str().unwrap(),
++            root.path().to_str().unwrap(),
++            state,
++        ])
++        .status()
++        .unwrap();
++    assert!(status.success());
++    root
++}
++
++fn binary() -> PathBuf {
++    let path = PathBuf::from(env!("CARGO_TARGET_DIR")).join("debug/spiral-coder");
++    if !path.exists() {
++        assert!(Command::new("cargo")
++            .args(["build", "--locked", "--quiet", "--bin", "spiral-coder"])
++            .status()
++            .unwrap()
++            .success());
++    }
++    path
++}
++
++fn run(root: &Path) -> Output {
++    Command::new(binary())
++        .args(["coupled-status", "--run-dir"])
++        .arg(root)
++        .output()
++        .unwrap()
++}
++
++fn succeeds(root: &Path) -> Value {
++    let output = run(root);
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    assert!(!output.stdout.is_empty());
++    serde_json::from_slice(&output.stdout).unwrap()
++}
++
++fn fails(root: &Path) {
++    let output = run(root);
++    assert!(!output.status.success());
++    assert!(output.stdout.is_empty());
++    assert!(!output.stderr.is_empty());
++}
++
++#[test]
++fn native_fixture_states_are_read_only_and_unknown_is_null() {
++    for state in ["completed", "running", "interrupted", "unknown", "stopped"] {
++        let root = fixture(state);
++        let value = succeeds(root.path());
++        assert_eq!(value["version"], 1);
++        if state == "unknown" {
++            assert!(value["pending"]["task_requests"].is_null());
++            assert!(value["pending"]["wire_requests"].is_null());
++            assert!(value["requests"]["task_used"].is_null());
++            assert!(value["requests"]["wire_used"].is_null());
++            assert!(value["requests"]["task_remaining"].is_null());
++            assert!(value["requests"]["wire_remaining"].is_null());
++        }
++    }
++}
++
++#[test]
++fn duplicate_request_id_is_rejected() {
++    let root = fixture("completed");
++    let path = root.path().join("iteration-01/state/tui-work.json");
++    let mut ledger: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
++    let first = ledger["requests"][0]["id"].clone();
++    ledger["requests"][1]["id"] = first;
++    fs::write(path, serde_json::to_vec(&ledger).unwrap()).unwrap();
++    fails(root.path());
++}
++
++#[test]
++fn wrong_parent_and_contradictory_completion_are_rejected() {
++    let root = fixture("completed");
++    let path = root.path().join("iterations.json");
++    let mut manifest: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
++    manifest["iterations"][0]["parent_task_id"] = json!("wrong");
++    fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
++    fails(root.path());
++
++    let root = fixture("completed");
++    let path = root.path().join("iterations.json");
++    let mut manifest: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
++    manifest["iterations"][0]["completed"] = json!(false);
++    fs::write(path, serde_json::to_vec(&manifest).unwrap()).unwrap();
++    fails(root.path());
++}
++
++#[cfg(unix)]
++#[test]
++fn symlinked_finalized_ledger_path_is_rejected() {
++    let root = fixture("completed");
++    let state = root.path().join("iteration-01/state");
++    let target = root.path().join("real-state");
++    fs::rename(&state, &target).unwrap();
++    std::os::unix::fs::symlink(&target, &state).unwrap();
++    fails(root.path());
++}

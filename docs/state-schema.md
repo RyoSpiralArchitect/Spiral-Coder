@@ -1377,8 +1377,11 @@ nonzero driver exit. A body interrupted after HTTP 200 is recorded as
 `stream_interrupted`, not a completed response. Unused budgets remain unused.
 
 For an unfinished declared task, the headless driver can give Coder one
-ordinary work slice per iteration after a completed Observer schema repair is
-rejected. The current request and wire receipt must match, Coder must have a
+ordinary work slice per iteration after a completed Observer repair is
+rejected, whether its envelope is malformed or parses with an action that fails
+the native action contract (for example `suggested_tool: exec` with
+`kind: edit`). Only malformed envelopes are charged as transport; no rejected
+action is adopted. The current request and wire receipt must match, Coder must have a
 work allowance, and native work must be outstanding. Preservation, approval
 and terminal barriers still apply. `observer_repair_returned_work` links the
 return to the rejected Observer request. The raw reply remains in the Observer

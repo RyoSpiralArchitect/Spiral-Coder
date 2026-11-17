@@ -1,0 +1,63 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S21",
+  "created_at": "2026-11-17T09:20:41.041342+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "4faa408776852d5847450b779243f2d657f128c7",
+  "binary_sha256": "297aa9c9356220c031d5446279b7ee6a28988137e982688116cec26506c6bb88",
+  "declaration_sha256": "6f3d373893790a2fefdfdd287e43bc7b698cc739e7b79e411c87f035ec8c7eae",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "d202bce73425f784f5940011a822080e93f801a4f39d2a9df8bd63d1d2815bdf",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh unseeded Luna/Luna run with S20's frozen inputs (baseline 7ad8be4, prompt, spec, native fixture, 24-case oracle, 26-subcase path matrix, six exact checks, four-fault audit, caps). The executor is PR #92 head 4faa408 = main d6655b6 plus two repairs found in S20: (1) the exact write-mode formatter that formatter_for_check prescribes is not reuse of a refuted assumption; (2) a parsed Observer repair that fails the native action contract gets the same single work return as a malformed one (not charged as transport; no action adopted). Combined condition, not matched causal evidence; no seed, operator edit, historical rerating or automatic adoption.",
+  "main_merge_required_before_run": false,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_terminal_receipt_sha256": "a620a79bc710c451de65a118be852c992f81b78fd4c22762938d634e7c960923",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "4a0c32afe2c4a2464f6d5f2b82b405a3dd09a0dea18ee9241230776b16b466f4",
+      "s12-control": "f2c150f6e63e5d003796b6634e2a6c5aeffda9d0cfb00b5235a97ea65b4f877d"
+    },
+    "control_note": "reference-control uses the operator reference tests (expected pass); s12-control uses S12's retained authored tests (expected fail)."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "d6655b6a5f54c2891f3ed6b1ef809d8fb2d2f4b6",
+  "runtime_source": "PR #92 head (claude/formatter-repair-continuation), not yet merged; precedent S14",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0"
+}
