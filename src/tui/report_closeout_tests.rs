@@ -218,3 +218,162 @@ async fn malformed_clarification_can_spend_the_last_coder_seat_on_an_honest_bloc
     assert_eq!(app.work_budget.remaining_for("coder"), 0);
     assert_eq!(app.work_budget.remaining_for("observer"), 3);
 }
+
+#[tokio::test]
+async fn semantically_rejected_repair_with_current_proof_returns_one_report_only_request() {
+    // Sealed S26 round 6 shape: all exact checks were current, the Observer's first
+    // answer had a duplicate JSON key, and its one repair proposed `done` with a
+    // report the native gate rejected. Only the authored report remained.
+    use httpmock::prelude::*;
+    for proof in ["current", "check_pending"] {
+        let server = MockServer::start();
+        let (mut app, _root) = closeout_app();
+        for cfg in [&mut app.coder_cfg, &mut app.observer_cfg] {
+            cfg.base_url = server.base_url();
+            cfg.api_key = Some("offline".into());
+            cfg.timeout_seconds = 3;
+        }
+        if proof == "check_pending" {
+            let messages = &mut app.coder_session.as_mut().unwrap().messages;
+            messages.truncate(messages.len() - 2);
+        }
+        fn is_repair(r: &HttpMockRequest) -> bool {
+            String::from_utf8_lossy(r.body.as_deref().unwrap_or_default())
+                .contains("Observer action repair: attempt")
+        }
+        let first = server.mock(|when, then| {
+            when.method(POST)
+                .path("/chat/completions")
+                .body_contains("intervention mode")
+                .matches(|r| !is_repair(r));
+            let payload = json!({"choices":[{"delta":{"content":"{\"summary\":\"rejected\",\"summary\":\"duplicate\"}"},"finish_reason":"stop"}]});
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+        });
+        let mut unreported = closeout_args();
+        unreported["summary"] =
+            json!("Repaired source.py and docs/usage.md; the exact check passed.");
+        let repair = server.mock(|when, then| {
+            when.method(POST).path("/chat/completions").matches(is_repair);
+            let payload = json!({"choices":[{"delta":{"content":suggestion_response("done","done",unreported.clone())},"finish_reason":"stop"}]});
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+        });
+        let coder = server.mock(|when, then| {
+            when.method(POST)
+                .path("/chat/completions")
+                .body_contains("one report-only request")
+                .matches(|r| {
+                    let body: serde_json::Value =
+                        serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+                    body["tools"].as_array().is_some_and(|tools| {
+                        tools.len() == 1 && tools[0]["function"]["name"] == "done"
+                    })
+                });
+            let content = "<impact>\nchanged: source.py and docs/usage.md repaired\nprogress: step 2 exact check passed after both edits\nremaining_gap: authored final report\n</impact>\n<think>\ngoal: Author the final report\nstep: 2\ntool: done\nrisk: unsupported claims\ndoubt: none\nnext: report retained proof\nverify: existing exact check\n</think>";
+            let payload = json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"closeout","function":{"name":"done","arguments":closeout_args().to_string()}}]},"finish_reason":"stop"}]});
+            then.status(200)
+                .header("content-type", "text/event-stream")
+                .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+        });
+        let (obs_tx, mut obs_rx) = mpsc::channel(128);
+        send_next_action_assist(&mut app, &obs_tx, "last-fail", "incomplete_task").await;
+        closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+        maybe_observer_action_repair(&mut app, &obs_tx).await;
+        closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+        assert!(app.pending_observer_hint.is_none() && app.pending_observer_advice.is_none());
+        let (coder_tx, mut coder_rx) = mpsc::channel(256);
+        let admitted = observer_request::maybe_report_closeout(&mut app, &coder_tx).await;
+        assert_eq!(admitted, proof == "current", "{proof}");
+        if admitted {
+            closeout_drain(&mut app, &mut coder_rx, PaneId::Coder).await;
+        }
+        first.assert_hits(1);
+        repair.assert_hits(1);
+        coder.assert_hits(usize::from(proof == "current"));
+        assert_eq!(app.coder_completed == Some(true), proof == "current", "{proof}");
+        assert!(!observer_request::maybe_report_closeout(&mut app, &coder_tx).await);
+    }
+}
+
+#[tokio::test]
+async fn report_only_closeout_is_not_held_by_the_authored_test_review() {
+    // The authored-test review needs room to edit tests and resubmit `done`. A
+    // report-only closeout has one wire attempt and only `done`, so its accepted
+    // report must not be traded for a review it cannot act on.
+    use httpmock::prelude::*;
+    let server = MockServer::start();
+    let (mut app, _root) = closeout_app();
+    for cfg in [&mut app.coder_cfg, &mut app.observer_cfg] {
+        cfg.base_url = server.base_url();
+        cfg.api_key = Some("offline".into());
+        cfg.timeout_seconds = 3;
+    }
+    let goal = format!("Repair source.py and docs/usage.md. Final answer must include `handoff-ready`.\n<task_requirements>\n{}\n</task_requirements>", json!({"version":1,"requirements":[
+        {"id":"repair","description":"Repair source and docs","artifacts":[{"path":"source.py","kind":"source"},{"path":"docs/usage.md","kind":"documentation"},{"path":"tests/test_source.py","kind":"test"}],"checks":[{"command":CLOSEOUT_CHECK}]},
+        {"id":"edge","description":"Reject the contradictory record","artifacts":[{"path":"source.py","kind":"source"},{"path":"tests/test_source.py","kind":"test"}],"checks":[{"command":CLOSEOUT_CHECK}]}]}));
+    {
+        let messages = &mut app.coder_session.as_mut().unwrap().messages;
+        messages[0]["content"] = json!(goal);
+        let check = messages.split_off(messages.len() - 2);
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":"tests-edit","type":"function","function":{"name":"patch_file","arguments":json!({"path":"tests/test_source.py"}).to_string()}}]}),
+            json!({"role":"tool","tool_call_id":"tests-edit","content":"OK: patched 'tests/test_source.py'"}),
+        ]);
+        messages.extend(check);
+    }
+    app.coder.messages[0].content = goal.clone();
+    app.coder_intent_anchor = Some(intent::apply_intent_update(
+        None,
+        intent::normalize_intent_update(&goal, None),
+        &goal,
+    ));
+    app.work_budget = crate::work_budget::WorkBudget::new(&goal, 10, None);
+    fn is_repair(r: &HttpMockRequest) -> bool {
+        String::from_utf8_lossy(r.body.as_deref().unwrap_or_default())
+            .contains("Observer action repair: attempt")
+    }
+    let _first = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("intervention mode")
+            .matches(|r| !is_repair(r));
+        let payload = json!({"choices":[{"delta":{"content":"{\"summary\":\"rejected\",\"summary\":\"duplicate\"}"},"finish_reason":"stop"}]});
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+    });
+    let _repair = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(is_repair);
+        let payload = json!({"choices":[{"delta":{"content":"{\"summary\":\"a\",\"summary\":\"b\"}"},"finish_reason":"stop"}]});
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+    });
+    let coder = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("one report-only request");
+        let content = "<think>\ngoal: Author the final report\nstep: 2\ntool: done\nrisk: unsupported claims\ndoubt: none\nnext: report retained proof\nverify: existing exact check\n</think>";
+        let payload = json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":"closeout","function":{"name":"done","arguments":closeout_args().to_string()}}]},"finish_reason":"stop"}]});
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(format!("data: {payload}\n\ndata: [DONE]\n\n"));
+    });
+    let (obs_tx, mut obs_rx) = mpsc::channel(128);
+    send_next_action_assist(&mut app, &obs_tx, "last-fail", "incomplete_task").await;
+    closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+    maybe_observer_action_repair(&mut app, &obs_tx).await;
+    closeout_drain(&mut app, &mut obs_rx, PaneId::Observer).await;
+    let (coder_tx, mut coder_rx) = mpsc::channel(256);
+    assert!(observer_request::maybe_report_closeout(&mut app, &coder_tx).await);
+    closeout_drain(&mut app, &mut coder_rx, PaneId::Coder).await;
+    coder.assert_hits(1);
+    let session = &app.coder_session.as_ref().unwrap().messages;
+    assert!(!session.iter().any(|m| m["content"]
+        .as_str()
+        .is_some_and(|c| c.contains("[Authored-test closeout]"))));
+    assert_eq!(app.coder_completed, Some(true), "{:?}", app.coder.messages);
+}

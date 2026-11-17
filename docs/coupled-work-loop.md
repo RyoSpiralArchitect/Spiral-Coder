@@ -276,7 +276,9 @@ been served. If the Observer's one repair of a rejected `done` is truncated
 or receives a recorded envelope transport rejection, the Coder can also use
 one report-only attempt when all native proof is current. A structurally rejected
 repair can take this route even when the first malformed envelope could not
-identify an intended `done`. Native proof and the absence of approval barriers
+identify an intended `done`; so can a parsed repair that the native gates reject
+semantically, because with every obligation current only the authored report
+remains. Native proof and the absence of approval barriers
 admit the attempt; rejected Observer text supplies neither advice nor completion.
 After a structurally
 rejected Observer repair, the last request still available to Coder can also

@@ -269,12 +269,14 @@ pub(super) fn finalize_observer_next_action_suggestion(app: &mut App) {
             let malformed = wire.status == "completed"
                 && wire.transport_rejection
                     == Some(crate::work_budget::TransportRejection::ObserverEnvelope);
-            // A malformed first envelope cannot reliably identify a suggested
-            // `done`. Current native proof, not rejected prose, admits the
-            // report-only fallback after the one repair is also malformed.
-            if (malformed || (r.repairing_done && wire.status == "output_limited"))
-                && super::report_closeout::ready(app, Reason::Verified)
-            {
+            // The one repair was rejected as well: malformed, semantically invalid
+            // (a parsed action the native gates refused), or a truncated `done`.
+            // When every native obligation is already current, only the authored
+            // report remains. Current native proof, not rejected prose, admits
+            // the report-only fallback.
+            let answered =
+                wire.status == "completed" || (r.repairing_done && wire.status == "output_limited");
+            if answered && super::report_closeout::ready(app, Reason::Verified) {
                 return Some(Reason::Verified);
             }
             (malformed && super::report_closeout::ready(app, Reason::LastCoderRequest))
