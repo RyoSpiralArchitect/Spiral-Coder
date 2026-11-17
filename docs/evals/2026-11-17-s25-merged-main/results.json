@@ -1,0 +1,899 @@
+{
+  "run": "S25",
+  "issue": 82,
+  "provider_calls": "live (gpt-5.6-luna, both roles)",
+  "run_receipt_sha256": "9166b7f251ade7639296c13d939c31fb9efd57aebdc6ae10d77ce5e29b9cfbc8",
+  "declaration_sha256": "b341bf6407a275c4a986fb6d665a189df59d21ec443f4443dad2288d7816c6ba",
+  "plan_sha256": "12f5af6d8be8cab165c3aedf6bb280a9b74194e9a1dd1796b0664a689577c834",
+  "assessment_script": "docs/evals/2026-11-11-coupled-status/assess-s11.py",
+  "closeout_review_issued": false,
+  "plan_goal_retained_events": 0,
+  "authored_tests": {
+    "test_functions": [
+      "completed_fixture_is_reported_by_public_cli",
+      "malformed_manifest_fails_without_stdout"
+    ]
+  },
+  "series_S20_S25": {
+    "S20": {
+      "stop": "observer_unavailable",
+      "task_wire": "85 / 95",
+      "gates": "18 / 26",
+      "independent_groups": "4 / 7",
+      "held_out": "23 / 24",
+      "sensitivity": "0 / 4",
+      "governor_blocks": 15
+    },
+    "S21": {
+      "stop": "iteration_limit",
+      "task_wire": "192 / 212",
+      "gates": "19 / 26",
+      "independent_groups": "4 / 7",
+      "held_out": "21 / 24",
+      "sensitivity": "4 / 4",
+      "governor_blocks": 31
+    },
+    "S22": {
+      "stop": "completed",
+      "task_wire": "166 / 182",
+      "gates": "25 / 26",
+      "independent_groups": "7 / 7",
+      "held_out": "24 / 24",
+      "sensitivity": "0 / 4",
+      "governor_blocks": 18
+    },
+    "S23": {
+      "stop": "no_new_edit_or_verification",
+      "task_wire": "192 / 209",
+      "gates": "19 / 26",
+      "independent_groups": "5 / 7",
+      "held_out": "22 / 24",
+      "sensitivity": "4 / 4",
+      "governor_blocks": 18
+    },
+    "S24": {
+      "stop": "iteration_limit",
+      "task_wire": "192 / 201",
+      "gates": "18 / 26",
+      "independent_groups": "5 / 7",
+      "held_out": "24 / 24",
+      "sensitivity": "0 / 4",
+      "governor_blocks": 11
+    },
+    "S25": {
+      "stop": "iteration_limit",
+      "task_wire": "192 / 213",
+      "gates": "18 / 26",
+      "independent_groups": "5 / 7",
+      "held_out": "22 / 24",
+      "sensitivity": "0 / 4",
+      "governor_blocks": 36
+    }
+  },
+  "assessment": {
+    "plan_sha256": "12f5af6d8be8cab165c3aedf6bb280a9b74194e9a1dd1796b0664a689577c834",
+    "declaration_sha256": "b341bf6407a275c4a986fb6d665a189df59d21ec443f4443dad2288d7816c6ba",
+    "sealed_receipt_sha256": "9166b7f251ade7639296c13d939c31fb9efd57aebdc6ae10d77ce5e29b9cfbc8",
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 1593.702,
+      "finished_at": "2026-11-17T13:29:54.980345+00:00",
+      "redacted_files": [],
+      "patch_exit_code": 0
+    },
+    "manifest": {
+      "active_iteration": null,
+      "completed": false,
+      "iterations": [
+        {
+          "completed": false,
+          "directory": "iteration-01",
+          "iteration": 1,
+          "parent_task_id": null,
+          "progress": {
+            "changed_files": [
+              "npm/spiral-coder/lib/launcher.cjs",
+              "src/coupled_status.rs",
+              "src/main.rs"
+            ],
+            "newly_reproduced_baselines": [
+              "python3 -S -m unittest -v scripts.status_visible"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794920601526-51888-1",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 35
+        },
+        {
+          "completed": false,
+          "directory": "iteration-02",
+          "iteration": 2,
+          "parent_task_id": "task-1794920601526-51888-1",
+          "progress": {
+            "changed_files": [
+              "src/coupled_status.rs"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794920890735-51888-3",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 34
+        },
+        {
+          "completed": false,
+          "directory": "iteration-03",
+          "iteration": 3,
+          "parent_task_id": "task-1794920890735-51888-3",
+          "progress": {
+            "changed_files": [
+              "docs/coupled-status.md",
+              "src/coupled_status.rs"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794921226248-51888-5",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 36
+        },
+        {
+          "completed": false,
+          "directory": "iteration-04",
+          "iteration": 4,
+          "parent_task_id": "task-1794921226248-51888-5",
+          "progress": {
+            "changed_files": [
+              "docs/state-schema.md",
+              "src/coupled_status.rs",
+              "tests/coupled_status.rs"
+            ],
+            "newly_verified": [],
+            "user_refusal": false
+          },
+          "task_id": "task-1794921488728-51888-7",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 36
+        },
+        {
+          "completed": false,
+          "directory": "iteration-05",
+          "iteration": 5,
+          "parent_task_id": "task-1794921488728-51888-7",
+          "progress": {
+            "changed_files": [
+              "src/coupled_status.rs"
+            ],
+            "newly_verified": [
+              "cargo fmt --all -- --check"
+            ],
+            "user_refusal": false
+          },
+          "task_id": "task-1794921749532-51888-9",
+          "task_requests": 32,
+          "termination": "budget_exhausted",
+          "wire_requests": 36
+        },
+        {
+          "completed": false,
+          "directory": "iteration-06",
+          "iteration": 6,
+          "parent_task_id": "task-1794921749532-51888-9",
+          "progress": {
+            "changed_files": [],
+            "newly_verified": [
+              "cargo test --locked --bin spiral-coder -q",
+              "cargo test --locked --test coupled_status -q",
+              "python3 -S -m unittest -v scripts.status_guide"
+            ],
+            "user_refusal": false
+          },
+          "task_id": "task-1794921990808-51888-11",
+          "task_requests": 32,
+          "termination": "blocked",
+          "wire_requests": 36
+        }
+      ],
+      "max_iterations": 6,
+      "max_task_requests": 192,
+      "max_task_requests_per_iteration": 32,
+      "max_wire_requests": 216,
+      "stop_reason": "iteration_limit",
+      "task_requests": 192,
+      "version": 1,
+      "wire_requests": 213
+    },
+    "rounds": [
+      {
+        "completed": false,
+        "directory": "iteration-01",
+        "iteration": 1,
+        "parent_task_id": null,
+        "progress": {
+          "changed_files": [
+            "npm/spiral-coder/lib/launcher.cjs",
+            "src/coupled_status.rs",
+            "src/main.rs"
+          ],
+          "newly_reproduced_baselines": [
+            "python3 -S -m unittest -v scripts.status_visible"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794920601526-51888-1",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 35,
+        "roles": {
+          "coder": 27,
+          "observer": 8
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 35,
+          "task_requests": 32,
+          "transport_requests": 3,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-02",
+        "iteration": 2,
+        "parent_task_id": "task-1794920601526-51888-1",
+        "progress": {
+          "changed_files": [
+            "src/coupled_status.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794920890735-51888-3",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 34,
+        "roles": {
+          "coder": 25,
+          "observer": 9
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 34,
+          "task_requests": 32,
+          "transport_requests": 2,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-03",
+        "iteration": 3,
+        "parent_task_id": "task-1794920890735-51888-3",
+        "progress": {
+          "changed_files": [
+            "docs/coupled-status.md",
+            "src/coupled_status.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794921226248-51888-5",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 36,
+        "roles": {
+          "coder": 28,
+          "observer": 8
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 36,
+          "task_requests": 32,
+          "transport_requests": 4,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-04",
+        "iteration": 4,
+        "parent_task_id": "task-1794921226248-51888-5",
+        "progress": {
+          "changed_files": [
+            "docs/state-schema.md",
+            "src/coupled_status.rs",
+            "tests/coupled_status.rs"
+          ],
+          "newly_verified": [],
+          "user_refusal": false
+        },
+        "task_id": "task-1794921488728-51888-7",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 36,
+        "roles": {
+          "coder": 28,
+          "observer": 8
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 36,
+          "task_requests": 32,
+          "transport_requests": 4,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-05",
+        "iteration": 5,
+        "parent_task_id": "task-1794921488728-51888-7",
+        "progress": {
+          "changed_files": [
+            "src/coupled_status.rs"
+          ],
+          "newly_verified": [
+            "cargo fmt --all -- --check"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1794921749532-51888-9",
+        "task_requests": 32,
+        "termination": "budget_exhausted",
+        "wire_requests": 36,
+        "roles": {
+          "coder": 27,
+          "observer": 9
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 36,
+          "task_requests": 32,
+          "transport_requests": 4,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      },
+      {
+        "completed": false,
+        "directory": "iteration-06",
+        "iteration": 6,
+        "parent_task_id": "task-1794921749532-51888-9",
+        "progress": {
+          "changed_files": [],
+          "newly_verified": [
+            "cargo test --locked --bin spiral-coder -q",
+            "cargo test --locked --test coupled_status -q",
+            "python3 -S -m unittest -v scripts.status_guide"
+          ],
+          "user_refusal": false
+        },
+        "task_id": "task-1794921990808-51888-11",
+        "task_requests": 32,
+        "termination": "blocked",
+        "wire_requests": 36,
+        "roles": {
+          "coder": 28,
+          "observer": 8
+        },
+        "ledger_verified": true,
+        "budget": {
+          "valid": true,
+          "wire_requests": 36,
+          "task_requests": 32,
+          "transport_requests": 4,
+          "coder_task_requests": 24,
+          "policy": {
+            "transport_repair_limit": 4,
+            "observer_reserved_requests": 8
+          }
+        }
+      }
+    ],
+    "gates": {
+      "both_roles_completed_requests": true,
+      "native_reproduction": true,
+      "authored_report": false,
+      "regular_source_changes": true,
+      "patch_replays_all_files": true,
+      "sealed_input_and_output": true,
+      "sealed_candidate_matches": true,
+      "distinct_parent_linked_ledgers": true,
+      "bounded_chain": true,
+      "both_roles_called": true,
+      "native_completed": false,
+      "accepted_done": false,
+      "no_remaining_acceptance": false,
+      "native_edit": true,
+      "actual_edit": true,
+      "required_paths_changed": true,
+      "fresh_native_checks": false,
+      "no_pending_checks": false,
+      "strict_scope": true,
+      "original_protected_files_preserved": true,
+      "process_ok": true,
+      "no_secret_redactions": true,
+      "patch_retained": true,
+      "candidate_unchanged_by_assessor": true,
+      "independent_checks_passed": false,
+      "authored_test_sensitivity": false
+    },
+    "all_chain_gates_passed": false,
+    "qualified_within_original_single_round": false,
+    "promotion_authorized": false,
+    "changed_files": [
+      "docs/coupled-status.md",
+      "docs/state-schema.md",
+      "npm/spiral-coder/lib/launcher.cjs",
+      "src/coupled_status.rs",
+      "src/main.rs",
+      "tests/coupled_status.rs"
+    ],
+    "patch_sha256": "2abfa7dcdc40733ff6060f2a28d5358267c916e8f5718b0fe4a096ecee27e5a0",
+    "exact_native_calls": {
+      "cargo fmt --all -- --check": [
+        {
+          "id": "call_AIqseBreZBQZiRt0tE2vQO7m",
+          "step": 129
+        }
+      ],
+      "python3 -S -m unittest -v scripts.status_visible": [],
+      "python3 -S -m unittest -v scripts.status_guide": [
+        {
+          "id": "call_va9jpUKHm4Abbo2OcDTEhwwr",
+          "step": 161
+        }
+      ],
+      "cargo test --locked --bin spiral-coder -q": [
+        {
+          "id": "call_nwIsKl6Kh6gfqQ7XLl1fOkuO",
+          "step": 142
+        }
+      ],
+      "cargo test --locked --test coupled_status -q": [
+        {
+          "id": "call_Zn0tZlAxccfET3EQqEhnYdPF",
+          "step": 147
+        }
+      ],
+      "python3 -S -m unittest -v scripts.status_paths": []
+    },
+    "terminal_reports": [
+      {
+        "step": 27,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [],
+          "completed_acceptance": [],
+          "next_steps": "Continue by locating and fixing the remaining manifest-count branch in src/coupled_status.rs, then create docs/coupled-status.md, append docs/state-schema.md, and add tests/coupled_status.rs using scripts.status_fixture.make. Run each exact command separately: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "BLOCKED: implemented partial native coupled-status wiring and npm forwarding in src/main.rs, src/coupled_status.rs, and npm/spiral-coder/lib/launcher.cjs. The visible check still fails with `Error: manifest counts`; required docs, authored integration tests, and final verification were not completed. Before: FAILED and After: PASSED cannot be reported because no passing final checks were recorded."
+        }
+      },
+      {
+        "step": 52,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [],
+          "completed_acceptance": [],
+          "next_steps": "Read src/main.rs as required by the formatter diagnostic, run cargo fmt --all, then diagnose and repair the remaining status_visible mismatch. Add docs/coupled-status.md, append docs/state-schema.md, and create tests/coupled_status.rs. Finally run each exact check separately: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "BLOCKED: coupled-status wiring and parser edits exist in src/main.rs, src/coupled_status.rs, and npm/spiral-coder/lib/launcher.cjs. The visible fixture still fails, formatting is not clean, and required documentation/tests were not authored. Recorded before/after outcomes: cargo fmt --all -- --check \u2014 Before: NOT RECORDED; After: FAILED. python3 -S -m unittest -v scripts.status_visible \u2014 Before: FAILED (1 test, 1 failure event); After: FAILED (1 test, 1 failure event). cargo test --locked --bin spiral-coder -q \u2014 Before: NOT RECORDED; After: NOT VERIFIED. cargo test --locked --test coupled_status -q \u2014 Before: NOT RECORDED; After: NOT VERIFIED. python3 -S -m unittest -v scripts.status_guide \u2014 Before: NOT RECORDED; After: NOT VERIFIED. python3 -S -m unittest -v scripts.status_paths \u2014 Before: NOT RECORDED; After: NOT VERIFIED."
+        }
+      },
+      {
+        "step": 80,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [],
+          "completed_acceptance": [],
+          "next_steps": "Append the coupled-status ownership section to docs/state-schema.md and create tests/coupled_status.rs using scripts.status_fixture.make. Then run separately, unchanged: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths. Diagnose any remaining visible mismatch before further edits.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "BLOCKED: Coupled-status parser, native CLI wiring, npm forwarding, and docs/coupled-status.md were edited. The latest source repair makes aggregate task/wire usage and remaining values null when a pending ledger is absent. However, the required state-schema append and tests/coupled_status.rs are still missing, and the visible check has not been rerun successfully after the repair. The exact final checks are not all executed with current evidence. Changed paths: src/main.rs; src/coupled_status.rs; npm/spiral-coder/lib/launcher.cjs; docs/coupled-status.md. Before: FAILED. After: NOT VERIFIED."
+        }
+      },
+      {
+        "step": 108,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [],
+          "completed_acceptance": [],
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "[BLOCKED] Added coupled-status source wiring, npm forwarding, coupled-status guide, append-only state-schema ownership documentation, and a public CLI integration test file. The completed fixture test and malformed-manifest rejection test were authored, but the visible status check still fails and the required final verification suite was not completed. Changed paths: src/main.rs; src/coupled_status.rs; npm/spiral-coder/lib/launcher.cjs; docs/coupled-status.md; docs/state-schema.md; tests/coupled_status.rs. Before: FAILED. After: NOT VERIFIED. Exact checks still pending: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_visible; python3 -S -m unittest -v scripts.status_guide; cargo test --locked --bin spiral-coder -q; cargo test --locked --test coupled_status -q; python3 -S -m unittest -v scripts.status_paths. The latest visible failure reports one unittest method failure: scripts.status_visible.StatusVisible.test_status_summarizes_completed_and_interrupted_records, assertion mismatch at line 29. Next action: inspect the expected/output construction in scripts.status_fixture.expected and src/coupled_status.rs, repair the exact schema mismatch, then run each six exact commands separately."
+        }
+      },
+      {
+        "step": 135,
+        "outcome": "GOVERNOR BLOCKED\n[Blocked report] done.acceptance_evidence must cover every completed acceptance criterion exactly once. Preserve every remaining criterion; cite native evidence for any claimed completed item.",
+        "args": {
+          "acceptance_evidence": [
+            {
+              "command": "@required-1",
+              "criterion": "acceptance 1"
+            },
+            {
+              "command": "@required-1",
+              "criterion": "acceptance 2"
+            },
+            {
+              "command": "@required-1",
+              "criterion": "acceptance 3"
+            },
+            {
+              "command": "@required-1",
+              "criterion": "acceptance 4"
+            }
+          ],
+          "completed_acceptance": [],
+          "next_steps": "Continue from the current parser/output-construction region in src/coupled_status.rs. Diagnose the exact expected-vs-actual JSON mismatch from scripts/status_fixture.expected and repair one targeted branch. Then run, as separate exact commands, `python3 -S -m unittest -v scripts.status_visible`, `python3 -S -m unittest -v scripts.status_guide`, `cargo test --locked --bin spiral-coder -q`, `cargo test --locked --test coupled_status -q`, and `python3 -S -m unittest -v scripts.status_paths`; do not claim completion until all pass.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 2",
+            "acceptance 3",
+            "acceptance 4"
+          ],
+          "summary": "[BLOCKED] Coupled-status implementation artifacts were edited: src/main.rs, src/coupled_status.rs, npm/spiral-coder/lib/launcher.cjs, docs/coupled-status.md, docs/state-schema.md, and tests/coupled_status.rs. `cargo fmt --all -- --check` passed after formatting. The protected visible check still failed with one unittest failure in `test_status_summarizes_completed_and_interrupted_records`; the output schema/values remain unresolved. The remaining five exact checks were not executed successfully. Before: FAILED. After: PASSED only for formatting; visible and remaining checks are not passed."
+        }
+      },
+      {
+        "step": 163,
+        "outcome": "OK: blocked",
+        "args": {
+          "acceptance_evidence": [
+            {
+              "command": "@required-5",
+              "criterion": "acceptance 2"
+            },
+            {
+              "command": "@required-3",
+              "criterion": "acceptance 3"
+            }
+          ],
+          "completed_acceptance": [
+            "acceptance 2",
+            "acceptance 3"
+          ],
+          "next_steps": "Continue by diagnosing the exact expected-versus-actual output mismatch in scripts/status_visible.py against src/coupled_status.rs, repair the smallest output-construction defect, then run separately: python3 -S -m unittest -v scripts.status_visible and python3 -S -m unittest -v scripts.status_paths. Re-run the full six-check set after any final edit, especially cargo fmt --all -- --check and the two cargo tests.",
+          "remaining_acceptance": [
+            "acceptance 1",
+            "acceptance 4"
+          ],
+          "summary": "[BLOCKED] Implemented coupled-status CLI/parser, npm forwarding, documentation, and public integration tests in src/main.rs, src/coupled_status.rs, npm/spiral-coder/lib/launcher.cjs, docs/coupled-status.md, docs/state-schema.md, and tests/coupled_status.rs. Successful recorded checks: cargo fmt --all -- --check; python3 -S -m unittest -v scripts.status_guide (1 test); cargo test --locked --bin spiral-coder -q (1148 passed, 2 ignored); cargo test --locked --test coupled_status -q (2 passed). The visible check remains failed with 1 unittest run and 1 failure event due to output mismatch, and status_paths has no current execution evidence. Before: FAILED. After: PASSED cannot be reported for the full task."
+        }
+      }
+    ],
+    "report_fields": {
+      "changed_paths_named": false,
+      "commands_named": false,
+      "before_failed": false,
+      "after_passed": false
+    },
+    "independent_checks": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": null,
+        "log_sha256": "25e68695e6af85b78d4841485b6233611bbacc505447d0a54c4adadbadd08685",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "status-visible",
+        "passed": false,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 1,
+        "test_summary": {
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0
+        },
+        "log_sha256": "2d56cf5f0a3ee03e9460b5ce72bd6a497b2013fa8f561c28edf871d7ecbcce56",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "status-held-out",
+        "passed": false,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 1,
+        "test_summary": {
+          "passed": 22,
+          "failed": 2,
+          "ignored": 0
+        },
+        "log_sha256": "719d9a826362f33fbbef481795d02f41a1fdce7b14e972cb0f60fac45a435a02",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "packaged-status",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "721e1d77b6597e7d2a634182ac155e0a57ec03a6b1bad06b640db5fb1f8c348c",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "guide-example",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "5c0b0eb219edee4663048e9db415dd1a1d3f212ffb77f206ffd7a028ec558224",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "status-paths",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "5331879e5b0c9237fb39b31f4bd5575a357dbe39e90c4c8de9ff3b3b0947a1bc",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      },
+      {
+        "id": "stock-regressions",
+        "passed": true,
+        "executed": true,
+        "skip_reason": null,
+        "exit_code": 0,
+        "test_summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "6512b10653b172126bd84bdef8158b883580fa1a4567ff689d1c35ff93e33243",
+        "candidate_binary_sha256": "8ccac0c2f31aef4ca254ca065359223890af710a959395aa130dcce6c4ba7dfc"
+      }
+    ],
+    "test_sensitivity": {
+      "version": 1,
+      "provider_calls": 0,
+      "audit_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+      "declaration_sha256": "b341bf6407a275c4a986fb6d665a189df59d21ec443f4443dad2288d7816c6ba",
+      "tests_sha256": "e6c2c33c31347c3b73c7210ccbaa6201eb82c86a95e8bd715712ec4dbb434170",
+      "raw_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+      "wall_limit_seconds": 600,
+      "faults": {
+        "missing_pending": {
+          "control_off": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "714c25d99cf76c9039904657baa0937e4135a9511f109b976901972e341705ba",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "d39f67e555360a40862c3f85e68a7f9473760b8016aca7f570f4459e881a2bb7",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 1.229,
+            "log_sha256": "05281b2757203be74d6027b3763ac47c295397bff2cbed2e00ad96061a5939d7",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "symlink": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "09a22d0f436c2767738316fb28b843c2f8a76029c22eaa1e330743c63b98bca2",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 1.153,
+            "log_sha256": "e31203da0b779ed2b2d3ab5e57175e853802118d4bc95e8ecb0306f2285fcf45",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "duplicate_request": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "06866436155359e18ab9683f0f5c99d5714785bd1b750a9dc6925f8baf432718",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 1.153,
+            "log_sha256": "e31203da0b779ed2b2d3ab5e57175e853802118d4bc95e8ecb0306f2285fcf45",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        },
+        "parent_link": {
+          "control_off": {
+            "exit_code": 1,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.007,
+            "log_sha256": "5ba50444b5a8fd801fbe0aac811b870760ba6cb54bd80f7abcd851f9de334f77",
+            "test_summary": null
+          },
+          "control_on": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 0.006,
+            "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+            "test_summary": null
+          },
+          "control_demonstrated": true,
+          "tests": {
+            "exit_code": 0,
+            "timed_out": false,
+            "output_limit": false,
+            "log_redactions": 0,
+            "wall_seconds": 1.292,
+            "log_sha256": "5e1902d738528b88bd8978c6ddc6ef532da464de0504b5624dc8e238af674b61",
+            "test_summary": {
+              "status": "ok",
+              "passed": 2,
+              "failed": 0,
+              "ignored": 0
+            }
+          },
+          "killed_by_authored_tests": false
+        }
+      },
+      "passed": false,
+      "promotion_authorized": false,
+      "instrumented_sha256": "bbbbc0fe9fa8dceb4143a51c0b5a7951990179857ca2bf59b2b522d7c763c916",
+      "reference_tests": {
+        "exit_code": 0,
+        "timed_out": false,
+        "output_limit": false,
+        "log_redactions": 0,
+        "wall_seconds": 10.1,
+        "log_sha256": "d76aae64c5963c0e76a802bd1cf33cfcc4a78d81441774db16b0319201eec442",
+        "test_summary": {
+          "status": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      },
+      "reference_tests_passed": true,
+      "binary_sha256": "df5226a8a4d7e239e8577c601c0ef767d60a642450db0e54e34aa567a829cd93",
+      "tests_unchanged": true,
+      "wall_seconds": 15.565
+    },
+    "all_extended_gates_passed": false
+  }
+}
