@@ -6,6 +6,7 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 mod authored_tests;
+mod test_closeout;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -556,6 +557,20 @@ fn repeated_successful_mutation_issue(
             super::compact_one_line(&attempted, 180),
         )
     })
+}
+
+/// One review of an authored test against the requirements that link it, before
+/// the first completion claim of the current task (see `test_closeout`).
+pub(super) fn test_closeout(
+    messages: &[Value],
+    tool_root: Option<&str>,
+    coder_remaining: Option<usize>,
+) -> Option<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
+    let contract = parse(crate::task_origin::root_user_text(messages))
+        .ok()
+        .flatten()?;
+    test_closeout::review(&contract, messages, tool_root, coder_remaining)
 }
 
 pub(super) fn issue(messages: &[Value], test_cmd: Option<&str>) -> Option<String> {
