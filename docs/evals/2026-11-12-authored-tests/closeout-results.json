@@ -1,0 +1,528 @@
+{
+  "plan_sha256": "404b2d425b23e2f39805ec0178cca66c634a859f119f55b96cd0c782383e0622",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "55febcbb2bb7ba31730ad0a9bd976dfcedbefa9f",
+  "binary_sha256": "03b353e6f19ab532fbbbfb47959b6309a7f5aff42f0a94733d4313f5c3588ab0",
+  "same_original_inputs": true,
+  "limits": {
+    "roles": {
+      "coder": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      },
+      "observer": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    },
+    "iterations": 6,
+    "maximum_task_requests": 192,
+    "maximum_wire_requests": 216,
+    "total_wall_seconds": 3600,
+    "task_requests_per_iteration": 32,
+    "transport_per_iteration": 4,
+    "observer_reserve": 8,
+    "coder_chunk_requests": 8
+  },
+  "positive_and_negative_controls": {
+    "reference-control": "aef80ed043d435d9d8f47b1e9de5e31f66c02e9988cd7d5a2cae440ec0d1201a",
+    "thin-control": "b9f52215fa50afb93bcf44d5d2fb8e2ed5d2f761c9bd332b87456fd313a7c574"
+  },
+  "replay": {
+    "source_session_sha256": {
+      "fresh_s17": "10fda0ae813c8243883c57c6fa6f39b93ed5156c527e56c686f06723dabd440b",
+      "focused_s16": "2cfa75d89393b654126d4b4fc37e2deeddb6fefc0c73286d9f577aed797a3855"
+    },
+    "binaries": {
+      "before": "0a9b008006bfc8f80a6f80634f12280c14dcd04a63cfdad06fceafa79707143b",
+      "after": "03b353e6f19ab532fbbbfb47959b6309a7f5aff42f0a94733d4313f5c3588ab0"
+    },
+    "provider_calls": 0,
+    "prefixes": {
+      "after_final_checks": {
+        "pending_checks": 0,
+        "native_obligations_match": true,
+        "retained_shared_rule": "behavior-3"
+      },
+      "after_nonunique_edit": {
+        "pending_checks": 6,
+        "native_obligations_match": true,
+        "unique_edit_guidance": false
+      },
+      "after_target_read": {
+        "pending_checks": 6,
+        "native_obligations_match": true,
+        "unique_edit_guidance": true
+      }
+    }
+  },
+  "fresh_runs": {
+    "S16": {
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 4,
+      "task_requests": 114,
+      "wire_requests": 127,
+      "wall_seconds": 1039.17,
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "b325f7ca6f5a12a30ddb137d5d6303f649427f8d76182f67999734e81499c7d6"
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "b5e8589e0bd95f6c8cecff8fa19936ca0acb5e4d0794c94f425a040d58a582c1"
+        },
+        "status-held-out": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "1d6317063bcddd055012fa7a8b085aabe49bb35e6911ca08ebe32b11ab2e740e"
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "caf1e6d39ff1066814ef0a35f8357acce05b05a4628f5226ca07114de97a129d"
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "fb92b99e06a4e4cd3acfca74a8916f5a0cd48dd5605ececbaf052d4dc0559812"
+        },
+        "status-paths": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "3e7af8588f30f104b09188dc3ae08c6cbdfa352de8e701c90d27e52cb31b1ff2"
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "1320019eb2197261d691e73e7ff095e3d2446c719d6143d579ba15a9af7a0682"
+        }
+      },
+      "held_out": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "reference_compatible": true,
+      "sensitivity": {
+        "missing_pending": false,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "authored_test_sensitivity"
+      ],
+      "changed_paths": [
+        "docs/coupled-status.md",
+        "docs/state-schema.md",
+        "npm/spiral-coder/lib/launcher.cjs",
+        "src/coupled_status.rs",
+        "src/main.rs",
+        "tests/coupled_status.rs"
+      ],
+      "scope_preserved": true,
+      "protected_preserved": true,
+      "patch_sha256": "376af06a08e66c168c0330399d55acf8f3ada0fa4e668f5e8445c4218e3abe34",
+      "receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808"
+    },
+    "S17": {
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 5,
+      "task_requests": 159,
+      "wire_requests": 174,
+      "wall_seconds": 1617.084,
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "1bc8e4974db329ddea704f9cc0197d565910cd345af0975d67e51b0a73660ab1"
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "3d03f1a15b7c9f9326dfc99d99af3ffa39df4d5ac26b638489fe1f665c2a885a"
+        },
+        "status-held-out": {
+          "passed": false,
+          "executed": true,
+          "log_sha256": "8b76528703b5171621eec6154e03c3849dabeac80160bf3137f1eb7141227e0f"
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "3962b4e29e39aaddecbbf533e3cc31888de07192ea12eaf6416b16521efe9f65"
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "191de1db94494a1ef746af9d702e0b8fed7b0973f23f0ca5e594ab7b36e41770"
+        },
+        "status-paths": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "91cf489b07bac68f729b4f640532a73439714362b842e3db2c476d1baa8874a5"
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "36dbfa55d6c953b5d1275e96c1692e19c1fbb83c925994b46657feef1d6c62d9"
+        }
+      },
+      "held_out": {
+        "passed": 23,
+        "failed": 1,
+        "ignored": 0
+      },
+      "reference_compatible": true,
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": true,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "changed_paths": [
+        "docs/coupled-status.md",
+        "docs/state-schema.md",
+        "npm/spiral-coder/lib/launcher.cjs",
+        "src/coupled_status.rs",
+        "src/main.rs",
+        "tests/coupled_status.rs"
+      ],
+      "scope_preserved": true,
+      "protected_preserved": true,
+      "patch_sha256": "8383fc2a8ffc14125123c0291a227bccaa7329ce9ff12e780f68090b18e29b69",
+      "receipt_sha256": "328a4198886a31f2e452fcd66d76fddc4e443d75b489cf0d7657226ab75d9da9"
+    },
+    "S18": {
+      "qualified": false,
+      "native_completed": false,
+      "accepted_done": false,
+      "stop_reason": "iteration_limit",
+      "rounds": 6,
+      "task_requests": 192,
+      "wire_requests": 210,
+      "wall_seconds": 1894.667,
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": false,
+        "python3 -S -m unittest -v scripts.status_visible": false,
+        "python3 -S -m unittest -v scripts.status_guide": false,
+        "cargo test --locked --bin spiral-coder -q": false,
+        "cargo test --locked --test coupled_status -q": false,
+        "python3 -S -m unittest -v scripts.status_paths": false
+      },
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "2d06d249cb488d5c2c3492f8abaf6b6453d1fd2d8f79d3cb73000af88ec5c02b"
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "83b0467a9f0f57b0b4f9106245c7f5011dfdf9576e1925191fd08a5c9f5e57f4"
+        },
+        "status-held-out": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "bbc8869c6070b5d3a05b8aead8d3146609a3fddd137d11c06d21b8ab539fdc7d"
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "041976bf4c806803d607c49a616b19a0218a4f41ebfca0f36d299926257d07d6"
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "66cb5eb77825e5fa14c23a38969f40cb1b435ea084cb873b041f1df92f0d84fa"
+        },
+        "status-paths": {
+          "passed": false,
+          "executed": true,
+          "log_sha256": "1e63d29c1564bdb42ca20ff55922c334b3e1711ebb1d19925e2c0f89aa00b6bc"
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "3bbad57cedc1402584a1aa6561ddda1b120271d75c78b84b9b30c4a459ece762"
+        }
+      },
+      "held_out": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "reference_compatible": true,
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "authored_report",
+        "native_completed",
+        "accepted_done",
+        "no_remaining_acceptance",
+        "fresh_native_checks",
+        "no_pending_checks",
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "changed_paths": [
+        "docs/coupled-status.md",
+        "docs/state-schema.md",
+        "npm/spiral-coder/lib/launcher.cjs",
+        "src/coupled_status.rs",
+        "src/main.rs",
+        "tests/coupled_status.rs"
+      ],
+      "scope_preserved": true,
+      "protected_preserved": true,
+      "patch_sha256": "b2b98a9e6ae217971a073b65f2a1c85c5e4998daf7268b9b21f6c6147c021e03",
+      "receipt_sha256": "16d7c0c290a836f331e26ecab030c0c8b8a3f20c7408219c87c000b3183d4bd7"
+    }
+  },
+  "native_work_returns": [],
+  "rejected_repair_replay": {
+    "source_report_sha256": "a42b45aa95931db5514fceaa9b18746a3234f2012b78401947ef16132726866c",
+    "source_session_sha256": "2cfa75d89393b654126d4b4fc37e2deeddb6fefc0c73286d9f577aed797a3855",
+    "external_provider_calls": 0,
+    "before": {
+      "binary_sha256": "0a9b008006bfc8f80a6f80634f12280c14dcd04a63cfdad06fceafa79707143b",
+      "calls": [
+        "coder",
+        "coder",
+        "coder",
+        "coder",
+        "observer",
+        "observer_repair"
+      ],
+      "work_returns": [],
+      "pending_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ],
+      "accepted_assists": 0,
+      "workspace_test_sha256": "1f94e43405704518b9424cda2437f63163e52c2dffc6bdb664cd1baf9c80bfbf"
+    },
+    "after": {
+      "binary_sha256": "03b353e6f19ab532fbbbfb47959b6309a7f5aff42f0a94733d4313f5c3588ab0",
+      "calls": [
+        "coder",
+        "coder",
+        "coder",
+        "coder",
+        "observer",
+        "observer_repair",
+        "coder_returned_work",
+        "coder_returned_work",
+        "coder_returned_work",
+        "observer",
+        "observer_repair"
+      ],
+      "work_returns": [
+        {
+          "observer_request_id": 5,
+          "remaining_coder": 12
+        }
+      ],
+      "pending_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ],
+      "accepted_assists": 0,
+      "workspace_test_sha256": "1f94e43405704518b9424cda2437f63163e52c2dffc6bdb664cd1baf9c80bfbf"
+    }
+  },
+  "assisted": {
+    "first": {
+      "kind": "assisted test-only continuation",
+      "source_run": "r16",
+      "runtime_commit": "55febcbb2bb7ba31730ad0a9bd976dfcedbefa9f",
+      "plan_sha256": "5b0217086a6756f939a6640cb9acc51ec085f0ae22877322cd4f3750a4811418",
+      "sealed_source_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "test_patch_sha256": "e1c952c8b11075c8cc3b32de0d39e8c4f6e1b50c87908ee76d6ed21868b43488",
+      "authored_test_sha256": "68bc79a0b9e46499f73e31d9c838bc03fa840583a7c0587c32e138bb9a3b2de4",
+      "termination": "completed",
+      "native_completed": true,
+      "pending_exact_checks": [],
+      "task_requests": 21,
+      "wire_requests": 21,
+      "wall_seconds": 173.931,
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": false
+      },
+      "reference_compatible": true,
+      "detected_faults": {
+        "missing_pending": true,
+        "symlink": true,
+        "duplicate_request": false,
+        "parent_link": true
+      }
+    },
+    "first_independent_readback": {
+      "source_first_result_sha256": "55f7f945a019d1aca2e1a7549ac30c9775ff56e997c01ce27deed2fc2d5cd658",
+      "baseline_identities_sha256": "d38da826fbaed71abb0d11222b389cd00b27d9b34cacfbb30942e051803cb880",
+      "candidate_inventory_sha256": "4c67680f13aff5237e829fd19b0d46040b20941091b65ee2bd279318cb2e4c20",
+      "provider_calls": 0,
+      "groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      }
+    },
+    "repair": {
+      "kind": "assisted test-design repair",
+      "source_run": "r16",
+      "runtime_commit": "55febcbb2bb7ba31730ad0a9bd976dfcedbefa9f",
+      "plan_sha256": "66f5c9b96b1df2222f2e708a1076947bf8d471bf82e09202cee75dd45389952f",
+      "sealed_source_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "test_patch_sha256": "4de286654b369dba3dd5c87238cc63e7c536fbf69b4005c916e848950a5dbc1d",
+      "authored_test_sha256": "9d39fbb98c6ca0ced63faa629caf63c4160a6b05f657d5855e95347ed3de577e",
+      "termination": "completed",
+      "native_completed": true,
+      "pending_exact_checks": [],
+      "task_requests": 15,
+      "wire_requests": 15,
+      "wall_seconds": 121.965,
+      "independent_groups": {
+        "candidate-build": true,
+        "status-visible": true,
+        "status-held-out": true,
+        "packaged-status": true,
+        "guide-example": true,
+        "status-paths": true,
+        "stock-regressions": true
+      },
+      "reference_compatible": true,
+      "detected_faults": {
+        "missing_pending": true,
+        "symlink": true,
+        "duplicate_request": true,
+        "parent_link": true
+      }
+    },
+    "patch_replay": {
+      "base_source_receipt_sha256": "8f2baa93a42cec435681a5c6438cdff45e7a49ddf7dd55296e95bc9c28635808",
+      "patches": [
+        {
+          "phase": "test-only-closeout",
+          "sha256": "e1c952c8b11075c8cc3b32de0d39e8c4f6e1b50c87908ee76d6ed21868b43488",
+          "result_test_sha256": "68bc79a0b9e46499f73e31d9c838bc03fa840583a7c0587c32e138bb9a3b2de4"
+        },
+        {
+          "phase": "test-proof-repair",
+          "sha256": "4de286654b369dba3dd5c87238cc63e7c536fbf69b4005c916e848950a5dbc1d",
+          "result_test_sha256": "9d39fbb98c6ca0ced63faa629caf63c4160a6b05f657d5855e95347ed3de577e"
+        }
+      ],
+      "candidate_inventory_sha256": "b7ffb1ca01f1e5127e0549d9a505d4abb95dd1ad1c5391790aacad5d01a447eb",
+      "changed_paths": [
+        "tests/coupled_status.rs"
+      ],
+      "provider_calls": 0,
+      "matched_final_bytes": true
+    }
+  },
+  "archived_run_readback": {
+    "candidate_result_sha256": "71d9bdb2c4ddc42fa538423c42b1e453d3c2ced58fcc3a307c680307ee4cb027",
+    "binary_sha256": "05e68d99fbad87f3cee48349f9eeb5f122377968ddbab58025ae2952668205af",
+    "provider_calls": 0,
+    "real_runs": {
+      "r16": {
+        "status": "completed",
+        "task_used": 114,
+        "wire_used": 127,
+        "pending": null,
+        "unchanged_archive": true,
+        "output_sha256": "46f863d83c66e6f16f834d584b8a9b4ce93868870c4661222ad688083ce96cda"
+      },
+      "r18": {
+        "status": "stopped",
+        "task_used": 192,
+        "wire_used": 210,
+        "pending": null,
+        "unchanged_archive": true,
+        "output_sha256": "dc7d2b07774f1ba97390d48f2f62b83a2a7d74a2fcb8cfe46bc4c8d90197a2f7"
+      },
+      "r7": {
+        "status": "running",
+        "task_used": 9,
+        "wire_used": 9,
+        "pending": {
+          "directory": "iteration-01",
+          "task_requests": 9,
+          "wire_requests": 9,
+          "in_flight_requests": 0
+        },
+        "unchanged_archive": true,
+        "output_sha256": "9da926aaa972f8a025eed4c35bf0bf41356e2fbecbcac518cc3cf32a05410337"
+      }
+    }
+  },
+  "local_validation": {
+    "command": "bash scripts/check-local.sh",
+    "passed": true,
+    "rust_main": {
+      "passed": 1194,
+      "ignored": 2
+    },
+    "rust_integrations_passed": 6,
+    "tui_replay_passed": 20,
+    "log_sha256": "3a71e619070415f115e2fa1ffbabaec0d1f160ad314760a06187c2d825e693a0"
+  }
+}

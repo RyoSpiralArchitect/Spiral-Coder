@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod authored_tests;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Contract {
@@ -90,6 +92,8 @@ pub(crate) struct Status {
     #[serde(skip)]
     baseline_receipts: BTreeMap<String, String>,
     pub pending_artifact_paths: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) authored_tests: Option<authored_tests::AuthoredTests>,
     requirements: Vec<Value>,
 }
 
@@ -316,6 +320,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
         .min();
     let mut status = Status {
         declared: true,
+        authored_tests: authored_tests::project(&contract, &evidence.actions),
         ..Status::default()
     };
     for requirement in contract.requirements {

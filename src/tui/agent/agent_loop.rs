@@ -174,10 +174,12 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     // positional guess at the end of the request log, so interleaved or
     // multi-attempt receipts cannot be misclassified into the transport pool.
     let mut last_request_cursor: Option<usize> = None;
+    let mut first_observer_observation = observer_continuation::current();
     for iter in 0..max_iters
         .saturating_add(repair_iterations)
         .saturating_add(GOVERNOR_BLOCK_ITER_RELIEF)
     {
+        let observer_observation = first_observer_observation.take();
         let observed_blocked_turns = count_governor_blocked_tool_turns(&messages);
         let newly_blocked = observed_blocked_turns.saturating_sub(prev_blocked_turns);
         // A transport refund requires a wholly rejected response: new blocked
@@ -951,6 +953,11 @@ This is the LAST model call for this run.\n\
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
+        let observer_observation = observer_observation.as_ref().filter(|observation| {
+            tool_call
+                .as_ref()
+                .is_some_and(|call| observation.matches_accepted_call(call, &assistant_text))
+        });
         tool_coercion::coerce_authored_tool_call(
             &tool_coercion::CoercionCtx {
                 tx: &tx,
@@ -1038,6 +1045,7 @@ This is the LAST model call for this run.\n\
                 assistant_text_clean: &assistant_text_clean,
                 parsed_plan: &parsed_plan,
                 parsed_think: &parsed_think,
+                observer_observation,
                 compat_last_think: &compat_last_think,
                 root_user_text: &root_user_text,
                 test_cmd: &test_cmd,

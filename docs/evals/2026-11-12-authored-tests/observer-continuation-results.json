@@ -1,0 +1,422 @@
+{
+  "plan_sha256": "32c1fea818c2bce5b4b8bd7953b324937c97d28a6c9d2dc2b7d947d2b2064835",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "c247d10aeb833c6dbb46a66a863710849f241524",
+  "binary_sha256": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+  "same_original_inputs": true,
+  "limits": {
+    "roles": {
+      "coder": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      },
+      "observer": {
+        "provider": "openai",
+        "model": "gpt-5.6-luna"
+      }
+    },
+    "iterations": 6,
+    "maximum_task_requests": 192,
+    "maximum_wire_requests": 216,
+    "total_wall_seconds": 3600,
+    "task_requests_per_iteration": 32,
+    "transport_per_iteration": 4,
+    "observer_reserve": 8,
+    "coder_chunk_requests": 8
+  },
+  "positive_and_negative_controls": {
+    "reference-control": "0447705aa6fec836419c78f882c6aa79913cb81845d3e4dee794b94e1fb0f405",
+    "thin-control": "5141ed9870cb0f67ed19dea7fa9212d8723f2e37f1e7ff43ce7a986f36da59f9"
+  },
+  "replay": {
+    "provider_calls": 0,
+    "source_session_sha256": "56fc687559846ff2eabda72bd34f796852262da951f840076baae7bf83c90760",
+    "source_report_sha256": "4550665c9563f4aede02f3fe6c35e179143ea9931c8033c5e2efd4d40770cfd1",
+    "original_replay_observations_sha256": "4259d29bf6ba779e953bb91e97fb07b5323eb4d2274c4e47a3dd3355a81ed01c",
+    "same_workspace": true,
+    "source_call_id": "call_HgNUWAyoCiAitSKYOWUdrGa3",
+    "matched_typed_reference": {
+      "prior": {
+        "binary_sha256": "03b353e6f19ab532fbbbfb47959b6309a7f5aff42f0a94733d4313f5c3588ab0",
+        "guided": false,
+        "executed": false,
+        "succeeded": false,
+        "plan_rejected": true,
+        "think_rejected": false,
+        "admitted_goal_retained": false,
+        "accepted_goal": null,
+        "acceptance": null,
+        "pending_checks": [
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "captured_comparison": false,
+        "comparison": null
+      },
+      "updated": {
+        "binary_sha256": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+        "guided": true,
+        "executed": true,
+        "succeeded": false,
+        "plan_rejected": false,
+        "think_rejected": false,
+        "admitted_goal_retained": true,
+        "accepted_goal": "Implement strict coupled-status summaries, tests, documentation, and pass all six exact checks.",
+        "acceptance": [
+          "Native and installed summaries work read-only.",
+          "Invalid records fail cleanly.",
+          "Docs and tests describe behavior.",
+          "All six checks pass."
+        ],
+        "pending_checks": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "captured_comparison": true,
+        "comparison": "Focused unittest: scripts.status_guide.Guide.test_documented_example tests: 1\nAssertion difference (- first operand, + second operand):\n- {'iterations': [{'changed_files': ['src/lib.rs'],\n-                  'newly_verified': ['cargo test'],\n-                  'task_id': 'task-1',\n-                  'task_requests': 3,\n-  'progress': ['iteration 1: task-1', 'completed'],\n-               'task_remaining': 189,\n-               'task_used': 3,\n-               'wire_limit': 384,\n-               'wire_remaining': 381,\n+ {'iterations': [{'changed_files': ['src/a.rs'],\n+                  'newly_verified': ['cargo test -q'],\n+                  'task_id': 't1',\n+                  'task_requests': 2,\n+               'task_remaining': 190,\n+               'task_used': 2,\n+               'wire_limit': 216,\n+               'wire_remaining': 213,\n[end focused unittest comparison]"
+      }
+    },
+    "prefix_control": {
+      "binary_sha256": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+      "guided": true,
+      "executed": false,
+      "succeeded": false,
+      "plan_rejected": false,
+      "think_rejected": false,
+      "admitted_goal_retained": true,
+      "accepted_goal": null,
+      "acceptance": null,
+      "pending_checks": [
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ],
+      "captured_comparison": false,
+      "comparison": null,
+      "final_gate": "assumption_ledger"
+    },
+    "negative_controls": {
+      "changed_acceptance": {
+        "binary_sha256": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+        "guided": true,
+        "executed": false,
+        "succeeded": false,
+        "plan_rejected": true,
+        "think_rejected": false,
+        "admitted_goal_retained": false,
+        "accepted_goal": null,
+        "acceptance": null,
+        "pending_checks": [
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "captured_comparison": false,
+        "comparison": null
+      },
+      "changed_cwd": {
+        "binary_sha256": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+        "guided": true,
+        "executed": false,
+        "succeeded": false,
+        "plan_rejected": true,
+        "think_rejected": false,
+        "admitted_goal_retained": false,
+        "accepted_goal": null,
+        "acceptance": null,
+        "pending_checks": [
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "captured_comparison": false,
+        "comparison": null
+      }
+    }
+  },
+  "fresh_runs": {
+    "S18": {
+      "qualified": false,
+      "native_completed": false,
+      "accepted_done": false,
+      "stop_reason": "iteration_limit",
+      "rounds": 6,
+      "plan_rejections": 6,
+      "observer_suggestions_executed": 41,
+      "observer_suggestions_rejected": 2,
+      "task_requests": 192,
+      "wire_requests": 210,
+      "wall_seconds": 1894.667,
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": false,
+        "python3 -S -m unittest -v scripts.status_visible": false,
+        "python3 -S -m unittest -v scripts.status_guide": false,
+        "cargo test --locked --bin spiral-coder -q": false,
+        "cargo test --locked --test coupled_status -q": false,
+        "python3 -S -m unittest -v scripts.status_paths": false
+      },
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "2d06d249cb488d5c2c3492f8abaf6b6453d1fd2d8f79d3cb73000af88ec5c02b"
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "83b0467a9f0f57b0b4f9106245c7f5011dfdf9576e1925191fd08a5c9f5e57f4"
+        },
+        "status-held-out": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "bbc8869c6070b5d3a05b8aead8d3146609a3fddd137d11c06d21b8ab539fdc7d"
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "041976bf4c806803d607c49a616b19a0218a4f41ebfca0f36d299926257d07d6"
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "66cb5eb77825e5fa14c23a38969f40cb1b435ea084cb873b041f1df92f0d84fa"
+        },
+        "status-paths": {
+          "passed": false,
+          "executed": true,
+          "log_sha256": "1e63d29c1564bdb42ca20ff55922c334b3e1711ebb1d19925e2c0f89aa00b6bc"
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "3bbad57cedc1402584a1aa6561ddda1b120271d75c78b84b9b30c4a459ece762"
+        }
+      },
+      "held_out": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "reference_compatible": true,
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": false
+      },
+      "failed_gates": [
+        "authored_report",
+        "native_completed",
+        "accepted_done",
+        "no_remaining_acceptance",
+        "fresh_native_checks",
+        "no_pending_checks",
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "changed_paths": [
+        "docs/coupled-status.md",
+        "docs/state-schema.md",
+        "npm/spiral-coder/lib/launcher.cjs",
+        "src/coupled_status.rs",
+        "src/main.rs",
+        "tests/coupled_status.rs"
+      ],
+      "scope_preserved": true,
+      "protected_preserved": true,
+      "patch_sha256": "b2b98a9e6ae217971a073b65f2a1c85c5e4998daf7268b9b21f6c6147c021e03",
+      "receipt_sha256": "16d7c0c290a836f331e26ecab030c0c8b8a3f20c7408219c87c000b3183d4bd7"
+    },
+    "S19": {
+      "qualified": false,
+      "native_completed": true,
+      "accepted_done": true,
+      "stop_reason": "completed",
+      "rounds": 6,
+      "plan_rejections": 7,
+      "observer_suggestions_executed": 37,
+      "observer_suggestions_rejected": 1,
+      "task_requests": 181,
+      "wire_requests": 196,
+      "wall_seconds": 1568.927,
+      "current_exact_checks": {
+        "cargo fmt --all -- --check": true,
+        "python3 -S -m unittest -v scripts.status_visible": true,
+        "python3 -S -m unittest -v scripts.status_guide": true,
+        "cargo test --locked --bin spiral-coder -q": true,
+        "cargo test --locked --test coupled_status -q": true,
+        "python3 -S -m unittest -v scripts.status_paths": true
+      },
+      "independent_checks": {
+        "candidate-build": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "4131d63502cf2affa6a75207bd0db4797f261daf1bcea93284d8792d05b2e26e"
+        },
+        "status-visible": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "fe49ce8455673533c8a21dc3c38ff098a8f2914d9186fa662c8d9e10d452cef3"
+        },
+        "status-held-out": {
+          "passed": false,
+          "executed": true,
+          "log_sha256": "2eebead09a0209eb7f545309a6492767b87d00a406c31dcfe3b1aa04217845a4"
+        },
+        "packaged-status": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "b6d4f3000c757fa94c945932df1e56d42ef6e449d49c40c8baafad23f35da0fc"
+        },
+        "guide-example": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "6c0b7cc2892654ca519b8848b0cb49ebba710885f1baa35469b8a1aa4a724b35"
+        },
+        "status-paths": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "93f7456c4999d96fc7d63feb1113ba4855c8ae6be1189fa3a706a835e0d4656f"
+        },
+        "stock-regressions": {
+          "passed": true,
+          "executed": true,
+          "log_sha256": "0f9630aeac374110879a7d44003fecf09203c9a495255fae2d758975ae6764ca"
+        }
+      },
+      "held_out": {
+        "passed": 22,
+        "failed": 2,
+        "ignored": 0
+      },
+      "reference_compatible": true,
+      "sensitivity": {
+        "missing_pending": true,
+        "symlink": false,
+        "duplicate_request": false,
+        "parent_link": true
+      },
+      "failed_gates": [
+        "independent_checks_passed",
+        "authored_test_sensitivity"
+      ],
+      "changed_paths": [
+        "docs/coupled-status.md",
+        "docs/state-schema.md",
+        "npm/spiral-coder/lib/launcher.cjs",
+        "src/coupled_status.rs",
+        "src/main.rs",
+        "tests/coupled_status.rs"
+      ],
+      "scope_preserved": true,
+      "protected_preserved": true,
+      "patch_sha256": "a0a636caa2aa0c7a410abe81d8cbeff5811b5c5ddd25f941d6513a2c10cf00c4",
+      "receipt_sha256": "b63406ed7a20af77900ec594fa670aa4873c81a654caccd49abac52d5b25537f"
+    }
+  },
+  "native_observation_handoffs": [],
+  "typed_references": [
+    {
+      "round": "iteration-04",
+      "call_id": "call_DVgkCm18kvkYr2HyYajSMSA2",
+      "command": "cargo test --locked --test coupled_status -q",
+      "executed": true,
+      "succeeded": true,
+      "observer_decision": "accept"
+    }
+  ],
+  "independent_s19_findings": {
+    "failed_held_out_cases": [
+      "test_completion_conflict",
+      "test_wrong_task_id"
+    ],
+    "strict_scope": true,
+    "protected_inputs_preserved": true,
+    "original_candidate_patch_replays": true
+  },
+  "grouped_subtest_replay": {
+    "provider_calls": 0,
+    "first_grouped_projection_sha256": "4bd4a1da9ec557116e18d72206c6e28c969af2d8728663afd61c8c31ee76ed02",
+    "source_session_sha256": {
+      "round_5": "51e490c43764e3f60fc8a54aaef2ea500289f6b681cf62f8dcac95daf0a9d446",
+      "round_6": "7f88b97484b7693cbe37bbf24fb2e308f073c0a79ff14529b488d1d12e67e0e7"
+    },
+    "source_run_receipt_sha256": "b63406ed7a20af77900ec594fa670aa4873c81a654caccd49abac52d5b25537f",
+    "binary_sha256": {
+      "before": "4b3ff9d6ff0e5da229a4867aa7df2c85f37312e2dfc7344c8c1c01afce96579a",
+      "grouped_without_normalization": "743294170a9aeeed6e79341c921119c4df149c60ba7a24af2e6fcedee7506e2d",
+      "after": "ce71623af41c9b68a0286df0317bad5e1d70168fd7f0f987e1f85397628fbcb9"
+    },
+    "prefixes": {
+      "before_diagnostic_read": {
+        "pending_checks": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "required_read": {
+          "failed_check": "python3 -S -m unittest -v scripts.status_paths",
+          "path": "scripts/status_paths.py"
+        },
+        "comparison_available": false
+      },
+      "after_diagnostic_read": {
+        "pending_checks": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_paths"
+        ],
+        "required_read": null,
+        "comparison_available": true
+      },
+      "after_repair": {
+        "pending_checks": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q"
+        ],
+        "required_read": null,
+        "comparison_available": false
+      }
+    },
+    "comparison": {
+      "case": "scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown",
+      "subtest_failures": 3,
+      "exit_code": 1,
+      "log_sha256": "0852ae0c1f8ae002708b994d81f7839e9ef942f9efb4cad12ae5c93c575ce17a",
+      "comparison_frame": "Focused unittest: scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown tests: 1 subtest failures: 3\nAssertion difference (- first operand, + second operand):\n-               'task_remaining': 190,\n-               'task_used': 2,\n-               'wire_remaining': 213,\n-               'wire_used': 3},\n+               'task_remaining': None,\n+               'task_used': None,\n+               'wire_remaining': None,\n+               'wire_used': None},\n[end focused unittest comparison]",
+      "same_candidate_bytes_after_observation": true
+    },
+    "reconstructed_prior_source_sha256": "2d450e9a69813d104753d3b064049d286a001f2e8d93cbecdf3a9829c982872b",
+    "exact_check_still_due": true
+  },
+  "grouped_subtest_runtime_commit": "2bcb1a178285a5812785ecdc62ac92eb2b6ac0c5",
+  "local_validation": {
+    "command": "bash scripts/check-local.sh",
+    "passed": true,
+    "rust_main": {
+      "passed": 1200,
+      "ignored": 2
+    },
+    "rust_integrations_passed": 6,
+    "tui_replay_passed": 20,
+    "log_sha256": "b053a0b9fce48a9da3282b8811b54a537c10e6bfbb1c0b32983c25102bdf4c31"
+  }
+}

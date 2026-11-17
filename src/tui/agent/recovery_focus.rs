@@ -29,7 +29,7 @@ mod recovery_snapshot;
 
 pub(crate) use diagnostic_followup::DiagnosticFollowup;
 use recovery_location::*;
-use recovery_snapshot::correlated_results;
+pub(super) use recovery_snapshot::correlated_results;
 pub(super) use recovery_snapshot::protected_call_ids;
 pub(super) use recovery_snapshot::validated_snapshot as native_snapshot;
 

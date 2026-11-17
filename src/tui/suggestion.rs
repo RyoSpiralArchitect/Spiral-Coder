@@ -88,6 +88,35 @@ impl ObserverResponseMode {
     }
 }
 
+pub(crate) fn explicit_response_decision(text: &str) -> Option<ObserverResponseMode> {
+    let lower = text.to_ascii_lowercase();
+    for line in lower.lines().map(str::trim) {
+        if let Some(decision) = line
+            .strip_prefix("decision:")
+            .or_else(|| line.strip_prefix("observer_response:"))
+        {
+            return match decision.trim() {
+                "accept" => Some(ObserverResponseMode::Accept),
+                "override" => Some(ObserverResponseMode::Override),
+                "defer" => Some(ObserverResponseMode::Defer),
+                _ => None,
+            };
+        }
+        if line.starts_with("[observer response]") {
+            for mode in [
+                ObserverResponseMode::Override,
+                ObserverResponseMode::Defer,
+                ObserverResponseMode::Accept,
+            ] {
+                if line.contains(mode.label()) {
+                    return Some(mode);
+                }
+            }
+        }
+    }
+    None
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ObserverResponseContract {
     #[serde(default)]

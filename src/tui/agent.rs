@@ -152,6 +152,7 @@ mod done_dispatch;
 mod exec_dispatch;
 mod file_tool_dispatch;
 pub(crate) mod iteration_handoff;
+pub(crate) mod observer_continuation;
 mod observer_handoff;
 mod report_surface;
 mod requirement_proof;

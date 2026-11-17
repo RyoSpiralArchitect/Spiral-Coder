@@ -26,7 +26,9 @@ Coder shell action inspect the original command and its outputs. No extra Cargo
 command runs. The common root-level `cargo test` and `cargo build` forms support
 `--locked`, `--offline`, `--frozen`, `--release`, a simple `--target-dir`, and
 a single `--bin` selector. For tests, the first Cargo unit-test runner must
-identify `src/main.rs` or `src/lib.rs` and its hashed executable. For builds,
+identify `src/main.rs` or `src/lib.rs` and its hashed executable under the
+selected profile's `deps` or `build/<package>/<unit-hash>/out` directory.
+The latter must match the executable's hash. For builds,
 one newly written or refreshed binary depfile must identify the product and
 its `src/main.rs` entry. The probe follows the current target directory and
 profile. Unsupported layouts, ambiguous outputs, quiet tests without a runner
