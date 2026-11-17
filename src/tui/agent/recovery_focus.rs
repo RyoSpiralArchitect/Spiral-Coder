@@ -27,6 +27,7 @@ mod recovery_progress;
 #[path = "recovery_snapshot.rs"]
 mod recovery_snapshot;
 
+pub(super) use baseline_failure::is_prescribed_formatter;
 pub(crate) use diagnostic_followup::DiagnosticFollowup;
 use recovery_location::*;
 pub(super) use recovery_snapshot::correlated_results;

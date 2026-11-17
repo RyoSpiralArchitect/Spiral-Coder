@@ -150,6 +150,63 @@ async fn malformed_observer_repair_returns_one_work_slice_with_original_obligati
 }
 
 #[tokio::test]
+async fn contract_invalid_observer_repair_returns_one_work_slice_without_transport_charge() {
+    // Sealed S20 round 3: both Observer answers parsed, but proposed the
+    // formatter as an edit (`kind: edit`, `suggested_tool: exec`).
+    let coder = MockServer::start();
+    let observer = MockServer::start();
+    const RETURN_PROMPT: &str = "The Observer's response repair did not provide usable advice.";
+    let initial = coder.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            !String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).contains(RETURN_PROMPT)
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work remains unfinished.", None));
+    });
+    let resumed = coder.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains(RETURN_PROMPT)
+            .body_contains("cargo test --locked --test ledger");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse("The work still needs its native checks.", None));
+    });
+    let contract_invalid = json!({"summary":"Repair the diagnosed formatting failure.",
+        "suggestions":[{"kind":"edit","reason":"Run the formatter, then rerun the exact check.",
+        "confidence":0.99,"suggested_tool":"exec","suggested_args":{"command":"cargo fmt --all"}}]})
+    .to_string();
+    let rejected = observer.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(sse(&contract_invalid, None));
+    });
+    let task = r#"Repair engine.rs and verify the result.
+<task_requirements>
+{"version":1,"requirements":[{"id":"ledger","description":"Check the repaired answer","artifacts":[{"path":"engine.rs","kind":"source"}],"checks":[{"command":"cargo test --locked --test ledger"}]}]}
+</task_requirements>"#;
+    let report = episode_with_prompt(&coder, &observer, 20, 4, 2, task).await;
+    assert!(initial.hits() > 0 && resumed.hits() > 0);
+    assert!(rejected.hits() >= 2);
+    assert_eq!(report["termination"], "observer_unavailable");
+    assert_eq!(
+        report["execution"]["pending_exact_checks"],
+        json!(["cargo test --locked --test ledger"])
+    );
+    assert_eq!(report["work"]["assists"], json!([]));
+    let requests = report["work"]["requests"].as_array().unwrap();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|row| row["charge"] == "transport")
+            .count(),
+        0
+    );
+}
+
+#[tokio::test]
 async fn reservation_drives_eight_observer_interventions_without_coder_borrowing() {
     let coder = MockServer::start();
     let observer = MockServer::start();

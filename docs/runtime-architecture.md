@@ -268,6 +268,12 @@ Repetition and progress evidence:
   root-approved required checks; unknown or extended mutation commands retain
   their assumption checks. This exemption does not bypass independent progress,
   recovery, repetition, or completion gates.
+  The exact write-mode formatter that recovery focus prescribes for a failed
+  formatter check (`cargo fmt` or `cargo fmt --all`, from `formatter_for_check`)
+  is not reuse of a refuted formatting assumption either: it applies the reported
+  diff and depends on no premise. Chained, extended, or other mutation commands
+  keep the keyword check, and the recovery gate still requires the diagnostic read
+  and the exact recheck.
   A subsequent successful read or write of that exact path confirms its existence
   through an event-local result hook; replay applies the same update in transcript
   order using correlated tool-call IDs. Earlier successes, unpaired results, cached

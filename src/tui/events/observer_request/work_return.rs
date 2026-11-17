@@ -1,4 +1,5 @@
-//! Return a Coder work slice when a completed Observer repair has no valid envelope.
+//! Return a Coder work slice when a completed Observer repair yields no usable
+//! advice: a malformed envelope, or a parsed one whose action contract fails.
 use super::*;
 
 pub(in crate::tui::events) fn rejected_repair_work_return(app: &App) -> Option<usize> {
@@ -23,10 +24,25 @@ pub(in crate::tui::events) fn rejected_repair_work_return(app: &App) -> Option<u
         .iter()
         .rev()
         .find(|message| message.role == Role::Assistant && message.complete)?;
-    suggestion::transport_issue_for_raw(reply.raw_content.as_deref().unwrap_or(&reply.content))?;
+    let raw = reply.raw_content.as_deref().unwrap_or(&reply.content);
 
     let messages = &app.coder_session.as_ref()?.messages;
     let test_command = app.project_test_cmd.as_deref();
+    // The same native resolution that refused to forward the reply: framing or
+    // schema errors, and parsed actions that fail the action contract.
+    let unusable = suggestion::transport_issue_for_raw(raw).is_some()
+        || crate::observer_action::resolve_advice(
+            raw,
+            messages,
+            test_command,
+            super::super::observer_assist::execution_root(app).as_deref(),
+            Some(work.coder_remaining()),
+        )
+        .issue
+        .is_some();
+    if !unusable {
+        return None;
+    }
     let obligations = agent::task_obligations::project(messages, test_command);
     let actionable = !obligations
         .task_requirements
