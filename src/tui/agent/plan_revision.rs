@@ -77,6 +77,22 @@ pub(super) fn validate_alignment(
     })
 }
 
+pub(super) fn preserve_goal_for_observation(
+    proposed: &PlanBlock,
+    active: &PlanBlock,
+    messages: &[Value],
+    contract: &TaskContract,
+) -> Option<PlanBlock> {
+    if proposed.goal == active.goal || proposed.acceptance_criteria != active.acceptance_criteria {
+        return None;
+    }
+    let admitted = anchor(active, messages, contract)?;
+    Some(PlanBlock {
+        goal: admitted.goal,
+        ..proposed.clone()
+    })
+}
+
 pub(super) fn snapshot(
     plan: Option<&PlanBlock>,
     messages: &[Value],

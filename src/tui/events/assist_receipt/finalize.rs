@@ -1,41 +1,6 @@
 //! Record the delivered advice independently of its optional response contract.
 use super::super::{agent, suggestion, App, Role};
 
-fn explicit_observer_response_decision(text: &str) -> Option<suggestion::ObserverResponseMode> {
-    let lower = text.to_ascii_lowercase();
-    for line in lower.lines() {
-        let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("decision:") {
-            return parse_observer_response_mode(rest.trim());
-        }
-        if let Some(rest) = trimmed.strip_prefix("observer_response:") {
-            return parse_observer_response_mode(rest.trim());
-        }
-        if trimmed.starts_with("[observer response]") {
-            if trimmed.contains("override") {
-                return Some(suggestion::ObserverResponseMode::Override);
-            }
-            if trimmed.contains("defer") {
-                return Some(suggestion::ObserverResponseMode::Defer);
-            }
-            if trimmed.contains("accept") {
-                return Some(suggestion::ObserverResponseMode::Accept);
-            }
-        }
-    }
-    None
-}
-
-fn parse_observer_response_mode(raw: &str) -> Option<suggestion::ObserverResponseMode> {
-    let t = raw.trim().to_ascii_lowercase();
-    match t.as_str() {
-        "accept" => Some(suggestion::ObserverResponseMode::Accept),
-        "override" => Some(suggestion::ObserverResponseMode::Override),
-        "defer" => Some(suggestion::ObserverResponseMode::Defer),
-        _ => None,
-    }
-}
-
 fn tool_call_matches_observer_suggestion(
     call_name: &str,
     call_args_json: &str,
@@ -77,7 +42,7 @@ pub(in crate::tui::events) fn finish(app: &mut App) {
             .find(|m| {
                 matches!(m.role, Role::Assistant) && m.complete && !m.content.trim().is_empty()
             })
-            .and_then(|m| explicit_observer_response_decision(&m.content))
+            .and_then(|m| suggestion::explicit_response_decision(&m.content))
     } else {
         None
     };
