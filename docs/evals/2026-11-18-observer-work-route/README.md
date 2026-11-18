@@ -182,3 +182,7 @@ before that write, so they leave the behavior of the intermediate ledger
 unmeasured. The candidate implementation still rejects the valid two-round
 case. This continuation establishes recovery on this saved point. The
 original fresh qualification remains 25/26 and #82 remains open.
+
+The [issuer-scope follow-up](../2026-11-18-issuer-scope/README.md) measures
+whether the Observer can derive a two-iteration public control from the writer
+and whether that control detects this candidate's remaining rejection.

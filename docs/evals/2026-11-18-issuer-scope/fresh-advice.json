@@ -1,0 +1,130 @@
+{
+  "manifest_sha256": "e319968ee00ebdca1f774c06e46636c273f8a9b4782fac55fdcc9dfb9bc9ca35",
+  "selection": "Observer primary reason or route fields mentioning issuer or boundary composition. Delivery is recorded only when matched to a native Coder system hint.",
+  "producer_reads": [
+    {
+      "iteration": "iteration-01",
+      "call_id": "call_OVjRcP6bwj8UFLHJmvmE2b2d",
+      "result_step": 15,
+      "arguments": {
+        "end_line": 200,
+        "path": "src/work_budget.rs",
+        "start_line": 1
+      },
+      "header": "[src/work_budget.rs] (641 lines, 24867 bytes) [range: lines 1-200; partial file]"
+    }
+  ],
+  "observed_proposals": [
+    {
+      "iteration": "iteration-02",
+      "display_index": 1,
+      "report_sha256": "10b696edcdcb7519746a8ea6c59fe867dbda52ccfa0986ae615d3129695d02e8",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "why_this_first": "Repair the observed compiler diagnostic before adding tests or running the six checks; this unlocks executable fixture-based validation. In the same implementation phase, inspect the actual WorkBudget owner construction before finalizing duplicate-ID tests: if requests resets per finalized owner, add two independently valid owners retaining the same native ID and assert success, plus a within-owner duplicate mutation asserting rejection. If IDs are shared, retain the rejection scope accordingly. This is preferable to another broad read because the missing CLI type/dispatch is already precisely identified and the remaining budget is limited."
+      },
+      "fields_observed_in_coder_system_hint": [],
+      "observed_hint_sha256": []
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 3,
+      "report_sha256": "10b696edcdcb7519746a8ea6c59fe867dbda52ccfa0986ae615d3129695d02e8",
+      "confidence": 0.98,
+      "relevant_fields": {
+        "why_this_first": "The latest executed edit changed src/main.rs but left the binary uncompilable. Inspecting the exact current declarations and coupled_status exports is better than retrying the failed patch or running the six checks, because every check is blocked by compilation. Once wiring compiles, continue with the remaining launcher, tests, docs, and exact verification obligations; the owner-local request-ID question remains unproven and should be covered by a positive multi-owner control and a within-owner duplicate rejection in tests."
+      },
+      "fields_observed_in_coder_system_hint": [],
+      "observed_hint_sha256": []
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 1,
+      "report_sha256": "9fa5ec48da70ddf35ed80840be7f6841f8a8c269a6fe5bd7c6ac0094cfc40c92",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "why_this_first": "Run the exact required recheck first because native recovery_stage and required_recheck take precedence, and the prior failure was superseded by the launcher mutation. If it passes, proceed with the remaining parser, public CLI tests, and documentation. If it fails, inspect the current failing assertion and source branch before further edits. The competing identity question cannot be settled from the retained assignment alone: confirm the owner construction/reset and then add a positive two-owner composition control plus a same-owner duplicate rejection control."
+      },
+      "fields_observed_in_coder_system_hint": [
+        "why_this_first"
+      ],
+      "observed_hint_sha256": [
+        "655875471f82567188a37d49b3e9f0d6092a983cf299a392aaae70e7c2ea884d"
+      ]
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 9,
+      "report_sha256": "9fa5ec48da70ddf35ed80840be7f6841f8a8c269a6fe5bd7c6ac0094cfc40c92",
+      "confidence": 0.86,
+      "relevant_fields": {
+        "primary_reason": "The current source observation shows `src/coupled_status.rs` is still the incomplete implementation, while the previous whole-file write was rejected for replacing unrelated lines. Apply one explicit, context-anchored patch to the existing parser branch that addresses the visible fixture path without replacing the function wholesale; preserve current CLI wiring and existing guards. This unlocks the mandatory recovery recheck. The discriminating result is the visible test: pass advances to authored tests/docs and the six-check sweep; failure supplies the next exact assertion. Also retain the ownership concern: request IDs are initialized from `state.requests.len()` in `src/work_budget.rs`, so the authored tests must later prove per-owner reset by composing two valid finalized owners and separately rejecting a within-owner duplicate."
+      },
+      "fields_observed_in_coder_system_hint": [
+        "primary_reason"
+      ],
+      "observed_hint_sha256": [
+        "5291e704e04093bc27b4fcd00594bb9a4a3f3f8ebba6e3e8e9eb7b9e9d0b3c67"
+      ]
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 1,
+      "report_sha256": "f27676695a83328e86ca66d4faabe13ac98d8bfc6c5f64655bf0a5bb262bdd02",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "why_this_first": "Run the required recheck first because the prior visible failure was superseded by a repair and unrelated passing evidence cannot resolve it. If it passes, continue with the remaining exact checks and then author the missing tests and documentation; if it fails, inspect the current failing assertion and its source branch before editing. The retained source quote shows WorkBudget request IDs are allocated from state.requests.len() in src/work_budget.rs, but it does not prove owner lifetime or reset behavior; defer the duplicate-ID scope control until the test source and producer ownership are established. A negative duplicate test alone would not detect a validator removed entirely, so the successful control must combine two independently valid finalized owners in one input, preserving each native ID, row order, linkage, and counts, followed by a within-owner duplicate mutation that keeps collection size unchanged and asserts the public CLI rejects it."
+      },
+      "fields_observed_in_coder_system_hint": [
+        "why_this_first"
+      ],
+      "observed_hint_sha256": [
+        "85f8556ade8f8a00eaad358122f6edcf9c2b82f611f4fbcea60cf18697386d4a"
+      ]
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 11,
+      "report_sha256": "f27676695a83328e86ca66d4faabe13ac98d8bfc6c5f64655bf0a5bb262bdd02",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "fallback": "If the visible suite still fails, inspect the current failing assertion and the corresponding branch in src/coupled_status.rs, preserving working defaults and ordering; do not claim completion or run a final sweep until that check passes. Afterward, author the protected-fixture public tests, including a successful unchanged baseline, single-invariant negative mutations, and a positive composition control for two independently valid finalized owners if request IDs are owner-local."
+      },
+      "fields_observed_in_coder_system_hint": [
+        "fallback"
+      ],
+      "observed_hint_sha256": [
+        "0368e8526a0b29650d72c9541019f64b2d365b112c928cd138e7e834fb2a76b6"
+      ]
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 13,
+      "report_sha256": "f27676695a83328e86ca66d4faabe13ac98d8bfc6c5f64655bf0a5bb262bdd02",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "primary_reason": "Immediate blocker: the required diagnostic read has not yet been satisfied. Read the exact failing test source to identify the expected completed/interrupted output and its fixture construction; this can unblock a targeted repair of interrupted aggregation or its expectation while preserving the admitted goal to finish implementation, documentation, tests, and exact verification. Do not rerun the failed check or edit yet: the retained failure tail is insufficient to distinguish the faulty production field from the test setup. After the read, carry the remaining work into the next iteration: repair the implementation if indicated, author protected-fixture public tests including a successful unchanged baseline and a positive cross-owner composition control, add both documentation artifacts, then run all six pending exact checks. If the test source reveals the failure is only fixture/setup-related, repair the authored fixture without weakening the assertion; otherwise inspect the corresponding implementation path before rerunning."
+      },
+      "fields_observed_in_coder_system_hint": [],
+      "observed_hint_sha256": []
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 17,
+      "report_sha256": "f27676695a83328e86ca66d4faabe13ac98d8bfc6c5f64655bf0a5bb262bdd02",
+      "confidence": 0.99,
+      "relevant_fields": {
+        "primary_reason": "Immediate blocker: the Coder turn and request budget are exhausted, so no action can execute now. Native evidence records a focused failure where an interrupted run reported task_used=2 and wire_used=3 instead of expected task_used=3 and wire_used=5, indicating pending-ledger aggregation is still omitted or incomplete in src/coupled_status.rs. The required artifacts tests/coupled_status.rs, docs/coupled-status.md, and the append-only docs/state-schema.md section remain unauthored; cargo fmt previously failed; and the six exact checks lack current successful receipts. The first future continuation should repair the pending aggregation from scripts.status_fixture's ledger schema, then author the missing public tests and documentation. Before the final sweep, inspect the request writer in src/work_budget.rs and its owning-state lifetime: the observed writer assigns let id = state.requests.len() and pushes into state.requests, but the reset/owner boundary is not yet established. Add a positive composition control with two independently valid finalized owners retaining the same native request ID in each, plus a same-owner duplicate rejection control; then run the required visible recheck after the next mutation and finally execute each of the six exact commands separately. If the writer's owner/reset cannot be established, read the constructor and finalized-owner assembly before deciding whether IDs are owner-local or globally shared."
+      },
+      "fields_observed_in_coder_system_hint": [],
+      "observed_hint_sha256": []
+    }
+  ],
+  "delivered_native_excerpt": [
+    {
+      "iteration": "iteration-03",
+      "hint_sha256": "5291e704e04093bc27b4fcd00594bb9a4a3f3f8ebba6e3e8e9eb7b9e9d0b3c67",
+      "primary_reason": "The current source observation shows `src/coupled_status.rs` is still the incomplete implementation, while the previous whole-file write was rejected for replacing unrelated lines. Apply one explicit, context-anchored patch to the existing parser branch that addresses the visible fixture path without replacing the function wholesale; preserve current CLI wiring and existing guards. This unlocks the mandatory recovery recheck. The discriminating result is the visible test: pass advances to authored tests/docs and the six-check sweep; failure supplies the next exact assertion. Also retain the ownership concern: request IDs are initialized from `state.requests.len()` in `src/work_budget.rs`, so the authored tests must later prove per-owner reset by composing two valid finalized owners and separately rejecting a within-owner duplicate."
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "plan_sha256": "ef014f3b69702bc13d8083eb206690f05c29f4fbb987c97b62e87d2502ccc81c",
+  "declaration_sha256": "7668b45101dda8117dffc707fe80065f4959a564afc2d02cf3e0b4cb95708a50",
+  "run_receipt_sha256": "978b9972aa2de32aa6dce85d7a6b4c1e958b1a934ae2170f7d36ef2653a648fa",
+  "assessment_sha256": "4ebb34c5d3788cf61dc1ad14c71687dc4ca69de63ea91456b1c10b2583969a92",
+  "candidate_patch_sha256": "1d2dda47dcd252906aecf0fb5cffefd03d5f8640df4450bde830ed1a9c5270e0",
+  "qualified": false,
+  "promotion_authorized": false,
+  "stop_reason": "no_new_edit_or_verification",
+  "wall_seconds": 983.63,
+  "completed": false,
+  "task_requests": 128,
+  "wire_requests": 143,
+  "rounds": [
+    {
+      "directory": "iteration-01",
+      "task_requests": 32,
+      "wire_requests": 35,
+      "roles": {
+        "coder": 26,
+        "observer": 9
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "src/coupled_status.rs",
+          "src/main.rs"
+        ],
+        "newly_reproduced_baselines": [
+          "python3 -S -m unittest -v scripts.status_visible"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-02",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 28,
+        "observer": 8
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "npm/spiral-coder/lib/launcher.cjs",
+          "src/main.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-03",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 28,
+        "observer": 8
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "src/coupled_status.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-04",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 27,
+        "observer": 9
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    }
+  ],
+  "gates": {
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": false,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_input_and_output": true,
+    "sealed_candidate_matches": true,
+    "distinct_parent_linked_ledgers": true,
+    "bounded_chain": true,
+    "both_roles_called": true,
+    "native_completed": false,
+    "accepted_done": false,
+    "no_remaining_acceptance": false,
+    "native_edit": true,
+    "actual_edit": true,
+    "required_paths_changed": false,
+    "fresh_native_checks": false,
+    "no_pending_checks": false,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "process_ok": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "candidate_unchanged_by_assessor": true,
+    "independent_checks_passed": false,
+    "authored_test_sensitivity": false
+  },
+  "exact_native_calls": {
+    "cargo fmt --all -- --check": [],
+    "python3 -S -m unittest -v scripts.status_visible": [],
+    "python3 -S -m unittest -v scripts.status_guide": [],
+    "cargo test --locked --bin spiral-coder -q": [],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_paths": []
+  },
+  "terminal_reports": [
+    {
+      "step": 26,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 54,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 82,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 109,
+      "outcome": "OK: blocked"
+    }
+  ],
+  "changed_files": [
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/coupled_status.rs",
+    "src/main.rs"
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "c0c67ea51977d1b87f3e47a283822724887adc0c146aa5c91a8afa7062eb643a",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "status-visible",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "3a20aacd6eb5c8ab1794ad4ebd6dc617b80202ffca0442f016d10f532c917e53",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 16,
+        "failed": 8,
+        "ignored": 0
+      },
+      "log_sha256": "ecc8147ed9aa8c32fe952c80febef7822bdc634142d9fd6422c21e2c307568a6",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "packaged-status",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "9ce192e41aeffe789d39a95fa7687158a36a67967a511c9c4c4bca17f0315757",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "guide-example",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "0d425b62278a1fb2facce8a528a59a909b147f356c698c015c7a236408053dda",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "status-paths",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": null,
+      "log_sha256": "97d30dfdf92a973f364763871f673aca959f6f87207cb39dfa44a70134bd3c04",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "4cee2bc335dfc4d18460692445ec777bf4030998197b07f1daf0f38f27e1f2bc",
+      "candidate_binary_sha256": "a151b518bc67b33f69cb4aa81fefff065d9f3ae3367766fb446238ce6aba46c7"
+    }
+  ],
+  "authored_test_sensitivity": {
+    "passed": false,
+    "tests_sha256": null,
+    "reference_tests": null,
+    "reason": "required authored tests absent",
+    "faults": {}
+  }
+}

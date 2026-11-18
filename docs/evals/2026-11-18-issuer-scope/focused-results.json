@@ -1,0 +1,247 @@
+{
+  "condition": "New focused task on the sealed previous candidate",
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "plan_sha256": "8d91577afd5de42ff03fa35ef7ed84f731b4e75c30503bd38f8bb8ab995b0c16",
+  "run_receipt_sha256": "f064636029d4550aae770284f686c8b335da92ce099ed5c9a7744a7a47aa7ccc",
+  "terminal_report_sha256": "0a5b5a08c02028896499bbe8ec3347b2f783ea7e3e6163816e06f772a5471518",
+  "completed": true,
+  "termination": "completed",
+  "rounds": [
+    {
+      "iteration": "iteration-01",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "stop": "report_incomplete",
+      "wire_by_role": {
+        "coder": 26,
+        "observer": 10
+      }
+    },
+    {
+      "iteration": "iteration-02",
+      "task_requests": 19,
+      "wire_requests": 23,
+      "stop": "completed",
+      "wire_by_role": {
+        "coder": 19,
+        "observer": 4
+      }
+    }
+  ],
+  "task_requests": 51,
+  "wire_requests": 59,
+  "wall_seconds": 522.52,
+  "changed_paths": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "last_edit_step": 38,
+  "exact_native_checks": [
+    {
+      "call_id": "call_5MaZkeW7SmCDHlpzfaUFi2LE",
+      "step": 39,
+      "command": "cargo fmt --all -- --check"
+    },
+    {
+      "call_id": "call_SEBYE3iGTzxNydvVuhVCVGce",
+      "step": 40,
+      "command": "python3 -S -m unittest -v scripts.status_visible"
+    },
+    {
+      "call_id": "call_xCh0HoqGX2OXRhTCVqASYwWi",
+      "step": 41,
+      "command": "python3 -S -m unittest -v scripts.status_guide"
+    },
+    {
+      "call_id": "call_F5JHyyJPuTepihXodzd9B0rJ",
+      "step": 42,
+      "command": "cargo test --locked --bin spiral-coder -q"
+    },
+    {
+      "call_id": "call_NYEjgDcgiCeXfCg86wP1I3tk",
+      "step": 43,
+      "command": "cargo test --locked --test coupled_status -q"
+    },
+    {
+      "call_id": "call_yIxpmGIkkCAjJcpvj0Znihjm",
+      "step": 44,
+      "command": "python3 -S -m unittest -v scripts.status_paths"
+    }
+  ],
+  "accepted_done_step": 45,
+  "pending_exact_checks": [],
+  "independent": {
+    "run_receipt_sha256": "f064636029d4550aae770284f686c8b335da92ce099ed5c9a7744a7a47aa7ccc",
+    "provider_calls": 0,
+    "changed_from_seed": [
+      "src/coupled_status.rs",
+      "tests/coupled_status.rs"
+    ],
+    "independent_groups": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "test_summary": null,
+        "log_sha256": "01233339d6be9a20f258ac1c07464c9e3bd33c200628b71a6d4952402b16a658"
+      },
+      {
+        "id": "status-visible",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "011ee222947c4c8b3a8977f9e5fb6634c969a3cd83b4f1d4891bdaa1ccab1ac0"
+      },
+      {
+        "id": "status-held-out",
+        "passed": true,
+        "test_summary": {
+          "passed": 24,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "544f062f84812b772d27958c481c9647356442b0bdb91ea322c3cdd5fb1a8549"
+      },
+      {
+        "id": "packaged-status",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "d741f213d19bf496918e1b7cec923737841c7aba3048d44e3d51c3275525c2a7"
+      },
+      {
+        "id": "guide-example",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "fee232019b726a2f63a8d64b78a91ceb03eaa92a0a27ac4d8f2c00f520fe6892"
+      },
+      {
+        "id": "status-paths",
+        "passed": true,
+        "test_summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "1ee436149cc6579639f95a02224ecf832a2c7202d5852e40dc0c4371a93aee2b"
+      },
+      {
+        "id": "stock-regressions",
+        "passed": true,
+        "test_summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "483e4b1ad8473def007cb4236c04a984e91941506e5c727c9062611923b252c5"
+      }
+    ],
+    "held_out": {
+      "total": 24,
+      "passed": 24,
+      "failed_cases": []
+    },
+    "authored_tests_sha256": "c58b7645dca37f8d1dd8260cbcd79ab5fd502c63529d6b5379401d03e59e651c"
+  },
+  "authored_test_sensitivity": {
+    "result_sha256": "2279dd1c4d249e3b33facbd267a48dae3074a7eb03444be22ddaae3ab82b9af9",
+    "reference": {
+      "status": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    "demonstrated_and_detected_faults": [
+      "duplicate_request",
+      "missing_pending",
+      "parent_link",
+      "symlink"
+    ]
+  },
+  "public_scope": {
+    "binary_sha256": "bdb2f2caa6df120618e9883fabf970a335ba0a926debf14988ee25c70ed2dac1",
+    "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+    "input_ids": {
+      "first": [
+        0,
+        1,
+        2
+      ],
+      "second_positive": [
+        0,
+        1,
+        2
+      ],
+      "second_negative": [
+        0,
+        0,
+        2
+      ]
+    },
+    "one_finalized": {
+      "passed": true,
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":2,\"wire_used\":3,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":190,\"wire_remaining\":213}}",
+      "stderr": ""
+    },
+    "two_finalized": {
+      "passed": true,
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]},{\"iteration\":2,\"task_id\":\"t2\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":4,\"wire_used\":6,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":188,\"wire_remaining\":210}}",
+      "stderr": ""
+    },
+    "duplicate_within_second": {
+      "passed": true,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: duplicate request id"
+    },
+    "passed": true,
+    "validator_sha256": "48e37270d26aae60b6a35a50a661502cd20c9b4b2d4fa3cbd7f308e0ddf6b390",
+    "tests_sha256": "c58b7645dca37f8d1dd8260cbcd79ab5fd502c63529d6b5379401d03e59e651c",
+    "probe_sha256": "aeb65e5bed67fe0ffd74ef7358d87d5b26e1a2278f047abac8c80e6f54eac918",
+    "native_template_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+  },
+  "authored_tests_on_previous_implementation": {
+    "tests_sha256": "c58b7645dca37f8d1dd8260cbcd79ab5fd502c63529d6b5379401d03e59e651c",
+    "previous_validator_sha256": "dd30dfb63bf3b2afb8e8dcebabf9d5b6934b81f18cc902efc3412422041800e6",
+    "previous_receipt_sha256": "8adb969c888a3a68758e9e7993ee9cc57082696b096c1412ea9b6f1f095244e1",
+    "log_sha256": "c5bf3d72d37fb373cd7c2c1d6e1e24df6eaab2670b687f740bf66083aeeb5b6f",
+    "exit": 101,
+    "test_summaries": [
+      "test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s"
+    ],
+    "failure_sites": [
+      "owner_local_request_ids_are_valid_across_two_iterations"
+    ],
+    "failure_message": "Error: duplicate request id"
+  },
+  "native_authored_test_order": "The validator changed before the new test. Starting-code failure of the final authored test was measured separately on the sealed previous implementation.",
+  "patches": {
+    "fresh": {
+      "patch_sha256": "1d2dda47dcd252906aecf0fb5cffefd03d5f8640df4450bde830ed1a9c5270e0",
+      "candidate_inventory_sha256": "4b5ddb2e7cb580bb6862e5501428db6d3ea31c3a84820d4aa0316ab4d9e584bb",
+      "matching_files": 1667
+    },
+    "focused_delta": {
+      "patch_sha256": "dceb96eeaeb12dc5c7c0217b15dfbebca1925fa9f8f31334731fbc9fec555801",
+      "candidate_inventory_sha256": "4cf135e59a87d7ccfdcf1eb3dddc829c9ee5be6db2878206b55acce87ebf3843",
+      "matching_files": 1669
+    },
+    "focused_cumulative": {
+      "patch_sha256": "ad2d20349f5dd756e81e5e06c3e0bb4662338f44f7dbd24eb638e0e4df09df66",
+      "candidate_inventory_sha256": "4cf135e59a87d7ccfdcf1eb3dddc829c9ee5be6db2878206b55acce87ebf3843",
+      "matching_files": 1669
+    }
+  }
+}

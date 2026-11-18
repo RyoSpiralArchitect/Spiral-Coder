@@ -1,0 +1,44 @@
+{
+  "binary_sha256": "aaa6bb5b0838672afac891a6c3d8c9f6441f8e931b50b5516919990152c7c249",
+  "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+  "input_ids": {
+    "first": [
+      0,
+      1,
+      2
+    ],
+    "second_positive": [
+      0,
+      1,
+      2
+    ],
+    "second_negative": [
+      0,
+      0,
+      2
+    ]
+  },
+  "one_finalized": {
+    "passed": true,
+    "exit": 0,
+    "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":2,\"wire_used\":3,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":190,\"wire_remaining\":213}}",
+    "stderr": ""
+  },
+  "two_finalized": {
+    "passed": true,
+    "exit": 0,
+    "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]},{\"iteration\":2,\"task_id\":\"t2\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":4,\"wire_used\":6,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":188,\"wire_remaining\":210}}",
+    "stderr": ""
+  },
+  "duplicate_within_second": {
+    "passed": false,
+    "exit": 0,
+    "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]},{\"iteration\":2,\"task_id\":\"t2\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":4,\"wire_used\":6,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":188,\"wire_remaining\":210}}",
+    "stderr": ""
+  },
+  "passed": false,
+  "validator_sha256": "4fdb957ac83ce436513635c250cfb3663fe5dd910167a19577738265f0199262",
+  "tests_sha256": null,
+  "probe_sha256": "aeb65e5bed67fe0ffd74ef7358d87d5b26e1a2278f047abac8c80e6f54eac918",
+  "native_template_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+}
