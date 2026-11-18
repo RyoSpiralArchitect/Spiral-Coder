@@ -116,12 +116,12 @@ impl Receipt {
         }
         // Accepted incomplete work can use the next predeclared allowance
         // without spending the last few requests just to exhaust this round.
-        let may_advance = self.termination == "blocked"
-            || (self.work.coder_remaining() == 0
-                && matches!(
-                    self.termination.as_str(),
-                    "budget_exhausted" | "report_incomplete"
-                ));
+        // A report-only closeout is the iteration's final Coder turn: once its
+        // report is rejected nothing more runs in this iteration, although the
+        // rejected attempt is charged as transport and the ledger can still
+        // show Coder allowance (S29: the reserved last turn left one request).
+        let may_advance = matches!(self.termination.as_str(), "blocked" | "report_incomplete")
+            || (self.work.coder_remaining() == 0 && self.termination == "budget_exhausted");
         if !may_advance {
             return Some(&self.termination);
         }
@@ -175,18 +175,52 @@ mod continuation_tests {
     #[test]
     fn early_blocked_exception_does_not_resume_other_terminations_or_completion() {
         let mut r = receipt();
-        for reason in [
-            "budget_exhausted",
-            "report_incomplete",
-            "observer_unavailable",
-            "interrupted",
-        ] {
+        for reason in ["budget_exhausted", "observer_unavailable", "interrupted"] {
             r.termination = reason.into();
             assert_eq!(r.stop(), Some(reason));
         }
         r.termination = "blocked".into();
         r.completed = true;
         assert_eq!(r.stop(), Some("completed"));
+    }
+
+    #[test]
+    fn a_rejected_report_only_closeout_advances_only_with_progress() {
+        // Sealed S29 iteration 1: 31 of 32 task requests (8 Observer), then the
+        // reserved last-turn report was rejected. That attempt is charged as
+        // transport, so the ledger still shows one Coder request, and the chain
+        // stopped with five predeclared iterations unused.
+        use crate::work_budget::{BudgetPolicy, TransportRejection, WorkBudget};
+        let budget = WorkBudget::new("task", 32, None);
+        budget
+            .configure(BudgetPolicy {
+                observer_reserved_requests: 8,
+                transport_repair_limit: 4,
+            })
+            .unwrap();
+        for role in std::iter::repeat_n("coder", 23).chain(std::iter::repeat_n("observer", 8)) {
+            budget
+                .begin(role, &Value::Null)
+                .unwrap()
+                .status("completed");
+        }
+        let closeout = budget.with_report_closeout();
+        closeout
+            .begin("coder", &Value::Null)
+            .unwrap()
+            .status("completed");
+        closeout
+            .reject_transport("coder", 31, TransportRejection::GovernorBlock)
+            .unwrap();
+        let mut r = receipt();
+        r.termination = "report_incomplete".into();
+        r.work = budget.snapshot();
+        assert_eq!(r.work.coder_remaining(), 1);
+        assert_eq!(r.stop(), None);
+        r.iteration_progress = Progress::default();
+        assert_eq!(r.stop(), Some("no_new_edit_or_verification"));
+        r.iteration_progress.user_refusal = true;
+        assert_eq!(r.stop(), Some("user_refusal"));
     }
 }
 

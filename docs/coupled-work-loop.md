@@ -255,7 +255,10 @@ a declared pre-edit failing baseline at the task root. This route requires an
 observed failing test count and grants a single continuation for that
 command. Final verification and reporting still require a successful check
 after the edits. An accepted blocked report need not consume the last unused
-Coder requests just to reach the next predeclared iteration. A user refusal,
+Coder requests just to reach the next predeclared iteration. Neither does a
+rejected report-only closeout (`report_incomplete`): that attempt is the
+iteration's final Coder turn, even though a rejected attempt is charged as
+transport and the ledger can still show Coder allowance. A user refusal,
 pending approval, provider failure or a round without this progress ends the run.
 An accepted incomplete report remains incomplete in its original record.
 An explicit `--seed-session FILE` still starts a newly budgeted invocation
