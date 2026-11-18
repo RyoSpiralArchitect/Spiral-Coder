@@ -67,6 +67,15 @@ impl Trace {
         assert!(self.focus.requires_read());
     }
 
+    fn fail_with_clipping(&mut self, id: &str, elapsed: &str) {
+        self.fail(id, 2, elapsed);
+        let result = &mut self.messages.last_mut().unwrap()["content"];
+        *result = json!(format!(
+            "{}\n[... output omitted ...]",
+            result.as_str().unwrap()
+        ));
+    }
+
     fn read(&mut self, id: &str) {
         let (result, failed) = crate::file_tools::tool_read_file(FILE, self.root());
         assert!(!failed);
@@ -185,7 +194,7 @@ fn changed_read_content_ends_the_comparison() {
 
 #[cfg(unix)]
 #[test]
-fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
+fn first_focused_comparison_retains_diagnosis_without_verification() {
     const OTHER_CHECK: &str = "cargo test --locked --bin spiral-coder -q";
     let mut trace = Trace::new();
     trace.messages[0]["content"] = json!(format!("{TASK}\nAlso run exactly: {OTHER_CHECK}"));
@@ -200,17 +209,12 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
         "import unittest\n\nclass Check(unittest.TestCase):\n    def test_value(self):\n        self.assertEqual({'used': 2}, {'used': 3})\n",
     )
     .unwrap();
-    for (failure, read) in [("f1", "r1"), ("f2", "r2")] {
-        trace.fail(failure, 2, "0.01");
-        let result = &mut trace.messages.last_mut().unwrap()["content"];
-        *result = json!(format!(
-            "{}\n[... output omitted ...]",
-            result.as_str().unwrap()
-        ));
-        assert!(trace.view().is_none());
-        trace.read(read);
-    }
+    trace.fail_with_clipping("f1", "0.01");
+    assert!(trace.view().is_none());
+    trace.read("r1");
     let followup = trace.view().unwrap();
+    assert!(followup.should_yield());
+    assert_eq!(followup.matching_failures, 1);
     let view = serde_json::to_value(agent::task_obligations::project_advisory(
         &trace.messages,
         Some(CHECK),
@@ -218,6 +222,7 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
     ))
     .unwrap();
     let followup_view = &view["diagnostic_followup"];
+    assert!(followup_view.get("earlier_failure_call_id").is_none());
     assert_eq!(
         followup_view["unittest_comparison"]["checks_to_refresh"],
         json!([OTHER_CHECK]),
@@ -277,20 +282,15 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
             .pending_exact_checks;
     assert_eq!(pending, vec![CHECK, OTHER_CHECK]);
 
-    // Replaying a command after just one cycle cannot preserve diagnosis,
-    // even when the comparison output is identical.
-    let one_cycle: Vec<_> = trace
+    // Both the native failing check and the read must still be correlated.
+    let missing_read: Vec<_> = trace
         .messages
         .iter()
-        .filter(|message| {
-            !["f1", "r1"]
-                .iter()
-                .any(|id| message["tool_call_id"] == *id || message["tool_calls"][0]["id"] == *id)
-        })
+        .filter(|message| message["tool_call_id"] != "r1" && message["tool_calls"][0]["id"] != "r1")
         .cloned()
         .collect();
-    let focus = RecoveryFocus::from_messages(&one_cycle, trace.root(), Some(CHECK));
-    assert!(!focus.progress_survives(&one_cycle, trace.root(), Some(CHECK)));
+    let focus = RecoveryFocus::from_messages(&missing_read, trace.root(), Some(CHECK));
+    assert!(!focus.progress_survives(&missing_read, trace.root(), Some(CHECK)));
 
     let comparison = trace.messages.split_off(trace.messages.len() - 2);
     trace.append(
@@ -302,6 +302,19 @@ fn focused_comparison_executes_and_retains_diagnosis_without_verification() {
     trace.messages.extend(comparison);
     let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
     assert!(!focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
+}
+
+#[test]
+fn rerunning_the_same_clipped_failure_does_not_yield_again_after_its_read() {
+    let mut trace = Trace::new();
+    trace.fail_with_clipping("f1", "0.01");
+    trace.read("r1");
+    assert!(trace.view().unwrap().should_yield());
+    trace.fail_with_clipping("f2", "0.02");
+    trace.read("r2");
+    let followup = trace.view().unwrap();
+    assert!(followup.has_unittest_comparison());
+    assert!(!followup.should_yield());
 }
 
 #[tokio::test]

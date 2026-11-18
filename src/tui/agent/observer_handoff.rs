@@ -119,7 +119,7 @@ pub(super) fn newly_executed(
     latest(messages, configured)
 }
 
-pub(super) fn after_repeated_diagnosis(
+pub(super) fn after_diagnostic_read(
     focus: &super::recovery_focus::RecoveryFocus,
     messages: &[Value],
     root: Option<&str>,

@@ -1825,23 +1825,23 @@ unknown. The current task owns the work ledger. The same receipt format covers
 consumed soft advice and advice that asks for an explicit response.
 
 The optional `task_obligations.diagnostic_followup` view derives from
-correlated version 2 recovery snapshots and their native results. It identifies
-the latest two comparable failures of the exact check at the workspace root
-and the completed diagnostic read. Comparison normalizes the elapsed time in
-a recognized unittest footer and padding before an assertion operator at the
-clipped output boundary. The remaining check output and read result must match.
-An intervening executed process or edit, different output, unresolved read or
-missing receipt ends the comparison. The value is prompt context. Existing
-recovery snapshots and the exact-check ledger retain their separate ownership.
+correlated version 2 recovery snapshots and their native results. It links an
+exact check at the workspace root to a completed read of the diagnosed file.
+Location selection ignores the compiler location immediately attached to a
+Rust warning. A clipped unittest assertion can supply a focused comparison on
+the first failure after that read. Other cases need two matching failures and
+reads. In that case the view also names the earlier failure. Matching normalizes
+unittest timing and padding before the clipped assertion operator. Executed
+processes, edits, changed output and unresolved reads delimit these sequences.
 
 The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
 root. When up to eight named subtests of that method fail, the view includes
 `subtest_failures`. The runner samples the first observed failure and binds
-the reported count to the receipt. Live and restored recovery require the
-same preceding failure/read cycles and matching command. For an observed
-difference, the native
+the reported count to the receipt. Both live dispatch and resume require the
+correlated failure, diagnostic read and exact comparison arguments. For an
+observed difference, the native
 `recovery_focus.comparison.frame` receipt retains the final output frame
 from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing

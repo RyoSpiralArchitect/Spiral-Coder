@@ -1,4 +1,4 @@
-//! Native evidence for changing course after a repeated localized failure.
+//! Native evidence for an assertion comparison or a different diagnostic step.
 use super::*;
 use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome};
 
@@ -11,7 +11,8 @@ const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
 pub(crate) struct DiagnosticFollowup {
     failed_check: String,
     failure_path: String,
-    earlier_failure_call_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    earlier_failure_call_id: Option<String>,
     latest_failure_call_id: String,
     diagnostic_read_call_id: String,
     matching_failures: usize,
@@ -80,7 +81,8 @@ impl DiagnosticFollowup {
     }
 
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
-        self.matching_failures == 2 && self.first_read_just_returned
+        let first_actionable_failure = if self.has_unittest_comparison() { 1 } else { 2 };
+        self.matching_failures == first_actionable_failure && self.first_read_just_returned
     }
 }
 
@@ -219,20 +221,21 @@ impl RecoveryFocus {
             }
         }
         let cycle = cycle?;
+        let read = cycle.first_read?;
+        let unittest_comparison =
+            unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
+        if cycle.earlier_failure.is_none() && unittest_comparison.is_none() {
+            return None;
+        }
         Some(DiagnosticFollowup {
             failed_check: focus.check.clone(),
             failure_path: focus.path.clone(),
-            earlier_failure_call_id: cycle.earlier_failure?,
+            earlier_failure_call_id: cycle.earlier_failure,
             latest_failure_call_id: cycle.latest_failure,
-            diagnostic_read_call_id: cycle.first_read?.call_id,
+            diagnostic_read_call_id: read.call_id,
             matching_failures: cycle.matching_failures,
             diagnostic: focus.diagnostic.clone(),
-            unittest_comparison: unittest_comparison::project(
-                &focus.check,
-                &focus.path,
-                &cycle.output,
-                root,
-            ),
+            unittest_comparison,
             first_read_just_returned,
         })
     }

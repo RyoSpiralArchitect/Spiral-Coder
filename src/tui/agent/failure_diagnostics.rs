@@ -95,7 +95,7 @@ fn unittest_case(line: &str) -> Option<&str> {
     (case.contains(" (") && case.ends_with(')')).then_some(line)
 }
 
-fn rust_warning_header(line: &str) -> bool {
+pub(super) fn rust_warning_header(line: &str) -> bool {
     let header = if line.starts_with("test_") {
         line.split_once(") ... ").map_or(line, |(_, rest)| rest)
     } else {
