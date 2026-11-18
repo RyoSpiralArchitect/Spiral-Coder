@@ -24,3 +24,9 @@ On the rebuilt CLIs, a separately generated first-interruption case returned zer
 In a separate disposable copy, the operator preserved the empty finalized list, set the manifest pointer to `iteration-01`, retained a valid empty ledger there, and made both pending and aggregate totals zero. All five task commands passed with the validator unchanged. The control fixes the expected state for a future run. Both live episodes remain incomplete. [Control patch](coherent-control.patch) · [Check receipts](coherent-control.json)
 
 This pair establishes transport of the concrete mismatch. The next unresolved behavior is using the expected side of the comparison as the repair target when the observed side contains a plausible stale pointer.
+
+## Reproduce the boundary check
+
+Restore the [prior diagnostic starting tree](../2026-11-18-fixture-diagnosis/README.md#recreate-the-observed-input) in a disposable checkout. Copy `status_fixture_observe.py` to `scripts/status_fixture_observe.py` and `fixture-forwarder.rs` to `scripts/status_fixture_forwarder.rs`. Leave the original test, validator, and generator in place. Use a separate Cargo target with locked dependencies already available offline. Reset the package build when switching from another checkout so an older test binary cannot be picked up.
+
+Run the first command in [the task](task.txt) from that checkout. It should execute one test and exit 101 with the sampled pointer and ledger differences. Apply each terminal or control patch to a fresh copy of the same starting tree before running the five checks independently.
