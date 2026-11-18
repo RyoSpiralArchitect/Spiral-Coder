@@ -1,21 +1,29 @@
-//! One review of authored tests against the requirements that link them.
+//! Authored tests against the requirements that link them.
 //!
 //! The original task can name one test artifact for several requirements. The
 //! authored-test view keeps those links visible, but it is advisory: once the
 //! exact checks pass, `done` is admissible even if the test file exercises only
-//! a fraction of them. Before the first completion claim of a task, while the
-//! Coder can still afford an edit and every declared check, show each linked
-//! requirement in full beside the current test functions once, and ask for a
-//! case-to-test coverage map. After that review, the first completion claim
-//! whose `done.summary` lacks a valid `Test coverage:` section is returned once.
-//! Neither step adds completion evidence or a new pass condition: the map is the
-//! Coder's own claim, checked only for its shape and for test functions that
-//! exist, and the next `done` proceeds.
+//! a fraction of them. Three one-time steps keep the linked cases in front of
+//! the Coder while it can still act, each only while it can afford an edit,
+//! every declared check and the report:
+//!
+//! - when a linked test file has been written, the first file change whose
+//!   automatic test did not fail carries a plan: each linked requirement in
+//!   full beside the current test functions, and a request for a case-to-test
+//!   map;
+//! - the first completion claim gets the same review before acceptance;
+//! - after that review, the first completion claim whose `done.summary` lacks a
+//!   valid `Test coverage:` section is returned once.
+//!
+//! None of them adds completion evidence or a new pass condition: the map is
+//! the Coder's own claim, checked only for its shape and for test functions
+//! that exist, and the next `done` proceeds.
 use super::{ArtifactKind, Contract, Requirement};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
+pub(super) const PLAN_MARKER: &str = "[Test coverage plan]";
 pub(super) const MARKER: &str = "[Authored-test closeout]";
 pub(super) const COVERAGE_MARKER: &str = "[Test coverage map]";
 // Whole requirement text: S28's review clipped at 160 characters and cut the
@@ -24,6 +32,8 @@ const MAX_DESCRIPTION_CHARS: usize = 1200;
 const MAX_LISTED_TESTS: usize = 24;
 const MAP_FORMAT: &str =
     "- <requirement id>: `test_function_name`, `another_test`\n- <requirement id>: none (reason)";
+// Shared by the plan and the review.
+const CASES: &str = "for each requirement, list every distinct case its text names (each rejection, mode, boundary or output rule) and the test function that exercises it, or `none`. Add a focused public test for each `none` case that the public command can exercise, starting with cases a requirement explicitly asks tests to cover, in one edit where possible; each starts from a passing control and changes one invariant.";
 
 fn shown(messages: &[Value], marker: &str) -> bool {
     messages.iter().any(|message| {
@@ -75,6 +85,114 @@ fn listed(names: &[String]) -> String {
     )
 }
 
+/// One edit, every declared check after it, and the final report.
+fn floor(contract: &Contract) -> usize {
+    let checks: BTreeSet<&str> = contract
+        .requirements
+        .iter()
+        .flat_map(|requirement| &requirement.checks)
+        .map(|check| check.command.trim())
+        .collect();
+    checks.len() + 2
+}
+
+fn allowance(coder_remaining: Option<usize>) -> String {
+    coder_remaining
+        .map(|left| format!(" Remaining Coder allowance: {left}."))
+        .unwrap_or_default()
+}
+
+/// A linked test file, its requirements in full, and its current tests.
+fn section(path: &str, requirements: &[&Requirement], tool_root: Option<&str>) -> String {
+    let mut text = format!(
+        "\n\n{path} is linked by the original task to {} requirements:",
+        requirements.len()
+    );
+    for requirement in requirements {
+        text.push_str(&format!(
+            "\n- {}: {}",
+            requirement.id,
+            clip(&requirement.description)
+        ));
+    }
+    match current_tests(tool_root, path) {
+        Some(names) if !names.is_empty() => text.push_str(&format!(
+            "\nCurrent test functions ({}): {}",
+            names.len(),
+            listed(&names)
+        )),
+        Some(_) => text.push_str("\nCurrent test functions: none recognized."),
+        None => text.push_str("\nCurrent test functions: the file could not be read."),
+    }
+    text
+}
+
+/// Linked test files with a successful native change in the current task,
+/// including the change being reported now.
+fn written<'a>(
+    linked: &BTreeMap<&'a str, Vec<&'a Requirement>>,
+    messages: &[Value],
+    changed_path: &str,
+) -> BTreeSet<&'a str> {
+    let earlier = crate::tui::agent::recovery_focus::correlated_results(messages)
+        .filter(|(call, message)| {
+            crate::execution_evidence::file_edit_succeeded(
+                &call.name,
+                message["content"].as_str().unwrap_or(""),
+            )
+        })
+        .filter_map(|(call, _)| {
+            serde_json::from_str::<Value>(&call.arguments).ok()?["path"]
+                .as_str()
+                .map(str::to_owned)
+        });
+    std::iter::once(changed_path.to_owned())
+        .chain(earlier)
+        .filter_map(|path| {
+            linked
+                .get_key_value(path.trim_start_matches("./"))
+                .map(|(path, _)| *path)
+        })
+        .collect()
+}
+
+/// Once a linked test file has been written in the current task, the first
+/// successful file change whose automatic test did not fail carries one plan
+/// (the caller checks the change). S30 wrote its test file with a full
+/// iteration ahead but claimed completion too late for the review, and its
+/// tests missed three of the four fault families the task named. `messages`
+/// are the current task's messages, before the reported change's result.
+pub(super) fn plan(
+    contract: &Contract,
+    messages: &[Value],
+    tool_root: Option<&str>,
+    changed_path: &str,
+    coder_remaining: Option<usize>,
+) -> Option<String> {
+    if shown(messages, PLAN_MARKER) || shown(messages, MARKER) {
+        return None;
+    }
+    let linked = linked(contract);
+    if linked.is_empty() || coder_remaining.is_some_and(|left| left < floor(contract)) {
+        return None;
+    }
+    let written = written(&linked, messages, changed_path);
+    if written.is_empty() {
+        return None;
+    }
+    let mut text = format!(
+        "{PLAN_MARKER} A test file linked to several requirements has been written. Plan its cases while edit budget remains."
+    );
+    for (path, requirements) in linked.iter().filter(|(path, _)| written.contains(*path)) {
+        text.push_str(&section(path, requirements, tool_root));
+    }
+    text.push_str(&format!(
+        "\n\nMap the cases now: {CASES} Follow any current recovery obligation first, then run every declared check after the last edit. When you call `done`, put the final map in `done.summary` under a `Test coverage:` line, one line per requirement ID, test functions in backticks:\n{MAP_FORMAT}\nThis plan is shown once per task and is not completion evidence.{}",
+        allowance(coder_remaining)
+    ));
+    Some(text)
+}
+
 /// `messages` are the current task's messages.
 pub(super) fn review(
     contract: &Contract,
@@ -86,51 +204,19 @@ pub(super) fn review(
         return None;
     }
     let linked = linked(contract);
-    if linked.is_empty() {
-        return None;
-    }
-    // One edit, every declared check after it, and the final report.
-    let checks: BTreeSet<&str> = contract
-        .requirements
-        .iter()
-        .flat_map(|requirement| &requirement.checks)
-        .map(|check| check.command.trim())
-        .collect();
-    let floor = checks.len() + 2;
-    if coder_remaining.is_some_and(|left| left < floor) {
+    if linked.is_empty() || coder_remaining.is_some_and(|left| left < floor(contract)) {
         return None;
     }
 
     let mut text = format!(
         "{MARKER} Before completion, map each requirement linked to an authored test to the tests that exercise it."
     );
-    for (path, requirements) in linked {
-        text.push_str(&format!(
-            "\n\n{path} is linked by the original task to {} requirements:",
-            requirements.len()
-        ));
-        for requirement in requirements {
-            text.push_str(&format!(
-                "\n- {}: {}",
-                requirement.id,
-                clip(&requirement.description)
-            ));
-        }
-        match current_tests(tool_root, path) {
-            Some(names) if !names.is_empty() => text.push_str(&format!(
-                "\nCurrent test functions ({}): {}",
-                names.len(),
-                listed(&names)
-            )),
-            Some(_) => text.push_str("\nCurrent test functions: none recognized."),
-            None => text.push_str("\nCurrent test functions: the file could not be read."),
-        }
+    for (path, requirements) in &linked {
+        text.push_str(&section(path, requirements, tool_root));
     }
     text.push_str(&format!(
-        "\n\nWrite the coverage map before editing: for each requirement, list every distinct case its text names (each rejection, mode, boundary or output rule) and the test function that exercises it, or `none`. Add a focused public test for each `none` case that the public command can exercise, starting with cases a requirement explicitly asks tests to cover, in one edit where possible; each starts from a passing control and changes one invariant. Then run every declared check again after the last edit, and call `done` with the final map in `done.summary` under a `Test coverage:` line, one line per requirement ID, test functions in backticks:\n{MAP_FORMAT}\nThis review is shown once per task and is not completion evidence.{}",
-        coder_remaining
-            .map(|left| format!(" Remaining Coder allowance: {left}."))
-            .unwrap_or_default()
+        "\n\nWrite the coverage map before editing: {CASES} Then run every declared check again after the last edit, and call `done` with the final map in `done.summary` under a `Test coverage:` line, one line per requirement ID, test functions in backticks:\n{MAP_FORMAT}\nThis review is shown once per task and is not completion evidence.{}",
+        allowance(coder_remaining)
     ));
     Some(text)
 }
@@ -364,18 +450,29 @@ fn test_names(path: &str, source: &str) -> Vec<String> {
 mod tests {
     use super::super::test_closeout as closeout_entry;
     use super::super::test_coverage as coverage_entry;
+    use super::super::test_plan as plan_entry;
     use super::*;
     use serde_json::json;
 
+    // S20–S30 share this task text byte for byte.
     const S28_PROMPT: &str =
         include_str!("../../../../benchmarks/self-dogfood-v2/coupled-status/prompt.txt");
     // The test file when S28 iteration 5 first claimed completion (step 96).
     const S28_TESTS: &str = "#[test]\nfn public_cli_matches_protected_fixture_states() {}\n\n#[test]\nfn duplicate_request_id_is_rejected() {}\n\n#[test]\nfn wrong_parent_linkage_is_rejected() {}\n";
+    // The test functions S30 iteration 5 first wrote (step 123).
+    const S30_TESTS: &str = "use std::process::Command;\n\n#[test]\nfn completed_fixture_is_reported_by_public_cli() {}\n\n#[test]\nfn interrupted_fixture_preserves_pending_summary() {}\n\n#[test]\nfn unknown_fixture_reports_null_usage() {}\n\n#[test]\nfn malformed_manifest_fails_without_stdout() {}\n";
 
     fn blocked(id: &str, text: &str) -> [Value; 2] {
         [
             json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":"done","arguments":"{}"}}]}),
             json!({"role":"tool","tool_call_id":id,"content":format!("GOVERNOR BLOCKED\n\n{text}")}),
+        ]
+    }
+
+    fn edit(id: &str, path: &str, result: &str) -> [Value; 2] {
+        [
+            json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":"write_file","arguments":json!({"path":path,"content":"…"}).to_string()}}]}),
+            json!({"role":"tool","tool_call_id":id,"content":result}),
         ]
     }
 
@@ -448,6 +545,108 @@ mod tests {
             crate::task_origin::MessageOrigin::User,
         ));
         assert!(closeout_entry(&history, root_dir, Some(25)).is_some());
+    }
+
+    #[test]
+    fn s30_first_test_write_carries_one_plan_with_each_linked_requirement_in_full() {
+        // Sealed S30 iteration 5, step 123: the first write of the test file, with
+        // 11 Coder requests left in the iteration. The first completion claim came
+        // in iteration 6 with 5 left, below the review's floor of 8, so the four
+        // tests (they detect only missing pending data) were never compared with
+        // the fault families the task names.
+        let dir = workspace(S30_TESTS);
+        let root_dir = dir.path().to_str();
+        let mut history = messages(S28_PROMPT);
+        let plan = plan_entry(&history, root_dir, "tests/coupled_status.rs", Some(11))
+            .expect("the first test write carries the plan");
+        assert!(plan.starts_with(PLAN_MARKER), "{plan}");
+        assert!(plan
+            .contains("tests/coupled_status.rs is linked by the original task to 9 requirements"));
+        assert!(plan.contains(
+            "Cover missing pending components, dangling symlinks, duplicate request IDs and actual wrong parent linkage"
+        ));
+        assert!(plan.contains(
+            "Current test functions (4): completed_fixture_is_reported_by_public_cli, interrupted_fixture_preserves_pending_summary, unknown_fixture_reports_null_usage, malformed_manifest_fails_without_stdout"
+        ));
+        assert!(plan.contains(
+            "Map the cases now: for each requirement, list every distinct case its text names"
+        ));
+        assert!(plan.contains("starting with cases a requirement explicitly asks tests to cover"));
+        assert!(plan.contains("under a `Test coverage:` line"));
+        assert!(plan.contains("Remaining Coder allowance: 11."));
+        // Below the floor (one edit, six declared checks, the report) it waits.
+        assert_eq!(
+            plan_entry(&history, root_dir, "tests/coupled_status.rs", Some(7)),
+            None
+        );
+
+        // Once shown, later changes carry none; the completion review still follows.
+        history.extend(edit(
+            "write-tests",
+            TESTS,
+            &format!("OK: wrote 'tests/coupled_status.rs' (61 lines, 2347 bytes)\n[auto-test] ✓ PASSED (exit 0)\n\n{plan}"),
+        ));
+        assert_eq!(
+            plan_entry(&history, root_dir, "tests/coupled_status.rs", Some(10)),
+            None
+        );
+        assert!(closeout_entry(&history, root_dir, Some(10)).is_some());
+    }
+
+    #[test]
+    fn the_plan_needs_a_written_linked_test_file_and_comes_once_per_task() {
+        let checks = ["check-a", "check-b"];
+        let dir = workspace(TWO_TESTS);
+        let root_dir = dir.path().to_str();
+        let task = root(3, &checks);
+        let mut history = messages(&task);
+        // A source change before any linked test file was written carries none,
+        // and so does a test file that the task does not link twice.
+        assert_eq!(
+            plan_entry(&history, root_dir, "src/coupled_status.rs", Some(20)),
+            None
+        );
+        assert_eq!(
+            plan_entry(&history, root_dir, "tests/other.rs", Some(20)),
+            None
+        );
+        // The caller skips a change whose automatic test failed. The next change
+        // whose automatic test did not fail carries the plan, even in source.
+        history.extend(edit(
+            "write-tests",
+            "./tests/coupled_status.rs",
+            "OK: wrote 'tests/coupled_status.rs' (9 lines, 200 bytes)\n[auto-test] ✗ FAILED (exit 101)",
+        ));
+        let plan = plan_entry(&history, root_dir, "src/coupled_status.rs", Some(20))
+            .expect("a written test file carries the plan");
+        assert!(plan
+            .contains("tests/coupled_status.rs is linked by the original task to 3 requirements"));
+        assert!(plan.contains("Remaining Coder allowance: 20."));
+        // Failed and unchanged writes are not authoring.
+        let mut unwritten = messages(&task);
+        unwritten.extend(edit("failed", TESTS, "ERROR: write rejected"));
+        unwritten.extend(edit(
+            "unchanged",
+            TESTS,
+            "OK: unchanged 'tests/coupled_status.rs' (identical contents; no write performed)",
+        ));
+        assert_eq!(
+            plan_entry(&unwritten, root_dir, "src/coupled_status.rs", Some(20)),
+            None
+        );
+        // A report-only closeout counts as no allowance; an unknown one plans.
+        assert_eq!(plan_entry(&messages(&task), root_dir, TESTS, Some(0)), None);
+        assert!(plan_entry(&messages(&task), root_dir, TESTS, None).is_some());
+        // After the completion review no plan follows.
+        let review = closeout_entry(&history, root_dir, Some(20)).unwrap();
+        history.extend(blocked("done-1", &review));
+        assert_eq!(plan_entry(&history, root_dir, TESTS, Some(19)), None);
+        // A new task in the same session gets its own plan.
+        history.push(crate::task_origin::user_message(
+            &task,
+            crate::task_origin::MessageOrigin::User,
+        ));
+        assert!(plan_entry(&history, root_dir, TESTS, Some(19)).is_some());
     }
 
     #[test]
