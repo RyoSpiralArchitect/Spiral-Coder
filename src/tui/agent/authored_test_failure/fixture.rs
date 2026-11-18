@@ -10,7 +10,7 @@ const MAX_HELPER_LINES: usize = 24;
 const MAX_BRANCH_LINES: usize = 16;
 const MAX_LINE_CHARS: usize = 200;
 
-pub(crate) const GUIDANCE: &str = "\nThe authored_test_failure.fixture_context quotes the failing case's setup, its local helper and a branch of the called fixture generator. Trace the literal case argument through the helper. Compare inherited fields and files from the generator with what the test changes before invocation. If a pointer, identity or count disagrees, cite both values and the exact test-only correction in the primary reason to Coder. Ask for one coherent successful input and one clone changing only the intended condition before changing a validator. If a fact is still missing, ask for its bounded native observation. Use the required diagnostic read first. The quoted source is advisory and supplies no execution receipt or edit authority.\n";
+pub(crate) const GUIDANCE: &str = "\nThe authored_test_failure.fixture_context quotes the failing case's setup, its local helper and a branch of the called fixture generator. Trace the literal case argument through the helper. Compare inherited fields and files from the generator with what the test changes before invocation. If a pointer, identity or count disagrees, cite both values and the exact test-only correction in the primary reason to Coder. Ask for one coherent successful input and one clone changing only the intended condition before changing a validator. Once the native read is complete, put the correction and the exact test path in the primary reason so Coder can use the retained read in its structured evidence: target_files, target_symbols, evidence, open_questions and next_probe. If a fact is still missing, ask for its bounded native observation. Use the required diagnostic read first. The quoted source is advisory and supplies no execution receipt or edit authority.\n";
 
 #[derive(Debug, Serialize)]
 pub(super) struct FixtureContext {
@@ -288,6 +288,30 @@ fn unrelated_test() {
             assert!(prompt.contains("directory = 'segment-02'"));
             assert!(prompt.contains("cite both values"));
             assert!(!prompt.contains("ignore this other case"));
+        }
+        for (id, expected) in [("first", true), ("again", false)] {
+            let read = ToolCallData {
+                id: id.into(),
+                name: "read_file".into(),
+                arguments: json!({"path":TEST_PATH}).to_string(),
+                thought_signature: None,
+            };
+            let (output, failed) = crate::file_tools::tool_read_file(TEST_PATH, workspace);
+            assert!(!failed);
+            let context = ExecVerificationContext::from_messages(Some(CHECK), &messages);
+            focus.record_result(&read, &output, workspace, Some(CHECK), &context);
+            messages.extend([
+                json!({"role":"assistant","tool_calls":[{"id":read.id,"function":{
+                    "name":read.name,"arguments":read.arguments}}]}),
+                focus.tool_message(&read, output),
+            ]);
+            let handoff = focus.fixture_read_handoff(&messages, workspace.unwrap(), Some(CHECK));
+            assert_eq!(handoff.is_some(), expected);
+            if let Some(handoff) = handoff {
+                let handoff = serde_json::to_value(handoff).unwrap();
+                assert_eq!(handoff["diagnostic_read_call_id"], id);
+                assert_eq!(handoff["test_name"], "reads_empty_import");
+            }
         }
     }
 

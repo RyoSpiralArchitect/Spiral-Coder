@@ -1942,3 +1942,13 @@ The Observer's primary reason can cite the inherited input and the test's
 changes, then propose a coherent control and a single-change negative case.
 The Coder sees the same setup in the task view. The existing diagnostic read,
 edit admission, request accounting and verification rules continue to apply.
+
+The first native read that resolves diagnosis for a recognized fixture case
+can yield the Coder slice to Observer with `observer_diagnostic_followup.kind`
+set to `authored_fixture_read`. Both the failed check and the read must be
+bound to current recovery snapshots. The handoff names the test and read call.
+Another read of that case in the current task does not schedule the same
+fixture handoff. Existing comparison handoffs keep precedence. The return
+uses the current work ledger and requires at least three Observer requests
+and two Coder requests available. The subsequent edit still needs its
+structured evidence and usual admission.
