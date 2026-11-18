@@ -1270,15 +1270,45 @@ persisted state or coverage receipt.
 When a declared test file is linked to two or more requirements, the first
 completion claim of a task that passes every other gate receives one
 `[Authored-test closeout]` review instead of acceptance. It lists each linked
-requirement ID with a bounded description beside the test functions recognized
-in the current file (Rust `#[test]`/`#[tokio::test]`, Python `def test…`,
-JavaScript `test(`/`it(`). The review requires Coder allowance for one edit,
-every declared check and the report; otherwise `done` proceeds unreviewed. A
-report-only closeout counts as no further allowance: it offers only `done`
-within one wire attempt, so its report is never traded for a review. It
-is a governor block without a recovery stage, and its marker in the current
-task's tool results is the only state: a second `done` proceeds. It adds no
-completion evidence, pass condition or coverage claim.
+requirement ID with its whole description (up to 1,200 characters) beside the
+test functions recognized in the current file (Rust `#[test]`/`#[tokio::test]`,
+Python `def test…`, JavaScript `test(`/`it(`). S28's review clipped each
+description at 160 characters, which cut the sentence naming the fault families
+the tests had to cover. The review asks the Coder to map every case each
+requirement names to a test function or `none`, add focused tests for the
+`none` cases (first those a requirement explicitly asks tests to cover), rerun
+every declared check, and report the final map in
+`done.summary` under a `Test coverage:` line, one `- <id>: ...` line per linked
+requirement with test functions in backticks. The review requires Coder
+allowance for one edit, every declared check and the report; otherwise `done`
+proceeds unreviewed. A report-only closeout counts as no further allowance: it
+offers only `done` within one wire attempt, so its report is never traded for a
+review. It is a governor block without a recovery stage, and its marker in the
+current task's tool results is the only state.
+
+The same request can come earlier. Once a linked test file has a successful
+native change in the current task, the first successful file change whose
+automatic test did not fail (the test write itself, or a later change after a
+failing one) carries one `[Test coverage plan]`. It is appended to that change's
+tool result after the history digest, so failure parsing never reads it as test
+output. The plan lists the linked requirements in full beside the current test
+functions, asks for the same case-to-test map and focused tests, and asks for
+the final map in `done.summary`. It needs the same allowance as the review and
+is skipped once the review has been shown. S30 wrote its test file with 11 Coder
+requests left in the iteration, but its first completion claim came with 5 left,
+below the review's floor of 8, so its tests were never compared with the fault
+families the task names. The plan is advisory: it blocks nothing, and the
+completion review still follows when there is room.
+
+After the review, the first completion claim whose map is absent, lacks a line
+for a linked requirement, has a line that names no test and does not say `none`,
+or names a function that is not a current test receives one
+`[Test coverage map]` return listing those problems and the current test
+functions. It is skipped when the Coder has no allowance left to answer,
+including a report-only closeout. The next `done` proceeds. The map is the
+Coder's own claim: only its shape and the existence of named tests are checked.
+None of these steps adds completion evidence, a pass condition or a coverage
+receipt.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
@@ -1525,8 +1555,11 @@ Observer raw responses and rejections stay intact. This does not manufacture
 valid advice, evidence rows or a final answer. Only a fresh model-authored `done`
 passing every existing gate completes the task. A rejected/empty report records
 `termination: "report_incomplete"` and a provider failure remains interrupted; no automatic second
-closeout is started. Resume requires explicit continuation and does not restore
-an in-flight closeout or grant new budget.
+closeout is started within the iteration. In a predeclared chain, that iteration
+can advance under the same progress rule as an accepted blocked report: the
+closeout was its final Coder turn, although the rejected attempt is charged as
+transport and the ledger can still show Coder allowance. Resume requires explicit
+continuation and does not restore an in-flight closeout or grant new budget.
 
 OpenAI-compatible streams (including Mistral and Gemini) retain provider output
 termination in the existing request `status`: `output_limited` for `length`,

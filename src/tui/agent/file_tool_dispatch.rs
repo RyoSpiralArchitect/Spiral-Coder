@@ -467,11 +467,29 @@ Action required: obtain a complete read of current contents before write_file. F
     }
 
     // Append tool result to conversation.
-    let history_result = if is_error {
+    let mut history_result = if is_error {
         result.clone()
     } else {
         compact_success_tool_result_for_history(tc.name.as_str(), &result)
     };
+    // Once a test file linked to several requirements has been written, the
+    // first change whose automatic test did not fail carries a one-time coverage
+    // plan after the digest, so failure parsing never reads it as test output.
+    if changed
+        && !ctx.root_read_only
+        && automatic_test != crate::execution_evidence::AutoTestOutcome::Failed
+    {
+        if let Some(plan) = requirement_proof::test_plan(
+            ctx.messages,
+            ctx.tool_root_abs.as_deref(),
+            path.as_str(),
+            requirement_proof::test_review_allowance(),
+        ) {
+            let _ = ctx.tx.send(StreamToken::Delta(format!("{plan}\n"))).await;
+            history_result.push_str("\n\n");
+            history_result.push_str(&plan);
+        }
+    }
     ctx.messages.push(CargoInputReceipt::attach(
         cargo_inputs,
         ctx.recovery.focus.tool_message(tc, history_result),

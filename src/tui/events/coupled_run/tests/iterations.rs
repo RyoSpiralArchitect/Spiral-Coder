@@ -441,3 +441,171 @@ async fn the_reserved_last_wire_is_a_coder_report_and_can_finish_the_task() {
     );
     assert_eq!(app.work_budget.remaining(), 0);
 }
+
+#[tokio::test]
+async fn a_rejected_last_turn_report_hands_its_progress_to_the_next_iteration() {
+    // S29 shape: the iteration edits, its reserved last-turn report is rejected
+    // (charged as transport, so one Coder request stays on the ledger), and the
+    // chain used to stop with `report_incomplete`. Progress now reaches the next
+    // predeclared iteration; a round without progress still stops.
+    let server = MockServer::start();
+    let think = "<think>\ngoal: Update the greeting in guide.md\nstep: 1\ntool: patch_file\nrisk: stale anchor\ndoubt: none\nnext: replace the old greeting\nverify: inspect guide.md\n</think>";
+    let edit = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            v["tools"].is_array() && !v.to_string().contains("observed-edit")
+        });
+        then.status(200).header("content-type", "text/event-stream").body(response(
+            "patch_file",
+            "observed-edit",
+            json!({"path":"guide.md","search":"old","replace":"hello"}),
+            &format!("<evidence>\ntarget_files: 1) guide.md\ntarget_symbols: 1) greeting\nevidence: The retained read shows old in guide.md.\nopen_questions: none\nnext_probe: patch guide.md\n</evidence>\n{think}"),
+        ));
+    });
+    // The Coder yields once more without new work after the Observer's turn.
+    let middle = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            let body = v.to_string();
+            v["tools"].is_array()
+                && body.contains("observed-edit")
+                && !body.contains("Use your last turn")
+                && !body.contains("[New iteration allowance]")
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(response(
+                "",
+                "",
+                json!({}),
+                "The greeting edit is in place; its check has not run.",
+            ));
+    });
+    // The reserved last turn reports blocked but claims one criterion with a
+    // command that never ran, as S29's did.
+    let rejected = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("Use your last turn")
+            .matches(|r| {
+                let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+                !v.to_string().contains("[New iteration allowance]")
+            });
+        then.status(200).header("content-type", "text/event-stream").body(response(
+            "done",
+            "unsupported-report",
+            json!({"summary":"[BLOCKED] The greeting was edited; its check still has to run.","completed_acceptance":["acceptance 1"],"remaining_acceptance":["acceptance 2"],"acceptance_evidence":[{"criterion":"acceptance 1","command":"printf never-run"}],"next_steps":"Run printf verified after the edit."}),
+            "<think>\ngoal: Report the greeting\nstep: 2\ntool: done\nrisk: unsupported claims\ndoubt: check not run\nnext: report\nverify: printf never-run\n</think>",
+        ));
+    });
+    let resumed = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("[New iteration allowance]")
+            .matches(|r| {
+                let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+                v["tools"].is_array()
+            });
+        then.status(200).header("content-type", "text/event-stream").body(response(
+            "done",
+            "still-incomplete",
+            json!({"summary":"The greeting was edited, but its check has not run.","completed_acceptance":[],"remaining_acceptance":["acceptance 1","acceptance 2"],"acceptance_evidence":[],"next_steps":"Run printf verified after the edit."}),
+            "<think>\ngoal: Hand off verification\nstep: 2\ntool: done\nrisk: inaccurate claims\ndoubt: check not run\nnext: hand off\nverify: printf verified\n</think>",
+        ));
+    });
+    let observer = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let v: Value = serde_json::from_slice(r.body.as_deref().unwrap_or_default()).unwrap();
+            !v["tools"].is_array()
+        });
+        let reply = json!({"summary":"The edit was recorded.","suggestions":[{"kind":"clarify","suggested_tool":null,"suggested_args":{},"reason":"Run the declared check next.","confidence":0.9}]});
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(response("", "", json!({}), &reply.to_string()));
+    });
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("project");
+    std::fs::create_dir(&root).unwrap();
+    std::fs::write(root.join("guide.md"), "old\n").unwrap();
+    let task = "Update the greeting in guide.md from old to hello.\n<task_requirements>\n{\"version\":1,\"requirements\":[{\"id\":\"guide\",\"description\":\"Verify the greeting\",\"artifacts\":[{\"path\":\"guide.md\",\"kind\":\"documentation\"}],\"checks\":[{\"command\":\"printf verified\"}]}]}\n</task_requirements>";
+    let prompt = dir.path().join("task.txt");
+    std::fs::write(&prompt, task).unwrap();
+    let seed = dir.path().join("seed.json");
+    AgentSession::save_atomic(&seed,&AgentSession::new(None,None,None,None,vec![
+        json!({"role":"user","content":task}),json!({"role":"assistant","accepted_plan":{"goal":"Update the greeting in guide.md","steps":["Edit the greeting","Report the result"],"acceptance_criteria":["guide.md greets the reader","The declared check passes"],"risks":"incorrect anchor","assumptions":"guide.md exists"},"tool_calls":[{"id":"prior-read","type":"function","function":{"name":"read_file","arguments":r#"{"path":"guide.md"}"#}}]}),
+        json!({"role":"tool","tool_call_id":"prior-read","content":"[guide.md] (1 lines, 4 bytes)\nold\n"})])).unwrap();
+    let output = dir.path().join("chain");
+    let cli = crate::Cli::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--model",
+        "offline",
+        "--base-url",
+        &server.base_url(),
+        "--api-key",
+        "offline",
+        "--timeout-seconds",
+        "3",
+        "coupled-run",
+        "--tool-root",
+        root.to_str().unwrap(),
+        "--prompt-file",
+        prompt.to_str().unwrap(),
+        "--seed-session",
+        seed.to_str().unwrap(),
+        "--out-dir",
+        output.to_str().unwrap(),
+        "--max-requests",
+        "4",
+        "--observer-reserved-requests",
+        "1",
+        "--transport-repair-requests",
+        "2",
+        "--iterations",
+        "4",
+    ])
+    .unwrap();
+    let Some(crate::Command::CoupledRun(mut args)) = cli.command else {
+        panic!("coupled-run")
+    };
+    args.coder_chunk_requests = Some(1);
+    let cfg = cli.common.to_partial_config().resolve().unwrap();
+    let roles = roles::resolve(cfg, &args.observer, false).unwrap();
+    std::fs::create_dir_all(&output).unwrap();
+    let result = super::super::iterations::run(args, roles).await;
+    assert!(result.is_ok(), "{result:?}");
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(output.join("iterations.json")).unwrap()).unwrap();
+    let rows = manifest["iterations"].as_array().unwrap();
+    assert_eq!(rows.len(), 2, "{manifest}");
+    assert_eq!(rows[0]["termination"], "report_incomplete", "{manifest}");
+    assert_eq!(rows[1]["parent_task_id"], rows[0]["task_id"]);
+    assert_eq!(manifest["stop_reason"], "no_new_edit_or_verification");
+    assert_eq!(manifest["completed"], false);
+    let first: Value =
+        serde_json::from_slice(&std::fs::read(output.join("iteration-01/report.json")).unwrap())
+            .unwrap();
+    assert_eq!(first["report_closeout_attempted"], true);
+    let last = first["work"]["requests"]
+        .as_array()
+        .unwrap()
+        .last()
+        .unwrap()
+        .clone();
+    assert_eq!(last["purpose"], "report_closeout");
+    assert_eq!(last["charge"], "transport");
+    assert_eq!(
+        rows[0]["task_requests"], 3,
+        "one Coder request stays on the ledger"
+    );
+    assert_eq!(
+        std::fs::read_to_string(root.join("guide.md")).unwrap(),
+        "hello\n"
+    );
+    edit.assert_hits(1);
+    middle.assert_hits(1);
+    rejected.assert_hits(1);
+    resumed.assert_hits(1);
+    assert!(observer.hits() >= 1);
+}

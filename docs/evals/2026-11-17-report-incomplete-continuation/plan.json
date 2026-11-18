@@ -1,0 +1,63 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S30",
+  "created_at": "2026-11-17T20:36:26.255143+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "13a2f83388ec41871d3496fd0f9b782eb5a1bf19",
+  "binary_sha256": "ecca76822051d5cbc13d57c8ec423d4c13b72ec69c96b6c5ed2d8daa380f73d7",
+  "declaration_sha256": "48a821f9b14fb39f689e1826684268a43037f8f87cd0b06c6d43a6e92b84aadd",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "07d9294a1b0e0f7b28c4649b5363abfc62bebf3be6b3334934a21434bc26aa09",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh unseeded Luna/Luna run with S20-S29's frozen inputs (baseline 7ad8be4, prompt, spec, native fixture, 24-case oracle, 26-subcase path matrix, six exact checks, four-fault audit, caps). The executor is PR #102 head 13a2f83 = main 1d2dd75 (#92-#100) + #101 (the authored-test closeout review shows each linked requirement in full and asks for a case-to-test map under 'Test coverage:' in done.summary, returned once if missing) + the S29 repair: a rejected report-only closeout (report_incomplete) advances to the next predeclared iteration under the same progress rule as an accepted blocked report. S29 stopped after one iteration before the map could be exercised. One sample, not matched causal evidence; no seed, operator edit, historical rerating or automatic adoption.",
+  "main_merge_required_before_run": false,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_terminal_receipt_sha256": "f048d1f5d66ca1e892cf1c70250292e7858f99541f5625efa79a8b3e6dc1c7b6",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "91bd2abdc79811b7bdf4d2051a635b18d4e9918bb7bc3ec0f4d3740debf4d683",
+      "s12-control": "d0f68b22da9a96c295fcbcd4ae2fb79efac913519f9b1108e5fae34005efcc9c"
+    },
+    "control_note": "reference-control uses the operator reference tests (expected pass); s12-control uses S12's retained authored tests (expected fail)."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "1d2dd754e526b436ab3349ba3ac6c8ed73c29a6b",
+  "runtime_source": "PR #102 head (claude/report-incomplete-continuation, stacked on #101), not yet merged",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0"
+}
