@@ -71,3 +71,23 @@ command (or its own check ID on compatible routes). Read tools and truthful
 blocked reports remain available. This is a request-time hint and schema:
 the original approval, working-directory, validation and proof checks still
 decide what can actually execute and what counts as passing.
+
+All intervention modes also receive a whole-task route. It groups declared
+artifacts by path and requirement, keeps dedicated test cases alongside shared
+behavior rules, and shows the exact checks a further edit would refresh. Edit
+receipts and current checks describe native activity; semantic coverage still
+requires examining the implementation, controls and assertions.
+
+The route estimates the requests left after reserving a full check sweep and
+one report. The estimate is an optimistic lower bound, excluding unknown
+diagnosis, reads, retries and test gaps. The Observer uses it to choose a useful
+milestone, compare a feasible alternative and explain what must continue in a
+later iteration. Mandatory diagnosis, rechecks and report-only turns keep their
+existing precedence.
+
+The existing `why_this_first` and `fallback` fields now reach the Coder with the
+validated primary suggestion. Each is bounded to 700 Unicode characters and
+marked when truncated. They describe the route and an observation that would
+justify changing it. They remain quoted advice in the existing soft hint, with
+the same confidence threshold and no additional scheduled action. The native
+transcript saves that hint and retains it through context compression.

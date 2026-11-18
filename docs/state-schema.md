@@ -1840,6 +1840,32 @@ No new persisted state, budget, progress credit or completion exception is added
 
 ## Observer intervention decision brief
 
+`observer_action/work_route.rs` derives the version-1 whole-task route from
+native `task_obligations` and the projected request allowance before prompt
+compaction. General, diagnostic and terminal handoff prompts receive it. The
+route lists up to 16 deduplicated artifact paths with their kinds, requirement
+IDs and native edit-receipt status. A written artifact is not marked as
+semantically complete. Dedicated test cases and shared behavioral rules stay
+visible after checks pass, with up to 12 entries per list and descriptions
+bounded to 1,200 Unicode characters. Lists report totals and excerpts identify
+truncation.
+
+The verification view deduplicates pending and required exact commands. It
+shows checks due now, checks due after another edit, and how many current
+receipts that edit would invalidate. The edit-then-finish lower bound reserves
+at least one edit, every missing artifact edit when known, outstanding baseline
+reproductions, the full exact-check set and one report. Capacity subtracts that check/report reserve from the next
+Coder allowance. It excludes unknown reads, diagnosis and repairs; unavailable
+accounting remains null. These are planning facts, not new gates or allowances.
+
+The Observer's existing `why_this_first` and `fallback` strings are forwarded
+in the validated soft hint as quoted advisory data, capped at 700 characters
+each with explicit truncation. They share the primary suggestion's confidence,
+validation and stale-context checks. No new envelope field or persistence
+owner is introduced: the existing runtime message carries the advice through
+session saves and context compression. Native evidence, approval and
+completion gates never consume these strings as proof.
+
 The Observer prompt derives a bounded brief from native execution receipts before
 compaction: the last six proposed actions retain executed/succeeded/freshness
 separately, with an explicit omission count. Only the latest unexecuted native

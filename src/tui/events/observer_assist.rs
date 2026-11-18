@@ -223,8 +223,9 @@ pub(crate) fn build_tui_next_action_prompt(
     reason_hint: &str,
 ) -> String {
     format!(
-        "{}\n{}",
+        "{}\n{}\n{}",
         crate::observer_action::intervention::prompt(packet),
+        crate::observer_action::work_route::prompt(packet),
         build_next_action_body(packet, lang, reason_hint)
     )
 }

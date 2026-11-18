@@ -7,6 +7,7 @@ pub(crate) mod diagnostic;
 pub(crate) mod intervention;
 pub(crate) mod strategy;
 mod test_recipe;
+pub(crate) mod work_route;
 
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]
