@@ -377,3 +377,108 @@ async fn report_only_closeout_is_not_held_by_the_authored_test_review() {
         .is_some_and(|c| c.contains("[Authored-test closeout]"))));
     assert_eq!(app.coder_completed, Some(true), "{:?}", app.coder.messages);
 }
+
+#[tokio::test]
+async fn coverage_map_follows_the_authored_test_review_once_through_done_dispatch() {
+    // First claim: the authored-test review. Second claim without a map: one
+    // coverage-map return. Third claim with a map of current tests: accepted.
+    use httpmock::prelude::*;
+    let server = MockServer::start();
+    let (mut app, root) = closeout_app();
+    app.coder_cfg.base_url = server.base_url();
+    app.coder_cfg.api_key = Some("offline".into());
+    app.coder_cfg.timeout_seconds = 5;
+    std::fs::create_dir_all(root.path().join("tests")).unwrap();
+    std::fs::write(
+        root.path().join("tests/test_source.py"),
+        "def test_repair():\n    pass\n\ndef test_edge():\n    pass\n",
+    )
+    .unwrap();
+    let goal = format!("Repair source.py and docs/usage.md. Final answer must include `handoff-ready`.\n<task_requirements>\n{}\n</task_requirements>", json!({"version":1,"requirements":[
+        {"id":"repair","description":"Repair source and docs","artifacts":[{"path":"source.py","kind":"source"},{"path":"docs/usage.md","kind":"documentation"},{"path":"tests/test_source.py","kind":"test"}],"checks":[{"command":CLOSEOUT_CHECK}]},
+        {"id":"edge","description":"Reject the contradictory record","artifacts":[{"path":"source.py","kind":"source"},{"path":"tests/test_source.py","kind":"test"}],"checks":[{"command":CLOSEOUT_CHECK}]}]}));
+    {
+        let messages = &mut app.coder_session.as_mut().unwrap().messages;
+        messages[0]["content"] = json!(goal);
+        let check = messages.split_off(messages.len() - 2);
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":"tests-edit","type":"function","function":{"name":"patch_file","arguments":json!({"path":"tests/test_source.py"}).to_string()}}]}),
+            json!({"role":"tool","tool_call_id":"tests-edit","content":"OK: patched 'tests/test_source.py'"}),
+        ]);
+        messages.extend(check);
+    }
+    app.coder.messages[0].content = goal.clone();
+    app.coder_intent_anchor = Some(intent::apply_intent_update(
+        None,
+        intent::normalize_intent_update(&goal, None),
+        &goal,
+    ));
+    app.work_budget = crate::work_budget::WorkBudget::new(&goal, 10, None);
+    fn body(r: &HttpMockRequest) -> String {
+        String::from_utf8_lossy(r.body.as_deref().unwrap_or_default()).into_owned()
+    }
+    fn done(id: &str, summary: &str) -> String {
+        let mut args = closeout_args();
+        args["summary"] = json!(summary);
+        let content = "<think>\ngoal: Author the final report\nstep: 2\ntool: done\nrisk: unsupported claims\ndoubt: none\nnext: report retained proof\nverify: existing exact check\n</think>";
+        let payload = json!({"choices":[{"delta":{"content":content,"tool_calls":[{"index":0,"id":id,"function":{"name":"done","arguments":args.to_string()}}]},"finish_reason":"stop"}]});
+        format!("data: {payload}\n\ndata: [DONE]\n\n")
+    }
+    let summary = closeout_args()["summary"].as_str().unwrap().to_owned();
+    let first = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .matches(|r| !body(r).contains("[Authored-test closeout]"));
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(done("claim-1", &summary));
+    });
+    let unmapped = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions").matches(|r| {
+            let b = body(r);
+            b.contains("[Authored-test closeout]") && !b.contains("[Test coverage map]")
+        });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(done(
+                "claim-2",
+                &format!("{summary}\nBoth tests exercise their requirements."),
+            ));
+    });
+    let mapped = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .matches(|r| body(r).contains("[Test coverage map]"));
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(done(
+                "claim-3",
+                &format!("{summary}\n\nTest coverage:\n- repair: `test_repair`\n- edge: `test_edge`"),
+            ));
+    });
+    let (tx, mut rx) = mpsc::channel(256);
+    send_coder_input(
+        &mut app,
+        &tx,
+        "Continue.".into(),
+        CoderInput::RuntimeContinuation,
+    )
+    .await;
+    closeout_drain(&mut app, &mut rx, PaneId::Coder).await;
+    first.assert_hits(1);
+    unmapped.assert_hits(1);
+    mapped.assert_hits(1);
+    assert_eq!(app.coder_completed, Some(true), "{:?}", app.coder.messages);
+    let session = &app.coder_session.as_ref().unwrap().messages;
+    let count = |marker: &str| {
+        session
+            .iter()
+            .filter(|m| m["role"] == "tool" && m["content"].as_str().is_some_and(|c| c.contains(marker)))
+            .count()
+    };
+    assert_eq!(count("[Authored-test closeout]"), 1);
+    assert_eq!(count("[Test coverage map]"), 1);
+    assert!(session
+        .iter()
+        .any(|m| m["tool_call_id"] == "claim-3" && m["content"] == "OK: done"));
+}

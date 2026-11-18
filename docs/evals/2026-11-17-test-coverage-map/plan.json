@@ -1,0 +1,63 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "S29",
+  "created_at": "2026-11-17T20:15:21.097623+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "8aa7ed89a9424cbad2771f51ad7dec260c809eba",
+  "binary_sha256": "541c50405d34adab2413b5e1e526dbdfea07abfc949a007b4069ebb23dda786b",
+  "declaration_sha256": "b582daa2a1ae7b1deb36d4b7b0a941e5e4d8546374364b5f3f392a5f25e2ce1e",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "1db1a392b73316da46c56e1dd1b4dd7d0dd3f16e6a1b44e3a2ca4f137b3cccfb",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh unseeded Luna/Luna run with S20-S28's frozen inputs (baseline 7ad8be4, prompt, spec, native fixture, 24-case oracle, 26-subcase path matrix, six exact checks, four-fault audit, caps). The executor is PR #101 head 8aa7ed8 = main 1d2dd75 (#92-#100, including the low-confidence work return) plus the coverage-map review: the authored-test closeout review shows each linked requirement in full and asks for a case-to-test map reported under 'Test coverage:' in done.summary; after it, the first completion claim with a missing or malformed map, or one naming functions that are not current tests, is returned once. One sample, not matched causal evidence; no seed, operator edit, historical rerating or automatic adoption.",
+  "main_merge_required_before_run": false,
+  "decision": "All original native/report/chain gates, all seven independent groups, and all four authored-test sensitivity faults must pass. No automatic adoption; first terminal retained.",
+  "previous_terminal_receipt_sha256": "93a70446cae36d91ec03574f4f93afe10fe86caaf73e92ee6bd4457810d1f57a",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "803a58b50cfb51e51912c37587feabb9b488b6d6573b15d17ef1194546bddb80",
+      "s12-control": "27e0cf50fe73bca342f491f4b95e8f41d0be158729c61a81b95c323a8eb59818"
+    },
+    "control_note": "reference-control uses the operator reference tests (expected pass); s12-control uses S12's retained authored tests (expected fail)."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "1d2dd754e526b436ab3349ba3ac6c8ed73c29a6b",
+  "runtime_source": "PR #101 head (claude/test-coverage-map), not yet merged",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0"
+}
