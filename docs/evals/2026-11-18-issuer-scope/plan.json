@@ -1,0 +1,70 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "issuer-scope-fresh",
+  "created_at": "2026-11-18T09:30:00.704981+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "a892360b0fcf9bae81e0799d347e3caec9010843",
+  "binary_sha256": "9fc427625d1d5a68664e64d7dd8b10abe82fd37796aee8c36dd1ea35d17d7f4b",
+  "declaration_sha256": "7668b45101dda8117dffc707fe80065f4959a564afc2d02cf3e0b4cb95708a50",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "573c79dd98a9d9ad4f6e5f654ce6f520c9454bac41c7c8727bea2b48c78f7a68",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "One unseeded Luna/Luna run from the original frozen #82 baseline. The Observer can inspect source locations of identifier issuance in native reads of human-named reference files. Original human prompt, checks, budgets and independent assessment are retained.",
+  "main_merge_required_before_run": false,
+  "decision": "Require all native, chain, report, and independent gates and detection of all four frozen faults. Retain the first terminal and review any qualified patch separately before adoption.",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "139559b5e909ce6ddf2123b71143be3373dd86d292bcef3b1823f6190d3ca444",
+      "s12-control": "13b2e183cbb22a1c19b4ba15fdfbcde27f9178d0eda8053c7ceeef5e51002cb4"
+    },
+    "control_note": "The reference tests pass against the reference and detect all four seeded faults. The retained S12 tests fail on the reference, so the audit skips their fault runs."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "609344c2049ec29c6dca4bdc12e47a6c0338e99b",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0",
+  "validation_log_sha256": "9782a10da9683199aab7dd5c4485ab3c11e33283195fa210003a075c36164cb4",
+  "observational_measures": [
+    "Observer explicitly identifies an allocator expression and its lifetime",
+    "Observer gives the Coder a public control with two valid finalized owners reusing a native ID; same-owner duplicates rejected",
+    "Coder authors or runs the proposed control, including observed result",
+    "held-out two_rounds and all 24 behavioral cases",
+    "independent check groups, authored-test reference compatibility and four-fault sensitivity",
+    "all 26 primary gates, first terminal retained"
+  ]
+}
