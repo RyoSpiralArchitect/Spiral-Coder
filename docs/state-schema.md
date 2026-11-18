@@ -1918,3 +1918,13 @@ be offered as executable patch bytes. This is advisory guidance, not a semantic
 validator or permission expansion. Existing diagnosis, recheck, approval,
 confidence and completion gates remain unchanged. No new persisted state or
 provider request is introduced.
+
+When a check stops inside a declared Rust test, the advisory
+`task_obligations.authored_test_failure` view carries the current check,
+diagnostic and reported source locations. Each site records the line and the
+kind of diagnostic (a Rust diagnostic arrow or a test panic). An available
+test revision supplies the corresponding source line, bounded to 300
+characters plus an omission marker. Coder and Observer use the operation on
+that line to identify what the test reached and which fixture precondition or
+public behavior still needs checking. A repair attempt or a historical location
+suppresses the view. This projection creates no persistent state or proof.

@@ -59,6 +59,8 @@ fn disposition(executed: Option<bool>, result: Option<&str>) -> Disposition {
 struct Brief<'a> {
     immediate_admission_block: Option<&'static str>,
     admitted_plan_fields: Option<PlanFields>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    authored_test_failure: Option<&'a Value>,
     recent_attempts: Vec<Attempt<'a>>,
     earlier_attempts_omitted: usize,
     next_coder_requests: &'a Value,
@@ -117,6 +119,9 @@ fn project(packet: &Value) -> Brief<'_> {
     Brief {
         immediate_admission_block: block,
         admitted_plan_fields: fields,
+        authored_test_failure: packet["task_obligations"]
+            .get("authored_test_failure")
+            .filter(|value| value.is_object()),
         recent_attempts: rows
             .iter()
             .skip(rows.len().saturating_sub(6))
@@ -172,6 +177,11 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
+    let failure_site_guidance = if brief.authored_test_failure.is_some() {
+        crate::tui::agent::task_obligations::FAILURE_SITE_GUIDANCE
+    } else {
+        ""
+    };
     let test_review = packet["task_obligations"]["task_requirements"]["authored_tests"]
         .get("review_source")
         .filter(|view| view.is_object())
@@ -187,7 +197,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{test_guidance}\
+    format!("[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{failure_site_guidance}{test_guidance}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\

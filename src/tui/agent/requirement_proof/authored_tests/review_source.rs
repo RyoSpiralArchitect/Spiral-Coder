@@ -60,6 +60,13 @@ pub(super) struct ReviewSource {
     rendered_read_hash: Option<u64>,
 }
 
+impl ReviewSource {
+    pub(super) fn line(&self, path: &str, line: usize) -> Option<&str> {
+        (self.path == path).then_some(())?;
+        self.source.lines().nth(line.checked_sub(1)?)
+    }
+}
+
 pub(super) fn project(
     tests: &AuthoredTests,
     messages: &[Value],

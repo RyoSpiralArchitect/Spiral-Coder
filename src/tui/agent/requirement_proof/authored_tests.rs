@@ -21,6 +21,10 @@ pub(crate) struct AuthoredTests {
 }
 
 impl AuthoredTests {
+    pub(in crate::tui::agent) fn source_line(&self, path: &str, line: usize) -> Option<&str> {
+        self.review_source.as_ref()?.line(path, line)
+    }
+
     pub(in crate::tui::agent) fn contains(&self, path: &str) -> bool {
         let path = path.trim_start_matches("./");
         self.targets.iter().any(|target| target.path == path)
