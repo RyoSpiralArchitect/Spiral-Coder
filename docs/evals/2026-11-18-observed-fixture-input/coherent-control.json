@@ -1,0 +1,43 @@
+{
+  "origin": "Operator-authored positive control in a separate disposable copy.",
+  "provider_calls": 0,
+  "starting_inventory_sha256": "86495b5508ecb88a3a0f0b8d430a4c2791c0a928cc268f3a44a8d06142e28263",
+  "patch_sha256": "783e6b2217634c494079dbfd983418c12e76240175cfdf9fbc6a96277d7ef815",
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "validator_sha256": "4c42c93a37f1633a298cca6b97e6cd1457b8369dcce38512f8618c90fadd47d2",
+  "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+  "finalized_rows": 0,
+  "pending_directory": "iteration-01",
+  "ledger_requests": 0,
+  "expected_aggregate_task_used": 0,
+  "expected_aggregate_wire_used": 0,
+  "exact_checks": [
+    {
+      "command": "python3 -S scripts/status_fixture_observe.py",
+      "exit": 0,
+      "log_sha256": "daa26c7fac3762ac006d9cb402179f7541e1baf8eb3dfdea2253309d4ee48d9d"
+    },
+    {
+      "command": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+      "exit": 0,
+      "log_sha256": "0ad776abf6d15e4180e7e6bfd0175fa0da68c954c910b20a3a95c9c859d8378d"
+    },
+    {
+      "command": "cargo test --locked --test coupled_status -q",
+      "exit": 0,
+      "log_sha256": "81fa429dbb8df3610e901d5a58600ead40e872069222dbb4f056e65710a2c1d3"
+    },
+    {
+      "command": "python3 -S -m unittest -v scripts.status_interruption_directory",
+      "exit": 0,
+      "log_sha256": "25ccf1c5f4c2d769fb12c623753020cad855c557cb5afa3a038339d3fe704bc1"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

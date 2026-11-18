@@ -1,0 +1,45 @@
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -44,13 +44,25 @@
+     let manifest_path = root.join("iterations.json");
+     let mut manifest: serde_json::Value =
+         serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
+-    manifest["iterations"] = serde_json::Value::Array(vec![]);
+-    manifest["task_requests"] = serde_json::Value::Number(1.into());
+-    manifest["wire_requests"] = serde_json::Value::Number(1.into());
+-    manifest["completed"] = serde_json::Value::Bool(false);
+-    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+-    let ledger = root.join("iteration-01/state/tui-work.json");
+-    fs::write(&ledger, br#"{\"task_id\":\"pending\",\"requests\":[]}"#).unwrap();
++    manifest["iterations"] = serde_json::json!([]);
++    manifest["interrupted_iteration"] = serde_json::json!({
++        "directory": "iteration-01",
++        "task_requests": 0,
++        "wire_requests": 0,
++    });
++    manifest["task_requests"] = serde_json::json!(0);
++    manifest["wire_requests"] = serde_json::json!(0);
++    manifest["completed"] = serde_json::json!(false);
++    fs::write(
++        &manifest_path,
++        serde_json::to_vec_pretty(&manifest).unwrap(),
++    )
++    .unwrap();
++    fs::write(
++        root.join("iteration-01/state/tui-work.json"),
++        br#"{"task_id":"t1","requests":[]}"#,
++    )
++    .unwrap();
+     let output = cli(&root);
+     assert!(
+         output.status.success(),
+@@ -61,6 +73,9 @@
+     assert_eq!(json["iterations"].as_array().unwrap().len(), 0);
+     assert_eq!(json["pending"]["task_requests"], 0);
+     assert_eq!(json["pending"]["wire_requests"], 0);
++    assert_eq!(json["pending"]["directory"], "iteration-01");
++    assert_eq!(json["requests"]["task_used"], 0);
++    assert_eq!(json["requests"]["wire_used"], 0);
+ }
+
+ #[test]

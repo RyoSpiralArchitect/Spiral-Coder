@@ -1,0 +1,160 @@
+{
+  "condition": "control",
+  "provider_roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "plan_sha256": "5acead149f36e4a2bff7970ba53127bac3ba0804a3db3ad93dfc8bbf556c8195",
+  "run_receipt_sha256": "1df82065aa61284c1b4d96daa675381c361e78c76ba3e0bc0c6c6050a973ea97",
+  "terminal_report_sha256": "6bef5968dd2e4aba1611905d8b19538e3ef2fff329a7a1f975d28c1f48d69f91",
+  "terminal_ledger_sha256": "8e5e4fceca1dd3d8046f8f21fda95d468f71173f7a59bc9df6693edd8540434d",
+  "resolved_profile_binary_sha256": "761e8a4f8a4760bb171cbbf98e49ebfe882eb24693fd13abf88e868b3da6ad47",
+  "terminal_inventory_sha256": "4e0e1bd7ca39576190e90e265aea7dc0bf0bf2a7e434a833dd9eade95cacc36c",
+  "patch_sha256": "efbae0e33f4ddd19ee0f57104c6f07efd46c1439ea0fcacff40c16dc21a2e998",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 333.69,
+    "finished_at": "2026-11-18T13:50:39.346751+00:00",
+    "redacted_native_files": 0
+  },
+  "termination": "budget_exhausted",
+  "budget": {
+    "task_requests": 32,
+    "wire_requests": 36,
+    "roles": {
+      "coder": 28,
+      "observer": 8
+    }
+  },
+  "first_valid_failed_check": {
+    "call_id": "call_ppRbVcy9TUxnVxrkJOfRkPXx",
+    "tool": "exec",
+    "result_step": 1,
+    "succeeded": false,
+    "freshness": "superseded"
+  },
+  "first_capture_before_edits": false,
+  "captured_mismatches": [],
+  "after_read_returns": [
+    {
+      "diagnostic_read_call_id": "call_V90goCItYnQOnqLDf4DSx5rb",
+      "failed_check": "python3 -S scripts/status_fixture_observe.py",
+      "failure_path": "tests/coupled_status.rs",
+      "kind": "authored_fixture_read",
+      "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+    }
+  ],
+  "first_observer_edit": {
+    "assist_id": 2,
+    "decision": "accept",
+    "executed": true,
+    "succeeded": true,
+    "matching_call_ids": [
+      "call_xW8DuCPjsziesxDXD6Wz23c9",
+      "call_OYlx8toiB6hJaHmeG7OhJef2",
+      "call_JVmxaEQjeV6c7VxAhjf5mXc0"
+    ],
+    "target": "tests/coupled_status.rs",
+    "referenced_ledger_in_replacement": "let ledger = root.join(\"iteration-02/state/tui-work.json\");",
+    "explicit_pending_pointer_correction": false
+  },
+  "first_native_edit": {
+    "call_id": "call_JVmxaEQjeV6c7VxAhjf5mXc0",
+    "tool": "patch_file",
+    "result_step": 6,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "tests/coupled_status.rs"
+  },
+  "native_edits": [
+    {
+      "call_id": "call_JVmxaEQjeV6c7VxAhjf5mXc0",
+      "tool": "patch_file",
+      "result_step": 6,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_fw3b1buL27G6bSZ3AFPDjCsl",
+      "tool": "patch_file",
+      "result_step": 19,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_hwNrZ6UBFapmO6VjgpUCMQzf",
+      "tool": "patch_file",
+      "result_step": 24,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "validator_hash_preserved": true,
+  "post_mutation_exact_passes": {
+    "python3 -S scripts/status_fixture_observe.py": [],
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": []
+  },
+  "checks_still_pending": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "accepted_done_step": null,
+  "native_completed": false,
+  "native_criteria_met": false,
+  "matching_entries_after_patch_replay": 1673,
+  "independent_candidate_sha256": "b87665cc6fa4efbab0c9e07d7124f6b38392decefe2b709283f0781585ef8870",
+  "independent_exact_exits": {
+    "python3 -S scripts/status_fixture_observe.py": 101,
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": 101,
+    "cargo test --locked --test coupled_status -q": 101,
+    "python3 -S -m unittest -v scripts.status_interruption_directory": 0,
+    "cargo fmt --all -- --check": 0
+  },
+  "independent_first_interruption_pair": {
+    "valid_exit": 0,
+    "valid_matches_writer_projection": true,
+    "valid_task_used": 0,
+    "valid_wire_used": 0,
+    "skipped_exit": 1,
+    "skipped_stdout_empty": true,
+    "skipped_diagnostic": "Error: invalid pending directory",
+    "passed": true
+  },
+  "writer_state_matrix": {
+    "passed": 18,
+    "total": 27,
+    "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+    "failed": [
+      "known_manifest_null_task_requests",
+      "known_manifest_null_wire_requests",
+      "missing_interruption_numeric_wire_requests",
+      "both_manifest_totals_lost",
+      "finalized_over_cap_active_unknown",
+      "pending_round_over_cap_active",
+      "finalized_over_cap_interrupted_unknown",
+      "pending_round_over_cap_interrupted",
+      "unknown_charge_in_pending"
+    ]
+  }
+}

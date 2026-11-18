@@ -1,0 +1,52 @@
+{
+  "external_provider_calls": 0,
+  "starting_inventory_sha256": "86495b5508ecb88a3a0f0b8d430a4c2791c0a928cc268f3a44a8d06142e28263",
+  "archived_actions": [
+    "select the first declared check",
+    "read the admitted test file"
+  ],
+  "runtimes": {
+    "control": {
+      "binary_sha256": "761e8a4f8a4760bb171cbbf98e49ebfe882eb24693fd13abf88e868b3da6ad47",
+      "loopback_requests": {
+        "coder-replay": 8,
+        "observer-replay": 4
+      },
+      "working_tree_changes": [],
+      "authored_fixture_read_returns": 1,
+      "coder_received_structured_observation": false,
+      "observer_received_structured_observation": false,
+      "observer_verified_mismatches": [],
+      "exit_code": 0
+    },
+    "observed": {
+      "binary_sha256": "ebc494dfc46aa7f7bbba133eeee7b244f5907744012b0316050caf5e8a972a91",
+      "loopback_requests": {
+        "coder-replay": 8,
+        "observer-replay": 4
+      },
+      "working_tree_changes": [],
+      "authored_fixture_read_returns": 1,
+      "coder_received_structured_observation": true,
+      "observer_received_structured_observation": true,
+      "observer_verified_mismatches": [
+        {
+          "expected": "iteration-01",
+          "field": "manifest.interrupted_directory",
+          "observed": "iteration-02"
+        },
+        {
+          "expected": "valid",
+          "field": "iteration-01/state/tui-work.json JSON",
+          "observed": "invalid"
+        },
+        {
+          "expected": 0,
+          "field": "selected pending ledger.wire_requests",
+          "observed": 2
+        }
+      ],
+      "exit_code": 0
+    }
+  }
+}
