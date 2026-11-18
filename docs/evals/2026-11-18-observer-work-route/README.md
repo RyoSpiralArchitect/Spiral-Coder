@@ -141,3 +141,44 @@ brief first in the prompt; its existing position was restored. The final
 full check passed. The complete local suite also passed for the later ownership
 prompt at `5b859ea`. A test/doc correction describes the actual system
 hint lifecycle and its focused compression/proof test also passed.
+
+## Recovery from the two fixture failures
+
+The runtime at `39dcc45` joins each reported Rust failure location in a
+declared test to the corresponding line of available test source. Coder and
+Observer can inspect the operation that stopped, follow its input back to the
+fixture, and decide which behavior the test still needs to exercise. The
+short compiler digest now retains the expected and actual types for a Rust
+type mismatch. The local suite passed with 1,243 Rust unit tests, two ignored,
+six integration tests and all 20 TUI replay cases.
+
+A [matched replay](failure-sites-replay.json) delivered the source-line field
+to both roles with the new binary. Both binaries received the existing test
+source, left the workspace intact and kept the same six checks pending. The
+scripted provider ran locally.
+
+For the live continuation, both Luna roles resumed from the preceding failed
+terminal with all 365 native messages, the original task and identical
+candidate files. The [plan](failure-sites-plan.json) was pushed at `c66bc72`
+before provider requests. The Coder reproduced the original three passes and
+two setup failures. The Observer identified where fixture mutation stopped.
+The Coder added the missing file in both affected tests. It ran all six exact
+checks after the last edit and corrected its final report until accepted.
+The run completed in 18 task requests plus three transport repairs, taking
+363.515 seconds. [Run and independent checks](failure-sites-results.json) ·
+[Candidate delta](failure-sites-candidate.patch)
+
+| Measure | Previous failed continuation | Recovery continuation |
+| --- | ---: | ---: |
+| Authored tests on the valid reference | 3 passed, 2 failed | 5 passed |
+| Authored-test fault detections | Skipped after reference failure | 4/4 |
+| Independent check groups | 5/7 | 6/7 |
+| External behavioral cases | 23/24 | 23/24 |
+| Native terminal | Report incomplete | Completed |
+
+Only the two test setups changed. Each writes a minimal ledger before
+removing or replacing a component. The tests invoke the unmodified fixture
+before that write, so they leave the behavior of the intermediate ledger
+unmeasured. The candidate implementation still rejects the valid two-round
+case. This continuation establishes recovery on this saved point. The
+original fresh qualification remains 25/26 and #82 remains open.
