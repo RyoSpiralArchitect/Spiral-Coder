@@ -917,8 +917,15 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         });
     }
 
+    // Like other diagnostic probes, the current focused comparison gathers
+    // evidence about the premise that the assumption ledger recorded.
     if let Some(conflict) =
         refuted_assumption_conflict(&*assumption_ledger, think, tc, &exec_verification_context)
+            .filter(|_| {
+                !recovery
+                    .focus
+                    .matches_current_focused_exec(tc, messages, tool_root_abs.as_deref())
+            })
     {
         *state = AgentState::Recovery;
         recovery.stage = Some(RecoveryStage::Diagnose);

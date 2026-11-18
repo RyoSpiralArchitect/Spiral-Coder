@@ -233,6 +233,35 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
     let args = &followup_view["unittest_comparison"]["arguments"];
     let command = args["command"].as_str().unwrap();
     let root = trace.root().unwrap();
+    let call = ToolCallData {
+        id: "comparison".into(),
+        name: "exec".into(),
+        arguments: args.to_string(),
+        thought_signature: None,
+    };
+    assert!(trace
+        .focus
+        .matches_current_focused_exec(&call, &trace.messages, Some(root)));
+    assert!(!trace.focus.matches_current_focused_exec(
+        &call,
+        &trace.messages[..trace.messages.len() - 2],
+        Some(root),
+    ));
+    for changed in [
+        json!({"command":command,"cwd":"/other"}),
+        json!({"command":format!("{command} && cargo fmt"),"cwd":root}),
+        json!({"command":command,"cwd":root,"unexpected":true}),
+    ] {
+        let changed_call = ToolCallData {
+            arguments: changed.to_string(),
+            ..call.clone()
+        };
+        assert!(!trace.focus.matches_current_focused_exec(
+            &changed_call,
+            &trace.messages,
+            Some(root),
+        ));
+    }
     let process = std::process::Command::new("sh")
         .args(["-c", command])
         .current_dir(root)

@@ -101,6 +101,21 @@ struct Cycle<'a> {
 }
 
 impl RecoveryFocus {
+    pub(in crate::tui::agent) fn matches_current_focused_exec(
+        &self,
+        call: &ToolCallData,
+        messages: &[Value],
+        root: Option<&str>,
+    ) -> bool {
+        if call.name != "exec" || !call.arguments.contains("Focused unittest:") {
+            return false;
+        }
+        serde_json::from_str::<Value>(&call.arguments).is_ok_and(|arguments| {
+            self.diagnostic_followup(messages, root)
+                .is_some_and(|followup| followup.matches_unittest_comparison(&arguments))
+        })
+    }
+
     pub(super) fn retained_comparison(
         &self,
         messages: &[Value],

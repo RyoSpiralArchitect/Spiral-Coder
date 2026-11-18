@@ -1846,7 +1846,10 @@ observed difference, the native
 from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing
 ledger would reopen after this execution. The comparison remains an
-observation of the unresolved check.
+observation of the unresolved check. The assumption ledger treats a command
+as this observation when its exact arguments match the current native
+failure and read projection. Dispatch applies the usual tool admission and
+records the actual outcome.
 
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
