@@ -559,6 +559,41 @@ fn repeated_successful_mutation_issue(
     })
 }
 
+/// The Coder allowance that an authored-test plan or review can count on. A
+/// report-only closeout offers only `done` within one wire attempt, so the Coder
+/// could neither edit tests nor resubmit: it counts as none.
+pub(super) fn test_review_allowance() -> Option<usize> {
+    crate::work_budget::current().map(|current| {
+        if current.budget.is_report_closeout() {
+            0
+        } else {
+            current.budget.remaining_for("coder")
+        }
+    })
+}
+
+/// One coverage plan after a test file linked to several requirements has been
+/// written in the current task (see `test_closeout::plan`). `changed_path` is
+/// the path of the successful file change being reported.
+pub(super) fn test_plan(
+    messages: &[Value],
+    tool_root: Option<&str>,
+    changed_path: &str,
+    coder_remaining: Option<usize>,
+) -> Option<String> {
+    let messages = crate::task_origin::current_task_messages(messages);
+    let contract = parse(crate::task_origin::root_user_text(messages))
+        .ok()
+        .flatten()?;
+    test_closeout::plan(
+        &contract,
+        messages,
+        tool_root,
+        changed_path,
+        coder_remaining,
+    )
+}
+
 /// One review of an authored test against the requirements that link it, before
 /// the first completion claim of the current task (see `test_closeout`).
 pub(super) fn test_closeout(

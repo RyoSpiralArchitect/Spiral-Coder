@@ -1286,6 +1286,20 @@ offers only `done` within one wire attempt, so its report is never traded for a
 review. It is a governor block without a recovery stage, and its marker in the
 current task's tool results is the only state.
 
+The same request can come earlier. Once a linked test file has a successful
+native change in the current task, the first successful file change whose
+automatic test did not fail (the test write itself, or a later change after a
+failing one) carries one `[Test coverage plan]`. It is appended to that change's
+tool result after the history digest, so failure parsing never reads it as test
+output. The plan lists the linked requirements in full beside the current test
+functions, asks for the same case-to-test map and focused tests, and asks for
+the final map in `done.summary`. It needs the same allowance as the review and
+is skipped once the review has been shown. S30 wrote its test file with 11 Coder
+requests left in the iteration, but its first completion claim came with 5 left,
+below the review's floor of 8, so its tests were never compared with the fault
+families the task names. The plan is advisory: it blocks nothing, and the
+completion review still follows when there is room.
+
 After the review, the first completion claim whose map is absent, lacks a line
 for a linked requirement, has a line that names no test and does not say `none`,
 or names a function that is not a current test receives one
@@ -1293,7 +1307,8 @@ or names a function that is not a current test receives one
 functions. It is skipped when the Coder has no allowance left to answer,
 including a report-only closeout. The next `done` proceeds. The map is the
 Coder's own claim: only its shape and the existence of named tests are checked.
-Neither step adds completion evidence, a pass condition or a coverage receipt.
+None of these steps adds completion evidence, a pass condition or a coverage
+receipt.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
