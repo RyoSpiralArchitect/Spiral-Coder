@@ -13,14 +13,12 @@
         "coder-replay": {
           "local_requests": 5,
           "workspace_readback": false,
-          "test_body_visible": true,
           "first_request_content_bytes": 131885,
           "exact_review_source_copies": 0
         },
         "observer-replay": {
           "local_requests": 3,
           "workspace_readback": false,
-          "test_body_visible": false,
           "first_request_content_bytes": 59394,
           "exact_review_source_copies": 0
         }
@@ -34,14 +32,12 @@
         "coder-replay": {
           "local_requests": 5,
           "workspace_readback": true,
-          "test_body_visible": true,
           "first_request_content_bytes": 134780,
           "exact_review_source_copies": 1
         },
         "observer-replay": {
           "local_requests": 3,
           "workspace_readback": true,
-          "test_body_visible": true,
           "first_request_content_bytes": 62340,
           "exact_review_source_copies": 1
         }

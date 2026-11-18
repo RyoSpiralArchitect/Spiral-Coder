@@ -37,3 +37,32 @@ checks fail as declared. All seven reference groups pass. The positive
 control detects all four seeded faults. The negative control fails one of
 four tests against the reference, so its fault runs are skipped.
 [Control summary](sensitivity-controls.json)
+
+## First terminal
+
+**Unqualified.** The run reached the six-iteration limit at 192 task and 209
+wire requests in 2,139.271 seconds. It passed 18 of 26 gates. The frozen
+candidate edits cover all six required paths. Five of the seven independent
+groups pass, with 23 of 24 held-out cases.
+
+The final round successfully ran the first five exact checks at steps
+146–150. The path check failed at step 151, and the source changed at step
+154. The repeated path check failed at step 155. All six exact checks
+remained pending at the end, and the runtime accepted an incomplete report
+at step 157.
+
+The candidate's two authored tests passed on the reference. They detected
+the missing-pending fault in the four-fault audit. The symlink, duplicate
+request, and parent linkage faults survived. The independent symlink and
+duplicate-ID rejection checks passed against the candidate implementation.
+
+## Remaining path failure
+
+A disposable rebuild of the sealed patch matched the frozen candidate
+inventory. A field-by-field comparison found the same difference for all
+three missing components of a running iteration. The candidate emits
+`pending: null`. The fixture expects the recorded `directory` and null
+values for `task_id`, the two request counts, and `in_flight_requests`.
+The interrupted controls match for all three missing components.
+
+[First terminal receipt and comparison](results.json)
