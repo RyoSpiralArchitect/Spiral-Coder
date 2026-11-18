@@ -292,6 +292,13 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
     }
     if let Some(obligations) = view["task_obligations"].as_object_mut() {
         obligations.remove("diagnostic_followup");
+        if let Some(failure) = obligations
+            .get_mut("authored_test_failure")
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            // The decision brief carries the full fixture excerpts.
+            failure.remove("fixture_context");
+        }
         if let Some(source) = obligations
             .get_mut("task_requirements")
             .and_then(|requirements| requirements.get_mut("authored_tests"))

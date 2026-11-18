@@ -1928,3 +1928,17 @@ characters plus an omission marker. Coder and Observer use the operation on
 that line to identify what the test reached and which fixture precondition or
 public behavior still needs checking. A repair attempt or a historical location
 suppresses the view. This projection creates no persistent state or proof.
+
+For a localized panic in a declared Rust test, native prompt assembly can attach
+`authored_test_failure.fixture_context`. It quotes the setup through the panic
+line, the local fixture helper and the matching branch of the Python generator
+called with a literal argument. Each excerpt cites its workspace path and
+one-based source lines. Projection requires a matching current test name and
+location. Reads use bounded UTF-8 workspace files. Ambiguous helpers, dynamic
+arguments and generators outside the workspace yield no context. The browser's
+advisory projection derives from receipts alone.
+
+The Observer's primary reason can cite the inherited input and the test's
+changes, then propose a coherent control and a single-change negative case.
+The Coder sees the same setup in the task view. The existing diagnostic read,
+edit admission, request accounting and verification rules continue to apply.
