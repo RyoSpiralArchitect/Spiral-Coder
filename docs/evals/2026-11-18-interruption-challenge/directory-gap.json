@@ -1,0 +1,62 @@
+{
+  "measured_after_both_terminals": true,
+  "used_in_qualification": false,
+  "results": {
+    "reference": {
+      "binary_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "valid": {
+        "exit": 0,
+        "stdout": "{\"iterations\":[{\"changed_files\":[\"src/a.rs\"],\"iteration\":1,\"newly_verified\":[\"cargo test -q\"],\"task_id\":\"t1\",\"task_requests\":2,\"termination\":\"blocked\",\"wire_requests\":3}],\"pending\":{\"directory\":\"iteration-02\",\"in_flight_requests\":1,\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2},\"requests\":{\"task_limit\":192,\"task_remaining\":189,\"task_used\":3,\"wire_limit\":216,\"wire_remaining\":211,\"wire_used\":5},\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"version\":1}",
+        "stderr": ""
+      },
+      "skipped_directory": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Error: invalid pending directory"
+      },
+      "passed": true
+    },
+    "previous": {
+      "binary_sha256": "5974f4b4ed9f3baefd6a13731e8d278831b10e60c91ab8fd0920f885ad251def",
+      "valid": {
+        "exit": 0,
+        "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-02\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+        "stderr": ""
+      },
+      "skipped_directory": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Error: invalid pending directory"
+      },
+      "passed": true
+    },
+    "fresh": {
+      "binary_sha256": "7e1e80a96dcb25b9bcd500c7777172a7573dcd903bfbae2eed2d754e285c82a8",
+      "valid": {
+        "exit": 0,
+        "stdout": "{\"iterations\":[{\"changed_files\":[\"src/a.rs\"],\"iteration\":1,\"newly_verified\":[\"cargo test -q\"],\"task_id\":\"t1\",\"task_requests\":2,\"termination\":\"blocked\",\"wire_requests\":3}],\"pending\":{\"directory\":\"iteration-02\",\"in_flight_requests\":1,\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2},\"requests\":{\"task_limit\":192,\"task_remaining\":189,\"task_used\":3,\"wire_limit\":216,\"wire_remaining\":211,\"wire_used\":5},\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"version\":1}",
+        "stderr": ""
+      },
+      "skipped_directory": {
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Error: invalid pending directory"
+      },
+      "passed": true
+    },
+    "focused": {
+      "binary_sha256": "2aa27391f11436586dd068bb928e8c5504a5bd5e98e13e88521972e77111bcb8",
+      "valid": {
+        "exit": 0,
+        "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-02\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+        "stderr": ""
+      },
+      "skipped_directory": {
+        "exit": 0,
+        "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-03\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+        "stderr": ""
+      },
+      "passed": false
+    }
+  }
+}

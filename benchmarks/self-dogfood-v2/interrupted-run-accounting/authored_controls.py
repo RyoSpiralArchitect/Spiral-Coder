@@ -56,11 +56,20 @@ def measure(source, reference, host_target, windows_target, out):
         run = command([executable,"--test-threads=1"],mode+".log",
                       {"SPIRAL_PROBE_BINARY":str(reference),"SPIRAL_PROBE_MODE":mode,"SPIRAL_PROBE_HITS":str(hits)})
         calls = len(hits.read_text().splitlines()) if hits.exists() else 0
-        # A process crash or a test setup error cannot substitute for a paired assertion.
-        failed = re.findall(r"^---- (\S+) stdout ----$",run.stdout,re.M)
-        passed = calls>0 and (run.returncode==0 if mode in ("native","pretty") else run.returncode==101 and bool(failed))
-        result["output_controls"][mode] = {"passed":passed,"exit":run.returncode,"two_row_calls":calls,
-                                           "failed_tests":failed,"log_sha256":sha(out/(mode+".log"))}
+        failed = re.findall(r"^---- (\S+) stdout ----$", run.stdout, re.M)
+        row = {"exit": run.returncode, "two_row_calls": calls, "failed_tests": failed,
+               "log_sha256": sha(out / (mode + ".log"))}
+        if mode in ("native", "pretty"):
+            row["passed"] = calls > 0 and run.returncode == 0
+        else:
+            # A suite that is already red cannot attribute its failure to a changed row.
+            positives = result["output_controls"]
+            comparable = positives["native"]["passed"] and positives["pretty"]["passed"]
+            row["detection_demonstrated"] = (
+                calls > 0 and run.returncode == 101 and bool(failed) if comparable else None
+            )
+            row["passed"] = row["detection_demonstrated"] is True
+        result["output_controls"][mode] = row
     result["passed"] = result["windows_compile"]["passed"] and all(row["passed"] for row in result["output_controls"].values())
     return result
 
