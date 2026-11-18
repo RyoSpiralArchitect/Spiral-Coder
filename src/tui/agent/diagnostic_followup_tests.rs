@@ -334,6 +334,32 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
 }
 
 #[test]
+fn another_window_of_the_same_clipped_failure_does_not_yield_again() {
+    let mut trace = Trace::new();
+    std::fs::write(
+        trace.path.join(FILE),
+        "assert actual == expected\n# context\n# end\n",
+    )
+    .unwrap();
+    let read_window = |trace: &mut Trace, id: &str, end: usize| {
+        let args = json!({"path": FILE, "start_line": 1, "end_line": end});
+        let (output, failed) = crate::file_tools::read_range::execute_args(&args, trace.root());
+        assert!(!failed);
+        trace.append(id, "read_file", args, output);
+    };
+    trace.fail_with_clipping("first-failure", "0.01");
+    read_window(&mut trace, "first-window", 1);
+    assert!(trace.view().unwrap().should_yield());
+    read_window(&mut trace, "wider-window", 2);
+    let followup = trace.view().unwrap();
+    assert!(followup.has_unittest_comparison());
+    assert!(!followup.should_yield());
+    trace.fail_with_clipping("same-failure-again", "0.02");
+    read_window(&mut trace, "narrow-window", 1);
+    assert!(!trace.view().unwrap().should_yield());
+}
+
+#[test]
 fn rerunning_the_same_clipped_failure_does_not_yield_again_after_its_read() {
     let mut trace = Trace::new();
     trace.fail_with_clipping("f1", "0.01");

@@ -11,7 +11,7 @@ The two live runs used gpt-5.6-luna for both Coder and Observer.
 | Original #82 baseline, original prompt | Stopped after 4 iterations, 128 task / 143 wire requests, 983.63 s | 16/24 | 3/7 | No test file |
 | Previous 23/24 candidate, focused public task, empty conversation | Completed in 2 iterations, 51 task / 59 wire requests, 522.52 s | 24/24 | 7/7 | 6/6 on the reference, all 4 frozen faults detected |
 
-The fresh trial passed 17/26 qualification gates. Issue #82 remains open.
+The fresh trial passed 17/26 qualification gates. The [independent review and issue closeout](review-closeout.md) records the subsequent disposition.
 The focused result establishes a repair and a regression test on the saved candidate.
 
 ## What reached the Coder

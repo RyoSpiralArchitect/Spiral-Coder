@@ -218,7 +218,8 @@ impl RecoveryFocus {
                             .as_ref()
                             .map(|read| read.result)
                             .or(cycle.earlier_read_result);
-                        if prior.is_some_and(|prior| prior != output) {
+                        let different_read = prior.is_some_and(|prior| prior != output);
+                        if different_read {
                             cycle.earlier_failure = None;
                             cycle.matching_failures = 1;
                             cycle.earlier_read_result = None;
@@ -229,7 +230,9 @@ impl RecoveryFocus {
                                 call_id: call.id,
                                 result: output,
                             });
-                            first_read_just_returned = true;
+                            // A different window updates the diagnosis for this
+                            // failure. It does not start another Observer turn.
+                            first_read_just_returned = !different_read;
                         }
                     }
                 }
