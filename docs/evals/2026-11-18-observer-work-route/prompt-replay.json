@@ -1,0 +1,53 @@
+{
+  "provider_calls": 0,
+  "sealed_session_sha256": "5a09c57525d5b92fc56e35fe47ddec3b835d50c9a99fef369f5aa71f40d5f7f5",
+  "inclusive_message_index": 230,
+  "snapshot_source_sha256": "e7dd337281261b2d243b81d584fa4aa32f326dd3b41a75ef9ed56fcd789e4d3f",
+  "workspace_unchanged": true,
+  "runtimes": {
+    "control": {
+      "binary_sha256": "48bf37d37683233fd15c6a8b0ca0fbbbea206cc041d1105bbffcd77f89a25c89",
+      "exit": 0,
+      "pending_checks": [],
+      "roles": {
+        "coder-replay": {
+          "local_requests": 5,
+          "workspace_readback": true,
+          "test_body_visible": true
+        },
+        "observer-replay": {
+          "local_requests": 3,
+          "workspace_readback": true,
+          "test_body_visible": true
+        }
+      },
+      "whole_task_route_received": false,
+      "test_case_map_received": false,
+      "future_check_cost_received": false,
+      "route_forwarded_to_coder": false,
+      "observer_prompt_bytes": 65658
+    },
+    "route": {
+      "binary_sha256": "ded09158738de763058fdd0c727d2b1c19b20f3238b9df2e719f3907f7f5ba2e",
+      "exit": 0,
+      "pending_checks": [],
+      "roles": {
+        "coder-replay": {
+          "local_requests": 5,
+          "workspace_readback": true,
+          "test_body_visible": true
+        },
+        "observer-replay": {
+          "local_requests": 3,
+          "workspace_readback": true,
+          "test_body_visible": true
+        }
+      },
+      "whole_task_route_received": true,
+      "test_case_map_received": true,
+      "future_check_cost_received": true,
+      "route_forwarded_to_coder": true,
+      "observer_prompt_bytes": 74177
+    }
+  }
+}
