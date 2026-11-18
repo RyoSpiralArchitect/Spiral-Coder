@@ -1,0 +1,337 @@
+{
+  "version": 1,
+  "first_native_edits": {
+    "src/coupled_status.rs": {
+      "first_native_changed_step": 17,
+      "changed_receipts": 8
+    },
+    "src/main.rs": {
+      "first_native_changed_step": 21,
+      "changed_receipts": 1
+    },
+    "npm/spiral-coder/lib/launcher.cjs": {
+      "first_native_changed_step": 35,
+      "changed_receipts": 1
+    },
+    "tests/coupled_status.rs": {
+      "first_native_changed_step": 66,
+      "changed_receipts": 2
+    },
+    "docs/coupled-status.md": {
+      "first_native_changed_step": 92,
+      "changed_receipts": 2
+    },
+    "docs/state-schema.md": {
+      "first_native_changed_step": 99,
+      "changed_receipts": 1
+    }
+  },
+  "governor_rejections": {
+    "Progress Gate": 3,
+    "Evidence Gate": 2,
+    "Recovery Gate": 8,
+    "Assumption Ledger": 1,
+    "Plan Gate": 1,
+    "Blocked report": 1
+  },
+  "retained_system_routes": [
+    {
+      "first_seen_iteration": "iteration-02",
+      "advice": {
+        "fallback": {
+          "text": "If the focused comparison captures no complete assertion difference, inspect the current aggregate-validation region in src/coupled_status.rs and the generated fixture counts, then make only a concrete local repair supported by those observations. Do not rerun the failing suite unchanged or claim completion; after the repair rerun python3 -S -m unittest -v scripts.status_visible, then use the remaining turn for the highest-value exact check or continuation handoff.",
+          "truncated": false
+        },
+        "why_this_first": {
+          "text": "This is a different bounded observation from the repeated test-source read and directly supplies the missing actual-versus-expected result. If it shows the implementation is rejecting a valid fixture, inspect and minimally repair the corresponding aggregate-validation branch in src/coupled_status.rs; if it shows the fixture/expected data is inconsistent, preserve the protected test and trace the native fixture writer instead. Keep the original exact check pending and rerun it after the targeted repair. Documentation, authored integration tests, and the remaining five checks are still unfinished and cannot fit before the required diagnosis and repair.",
+          "truncated": false
+        }
+      }
+    },
+    {
+      "first_seen_iteration": "iteration-04",
+      "advice": {
+        "fallback": {
+          "text": "If the focused comparison shows the documented block is stale, update only the JSON fenced block in docs/coupled-status.md to the exact expected object while preserving its explanatory text, then rerun python3 -S -m unittest -v scripts.status_guide. If it shows the command output differs from expected(), do not alter the docs; inspect the relevant implementation/fixture source and make the smallest supported source repair before rerunning the same check.",
+          "truncated": false
+        },
+        "why_this_first": {
+          "text": "The current evidence shows cargo fmt and status_visible passing, while status_guide fails only because its measured JSON does not equal scripts.status_fixture.expected(). The completed read of scripts/status_guide.py shows the equality assertion but the failure digest is clipped, so it cannot distinguish a stale documentation block from a changed fixture/implementation result. Execute the supplied focused comparison first; if the minus operand is the documented block and the plus operand is expected(), patch only docs/coupled-status.md, then rerun the failed exact check. If the operands indicate a runtime mismatch instead, inspect the implicated source path before editing. After status_guide",
+          "truncated": true
+        }
+      }
+    },
+    {
+      "first_seen_iteration": "iteration-05",
+      "advice": {
+        "fallback": {
+          "text": "If the integration test fails, preserve the failure output and inspect only the reported coupled-status branch before making any edit; rerun the full six-check sweep after any repair. If it passes, submit the authored report with all six exact outcomes and keep any unsupported semantic claims qualified.",
+          "truncated": false
+        },
+        "why_this_first": {
+          "text": "The latest edit only changed pending-usage accounting to preserve unknown values, and the formatter, visible, guide, paths, and binary checks all pass afterward. Running the remaining exact integration check directly resolves the only pending verification and determines whether to report completion or diagnose a concrete failure. This is preferable to another source read or edit because no current failure is recorded and only one required check remains.",
+          "truncated": false
+        }
+      }
+    }
+  ],
+  "observer_json_rows": [
+    {
+      "iteration": "iteration-01",
+      "display_index": 1,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 3,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 5,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 7,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 9,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 13,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 15,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 17,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 19,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-01",
+      "display_index": 21,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 1,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 3,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 5,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 7,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 9,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 11,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 13,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 15,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 17,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-02",
+      "display_index": 19,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 1,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 3,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 5,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 7,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 9,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 11,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 13,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-03",
+      "display_index": 15,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 1,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 3,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 5,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 7,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 11,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 13,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 15,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-04",
+      "display_index": 17,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 1,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 3,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 5,
+      "has_why_this_first": false,
+      "has_fallback": false
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 7,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 9,
+      "has_why_this_first": true,
+      "has_fallback": true
+    },
+    {
+      "iteration": "iteration-05",
+      "display_index": 11,
+      "has_why_this_first": true,
+      "has_fallback": true
+    }
+  ],
+  "summed_request_duration_ms": {
+    "coder": 800916,
+    "observer": 332974
+  },
+  "interpretation": "Native edit receipts describe timing, not semantic completion. Advisory strings are model claims. Session system context is refreshed on continuation, so retained routes undercount delivery; exact duplicate payloads across saved sessions count once. Duration sums include provider calls and are not independent wall times. This projection does not assess the truth or usefulness of an explanation."
+}
