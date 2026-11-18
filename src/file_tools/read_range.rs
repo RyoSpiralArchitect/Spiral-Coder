@@ -1,8 +1,28 @@
 //! Bounded, one-based inclusive line reads. Only a complete rendering is a snapshot.
 use serde::Deserialize;
 use serde_json::Value;
+use std::{io::Read, path::Path};
 
 const MAX_RANGE_LINES: usize = 200;
+
+/// Read one complete regular UTF-8 file under a canonical workspace directory.
+pub(crate) fn bounded_workspace_text(workspace: &Path, path: &str, limit: u64) -> Option<String> {
+    let target = workspace.join(path).canonicalize().ok()?;
+    if !target.starts_with(workspace) {
+        return None;
+    }
+    let metadata = target.metadata().ok()?;
+    if !metadata.is_file() || metadata.len() > limit {
+        return None;
+    }
+    let mut body = String::new();
+    std::fs::File::open(target)
+        .ok()?
+        .take(limit.saturating_add(1))
+        .read_to_string(&mut body)
+        .ok()?;
+    (body.len() as u64 <= limit).then_some(body)
+}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct ReadRequest {

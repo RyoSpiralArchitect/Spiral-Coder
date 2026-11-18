@@ -2,10 +2,9 @@
 //! The transcript owns the proposal. Only a new, ordinarily governed call can write.
 use super::{eligible_target, full_read, take_exchange, Exchange};
 use crate::execution_evidence::{auto_test_outcome, AutoTestOutcome};
-use crate::file_tools::read_range::{matches_range_header, ReadRequest};
+use crate::file_tools::read_range::{bounded_workspace_text, matches_range_header, ReadRequest};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::io::Read;
 use std::path::Path;
 
 const FILE_LIMIT: u64 = 512 * 1024;
@@ -185,24 +184,6 @@ pub(in crate::tui::agent) fn retained_read(messages: &[Value]) -> Option<String>
     (read.output.len() <= 32 * 1024).then(|| read.id.to_owned())
 }
 
-fn contents(workspace: &Path, path: &str) -> Option<String> {
-    let target = workspace.join(path).canonicalize().ok()?;
-    if !target.starts_with(workspace) {
-        return None;
-    }
-    let meta = target.metadata().ok()?;
-    if !meta.is_file() || meta.len() > FILE_LIMIT {
-        return None;
-    }
-    let mut bytes = String::new();
-    std::fs::File::open(target)
-        .ok()?
-        .take(FILE_LIMIT + 1)
-        .read_to_string(&mut bytes)
-        .ok()?;
-    (bytes.len() as u64 <= FILE_LIMIT).then_some(bytes)
-}
-
 fn confirmed(read: &Exchange<'_>, patch: &Patch, source: &str, first: usize, last: usize) -> bool {
     if full_read(read, &patch.path) == Some(source) {
         return true;
@@ -237,7 +218,7 @@ pub(in crate::tui::agent) fn project(messages: &[Value], workspace: &str) -> Opt
     {
         return None;
     }
-    let source = contents(&root, &h.patch.path)?;
+    let source = bounded_workspace_text(&root, &h.patch.path, FILE_LIMIT)?;
     let mut matches = source.match_indices(&h.patch.search);
     let (at, _) = matches.next()?;
     if matches.next().is_some() {

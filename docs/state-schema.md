@@ -1289,6 +1289,12 @@ exclude trailing whitespace and serve as review context. An unconfirmed edit, an
 incomplete read of that file, or an executed workspace action clears the
 view. Recognized verification runs retain the recorded revision. The
 projection opens no files and supplies no test coverage or edit authority.
+The local Coder and TUI Observer can also refresh this view when history lacks
+a complete revision. They read at most 8 KiB from the latest successfully
+edited declared test path, resolved inside the workspace. The
+`workspace_readback` origin identifies this source, and `call_id` points to
+the edit that selected its path. The readback creates no native read or check
+receipt. Browser advisory packets continue to derive source from history.
 Test design guidance asks both roles to preserve declared path names when
 exercising filesystem type validation, so a naming rule cannot mask the fault.
 An Observer reply with a path-only edit for a declared test can be projected

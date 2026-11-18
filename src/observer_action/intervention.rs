@@ -176,8 +176,13 @@ pub(crate) fn prompt(packet: &Value) -> String {
         .get("review_source")
         .filter(|view| view.is_object())
         .map(|view| {
+            let title = if view["origin"] == "workspace_readback" {
+                "Authored test source read from the workspace"
+            } else {
+                "Authored test source from a native receipt"
+            };
             format!(
-                "\n[Authored test source from a native receipt]\n{}\n",
+                "\n[{title}]\n{}\n",
                 serde_json::to_string(view).expect("test source serializes")
             )
         })
