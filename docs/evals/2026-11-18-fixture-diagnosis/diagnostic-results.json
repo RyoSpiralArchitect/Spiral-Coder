@@ -1,0 +1,199 @@
+{
+  "condition": "diagnostic",
+  "plan_sha256": "4a4ef87367275a1d7fa874cfb235b07ad855a4bf3794ccefc34e18b4df918dbc",
+  "run_receipt_sha256": "5a7ab7710e66901ce469d67cb6ff9f40ba8c310814b85f6136189abbb4bccbc4",
+  "delta_sha256": "ef02affba6a1a17779c3aa3a693f8af7fe38df11ec191bb17e5b144c90713eba",
+  "start_inventory_sha256": "22698c4ae84112a4a58aa65382499f9f8e545f1c1ebe15a7c403e9645d507cbe",
+  "terminal_inventory_sha256": "ab708819b6cd291e3a1747299e472e03bba5d1969d2973d049015a9203cb363f",
+  "provider_roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "rounds": [
+    {
+      "termination": "blocked",
+      "task": 32,
+      "wire": 35,
+      "roles": {
+        "coder": 27,
+        "observer": 8
+      },
+      "report_sha256": "849900b5afc42367fe4d1eb6b4f5d5260f95f1d404cf2b11c6abfef6501d6202"
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 249.606,
+    "finished_at": "2026-11-18T12:53:57.504382+00:00",
+    "redacted_native_files": 0
+  },
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "first_edit": {
+    "call_id": "call_EqIOSa7NMq7CppPallgBgEO1",
+    "tool": "apply_diff",
+    "result_step": 7,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "src/coupled_status.rs"
+  },
+  "edits": [
+    {
+      "call_id": "call_EqIOSa7NMq7CppPallgBgEO1",
+      "tool": "apply_diff",
+      "result_step": 7,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_kgvyGvVFEguEjkKL6npCOgvP",
+      "tool": "apply_diff",
+      "result_step": 14,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_jxxB7n5H6nDwoXIiMdApGMAJ",
+      "tool": "apply_diff",
+      "result_step": 17,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_jAKAoX9uow2GpQAdrlHuIS7K",
+      "tool": "patch_file",
+      "result_step": 19,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_M9NoS2CLVCJQgOTX7rrhw35l",
+      "tool": "patch_file",
+      "result_step": 21,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_9KCHvLokM5M9orDk2izVFzBX",
+      "tool": "patch_file",
+      "result_step": 23,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "before_edit_native_failure": [
+    {
+      "call_id": "call_Jt8MNOuVrsyCQfh8E2ALLq9N",
+      "tool": "exec",
+      "result_step": 1,
+      "succeeded": false,
+      "freshness": "superseded"
+    }
+  ],
+  "native_checks_after_last_mutation": {
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [
+      {
+        "call_id": "call_Ky8EgnEHIpY8aKZ5WhnFyZVS",
+        "tool": "exec",
+        "result_step": 24,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status -q": [
+      {
+        "call_id": "call_z76BQMZWrPC5GrNy4GdB7UVj",
+        "tool": "exec",
+        "result_step": 25,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": []
+  },
+  "remaining_native_checks": [
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "accepted_done_step": null,
+  "accepted_done_report": null,
+  "native_passed": false,
+  "coder_reported_fixture_before_edit": "<reflect>\nlast_outcome: failure\ngoal_delta: same\nwrong_assumption: The pending directory fixture disagrees with the test’s first-iteration mutation.\nstrategy_change: adjust\nnext_minimal_action: Read the required failing test source before editing.\n</reflect>\n<think>\ngoal: Diagnose the exact fixture mutation and assertion\nstep: 2\ntool: read_file\nrisk: The supplied test may expose a fixture-only mismatch\ndoubt: The failure could originate in production directory validation\nnext: Read tests/coupled_status.rs\nverify: Confirm setup, mutation, and expected diagnostic\n</think>\n[Observer response]\ndecision: accept\nreason: The exact test source is required to distinguish fixture setup from product logic before editing.",
+  "retained_observer_advice": [
+    "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(end_line=59, path=tests/coupled_status.rs, start_line=42)\nWhy: Read tests/coupled_status.rs first, bounded to the failing case and its assertion (lines 42-59), to trace the interrupted fixture's inherited directory/count fields through the test-only mutation and identify the concrete pending-count mismatch. This unlocks a precise product-versus-fixture diagnosis before another edit; if the source shows the fixture still records a different iteration identity or expected totals, correct that coherent input, otherwise inspect the implementation only after the test evidence supports it. Keep the remaining exact checks pending until this recovery read and any resulting fix complete.\n</observer_advisory>\n\n[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native read_file with exactly these arguments: {\"end_line\":59,\"path\":\"tests/coupled_status.rs\",\"start_line\":42}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply."
+  ],
+  "unexecuted_evidence_blocks": [
+    {
+      "call_id": "call_mNdmrIbT0b4cjgQRKaZ7OCat",
+      "tool": "apply_diff",
+      "result_step": 11,
+      "succeeded": false,
+      "freshness": "unexecuted"
+    }
+  ],
+  "unexecuted_recovery_blocks": [
+    {
+      "call_id": "call_Pv9SRZvdp6dOFjBq9uNEfahx",
+      "tool": "apply_diff",
+      "result_step": 12,
+      "succeeded": false,
+      "freshness": "unexecuted"
+    }
+  ],
+  "matching_file_entries_after_patch_replay": 1671,
+  "build": {
+    "exit": 0,
+    "log_sha256": "60ed8a006a4801f04bd1f691071dfbc1107b5644d0a36da830d29b3f3a9c19d1"
+  },
+  "binary_sha256": "d12de83fdca78bfd135f9b477bb393640372941b982c1af4ea0e413d0c620718",
+  "writer_state_cases": {
+    "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+    "passed": 18,
+    "total": 27,
+    "failed": [
+      "known_manifest_null_task_requests",
+      "known_manifest_null_wire_requests",
+      "missing_interruption_numeric_wire_requests",
+      "both_manifest_totals_lost",
+      "finalized_over_cap_active_unknown",
+      "pending_round_over_cap_active",
+      "finalized_over_cap_interrupted_unknown",
+      "pending_round_over_cap_interrupted",
+      "unknown_charge_in_pending"
+    ]
+  },
+  "directory_pair": {
+    "binary_sha256": "d12de83fdca78bfd135f9b477bb393640372941b982c1af4ea0e413d0c620718",
+    "valid": {
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-02\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+      "stderr": ""
+    },
+    "skipped_directory": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: invalid pending directory"
+    },
+    "passed": true
+  },
+  "fixture_read_returns": [],
+  "qualifies_as_diagnostic_completion": false,
+  "promotion_authorized": false
+}

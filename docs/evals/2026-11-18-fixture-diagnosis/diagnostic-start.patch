@@ -1,0 +1,44 @@
+--- a/src/coupled_status.rs
++++ b/src/coupled_status.rs
+@@ -289,6 +289,7 @@
+         bail!("completed manifest is inconsistent");
+     }
+     if manifest.iterations.is_empty()
++        && !pending_interrupted
+         && (manifest.task_requests != Some(0) || manifest.wire_requests != Some(0))
+     {
+         bail!("empty manifest must have zero totals");
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -36,6 +36,31 @@
+         );
+         assert!(!output.stdout.is_empty());
+     }
++}
++
++#[test]
++fn first_interruption_with_empty_ledger_preserves_known_totals() {
++    let (_tmp, root) = fixture("interrupted");
++    let manifest_path = root.join("iterations.json");
++    let mut manifest: serde_json::Value =
++        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
++    manifest["iterations"] = serde_json::Value::Array(vec![]);
++    manifest["task_requests"] = serde_json::Value::Number(1.into());
++    manifest["wire_requests"] = serde_json::Value::Number(1.into());
++    manifest["completed"] = serde_json::Value::Bool(false);
++    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
++    let ledger = root.join("iteration-01/state/tui-work.json");
++    fs::write(&ledger, br#"{\"task_id\":\"pending\",\"requests\":[]}"#).unwrap();
++    let output = cli(&root);
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++    assert_eq!(json["iterations"].as_array().unwrap().len(), 0);
++    assert_eq!(json["pending"]["task_requests"], 0);
++    assert_eq!(json["pending"]["wire_requests"], 0);
+ }
+ 
+ #[test]
