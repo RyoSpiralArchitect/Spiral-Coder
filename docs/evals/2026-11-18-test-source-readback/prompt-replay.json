@@ -1,0 +1,51 @@
+{
+  "provider_calls": 0,
+  "sealed_session_sha256": "5a09c57525d5b92fc56e35fe47ddec3b835d50c9a99fef369f5aa71f40d5f7f5",
+  "inclusive_message_index": 230,
+  "snapshot_source_sha256": "e7dd337281261b2d243b81d584fa4aa32f326dd3b41a75ef9ed56fcd789e4d3f",
+  "workspace_unchanged": true,
+  "runtimes": {
+    "main": {
+      "binary_sha256": "b1b8338d3004efee6fa144e6c70524a80218f1b685ef9c48003b2fabb7970d1f",
+      "exit": 0,
+      "pending_checks": [],
+      "roles": {
+        "coder-replay": {
+          "local_requests": 5,
+          "workspace_readback": false,
+          "test_body_visible": true,
+          "first_request_content_bytes": 131885,
+          "exact_review_source_copies": 0
+        },
+        "observer-replay": {
+          "local_requests": 3,
+          "workspace_readback": false,
+          "test_body_visible": false,
+          "first_request_content_bytes": 59394,
+          "exact_review_source_copies": 0
+        }
+      }
+    },
+    "readback": {
+      "binary_sha256": "975b676d197d506c20ea67cd6828e0e1963b9b22422eb185659ec6ea2969d82c",
+      "exit": 0,
+      "pending_checks": [],
+      "roles": {
+        "coder-replay": {
+          "local_requests": 5,
+          "workspace_readback": true,
+          "test_body_visible": true,
+          "first_request_content_bytes": 134780,
+          "exact_review_source_copies": 1
+        },
+        "observer-replay": {
+          "local_requests": 3,
+          "workspace_readback": true,
+          "test_body_visible": true,
+          "first_request_content_bytes": 62340,
+          "exact_review_source_copies": 1
+        }
+      }
+    }
+  }
+}
