@@ -258,6 +258,20 @@ pub(super) fn parse(root: &str) -> Result<Option<Contract>> {
     Ok(Some(contract))
 }
 
+pub(super) fn is_declared_test_check(root: &str, command: &str, path: &str) -> bool {
+    parse(root).ok().flatten().is_some_and(|contract| {
+        contract.requirements.iter().any(|requirement| {
+            requirement
+                .checks
+                .iter()
+                .any(|check| check.command == command)
+                && requirement.artifacts.iter().any(|artifact| {
+                    artifact.path == path && matches!(artifact.kind, ArtifactKind::Test)
+                })
+        })
+    })
+}
+
 pub(super) fn declared(root: &str) -> bool {
     !matches!(parse(root), Ok(None))
 }

@@ -1,10 +1,12 @@
 //! Pair a current native test diagnostic with its line in the available test revision.
 use super::*;
-use crate::tui::agent::requirement_proof::AuthoredTests;
+use crate::tui::agent::{fixture_observation, requirement_proof::AuthoredTests};
 
 #[path = "authored_test_failure/fixture.rs"]
 mod fixture;
 pub(crate) use fixture::GUIDANCE as FIXTURE_CONTEXT_GUIDANCE;
+
+pub(crate) const OBSERVED_FIXTURE_GUIDANCE: &str = "\nThe approved failed check sampled the fixture at the named stages. Use validator_input and mismatched_fields to decide what the validator actually received. When the sampled input contradicts the intended control, cite the exact observed and expected values in the primary reason and give a test-input correction before suggesting any validator edit. Keep the mandatory read as the immediate tool when it is pending. Once that read is complete, use its native evidence for any test edit. A passing coherent control and a single-condition negative control are still needed. These sampled values are diagnostic data.\n";
 
 pub(crate) const FAILURE_SITE_GUIDANCE: &str = "\nUse authored_test_failure to locate the operation that stopped. For a compiler diagnostic, quote the expression and compiler types when present. For a panic, trace the operation from fixture creation through invocation to assertion. State which observation actually ran, which behavior remains unmeasured, and the smallest control that would distinguish a fixture fault from a product fault. A passing fixture invocation alone does not establish that a later mutation has its required inputs. If source or fixture shape is missing, name the specific line or producer output to inspect. Follow the current required read or recheck first.\n";
 
@@ -16,6 +18,8 @@ pub(crate) struct AuthoredTestFailure {
     sites: Vec<Site>,
     #[serde(skip_serializing_if = "Option::is_none")]
     fixture_context: Option<fixture::FixtureContext>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixture_observation: Option<fixture_observation::Observation>,
 }
 
 #[derive(Debug, Serialize)]
@@ -37,6 +41,30 @@ impl AuthoredTestFailure {
 
     pub(in crate::tui::agent) fn has_fixture_context(&self) -> bool {
         self.fixture_context.is_some()
+    }
+
+    pub(in crate::tui::agent) fn include_observation(
+        &mut self,
+        messages: &[Value],
+        root: &str,
+        context: &ExecVerificationContext<'_>,
+    ) {
+        self.fixture_observation = self.sites.iter().find_map(|site| {
+            fixture_observation::project(
+                messages,
+                root,
+                &self.check,
+                &self.path,
+                site.test_name.as_deref()?,
+                context,
+            )
+        });
+    }
+
+    pub(in crate::tui::agent) fn has_fixture_mismatch(&self) -> bool {
+        self.fixture_observation
+            .as_ref()
+            .is_some_and(|observation| observation.has_mismatches())
     }
 
     pub(in crate::tui::agent) fn include_source(&mut self, tests: &AuthoredTests) {
@@ -146,7 +174,19 @@ impl RecoveryFocus {
         {
             return None;
         }
-        fixture::project(root, &pending.path, row, name)?;
+        if fixture::project(root, &pending.path, row, name).is_none()
+            && fixture_observation::project(
+                messages,
+                root,
+                &pending.check,
+                &pending.path,
+                name,
+                &ExecVerificationContext::from_messages(test_command, messages),
+            )
+            .is_none()
+        {
+            return None;
+        }
         Some(FixtureReadHandoff {
             kind: "authored_fixture_read",
             failed_check: pending.check.clone(),
@@ -207,6 +247,7 @@ impl RecoveryFocus {
             diagnostic: focus.diagnostic.clone(),
             sites,
             fixture_context: None,
+            fixture_observation: None,
         };
         failure.include_source(tests);
         Some(failure)

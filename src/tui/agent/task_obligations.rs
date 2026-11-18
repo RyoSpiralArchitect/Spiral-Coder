@@ -4,7 +4,9 @@ use super::{evidence_packet, final_handoff, task_harness};
 use serde::Serialize;
 use serde_json::Value;
 
-pub(crate) use super::recovery_focus::{FAILURE_SITE_GUIDANCE, FIXTURE_CONTEXT_GUIDANCE};
+pub(crate) use super::recovery_focus::{
+    FAILURE_SITE_GUIDANCE, FIXTURE_CONTEXT_GUIDANCE, OBSERVED_FIXTURE_GUIDANCE,
+};
 
 pub(crate) const DIAGNOSTIC_FOLLOWUP_GUIDANCE: &str = "The native diagnostic_followup links the current failed check with a completed read of its failure location. Use the returned observations to state the specific missing fact. Choose one different bounded observation that could distinguish likely causes, such as comparing the actual and expected result for the one failing case. A different file or line range must address an identified gap. If current evidence already supports a repair, make it in the allowed scope. Keep the original check pending for after the repair. The read and this comparison supply no completion proof.";
 const UNITTEST_COMPARISON_GUIDANCE: &str = "When diagnostic_followup.unittest_comparison is present, its arguments are a runnable exec for the single failing method. If the clipped assertion difference is the missing fact, run those arguments once from the specified cwd. Include any checks_to_refresh in the remaining verification work. The minus and plus lines are the first and second operands of the observed assertion. Use the test read to identify actual and expected. A nonzero exit can still reveal the difference. Use the differing fields to locate the source to repair. Keep the original exact check pending.";
@@ -147,6 +149,13 @@ pub(crate) fn project_advisory(
     if let Some(followup) = diagnostic_followup.as_mut() {
         followup.include_comparison_check_cost(&required, &evidence.pending_exact_checks, test_cmd);
     }
+    let mut authored_test_failure = task_requirements
+        .authored_tests
+        .as_ref()
+        .and_then(|tests| focus.authored_test_failure(tests, tool_root));
+    if let (Some(failure), Some(workspace)) = (&mut authored_test_failure, tool_root) {
+        failure.include_observation(messages, workspace, &context);
+    }
     TaskObligations {
         minimum_delivery: task_requirements
             .delivery_floor(&required, &evidence.pending_exact_checks),
@@ -188,7 +197,7 @@ pub(crate) fn project_advisory(
         acceptance_criteria: super::acceptance_report::criteria(plan.as_ref()),
         current_commands: acceptance.commands,
         citable_checks: acceptance.citable_checks,
-        authored_test_failure: task_requirements.authored_tests.as_ref().and_then(|tests| focus.authored_test_failure(tests, tool_root)),
+        authored_test_failure,
         task_requirements,
     }
 }
@@ -237,6 +246,9 @@ pub(crate) fn prompt(
     );
     if let Some(failure) = &obligations.authored_test_failure {
         prompt.push_str(FAILURE_SITE_GUIDANCE);
+        if failure.has_fixture_mismatch() {
+            prompt.push_str(OBSERVED_FIXTURE_GUIDANCE);
+        }
         if failure.has_fixture_context() {
             prompt.push_str(FIXTURE_CONTEXT_GUIDANCE);
         }
