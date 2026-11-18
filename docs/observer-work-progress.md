@@ -100,3 +100,15 @@ the same confidence threshold and no additional scheduled action. The native
 transcript saves the current system hint and retains it through context
 compression. Starting the next continuation refreshes the system context;
 historical Observer replies remain in the run's display record.
+
+When a declared public test covers identifier uniqueness, the native Observer
+can follow a partial source read to the issuer. It considers up to four Rust
+reference paths named in the human task, excludes declared output files and
+requires a correlated native read of the same path. For files up to 64 KiB it
+quotes current assignment lines, the following collection push when present
+and possible initializers of that field. Each quote carries its line number.
+The call ID identifies the earlier read that selected the file. The Observer
+checks ownership and lifetime, then gives the Coder a public control with two
+valid owners and a single invalid duplicate within one owner when the source
+supports local IDs. Shared or unresolved lifetimes call for different evidence.
+This readback is transient advice and carries no completion credit.
