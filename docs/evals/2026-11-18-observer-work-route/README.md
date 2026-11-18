@@ -88,7 +88,7 @@ contains 16 governor rejections across the retained rounds.
 
 ## Ownership and composition follow-up
 
-The next prompt adds an advisory question about the unit that owns and resets
+The prompt at `5b859ea` adds an advisory question about the unit that owns and resets
 an identity or counter, grounded in the declared contract and observed producer
 or schema. It asks for a relevant positive composition control as well as a
 negative rejection case. It changes no acceptance gate and names no benchmark
@@ -101,6 +101,36 @@ seed. This is a saved-point diagnostic continuation, not a fresh qualification
 run. Its [separate plan](boundary-plan.json) pins the request and time caps
 before new provider calls.
 
+The first terminal was `report_incomplete`: 32 task / 36 wire requests in
+337.134 seconds, including eight Observer requests and four transport repairs.
+The Coder chose missing-component and dangling-symlink test expansion before
+the first funded Observer assist; the Observer continued that route. No
+positive multi-owner composition case was added. Only the authored test file
+changed. [Continuation receipt](boundary-results.json) ·
+[Unadopted test delta](boundary-candidate.patch)
+
+The added tests initially failed to compile. After a repair, both new tests
+panicked during setup: they tried to remove a pending ledger that the `unknown`
+fixture had never created. Creating the parent directories did not supply that
+file. The independent rerun passed 5/7 groups and 23/24 behavioral cases; the
+original `test_two_rounds` failure remained. The tests also failed on the valid
+reference (three passed, two failed), so the four mutant test runs were skipped.
+This is an invalid sensitivity result, not four demonstrated missed faults.
+
+No exact final check was current after the last edit. The final blocked report
+cited a guide check without a current success receipt and was rejected. The
+process exited normally, but the task did not complete. Neither candidate is
+adopted, and the fresh result remains 25/26 rather than being replaced by this
+continuation.
+
+This follow-up does **not** establish an improvement from the ownership lens.
+The lens was developed after examining the external failure, and the saved
+point already contained native closeout obligations. There is no matched live
+control that isolates why the continuation took this route. The remaining
+engineering questions are how to separate product uncertainty from broken test
+setup, ground a diagnosis in the actual expression and diagnostic, and choose
+a small informative control before spending the final budget on test expansion.
+
 ## Runtime checks
 
 The full local check script passed: 1,241 Rust unit tests with two ignored,
@@ -108,5 +138,6 @@ six integration tests, all 20 TUI replay cases, 97 Python tests, 80 web tests,
 five npm tests, the repository-map checks and the local server smoke check.
 An initial check caught two tests whose decision-brief parser expects that
 brief first in the prompt; its existing position was restored. The final
-full check passed. A later test/doc correction describes the actual system
+full check passed. The complete local suite also passed for the later ownership
+prompt at `5b859ea`. A test/doc correction describes the actual system
 hint lifecycle and its focused compression/proof test also passed.

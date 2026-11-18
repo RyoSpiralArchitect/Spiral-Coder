@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "evidence_kind": "saved-point diagnostic continuation; not a fresh qualification or causal comparison",
+  "plan_sha256": "67ae0ee5327c9d28b45570581ce5170f37fa83b41e8d4b57a3598a3010a3f359",
+  "run_receipt_sha256": "2d7c4eb8f7fcbf075c6502c1f0f9c944e1cbbf90992ba73baa6e29b93d111151",
+  "native_report_sha256": "d8089ecda1e31161e1a8749f1dc427e044ebd9949a1f7706579bf56629d605ca",
+  "candidate_delta_sha256": "58c521721fcf6e5732dbf7728c54d5a8ba23ad21143849608965ee6f9edafc71",
+  "candidate_inventory_sha256": "943693edd6a58981059fb4522332721a7c6994bf012107d0abc0cd56c9963ed0",
+  "candidate_preserved_after_assessment": true,
+  "operator_changed_candidate_files": [],
+  "changed_from_seed": [
+    "tests/coupled_status.rs"
+  ],
+  "native": {
+    "completed": false,
+    "termination": "report_incomplete",
+    "task_requests": 32,
+    "wire_requests": 36,
+    "transport_repairs": 4,
+    "role_requests": {
+      "coder": 28,
+      "observer": 8
+    },
+    "wall_seconds": 337.134,
+    "process_exit_code": 0,
+    "timed_out": false,
+    "last_mutation_step": 150,
+    "fresh_exact_checks_after_last_mutation": {
+      "cargo fmt --all -- --check": false,
+      "python3 -S -m unittest -v scripts.status_visible": false,
+      "python3 -S -m unittest -v scripts.status_guide": false,
+      "cargo test --locked --bin spiral-coder -q": false,
+      "cargo test --locked --test coupled_status -q": false,
+      "python3 -S -m unittest -v scripts.status_paths": false
+    },
+    "pending_exact_checks": [
+      "cargo fmt --all -- --check",
+      "python3 -S -m unittest -v scripts.status_visible",
+      "python3 -S -m unittest -v scripts.status_guide",
+      "cargo test --locked --bin spiral-coder -q",
+      "cargo test --locked --test coupled_status -q",
+      "python3 -S -m unittest -v scripts.status_paths"
+    ],
+    "final_done_rejection": "GOVERNOR BLOCKED\n[Blocked report] done.acceptance_evidence command must match a known successful verification command. Preserve every remaining criterion; cite native evidence for any claimed completed item.",
+    "assists": [
+      {
+        "assist_id": 1,
+        "decision": "accept",
+        "suggested_tool": "patch_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": false,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 2,
+        "decision": "accept",
+        "suggested_tool": "read_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": true,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 3,
+        "decision": "accept",
+        "suggested_tool": "patch_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": false,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 4,
+        "decision": "accept",
+        "suggested_tool": "patch_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": false,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 5,
+        "decision": "accept",
+        "suggested_tool": "read_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": true,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 6,
+        "decision": "accept",
+        "suggested_tool": "read_file",
+        "suggested_path": "scripts/status_fixture.py",
+        "matching_suggestion_executed": false,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 7,
+        "decision": "accept",
+        "suggested_tool": "read_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": true,
+        "matching_suggestion_succeeded": null
+      },
+      {
+        "assist_id": 8,
+        "decision": "accept",
+        "suggested_tool": "read_file",
+        "suggested_path": "tests/coupled_status.rs",
+        "matching_suggestion_executed": true,
+        "matching_suggestion_succeeded": null
+      }
+    ]
+  },
+  "independent": {
+    "run_receipt_sha256": "2d7c4eb8f7fcbf075c6502c1f0f9c944e1cbbf90992ba73baa6e29b93d111151",
+    "provider_calls": 0,
+    "changed_from_seed": [
+      "tests/coupled_status.rs"
+    ],
+    "independent_groups": [
+      {
+        "id": "candidate-build",
+        "passed": true,
+        "test_summary": null,
+        "log_sha256": "73f17297806bb7c878946ed221e5c2ebf55a9093ddcb362ae109510e9a73a7b0"
+      },
+      {
+        "id": "status-visible",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "3f455cd421288d720a61aa01ce2cd5438811643163c0dcd5bd6cf6f6874b9fa5"
+      },
+      {
+        "id": "status-held-out",
+        "passed": false,
+        "test_summary": {
+          "passed": 23,
+          "failed": 1,
+          "ignored": 0
+        },
+        "log_sha256": "eaf1e6d0e4d485b0a9cc04e241dfbb8e8c96b44498885a4c1d9c5f2b5d704c7a"
+      },
+      {
+        "id": "packaged-status",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "d824da3807d2b84d5bddc6ba98c15822a1a772748c4ab253d4fcce6101a1661b"
+      },
+      {
+        "id": "guide-example",
+        "passed": true,
+        "test_summary": {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "123f59766c7c40e1c9e7458dac88f880e2f0a7a9c86428b56f7b13d264f50b14"
+      },
+      {
+        "id": "status-paths",
+        "passed": true,
+        "test_summary": {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0
+        },
+        "log_sha256": "fbca3aebeada423e61a6d790facfd337f19826ee547b4061b6da3e88f59287c8"
+      },
+      {
+        "id": "stock-regressions",
+        "passed": false,
+        "test_summary": {
+          "passed": 3,
+          "failed": 2,
+          "ignored": 0
+        },
+        "log_sha256": "fd15aae4526f336f15c2209836f3b9e50142882685add3fd5b2958ab4c1dfbf6"
+      }
+    ],
+    "held_out": {
+      "total": 24,
+      "passed": 23,
+      "failed_cases": [
+        "test_two_rounds"
+      ]
+    },
+    "authored_tests_sha256": "5230882fed6a803fec6abc75f578098667e702617a770088a8e63ff5d100f0f7"
+  },
+  "authored_test_sensitivity": {
+    "version": 1,
+    "provider_calls": 0,
+    "audit_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "declaration_sha256": "4beb68a6089650a50815cd79827983193c7fc334ec033fce2b08befd8854f7bb",
+    "tests_sha256": "5230882fed6a803fec6abc75f578098667e702617a770088a8e63ff5d100f0f7",
+    "raw_reference_sha256": "b53b1d4d626020de8a9a9c5b23b62c667f735e47d669687138af7498af528ae7",
+    "wall_limit_seconds": 600,
+    "faults": {
+      "missing_pending": {
+        "control_off": {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "714c25d99cf76c9039904657baa0937e4135a9511f109b976901972e341705ba",
+          "test_summary": null
+        },
+        "control_on": {
+          "exit_code": 1,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "f33da4dd03dae24610317eb7fc3df8744f8a0a19641cb63069bdc47fea33f6b9",
+          "test_summary": null
+        },
+        "control_demonstrated": true,
+        "tests": null,
+        "killed_by_authored_tests": false
+      },
+      "symlink": {
+        "control_off": {
+          "exit_code": 1,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "d5016eebe54e795a3186dce5579d3e97506d60b22c4b848e0c0f83748583899d",
+          "test_summary": null
+        },
+        "control_on": {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+          "test_summary": null
+        },
+        "control_demonstrated": true,
+        "tests": null,
+        "killed_by_authored_tests": false
+      },
+      "duplicate_request": {
+        "control_off": {
+          "exit_code": 1,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "06866436155359e18ab9683f0f5c99d5714785bd1b750a9dc6925f8baf432718",
+          "test_summary": null
+        },
+        "control_on": {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+          "test_summary": null
+        },
+        "control_demonstrated": true,
+        "tests": null,
+        "killed_by_authored_tests": false
+      },
+      "parent_link": {
+        "control_off": {
+          "exit_code": 1,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "5ba50444b5a8fd801fbe0aac811b870760ba6cb54bd80f7abcd851f9de334f77",
+          "test_summary": null
+        },
+        "control_on": {
+          "exit_code": 0,
+          "timed_out": false,
+          "output_limit": false,
+          "log_redactions": 0,
+          "wall_seconds": 0.005,
+          "log_sha256": "871c5ef4b267430aaf648e6d4f13f34886af73296e5419c098c1b7400c789672",
+          "test_summary": null
+        },
+        "control_demonstrated": true,
+        "tests": null,
+        "killed_by_authored_tests": false
+      }
+    },
+    "passed": false,
+    "promotion_authorized": false,
+    "instrumented_sha256": "bbbbc0fe9fa8dceb4143a51c0b5a7951990179857ca2bf59b2b522d7c763c916",
+    "reference_tests": {
+      "exit_code": 101,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 10.809,
+      "log_sha256": "ec410c9131c2e888f5749e9963e110a3bb876b795016e0d5abfbde23e9770422",
+      "test_summary": {
+        "status": "FAILED",
+        "passed": 3,
+        "failed": 2,
+        "ignored": 0
+      }
+    },
+    "reference_tests_passed": false,
+    "binary_sha256": "80a76219aebe72bf1a5b7e8b97306b5bbccd481127dcea14ae994600df72c50a",
+    "tests_unchanged": true,
+    "wall_seconds": 11.529
+  },
+  "observations": [
+    "The restored pre-report point reached the existing authored-test closeout gate. The Coder chose missing pending components and dangling symlinks before the first funded Observer assist.",
+    "The first Observer assist continued that route. Its proposed tests used the unknown fixture and removed a ledger that the fixture did not create. No positive multi-owner composition case was added.",
+    "The first added tests also used Vec<u8>::contains with a string. The Observer described this as component indexing or dispatch and later offered identical search/replace text; those descriptions were model claims, not source facts.",
+    "A later Coder edit decoded stdout correctly and another edit created the missing directories. The ledger file was still absent before remove_file, leaving two setup panics.",
+    "Only authored tests changed. All implementation and documentation bytes match the sealed fresh candidate, including the cross-ledger duplicate-ID rejection defect.",
+    "The final blocked report cited a guide command without a current successful receipt after the new edits; the native gate rejected it. Exit code zero does not indicate task completion.",
+    "The positive-composition prompt was added after the developer observed the fresh external failure. No hidden-case feedback was supplied to the seed, but this is not a blind test of the lens."
+  ],
+  "next_hypotheses_not_implemented": [
+    "Separate uncertain product behavior from an unproven test setup; ground a test mutation in the exact existing source and generated path shape before proposing it.",
+    "Distinguish the compiler observation from a diagnosis: retain the failing expression and expected/found types rather than treating a location or generic error code as proof of a specific cause.",
+    "Make a semantic review decision before a large late test expansion, weighing the unfinished behavior, a minimal valid control, and the full post-edit verification cost."
+  ],
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "external_provider_calls_during_assessment": 0
+}
