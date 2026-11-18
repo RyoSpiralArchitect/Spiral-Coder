@@ -1,0 +1,352 @@
+{
+  "initial": {
+    "plan_sha256": "014ca9ba8a00ef4d555cd0ae6ca79ec45ef531128c27a6586d3dbbd3aaca54a3",
+    "runtime_commit": "35ac6614314fa75b296492b6431b25135edaa4de",
+    "sealed_receipt_sha256": "680c27643449719145b8b241078fbb72b238cf40ab0f9c109da636b8c7d48493",
+    "candidate_patch_sha256": "1b327222f0c0b4a4594bb8d8e03686b4d7243a00fac93d1c677f1a6800b51d40",
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 387.323,
+      "finished_at": "2026-11-18T02:20:50.649532+00:00",
+      "redacted_native_files": 0
+    },
+    "termination": "budget_exhausted",
+    "native_completed": false,
+    "task_requests": 32,
+    "wire_requests": 36,
+    "requests_by_role_and_charge": {
+      "coder": {
+        "task": 24,
+        "transport": 4
+      },
+      "observer": {
+        "task": 8,
+        "transport": 0
+      }
+    },
+    "first_failed_path_check_step": 151,
+    "diagnostic_read_step": 152,
+    "first_comparison_handoff": {
+      "latest_failure_call_id": "call_oqTJR0CX51y269Zd4axzSMjA",
+      "diagnostic_read_call_id": "call_UuC09NFoJlRv2DZISp5qxcBJ",
+      "matching_failures": 1,
+      "failure_path": "scripts/status_paths.py"
+    },
+    "comparison_attempts": [
+      {
+        "step": 153,
+        "id": "call_YIvqR6b2UTPkqoWtyBhfSSEk",
+        "executed": false,
+        "assumption_ledger_rejected": true
+      },
+      {
+        "step": 155,
+        "id": "call_vdvgdI3L0LixuBzorEraW6vE",
+        "executed": false,
+        "assumption_ledger_rejected": true
+      },
+      {
+        "step": 164,
+        "id": "call_KUurEAoXMPMPmDihVg01ZZZq",
+        "executed": false,
+        "assumption_ledger_rejected": true
+      }
+    ],
+    "observed_comparisons": [],
+    "observer_comparison_executed": false,
+    "last_mutation_step": 167,
+    "fresh_exact_checks": {
+      "cargo fmt --all -- --check": [],
+      "python3 -S -m unittest -v scripts.status_visible": [
+        172
+      ],
+      "python3 -S -m unittest -v scripts.status_guide": [
+        173
+      ],
+      "cargo test --locked --bin spiral-coder -q": [],
+      "cargo test --locked --test coupled_status -q": [],
+      "python3 -S -m unittest -v scripts.status_paths": [
+        170
+      ]
+    },
+    "pending_exact_checks": [
+      "cargo fmt --all -- --check",
+      "cargo test --locked --bin spiral-coder -q",
+      "cargo test --locked --test coupled_status -q"
+    ],
+    "accepted_done_step": null,
+    "pycache_tests_failed_in_native_run": [
+      "exact_python_command_keeps_bytecode_outside_the_workspace",
+      "edit_triggered_tests_use_the_run_cache_and_keep_native_status"
+    ],
+    "independent": {
+      "run_receipt_sha256": "680c27643449719145b8b241078fbb72b238cf40ab0f9c109da636b8c7d48493",
+      "provider_calls": 0,
+      "changed_from_seed": [
+        "src/coupled_status.rs"
+      ],
+      "independent_groups": [
+        {
+          "id": "candidate-build",
+          "passed": true,
+          "test_summary": null,
+          "log_sha256": "e712671d6117c188f19ba63e2925da856b9c8419ed8439ad275ea53e948b1df2"
+        },
+        {
+          "id": "status-visible",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "8c5a9f8a7eb9409f4a504051aba32dc10c30af2f8843ac9a7bda8540690d62df"
+        },
+        {
+          "id": "status-held-out",
+          "passed": true,
+          "test_summary": {
+            "passed": 24,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "da4c4bf19a72f915601d92a343052408b3ab5b8eb0efd166b81e2316ac62c527"
+        },
+        {
+          "id": "packaged-status",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "e1a760873ee9b01dcfa88d3d73a39220ad1388dfef6b0a8c2e8a4b195c40a1a7"
+        },
+        {
+          "id": "guide-example",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "abe906fce25b6367d3c18d754c06ac7cef4fd9117d2b6f7092d9ee42d47d3878"
+        },
+        {
+          "id": "status-paths",
+          "passed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "bc994d6c4bcf22189d7dc6e296c8a851504ad094205ff6387f4b7c9fed07a14a"
+        },
+        {
+          "id": "stock-regressions",
+          "passed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "f35ceda7ac2672ff3581d775fbf3b006a364424e0da637d1c86719ea5e94e56f"
+        }
+      ],
+      "held_out": {
+        "total": 24,
+        "passed": 24,
+        "failed_cases": []
+      },
+      "authored_tests_sha256": "8b2978d373434861515b2663035434b5b40fbddd8114fcecf9af8fc2eb6db1a2"
+    },
+    "closeout_attempts": [
+      {
+        "step": 178,
+        "outcome": "GOVERNOR BLOCKED",
+        "feedback": "[Blocked report] Acceptance check reference @required-5 has no current successful receipt at tool_root in this task. Preserve every remaining criterion; cite native evidence for any claimed completed item."
+      }
+    ]
+  },
+  "confirmation": {
+    "plan_sha256": "20770c6b27634a350e46186ca7cab59b8d6d5aa6115eb080cace79beafe74007",
+    "runtime_commit": "0ad480da93e2afec15d11cd7a914f5f9a7a4fb74",
+    "sealed_receipt_sha256": "911b37b709d04d16bb91833ef045eab20768e190b8208206163dc8f655f46530",
+    "candidate_patch_sha256": "a88caa804c3753769c98b92dc1a39ae95f11cd271d8c17dd7035bc8c3f98c8c4",
+    "process": {
+      "exit_code": 0,
+      "timed_out": false,
+      "output_limit": false,
+      "log_redactions": 0,
+      "wall_seconds": 299.572,
+      "finished_at": "2026-11-18T02:29:45.509438+00:00",
+      "redacted_native_files": 0
+    },
+    "termination": "report_incomplete",
+    "native_completed": false,
+    "task_requests": 23,
+    "wire_requests": 26,
+    "requests_by_role_and_charge": {
+      "coder": {
+        "task": 18,
+        "transport": 1
+      },
+      "observer": {
+        "task": 5,
+        "transport": 2
+      }
+    },
+    "first_failed_path_check_step": 151,
+    "diagnostic_read_step": 152,
+    "first_comparison_handoff": {
+      "latest_failure_call_id": "call_YzEASBz4s471nFynDfUNxIl1",
+      "diagnostic_read_call_id": "call_yiklbicjkJZLgvqqk0PCPZjw",
+      "matching_failures": 1,
+      "failure_path": "scripts/status_paths.py"
+    },
+    "comparison_attempts": [
+      {
+        "step": 153,
+        "id": "call_8BzGm9Lf9oEHp5QCx03PaFVB",
+        "executed": true,
+        "assumption_ledger_rejected": false
+      }
+    ],
+    "observed_comparisons": [
+      {
+        "call_id": "call_8BzGm9Lf9oEHp5QCx03PaFVB",
+        "frame": "Focused unittest: scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown tests: 1 subtest failures: 3\nAssertion difference (- first operand, + second operand):\n-  'pending': None,\n+  'pending': {'directory': 'iteration-02',\n+              'in_flight_requests': None,\n+              'task_id': None,\n+              'task_requests': None,\n+              'wire_requests': None},\n[end focused unittest comparison]"
+      }
+    ],
+    "observer_comparison_executed": true,
+    "last_mutation_step": 162,
+    "fresh_exact_checks": {
+      "cargo fmt --all -- --check": [
+        163
+      ],
+      "python3 -S -m unittest -v scripts.status_visible": [
+        164
+      ],
+      "python3 -S -m unittest -v scripts.status_guide": [
+        165
+      ],
+      "cargo test --locked --bin spiral-coder -q": [
+        166
+      ],
+      "cargo test --locked --test coupled_status -q": [
+        167
+      ],
+      "python3 -S -m unittest -v scripts.status_paths": [
+        168
+      ]
+    },
+    "pending_exact_checks": [],
+    "accepted_done_step": null,
+    "pycache_tests_failed_in_native_run": [],
+    "independent": {
+      "run_receipt_sha256": "911b37b709d04d16bb91833ef045eab20768e190b8208206163dc8f655f46530",
+      "provider_calls": 0,
+      "changed_from_seed": [
+        "docs/state-schema.md",
+        "src/coupled_status.rs"
+      ],
+      "independent_groups": [
+        {
+          "id": "candidate-build",
+          "passed": true,
+          "test_summary": null,
+          "log_sha256": "b296ee744694c58619e6caaaceee1d97669ba0b2452324932d925e37b3710d2f"
+        },
+        {
+          "id": "status-visible",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "1db6bfa776dab37c362ea4462c4df9273c06e189f4494ae5927cba3c4e0ad53c"
+        },
+        {
+          "id": "status-held-out",
+          "passed": true,
+          "test_summary": {
+            "passed": 24,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "bdf49317d99aadfd7e3d3fa768742ed10b7b6ef37fd36e23e9cd5ef33ac35038"
+        },
+        {
+          "id": "packaged-status",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "d1ea91b81d227a07a53bddfd72044142229df9a484d20de7e4038de1b08e3ea7"
+        },
+        {
+          "id": "guide-example",
+          "passed": true,
+          "test_summary": {
+            "passed": 1,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "e354e37045890e6fafce910fc81808c62979322062dc25234fdf29918509a604"
+        },
+        {
+          "id": "status-paths",
+          "passed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "12696b10106cdd197fa3a99dd4b10ebdf5b1665dc6491f093291a62cee297527"
+        },
+        {
+          "id": "stock-regressions",
+          "passed": true,
+          "test_summary": {
+            "passed": 3,
+            "failed": 0,
+            "ignored": 0
+          },
+          "log_sha256": "9a7a453607deef91413aaac42b29b05cea091a8e66f9e0f65324c9975e360c24"
+        }
+      ],
+      "held_out": {
+        "total": 24,
+        "passed": 24,
+        "failed_cases": []
+      },
+      "authored_tests_sha256": "8b2978d373434861515b2663035434b5b40fbddd8114fcecf9af8fc2eb6db1a2"
+    },
+    "closeout_attempts": [
+      {
+        "step": 169,
+        "outcome": "GOVERNOR BLOCKED",
+        "feedback": "The requested outcome must occupy its own line in done.summary: Before: FAILED. Keep the measured explanation on another line. The check receipts are current."
+      }
+    ]
+  },
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "independent_baseline_test_identities_sha256": "d38da826fbaed71abb0d11222b389cd00b27d9b34cacfbb30942e051803cb880",
+  "retained_authored_test_sensitivity": {
+    "source_run_receipt_sha256": "ac49626759eefa36baa984b8009191fb14b3676358f5df13fbfd68c2e496a402",
+    "tests_sha256": "8b2978d373434861515b2663035434b5b40fbddd8114fcecf9af8fc2eb6db1a2",
+    "faults": {
+      "missing_pending": true,
+      "symlink": false,
+      "duplicate_request": false,
+      "parent_link": false
+    }
+  }
+}

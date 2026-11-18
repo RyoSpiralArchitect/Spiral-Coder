@@ -33,3 +33,39 @@ remained due. [Replay receipt](prompt-replay.json)
 
 The [live plan](plan.json) pins one Luna/Luna continuation from the
 reconstructed checkpoint with the original per-iteration request limits.
+
+## Live continuations
+
+In the first continuation, the Observer offered the comparison after the
+first diagnostic read. The Coder's three attempts hit the assumption ledger
+because their wording overlapped refuted premises. It later repaired the
+source and passed the path check. The launcher's temporary bytecode setting
+also caused two Rust tests that inspect the external Python cache to fail.
+The independent evaluator used the original environment, and both tests
+passed there.
+
+The next runtime treats the exact comparison derived from the current
+failure and read as evidence gathering for the assumption ledger. The
+[matched replay](assumption-replay.json) reuses the rejected live response.
+The updated runtime executes the comparison and records the difference. The
+[confirmation plan](confirmation-plan.json) uses the original execution
+environment with the dedicated external Python cache.
+
+| Result | First continuation | Confirmation |
+| --- | ---: | ---: |
+| Task / wire requests | 32 / 36 | 23 / 26 |
+| Observer comparison executed | 0 | 1 |
+| Exact native checks current after the last edit | 3 / 6 | 6 / 6 |
+| Independent groups | 7 / 7 | 7 / 7 |
+| Held-out behavior | 24 / 24 | 24 / 24 |
+
+In the confirmation the Coder reproduced the failing check, read the
+assertion, ran the Observer's comparison at step 153, and repaired the
+reader. The path check passed at step 156. After the state-schema edit at
+step 162, the six exact checks passed at steps 163–168. The rejected report
+at step 169 put extra text on the required `Before: FAILED` line.
+
+Both continuations start from the saved task and candidate. The authored
+test file has the same hash as the previous measured 1/4 fault audit.
+The remaining audit cases include symlinks, duplicate request IDs and
+parent linkage. [Sealed run and check summaries](continuation-results.json)
