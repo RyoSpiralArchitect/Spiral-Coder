@@ -217,7 +217,7 @@ fn optional_route_reaches_coder_only_with_the_validated_confident_advice() {
     let invalid = super::super::evaluate(request(invalid.to_string()));
     assert!(invalid.issue.is_some() && invalid.hint.is_none());
 
-    // The existing runtime hint is saved verbatim and survives wire compaction;
+    // The current system hint is saved verbatim and survives wire compaction;
     // it still has no effect on native requirement or exact-check proof.
     let mut messages = task();
     for i in 0..20 {
@@ -233,10 +233,7 @@ fn optional_route_reaches_coder_only_with_the_validated_confident_advice() {
         );
     }
     let before = serde_json::to_value(task_obligations::project(&messages, None)).unwrap();
-    messages.push(crate::task_origin::user_message(
-        &hint,
-        crate::task_origin::MessageOrigin::Runtime,
-    ));
+    messages.push(json!({"role":"system","content":hint}));
     let restored: Vec<Value> =
         serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
     assert_eq!(

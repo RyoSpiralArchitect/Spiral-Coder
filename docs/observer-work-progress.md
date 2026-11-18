@@ -85,9 +85,18 @@ milestone, compare a feasible alternative and explain what must continue in a
 later iteration. Mandatory diagnosis, rechecks and report-only turns keep their
 existing precedence.
 
+The review also asks where each identity or counter is owned and reset, using
+the declared contract and observed producer or schema. Negative rejection
+tests are paired with a question about valid composition across those
+boundaries. This can expose an overbroad validator that rejects normal combined
+inputs. It remains source-grounded advisory reasoning, not an inferred defect,
+an additional mandatory test or a new acceptance criterion.
+
 The existing `why_this_first` and `fallback` fields now reach the Coder with the
 validated primary suggestion. Each is bounded to 700 Unicode characters and
 marked when truncated. They describe the route and an observation that would
 justify changing it. They remain quoted advice in the existing soft hint, with
 the same confidence threshold and no additional scheduled action. The native
-transcript saves that hint and retains it through context compression.
+transcript saves the current system hint and retains it through context
+compression. Starting the next continuation refreshes the system context;
+historical Observer replies remain in the run's display record.

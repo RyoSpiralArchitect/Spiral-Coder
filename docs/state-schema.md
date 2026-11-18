@@ -1862,8 +1862,9 @@ The Observer's existing `why_this_first` and `fallback` strings are forwarded
 in the validated soft hint as quoted advisory data, capped at 700 characters
 each with explicit truncation. They share the primary suggestion's confidence,
 validation and stale-context checks. No new envelope field or persistence
-owner is introduced: the existing runtime message carries the advice through
-session saves and context compression. Native evidence, approval and
+owner is introduced: the current system message carries the advice through
+session saves and context compression, and the next continuation refreshes it.
+Native evidence, approval and
 completion gates never consume these strings as proof.
 
 The Observer prompt derives a bounded brief from native execution receipts before
