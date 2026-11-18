@@ -12,7 +12,6 @@ fn exec_accepts_a_declared_check_selection_without_retyping_the_command() {
         .is_some_and(|items| items.iter().any(|v| v == "command")));
 }
 
-#[cfg(not(target_os = "windows"))]
 pub(super) fn mock_config(server: &httpmock::MockServer) -> RunConfig {
     RunConfig {
         provider: ProviderKind::OpenAiCompatible,
