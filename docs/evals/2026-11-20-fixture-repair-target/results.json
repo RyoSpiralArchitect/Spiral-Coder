@@ -1,0 +1,410 @@
+{
+  "plan_sha256": "36395a68f94b8c7dd0087ec476c8e29f1095067f307628ae08c80af79237f396",
+  "run_receipt_sha256": "30d4ca6d5dc163c8c5f42de341f560a0a9bdac845c6c4a9de4cf1575d5e893cc",
+  "report_sha256": "14b50363279c0e094d6afa9bc4cffc6b8e16219be65ce4d22681af8eec793eb6",
+  "ledger_sha256": "89456bf7b59eee5defd6de50e4ffd6dccde489b1f763ba2927a4717eb0aac232",
+  "advice_snapshot_sha256": "5fc0a73b0147e2797f579a663f2cd7e2dd17341186aa95c757622c757fa810fe",
+  "patch_sha256": "3b38409d3774884f6cfb5df53f829026bddcca5c82519109b4ae757e43f91176",
+  "terminal_inventory_sha256": "3004fec122414c5fafc327c98687a5a8030529f6ba69de78d277079c947436b9",
+  "native_availability": {
+    "source": "report",
+    "errors": []
+  },
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 179.397,
+    "finished_at": "2026-11-19T19:46:24.849211+00:00",
+    "redacted_native_files": 0
+  },
+  "roles": {
+    "coder": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 32768,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.0,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    },
+    "observer": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 8192,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.2,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    }
+  },
+  "termination": "completed",
+  "error": null,
+  "task_requests": 17,
+  "wire_requests": 17,
+  "role_requests": {
+    "coder": 13,
+    "observer": 4
+  },
+  "budget_valid": true,
+  "original_check_failures_before_edit": [
+    {
+      "call_id": "call_SRsuTdpWMW8bxALqmYXPv1YJ",
+      "tool": "exec",
+      "result_step": 1,
+      "succeeded": false,
+      "freshness": "superseded"
+    }
+  ],
+  "first_failure_frame": {
+    "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+    "comparisons": [
+      {
+        "expected": 0,
+        "field": "manifest.finalized_rows",
+        "observed": 0
+      },
+      {
+        "expected": "iteration-01",
+        "field": "manifest.interrupted_directory",
+        "observed": "iteration-02"
+      },
+      {
+        "expected": "valid",
+        "field": "iteration-01/state/tui-work.json JSON",
+        "observed": "invalid"
+      },
+      {
+        "expected": 0,
+        "field": "iteration-01/state/tui-work.json.wire_requests",
+        "observed": null
+      },
+      {
+        "expected": 0,
+        "field": "manifest.interrupted_iteration.task_requests",
+        "observed": 1
+      },
+      {
+        "expected": 0,
+        "field": "manifest.interrupted_iteration.wire_requests",
+        "observed": 2
+      },
+      {
+        "expected": 0,
+        "field": "manifest.task_requests",
+        "observed": 1
+      },
+      {
+        "expected": 0,
+        "field": "manifest.wire_requests",
+        "observed": 1
+      }
+    ],
+    "snapshots": [
+      {
+        "fields": {
+          "finalized_rows": 1,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "json": "valid",
+          "task_requests": 3,
+          "wire_requests": 5
+        },
+        "file": "iterations.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 2,
+          "wire_requests": 3
+        },
+        "file": "iteration-01/state/tui-work.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 2
+        },
+        "file": "iteration-02/state/tui-work.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "finalized_rows": 0,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 1
+        },
+        "file": "iterations.json",
+        "stage": "validator_input"
+      },
+      {
+        "fields": {
+          "column": 2,
+          "json": "invalid",
+          "line": 1
+        },
+        "file": "iteration-01/state/tui-work.json",
+        "stage": "validator_input"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 2
+        },
+        "file": "iteration-02/state/tui-work.json",
+        "stage": "validator_input"
+      }
+    ],
+    "version": 1
+  },
+  "after_read_handoffs": [
+    {
+      "diagnostic_read_call_id": "call_zS4PKOIhW86vtyLg54I1pUMU",
+      "failed_check": "python3 -S scripts/status_fixture_observe.py",
+      "failure_path": "tests/coupled_status.rs",
+      "kind": "authored_fixture_read",
+      "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+    }
+  ],
+  "advice_after_read_before_first_edit": [
+    {
+      "captured_at": "2026-11-19T19:44:39.681962+00:00",
+      "previous_tool_call_id": "call_zS4PKOIhW86vtyLg54I1pUMU",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\npatch_file(path=tests/coupled_status.rs, replace=    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"active_iteration\"] = serde_json::Value::Null;\n    manifest[\"stop_reason\"] = serde_json::Value::String(\"interrupted\".into());\n    manifest[\"interrupted_iteration\"] = serde_json::json!({\n        \"directory\": \"iteration-01\",\n        \"task_requests\": 0,\n        \"wire_requests\": 0\n    });\n    manifest[\"task_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::create_dir_all(ledger.parent().unwrap()).unwrap();\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();, search=    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();)\nWhy: Repair the failing test setup in tests/coupled_status.rs using the observed validator_input and expected_inputs: establish iteration-01 as the interrupted directory, write syntactically valid empty-ledger JSON, and set the linked manifest interrupted record and aggregate totals to zero together. Preserve the later skipped-directory negative test. This is the smallest action that converts the current fixture fault into the intended positive case; then rerun the exact failed observation. Do not edit src/coupled_status.rs unless this coherent input still fails.\nObserver route (quoted advice, not native evidence or a queued action): {\"fallback\":{\"text\":\"If the scoped test correction cannot establish the expected iteration-01 producer shape without changing protected fixture behavior, do not alter the validator. Report the exact unsupported setup dependency and obtain the minimal producer/schema region needed to construct a valid durable ledger; after any mutation, rerun the failed observation first.\",\"truncated\":false},\"why_this_first\":{\"text\":\"Use the recorded validator_input as the correction source: change the setup expression `let (_tmp, root) = fixture(\\\"interrupted\\\");` to `let (_tmp, root) = fixture(\\\"interrupted\\\");` only if the setup also explicitly creates the coherent iteration-01 state required by expected_inputs, because the current generator produces iteration-02. The concrete required setup values are interrupted_directory=`iteration-01`, valid JSON for `iteration-01/state/tui-work.json`, wire_requests=0, interrupted task_requests=0, interrupted wire_requests=0, and manifest totals task_requests=0 and wire_requests=0. The existing ledger write must be corrected from escaped bytes to valid JSON bytes. Reconcile the direct\",\"truncated\":true}}\nCheck its conditions against the current results before choosing a new action; current scope, diagnosis, approvals and completion check"
+    }
+  ],
+  "all_retained_advice_before_first_edit": [
+    {
+      "captured_at": "2026-11-19T19:44:23.581953+00:00",
+      "previous_tool_call_id": "call_SRsuTdpWMW8bxALqmYXPv1YJ",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(path=tests/coupled_status.rs)\nWhy: Read the exact failure path first, as required by pending recovery, to trace the operation from the `fixture(\"interrupted\")` setup through the manifest and ledger mutations, `cli(&root)`, and the assertion at line 55. This distinguishes the fixture fault from a product fault and supplies the native read evidence needed before editing. The current observation only ran `python3 -S scripts/status_fixture_observe.py`; it did not measure behavior with coherent inputs. After the read, correct the named setup expressions so the expected positive case is coherent—especially the pending directory and valid empty ledger JSON—then apply only the intended negative condition and rerun every pending exact check. If the source shows a different producer or assertion dependency, use that concrete fact to choose the smallest supported edit instead.\n</observer_advisory>\n\n[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native read_file with exactly these arguments: {\"path\":\"tests/coupled_status.rs\"}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply."
+    },
+    {
+      "captured_at": "2026-11-19T19:44:39.681962+00:00",
+      "previous_tool_call_id": "call_zS4PKOIhW86vtyLg54I1pUMU",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\npatch_file(path=tests/coupled_status.rs, replace=    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"active_iteration\"] = serde_json::Value::Null;\n    manifest[\"stop_reason\"] = serde_json::Value::String(\"interrupted\".into());\n    manifest[\"interrupted_iteration\"] = serde_json::json!({\n        \"directory\": \"iteration-01\",\n        \"task_requests\": 0,\n        \"wire_requests\": 0\n    });\n    manifest[\"task_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::create_dir_all(ledger.parent().unwrap()).unwrap();\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();, search=    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();)\nWhy: Repair the failing test setup in tests/coupled_status.rs using the observed validator_input and expected_inputs: establish iteration-01 as the interrupted directory, write syntactically valid empty-ledger JSON, and set the linked manifest interrupted record and aggregate totals to zero together. Preserve the later skipped-directory negative test. This is the smallest action that converts the current fixture fault into the intended positive case; then rerun the exact failed observation. Do not edit src/coupled_status.rs unless this coherent input still fails.\nObserver route (quoted advice, not native evidence or a queued action): {\"fallback\":{\"text\":\"If the scoped test correction cannot establish the expected iteration-01 producer shape without changing protected fixture behavior, do not alter the validator. Report the exact unsupported setup dependency and obtain the minimal producer/schema region needed to construct a valid durable ledger; after any mutation, rerun the failed observation first.\",\"truncated\":false},\"why_this_first\":{\"text\":\"Use the recorded validator_input as the correction source: change the setup expression `let (_tmp, root) = fixture(\\\"interrupted\\\");` to `let (_tmp, root) = fixture(\\\"interrupted\\\");` only if the setup also explicitly creates the coherent iteration-01 state required by expected_inputs, because the current generator produces iteration-02. The concrete required setup values are interrupted_directory=`iteration-01`, valid JSON for `iteration-01/state/tui-work.json`, wire_requests=0, interrupted task_requests=0, interrupted wire_requests=0, and manifest totals task_requests=0 and wire_requests=0. The existing ledger write must be corrected from escaped bytes to valid JSON bytes. Reconcile the direct\",\"truncated\":true}}\nCheck its conditions against the current results before choosing a new action; current scope, diagnosis, approvals and completion check"
+    }
+  ],
+  "assist_records": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_zS4PKOIhW86vtyLg54I1pUMU"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "tool": "patch_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs",
+        "replace": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"active_iteration\"] = serde_json::Value::Null;\n    manifest[\"stop_reason\"] = serde_json::Value::String(\"interrupted\".into());\n    manifest[\"interrupted_iteration\"] = serde_json::json!({\n        \"directory\": \"iteration-01\",\n        \"task_requests\": 0,\n        \"wire_requests\": 0\n    });\n    manifest[\"task_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::create_dir_all(ledger.parent().unwrap()).unwrap();\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+        "search": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+      },
+      "matching_call_ids": [
+        "call_gCpFv9cEDyrg44JtTV5koU1T"
+      ],
+      "executed": true,
+      "succeeded": true
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_94kM6kkJsGujMFp66ixU5OIY"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "tool": "exec",
+      "arguments": {
+        "check_id": "required-2"
+      },
+      "matching_call_ids": [
+        "call_HoEVEFoq7PL8S06MVbJHqz2j"
+      ],
+      "executed": true,
+      "succeeded": true
+    }
+  ],
+  "first_edit_matched_suggestions": [
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "tool": "patch_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs",
+        "replace": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"active_iteration\"] = serde_json::Value::Null;\n    manifest[\"stop_reason\"] = serde_json::Value::String(\"interrupted\".into());\n    manifest[\"interrupted_iteration\"] = serde_json::json!({\n        \"directory\": \"iteration-01\",\n        \"task_requests\": 0,\n        \"wire_requests\": 0\n    });\n    manifest[\"task_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::create_dir_all(ledger.parent().unwrap()).unwrap();\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+        "search": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+      },
+      "matching_call_ids": [
+        "call_gCpFv9cEDyrg44JtTV5koU1T"
+      ],
+      "executed": true,
+      "succeeded": true
+    }
+  ],
+  "first_native_edit": {
+    "call_id": "call_gCpFv9cEDyrg44JtTV5koU1T",
+    "tool": "patch_file",
+    "result_step": 3,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "tests/coupled_status.rs"
+  },
+  "first_native_edit_arguments": {
+    "path": "tests/coupled_status.rs",
+    "replace": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"active_iteration\"] = serde_json::Value::Null;\n    manifest[\"stop_reason\"] = serde_json::Value::String(\"interrupted\".into());\n    manifest[\"interrupted_iteration\"] = serde_json::json!({\n        \"directory\": \"iteration-01\",\n        \"task_requests\": 0,\n        \"wire_requests\": 0\n    });\n    manifest[\"task_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(0.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::create_dir_all(ledger.parent().unwrap()).unwrap();\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+    "search": "    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+  },
+  "native_edits": [
+    {
+      "call_id": "call_gCpFv9cEDyrg44JtTV5koU1T",
+      "tool": "patch_file",
+      "result_step": 3,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_BnNcjPaXpuWGPXo8QoCBFqne",
+      "tool": "patch_file",
+      "result_step": 7,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "protected_files_preserved": {
+    "src/coupled_status.rs": true,
+    "scripts/status_interruption_directory.py": true,
+    "scripts/status_fixture_observe.py": true,
+    "scripts/status_fixture_forwarder.rs": true
+  },
+  "post_mutation_passes": {
+    "python3 -S scripts/status_fixture_observe.py": [
+      {
+        "call_id": "call_27vb3evjv8llQX10V9eThDVR",
+        "tool": "exec",
+        "result_step": 9,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [
+      {
+        "call_id": "call_HoEVEFoq7PL8S06MVbJHqz2j",
+        "tool": "exec",
+        "result_step": 10,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status -q": [
+      {
+        "call_id": "call_PDf2sSYcdr7F401t8PyrUFQ8",
+        "tool": "exec",
+        "result_step": 11,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [
+      {
+        "call_id": "call_WH45C7QJJ2MchC1Nik7nj2wK",
+        "tool": "exec",
+        "result_step": 12,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo fmt --all -- --check": [
+      {
+        "call_id": "call_WjqMvGH8KVclZawYquDUcS6I",
+        "tool": "exec",
+        "result_step": 8,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ]
+  },
+  "last_mutation_step": 7,
+  "accepted_done_step": 13,
+  "pending_exact_checks": [],
+  "native_completed": true,
+  "native_gate": true,
+  "matched_terminal_entries": 1673,
+  "independent_exact_checks": {
+    "python3 -S scripts/status_fixture_observe.py": {
+      "exit": 0,
+      "log_sha256": "e665f3b64f07b7138b70733bebc999912236fac95e73bcbdf8688ddd723a6ef6"
+    },
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": {
+      "exit": 0,
+      "log_sha256": "9a8d44e88e1e1a20b7b2468d59005f31132eb3a66ea552a5a33f9d909d0f3b6e"
+    },
+    "cargo test --locked --test coupled_status -q": {
+      "exit": 0,
+      "log_sha256": "07289586684509b3c6cc3e28aee35dd32356e32aee9b37958bfbdb4727310084"
+    },
+    "python3 -S -m unittest -v scripts.status_interruption_directory": {
+      "exit": 0,
+      "log_sha256": "cec16bc18b308cecd9edeaf6dd8297b3563c65a45b657aa38761e0cb39dddeab"
+    },
+    "cargo fmt --all -- --check": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "accepted_done_payload": {
+    "acceptance_evidence": [
+      {
+        "command": "@required-2",
+        "criterion": "acceptance 1"
+      },
+      {
+        "command": "@required-4",
+        "criterion": "acceptance 2"
+      },
+      {
+        "command": "@required-5",
+        "criterion": "acceptance 3"
+      }
+    ],
+    "completed_acceptance": [
+      "acceptance 1",
+      "acceptance 2",
+      "acceptance 3"
+    ],
+    "next_steps": "None; all requested edits and exact checks are complete.",
+    "remaining_acceptance": [],
+    "summary": "[DONE] Repaired tests/coupled_status.rs only. The first-interruption fixture now explicitly represents an interrupted first iteration with zero task/wire requests, creates the durable iteration-01 state directory, and writes a valid empty work ledger. The measured change was tests/coupled_status.rs: 8 semantic setup lines added, plus rustfmt wrapping. Required outcomes: empty first interrupted ledger reports zero used requests; skipped-directory rejection remains covered by the passing directory unittest with empty stdout and a diagnostic; all five exact checks passed. Checks: python3 -S scripts/status_fixture_observe.py (1 passed, 0 failed); cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact (1 passed, 0 failed); cargo test --locked --test coupled_status -q (7 passed, 0 failed); python3 -S -m unittest -v scripts.status_interruption_directory (1 test, 0 failures/errors); cargo fmt --all -- --check (passed)."
+  }
+}
