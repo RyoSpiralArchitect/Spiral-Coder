@@ -332,17 +332,24 @@ mod tests {
             arguments: json!({"command":CHECK,"cwd":root}).to_string(),
             thought_signature: None,
         };
-        for (declared, accepted) in [
-            (CASE.to_owned(), false),
-            (format!("a::{CASE}"), false),
-            (format!("b::{CASE}"), true),
+        for (declared, both_fail, accepted) in [
+            (CASE.to_owned(), false, false),
+            (format!("a::{CASE}"), false, false),
+            (format!("b::{CASE}"), false, true),
+            (format!("a::{CASE}"), true, true),
         ] {
             let mut messages =
                 vec![json!({"role":"user","content":task().replace(CASE,&declared)})];
             let mut focus = RecoveryFocus::default();
-            let failure = format!(
-                "FAILED (exit_code: 101)\ncwd: {root}\nthread 'b::{CASE}' panicked at {TEST_PATH}:2:3:\nwrong input"
-            );
+            let mut failure = format!("FAILED (exit_code: 101)\ncwd: {root}\n");
+            if both_fail {
+                failure.push_str(&format!(
+                    "thread 'a::{CASE}' panicked at {TEST_PATH}:2:3:\nwrong input\n"
+                ));
+            }
+            failure.push_str(&format!(
+                "thread 'b::{CASE}' panicked at {TEST_PATH}:2:3:\nwrong input"
+            ));
             let context = ExecVerificationContext::from_messages(None, &messages);
             focus.record_result(&call, &failure, Some(root), None, &context);
             let frame = capture(&messages, CHECK, &frame().replace(CASE, &declared)).unwrap();
@@ -363,6 +370,15 @@ mod tests {
                 accepted,
                 "{declared}"
             );
+            if both_fail {
+                assert_eq!(
+                    packet["authored_test_failure"]["sites"]
+                        .as_array()
+                        .unwrap()
+                        .len(),
+                    2
+                );
+            }
         }
     }
 
@@ -467,6 +483,25 @@ mod tests {
         assert_eq!(
             view(&after_action)["required_diagnostic_read"]["path"],
             TEST_PATH
+        );
+        let reused = ToolCallData {
+            id: call.id.clone(),
+            name: "read_file".into(),
+            arguments: json!({"path":TEST_PATH}).to_string(),
+            thought_signature: None,
+        };
+        let (read, failed) = crate::file_tools::tool_read_file(TEST_PATH, Some(root));
+        assert!(!failed);
+        let context = ExecVerificationContext::from_messages(None, &after_action);
+        focus.record_result(&reused, &read, Some(root), None, &context);
+        append(
+            &mut after_action,
+            &reused,
+            focus.tool_message(&reused, read),
+        );
+        assert!(
+            view(&after_action)["authored_test_failure"].is_null(),
+            "a reused ID cannot refresh a failure"
         );
 
         let refreshed = ToolCallData {

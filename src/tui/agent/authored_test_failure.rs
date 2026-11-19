@@ -133,7 +133,7 @@ fn panic_name(diagnostic_line: &str) -> Option<&str> {
 }
 
 impl FailureFocus {
-    fn rust_panic_site(&self, root: &str) -> Option<(&str, usize)> {
+    pub(super) fn rust_panic_site(&self, root: &str) -> Option<(&str, usize)> {
         self.diagnostic.split(" | ").find_map(|line| {
             let name = panic_name(line)?;
             let (path, row) = baseline_failure::rust_location(line)?;
@@ -155,14 +155,8 @@ impl RecoveryFocus {
         let Some(mutation) = evidence.mutation_step else {
             return true;
         };
-        let current_calls: std::collections::BTreeSet<_> = evidence
-            .actions
-            .iter()
-            .filter(|action| action.result_step.is_some_and(|step| step >= mutation))
-            .map(|action| action.call_id.as_str())
-            .collect();
-        correlated_results(messages).any(|(call, message)| {
-            current_calls.contains(call.id.as_str())
+        recovery_snapshot::numbered_correlated_results(messages).any(|(step, call, message)| {
+            step >= mutation
                 && recovery_progress::owned_failure(&call, message, root).is_some_and(|failure| {
                     failure.check == pending.check
                         && failure.path == pending.path
@@ -298,15 +292,15 @@ impl RecoveryFocus {
             } else {
                 "test_panic"
             };
-            if !sites
-                .iter()
-                .any(|site: &Site| site.line == line && site.kind == kind)
-            {
+            let test_name = panic_name(part);
+            if !sites.iter().any(|site: &Site| {
+                site.line == line && site.kind == kind && site.test_name.as_deref() == test_name
+            }) {
                 sites.push(Site {
                     line,
                     kind,
                     current_source_line: None,
-                    test_name: panic_name(part).map(str::to_owned),
+                    test_name: test_name.map(str::to_owned),
                 });
             }
         }
