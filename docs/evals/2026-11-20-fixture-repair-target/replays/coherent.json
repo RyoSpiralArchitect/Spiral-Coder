@@ -1,0 +1,10 @@
+{
+  "case": "coherent",
+  "exit": 0,
+  "first_error": null,
+  "tests_executed": 1,
+  "mismatches": [],
+  "frame": null,
+  "stdout_sha256": "983ff77e8fc1a1587e9ea1fb05846bb2b8e973e6b0737bf71f66a9212b596985",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

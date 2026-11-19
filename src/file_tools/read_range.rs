@@ -200,6 +200,44 @@ pub(crate) fn fresh_full_body<'a>(path: &str, output: &'a str) -> Option<&'a str
     .then_some(source)
 }
 
+/// A header identifies the requested window. Only its retained complete lines
+/// can supply a diagnostic read of a specific source location.
+pub(crate) fn covers_line(arguments: &str, output: &str, line: usize) -> bool {
+    let Ok(request) = serde_json::from_str::<ReadRequest>(arguments) else {
+        return false;
+    };
+    let Some((header, body)) = output.split_once('\n') else {
+        return false;
+    };
+    let Some((total, _, suffix)) = header_counts(&request.path, header) else {
+        return false;
+    };
+    let (start, end) = if suffix.is_empty() {
+        (1, total)
+    } else if suffix.ends_with("; partial file]") && matches_range_header(arguments, header) {
+        let Ok((start, end)) = request.bounds() else {
+            return false;
+        };
+        (start, end.min(total))
+    } else {
+        return false;
+    };
+    if !(start..=end).contains(&line) {
+        return false;
+    }
+    if suffix.is_empty() && fresh_full_body(&request.path, output).is_some() {
+        return true;
+    }
+    if let Some((shown, _)) = body.rsplit_once("\n[…truncated — ") {
+        if shown.chars().count() == super::MAX_READ_CHARS {
+            return line - start < shown.bytes().filter(|&byte| byte == b'\n').count();
+        }
+    }
+    !suffix.is_empty()
+        && body.lines().count() == end - start + 1
+        && body.chars().count() <= super::MAX_READ_CHARS
+}
+
 /// Both successful partial reads and truncated prefixes are useful observations,
 /// but neither permits replacement of the whole existing file.
 pub(crate) fn full_snapshot(text: &str) -> bool {
@@ -237,6 +275,31 @@ mod tests {
             std::fs::read_to_string(dir.path().join("large.txt")).unwrap(),
             text
         );
+    }
+
+    #[test]
+    fn coverage_requires_the_complete_line_in_the_correlated_output() {
+        let dir = tempfile::tempdir().unwrap();
+        let source = format!("before\n{}\nafter", "字".repeat(8001));
+        std::fs::write(dir.path().join("a.rs"), source).unwrap();
+        let base = dir.path().to_str();
+        let full = json!({"path":"a.rs"});
+        let (prefix, false) = execute_args(&full, base) else {
+            panic!("read failed")
+        };
+        assert!(covers_line(&full.to_string(), &prefix, 1));
+        assert!(!covers_line(&full.to_string(), &prefix, 2));
+        let range = json!({"path":"a.rs","start_line":2,"end_line":3});
+        let (clipped, false) = execute_args(&range, base) else {
+            panic!("range failed")
+        };
+        assert!(!covers_line(&range.to_string(), &clipped, 2));
+        let exact = json!({"path":"a.rs","start_line":3,"end_line":3});
+        let (line, false) = execute_args(&exact, base) else {
+            panic!("line failed")
+        };
+        assert!(covers_line(&exact.to_string(), &line, 3));
+        assert!(!covers_line(&range.to_string(), &line, 3));
     }
 
     #[test]

@@ -298,6 +298,7 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
         {
             // The decision brief carries the full fixture excerpts.
             failure.remove("fixture_context");
+            failure.remove("fixture_observation");
         }
         if let Some(source) = obligations
             .get_mut("task_requirements")

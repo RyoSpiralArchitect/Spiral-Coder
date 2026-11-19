@@ -1,0 +1,188 @@
+{
+  "condition": "observed",
+  "provider_roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "plan_sha256": "fac05c920e9e678142128b87935a483bc57324e31278977cb696fbec90ad097e",
+  "run_receipt_sha256": "89ba0188b95715759cff770d1c2ce86a9972ce9bc4fd252d978349472412bc23",
+  "terminal_report_sha256": "598de0f38c2f22524cd42dd9319a28660e9588ce9b237ea1a8ebcef6eedf93b6",
+  "terminal_ledger_sha256": "f8840c9d4a6bda256e76ab482da87e33cbe48547ee026648097ad6f9acb20bf0",
+  "resolved_profile_binary_sha256": "ebc494dfc46aa7f7bbba133eeee7b244f5907744012b0316050caf5e8a972a91",
+  "terminal_inventory_sha256": "3fb898db082b54a9b95209d95c133bc5c3849a96487d6ed9ceb7cbc131b380a1",
+  "patch_sha256": "bd1ea01b92c681cfb87fb38a563c10a5a6615820bcec7f213c9825d2b4805468",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 378.678,
+    "finished_at": "2026-11-18T13:51:24.318367+00:00",
+    "redacted_native_files": 0
+  },
+  "termination": "blocked",
+  "budget": {
+    "task_requests": 32,
+    "wire_requests": 34,
+    "roles": {
+      "coder": 24,
+      "observer": 10
+    }
+  },
+  "first_valid_failed_check": {
+    "call_id": "call_kNiUGrfOxBcKpBCpx8E78w6X",
+    "tool": "exec",
+    "result_step": 1,
+    "succeeded": false,
+    "freshness": "before_mutation"
+  },
+  "first_capture_before_edits": true,
+  "captured_mismatches": [
+    {
+      "expected": "iteration-01",
+      "field": "manifest.interrupted_directory",
+      "observed": "iteration-02"
+    },
+    {
+      "expected": "valid",
+      "field": "iteration-01/state/tui-work.json JSON",
+      "observed": "invalid"
+    },
+    {
+      "expected": 0,
+      "field": "selected pending ledger.wire_requests",
+      "observed": 2
+    }
+  ],
+  "after_read_returns": [
+    {
+      "diagnostic_read_call_id": "call_HFSvC3CvF9x4lXeXZsKm2s5T",
+      "failed_check": "python3 -S scripts/status_fixture_observe.py",
+      "failure_path": "tests/coupled_status.rs",
+      "kind": "authored_fixture_read",
+      "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+    }
+  ],
+  "first_observer_edit": {
+    "assist_id": 2,
+    "decision": "accept",
+    "executed": false,
+    "succeeded": null,
+    "matching_call_ids": [],
+    "target": "tests/coupled_status.rs",
+    "referenced_ledger_in_replacement": "let ledger = root.join(\"iteration-02/state/tui-work.json\");",
+    "explicit_pending_pointer_correction": false
+  },
+  "first_native_edit": {
+    "call_id": "call_D2OxLialZa0mKvQAc2BkDvyg",
+    "tool": "patch_file",
+    "result_step": 6,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "tests/coupled_status.rs"
+  },
+  "native_edits": [
+    {
+      "call_id": "call_D2OxLialZa0mKvQAc2BkDvyg",
+      "tool": "patch_file",
+      "result_step": 6,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_gSYHvMHlIsdEFqF9doMAMTPk",
+      "tool": "patch_file",
+      "result_step": 14,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_yfmCWHXD5cYmmeGpF6myklyG",
+      "tool": "patch_file",
+      "result_step": 18,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_jnyxnJ6xq09OJVtRYiUMtGsG",
+      "tool": "patch_file",
+      "result_step": 21,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_V6R1Fm4f7nisWw43BHKFpDJO",
+      "tool": "patch_file",
+      "result_step": 23,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "validator_hash_preserved": true,
+  "post_mutation_exact_passes": {
+    "python3 -S scripts/status_fixture_observe.py": [],
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": []
+  },
+  "checks_still_pending": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "accepted_done_step": null,
+  "native_completed": false,
+  "native_criteria_met": false,
+  "matching_entries_after_patch_replay": 1673,
+  "independent_candidate_sha256": "020e462d9dd0b913a48be5a52c635e52eabef11588b2b2e9aad77b389ece4be1",
+  "independent_exact_exits": {
+    "python3 -S scripts/status_fixture_observe.py": 101,
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": 101,
+    "cargo test --locked --test coupled_status -q": 101,
+    "python3 -S -m unittest -v scripts.status_interruption_directory": 0,
+    "cargo fmt --all -- --check": 0
+  },
+  "independent_first_interruption_pair": {
+    "valid_exit": 0,
+    "valid_matches_writer_projection": true,
+    "valid_task_used": 0,
+    "valid_wire_used": 0,
+    "skipped_exit": 1,
+    "skipped_stdout_empty": true,
+    "skipped_diagnostic": "Error: invalid pending directory",
+    "passed": true
+  },
+  "writer_state_matrix": {
+    "passed": 18,
+    "total": 27,
+    "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+    "failed": [
+      "known_manifest_null_task_requests",
+      "known_manifest_null_wire_requests",
+      "missing_interruption_numeric_wire_requests",
+      "both_manifest_totals_lost",
+      "finalized_over_cap_active_unknown",
+      "pending_round_over_cap_active",
+      "finalized_over_cap_interrupted_unknown",
+      "pending_round_over_cap_interrupted",
+      "unknown_charge_in_pending"
+    ]
+  }
+}

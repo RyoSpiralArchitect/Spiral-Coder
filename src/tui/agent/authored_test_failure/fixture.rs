@@ -252,7 +252,7 @@ fn unrelated_test() {
         messages.extend([
             json!({"role":"assistant","tool_calls":[{"id":call.id,"function":{
                 "name":call.name,"arguments":call.arguments}}]}),
-            focus.tool_message(&call, failed),
+            focus.tool_message(&call, failed.clone()),
         ]);
         let view = serde_json::to_value(task_obligations::project_at(
             &messages,
@@ -289,14 +289,35 @@ fn unrelated_test() {
             assert!(prompt.contains("cite both values"));
             assert!(!prompt.contains("ignore this other case"));
         }
-        for (id, expected) in [("first", true), ("again", false)] {
+        for (id, start, expected) in [
+            ("clipped_prefix", None, false),
+            ("repeated_clipped_prefix", None, false),
+            ("targeted", Some(610), true),
+            ("again", Some(610), false),
+        ] {
+            if id == "repeated_clipped_prefix" {
+                let repeat = ToolCallData {
+                    id: "repeat-check".into(),
+                    ..call.clone()
+                };
+                let context = ExecVerificationContext::from_messages(Some(CHECK), &messages);
+                focus.record_result(&repeat, &failed, workspace, Some(CHECK), &context);
+                messages.extend([
+                    json!({"role":"assistant","tool_calls":[repeat.to_json()]}),
+                    focus.tool_message(&repeat, failed.clone()),
+                ]);
+            }
+            let args = start.map_or_else(
+                || json!({"path":TEST_PATH}),
+                |start| json!({"path":TEST_PATH,"start_line":start,"end_line":616}),
+            );
             let read = ToolCallData {
                 id: id.into(),
                 name: "read_file".into(),
-                arguments: json!({"path":TEST_PATH}).to_string(),
+                arguments: args.to_string(),
                 thought_signature: None,
             };
-            let (output, failed) = crate::file_tools::tool_read_file(TEST_PATH, workspace);
+            let (output, failed) = crate::file_tools::read_range::execute_args(&args, workspace);
             assert!(!failed);
             let context = ExecVerificationContext::from_messages(Some(CHECK), &messages);
             focus.record_result(&read, &output, workspace, Some(CHECK), &context);
@@ -307,6 +328,9 @@ fn unrelated_test() {
             ]);
             let handoff = focus.fixture_read_handoff(&messages, workspace.unwrap(), Some(CHECK));
             assert_eq!(handoff.is_some(), expected);
+            if start.is_none() {
+                assert!(focus.diagnostic_followup(&messages, workspace).is_none());
+            }
             if let Some(handoff) = handoff {
                 let handoff = serde_json::to_value(handoff).unwrap();
                 assert_eq!(handoff["diagnostic_read_call_id"], id);

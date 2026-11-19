@@ -1,0 +1,127 @@
+{
+  "case": "baseline",
+  "exit": 101,
+  "first_error": "Error: invalid pending directory",
+  "tests_executed": 1,
+  "mismatches": [
+    "manifest.interrupted_directory",
+    "iteration-01/state/tui-work.json JSON",
+    "iteration-01/state/tui-work.json.wire_requests",
+    "manifest.interrupted_iteration.task_requests",
+    "manifest.interrupted_iteration.wire_requests",
+    "manifest.task_requests",
+    "manifest.wire_requests"
+  ],
+  "frame": {
+    "version": 1,
+    "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+    "snapshots": [
+      {
+        "stage": "generated",
+        "file": "iterations.json",
+        "fields": {
+          "json": "valid",
+          "finalized_rows": 1,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "task_requests": 3,
+          "wire_requests": 5
+        }
+      },
+      {
+        "stage": "generated",
+        "file": "iteration-01/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 3,
+          "task_requests": 2
+        }
+      },
+      {
+        "stage": "generated",
+        "file": "iteration-02/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 2,
+          "task_requests": 1
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iterations.json",
+        "fields": {
+          "json": "valid",
+          "finalized_rows": 0,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "task_requests": 1,
+          "wire_requests": 1
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iteration-01/state/tui-work.json",
+        "fields": {
+          "json": "invalid",
+          "line": 1,
+          "column": 2
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iteration-02/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 2,
+          "task_requests": 1
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "field": "manifest.finalized_rows",
+        "observed": 0,
+        "expected": 0
+      },
+      {
+        "field": "manifest.interrupted_directory",
+        "observed": "iteration-02",
+        "expected": "iteration-01"
+      },
+      {
+        "field": "iteration-01/state/tui-work.json JSON",
+        "observed": "invalid",
+        "expected": "valid"
+      },
+      {
+        "field": "iteration-01/state/tui-work.json.wire_requests",
+        "observed": null,
+        "expected": 0
+      },
+      {
+        "field": "manifest.interrupted_iteration.task_requests",
+        "observed": 1,
+        "expected": 0
+      },
+      {
+        "field": "manifest.interrupted_iteration.wire_requests",
+        "observed": 2,
+        "expected": 0
+      },
+      {
+        "field": "manifest.task_requests",
+        "observed": 1,
+        "expected": 0
+      },
+      {
+        "field": "manifest.wire_requests",
+        "observed": 1,
+        "expected": 0
+      }
+    ]
+  },
+  "stdout_sha256": "dcb6df574cc7488b6f1805ba66a777acd3deaa9a9ebba3e873bd62298271d886",
+  "stderr_sha256": "66ed5bd426d1de93a72757893f1a3ded071562399e03765c3d13e6fc034ddea5"
+}
