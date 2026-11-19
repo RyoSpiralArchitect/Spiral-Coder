@@ -1,0 +1,87 @@
+{
+  "archived_session_sha256": "f1c9eece5a8e0778748477bbea9c61e88057a718975e23f0c26365337cd44bc8",
+  "starting_inventory_sha256": "22698c4ae84112a4a58aa65382499f9f8e545f1c1ebe15a7c403e9645d507cbe",
+  "scripted_native_actions": [
+    "exact failing integration test",
+    "mandatory read"
+  ],
+  "external_provider_calls": 0,
+  "runtimes": {
+    "previous": {
+      "authored_fixture_read_returns": [],
+      "binary_sha256": "7952f434649badfe7361c01a96865ec461b62100493a985109d26c821358f887",
+      "local_requests": {
+        "coder-replay": 8,
+        "observer-replay": 4
+      },
+      "resulting_file_changes": [],
+      "failure_path": "tests/coupled_status.rs",
+      "required_read_present": true,
+      "fixture_context": {
+        "case": {
+          "end_line": 55,
+          "path": "tests/coupled_status.rs",
+          "source": "fn first_interruption_with_empty_ledger_preserves_known_totals() {\n    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();\n    let output = cli(&root);\n    assert!(",
+          "start_line": 42
+        },
+        "fixture_argument": "interrupted",
+        "generator": {
+          "end_line": 57,
+          "path": "scripts/status_fixture.py",
+          "source": "    if state in ('running', 'interrupted', 'unknown'):\n        directory = 'iteration-02'\n        if state == 'running':\n            manifest['active_iteration'] = directory\n        else:\n            manifest['stop_reason'] = 'interrupted'\n            manifest['interrupted_iteration'] = {'directory': directory,\n                'task_requests': None if state == 'unknown' else 1,\n                'wire_requests': None if state == 'unknown' else 2}\n            manifest['task_requests'] = None if state == 'unknown' else 3\n            manifest['wire_requests'] = None if state == 'unknown' else 5\n        if state != 'unknown':\n            put(root, directory + '/state/tui-work.json', work('t2', ('task', 'transport'), True))\n    if state == 'stopped':\n        manifest['stop_reason'] = 'user_refusal'\n        row['progress']['user_refusal'] = True",
+          "start_line": 42
+        },
+        "helper": {
+          "end_line": 16,
+          "path": "tests/coupled_status.rs",
+          "source": "fn fixture(state: &str) -> (tempfile::TempDir, PathBuf) {\n    let dir = tempfile::tempdir().unwrap();\n    let root = dir.path().to_path_buf();\n    let status = Command::new(\"python3\")\n        .args([\"-S\", \"scripts/status_fixture.py\"])\n        .arg(&root)\n        .arg(state)\n        .status()\n        .unwrap();\n    assert!(status.success());\n    (dir, root)\n}",
+          "start_line": 5
+        }
+      },
+      "prompt_bytes": 17435,
+      "exit_code": 0
+    },
+    "fixture-context": {
+      "authored_fixture_read_returns": [
+        {
+          "diagnostic_read_call_id": "call_kBtP6sMW5sdJbyJxAbQNpNrc",
+          "failed_check": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+          "failure_path": "tests/coupled_status.rs",
+          "kind": "authored_fixture_read",
+          "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+        }
+      ],
+      "binary_sha256": "761e8a4f8a4760bb171cbbf98e49ebfe882eb24693fd13abf88e868b3da6ad47",
+      "local_requests": {
+        "coder-replay": 8,
+        "observer-replay": 4
+      },
+      "resulting_file_changes": [],
+      "failure_path": "tests/coupled_status.rs",
+      "required_read_present": true,
+      "fixture_context": {
+        "case": {
+          "end_line": 55,
+          "path": "tests/coupled_status.rs",
+          "source": "fn first_interruption_with_empty_ledger_preserves_known_totals() {\n    let (_tmp, root) = fixture(\"interrupted\");\n    let manifest_path = root.join(\"iterations.json\");\n    let mut manifest: serde_json::Value =\n        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();\n    manifest[\"iterations\"] = serde_json::Value::Array(vec![]);\n    manifest[\"task_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"wire_requests\"] = serde_json::Value::Number(1.into());\n    manifest[\"completed\"] = serde_json::Value::Bool(false);\n    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();\n    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();\n    let output = cli(&root);\n    assert!(",
+          "start_line": 42
+        },
+        "fixture_argument": "interrupted",
+        "generator": {
+          "end_line": 57,
+          "path": "scripts/status_fixture.py",
+          "source": "    if state in ('running', 'interrupted', 'unknown'):\n        directory = 'iteration-02'\n        if state == 'running':\n            manifest['active_iteration'] = directory\n        else:\n            manifest['stop_reason'] = 'interrupted'\n            manifest['interrupted_iteration'] = {'directory': directory,\n                'task_requests': None if state == 'unknown' else 1,\n                'wire_requests': None if state == 'unknown' else 2}\n            manifest['task_requests'] = None if state == 'unknown' else 3\n            manifest['wire_requests'] = None if state == 'unknown' else 5\n        if state != 'unknown':\n            put(root, directory + '/state/tui-work.json', work('t2', ('task', 'transport'), True))\n    if state == 'stopped':\n        manifest['stop_reason'] = 'user_refusal'\n        row['progress']['user_refusal'] = True",
+          "start_line": 42
+        },
+        "helper": {
+          "end_line": 16,
+          "path": "tests/coupled_status.rs",
+          "source": "fn fixture(state: &str) -> (tempfile::TempDir, PathBuf) {\n    let dir = tempfile::tempdir().unwrap();\n    let root = dir.path().to_path_buf();\n    let status = Command::new(\"python3\")\n        .args([\"-S\", \"scripts/status_fixture.py\"])\n        .arg(&root)\n        .arg(state)\n        .status()\n        .unwrap();\n    assert!(status.success());\n    (dir, root)\n}",
+          "start_line": 5
+        }
+      },
+      "prompt_bytes": 17668,
+      "exit_code": 0
+    }
+  }
+}

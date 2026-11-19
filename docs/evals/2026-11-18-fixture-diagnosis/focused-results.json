@@ -1,0 +1,402 @@
+{
+  "condition": "focused",
+  "plan_sha256": "65fa8da1d87fa8e9e2273ab065ac6812eccdd29366c11bbb10808e968298534b",
+  "run_receipt_sha256": "b5d30e9f9d31f407189b4b93126f0b10a5b77bc740f02bdf1f974c654b3dff38",
+  "delta_sha256": "6144742dc62f18c7eaeb8fb728be66e245fc7ac467d510bc8f83613d81b7587b",
+  "start_inventory_sha256": "d7b28c87fb3a3343384a45b9aa2ee890e0b7487789a4734634c464bdc0e6f1d2",
+  "terminal_inventory_sha256": "1c4b59e48991b5f68a055fda996c9fb9a9cffeba9a067d041dc0af84ee8909aa",
+  "provider_roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "rounds": [
+    {
+      "termination": "completed",
+      "task": 25,
+      "wire": 25,
+      "roles": {
+        "coder": 19,
+        "observer": 6
+      },
+      "report_sha256": "6f5ad4ecbe9ccbd06b62b6df7e48ddc7df7dd5455adb9e8f3646e95abf9d4d1c"
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 184.647,
+    "finished_at": "2026-11-18T12:52:52.649269+00:00",
+    "redacted_native_files": 0
+  },
+  "changed_paths": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "first_edit": {
+    "call_id": "call_ZuFT379hMHbudTaDekuOfjxk",
+    "tool": "patch_file",
+    "result_step": 5,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "src/coupled_status.rs"
+  },
+  "edits": [
+    {
+      "call_id": "call_ZuFT379hMHbudTaDekuOfjxk",
+      "tool": "patch_file",
+      "result_step": 5,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_gtTDvmH4dMWQfuCdOLuqLMar",
+      "tool": "patch_file",
+      "result_step": 11,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "before_edit_native_failure": [
+    {
+      "call_id": "call_Nbn7C7dfNpUVJeJqTcSyxqpn",
+      "tool": "exec",
+      "result_step": 1,
+      "succeeded": false,
+      "freshness": "superseded"
+    }
+  ],
+  "native_checks_after_last_mutation": {
+    "python3 -S -m unittest -v scripts.status_first_interruption": [
+      {
+        "call_id": "call_qKjfGCYz38BLeq81Pa6KyFxq",
+        "tool": "exec",
+        "result_step": 12,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo fmt --all -- --check": [
+      {
+        "call_id": "call_vvqNdBfQesXioeGqVLycSI28",
+        "tool": "exec",
+        "result_step": 13,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_visible": [
+      {
+        "call_id": "call_Smlc84JRR2ikIpMQsj0tYxh1",
+        "tool": "exec",
+        "result_step": 14,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_guide": [
+      {
+        "call_id": "call_c5AtPNOF9iIbnOXA6JEdT0uK",
+        "tool": "exec",
+        "result_step": 15,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --bin spiral-coder -q": [
+      {
+        "call_id": "call_mzvqt0K3jlks013SNtkLQko8",
+        "tool": "exec",
+        "result_step": 16,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status -q": [
+      {
+        "call_id": "call_L3iFnjAFPutJhPsbENSiaddU",
+        "tool": "exec",
+        "result_step": 17,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_paths": [
+      {
+        "call_id": "call_bzlpxmkQsKd8EZyjQ7q6GCl8",
+        "tool": "exec",
+        "result_step": 18,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ]
+  },
+  "remaining_native_checks": [],
+  "accepted_done_step": 19,
+  "accepted_done_report": {
+    "acceptance_evidence": [
+      {
+        "command": "@required-1",
+        "criterion": "acceptance 1"
+      },
+      {
+        "command": "@required-6",
+        "criterion": "acceptance 2"
+      },
+      {
+        "command": "@required-7",
+        "criterion": "acceptance 3"
+      }
+    ],
+    "completed_acceptance": [
+      "acceptance 1",
+      "acceptance 2",
+      "acceptance 3"
+    ],
+    "next_steps": "None; all declared exact checks passed after the final edits.",
+    "remaining_acceptance": [],
+    "summary": "[DONE] Repaired first-interruption coupled-status accounting in src/coupled_status.rs and added portable public coverage in tests/coupled_status.rs, including parsed ordered (iteration, task_id) assertions. Recorded outcomes: baseline `python3 -S -m unittest -v scripts.status_first_interruption` FAILED with 1 failure before edits; after edits it PASSED. `cargo fmt --all -- --check` PASSED. `python3 -S -m unittest -v scripts.status_visible` PASSED. `python3 -S -m unittest -v scripts.status_guide` PASSED. `cargo test --locked --bin spiral-coder -q` PASSED: 1148 passed, 2 ignored. `cargo test --locked --test coupled_status -q` PASSED: 6 passed. `python3 -S -m unittest -v scripts.status_paths` PASSED: 3 tests run, 0 failures/errors."
+  },
+  "native_passed": true,
+  "matching_file_entries_after_patch_replay": 1670,
+  "build": {
+    "exit": 0,
+    "log_sha256": "c48e83ce2b98d9e254a01e38105357a1bd2c6e10364838ee00e2a564b0be8230"
+  },
+  "binary_sha256": "2687df3475b9c76ae169d1963d8d692534659cd4429ef97b6cd4574d7c0faaac",
+  "writer_state_cases": {
+    "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+    "passed": 18,
+    "total": 27,
+    "failed": [
+      "known_manifest_null_task_requests",
+      "known_manifest_null_wire_requests",
+      "missing_interruption_numeric_wire_requests",
+      "both_manifest_totals_lost",
+      "finalized_over_cap_active_unknown",
+      "pending_round_over_cap_active",
+      "finalized_over_cap_interrupted_unknown",
+      "pending_round_over_cap_interrupted",
+      "unknown_charge_in_pending"
+    ]
+  },
+  "directory_pair": {
+    "binary_sha256": "2687df3475b9c76ae169d1963d8d692534659cd4429ef97b6cd4574d7c0faaac",
+    "valid": {
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-02\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+      "stderr": ""
+    },
+    "skipped_directory": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: invalid pending directory"
+    },
+    "passed": true
+  },
+  "independent_preflight_sha256": "f84115cf9dc0c49bca90171439f54d94bfd908678d839c11ba79977fb0f6df9f",
+  "independent_preflight_provider_calls": 0,
+  "original_groups": {
+    "candidate-build": {
+      "passed": true,
+      "test_summary": null,
+      "log_sha256": "79c3ea2763b1e3f9ab7cb879ca5e76ebccfe2e43772d6fc80a97d9d5ca09173a"
+    },
+    "status-visible": {
+      "passed": true,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "0128bc56d54d63ecc18ca996d9eb94068bd3af41eb34a9242b10b076b6695817"
+    },
+    "status-held-out": {
+      "passed": true,
+      "test_summary": {
+        "passed": 24,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "c1959bb14806869af690948f76a361f30008ecdd37d5cdbda04859283da6af74"
+    },
+    "packaged-status": {
+      "passed": true,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "4795253b488ff18b6d07673cbe43d98c2bb0ea2579ab7001319d7771c5ce0e5d"
+    },
+    "guide-example": {
+      "passed": true,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "a0a51f01d85b11e238cf96a42316ca498075f39c533c0bd1167fadd389a2c659"
+    },
+    "status-paths": {
+      "passed": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "ac4545818634b6d106edc3d8601ba5f3b979d05dd7bf6b6dea8a66436e88a0e5"
+    },
+    "stock-regressions": {
+      "passed": true,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "f128f44108af993a19d3965b92c67c23cb4e42206a2f29012ef525e52935dc09"
+    }
+  },
+  "original_authored_tests": {
+    "reference": {
+      "status": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    },
+    "test_sha256": "58f7ed96db2a856d93528659c4e4127544923aaf7273b5890a0fb514ceb6db25",
+    "faults": {
+      "missing_pending": {
+        "demonstrated": true,
+        "detected": true
+      },
+      "symlink": {
+        "demonstrated": true,
+        "detected": true
+      },
+      "duplicate_request": {
+        "demonstrated": true,
+        "detected": true
+      },
+      "parent_link": {
+        "demonstrated": true,
+        "detected": true
+      }
+    }
+  },
+  "authored_output_controls": {
+    "authored_tests_sha256": "58f7ed96db2a856d93528659c4e4127544923aaf7273b5890a0fb514ceb6db25",
+    "reference_cli_sha256": "28b87cfaa44a0cf48658fcdd6f0d264bee74de0a3dd91ddac8fd676f762a28a0",
+    "tested_target": "x86_64-pc-windows-gnu",
+    "windows_compile": {
+      "passed": false,
+      "exit": 101,
+      "log_sha256": "01507a19df32d1b40ef03bbe3b401b360ff37baac5aa9aa47c37a79a5a802cbe"
+    },
+    "output_controls": {
+      "native": {
+        "exit": 0,
+        "two_row_calls": 1,
+        "failed_tests": [],
+        "log_sha256": "c5aebd66f4fc38ec48317e21cf4c0677d8dad94347f1941d174e69b52a33baca",
+        "passed": true
+      },
+      "pretty": {
+        "exit": 0,
+        "two_row_calls": 1,
+        "failed_tests": [],
+        "log_sha256": "4d85a27a81cefa242bdae4d6f29acf17ae9f9e052e174a81accf374e9a0f56f1",
+        "passed": true
+      },
+      "swapped_task_ids": {
+        "exit": 101,
+        "two_row_calls": 1,
+        "failed_tests": [
+          "owner_local_request_ids_are_valid_across_two_iterations"
+        ],
+        "log_sha256": "0d239fe53b0d225da6919c77c0ee5483ccbf78de9efff9740e6c58d82263ba1f",
+        "detection_demonstrated": true,
+        "passed": true
+      },
+      "wrong_numbers": {
+        "exit": 101,
+        "two_row_calls": 1,
+        "failed_tests": [
+          "owner_local_request_ids_are_valid_across_two_iterations"
+        ],
+        "log_sha256": "eb51cd5ae64e3ad44b22d3e8f2df95cfacc8e9485c2561b97b277bf76e486795",
+        "detection_demonstrated": true,
+        "passed": true
+      },
+      "reversed_rows": {
+        "exit": 101,
+        "two_row_calls": 1,
+        "failed_tests": [
+          "owner_local_request_ids_are_valid_across_two_iterations"
+        ],
+        "log_sha256": "64c7bc354474fc45b424fbf4e0ee5dc637d537573808a117c47bf9290b69c727",
+        "detection_demonstrated": true,
+        "passed": true
+      }
+    },
+    "passed": false,
+    "host_compile": {
+      "passed": true,
+      "log_sha256": "c82f2a2c29f108cb1f38ecb51f52af3dd2f162ed0279d68d7a1e5c5294249654"
+    }
+  },
+  "native_archive_readback": {
+    "binary_sha256": "2687df3475b9c76ae169d1963d8d692534659cd4429ef97b6cd4574d7c0faaac",
+    "archives": [
+      {
+        "passed": true,
+        "exit": 0,
+        "inventory_unchanged": true,
+        "file_count": 89,
+        "iterations": 1,
+        "task_requests": 25,
+        "wire_requests": 25,
+        "manifest_sha256": "ea8a0c7b5ebe8a2c0339f18d029ce3b0e163ff5208a9e14f769ca6a75d8ebeff",
+        "stdout_sha256": "e3ea552252103c3751cdb152a00d5347b259892ea1debf1406e5fecc1189be0e",
+        "stderr": ""
+      },
+      {
+        "passed": true,
+        "exit": 0,
+        "inventory_unchanged": true,
+        "file_count": 3,
+        "iterations": 0,
+        "task_requests": null,
+        "wire_requests": null,
+        "manifest_sha256": "f6ec7d709d76d35e710368654ddb97e94128b6d263b87927e2cff67a8140383d",
+        "stdout_sha256": "dba4ba4c76e5fb375b5f82bdcd0913d7d47f76c92dc4a18f299a47d52b147ec7",
+        "stderr": ""
+      },
+      {
+        "passed": true,
+        "exit": 0,
+        "inventory_unchanged": true,
+        "file_count": 7,
+        "iterations": 0,
+        "task_requests": 1,
+        "wire_requests": 1,
+        "manifest_sha256": "a264856bd48aa4d7ab28f440b8ce75459603ed13cb18bca4e3747f83fe0ccaf7",
+        "stdout_sha256": "0776c294f208415f906a4bcf3ce84a577d2eb70866728d68dae2a7b0bf99b295",
+        "stderr": ""
+      }
+    ],
+    "provider_calls": 0
+  },
+  "windows_compiler_failure": "Four E0433 errors from unconditional std::os::unix::fs::symlink in the exact authored test source.",
+  "qualified": false,
+  "promotion_authorized": false
+}

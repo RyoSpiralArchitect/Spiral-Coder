@@ -1,0 +1,50 @@
+{
+  "provider_calls": 0,
+  "fixture_argument": "interrupted",
+  "generator_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+  "authored_test_sha256": "a636b4d863f6e468794628ea24348bc731aa06b38fb83abedf7f0b1c97bf9d78",
+  "generated": {
+    "iterations": [
+      {
+        "iteration": 1,
+        "directory": "iteration-01",
+        "task_id": "t1",
+        "parent_task_id": null,
+        "termination": "blocked",
+        "completed": false,
+        "task_requests": 2,
+        "wire_requests": 3,
+        "progress": {
+          "changed_files": [
+            "src/a.rs"
+          ],
+          "newly_verified": [
+            "cargo test -q"
+          ],
+          "newly_reproduced_baselines": [],
+          "user_refusal": false
+        }
+      }
+    ],
+    "interrupted_iteration": {
+      "directory": "iteration-02",
+      "task_requests": 1,
+      "wire_requests": 2
+    },
+    "task_requests": 3,
+    "wire_requests": 5
+  },
+  "generated_ledger_paths": [
+    "iteration-01/state/tui-work.json",
+    "iteration-02/state/tui-work.json"
+  ],
+  "author_changes": {
+    "finalized_rows": 0,
+    "task_requests": 1,
+    "wire_requests": 1,
+    "interrupted_directory": "iteration-02",
+    "test_ledger": "iteration-01/state/tui-work.json",
+    "test_ledger_json_error": "Expecting property name enclosed in double quotes (line 1, column 2)"
+  },
+  "evidence_use": "Model-free observation after the live trials."
+}

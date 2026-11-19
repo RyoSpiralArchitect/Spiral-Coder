@@ -1,0 +1,89 @@
+{
+  "external_provider_calls": 0,
+  "native_exit": 101,
+  "instrumented_exit": 101,
+  "tests_reached_in_each": 1,
+  "first_error_in_each": "Error: invalid pending directory",
+  "prior_invalid_native_attempt_excluded": "A reused package target violated input parity; the exact native and sampled runs were executed again after a package reset.",
+  "frame": {
+    "version": 1,
+    "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+    "snapshots": [
+      {
+        "stage": "generated",
+        "file": "iterations.json",
+        "fields": {
+          "json": "valid",
+          "finalized_rows": 1,
+          "interrupted_directory": "iteration-02",
+          "task_requests": 3,
+          "wire_requests": 5
+        }
+      },
+      {
+        "stage": "generated",
+        "file": "iteration-01/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 3,
+          "task_requests": 2
+        }
+      },
+      {
+        "stage": "generated",
+        "file": "iteration-02/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 2,
+          "task_requests": 1
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iterations.json",
+        "fields": {
+          "json": "valid",
+          "finalized_rows": 0,
+          "interrupted_directory": "iteration-02",
+          "task_requests": 1,
+          "wire_requests": 1
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iteration-01/state/tui-work.json",
+        "fields": {
+          "json": "invalid",
+          "line": 1,
+          "column": 2
+        }
+      },
+      {
+        "stage": "validator_input",
+        "file": "iteration-02/state/tui-work.json",
+        "fields": {
+          "json": "valid",
+          "wire_requests": 2,
+          "task_requests": 1
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "field": "manifest.interrupted_directory",
+        "observed": "iteration-02",
+        "expected": "iteration-01"
+      },
+      {
+        "field": "iteration-01/state/tui-work.json JSON",
+        "observed": "invalid",
+        "expected": "valid"
+      },
+      {
+        "field": "selected pending ledger.wire_requests",
+        "observed": 2,
+        "expected": 0
+      }
+    ]
+  }
+}

@@ -237,6 +237,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             &recovery.focus,
             &messages,
             tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
             initial_handoff_steps,
             step_seq,
         ) {

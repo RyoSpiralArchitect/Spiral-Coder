@@ -151,6 +151,7 @@ use automatic_test::run as run_test_cmd;
 mod done_dispatch;
 mod exec_dispatch;
 mod file_tool_dispatch;
+mod fixture_observation;
 pub(crate) mod iteration_handoff;
 pub(crate) mod observer_continuation;
 mod observer_handoff;

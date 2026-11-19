@@ -1,0 +1,60 @@
+Repair the first-interruption integration test for coupled-status in this saved workspace.
+
+Begin with the first exact check below before any edit. It runs the original single integration test through a forwarding binary and prints bounded observations of the files the fixture created and the validator received.
+
+A coherent first interrupted iteration with a durable empty work ledger must report zero used requests. A skipped directory must fail with empty stdout and a diagnostic. Use the observed manifest, ledger, and the writer in src/tui/events/coupled_run/iterations.rs to choose a correction.
+
+Only tests/coupled_status.rs and src/coupled_status.rs may change. Repair the failing integration case in tests/coupled_status.rs. A source edit is permitted only if the coherent input still fails. Preserve unrelated tests and behavior. The diagnostic runner, generator, and public pair check are protected.
+
+Run each exact check separately after the final edit, then report the measured change and check results.
+
+python3 -S scripts/status_fixture_observe.py
+cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact
+cargo test --locked --test coupled_status -q
+python3 -S -m unittest -v scripts.status_interruption_directory
+cargo fmt --all -- --check
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "first-interruption",
+      "description": "Repair the integration test for the empty first interrupted ledger and preserve rejection of a skipped directory.",
+      "artifacts": [
+        {
+          "path": "tests/coupled_status.rs",
+          "kind": "test"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S scripts/status_fixture_observe.py",
+          "baseline_failure": true
+        },
+        {
+          "command": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact"
+        },
+        {
+          "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_interruption_directory"
+        },
+        {
+          "command": "cargo fmt --all -- --check"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>
+
+<fixture_observation>
+{
+  "version": 1,
+  "check": "python3 -S scripts/status_fixture_observe.py",
+  "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+  "test_path": "tests/coupled_status.rs"
+}
+</fixture_observation>

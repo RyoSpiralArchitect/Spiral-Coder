@@ -1,0 +1,111 @@
+{
+  "condition": "Both roles see the expected fixture inputs ahead of diagnostic observations and are guided to finish a formatted coherent repair.",
+  "issue": 105,
+  "previous_plan_sha256": "9bf2989963b5b2c76f4d042506c8a0ab9de373f4c65d34e2f2ddbc03491cc33a",
+  "runtime_commit": "8124843b7d11f51e435e4671aab1ef60f7cd5eab",
+  "prior_runtime_binary_sha256": "ebc494dfc46aa7f7bbba133eeee7b244f5907744012b0316050caf5e8a972a91",
+  "binary_sha256": "27fef104424ec245d7ae93f41668f11c5b44bd90efbde80546abbcbf68471e4f",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "runner_sha256": "c7984bca80085d4015b6ad4e29543bd4f3a91afeab0a79795859302a9a602036",
+  "driver_files": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "f4b2080263c47cfba27f39de53831ad16ba43e73b31b8d71954a7f726fe9026d",
+    "coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "coupled_bench/roles.py": "c60203ed38fe271896dc82702408ab0d7cbf191eacdbcb74790f5d0662ab2c19",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+    "self_dogfood/assessment.py": "01a7b958e4e5e61e87e2f6587b4e788f261874bc9c69d02bcf061de84d88d206",
+    "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+    "self_dogfood/contracts.py": "c06556ba7e121aa94363c8024e54226a069c19b6f4386a9915d65fc80707341d",
+    "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+    "self_dogfood/measurement.py": "cee7d2f818b75bdfae4877498cdb63cb0dc4e81a5c5f02a0fc8a3ec3aeabddfa",
+    "self_dogfood/paired.py": "7a2c2a208c101bb07b300127ab8f6bae09ca6fbe79cf04d21bdcaba1510c6a19",
+    "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+    "self_dogfood/runner.py": "be04b79e710260c62e9d8bbafb97ca93423286fc9a98f54c1f78e50dfdbcbcf0"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "task_requests_per_iteration": 32,
+  "maximum_task_requests": 32,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "transport_repair_requests": 4,
+  "provider_timeout_seconds": 90,
+  "coder_max_tokens": 32768,
+  "observer_max_tokens": 8192,
+  "temperature": 0,
+  "wall_seconds": 900,
+  "fixture": {
+    "starting_files": 1673,
+    "source_inventory_sha256": "86495b5508ecb88a3a0f0b8d430a4c2791c0a928cc268f3a44a8d06142e28263",
+    "start_inventory_sha256": "e8af45020454d5361b64dee87cb682e13b06df89b33341e82466c244712013b2",
+    "probe_patch_sha256": "e791a1316e2fd2972a5cae10d004acc24962fb4178c6b28ad36ec30cb24c1c0a",
+    "initial_authored_test_sha256": "a636b4d863f6e468794628ea24348bc731aa06b38fb83abedf7f0b1c97bf9d78",
+    "initial_validator_sha256": "4c42c93a37f1633a298cca6b97e6cd1457b8369dcce38512f8618c90fadd47d2",
+    "protected_runner": {
+      "scripts/status_fixture_observe.py": "9f46ce93dc8ab0ef71c64b6b8026c00d628cf460f42c8e49ccd8776ac32e87be",
+      "scripts/status_fixture_forwarder.rs": "da7b068ee565ee04e2d0837b947e317c979a72382d39883bf243ff86bee86a4c"
+    },
+    "visible_fixture": "scripts/status_interruption_directory.py",
+    "visible_sha256": "7bc66bca42e6f5a61673544f9190e8e118de6e87338d530045b82fc049abf7e6",
+    "task_sha256": "d5b2fc6323e06ebbf0d37725e3ebb7551bb3bf6e5a5a63805f71dbafc83cdfce",
+    "retained_message_count": 0
+  },
+  "model_free_preflight": {
+    "baseline": {
+      "result_sha256": "4ded8311babca7e63db63aa6fbc0b1ff5ca00a12b4086f9008e4014a4c714a11",
+      "exit": 101,
+      "mismatches": 7
+    },
+    "former-control": {
+      "result_sha256": "7f2823ef7fcc75826badd1209dc548d6b0a9b82f55df6685573cb0e2f91dc6bb",
+      "exit": 101,
+      "mismatches": 6
+    },
+    "former-observed": {
+      "result_sha256": "b4f6f57b71259a532a19d017be71a269e37b1809c83f65059c06f8e7aa3066db",
+      "exit": 101,
+      "mismatches": 7
+    },
+    "coherent": {
+      "result_sha256": "c9ac2a7f35298ddedd5dcc4375dfbdb2786900d346ccc0bdc43c1acc081dc97f",
+      "exit": 0,
+      "mismatches": 0
+    }
+  },
+  "exact_checks": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "editable": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "external_calls_at_pin": 0,
+  "promotion_authorized": false,
+  "created_at": "2026-11-19T19:43:25.110239+00:00",
+  "predeclared_observations": [
+    "Preserve the first terminal.",
+    "Before editing, the original failed check reports mismatches against fixed first-interruption inputs.",
+    "Observer's first corrective advice changes the stale manifest pointer to iteration-01 while keeping zero finalized rows and a valid empty ledger.",
+    "Compare the first native changed file and replacement with the forwarded advice and the durable matching-call records; retain uncertainty when the relationship is unrecorded.",
+    "The first edit corrects both the manifest and referenced ledger; count later formatting mutations and unnecessary check replay.",
+    "All five exact checks have successful current receipts after the final mutation, and the native done is accepted.",
+    "Replay the terminal patch independently and run all five checks without providers. Revalidate the sealed receipts and unchanged production code if the test-only path works."
+  ]
+}

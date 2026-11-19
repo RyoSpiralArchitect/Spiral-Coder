@@ -353,6 +353,17 @@ This is blocked to prevent nested-repo / accidental repo-root modifications.\n\n
         &stdout,
         &stderr,
     );
+    let message = if exit_code > 0
+        && !escaped_tool_root
+        && ctx.tool_root_abs.as_deref() == Some(cwd_used_label.as_str())
+    {
+        match super::fixture_observation::capture(ctx.messages, &command, &stdout) {
+            Some(frame) => frame.attach(message),
+            None => message,
+        }
+    } else {
+        message
+    };
     ctx.messages.push(match comparison_receipt {
         Some(receipt) => receipt.attach(message),
         None => message,

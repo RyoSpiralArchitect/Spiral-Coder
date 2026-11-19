@@ -1,6 +1,49 @@
 //! Pair a current native test diagnostic with its line in the available test revision.
 use super::*;
-use crate::tui::agent::requirement_proof::AuthoredTests;
+use crate::tui::agent::{
+    evidence_packet::{self, ExecutionPacket},
+    fixture_observation,
+    requirement_proof::AuthoredTests,
+};
+
+#[path = "authored_test_failure/fixture.rs"]
+mod fixture;
+pub(crate) use fixture::GUIDANCE as FIXTURE_CONTEXT_GUIDANCE;
+
+pub(crate) fn fixture_repair_prompt(failure: &Value) -> Option<String> {
+    let observation = &failure["fixture_observation"];
+    if observation["mismatched_fields"].as_array()?.is_empty() {
+        return None;
+    }
+    let mut expected_inputs = BTreeMap::new();
+    for comparison in observation["comparisons"].as_array()? {
+        let field = comparison["field"].as_str()?;
+        if expected_inputs
+            .insert(field, comparison.get("expected")?)
+            .is_some()
+        {
+            return None;
+        }
+    }
+    let target = json!({
+        "test_path": failure["path"].as_str()?,
+        "case": observation["case"].as_str()?,
+        "expected_inputs": expected_inputs,
+    });
+    Some(format!(
+        "[Expected inputs for the authored fixture]\n{target}\n\
+         Use expected_inputs as the destination of the test-input correction. Use validator_input \
+         to identify the starting values. In the primary reason, name the setup expression to \
+         change and give its expected value. Reconcile related references, stored records and counts \
+         together in the test setup. Establish the coherent positive case before applying the \
+         single-condition negative test. Consider a validator change only if coherent input still \
+         fails. Follow the mandatory read or exact recheck first and cite the native read in the edit \
+         evidence. When a format check is declared, make the first supported edit ready for it. If \
+         the task leaves check order open, check formatting before the rest of the final sweep, after any \
+         required recheck. Run every exact check again after further mutations. This is diagnostic \
+         context from the approved check.\n\n"
+    ))
+}
 
 pub(crate) const FAILURE_SITE_GUIDANCE: &str = "\nUse authored_test_failure to locate the operation that stopped. For a compiler diagnostic, quote the expression and compiler types when present. For a panic, trace the operation from fixture creation through invocation to assertion. State which observation actually ran, which behavior remains unmeasured, and the smallest control that would distinguish a fixture fault from a product fault. A passing fixture invocation alone does not establish that a later mutation has its required inputs. If source or fixture shape is missing, name the specific line or producer output to inspect. Follow the current required read or recheck first.\n";
 
@@ -10,17 +53,57 @@ pub(crate) struct AuthoredTestFailure {
     check: String,
     diagnostic: String,
     sites: Vec<Site>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixture_context: Option<fixture::FixtureContext>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixture_observation: Option<fixture_observation::Observation>,
 }
 
 #[derive(Debug, Serialize)]
 struct Site {
     kind: &'static str,
     line: usize,
+    #[serde(skip)]
+    test_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     current_source_line: Option<String>,
 }
 
 impl AuthoredTestFailure {
+    pub(in crate::tui::agent) fn include_fixture_context(&mut self, workspace: &str) {
+        self.fixture_context = self.sites.iter().find_map(|site| {
+            let function = site.test_name.as_deref()?.rsplit("::").next()?;
+            fixture::project(workspace, &self.path, site.line, function)
+        });
+    }
+
+    pub(in crate::tui::agent) fn has_fixture_context(&self) -> bool {
+        self.fixture_context.is_some()
+    }
+
+    pub(in crate::tui::agent) fn include_observation(
+        &mut self,
+        messages: &[Value],
+        root: &str,
+        context: &ExecVerificationContext<'_>,
+    ) {
+        self.fixture_observation = self.sites.iter().find_map(|site| {
+            fixture_observation::project(
+                messages,
+                root,
+                &self.check,
+                &self.path,
+                site.test_name.as_deref()?,
+                context,
+            )
+        });
+    }
+
+    pub(in crate::tui::agent) fn repair_prompt(&self) -> Option<String> {
+        self.fixture_observation.as_ref()?;
+        fixture_repair_prompt(&serde_json::to_value(self).ok()?)
+    }
+
     pub(in crate::tui::agent) fn include_source(&mut self, tests: &AuthoredTests) {
         for site in &mut self.sites {
             site.current_source_line = tests.source_line(&self.path, site.line).map(|line| {
@@ -32,6 +115,151 @@ impl AuthoredTestFailure {
                 text
             });
         }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct FixtureReadHandoff {
+    kind: &'static str,
+    failed_check: String,
+    failure_path: String,
+    test_name: String,
+    diagnostic_read_call_id: String,
+}
+
+fn panic_name(diagnostic_line: &str) -> Option<&str> {
+    let (name, _) = diagnostic_line.strip_prefix("thread '")?.split_once('\'')?;
+    Some(name)
+}
+
+impl FailureFocus {
+    pub(super) fn rust_panic_site(&self, root: &str) -> Option<(&str, usize)> {
+        self.diagnostic.split(" | ").find_map(|line| {
+            let name = panic_name(line)?;
+            let (path, row) = baseline_failure::rust_location(line)?;
+            (relative_path(path, Some(root))?.as_str() == self.path).then_some((name, row))
+        })
+    }
+}
+
+impl RecoveryFocus {
+    pub(in crate::tui::agent) fn authored_source_is_current(
+        &self,
+        messages: &[Value],
+        root: Option<&str>,
+        evidence: &ExecutionPacket,
+    ) -> bool {
+        let Some(pending) = self.pending.as_ref() else {
+            return false;
+        };
+        let Some(mutation) = evidence.mutation_step else {
+            return true;
+        };
+        recovery_snapshot::numbered_correlated_results(messages).any(|(step, call, message)| {
+            step >= mutation
+                && recovery_progress::owned_failure(&call, message, root).is_some_and(|failure| {
+                    failure.check == pending.check
+                        && failure.path == pending.path
+                        && failure.diagnostic == pending.diagnostic
+                })
+        })
+    }
+
+    /// The first exact read of this authored test's panic in the current task
+    /// gives Observer a chance to propose a correction after the read gate.
+    pub(in crate::tui::agent) fn fixture_read_handoff(
+        &self,
+        messages: &[Value],
+        root: &str,
+        test_command: Option<&str>,
+    ) -> Option<FixtureReadHandoff> {
+        let pending = self.pending.as_ref()?;
+        if pending.location != LocationEvidence::Current
+            || pending.observation != Observation::Observed
+        {
+            return None;
+        }
+        let (name, row) = pending.rust_panic_site(root)?;
+        let mut last = None;
+        let mut failure_observed = false;
+        let mut awaiting_read = false;
+        for (call, result) in correlated_results(messages) {
+            last = None;
+            if result[METADATA_KEY]["version"] != 2 {
+                continue;
+            }
+            let Some(focus) = recovery_snapshot::validated_snapshot(result).and_then(|s| s.pending)
+            else {
+                continue;
+            };
+            if focus.path != pending.path
+                || focus
+                    .rust_panic_site(root)
+                    .is_none_or(|(other, _)| other != name)
+            {
+                continue;
+            }
+            let matches_current_failure =
+                focus.check == pending.check && focus.diagnostic == pending.diagnostic;
+            if focus.observation == Observation::AwaitingRead && matches_current_failure {
+                awaiting_read = true;
+            }
+            if focus.observation == Observation::Observed
+                && call.name == "read_file"
+                && argument_path(&call)
+                    .and_then(|path| relative_path(&path, Some(root)))
+                    .as_deref()
+                    == Some(pending.path.as_str())
+                && crate::file_tools::read_range::covers_line(
+                    &call.arguments,
+                    result["content"].as_str().unwrap_or_default(),
+                    row,
+                )
+            {
+                if awaiting_read && matches_current_failure && !failure_observed {
+                    last = Some(call.id);
+                }
+                failure_observed = true;
+                awaiting_read = false;
+            }
+        }
+        let diagnostic_read_call_id = last?;
+        if !self.authored_source_is_current(
+            messages,
+            Some(root),
+            &evidence_packet::project(messages, test_command),
+        ) {
+            return None;
+        }
+        let requirements = super::super::requirement_proof::project(messages, test_command);
+        if !requirements
+            .authored_tests
+            .as_ref()?
+            .contains(&pending.path)
+        {
+            return None;
+        }
+        let function = name.rsplit("::").next()?;
+        if fixture::project(root, &pending.path, row, function).is_none()
+            && fixture_observation::project(
+                messages,
+                root,
+                &pending.check,
+                &pending.path,
+                name,
+                &ExecVerificationContext::from_messages(test_command, messages),
+            )
+            .is_none()
+        {
+            return None;
+        }
+        Some(FixtureReadHandoff {
+            kind: "authored_fixture_read",
+            failed_check: pending.check.clone(),
+            failure_path: pending.path.clone(),
+            test_name: name.into(),
+            diagnostic_read_call_id,
+        })
     }
 }
 
@@ -64,14 +292,15 @@ impl RecoveryFocus {
             } else {
                 "test_panic"
             };
-            if !sites
-                .iter()
-                .any(|site: &Site| site.line == line && site.kind == kind)
-            {
+            let test_name = panic_name(part);
+            if !sites.iter().any(|site: &Site| {
+                site.line == line && site.kind == kind && site.test_name.as_deref() == test_name
+            }) {
                 sites.push(Site {
                     line,
                     kind,
                     current_source_line: None,
+                    test_name: test_name.map(str::to_owned),
                 });
             }
         }
@@ -83,6 +312,8 @@ impl RecoveryFocus {
             check: focus.check.clone(),
             diagnostic: focus.diagnostic.clone(),
             sites,
+            fixture_context: None,
+            fixture_observation: None,
         };
         failure.include_source(tests);
         Some(failure)

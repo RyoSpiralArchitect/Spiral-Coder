@@ -1,0 +1,64 @@
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+index 4779402..d1889a3 100644
+--- a/src/coupled_status.rs
++++ b/src/coupled_status.rs
+@@ -182,7 +182,12 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+     if let Some((directory, interrupted)) = pending_name {
+         pending_interrupted = interrupted;
+         let expected = format!("iteration-{:02}", manifest.iterations.len() + 1);
+-        if directory != expected || manifest.iterations.len() >= manifest.max_iterations {
++        let interrupted_first_iteration = interrupted
++            && manifest.iterations.is_empty()
++            && directory == "iteration-02";
++        if (!interrupted_first_iteration && directory != expected)
++            || manifest.iterations.len() >= manifest.max_iterations
++        {
+             bail!("invalid pending directory");
+         }
+         if interrupted && manifest.stop_reason.as_deref() != Some("interrupted") {
+@@ -191,9 +196,19 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+         if !interrupted && manifest.stop_reason.is_some() {
+             bail!("active iteration requires null stop reason");
+         }
++        let ledger_directory = if interrupted
++            && manifest.iterations.is_empty()
++            && directory == "iteration-02"
++            && root.join("iteration-01/state/tui-work.json").is_file()
++            && !root.join("iteration-02/state/tui-work.json").exists()
++        {
++            "iteration-01"
++        } else {
++            directory.as_str()
++        };
+         let ledger_path = checked_path(
+             &root,
+-            Path::new(&directory).join("state/tui-work.json").as_path(),
++            Path::new(ledger_directory).join("state/tui-work.json").as_path(),
+             true,
+         )?;
+         if ledger_path.exists() {
+@@ -260,18 +275,17 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+             Some(task_total.checked_add(t).context("task overflow")?),
+             Some(wire_total.checked_add(w).context("wire overflow")?),
+         ),
+-        (false, Some((_t, _w)), true) => (manifest_task, manifest_wire),
++        (false, Some((t, w)), true) => (
++            Some(task_total.checked_add(t).context("task overflow")?),
++            Some(wire_total.checked_add(w).context("wire overflow")?),
++        ),
+         (false, None, true) => (None, None),
+         (false, None, false) => (Some(task_total), Some(wire_total)),
+     };
+-    if manifest.task_requests != manifest_task
+-        && !(pending_interrupted && manifest.task_requests.is_none())
+-    {
++    if !pending_interrupted && manifest.task_requests != manifest_task {
+         bail!("manifest aggregate counts mismatch");
+     }
+-    if manifest.wire_requests != manifest_wire
+-        && !(pending_interrupted && manifest.wire_requests.is_none())
+-    {
++    if !pending_interrupted && manifest.wire_requests != manifest_wire {
+         bail!("manifest aggregate counts mismatch");
+     }
+     if task_used.map_or(false, |v| v > manifest.max_task_requests)

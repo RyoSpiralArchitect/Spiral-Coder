@@ -1,0 +1,22 @@
+[
+  {
+    "command": "python3 -S scripts/status_fixture_observe.py",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "exit": 0
+  },
+  {
+    "command": "cargo test --locked --test coupled_status -q",
+    "exit": 0
+  },
+  {
+    "command": "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "exit": 0
+  },
+  {
+    "command": "cargo fmt --all -- --check",
+    "exit": 0
+  }
+]

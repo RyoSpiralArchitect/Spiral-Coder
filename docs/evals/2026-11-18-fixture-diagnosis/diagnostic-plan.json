@@ -1,0 +1,71 @@
+{
+  "condition": "Reproduce the exact archived faulty authored test before touching its inputs. Examine the first Observer advice and disposition of fixture vs production before checking the valid and skipped pairs.",
+  "issue": 105,
+  "runtime_commit": "a62ffce9f5c6709ddc77577d027fe925cc2fb289",
+  "binary_sha256": "7952f434649badfe7361c01a96865ec461b62100493a985109d26c821358f887",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_run_receipt_sha256": "28cb8876a832b5fe052a18dad0a517d511c4871165b8a5be16612f2ea3617991",
+    "source_session_sha256": "7d8144e64008310f3b233758b6271888f8ad6e341ec7788f4dfd2204bba8521e",
+    "restored_through_message": 31,
+    "native_edits": [
+      {
+        "call_id": "call_O5Y80kuBWEIj3DeYnU9XEBSe",
+        "path": "src/coupled_status.rs",
+        "native_after_hash": "abc868d79cd231fc",
+        "sha256": "4c42c93a37f1633a298cca6b97e6cd1457b8369dcce38512f8618c90fadd47d2"
+      },
+      {
+        "call_id": "call_W3GqN62zaV6VGrUiZLB6kKey",
+        "path": "tests/coupled_status.rs",
+        "native_after_hash": "4d7faf7472e83e96",
+        "sha256": "a636b4d863f6e468794628ea24348bc731aa06b38fb83abedf7f0b1c97bf9d78"
+      }
+    ],
+    "retained_message_count": 0,
+    "task_sha256": "d63d49d468c5eae0ff11f28d18fa4266bb9d4dd143c5490f6c8708a0ad8f4b8d",
+    "start_inventory_sha256": "22698c4ae84112a4a58aa65382499f9f8e545f1c1ebe15a7c403e9645d507cbe",
+    "visible_fixture": "scripts/status_interruption_directory.py",
+    "visible_sha256": "7bc66bca42e6f5a61673544f9190e8e118de6e87338d530045b82fc049abf7e6"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "task_requests_per_iteration": 32,
+  "maximum_task_requests": 32,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "transport_repair_requests": 4,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 900,
+  "exact_checks": [
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "editable": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "promotion_authorized": false,
+  "external_calls_at_pin": 0,
+  "created_at": "2026-11-18T12:48:03.387621+00:00",
+  "precondition": "Both conditions preserve the first terminal. Comparisons across live runs are descriptive.",
+  "predeclared_observations": [
+    "first valid failing exact check before any mutation",
+    "Observer forwards a reason grounded in the case prelude and its generator before a validator edit",
+    "first changed path and its relation to the malformed input",
+    "valid and skipped public assertions both pass",
+    "all exact checks current and an accepted native completion"
+  ]
+}
