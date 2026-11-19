@@ -1,0 +1,62 @@
+Repair the read-only coupled-status command on the supplied candidate. A run can be interrupted before its first completed iteration while its first ledger is absent, empty or already contains attempts. Recover the accounting rules from src/tui/events/coupled_run/iterations.rs and src/work_budget.rs. Reproduce the public failure first with the exact command below, before changing files.
+python3 -S -m unittest -v scripts.status_first_interruption
+
+Keep the native output schema. Start is zero, active manifests retain finalized sums, and an interrupted manifest records finalized plus pending usage when the ledger exists. A missing pending ledger makes both interrupted totals and both used/remaining totals unknown. Compare task and wire counts independently and exactly. Validate the known finalized subtotal even when pending usage is unknown. Apply the per-iteration task cap to a pending ledger and the aggregate limits to all known usage. Every native wire receipt counts, the omitted charge defaults to task, and an unrecognized charge makes an existing ledger invalid. Keep finalized request IDs unique within their own ledger and preserve all existing validations. On invalid data return nonzero, no stdout and a diagnostic.
+
+Maintain public CLI regressions in tests/coupled_status.rs for the first interruption and contradictory known/unknown counts. Preserve the existing cases, including the valid two-finalized-iteration fixture and the within-owner duplicate rejection. Verify the exact ordered (iteration, task_id) pairs in parsed JSON, including when a CLI pretty-prints. Keep every non-Unix case available on Windows and isolate Unix-only setup to its own cases. Run all seven exact commands separately after the last edit, then submit a native report of measured outcomes and remaining work.
+
+Only src/coupled_status.rs and tests/coupled_status.rs may change. Use the protected fixtures and preserve all other files.
+
+python3 -S -m unittest -v scripts.status_first_interruption
+cargo fmt --all -- --check
+python3 -S -m unittest -v scripts.status_visible
+python3 -S -m unittest -v scripts.status_guide
+cargo test --locked --bin spiral-coder -q
+cargo test --locked --test coupled_status -q
+python3 -S -m unittest -v scripts.status_paths
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "interruption",
+      "description": "Reconcile native first and later interruptions, exact optional count pairs, known and per-iteration caps, and native request charge semantics. Preserve owner-local request ID uniqueness. Publish portable tests of the public behavior.",
+      "artifacts": [
+        {
+          "path": "src/coupled_status.rs",
+          "kind": "source"
+        },
+        {
+          "path": "tests/coupled_status.rs",
+          "kind": "test"
+        }
+      ],
+      "checks": [
+        {
+          "command": "python3 -S -m unittest -v scripts.status_first_interruption",
+          "baseline_failure": true
+        },
+        {
+          "command": "cargo fmt --all -- --check"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_visible"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_guide"
+        },
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        },
+        {
+          "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

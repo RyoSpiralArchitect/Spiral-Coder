@@ -169,6 +169,9 @@ impl RecoveryFocus {
         }
         let mut cycle: Option<Cycle<'_>> = None;
         let mut first_read_just_returned = false;
+        let panic_line = root
+            .to_str()
+            .and_then(|root| focus.rust_panic_site(root).map(|(_, line)| line));
         for (call, message) in correlated_results(messages) {
             first_read_just_returned = false;
             let output = message["content"].as_str().unwrap_or_default();
@@ -211,6 +214,13 @@ impl RecoveryFocus {
                         .as_deref()
                         == Some(focus.path.as_str())
                         && recovery_progress::successful_read(&call, output, &focus.path, root)
+                        && panic_line.is_none_or(|line| {
+                            crate::file_tools::read_range::covers_line(
+                                &call.arguments,
+                                output,
+                                line,
+                            )
+                        })
                         && matches_snapshot(message, focus, Observation::Observed)
                     {
                         let prior = cycle

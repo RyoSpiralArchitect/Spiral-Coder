@@ -1,0 +1,41 @@
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -66,10 +66,15 @@
+ }
+ 
+ #[test]
+-fn missing_pending_ledger_is_unknown_and_symlink_is_rejected() {
++fn missing_pending_ledger_is_unknown() {
+     let (_tmp, root) = fixture("unknown");
+     let output = cli(&root);
+     assert!(output.status.success());
++}
++
++#[cfg(unix)]
++#[test]
++fn finalized_directory_symlink_is_rejected() {
+     let (_tmp, root) = fixture("completed");
+     let original = root.join("iteration-01");
+     let moved = root.join("real-iteration-01");
+@@ -124,9 +129,10 @@
+         "{}",
+         String::from_utf8_lossy(&output.stderr)
+     );
+-    let stdout = String::from_utf8_lossy(&output.stdout);
+-    assert!(stdout.contains("\"iteration\":1"));
+-    assert!(stdout.contains("\"iteration\":2"));
++    let result: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++    let ordered_ids: Vec<_> = result["iterations"].as_array().unwrap().iter()
++        .map(|r| (r["iteration"].as_u64(), r["task_id"].as_str())).collect();
++    assert_eq!(ordered_ids, [(Some(1), Some("t1")), (Some(2), Some("t2"))]);
+ }
+ 
+ fn assert_rejected(root: &Path) {
+@@ -160,6 +166,7 @@
+     }
+ }
+ 
++#[cfg(unix)]
+ #[test]
+ fn dangling_pending_symlink_components_are_rejected() {
+     for component in ["directory", "state", "ledger"] {

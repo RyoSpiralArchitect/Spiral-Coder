@@ -1,0 +1,40 @@
+{
+  "reason": "After the first sealed terminal, the saved Coder stream was interrupted by a network timeout.",
+  "authorization": "Unspent requests from the original 32-task, 36-wire, 900-second envelope.",
+  "work_budget_model": "The CLI seeds the same conversation in a new ledger with only the unused allowances.",
+  "initial_plan_sha256": "9bf2989963b5b2c76f4d042506c8a0ab9de373f4c65d34e2f2ddbc03491cc33a",
+  "initial_receipt_sha256": "471cae17f5e238d3340bcea7c43a687f75a13012f3ae6ed5442e86534ca9cc63",
+  "seed_session_sha256": "e2fbf7af7870a22b7d15abc3fd2369d96aca0574f04aa0b7fcf6d156d5b12068",
+  "seed_workspace_inventory_sha256": "994d36f398a40cd22a8bc054562c2ef95cb1f323cd83b5f8cfcd51359753c26f",
+  "runner_sha256": "75606c704f7ed69e04d2774775e37f9596073ffe13b1c2a1f9349f873ed53318",
+  "binary_sha256": "ebc494dfc46aa7f7bbba133eeee7b244f5907744012b0316050caf5e8a972a91",
+  "task_sha256": "d5b2fc6323e06ebbf0d37725e3ebb7551bb3bf6e5a5a63805f71dbafc83cdfce",
+  "task_requests_spent": 17,
+  "wire_requests_spent": 20,
+  "observer_task_requests_spent": 6,
+  "continuation_task_limit": 15,
+  "continuation_wire_limit": 16,
+  "continuation_transport_limit": 1,
+  "continuation_observer_reserve": 2,
+  "continuation_wall_seconds": 650,
+  "continuation_count_limit": 1,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "exact_checks": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "provider_calls_at_pin": 20,
+  "created_at": "2026-11-19T06:49:50.627992+00:00"
+}

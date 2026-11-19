@@ -1,0 +1,47 @@
+Repair the failing integration case for coupled-status in this saved workspace. Begin by running the first exact command below, before changing files.
+
+An empty durable ledger for the first interrupted iteration must report zero used requests. The interrupted directory must be the next directory after the finalized iterations. Check the actual stored inputs, the generator, and the writer in src/tui/events/coupled_run/iterations.rs. Preserve the output schema and unrelated behavior. A coherent native record should pass. A skipped interrupted directory should fail with empty stdout and a diagnostic. The protected public directory test exercises that pair.
+
+Only src/coupled_status.rs and tests/coupled_status.rs may change. Use the existing cases and preserve their coverage. Run each exact check separately after the last edit. When complete, describe the measured change and checks in the final report.
+
+cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact
+cargo test --locked --test coupled_status -q
+python3 -S -m unittest -v scripts.status_interruption_directory
+cargo fmt --all -- --check
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "first-interruption",
+      "description": "Repair the first interrupted empty ledger case and preserve contiguous interrupted directories.",
+      "artifacts": [
+        {
+          "path": "src/coupled_status.rs",
+          "kind": "source"
+        },
+        {
+          "path": "tests/coupled_status.rs",
+          "kind": "test"
+        }
+      ],
+      "checks": [
+        {
+          "command": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+          "baseline_failure": true
+        },
+        {
+          "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_interruption_directory"
+        },
+        {
+          "command": "cargo fmt --all -- --check"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

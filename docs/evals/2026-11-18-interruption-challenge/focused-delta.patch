@@ -1,0 +1,128 @@
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+index 2d1bcf7..885095f 100644
+--- a/src/coupled_status.rs
++++ b/src/coupled_status.rs
+@@ -181,8 +181,17 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+     let mut pending_unknown = false;
+     if let Some((directory, interrupted)) = pending_name {
+         pending_interrupted = interrupted;
+-        let expected = format!("iteration-{:02}", manifest.iterations.len() + 1);
+-        if directory != expected || manifest.iterations.len() >= manifest.max_iterations {
++        let expected_iteration = if interrupted {
++            directory
++                .strip_prefix("iteration-")
++                .and_then(|value| value.parse::<usize>().ok())
++                .filter(|iteration| *iteration > 0)
++                .context("invalid pending directory")?
++        } else {
++            manifest.iterations.len() + 1
++        };
++        let expected = format!("iteration-{expected_iteration:02}");
++        if directory != expected || expected_iteration > manifest.max_iterations {
+             bail!("invalid pending directory");
+         }
+         if interrupted && manifest.stop_reason.as_deref() != Some("interrupted") {
+@@ -215,11 +224,21 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+                     bail!("pending counts mismatch");
+                 }
+             }
++            let pending_task_requests = if ledger.requests.is_empty() {
++                0
++            } else {
++                counts.0
++            };
++            let pending_wire_requests = if ledger.requests.is_empty() {
++                0
++            } else {
++                counts.1
++            };
+             pending = Some(OutputPending {
+                 directory,
+                 task_id: pending_task.clone(),
+-                task_requests: Some(counts.0),
+-                wire_requests: Some(counts.1),
++                task_requests: Some(pending_task_requests),
++                wire_requests: Some(pending_wire_requests),
+                 in_flight_requests: Some(inflight),
+             });
+         } else {
+@@ -254,6 +273,12 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+     } else {
+         (Some(task_total), Some(wire_total))
+     };
++    if pending_interrupted && pending_usage == Some((0, 0)) {
++        if let Some(output_pending) = pending.as_mut() {
++            output_pending.task_requests = Some(0);
++            output_pending.wire_requests = Some(0);
++        }
++    }
+     let (task_used, wire_used) = match (pending_unknown, pending_usage, pending_interrupted) {
+         (true, _, _) => (None, None),
+         (false, Some((t, w)), false) => (
+@@ -264,13 +289,17 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+         (false, None, true) => (None, None),
+         (false, None, false) => (Some(task_total), Some(wire_total)),
+     };
++    let first_interruption_without_finalized =
++        pending_interrupted && manifest.iterations.is_empty();
+     if manifest.task_requests != manifest_task
+         && !(pending_interrupted && manifest.task_requests.is_none())
++        && !first_interruption_without_finalized
+     {
+         bail!("manifest aggregate counts mismatch");
+     }
+     if manifest.wire_requests != manifest_wire
+         && !(pending_interrupted && manifest.wire_requests.is_none())
++        && !first_interruption_without_finalized
+     {
+         bail!("manifest aggregate counts mismatch");
+     }
+@@ -289,6 +318,7 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+         bail!("completed manifest is inconsistent");
+     }
+     if manifest.iterations.is_empty()
++        && !pending_interrupted
+         && (manifest.task_requests != Some(0) || manifest.wire_requests != Some(0))
+     {
+         bail!("empty manifest must have zero totals");
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index 7f24377..fe36fbe 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -38,6 +38,36 @@ fn native_states_are_reported() {
+     }
+ }
+ 
++#[test]
++fn first_interruption_with_empty_ledger_preserves_known_totals() {
++    let (_tmp, root) = fixture("interrupted");
++    let manifest_path = root.join("iterations.json");
++    let mut manifest: serde_json::Value =
++        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
++    manifest["iterations"] = serde_json::Value::Array(vec![]);
++    manifest["task_requests"] = serde_json::Value::Number(1.into());
++    manifest["wire_requests"] = serde_json::Value::Number(1.into());
++    manifest["completed"] = serde_json::Value::Bool(false);
++    fs::write(
++        &manifest_path,
++        serde_json::to_vec_pretty(&manifest).unwrap(),
++    )
++    .unwrap();
++    let ledger = root.join("iteration-01/state/tui-work.json");
++    fs::create_dir_all(ledger.parent().unwrap()).unwrap();
++    fs::write(&ledger, br#"{"task_id":"pending","requests":[]}"#).unwrap();
++    let output = cli(&root);
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++    assert_eq!(json["iterations"].as_array().unwrap().len(), 0);
++    assert_eq!(json["pending"]["task_requests"], 0);
++    assert_eq!(json["pending"]["wire_requests"], 0);
++}
++
+ #[test]
+ fn duplicate_request_ids_and_wrong_parent_are_rejected() {
+     let (_tmp, root) = fixture("completed");

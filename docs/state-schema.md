@@ -1928,3 +1928,61 @@ characters plus an omission marker. Coder and Observer use the operation on
 that line to identify what the test reached and which fixture precondition or
 public behavior still needs checking. A repair attempt or a historical location
 suppresses the view. This projection creates no persistent state or proof.
+
+For a localized panic in a declared Rust test, native prompt assembly can attach
+`authored_test_failure.fixture_context`. It quotes the setup through the panic
+line, the local fixture helper and the matching branch of the Python generator
+called with a literal argument. Each excerpt cites its workspace path and
+one-based source lines. Projection requires a matching current test name and
+location. Reads use bounded UTF-8 workspace files. Ambiguous helpers, dynamic
+arguments and generators outside the workspace yield no context. The browser's
+advisory projection derives from receipts alone.
+
+The Observer's primary reason can cite the inherited input and the test's
+changes, then propose a coherent control and a single-change negative case.
+The Coder sees the same setup in the task view. The existing diagnostic read,
+edit admission, request accounting and verification rules continue to apply.
+
+The first native read that resolves diagnosis for a recognized fixture case
+can yield the Coder slice to Observer with `observer_diagnostic_followup.kind`
+set to `authored_fixture_read`. Both the failed check and the read must be
+bound to current recovery snapshots. The handoff names the test and read call.
+Another read of that case in the current task does not schedule the same
+fixture handoff. Existing comparison handoffs keep precedence. The return
+uses the current work ledger and requires at least three Observer requests
+and two Coder requests available. The subsequent edit still needs its
+structured evidence and usual admission.
+
+### Observed fixture inputs
+
+A task can opt into one sampled fixture with a standalone
+`<fixture_observation>` JSON block in its original request. Version 1 names
+the exact `check`, authored `test_path`, and test `case` as reported by the
+test runner. Use the complete name for a nested Rust test, such as
+`module::case`. The check and test artifact must belong to the same declared
+task requirement.
+
+The native executor can retain a final `Fixture observation v1: ` JSON line
+from that check's stdout after an actual failed execution in the workspace
+root. The frame names the case and contains bounded scalar snapshots at
+`generated` or `validator_input` stages, and field comparisons with observed
+and expected values. The check itself owns the sampling. The runtime runs it
+through the normal explicit tool call, scope and approval. It performs no
+implicit fixture execution.
+
+The bounded JSON is local tool-result metadata under
+`recovery_focus.fixture_observation`. While the same authored failure is
+current, Coder and Observer see the sampled values, the native call ID and
+the fields whose operands differ. A subsequent mutation or newer execution
+of the check retires the sample. Fixture snapshots are diagnostic data.
+Failed checks, evidence, approvals and completion keep their ordinary rules.
+
+When the current sample has mismatches, both prompts lead with the approved
+check's expected inputs for the authored test. The repair guidance uses those
+inputs as the destination and cites the sampled values separately. It keeps
+the mandatory diagnostic read and exact recheck in force. When the task
+leaves check order open, declared formatting checks can run early in the
+final sweep to preserve freshness across the later checks.
+The first Observer handoff after diagnosis uses a native read that includes
+the panic line. A possible mutation retires the quoted source context until
+a fresh native failure locates it again.

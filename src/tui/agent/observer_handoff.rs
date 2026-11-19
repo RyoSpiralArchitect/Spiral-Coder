@@ -119,13 +119,21 @@ pub(super) fn newly_executed(
     latest(messages, configured)
 }
 
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub(super) enum DiagnosticReturn {
+    Followup(super::recovery_focus::DiagnosticFollowup),
+    Fixture(super::recovery_focus::FixtureReadHandoff),
+}
+
 pub(super) fn after_diagnostic_read(
     focus: &super::recovery_focus::RecoveryFocus,
     messages: &[Value],
     root: Option<&str>,
+    configured: Option<&str>,
     initial_steps: usize,
     current_steps: usize,
-) -> Option<super::recovery_focus::DiagnosticFollowup> {
+) -> Option<DiagnosticReturn> {
     if current_steps <= initial_steps
         || !crate::work_budget::current().is_some_and(|context| {
             context.role == "coder"
@@ -139,6 +147,12 @@ pub(super) fn after_diagnostic_read(
     focus
         .diagnostic_followup(messages, root)
         .filter(|followup| followup.should_yield())
+        .map(DiagnosticReturn::Followup)
+        .or_else(|| {
+            focus
+                .fixture_read_handoff(messages, root?, configured)
+                .map(DiagnosticReturn::Fixture)
+        })
 }
 
 #[cfg(test)]
