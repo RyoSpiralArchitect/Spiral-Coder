@@ -247,6 +247,8 @@ allowance. Its `iteration-01/`, `iteration-02/` and subsequent directories
 retain separate reports, sessions, traces and ledgers. `iterations.json`
 lists the parent task IDs, per-iteration spend, totals and stop reason.
 While an iteration is running, its own ledger includes in-flight requests.
+`spiral coupled-status --run-dir` reconciles these records without provider
+calls; see [coupled-status](coupled-status.md).
 
 A validated successful report stops the chain immediately. An exhausted
 iteration or an accepted blocked report can advance when it recorded a new
