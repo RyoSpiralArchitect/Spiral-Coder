@@ -17,8 +17,8 @@ use crate::task_scope::relative_path;
 #[path = "authored_test_failure.rs"]
 mod authored_test_failure;
 pub(crate) use authored_test_failure::{
-    AuthoredTestFailure, FixtureReadHandoff, FAILURE_SITE_GUIDANCE, FIXTURE_CONTEXT_GUIDANCE,
-    OBSERVED_FIXTURE_GUIDANCE,
+    fixture_repair_prompt, AuthoredTestFailure, FixtureReadHandoff, FAILURE_SITE_GUIDANCE,
+    FIXTURE_CONTEXT_GUIDANCE,
 };
 
 #[path = "baseline_failure.rs"]

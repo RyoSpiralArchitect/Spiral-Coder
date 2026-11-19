@@ -1974,3 +1974,10 @@ current, Coder and Observer see the sampled values, the native call ID and
 the fields whose operands differ. A subsequent mutation or newer execution
 of the check retires the sample. Fixture snapshots are diagnostic data.
 Failed checks, evidence, approvals and completion keep their ordinary rules.
+
+When the current sample has mismatches, both prompts lead with the approved
+check's expected inputs for the authored test. The repair guidance uses those
+inputs as the destination and cites the sampled values separately. It keeps
+the mandatory diagnostic read and exact recheck in force. When the task
+leaves check order open, declared formatting checks can run early in the
+final sweep to preserve freshness across the later checks.

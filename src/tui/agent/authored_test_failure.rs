@@ -6,7 +6,40 @@ use crate::tui::agent::{fixture_observation, requirement_proof::AuthoredTests};
 mod fixture;
 pub(crate) use fixture::GUIDANCE as FIXTURE_CONTEXT_GUIDANCE;
 
-pub(crate) const OBSERVED_FIXTURE_GUIDANCE: &str = "\nThe approved failed check sampled the fixture at the named stages. Use validator_input and mismatched_fields to decide what the validator actually received. When the sampled input contradicts the intended control, cite the exact observed and expected values in the primary reason and give a test-input correction before suggesting any validator edit. Keep the mandatory read as the immediate tool when it is pending. Once that read is complete, use its native evidence for any test edit. A passing coherent control and a single-condition negative control are still needed. These sampled values are diagnostic data.\n";
+pub(crate) fn fixture_repair_prompt(failure: &Value) -> Option<String> {
+    let observation = &failure["fixture_observation"];
+    if observation["mismatched_fields"].as_array()?.is_empty() {
+        return None;
+    }
+    let mut expected_inputs = BTreeMap::new();
+    for comparison in observation["comparisons"].as_array()? {
+        let field = comparison["field"].as_str()?;
+        if expected_inputs
+            .insert(field, comparison.get("expected")?)
+            .is_some()
+        {
+            return None;
+        }
+    }
+    let target = json!({
+        "test_path": failure["path"].as_str()?,
+        "case": observation["case"].as_str()?,
+        "expected_inputs": expected_inputs,
+    });
+    Some(format!(
+        "[Expected inputs for the authored fixture]\n{target}\n\
+         Use expected_inputs as the destination of the test-input correction. Use validator_input \
+         to identify the starting values. In the primary reason, name the setup expression to \
+         change and give its expected value. Reconcile related references, stored records and counts \
+         together in the test setup. Establish the coherent positive case before applying the \
+         single-condition negative test. Consider a validator change only if coherent input still \
+         fails. Follow the mandatory read or exact recheck first and cite the native read in the edit \
+         evidence. Make the first supported edit ready for the declared format check. If the task \
+         leaves check order open, check formatting before the rest of the final sweep, after any \
+         required recheck. Run every exact check again after further mutations. This is diagnostic \
+         context from the approved check.\n\n"
+    ))
+}
 
 pub(crate) const FAILURE_SITE_GUIDANCE: &str = "\nUse authored_test_failure to locate the operation that stopped. For a compiler diagnostic, quote the expression and compiler types when present. For a panic, trace the operation from fixture creation through invocation to assertion. State which observation actually ran, which behavior remains unmeasured, and the smallest control that would distinguish a fixture fault from a product fault. A passing fixture invocation alone does not establish that a later mutation has its required inputs. If source or fixture shape is missing, name the specific line or producer output to inspect. Follow the current required read or recheck first.\n";
 
@@ -61,10 +94,9 @@ impl AuthoredTestFailure {
         });
     }
 
-    pub(in crate::tui::agent) fn has_fixture_mismatch(&self) -> bool {
-        self.fixture_observation
-            .as_ref()
-            .is_some_and(|observation| observation.has_mismatches())
+    pub(in crate::tui::agent) fn repair_prompt(&self) -> Option<String> {
+        self.fixture_observation.as_ref()?;
+        fixture_repair_prompt(&serde_json::to_value(self).ok()?)
     }
 
     pub(in crate::tui::agent) fn include_source(&mut self, tests: &AuthoredTests) {

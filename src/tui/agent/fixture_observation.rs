@@ -175,12 +175,6 @@ pub(super) struct Observation {
     mismatched_fields: Vec<String>,
 }
 
-impl Observation {
-    pub(super) fn has_mismatches(&self) -> bool {
-        !self.mismatched_fields.is_empty()
-    }
-}
-
 /// Bind retained local metadata to the current panic and check. A mutation or
 /// a newer execution of that check retires the prior bytes.
 pub(super) fn project(
@@ -379,8 +373,20 @@ mod tests {
             "verification_failure",
         );
         for prompt in [coder, observer] {
-            assert!(prompt.contains("record-02") && prompt.contains("record-01"));
+            let mut lines = prompt.lines();
+            assert_eq!(
+                lines.next(),
+                Some("[Expected inputs for the authored fixture]")
+            );
+            let target: Value = serde_json::from_str(lines.next().unwrap()).unwrap();
+            assert_eq!(
+                target,
+                json!({"test_path":TEST_PATH,"case":CASE,
+                "expected_inputs":{"pending pointer":"record-01"}})
+            );
+            assert!(lines.any(|line| line.contains("record-02")));
             assert!(prompt.contains("test-input correction"));
+            assert!(prompt.contains("mandatory read or exact recheck first"));
         }
         let context = ExecVerificationContext::from_messages(None, &restored);
         assert!(project(&restored, "/other", CHECK, TEST_PATH, CASE, &context).is_none());
