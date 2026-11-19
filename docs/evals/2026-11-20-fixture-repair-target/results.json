@@ -406,5 +406,14 @@
     "next_steps": "None; all requested edits and exact checks are complete.",
     "remaining_acceptance": [],
     "summary": "[DONE] Repaired tests/coupled_status.rs only. The first-interruption fixture now explicitly represents an interrupted first iteration with zero task/wire requests, creates the durable iteration-01 state directory, and writes a valid empty work ledger. The measured change was tests/coupled_status.rs: 8 semantic setup lines added, plus rustfmt wrapping. Required outcomes: empty first interrupted ledger reports zero used requests; skipped-directory rejection remains covered by the passing directory unittest with empty stdout and a diagnostic; all five exact checks passed. Checks: python3 -S scripts/status_fixture_observe.py (1 passed, 0 failed); cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact (1 passed, 0 failed); cargo test --locked --test coupled_status -q (7 passed, 0 failed); python3 -S -m unittest -v scripts.status_interruption_directory (1 test, 0 failures/errors); cargo fmt --all -- --check (passed)."
+  },
+  "first_fixture_check_after_edit": {
+    "call_id": "call_LQxUXTyPmZPaYTGDXy2lws2G",
+    "tool": "exec",
+    "result_step": 4,
+    "executed": true,
+    "succeeded": true,
+    "freshness": "superseded",
+    "command": "python3 -S scripts/status_fixture_observe.py"
   }
 }

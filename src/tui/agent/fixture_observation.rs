@@ -317,13 +317,63 @@ mod tests {
     }
 
     #[test]
+    fn same_leaf_in_another_module_cannot_claim_the_observation() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().to_str().unwrap();
+        std::fs::create_dir(dir.path().join("tests")).unwrap();
+        std::fs::write(
+            dir.path().join(TEST_PATH),
+            "mod a { #[test] fn first_import() {} }\nmod b { #[test] fn first_import() {} }\n",
+        )
+        .unwrap();
+        let call = ToolCallData {
+            id: "case".into(),
+            name: "exec".into(),
+            arguments: json!({"command":CHECK,"cwd":root}).to_string(),
+            thought_signature: None,
+        };
+        for (declared, accepted) in [
+            (CASE.to_owned(), false),
+            (format!("a::{CASE}"), false),
+            (format!("b::{CASE}"), true),
+        ] {
+            let mut messages =
+                vec![json!({"role":"user","content":task().replace(CASE,&declared)})];
+            let mut focus = RecoveryFocus::default();
+            let failure = format!(
+                "FAILED (exit_code: 101)\ncwd: {root}\nthread 'b::{CASE}' panicked at {TEST_PATH}:2:3:\nwrong input"
+            );
+            let context = ExecVerificationContext::from_messages(None, &messages);
+            focus.record_result(&call, &failure, Some(root), None, &context);
+            let frame = capture(&messages, CHECK, &frame().replace(CASE, &declared)).unwrap();
+            append(
+                &mut messages,
+                &call,
+                frame.attach(focus.tool_message(&call, failure)),
+            );
+            let packet = serde_json::to_value(task_obligations::project_advisory(
+                &messages,
+                None,
+                Some(root),
+            ))
+            .unwrap();
+            assert_eq!(packet["required_diagnostic_read"]["path"], TEST_PATH);
+            assert_eq!(
+                packet["authored_test_failure"]["fixture_observation"].is_object(),
+                accepted,
+                "{declared}"
+            );
+        }
+    }
+
+    #[test]
     fn current_sample_reaches_both_roles_and_retires_on_mutation_or_new_result() {
         let temp = tempfile::tempdir().unwrap();
         let root = temp.path().to_str().unwrap();
         let test_path = temp.path().join(TEST_PATH);
         std::fs::create_dir_all(test_path.parent().unwrap()).unwrap();
         std::fs::write(
-            test_path,
+            &test_path,
             format!("{}assert!(result.is_ok());\n", "\n".repeat(11)),
         )
         .unwrap();
@@ -388,6 +438,54 @@ mod tests {
             assert!(prompt.contains("test-input correction"));
             assert!(prompt.contains("mandatory read or exact recheck first"));
         }
+        let mut after_action = restored.clone();
+        let action = ToolCallData {
+            id: "partial-action".into(),
+            name: "exec".into(),
+            arguments: json!({"command":"mv part.rs tests/import.rs && false","cwd":root})
+                .to_string(),
+            thought_signature: None,
+        };
+        let context = ExecVerificationContext::from_messages(None, &after_action);
+        assert_eq!(
+            context.classify("mv part.rs tests/import.rs && false").kind,
+            ExecKind::Action
+        );
+        let partial_failure = format!("FAILED (exit_code: 1)\ncwd: {root}\nstopped after a change");
+        std::fs::write(
+            &test_path,
+            format!("{}assert!(new_result.is_ok());\n", "\n".repeat(12)),
+        )
+        .unwrap();
+        focus.record_result(&action, &partial_failure, Some(root), None, &context);
+        append(
+            &mut after_action,
+            &action,
+            focus.tool_message(&action, partial_failure),
+        );
+        assert!(view(&after_action)["authored_test_failure"].is_null());
+        assert_eq!(
+            view(&after_action)["required_diagnostic_read"]["path"],
+            TEST_PATH
+        );
+
+        let refreshed = ToolCallData {
+            id: "fresh-check".into(),
+            ..call.clone()
+        };
+        let failure_at_new_line = failure.replace(":12:3:", ":13:3:");
+        let context = ExecVerificationContext::from_messages(None, &after_action);
+        focus.record_result(&refreshed, &failure_at_new_line, Some(root), None, &context);
+        append(
+            &mut after_action,
+            &refreshed,
+            focus.tool_message(&refreshed, failure_at_new_line),
+        );
+        assert_eq!(
+            view(&after_action)["authored_test_failure"]["sites"][0]["line"],
+            13
+        );
+
         let context = ExecVerificationContext::from_messages(None, &restored);
         assert!(project(&restored, "/other", CHECK, TEST_PATH, CASE, &context).is_none());
         for (tool, content, arguments) in [

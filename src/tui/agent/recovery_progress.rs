@@ -80,6 +80,14 @@ pub(super) fn survives(
 /// Version 2 snapshots bind the actual failed check, including automatic tests
 /// whose configuration may have changed since this result was recorded.
 fn owned_check(tc: &ToolCallData, message: &Value, root: Option<&str>) -> Option<String> {
+    owned_failure(tc, message, root).map(|failure| failure.check)
+}
+
+pub(super) fn owned_failure(
+    tc: &ToolCallData,
+    message: &Value,
+    root: Option<&str>,
+) -> Option<FailureFocus> {
     if message[METADATA_KEY]["version"] != 2 {
         return None;
     }
@@ -102,7 +110,7 @@ fn owned_check(tc: &ToolCallData, message: &Value, root: Option<&str>) -> Option
         file_edit_succeeded(&tc.name, output)
             && auto_test_outcome(&tc.name, output) == AutoTestOutcome::Failed
     };
-    matches.then_some(pending.check)
+    matches.then_some(pending)
 }
 
 /// Match check failures to their own successful check, failed edits to a

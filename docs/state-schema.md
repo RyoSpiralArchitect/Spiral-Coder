@@ -1957,8 +1957,10 @@ structured evidence and usual admission.
 
 A task can opt into one sampled fixture with a standalone
 `<fixture_observation>` JSON block in its original request. Version 1 names
-the exact `check`, authored `test_path`, and leaf test `case`. The check and
-test artifact must belong to the same declared task requirement.
+the exact `check`, authored `test_path`, and test `case` as reported by the
+test runner. Use the complete name for a nested Rust test, such as
+`module::case`. The check and test artifact must belong to the same declared
+task requirement.
 
 The native executor can retain a final `Fixture observation v1: ` JSON line
 from that check's stdout after an actual failed execution in the workspace
@@ -1981,3 +1983,6 @@ inputs as the destination and cites the sampled values separately. It keeps
 the mandatory diagnostic read and exact recheck in force. When the task
 leaves check order open, declared formatting checks can run early in the
 final sweep to preserve freshness across the later checks.
+The first Observer handoff after diagnosis uses a native read that includes
+the panic line. A possible mutation retires the quoted source context until
+a fresh native failure locates it again.

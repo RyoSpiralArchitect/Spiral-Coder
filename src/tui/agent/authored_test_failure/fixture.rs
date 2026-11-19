@@ -289,14 +289,22 @@ fn unrelated_test() {
             assert!(prompt.contains("cite both values"));
             assert!(!prompt.contains("ignore this other case"));
         }
-        for (id, expected) in [("first", true), ("again", false)] {
+        for (id, start, expected) in [
+            ("clipped_prefix", None, false),
+            ("targeted", Some(610), true),
+            ("again", Some(610), false),
+        ] {
+            let args = start.map_or_else(
+                || json!({"path":TEST_PATH}),
+                |start| json!({"path":TEST_PATH,"start_line":start,"end_line":616}),
+            );
             let read = ToolCallData {
                 id: id.into(),
                 name: "read_file".into(),
-                arguments: json!({"path":TEST_PATH}).to_string(),
+                arguments: args.to_string(),
                 thought_signature: None,
             };
-            let (output, failed) = crate::file_tools::tool_read_file(TEST_PATH, workspace);
+            let (output, failed) = crate::file_tools::read_range::execute_args(&args, workspace);
             assert!(!failed);
             let context = ExecVerificationContext::from_messages(Some(CHECK), &messages);
             focus.record_result(&read, &output, workspace, Some(CHECK), &context);

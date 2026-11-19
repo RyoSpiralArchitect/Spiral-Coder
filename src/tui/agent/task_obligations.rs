@@ -152,7 +152,8 @@ pub(crate) fn project_advisory(
     let mut authored_test_failure = task_requirements
         .authored_tests
         .as_ref()
-        .and_then(|tests| focus.authored_test_failure(tests, tool_root));
+        .and_then(|tests| focus.authored_test_failure(tests, tool_root))
+        .filter(|_| focus.authored_source_is_current(messages, tool_root, &evidence));
     if let (Some(failure), Some(workspace)) = (&mut authored_test_failure, tool_root) {
         failure.include_observation(messages, workspace, &context);
     }
