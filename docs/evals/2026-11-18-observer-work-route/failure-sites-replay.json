@@ -1,0 +1,53 @@
+{
+  "external_requests": 0,
+  "seed_sha256": "df7d3e3f986856b0f03ceebec20774dfff8f2fbf30b385223f1f27e9e1efd3dc",
+  "unchanged_workspace": true,
+  "outcomes": {
+    "control": {
+      "binary_sha256": "292e2d7196f5f47411de9d899bc528bf2571c91a2ec1df6d57d0976eea95646a",
+      "roles": {
+        "coder": {
+          "local_requests": 6,
+          "structured_sites_received": false,
+          "ledger_removal_source_available": true
+        },
+        "observer": {
+          "local_requests": 2,
+          "structured_sites_received": false,
+          "ledger_removal_source_available": true
+        }
+      },
+      "pending_exact_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ]
+    },
+    "failure_sites": {
+      "binary_sha256": "b2fa2666a30d05504113c8a22523c4ba462592b14925ea3072840a764b4425aa",
+      "roles": {
+        "coder": {
+          "local_requests": 6,
+          "structured_sites_received": true,
+          "ledger_removal_source_available": true
+        },
+        "observer": {
+          "local_requests": 2,
+          "structured_sites_received": true,
+          "ledger_removal_source_available": true
+        }
+      },
+      "pending_exact_checks": [
+        "cargo fmt --all -- --check",
+        "python3 -S -m unittest -v scripts.status_visible",
+        "python3 -S -m unittest -v scripts.status_guide",
+        "cargo test --locked --bin spiral-coder -q",
+        "cargo test --locked --test coupled_status -q",
+        "python3 -S -m unittest -v scripts.status_paths"
+      ]
+    }
+  }
+}

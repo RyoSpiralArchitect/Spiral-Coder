@@ -1,0 +1,126 @@
+{
+  "external_provider_calls": 0,
+  "fixture": {
+    "source_receipt_sha256": "ac49626759eefa36baa984b8009191fb14b3676358f5df13fbfd68c2e496a402",
+    "source_session_sha256": "651cb265f574697831daa15575f935a307b639e668097eb09004573d92d753a8",
+    "retained_message_count": 353,
+    "before_native_step": 151,
+    "source_before_step_sha256": "442ab8acfb6d52a0bf2764abe21d862fa26672ac0aac3e36d51b9763fc4b1e19",
+    "task_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+    "seed_sha256": "fbe7d5886914488fe8b50beed4c4a8e52cff293b4b85118a5eebafa553992254",
+    "start_inventory_sha256": "2c1da9217f4158bec42eb30b81385adb724e822e92cd209d3b3ec63397112695"
+  },
+  "previous": {
+    "runtime_sha256": "d0d69d48bd1c4805fd25aa12fd0842a02d9b08341501241cc5c5a9066500abc3",
+    "diagnostic_path": "scripts/status_paths.py",
+    "observer_calls": 2,
+    "coder_calls": 4,
+    "comparison_executed": false,
+    "assumption_ledger_rejected": true,
+    "comparison_frame": null,
+    "pending_exact_checks": [
+      "python3 -S -m unittest -v scripts.status_paths"
+    ],
+    "action_tape": [
+      {
+        "role": "coder-offline",
+        "request": 1,
+        "action": "exact_check"
+      },
+      {
+        "role": "observer-offline",
+        "request": 1,
+        "action": "required_diagnostic_read",
+        "path": "scripts/status_paths.py"
+      },
+      {
+        "role": "coder-offline",
+        "request": 2,
+        "action": "read_assertion"
+      },
+      {
+        "role": "observer-offline",
+        "request": 2,
+        "action": "assertion_comparison",
+        "case": "scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown",
+        "checks_to_refresh": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q"
+        ]
+      },
+      {
+        "role": "coder-offline",
+        "request": 3,
+        "action": "exec_comparison"
+      },
+      {
+        "role": "coder-offline",
+        "request": 4,
+        "action": "bounded_stop"
+      }
+    ],
+    "workspace_inventory_matched": true
+  },
+  "updated": {
+    "runtime_sha256": "65835dd47f99cd53d9340dbe9b7d1620d7da4fe464a9fbdb7c88a9c9b48c4c5b",
+    "diagnostic_path": "scripts/status_paths.py",
+    "observer_calls": 2,
+    "coder_calls": 4,
+    "comparison_executed": true,
+    "assumption_ledger_rejected": false,
+    "comparison_frame": "Focused unittest: scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown tests: 1 subtest failures: 3\nAssertion difference (- first operand, + second operand):\n-  'pending': None,\n+  'pending': {'directory': 'iteration-02',\n+              'in_flight_requests': None,\n+              'task_id': None,\n+              'task_requests': None,\n+              'wire_requests': None},\n[end focused unittest comparison]",
+    "pending_exact_checks": [
+      "cargo fmt --all -- --check",
+      "python3 -S -m unittest -v scripts.status_visible",
+      "python3 -S -m unittest -v scripts.status_guide",
+      "cargo test --locked --bin spiral-coder -q",
+      "cargo test --locked --test coupled_status -q",
+      "python3 -S -m unittest -v scripts.status_paths"
+    ],
+    "action_tape": [
+      {
+        "role": "coder-offline",
+        "request": 1,
+        "action": "exact_check"
+      },
+      {
+        "role": "observer-offline",
+        "request": 1,
+        "action": "required_diagnostic_read",
+        "path": "scripts/status_paths.py"
+      },
+      {
+        "role": "coder-offline",
+        "request": 2,
+        "action": "read_assertion"
+      },
+      {
+        "role": "observer-offline",
+        "request": 2,
+        "action": "assertion_comparison",
+        "case": "scripts.status_paths.StatusPaths.test_missing_pending_components_are_unknown",
+        "checks_to_refresh": [
+          "cargo fmt --all -- --check",
+          "python3 -S -m unittest -v scripts.status_visible",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q"
+        ]
+      },
+      {
+        "role": "coder-offline",
+        "request": 3,
+        "action": "exec_comparison"
+      },
+      {
+        "role": "coder-offline",
+        "request": 4,
+        "action": "bounded_stop"
+      }
+    ],
+    "workspace_inventory_matched": true
+  }
+}

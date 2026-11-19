@@ -1,0 +1,63 @@
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index f3fc36b..708ef91 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -80,3 +80,58 @@ fn missing_pending_ledger_is_unknown_and_symlink_is_rejected() {
+     assert!(output.stdout.is_empty());
+     assert!(!output.stderr.is_empty());
+ }
++
++fn assert_rejected(root: &Path) {
++    let output = cli(root);
++    assert!(!output.status.success());
++    assert!(output.stdout.is_empty());
++    assert!(!output.stderr.is_empty());
++}
++
++#[test]
++fn each_missing_pending_component_is_unknown() {
++    for component in ["directory", "state", "ledger"] {
++        let (_tmp, root) = fixture("unknown");
++        assert!(cli(&root).status.success());
++        let iteration = root.join("iteration-02");
++        fs::create_dir_all(iteration.join("state")).unwrap();
++        match component {
++            "directory" => fs::remove_dir_all(&iteration).unwrap(),
++            "state" => fs::remove_dir_all(iteration.join("state")).unwrap(),
++            "ledger" => fs::remove_file(iteration.join("state/tui-work.json")).unwrap(),
++            _ => unreachable!(),
++        }
++        let output = cli(&root);
++        assert!(output.status.success(), "{component}");
++        assert!(String::from_utf8_lossy(&output.stdout).contains("\"task_used\":null"));
++    }
++}
++
++#[test]
++fn dangling_pending_symlink_components_are_rejected() {
++    for component in ["directory", "state", "ledger"] {
++        let (_tmp, root) = fixture("unknown");
++        assert!(cli(&root).status.success());
++        let iteration = root.join("iteration-02");
++        fs::create_dir_all(iteration.join("state")).unwrap();
++        let missing = root.join("does-not-exist");
++        match component {
++            "directory" => {
++                fs::remove_dir_all(&iteration).unwrap();
++                std::os::unix::fs::symlink(&missing, &iteration).unwrap();
++            }
++            "state" => {
++                let state = iteration.join("state");
++                fs::remove_dir_all(&state).unwrap();
++                std::os::unix::fs::symlink(&missing, &state).unwrap();
++            }
++            "ledger" => {
++                let ledger = iteration.join("state/tui-work.json");
++                fs::remove_file(&ledger).unwrap();
++                std::os::unix::fs::symlink(&missing, &ledger).unwrap();
++            }
++            _ => unreachable!(),
++        }
++        assert_rejected(&root);
++    }
++}

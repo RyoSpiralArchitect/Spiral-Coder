@@ -1,0 +1,39 @@
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+index 2d1bcf7..4779402 100644
+--- a/src/coupled_status.rs
++++ b/src/coupled_status.rs
+@@ -289,6 +289,7 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+         bail!("completed manifest is inconsistent");
+     }
+     if manifest.iterations.is_empty()
++        && !pending_interrupted
+         && (manifest.task_requests != Some(0) || manifest.wire_requests != Some(0))
+     {
+         bail!("empty manifest must have zero totals");
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index 7f24377..bf17afd 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -124,9 +124,19 @@ fn owner_local_request_ids_are_valid_across_two_iterations() {
+         "{}",
+         String::from_utf8_lossy(&output.stderr)
+     );
+-    let stdout = String::from_utf8_lossy(&output.stdout);
+-    assert!(stdout.contains("\"iteration\":1"));
+-    assert!(stdout.contains("\"iteration\":2"));
++    let parsed: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++    let pairs: Vec<(u64, String)> = parsed["iterations"]
++        .as_array()
++        .unwrap()
++        .iter()
++        .map(|row| {
++            (
++                row["iteration"].as_u64().unwrap(),
++                row["task_id"].as_str().unwrap().to_string(),
++            )
++        })
++        .collect();
++    assert_eq!(pairs, vec![(1, "t1".into()), (2, "t2".into())]);
+ }
+ 
+ fn assert_rejected(root: &Path) {

@@ -1,0 +1,76 @@
+{
+  "condition": "Repair the sealed #82 focused candidate with one new protected visible reproduction, an empty conversation, and no operator repairs. Retain the first terminal.",
+  "issue": 105,
+  "runtime_commit": "f7fcf4983293fb84e96156faa98473591ff58a6a",
+  "binary_sha256": "ce878df5a2ad984ead0892f3f505f6203643a32af171e588b86e1c7ba53f7b87",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_receipt_sha256": "f064636029d4550aae770284f686c8b335da92ce099ed5c9a7744a7a47aa7ccc",
+    "source_inventory_sha256": "4cf135e59a87d7ccfdcf1eb3dddc829c9ee5be6db2878206b55acce87ebf3843",
+    "start_inventory_sha256": "d7b28c87fb3a3343384a45b9aa2ee890e0b7487789a4734634c464bdc0e6f1d2",
+    "visible_fixture": "scripts/status_first_interruption.py",
+    "visible_sha256": "8af4b7a3ee4001623eb5c11e2daf6f776a190ab4dede61a795d587de3274ce4a",
+    "retained_message_count": 0,
+    "task_sha256": "d8560da677fe6024c27bd80440cc044dec91a03cf0a9b500e869077e14c1f091",
+    "operator_changed_candidate_source_files": []
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 3,
+  "task_requests_per_iteration": 32,
+  "maximum_task_requests": 96,
+  "maximum_wire_requests": 108,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "transport_repair_requests": 4,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 1800,
+  "exact_checks": [
+    "python3 -S -m unittest -v scripts.status_first_interruption",
+    "cargo fmt --all -- --check",
+    "python3 -S -m unittest -v scripts.status_visible",
+    "python3 -S -m unittest -v scripts.status_guide",
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
+  ],
+  "editable": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "required_held_out_cases": 24,
+  "required_original_groups": 7,
+  "required_authored_faults": 4,
+  "required_new_cases": 27,
+  "promotion_authorized": false,
+  "successor_controls": {
+    "operator_files_sha256": {
+      "authored_controls.py": "b398225d4d09c7fdce2e5d66d2677f79d751d9fa928e9c3752a09463cc7860ac",
+      "interruption_cases.py": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+      "output_fixture.rs": "048f315207a215bb1f11c5ff03d74589ba7c333694a82c4dffa25d597852108e",
+      "visible.py": "8af4b7a3ee4001623eb5c11e2daf6f776a190ab4dede61a795d587de3274ce4a"
+    },
+    "new_native_cases_required": 27,
+    "windows_test_target": "x86_64-pc-windows-gnu",
+    "equivalent_outputs_that_must_pass": [
+      "native",
+      "pretty"
+    ],
+    "faults_that_must_fail_a_named_test": [
+      "swapped_task_ids",
+      "wrong_numbers",
+      "reversed_rows"
+    ],
+    "freeze": "Separate first terminals, measured against the same independent controls. Never promote automatically."
+  },
+  "external_calls_at_pin": 0,
+  "created_at": "2026-11-18T10:50:30.531375+00:00"
+}

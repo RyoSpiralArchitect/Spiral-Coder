@@ -1,0 +1,247 @@
+{
+  "frozen_scorer_sha256": "b398225d4d09c7fdce2e5d66d2677f79d751d9fa928e9c3752a09463cc7860ac",
+  "paired_scorer_sha256": "97eb8e0b5a7a0b4ac69a0f5e1b4ecf6eeb84757bc3605f7cf54617d412641191",
+  "provider_calls": 0,
+  "first_terminal_qualification_unchanged": true,
+  "runs": {
+    "previous": {
+      "authored_tests_sha256": "c58b7645dca37f8d1dd8260cbcd79ab5fd502c63529d6b5379401d03e59e651c",
+      "reference_cli_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "tested_target": "x86_64-pc-windows-gnu",
+      "windows_compile": {
+        "passed": false,
+        "exit": 101,
+        "log_sha256": "3c76f59d9257d328f6d5f8a508c38241aa8747712b98294fe55716a8b3a987d4"
+      },
+      "output_controls": {
+        "native": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "577de507cfc641ef344bf994e1013e99968c3f121d181d4979a63e8797c7f3bf",
+          "passed": true
+        },
+        "pretty": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "owner_local_request_ids_are_valid_across_two_iterations"
+          ],
+          "log_sha256": "6072b4d39578b6b535e26353dc8f2ed2294fbd69ce09a7c6ff0c26607ed48f26",
+          "passed": false
+        },
+        "swapped_task_ids": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "bd516108f785669a9aa2e35b9b8eb0a316cc5c203224430e2c50d1e1da31dba1",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "wrong_numbers": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "bd516108f785669a9aa2e35b9b8eb0a316cc5c203224430e2c50d1e1da31dba1",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "reversed_rows": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "f463bee2de5e147bde6baadd5554ec10483eaf87db1039b836c6417ef34f5754",
+          "detection_demonstrated": null,
+          "passed": false
+        }
+      },
+      "passed": false,
+      "host_compile": {
+        "passed": true,
+        "log_sha256": "7af64cc2dcdb30b5f84c20fb525532ee8353965189631695abad5dabae791fc2"
+      }
+    },
+    "positive": {
+      "authored_tests_sha256": "e1ed6444ba2c569f2bca06db8a2459edc55f967ffa57024dd8626504f6d574fc",
+      "reference_cli_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "tested_target": "x86_64-pc-windows-gnu",
+      "windows_compile": {
+        "passed": true,
+        "exit": 0,
+        "log_sha256": "f0a46790011d4318c325f507ff3564a940687c24680462ccfa1ddd4f778b82c8"
+      },
+      "output_controls": {
+        "native": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "87b6e8d3cf733b53a17bd421d3b9685503e3f16c4a6ec52232db11259d827425",
+          "passed": true
+        },
+        "pretty": {
+          "exit": 0,
+          "two_row_calls": 1,
+          "failed_tests": [],
+          "log_sha256": "95d2247abe08d7a5914f33c9850e32df6537b1307b0827ed968c1874e3c44b50",
+          "passed": true
+        },
+        "swapped_task_ids": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "owner_local_request_ids_are_valid_across_two_iterations"
+          ],
+          "log_sha256": "6826fbbaa8cff3356cc4ed99b9000ffa022adaeb31ca2280b0a45219f6577db0",
+          "detection_demonstrated": true,
+          "passed": true
+        },
+        "wrong_numbers": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "owner_local_request_ids_are_valid_across_two_iterations"
+          ],
+          "log_sha256": "68a1697ad9504e45401f26bd98c0d541f496871b04705a1b239494ce3311b0d2",
+          "detection_demonstrated": true,
+          "passed": true
+        },
+        "reversed_rows": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "owner_local_request_ids_are_valid_across_two_iterations"
+          ],
+          "log_sha256": "ad34df8bb6ef3d5a5857718cfc417fbb593e4e3286348e51e1984581dd68da55",
+          "detection_demonstrated": true,
+          "passed": true
+        }
+      },
+      "passed": true,
+      "host_compile": {
+        "passed": true,
+        "log_sha256": "fb174c4722b71f23c5bfd9266ae25fc7d4f3738211e3941bddb48f6ce744d60a"
+      }
+    },
+    "fresh": {
+      "authored_tests_sha256": "3e5813c71f4cbd4fc65fa319788c81087e7f94ca12f4816db07a7903a85f8374",
+      "reference_cli_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "tested_target": "x86_64-pc-windows-gnu",
+      "windows_compile": {
+        "passed": true,
+        "exit": 0,
+        "log_sha256": "f73fd7b52724804ab1a34df691e6071da2ae5efe886ab4b71a099c78a4ec8dae"
+      },
+      "output_controls": {
+        "native": {
+          "exit": 0,
+          "two_row_calls": 0,
+          "failed_tests": [],
+          "log_sha256": "23aab6f0e5540e5ea7b1150649de9652968b4b795655661241b235e183753cb2",
+          "passed": false
+        },
+        "pretty": {
+          "exit": 0,
+          "two_row_calls": 0,
+          "failed_tests": [],
+          "log_sha256": "cd67f1c579ad3e3986099d425aa671eb5a32df87e2c7271520c84eb0f59c12b7",
+          "passed": false
+        },
+        "swapped_task_ids": {
+          "exit": 0,
+          "two_row_calls": 0,
+          "failed_tests": [],
+          "log_sha256": "cd67f1c579ad3e3986099d425aa671eb5a32df87e2c7271520c84eb0f59c12b7",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "wrong_numbers": {
+          "exit": 0,
+          "two_row_calls": 0,
+          "failed_tests": [],
+          "log_sha256": "aea4c7ad977f0af8aebea98fe706ab8c2de65510bd16bd3e6b64eccac7b7780f",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "reversed_rows": {
+          "exit": 0,
+          "two_row_calls": 0,
+          "failed_tests": [],
+          "log_sha256": "cd67f1c579ad3e3986099d425aa671eb5a32df87e2c7271520c84eb0f59c12b7",
+          "detection_demonstrated": null,
+          "passed": false
+        }
+      },
+      "passed": false,
+      "host_compile": {
+        "passed": true,
+        "log_sha256": "c966c59483ecf3e7610475cefb5822e4ee72cc37b8ac027d1d524e9fc6433223"
+      }
+    },
+    "focused": {
+      "authored_tests_sha256": "bf798f0761584f6f174226fffdab689cb285ef295dce3040a401608cc928dbcd",
+      "reference_cli_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "tested_target": "x86_64-pc-windows-gnu",
+      "windows_compile": {
+        "passed": false,
+        "exit": 101,
+        "log_sha256": "2f7992d0e967be8db6b852b4431435549b76d5823b99a6e9394da933540b5bb2"
+      },
+      "output_controls": {
+        "native": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "first_interruption_with_empty_ledger_preserves_known_totals"
+          ],
+          "log_sha256": "be3cca156eb9faa7f5a72dc163ffc55007bb8ed30edeab9f0845921529b976c5",
+          "passed": false
+        },
+        "pretty": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "first_interruption_with_empty_ledger_preserves_known_totals",
+            "owner_local_request_ids_are_valid_across_two_iterations"
+          ],
+          "log_sha256": "a9b4fa5682eaa8dfada848a280ca3e6ed313bc24e5efb4e199e1293db655f657",
+          "passed": false
+        },
+        "swapped_task_ids": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "first_interruption_with_empty_ledger_preserves_known_totals"
+          ],
+          "log_sha256": "67bab977167fa94535aa7336f660fca6a756d1545ed503e6480833b24c3634ad",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "wrong_numbers": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "first_interruption_with_empty_ledger_preserves_known_totals"
+          ],
+          "log_sha256": "bd839a7f63a105c05c078e850848fd4308d63d8ba384fbe19459833637b16a86",
+          "detection_demonstrated": null,
+          "passed": false
+        },
+        "reversed_rows": {
+          "exit": 101,
+          "two_row_calls": 1,
+          "failed_tests": [
+            "first_interruption_with_empty_ledger_preserves_known_totals"
+          ],
+          "log_sha256": "eabd9499c00eb3610160fb5fe38b2c3aa8d0225a939517e93b02fda1478e1433",
+          "detection_demonstrated": null,
+          "passed": false
+        }
+      },
+      "passed": false,
+      "host_compile": {
+        "passed": true,
+        "log_sha256": "f1b850bde2df96874bd1d02fd0c8d54702161096de34a6269badfc0e693266dc"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "condition": "Adds current fixture observation delivery to both roles.",
+  "issue": 105,
+  "runtime_commit": "2a8f808125ef2fb589232100504004535206292a",
+  "binary_sha256": "ebc494dfc46aa7f7bbba133eeee7b244f5907744012b0316050caf5e8a972a91",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_inventory_sha256": "22698c4ae84112a4a58aa65382499f9f8e545f1c1ebe15a7c403e9645d507cbe",
+    "source_plan_sha256": "4a4ef87367275a1d7fa874cfb235b07ad855a4bf3794ccefc34e18b4df918dbc",
+    "start_inventory_sha256": "86495b5508ecb88a3a0f0b8d430a4c2791c0a928cc268f3a44a8d06142e28263",
+    "task_sha256": "d5b2fc6323e06ebbf0d37725e3ebb7551bb3bf6e5a5a63805f71dbafc83cdfce",
+    "retained_message_count": 0,
+    "starting_files": 1673,
+    "protected_runner": {
+      "scripts/status_fixture_forwarder.rs": "da7b068ee565ee04e2d0837b947e317c979a72382d39883bf243ff86bee86a4c",
+      "scripts/status_fixture_observe.py": "138f995839de0f5a9f23695ab746bd7cbab13aebde8520648d709b7f8f35fab9"
+    },
+    "initial_authored_test_sha256": "a636b4d863f6e468794628ea24348bc731aa06b38fb83abedf7f0b1c97bf9d78",
+    "initial_validator_sha256": "4c42c93a37f1633a298cca6b97e6cd1457b8369dcce38512f8618c90fadd47d2",
+    "visible_fixture": "scripts/status_interruption_directory.py",
+    "visible_sha256": "7bc66bca42e6f5a61673544f9190e8e118de6e87338d530045b82fc049abf7e6"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "task_requests_per_iteration": 32,
+  "maximum_task_requests": 32,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "transport_repair_requests": 4,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 900,
+  "exact_checks": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "editable": [
+    "src/coupled_status.rs",
+    "tests/coupled_status.rs"
+  ],
+  "promotion_authorized": false,
+  "external_calls_at_pin": 0,
+  "created_at": "2026-11-18T13:44:56.932393+00:00",
+  "precondition": "Preserve the first terminal in each arm. Describe this matched pair without a general effectiveness claim.",
+  "predeclared_observations": [
+    "Original failed observation check executed before the first changed path.",
+    "Native diagnostic read and ensuing Observer advice identify the pointer, the empty ledger, and a concrete test correction before edits.",
+    "First and terminal changed paths; validator has its starting bytes when a test-only correction works.",
+    "Current successful receipts for all five exact checks and an accepted native completion.",
+    "Independently replay the candidate patch and check coherent first interruption and skipped-directory rejection."
+  ],
+  "driver_source_commit": "2a8f808125ef2fb589232100504004535206292a",
+  "driver_files": {
+    "coupled_bench/__init__.py": "3df2d6249ae9f782a80e64b37ca71d8b3ef635253df407ba43e7afd1c6777b2d",
+    "coupled_bench/common.py": "f4b2080263c47cfba27f39de53831ad16ba43e73b31b8d71954a7f726fe9026d",
+    "coupled_bench/evidence.py": "a2f6ea946edcc7fbd59b80f7bc8a8692f1167a9b5357dbdb132c359153bef038",
+    "coupled_bench/oracles.py": "166b8a9b46d37a43f8f57d8621a51677e40b7ff5472addfda398e70c5a9374aa",
+    "coupled_bench/reporting.py": "2e8aad24f2a53b724aa3d8b940125f7118700f751c66e599f816c163cded42de",
+    "coupled_bench/roles.py": "c60203ed38fe271896dc82702408ab0d7cbf191eacdbcb74790f5d0662ab2c19",
+    "coupled_bench/runner.py": "9035b2b0d5469d9d81c031f590a5eccbf3db734079f01691f9cd6ba249ce425d",
+    "self_dogfood/__init__.py": "2574eb88dfbe1ecc11d97aab4b5e969515be10f474d930abaa184d18e9dc0728",
+    "self_dogfood/assessment.py": "01a7b958e4e5e61e87e2f6587b4e788f261874bc9c69d02bcf061de84d88d206",
+    "self_dogfood/build_cache.py": "68abf994b77beca622797d01ac62bac5efad89936d87e85fa5047b95cd0f58d7",
+    "self_dogfood/contracts.py": "c06556ba7e121aa94363c8024e54226a069c19b6f4386a9915d65fc80707341d",
+    "self_dogfood/evidence.py": "a7c4b68538607776c0761b9fd6900c96847401ba8f5ee7ea8f463e29767b66c1",
+    "self_dogfood/measurement.py": "cee7d2f818b75bdfae4877498cdb63cb0dc4e81a5c5f02a0fc8a3ec3aeabddfa",
+    "self_dogfood/paired.py": "7a2c2a208c101bb07b300127ab8f6bae09ca6fbe79cf04d21bdcaba1510c6a19",
+    "self_dogfood/process.py": "9c8db4ad7f323a4f53fcff68c3065f60c89e33935fd48d1221986dff0efe8398",
+    "self_dogfood/runner.py": "be04b79e710260c62e9d8bbafb97ca93423286fc9a98f54c1f78e50dfdbcbcf0"
+  },
+  "profile_command_sha256": "e6f02355679a7067fb3ae7ff40f9a51eb648bdd57b408152e4e9739febe9b34f",
+  "runner_sha256": "45be28fd67aaa38ab800ad0daedf168eb271980f3ef0f252acd7bf1ab2e9bb96"
+}

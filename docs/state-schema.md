@@ -1319,6 +1319,12 @@ exclude trailing whitespace and serve as review context. An unconfirmed edit, an
 incomplete read of that file, or an executed workspace action clears the
 view. Recognized verification runs retain the recorded revision. The
 projection opens no files and supplies no test coverage or edit authority.
+The local Coder and TUI Observer can also refresh this view when history lacks
+a complete revision. They read at most 8 KiB from the latest successfully
+edited declared test path, resolved inside the workspace. The
+`workspace_readback` origin identifies this source, and `call_id` points to
+the edit that selected its path. The readback creates no native read or check
+receipt. Browser advisory packets continue to derive source from history.
 Test design guidance asks both roles to preserve declared path names when
 exercising filesystem type validation, so a naming rule cannot mask the fault.
 An Observer reply with a path-only edit for a declared test can be projected
@@ -1834,6 +1840,33 @@ No new persisted state, budget, progress credit or completion exception is added
 
 ## Observer intervention decision brief
 
+`observer_action/work_route.rs` derives the version-1 whole-task route from
+native `task_obligations` and the projected request allowance before prompt
+compaction. General, diagnostic and terminal handoff prompts receive it. The
+route lists up to 16 deduplicated artifact paths with their kinds, requirement
+IDs and native edit-receipt status. A written artifact is not marked as
+semantically complete. Dedicated test cases and shared behavioral rules stay
+visible after checks pass, with up to 12 entries per list and descriptions
+bounded to 1,200 Unicode characters. Lists report totals and excerpts identify
+truncation.
+
+The verification view deduplicates pending and required exact commands. It
+shows checks due now, checks due after another edit, and how many current
+receipts that edit would invalidate. The edit-then-finish lower bound reserves
+at least one edit, every missing artifact edit when known, outstanding baseline
+reproductions, the full exact-check set and one report. Capacity subtracts that check/report reserve from the next
+Coder allowance. It excludes unknown reads, diagnosis and repairs; unavailable
+accounting remains null. These are planning facts, not new gates or allowances.
+
+The Observer's existing `why_this_first` and `fallback` strings are forwarded
+in the validated soft hint as quoted advisory data, capped at 700 characters
+each with explicit truncation. They share the primary suggestion's confidence,
+validation and stale-context checks. No new envelope field or persistence
+owner is introduced: the current system message carries the advice through
+session saves and context compression, and the next continuation refreshes it.
+Native evidence, approval and
+completion gates never consume these strings as proof.
+
 The Observer prompt derives a bounded brief from native execution receipts before
 compaction: the last six proposed actions retain executed/succeeded/freshness
 separately, with an explicit omission count. Only the latest unexecuted native
@@ -1852,28 +1885,31 @@ unknown. The current task owns the work ledger. The same receipt format covers
 consumed soft advice and advice that asks for an explicit response.
 
 The optional `task_obligations.diagnostic_followup` view derives from
-correlated version 2 recovery snapshots and their native results. It identifies
-the latest two comparable failures of the exact check at the workspace root
-and the completed diagnostic read. Comparison normalizes the elapsed time in
-a recognized unittest footer and padding before an assertion operator at the
-clipped output boundary. The remaining check output and read result must match.
-An intervening executed process or edit, different output, unresolved read or
-missing receipt ends the comparison. The value is prompt context. Existing
-recovery snapshots and the exact-check ledger retain their separate ownership.
+correlated version 2 recovery snapshots and their native results. It links an
+exact check at the workspace root to a completed read of the diagnosed file.
+Location selection ignores the compiler location immediately attached to a
+Rust warning. A clipped unittest assertion can supply a focused comparison on
+the first failure after that read. Other cases need two matching failures and
+reads. In that case the view also names the earlier failure. Matching normalizes
+unittest timing and padding before the clipped assertion operator. Executed
+processes, edits, changed output and unresolved reads delimit these sequences.
 
 The view can include `unittest_comparison.case` and
 `unittest_comparison.arguments` for a single localized method in clipped
 unittest output. The arguments use the existing `exec` schema and workspace
 root. When up to eight named subtests of that method fail, the view includes
 `subtest_failures`. The runner samples the first observed failure and binds
-the reported count to the receipt. Live and restored recovery require the
-same preceding failure/read cycles and matching command. For an observed
-difference, the native
+the reported count to the receipt. Both live dispatch and resume require the
+correlated failure, diagnostic read and exact comparison arguments. For an
+observed difference, the native
 `recovery_focus.comparison.frame` receipt retains the final output frame
 from dispatch for resume. The optional
 `checks_to_refresh` list describes current exact checks that the existing
 ledger would reopen after this execution. The comparison remains an
-observation of the unresolved check.
+observation of the unresolved check. The assumption ledger treats a command
+as this observation when its exact arguments match the current native
+failure and read projection. Dispatch applies the usual tool admission and
+records the actual outcome.
 
 General, diagnostic and handoff prompts all ask for a concise decision rationale
 using existing fields: missing fact, consequence of the next observation, a
@@ -1882,3 +1918,71 @@ be offered as executable patch bytes. This is advisory guidance, not a semantic
 validator or permission expansion. Existing diagnosis, recheck, approval,
 confidence and completion gates remain unchanged. No new persisted state or
 provider request is introduced.
+
+When a check stops inside a declared Rust test, the advisory
+`task_obligations.authored_test_failure` view carries the current check,
+diagnostic and reported source locations. Each site records the line and the
+kind of diagnostic (a Rust diagnostic arrow or a test panic). An available
+test revision supplies the corresponding source line, bounded to 300
+characters plus an omission marker. Coder and Observer use the operation on
+that line to identify what the test reached and which fixture precondition or
+public behavior still needs checking. A repair attempt or a historical location
+suppresses the view. This projection creates no persistent state or proof.
+
+For a localized panic in a declared Rust test, native prompt assembly can attach
+`authored_test_failure.fixture_context`. It quotes the setup through the panic
+line, the local fixture helper and the matching branch of the Python generator
+called with a literal argument. Each excerpt cites its workspace path and
+one-based source lines. Projection requires a matching current test name and
+location. Reads use bounded UTF-8 workspace files. Ambiguous helpers, dynamic
+arguments and generators outside the workspace yield no context. The browser's
+advisory projection derives from receipts alone.
+
+The Observer's primary reason can cite the inherited input and the test's
+changes, then propose a coherent control and a single-change negative case.
+The Coder sees the same setup in the task view. The existing diagnostic read,
+edit admission, request accounting and verification rules continue to apply.
+
+The first native read that resolves diagnosis for a recognized fixture case
+can yield the Coder slice to Observer with `observer_diagnostic_followup.kind`
+set to `authored_fixture_read`. Both the failed check and the read must be
+bound to current recovery snapshots. The handoff names the test and read call.
+Another read of that case in the current task does not schedule the same
+fixture handoff. Existing comparison handoffs keep precedence. The return
+uses the current work ledger and requires at least three Observer requests
+and two Coder requests available. The subsequent edit still needs its
+structured evidence and usual admission.
+
+### Observed fixture inputs
+
+A task can opt into one sampled fixture with a standalone
+`<fixture_observation>` JSON block in its original request. Version 1 names
+the exact `check`, authored `test_path`, and test `case` as reported by the
+test runner. Use the complete name for a nested Rust test, such as
+`module::case`. The check and test artifact must belong to the same declared
+task requirement.
+
+The native executor can retain a final `Fixture observation v1: ` JSON line
+from that check's stdout after an actual failed execution in the workspace
+root. The frame names the case and contains bounded scalar snapshots at
+`generated` or `validator_input` stages, and field comparisons with observed
+and expected values. The check itself owns the sampling. The runtime runs it
+through the normal explicit tool call, scope and approval. It performs no
+implicit fixture execution.
+
+The bounded JSON is local tool-result metadata under
+`recovery_focus.fixture_observation`. While the same authored failure is
+current, Coder and Observer see the sampled values, the native call ID and
+the fields whose operands differ. A subsequent mutation or newer execution
+of the check retires the sample. Fixture snapshots are diagnostic data.
+Failed checks, evidence, approvals and completion keep their ordinary rules.
+
+When the current sample has mismatches, both prompts lead with the approved
+check's expected inputs for the authored test. The repair guidance uses those
+inputs as the destination and cites the sampled values separately. It keeps
+the mandatory diagnostic read and exact recheck in force. When the task
+leaves check order open, declared formatting checks can run early in the
+final sweep to preserve freshness across the later checks.
+The first Observer handoff after diagnosis uses a native read that includes
+the panic line. A possible mutation retires the quoted source context until
+a fresh native failure locates it again.

@@ -1,7 +1,7 @@
 //! Preserve one bounded test revision from correlated native results.
 use super::AuthoredTests;
 use crate::execution_evidence::{exec_may_have_run, file_edit_succeeded};
-use crate::file_tools::read_range::fresh_full_body;
+use crate::file_tools::read_range::{bounded_workspace_text, fresh_full_body};
 use crate::tui::agent::{
     exec_verification::ExecVerificationContext,
     recovery_focus::correlated_results,
@@ -10,6 +10,7 @@ use crate::tui::agent::{
 };
 use serde::Serialize;
 use serde_json::Value;
+use std::path::Path;
 
 const MAX_SOURCE_BYTES: usize = 8192;
 
@@ -19,6 +20,34 @@ enum Origin {
     Read,
     Write,
     ReconstructedEdit,
+    WorkspaceReadback,
+}
+
+pub(super) fn readback(
+    tests: &AuthoredTests,
+    messages: &[Value],
+    workspace: &str,
+) -> Option<ReviewSource> {
+    let (path, call_id) = correlated_results(messages)
+        .filter_map(|(call, result)| {
+            if !file_edit_succeeded(&call.name, result["content"].as_str()?) {
+                return None;
+            }
+            let args: Value = serde_json::from_str(&call.arguments).ok()?;
+            let path =
+                crate::task_scope::relative_path(args["path"].as_str()?.trim(), Some(workspace))?;
+            tests.contains(&path).then_some((path, call.id))
+        })
+        .last()?;
+    let root = Path::new(workspace).canonicalize().ok()?;
+    let source = bounded_workspace_text(&root, &path, MAX_SOURCE_BYTES as u64)?;
+    Some(ReviewSource {
+        path,
+        call_id,
+        origin: Origin::WorkspaceReadback,
+        source,
+        rendered_read_hash: None,
+    })
 }
 
 #[derive(Debug, Serialize)]
@@ -29,6 +58,13 @@ pub(super) struct ReviewSource {
     source: String,
     #[serde(skip)]
     rendered_read_hash: Option<u64>,
+}
+
+impl ReviewSource {
+    pub(super) fn line(&self, path: &str, line: usize) -> Option<&str> {
+        (self.path == path).then_some(())?;
+        self.source.lines().nth(line.checked_sub(1)?)
+    }
 }
 
 pub(super) fn project(

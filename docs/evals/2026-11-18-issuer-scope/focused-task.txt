@@ -1,0 +1,52 @@
+Review the public coupled-status command's request-ID uniqueness using its native producer. Read src/work_budget.rs where the durable writer allocates the ID, and inspect scripts/status_fixture.py for its native records. The Observer should identify the exact assignment, the owning state and its lifetime, then give the Coder a public positive control with two normal finalized iterations. Determine from the writer which identifiers should coincide or differ. Include a single duplicate inside one iteration as the negative control.
+
+Exercise the real CLI from tests/coupled_status.rs. Keep both fixtures otherwise valid, including all links and summary counts. Assert both iterations are represented in the positive output. Run the authored test on the starting code and record what it actually did. Repair src/coupled_status.rs if the observed public behavior disagrees with the producer; preserve the existing tests and documentation. After your last edit run each exact check below separately. Report the writer observation, public test results and the changed paths. State any remaining failure truthfully.
+
+cargo fmt --all -- --check
+python3 -S -m unittest -v scripts.status_visible
+python3 -S -m unittest -v scripts.status_guide
+cargo test --locked --bin spiral-coder -q
+cargo test --locked --test coupled_status -q
+python3 -S -m unittest -v scripts.status_paths
+
+<task_requirements>
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "writer-scope",
+      "description": "Check request ID uniqueness against the actual issuing state, with a two-iteration public positive control and one duplicate within the same iteration as the negative control. Repair the public validator and cover both directions.",
+      "artifacts": [
+        {
+          "path": "src/coupled_status.rs",
+          "kind": "source"
+        },
+        {
+          "path": "tests/coupled_status.rs",
+          "kind": "test"
+        }
+      ],
+      "checks": [
+        {
+          "command": "cargo fmt --all -- --check"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_visible"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_guide"
+        },
+        {
+          "command": "cargo test --locked --bin spiral-coder -q"
+        },
+        {
+          "command": "cargo test --locked --test coupled_status -q"
+        },
+        {
+          "command": "python3 -S -m unittest -v scripts.status_paths"
+        }
+      ]
+    }
+  ]
+}
+</task_requirements>

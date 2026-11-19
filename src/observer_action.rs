@@ -4,9 +4,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 pub(crate) mod diagnostic;
+pub(crate) mod identity_scope;
 pub(crate) mod intervention;
 pub(crate) mod strategy;
 mod test_recipe;
+pub(crate) mod work_route;
 
 #[cfg(test)]
 #[path = "observer_action/report_repair_tests.rs"]
@@ -219,6 +221,12 @@ pub(crate) fn evaluate(mut request: Request) -> Response {
     if !request.packet.is_object() {
         request.packet = json!({});
     }
+    // Only the native Observer can attach workspace readbacks.
+    request
+        .packet
+        .as_object_mut()
+        .unwrap()
+        .remove("identity_scope_review");
     request.packet["artifact_preservation_issue"] =
         json!(crate::work_budget::current().and_then(|c| c.budget.preservation_issue()));
     request.packet["artifact_guidance"] =

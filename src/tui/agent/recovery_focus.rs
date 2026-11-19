@@ -14,6 +14,13 @@ use crate::execution_evidence::{auto_test_outcome, file_edit_succeeded, AutoTest
 use crate::streaming::ToolCallData;
 use crate::task_scope::relative_path;
 
+#[path = "authored_test_failure.rs"]
+mod authored_test_failure;
+pub(crate) use authored_test_failure::{
+    fixture_repair_prompt, AuthoredTestFailure, FixtureReadHandoff, FAILURE_SITE_GUIDANCE,
+    FIXTURE_CONTEXT_GUIDANCE,
+};
+
 #[path = "baseline_failure.rs"]
 mod baseline_failure;
 #[path = "diagnostic_followup.rs"]

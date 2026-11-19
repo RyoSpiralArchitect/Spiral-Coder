@@ -1,0 +1,33 @@
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index b939663..1a2c664 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -45,12 +45,24 @@ fn first_interruption_with_empty_ledger_preserves_known_totals() {
+     let mut manifest: serde_json::Value =
+         serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
+     manifest["iterations"] = serde_json::Value::Array(vec![]);
+-    manifest["task_requests"] = serde_json::Value::Number(1.into());
+-    manifest["wire_requests"] = serde_json::Value::Number(1.into());
++    manifest["active_iteration"] = serde_json::Value::Null;
++    manifest["stop_reason"] = serde_json::Value::String("interrupted".into());
++    manifest["interrupted_iteration"] = serde_json::json!({
++        "directory": "iteration-01",
++        "task_requests": 0,
++        "wire_requests": 0
++    });
++    manifest["task_requests"] = serde_json::Value::Number(0.into());
++    manifest["wire_requests"] = serde_json::Value::Number(0.into());
+     manifest["completed"] = serde_json::Value::Bool(false);
+-    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
++    fs::write(
++        &manifest_path,
++        serde_json::to_vec_pretty(&manifest).unwrap(),
++    )
++    .unwrap();
+     let ledger = root.join("iteration-01/state/tui-work.json");
+-    fs::write(&ledger, br#"{\"task_id\":\"pending\",\"requests\":[]}"#).unwrap();
++    fs::create_dir_all(ledger.parent().unwrap()).unwrap();
++    fs::write(&ledger, br#"{"task_id":"pending","requests":[]}"#).unwrap();
+     let output = cli(&root);
+     assert!(
+         output.status.success(),

@@ -1,0 +1,182 @@
+{
+  "condition": "post-read",
+  "plan_sha256": "27dfa620e016626c885e91b7cc5e2d2c7b6345b937e4c7487829307b69e8dcd9",
+  "run_receipt_sha256": "35b806f683b868ac49d6d4ca654781b98fcc8176d0b3e5ec7a995b15f0548927",
+  "delta_sha256": "363d06b9c4bf14596d1daf57e6241892bfc1266551fe8910a79c5618134efead",
+  "start_inventory_sha256": "22698c4ae84112a4a58aa65382499f9f8e545f1c1ebe15a7c403e9645d507cbe",
+  "terminal_inventory_sha256": "1de4635f42a4ca4d4d32a3660b0203f68ba24a60f14b11dd9a7deb26bc85115f",
+  "provider_roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "rounds": [
+    {
+      "termination": "blocked",
+      "task": 32,
+      "wire": 34,
+      "roles": {
+        "coder": 25,
+        "observer": 9
+      },
+      "report_sha256": "73358aec6849bca385a1adb4e6d851c2b7a5deed43a2cd14e168622e60a991bf"
+    }
+  ],
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 311.543,
+    "finished_at": "2026-11-18T13:08:30.824357+00:00",
+    "redacted_native_files": 0
+  },
+  "changed_paths": [
+    "src/coupled_status.rs"
+  ],
+  "first_edit": {
+    "call_id": "call_rMNeWrxhz6ymhUGy8XzzT8sc",
+    "tool": "apply_diff",
+    "result_step": 10,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "src/coupled_status.rs"
+  },
+  "edits": [
+    {
+      "call_id": "call_rMNeWrxhz6ymhUGy8XzzT8sc",
+      "tool": "apply_diff",
+      "result_step": 10,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_z4sLje4EhxIiyI6YH9XLprWR",
+      "tool": "apply_diff",
+      "result_step": 12,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_I06oN6QOlIHtrHLGh9CXn4ud",
+      "tool": "apply_diff",
+      "result_step": 16,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_1FRWi6Awpr3GIOdM26vz5AVR",
+      "tool": "apply_diff",
+      "result_step": 18,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "src/coupled_status.rs"
+    },
+    {
+      "call_id": "call_vKLoZOl6eFjIjvZ1nLvA2BkI",
+      "tool": "apply_diff",
+      "result_step": 22,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "src/coupled_status.rs"
+    }
+  ],
+  "before_edit_native_failure": [
+    {
+      "call_id": "call_Z494rIt3eb2e5KdEPDLumNKi",
+      "tool": "exec",
+      "result_step": 1,
+      "succeeded": false,
+      "freshness": "before_mutation"
+    }
+  ],
+  "native_checks_after_last_mutation": {
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": []
+  },
+  "remaining_native_checks": [
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "accepted_done_step": null,
+  "accepted_done_report": null,
+  "native_passed": false,
+  "fixture_read_returns": [
+    {
+      "diagnostic_read_call_id": "call_ajWo8ztKVqQLQyqNqnyNejSW",
+      "failed_check": "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+      "failure_path": "tests/coupled_status.rs",
+      "kind": "authored_fixture_read",
+      "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+    }
+  ],
+  "coder_reported_fixture_before_edit": null,
+  "retained_observer_advice": [
+    "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(path=tests/coupled_status.rs)\nWhy: Read the exact failure path now to inspect the current, post-edit test setup and assertion at line 62. This distinguishes a fixture/input mismatch from a product accounting defect and unlocks a targeted next edit; if the test data or expected field is inconsistent, correct that evidence path, otherwise trace the failing pending-count computation in src/coupled_status.rs. Do not rerun or edit before this required read; the four pending checks and authored report remain due.\n</observer_advisory>\n\n[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native read_file with exactly these arguments: {\"path\":\"tests/coupled_status.rs\"}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply."
+  ],
+  "unexecuted_evidence_blocks": [],
+  "unexecuted_recovery_blocks": [],
+  "matching_file_entries_after_patch_replay": 1671,
+  "build": {
+    "exit": 0,
+    "log_sha256": "31de6b78d278275e9fa0a16476dce311382d33598dbdcb7a934a9b3fafa6b82b"
+  },
+  "binary_sha256": "c54f58a3b4cfca39ec18e9eb76323442b9537b526327088bbb30c1ed690d6fc5",
+  "writer_state_cases": {
+    "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+    "passed": 16,
+    "total": 27,
+    "failed": [
+      "known_manifest_null_task_requests",
+      "missing_manifest_numeric_task_requests",
+      "known_manifest_null_wire_requests",
+      "missing_manifest_numeric_wire_requests",
+      "missing_interruption_numeric_wire_requests",
+      "both_manifest_totals_lost",
+      "finalized_over_cap_active_unknown",
+      "pending_round_over_cap_active",
+      "finalized_over_cap_interrupted_unknown",
+      "pending_round_over_cap_interrupted",
+      "unknown_charge_in_pending"
+    ]
+  },
+  "directory_pair": {
+    "binary_sha256": "c54f58a3b4cfca39ec18e9eb76323442b9537b526327088bbb30c1ed690d6fc5",
+    "valid": {
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"stopped\",\"stop_reason\":\"interrupted\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"blocked\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":{\"directory\":\"iteration-02\",\"task_id\":\"t2\",\"task_requests\":1,\"wire_requests\":2,\"in_flight_requests\":1},\"requests\":{\"task_used\":3,\"wire_used\":5,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":189,\"wire_remaining\":211}}",
+      "stderr": ""
+    },
+    "skipped_directory": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: invalid pending directory"
+    },
+    "passed": true
+  },
+  "first_observer_action_after_fixture_read": {
+    "tool": "read_file",
+    "arguments": {
+      "path": "src/coupled_status.rs"
+    },
+    "matching_call_ids": [
+      "call_IhUZPfcESPS8gTPkC0LrGI91"
+    ],
+    "executed": true,
+    "succeeded": null
+  },
+  "qualifies_as_diagnostic_completion": false,
+  "promotion_authorized": false
+}

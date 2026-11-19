@@ -1,0 +1,54 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "condition": "One Luna/Luna continuation from the preserved first terminal of the ownership follow-up. All 365 native messages retained, including rejected blocked report. Same original task, changed authored tests as produced, no evaluator output in seed.",
+  "runtime_commit": "39dcc45b41c9a62c4de8ed648a6d3e9f1d848f6b",
+  "binary_sha256": "b2fa2666a30d05504113c8a22523c4ba462592b14925ea3072840a764b4425aa",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_session_sha256": "6fb5acb07a3935ab8b533313ac67230337171b2a4edabeb5675b6f755dd46ba8",
+    "source_receipt_sha256": "2d7c4eb8f7fcbf075c6502c1f0f9c944e1cbbf90992ba73baa6e29b93d111151",
+    "retained_message_count": 365,
+    "seed_sha256": "10ad793683406902f78b3b19a62df2841ecb47d9012fdb7bb765ea8d2a1c1da0",
+    "task_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+    "start_inventory_sha256": "943693edd6a58981059fb4522332721a7c6994bf012107d0abc0cd56c9963ed0",
+    "source_patch_sha256": "58c521721fcf6e5732dbf7728c54d5a8ba23ad21143849608965ee6f9edafc71",
+    "operator_changed_candidate_files": []
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "maximum_task_requests": 32,
+  "transport_repair_requests": 4,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 900,
+  "native_checks": [
+    "cargo fmt --all -- --check",
+    "python3 -S -m unittest -v scripts.status_visible",
+    "python3 -S -m unittest -v scripts.status_guide",
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
+  ],
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "external_provider_calls_at_pin": 0,
+  "runner_sha256": "282b220ab7c8b6b6e80bf9679d1270304ef04557e8ba90bd2562af9fa64e9254",
+  "validation_log_sha256": "a6d3c15ea6853afcd5ed2bd718b9e34b30c82b87450b7fff3fb9b8ef7999cb91",
+  "objectives": [
+    "Check whether the pair repairs both fixture setup failures and runs the authored suite successfully.",
+    "Evaluate the resulting tests against the same valid reference and four fault controls, and the candidate against the same seven independent groups.",
+    "Retain the first terminal, exact post-edit verification status, and native actor requests. Compare fixture recovery to the sealed predecessor. This continuation cannot qualify issue 82."
+  ]
+}

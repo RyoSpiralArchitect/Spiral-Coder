@@ -95,7 +95,7 @@ fn unittest_case(line: &str) -> Option<&str> {
     (case.contains(" (") && case.ends_with(')')).then_some(line)
 }
 
-fn rust_warning_header(line: &str) -> bool {
+pub(super) fn rust_warning_header(line: &str) -> bool {
     let header = if line.starts_with("test_") {
         line.split_once(") ... ").map_or(line, |(_, rest)| rest)
     } else {
@@ -162,6 +162,7 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
         let mut named_test = false;
         let mut rust_warning = false;
         let mut pending_panic_cause = false;
+        let mut rust_type_mismatch = false;
         for line in source.lines().map(str::trim) {
             if pending_panic_cause && !line.is_empty() {
                 // Rust panic messages need not contain "error" or "assertion".
@@ -169,6 +170,27 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
                 push_line(&mut lines, line);
                 pending_panic_cause = false;
                 continue;
+            }
+            if rust_type_mismatch {
+                // Rustc places expected/found beside its caret or in following notes.
+                // Keep just its type annotation, within the existing digest limits.
+                let annotation = line
+                    .trim_start_matches('|')
+                    .trim_start_matches('=')
+                    .trim()
+                    .trim_start_matches(['^', '-', ' '])
+                    .trim();
+                if annotation.starts_with("expected ") || annotation.starts_with("found ") {
+                    push_line(&mut lines, annotation);
+                    continue;
+                }
+            }
+            if line.starts_with("error")
+                || rust_warning_header(line)
+                || line.starts_with("thread '")
+                || line.is_empty()
+            {
+                rust_type_mismatch = line.starts_with("error[E0308]:");
             }
             if rust_warning_header(line) {
                 rust_warning = true;
@@ -530,6 +552,38 @@ mod tests {
         assert!(error_digest(real, "").unwrap().contains(real));
         let failure = "test tests::failed_assertion ... FAILED";
         assert!(error_digest(failure, "").unwrap().contains(failure));
+    }
+
+    #[test]
+    fn rustc_type_annotation_survives_failed_auto_test_and_history() {
+        let stderr = format!(
+            "warning: unrelated
+  --> src/other.rs:4:1
+   | ^ expected a warning to be ignored
+
+error[E0308]: mismatched types
+  --> tests/io.rs:105:40
+   |
+105 | assert!(out.contains(key));
+   |              -------- ^^^ expected `&u8`, found `&str`
+   |
+   = note: expected reference `&u8`
+{}
+error: could not compile",
+            "noise\n".repeat(700)
+        );
+        // rustc may prefix the caret with a relationship marker. The caret
+        // itself, rather than the displayed source, carries the annotation.
+        let rendered = compact_and_prune(&automatic_test_output("", &stderr, 101, "/work"));
+        let summary = recovery_summary(&rendered, None);
+        for text in [&rendered, &summary] {
+            assert!(
+                text.contains("--> tests/io.rs:105:40")
+                    && text.contains("expected `&u8`, found `&str`"),
+                "{text}"
+            );
+            assert!(!text.contains("expected a warning to be ignored"), "{text}");
+        }
     }
 
     #[test]

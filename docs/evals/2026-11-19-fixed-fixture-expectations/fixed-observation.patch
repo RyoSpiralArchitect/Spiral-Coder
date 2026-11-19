@@ -1,0 +1,56 @@
+--- a/scripts/status_fixture_observe.py
++++ b/scripts/status_fixture_observe.py
+@@ -68,6 +68,8 @@
+         fields.update(
+             finalized_rows=len(rows) if isinstance(rows, list) else None,
+             interrupted_directory=iteration(pending.get("directory")) if isinstance(pending, dict) else None,
++            interrupted_task_requests=number(pending.get("task_requests")) if isinstance(pending, dict) else None,
++            interrupted_wire_requests=number(pending.get("wire_requests")) if isinstance(pending, dict) else None,
+             task_requests=number(value.get("task_requests")),
+             wire_requests=number(value.get("wire_requests")),
+         )
+@@ -98,21 +100,25 @@
+
+
+ def comparisons(samples):
++    # The case is a first interruption. Its expected fields are independent
++    # of the generated history and of mutations made by the test.
+     by_file = {sample["file"]: sample["fields"] for sample in samples
+                if sample["stage"] == "validator_input"}
+     manifest = by_file[MANIFEST]
+-    rows = manifest.get("finalized_rows")
+-    pointer = manifest.get("interrupted_directory")
+-    if rows is None or pointer is None:
+-        return []
+-    expected_directory = f"iteration-{rows + 1:02}"
+-    next_ledger = by_file.get(f"{expected_directory}/{LEDGER}", {})
+-    selected_ledger = by_file.get(f"{pointer}/{LEDGER}", {})
+-    return [
+-        {"field": "manifest.interrupted_directory", "observed": pointer, "expected": expected_directory},
+-        {"field": f"{expected_directory}/{LEDGER} JSON", "observed": next_ledger.get("json", "missing"), "expected": "valid"},
+-        {"field": "selected pending ledger.wire_requests", "observed": selected_ledger.get("wire_requests"), "expected": 0},
++    directory = "iteration-01"
++    ledger_path = f"{directory}/{LEDGER}"
++    ledger = by_file.get(ledger_path, {})
++    values = [
++        ("manifest.finalized_rows", manifest.get("finalized_rows"), 0),
++        ("manifest.interrupted_directory", manifest.get("interrupted_directory"), directory),
++        (f"{ledger_path} JSON", ledger.get("json", "missing"), "valid"),
++        (f"{ledger_path}.wire_requests", ledger.get("wire_requests"), 0),
++        ("manifest.interrupted_iteration.task_requests", manifest.get("interrupted_task_requests"), 0),
++        ("manifest.interrupted_iteration.wire_requests", manifest.get("interrupted_wire_requests"), 0),
++        ("manifest.task_requests", manifest.get("task_requests"), 0),
++        ("manifest.wire_requests", manifest.get("wire_requests"), 0),
+     ]
++    return [{"field": field, "observed": actual, "expected": expected} for field, actual, expected in values]
+
+
+ def cargo(args, cwd, env):
+@@ -144,6 +150,7 @@
+         shutil.copyfile("scripts/status_fixture.py", scratch / "scripts/status_fixture_base.py")
+         (scratch / "scripts/status_fixture.py").write_text("from status_fixture_observe import generate\ngenerate()\n")
+         shutil.copyfile("scripts/status_fixture_forwarder.rs", scratch / "src/main.rs")
++        cargo(["clean", "--package", "spiral-coder", "--profile", "fixture-observation"], scratch, env)
+         artifact_output = cargo(["test", "--test", "coupled_status", "--no-run",
+                                  "--profile", "fixture-observation", "--message-format=json"], scratch, env)
+         artifacts = (json.loads(line) for line in artifact_output.splitlines())

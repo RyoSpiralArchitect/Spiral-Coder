@@ -297,6 +297,31 @@ fn compiler_and_python_failures_retain_a_unique_existing_location() {
     }
 }
 
+#[test]
+fn compiler_warning_locations_do_not_hide_a_unittest_assertion() {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("code.rs"), "source").unwrap();
+    std::fs::write(root.path().join("test_value.py"), "test").unwrap();
+    let check = "python3 -S -m unittest -v test_value";
+    let output = concat!(
+        "FAILED (exit_code: 1)\nstderr:\n",
+        "warning: unused variable\n --> code.rs:1:2\n",
+        "FAIL: test_assertion (test_value.ValueTest.test_assertion)\n",
+        "  File \"test_value.py\", line 1, in test_assertion\n",
+        "AssertionError: actual != expected\n"
+    );
+    let observed = super::diagnostic(check, output, root.path().to_str())
+        .unwrap()
+        .unwrap();
+    assert_eq!(observed.0, "test_value.py");
+    assert!(observed.1.contains("AssertionError: actual != expected"));
+    let ambiguous = output.replace("warning: unused variable", "error[E0001]: broken");
+    assert_eq!(
+        super::diagnostic(check, &ambiguous, root.path().to_str()),
+        Err(())
+    );
+}
+
 #[cfg(unix)]
 #[test]
 fn baseline_diagnostics_cannot_follow_a_symlink_outside_the_workspace() {

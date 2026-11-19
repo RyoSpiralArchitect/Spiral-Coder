@@ -1,0 +1,91 @@
+{
+  "reference": {
+    "binary_sha256": "226f8926d65d58a2e055d9006ef1ac785437209e5c8c22b59f542b4d4aedd03e",
+    "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+    "input_ids": {
+      "first": [
+        0,
+        1,
+        2
+      ],
+      "second_positive": [
+        0,
+        1,
+        2
+      ],
+      "second_negative": [
+        0,
+        0,
+        2
+      ]
+    },
+    "one_finalized": {
+      "passed": true,
+      "exit": 0,
+      "stdout": "{\"iterations\":[{\"changed_files\":[\"src/a.rs\"],\"iteration\":1,\"newly_verified\":[\"cargo test -q\"],\"task_id\":\"t1\",\"task_requests\":2,\"termination\":\"completed\",\"wire_requests\":3}],\"pending\":null,\"requests\":{\"task_limit\":192,\"task_remaining\":190,\"task_used\":2,\"wire_limit\":216,\"wire_remaining\":213,\"wire_used\":3},\"status\":\"completed\",\"stop_reason\":\"completed\",\"version\":1}",
+      "stderr": ""
+    },
+    "two_finalized": {
+      "passed": true,
+      "exit": 0,
+      "stdout": "{\"iterations\":[{\"changed_files\":[\"src/a.rs\"],\"iteration\":1,\"newly_verified\":[\"cargo test -q\"],\"task_id\":\"t1\",\"task_requests\":2,\"termination\":\"blocked\",\"wire_requests\":3},{\"changed_files\":[\"src/a.rs\"],\"iteration\":2,\"newly_verified\":[\"cargo test -q\"],\"task_id\":\"t2\",\"task_requests\":2,\"termination\":\"completed\",\"wire_requests\":3}],\"pending\":null,\"requests\":{\"task_limit\":192,\"task_remaining\":188,\"task_used\":4,\"wire_limit\":216,\"wire_remaining\":210,\"wire_used\":6},\"status\":\"completed\",\"stop_reason\":\"completed\",\"version\":1}",
+      "stderr": ""
+    },
+    "duplicate_within_second": {
+      "passed": true,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: duplicate request ID"
+    },
+    "passed": true,
+    "validator_sha256": "39e0b36d8cce39df2ae9fa5ff779ef69bcf11091e85df037749089a36cc7b87e",
+    "tests_sha256": "ca0c59d514ddf8cc5653398e148020c566d9b8b8354063af499e543ea02dd7ca",
+    "probe_sha256": "aeb65e5bed67fe0ffd74ef7358d87d5b26e1a2278f047abac8c80e6f54eac918",
+    "native_template_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60"
+  },
+  "previous": {
+    "binary_sha256": "5b0dd28236bec21bae26d1345d555ae1b8a5406aa543584e3a03e0388ec539e2",
+    "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+    "input_ids": {
+      "first": [
+        0,
+        1,
+        2
+      ],
+      "second_positive": [
+        0,
+        1,
+        2
+      ],
+      "second_negative": [
+        0,
+        0,
+        2
+      ]
+    },
+    "one_finalized": {
+      "passed": true,
+      "exit": 0,
+      "stdout": "{\"version\":1,\"status\":\"completed\",\"stop_reason\":\"completed\",\"iterations\":[{\"iteration\":1,\"task_id\":\"t1\",\"termination\":\"completed\",\"task_requests\":2,\"wire_requests\":3,\"changed_files\":[\"src/a.rs\"],\"newly_verified\":[\"cargo test -q\"]}],\"pending\":null,\"requests\":{\"task_used\":2,\"wire_used\":3,\"task_limit\":192,\"wire_limit\":216,\"task_remaining\":190,\"wire_remaining\":213}}",
+      "stderr": ""
+    },
+    "two_finalized": {
+      "passed": false,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: duplicate request id"
+    },
+    "duplicate_within_second": {
+      "passed": true,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Error: duplicate request id"
+    },
+    "passed": false,
+    "validator_sha256": "dd30dfb63bf3b2afb8e8dcebabf9d5b6934b81f18cc902efc3412422041800e6",
+    "tests_sha256": "53401aaea9cfd7a0d38468523ab9a08000551582697b78777a1f07bca9a2a610",
+    "probe_sha256": "aeb65e5bed67fe0ffd74ef7358d87d5b26e1a2278f047abac8c80e6f54eac918",
+    "native_template_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+    "source_receipt_sha256": "8adb969c888a3a68758e9e7993ee9cc57082696b096c1412ea9b6f1f095244e1"
+  }
+}

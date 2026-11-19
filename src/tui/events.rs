@@ -2450,6 +2450,7 @@ pub(crate) fn build_observer_suggestion_soft_hint(
     } else {
         primary.reason.as_str()
     };
+    let route = crate::observer_action::work_route::coder_context(env);
     Some(format!(
         "<observer_advisory priority=\"soft\" source=\"external_observer\">\n\
 [Observer advisory — soft hint only]\n\
@@ -2457,6 +2458,7 @@ Stay within the current intent anchor and task scope.\n\
 If you are still stuck, prefer this next step before widening search:\n\
 {action}\n\
 Why: {reason}\n\
+{route}\
 </observer_advisory>"
     ))
 }

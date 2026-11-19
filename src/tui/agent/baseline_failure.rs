@@ -52,8 +52,14 @@ pub(super) fn diagnostic(
     // last edited/read source or a path mentioned in ordinary output is causal.
     let mut candidates = BTreeMap::new();
     let mut python_frame = None;
+    let mut previous_warning_header = false;
     for line in output.lines().map(str::trim) {
-        if let Some(path) = rust_location(line) {
+        let warning_location = previous_warning_header && line.starts_with("--> ");
+        previous_warning_header = super::super::failure_diagnostics::rust_warning_header(line);
+        if warning_location {
+            continue;
+        }
+        if let Some((path, _)) = rust_location(line) {
             candidates.insert(workspace_file(path, root_path, &root).ok_or(())?, line);
         }
         if let Some(path) = python_location(line) {
@@ -141,7 +147,7 @@ fn rustfmt_diff(
     }
 }
 
-fn rust_location(line: &str) -> Option<&str> {
+pub(super) fn rust_location(line: &str) -> Option<(&str, usize)> {
     let location = if let Some(location) = line.strip_prefix("--> ") {
         location
     } else {
@@ -151,7 +157,7 @@ fn rust_location(line: &str) -> Option<&str> {
     };
     let (path_line, column) = location.trim_end_matches(':').rsplit_once(':')?;
     let (path, line) = path_line.rsplit_once(':')?;
-    (positive_number(line) && positive_number(column)).then_some(path)
+    (positive_number(line) && positive_number(column)).then_some((path, line.parse().ok()?))
 }
 
 fn python_location(line: &str) -> Option<&str> {

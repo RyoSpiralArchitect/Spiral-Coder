@@ -1,0 +1,47 @@
+{
+  "condition": "One conditional diagnostic on the sealed previous 23/24 candidate with a new public task, no conversation seed and the same model pair. Run it only if the unseeded primary trial lacks full qualification or the producer-grounded Observer-to-Coder control. This diagnostic cannot qualify #82.",
+  "runtime_commit": "a892360b0fcf9bae81e0799d347e3caec9010843",
+  "binary_sha256": "9fc427625d1d5a68664e64d7dd8b10abe82fd37796aee8c36dd1ea35d17d7f4b",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "fixture": {
+    "source_receipt_sha256": "8adb969c888a3a68758e9e7993ee9cc57082696b096c1412ea9b6f1f095244e1",
+    "source_session_sha256": "fe6da8c367e63b4518b3b35bcee6c605190d34bfea032d087f51d62b31206fcb",
+    "retained_message_count": 0,
+    "source_patch_sha256": "ee0d6099cdc2ca0ed3bde6a21f146ce8a7075af665135b04750750097c3d7d8d",
+    "start_inventory_sha256": "4420767fe34171046bb6fcbde3ab64734cfa4b3a2091acb375adeda4b1a6b99b",
+    "task_sha256": "ffe592612fb6f98b92c1663090f778cc75ac77c7de9ad7d5aaffbab8ee6c8437",
+    "operator_changed_candidate_files": []
+  },
+  "iterations": 2,
+  "task_requests_per_iteration": 32,
+  "maximum_task_requests": 64,
+  "maximum_wire_requests": 72,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "transport_repair_requests": 4,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 1500,
+  "exact_checks": [
+    "cargo fmt --all -- --check",
+    "python3 -S -m unittest -v scripts.status_visible",
+    "python3 -S -m unittest -v scripts.status_guide",
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
+  ],
+  "independent_check_groups": 7,
+  "held_out_cases": 24,
+  "sensitivity_faults": 4,
+  "retain_first_terminal": true,
+  "promotion_authorized": false
+}

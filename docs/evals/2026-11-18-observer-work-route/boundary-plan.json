@@ -1,0 +1,55 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "condition": "One saved-point Luna/Luna review continuation from the sealed fresh candidate immediately before its final native done. Original task and native history retained; no operator candidate edits or held-out feedback in seed. Observer prompt asks about ownership boundaries and positive composition as well as rejection tests.",
+  "runtime_commit": "5b859eae778d51fc65e05b201352c97af17d7452",
+  "binary_sha256": "292e2d7196f5f47411de9d899bc528bf2571c91a2ec1df6d57d0976eea95646a",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_session_sha256": "96d550216509b0ddb96b8d83a638c75dc5ee02409480a82b6e794a5816bbaf2f",
+    "source_receipt_sha256": "d542501be2e2f9b60641bbd701122528c3b1af614c380cef797ecf680fc6fb86",
+    "retained_message_count": 301,
+    "seed_sha256": "ffe29aa24180a0bd63d29de71f01a0656bbed247bad7574db5af06dc416ed351",
+    "task_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+    "inventory_sha256": "ed0590752b205d477b8227c7c5dd070965df7c75dfbab768ef542ce6eb4645c8",
+    "source_patch_sha256": "cdd484953da4ab87d869ca3ad984e46e7b8bc58bd7d40a6d9fef33593dbdd3ae",
+    "operator_changed_candidate_files": [],
+    "start_inventory_sha256": "b809aee7ece7be658e968ad9b9b4664506d4381da19c6ed6da6ed36b68072f74"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "maximum_task_requests": 32,
+  "transport_repair_requests": 4,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 900,
+  "native_checks": [
+    "cargo fmt --all -- --check",
+    "python3 -S -m unittest -v scripts.status_visible",
+    "python3 -S -m unittest -v scripts.status_guide",
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
+  ],
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "external_provider_calls_at_pin": 0,
+  "runner_sha256": "282b220ab7c8b6b6e80bf9679d1270304ef04557e8ba90bd2562af9fa64e9254",
+  "validation_log_sha256": "cf9a4f0b3b6b9c002c220c4e823605d40a2472dcbc752925a625954bf76650bb",
+  "objectives": [
+    "Observe whether the first funded closeout review considers a positive composition case and the ownership of identifiers.",
+    "Retain the first terminal and any candidate changes with native checks after the final mutation.",
+    "Recheck the changed candidate with the original external checks and the fixed sensitivity audit; unchanged test bytes may reuse the source-bound reference audit."
+  ]
+}

@@ -116,7 +116,7 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
     });
     let mut budget = crate::observer_action::strategy::native_budget(&work);
     crate::observer_action::strategy::project_budget(&mut budget, obligations.as_ref(), true);
-    Ok(json!({
+    let mut packet = json!({
         "thread_id": app.tool_root.clone().unwrap_or_else(|| "tui-session".to_string()),
         "target_message_id": format!("coder-{}", target_idx),
         "task_summary": task_summary,
@@ -161,7 +161,17 @@ pub(super) fn build_tui_meta_failure_packet_for_selector(
             "native tool calls and correlated results are authoritative; null means unknown".to_string(),
             "intent_anchor and recent tool results are included when available".to_string(),
         ],
-    }))
+    });
+    if let (Some(session), Some(root)) = (&app.coder_session, tool_root.as_deref()) {
+        if let Some(review) = crate::observer_action::identity_scope::project(
+            &packet,
+            crate::task_origin::root_user_text(&session.messages),
+            root,
+        ) {
+            packet["identity_scope_review"] = json!(review);
+        }
+    }
+    Ok(packet)
 }
 
 // A structured incomplete outcome is authoritative even when the last branch
@@ -223,8 +233,9 @@ pub(crate) fn build_tui_next_action_prompt(
     reason_hint: &str,
 ) -> String {
     format!(
-        "{}\n{}",
+        "{}\n{}\n{}",
         crate::observer_action::intervention::prompt(packet),
+        crate::observer_action::work_route::prompt(packet),
         build_next_action_body(packet, lang, reason_hint)
     )
 }
@@ -281,6 +292,14 @@ fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &
     }
     if let Some(obligations) = view["task_obligations"].as_object_mut() {
         obligations.remove("diagnostic_followup");
+        if let Some(failure) = obligations
+            .get_mut("authored_test_failure")
+            .and_then(serde_json::Value::as_object_mut)
+        {
+            // The decision brief carries the full fixture excerpts.
+            failure.remove("fixture_context");
+            failure.remove("fixture_observation");
+        }
         if let Some(source) = obligations
             .get_mut("task_requirements")
             .and_then(|requirements| requirements.get_mut("authored_tests"))

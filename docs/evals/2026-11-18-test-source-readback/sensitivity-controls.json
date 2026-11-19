@@ -1,0 +1,34 @@
+{
+  "reference-control": {
+    "sha256": "42f38b63141f649b59477f26cd7ae4b6e087779ed874eb8c6e0514ce7f589ef8",
+    "tests_sha256": "ca0c59d514ddf8cc5653398e148020c566d9b8b8354063af499e543ea02dd7ca",
+    "reference_tests": {
+      "status": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    "fault_detection": {
+      "missing_pending": true,
+      "symlink": true,
+      "duplicate_request": true,
+      "parent_link": true
+    }
+  },
+  "s12-control": {
+    "sha256": "09af489cb7a7d1b215a497af356369c8ddf9a795fe7fcc73ccce23b1d4a408fd",
+    "tests_sha256": "ebb3f33170f4df7aea5a31c23bbd830e68c5621558bc88b18d084a550edf5e37",
+    "reference_tests": {
+      "status": "FAILED",
+      "passed": 3,
+      "failed": 1,
+      "ignored": 0
+    },
+    "fault_detection": {
+      "missing_pending": null,
+      "symlink": null,
+      "duplicate_request": null,
+      "parent_link": null
+    }
+  }
+}

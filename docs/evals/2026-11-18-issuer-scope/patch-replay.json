@@ -1,0 +1,17 @@
+{
+  "fresh": {
+    "patch_sha256": "1d2dda47dcd252906aecf0fb5cffefd03d5f8640df4450bde830ed1a9c5270e0",
+    "candidate_inventory_sha256": "4b5ddb2e7cb580bb6862e5501428db6d3ea31c3a84820d4aa0316ab4d9e584bb",
+    "matching_files": 1667
+  },
+  "focused_delta": {
+    "patch_sha256": "dceb96eeaeb12dc5c7c0217b15dfbebca1925fa9f8f31334731fbc9fec555801",
+    "candidate_inventory_sha256": "4cf135e59a87d7ccfdcf1eb3dddc829c9ee5be6db2878206b55acce87ebf3843",
+    "matching_files": 1669
+  },
+  "focused_cumulative": {
+    "patch_sha256": "ad2d20349f5dd756e81e5e06c3e0bb4662338f44f7dbd24eb638e0e4df09df66",
+    "candidate_inventory_sha256": "4cf135e59a87d7ccfdcf1eb3dddc829c9ee5be6db2878206b55acce87ebf3843",
+    "matching_files": 1669
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "plan_sha256": "016b400661e8865d2cca051d742a01c8ab2462fd636b0cffacc9b81fa0b424ca",
+  "declaration_sha256": "4beb68a6089650a50815cd79827983193c7fc334ec033fce2b08befd8854f7bb",
+  "run_receipt_sha256": "d542501be2e2f9b60641bbd701122528c3b1af614c380cef797ecf680fc6fb86",
+  "assessment_sha256": "e93ba887aeff8f8830ef3db8d56b63ea81e303a39a6815014bcb8ee73b652e47",
+  "candidate_patch_sha256": "cdd484953da4ab87d869ca3ad984e46e7b8bc58bd7d40a6d9fef33593dbdd3ae",
+  "qualified": false,
+  "promotion_authorized": false,
+  "stop_reason": "completed",
+  "wall_seconds": 1580.528,
+  "completed": true,
+  "task_requests": 152,
+  "wire_requests": 166,
+  "rounds": [
+    {
+      "directory": "iteration-01",
+      "task_requests": 32,
+      "wire_requests": 34,
+      "roles": {
+        "coder": 24,
+        "observer": 10
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "src/coupled_status.rs",
+          "src/main.rs"
+        ],
+        "newly_reproduced_baselines": [
+          "python3 -S -m unittest -v scripts.status_visible"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-02",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 26,
+        "observer": 10
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "npm/spiral-coder/lib/launcher.cjs",
+          "src/coupled_status.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-03",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 28,
+        "observer": 8
+      },
+      "termination": "blocked",
+      "progress": {
+        "changed_files": [
+          "src/coupled_status.rs",
+          "tests/coupled_status.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-04",
+      "task_requests": 32,
+      "wire_requests": 36,
+      "roles": {
+        "coder": 28,
+        "observer": 8
+      },
+      "termination": "budget_exhausted",
+      "progress": {
+        "changed_files": [
+          "docs/coupled-status.md",
+          "docs/state-schema.md",
+          "src/coupled_status.rs"
+        ],
+        "newly_verified": [],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    },
+    {
+      "directory": "iteration-05",
+      "task_requests": 24,
+      "wire_requests": 24,
+      "roles": {
+        "coder": 18,
+        "observer": 6
+      },
+      "termination": "completed",
+      "progress": {
+        "changed_files": [
+          "docs/coupled-status.md",
+          "src/coupled_status.rs"
+        ],
+        "newly_verified": [
+          "cargo fmt --all -- --check",
+          "cargo test --locked --bin spiral-coder -q",
+          "cargo test --locked --test coupled_status -q",
+          "python3 -S -m unittest -v scripts.status_guide",
+          "python3 -S -m unittest -v scripts.status_paths",
+          "python3 -S -m unittest -v scripts.status_visible"
+        ],
+        "user_refusal": false
+      },
+      "ledger_verified": true
+    }
+  ],
+  "gates": {
+    "both_roles_completed_requests": true,
+    "native_reproduction": true,
+    "authored_report": true,
+    "regular_source_changes": true,
+    "patch_replays_all_files": true,
+    "sealed_input_and_output": true,
+    "sealed_candidate_matches": true,
+    "distinct_parent_linked_ledgers": true,
+    "bounded_chain": true,
+    "both_roles_called": true,
+    "native_completed": true,
+    "accepted_done": true,
+    "no_remaining_acceptance": true,
+    "native_edit": true,
+    "actual_edit": true,
+    "required_paths_changed": true,
+    "fresh_native_checks": true,
+    "no_pending_checks": true,
+    "strict_scope": true,
+    "original_protected_files_preserved": true,
+    "process_ok": true,
+    "no_secret_redactions": true,
+    "patch_retained": true,
+    "candidate_unchanged_by_assessor": true,
+    "independent_checks_passed": false,
+    "authored_test_sensitivity": true
+  },
+  "exact_native_calls": {
+    "cargo fmt --all -- --check": [
+      {
+        "id": "call_tNP1WONWPF5a46gWKI32g10D",
+        "step": 119
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_visible": [
+      {
+        "id": "call_kT9WT0Phmhvk866cauMy7Vvn",
+        "step": 120
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_guide": [
+      {
+        "id": "call_wJIyLKTJiO398awNah9CDJ0c",
+        "step": 121
+      }
+    ],
+    "cargo test --locked --bin spiral-coder -q": [
+      {
+        "id": "call_ry416xIZg8mP5NbXf4xmjmWB",
+        "step": 122
+      }
+    ],
+    "cargo test --locked --test coupled_status -q": [
+      {
+        "id": "call_CioaIbm3SKTUESEtAhKZzpiF",
+        "step": 123
+      }
+    ],
+    "python3 -S -m unittest -v scripts.status_paths": [
+      {
+        "id": "call_wrCdagBszpBCq0ERkcVBWzpN",
+        "step": 118
+      }
+    ]
+  },
+  "terminal_reports": [
+    {
+      "step": 24,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 50,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 78,
+      "outcome": "OK: blocked"
+    },
+    {
+      "step": 106,
+      "outcome": "GOVERNOR BLOCKED"
+    },
+    {
+      "step": 124,
+      "outcome": "OK: done"
+    }
+  ],
+  "changed_files": [
+    "docs/coupled-status.md",
+    "docs/state-schema.md",
+    "npm/spiral-coder/lib/launcher.cjs",
+    "src/coupled_status.rs",
+    "src/main.rs",
+    "tests/coupled_status.rs"
+  ],
+  "independent_checks": [
+    {
+      "id": "candidate-build",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": null,
+      "log_sha256": "7ae95c845967d4accba0ea46e9df0ecc969b1b89dbcb29e013b804fe7997921e",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "status-visible",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "489929993d91928db9892ed9d0456b70ca73b6a17c861c5d41f25ed7417ff0a4",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "status-held-out",
+      "passed": false,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 1,
+      "test_summary": {
+        "passed": 23,
+        "failed": 1,
+        "ignored": 0
+      },
+      "log_sha256": "1fcc2b35d3ef679f3a388499db66848c360077a2fbcc8422fcd4a6e09f0d8d16",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "packaged-status",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "b9e37952124ed66eabc39b0b29b647d71622515e59a2d346137dfaec11dfc8d9",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "guide-example",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "1dc91452ab7ca1a4baf3372bec2d759f66d5bf8e6bfe7fed4c4fd0bbf0e6ae19",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "status-paths",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "86f25f670d6c0e9b31df306420c7ea750b60d2a5a0d8047be6a18d36dd6622bf",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    },
+    {
+      "id": "stock-regressions",
+      "passed": true,
+      "executed": true,
+      "skip_reason": null,
+      "exit_code": 0,
+      "test_summary": {
+        "passed": 3,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log_sha256": "6323ea7a7a2f38089e337cdcb55615c0f17feb87939278a1d4e459cb6978470a",
+      "candidate_binary_sha256": "fe7db75d7f62a216f79d6cdee59b50eeb1295404a85d49637b295b2db3dcfc62"
+    }
+  ],
+  "authored_test_sensitivity": {
+    "passed": true,
+    "tests_sha256": "b27ec5d576662dc1c269a0218eeb785e5cf0142ef4b9024f68538e8d4b3f4d5c",
+    "reference_tests": {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "reason": null,
+    "faults": {
+      "missing_pending": {
+        "control_demonstrated": true,
+        "exercised": true,
+        "detected": true
+      },
+      "symlink": {
+        "control_demonstrated": true,
+        "exercised": true,
+        "detected": true
+      },
+      "duplicate_request": {
+        "control_demonstrated": true,
+        "exercised": true,
+        "detected": true
+      },
+      "parent_link": {
+        "control_demonstrated": true,
+        "exercised": true,
+        "detected": true
+      }
+    }
+  }
+}

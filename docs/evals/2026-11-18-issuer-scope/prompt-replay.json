@@ -1,0 +1,53 @@
+{
+  "source_session_sha256": "fe6da8c367e63b4518b3b35bcee6c605190d34bfea032d087f51d62b31206fcb",
+  "retained_through_message": 383,
+  "seed_sha256": "99f0f832a3b0ac6c10b975bb85c6824e0f24605aeccc23076c4596c47efc7d29",
+  "earlier_read_range": [
+    1,
+    200
+  ],
+  "external_provider_calls": 0,
+  "workspace_unchanged": true,
+  "scripted_responses": true,
+  "runtimes": {
+    "previous": {
+      "binary_sha256": "b2fa2666a30d05504113c8a22523c4ba462592b14925ea3072840a764b4425aa",
+      "local_requests": {
+        "coder-replay": 5,
+        "observer-replay": 3
+      },
+      "issuer_review_present": false,
+      "issuer_sites": [],
+      "paired_control_requested": false
+    },
+    "issuer": {
+      "binary_sha256": "9fc427625d1d5a68664e64d7dd8b10abe82fd37796aee8c36dd1ea35d17d7f4b",
+      "local_requests": {
+        "coder-replay": 5,
+        "observer-replay": 3
+      },
+      "issuer_review_present": true,
+      "issuer_sites": [
+        {
+          "assignment": {
+            "number": 356,
+            "text": "let id = state.requests.len();"
+          },
+          "following_use": {
+            "number": 357,
+            "text": "state.requests.push(RequestReceipt {"
+          },
+          "path": "src/work_budget.rs",
+          "possible_initializers": [
+            {
+              "number": 141,
+              "text": "requests: Vec::new(),"
+            }
+          ],
+          "selected_by_read_call_id": "call_fRQuQgr2lFms2gdLY8UFxaaP"
+        }
+      ],
+      "paired_control_requested": true
+    }
+  }
+}

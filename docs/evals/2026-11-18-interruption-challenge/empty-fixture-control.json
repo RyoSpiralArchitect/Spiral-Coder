@@ -1,0 +1,22 @@
+{
+  "used_in_qualification": false,
+  "starting_tests_sha256": "bf798f0761584f6f174226fffdab689cb285ef295dce3040a401608cc928dbcd",
+  "corrected_tests_sha256": "146593d3a86ebb5cb9b5da8a32d818a1c39661d0af9587dfb57dbb392f8eb241",
+  "test_only_patch_sha256": "c45fb13661887383c1e7dd207d6bc95a59c03c55ce7ed171d19487ce1158d8f1",
+  "controls": {
+    "focused": {
+      "exit": 0,
+      "passed": 7,
+      "failed": 0,
+      "binary_sha256": "2aa27391f11436586dd068bb928e8c5504a5bd5e98e13e88521972e77111bcb8",
+      "log_sha256": "9716e143f037442f4af0fdfb9c93a6ce28a2ee37244864d255bd6d10db16e68e"
+    },
+    "reference": {
+      "exit": 0,
+      "passed": 7,
+      "failed": 0,
+      "binary_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "log_sha256": "02f52da94d0aae05fea22499cd69483adfc42aeca3b6a3b51518e7085a640e75"
+    }
+  }
+}

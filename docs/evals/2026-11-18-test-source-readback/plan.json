@@ -1,0 +1,62 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "readback-fresh",
+  "created_at": "2026-11-18T00:51:12.137679+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "e3f44e7347c4ff9588c275fa4148722b6c2c619b",
+  "binary_sha256": "975b676d197d506c20ea67cd6828e0e1963b9b22422eb185659ec6ea2969d82c",
+  "declaration_sha256": "809b3ca93a1eff31a76e0198eff4b7fd9d5b4d6d37c6edfec17817a4461d5cfd",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "5e3f6825a0b7f8fa0cf1ee7fabe6682cbfcc542dcb1cb82425fe5fb5e8643cec",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh Luna/Luna run of #82 with the original task and checks. The runtime adds a bounded current-source fallback when a successfully edited declared test has no complete native revision in history. Compare this one observation with the S28 closeout and the preregistered controls.",
+  "main_merge_required_before_run": false,
+  "decision": "Require all native, chain, report, and independent gates and detection of all four frozen faults. Retain the first terminal and review any qualified patch separately before adoption.",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "42f38b63141f649b59477f26cd7ae4b6e087779ed874eb8c6e0514ce7f589ef8",
+      "s12-control": "09af489cb7a7d1b215a497af356369c8ddf9a795fe7fcc73ccce23b1d4a408fd"
+    },
+    "control_note": "The reference tests pass against the reference and detect all four seeded faults. The retained S12 tests fail on the reference, so the audit skips their fault runs."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "1d2dd754e526b436ab3349ba3ac6c8ed73c29a6b",
+  "runtime_source": "Main 1d2dd75 plus the authored-test workspace readback at e3f44e7",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0"
+}

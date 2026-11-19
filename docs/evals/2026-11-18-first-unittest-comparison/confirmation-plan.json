@@ -1,0 +1,57 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "condition": "One further continuation from the same saved path-check state. The runtime recognizes arguments bound to the current diagnostic read and comparison. The child uses the original self-dogfood execution environment with external Python bytecode caching.",
+  "pinned_at": "2026-11-18T02:23:43.608779+00:00",
+  "runtime_commit": "0ad480da93e2afec15d11cd7a914f5f9a7a4fb74",
+  "binary_sha256": "65835dd47f99cd53d9340dbe9b7d1620d7da4fe464a9fbdb7c88a9c9b48c4c5b",
+  "matched_replay_sha256": "c63f0f4c2d18bb085752f921a6b66f3afcfcf2d45108b8de33139e05a5f19606",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "fixture": {
+    "source_receipt_sha256": "ac49626759eefa36baa984b8009191fb14b3676358f5df13fbfd68c2e496a402",
+    "source_session_sha256": "651cb265f574697831daa15575f935a307b639e668097eb09004573d92d753a8",
+    "retained_message_count": 353,
+    "before_native_step": 151,
+    "source_before_step_sha256": "442ab8acfb6d52a0bf2764abe21d862fa26672ac0aac3e36d51b9763fc4b1e19",
+    "task_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+    "seed_sha256": "eb4d605b3efcc3894b26ad5ddfdc21b1472aa42c12d36b45dd63459e51f20d5f",
+    "start_inventory_sha256": "2c1da9217f4158bec42eb30b81385adb724e822e92cd209d3b3ec63397112695"
+  },
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "iterations": 1,
+  "maximum_task_requests": 32,
+  "transport_repair_requests": 4,
+  "maximum_wire_requests": 36,
+  "observer_reserved_requests": 8,
+  "coder_chunk_requests": 8,
+  "provider_timeout_seconds": 90,
+  "wall_seconds": 900,
+  "native_checks": [
+    "cargo fmt --all -- --check",
+    "python3 -S -m unittest -v scripts.status_visible",
+    "python3 -S -m unittest -v scripts.status_guide",
+    "cargo test --locked --bin spiral-coder -q",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_paths"
+  ],
+  "primary_check": "python3 -S -m unittest -v scripts.status_paths",
+  "objectives": [
+    "Reproduce the current path failure and read the assertion location.",
+    "Offer the comparison after the first read and execute it with a native receipt showing the pending-field difference.",
+    "Repair the mismatch and pass the exact path check. Use all current native receipts for any completion claim."
+  ],
+  "fresh_run_qualification": false,
+  "promotion_authorized": false,
+  "external_provider_calls_at_pin": 0,
+  "prior_run_receipt_sha256": "680c27643449719145b8b241078fbb72b238cf40ab0f9c109da636b8c7d48493",
+  "environment": "self_dogfood.contracts.execution_env"
+}

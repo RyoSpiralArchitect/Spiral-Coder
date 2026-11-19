@@ -1,0 +1,72 @@
+{
+  "task": "coupled-status",
+  "issue": 82,
+  "run": "observer-work-route-fresh",
+  "created_at": "2026-11-18T07:51:53.589078+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "5389629c80db42457e020de4f7f941d8d674114c",
+  "binary_sha256": "ded09158738de763058fdd0c727d2b1c19b20f3238b9df2e719f3907f7f5ba2e",
+  "declaration_sha256": "4beb68a6089650a50815cd79827983193c7fc334ec033fce2b08befd8854f7bb",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "0a2ada5ed026e6fde54a86123a541e6ad4b9f7faa7ada104311f45b208ed0fa0",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "One fresh unseeded Luna/Luna run with the original #82 task, controls, checks and budgets. The runtime combines current main with PR #104 diagnostic handoffs, a derived whole-task Observer route and forwarding of its existing why_this_first/fallback advice. This single run measures behavior, not a causal effect estimate.",
+  "main_merge_required_before_run": false,
+  "decision": "Require all native, chain, report, and independent gates and detection of all four frozen faults. Retain the first terminal and review any qualified patch separately before adoption.",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "c1c7d19468682fa70b4a2b28a980a6d110445b17f52b6631d78bf121a18a17ec",
+      "s12-control": "76a484cc4e55dadf9dc986565402211586e58564411aab3dc89112de164a45a9"
+    },
+    "control_note": "The reference tests pass against the reference and detect all four seeded faults. The retained S12 tests fail on the reference, so the audit skips their fault runs."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "609344c2049ec29c6dca4bdc12e47a6c0338e99b",
+  "runtime_source": "5389629 on main 609344c plus the existing PR #104 branch",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0",
+  "matched_replay_sha256": "82574f6f49b79fc672eace99db55daed6c2e86b5de782a7378a7d294f427317b",
+  "validation_log_sha256": "61054486bce731d79178b87b1b7247b2afd12e019e3069f247190c5c0f8a8e2b",
+  "observational_measures": [
+    "first native edit of each declared artifact",
+    "Observer route and fallback delivered to Coder",
+    "task and wire use per iteration",
+    "native final checks after the last mutation",
+    "independent behavioral checks",
+    "authored test detection of the four frozen faults"
+  ]
+}

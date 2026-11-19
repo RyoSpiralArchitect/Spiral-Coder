@@ -1,0 +1,79 @@
+diff --git a/src/coupled_status.rs b/src/coupled_status.rs
+index 15a1043..2d1bcf7 100644
+--- a/src/coupled_status.rs
++++ b/src/coupled_status.rs
+@@ -116,7 +116,6 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+     validate_manifest(&manifest)?;
+ 
+     let mut task_ids = HashSet::new();
+-    let mut request_ids = HashSet::new();
+     let mut finalized = Vec::new();
+     let mut task_total = 0usize;
+     let mut wire_total = 0usize;
+@@ -140,6 +139,7 @@ pub fn run(run_dir: PathBuf) -> Result<()> {
+         if ledger.task_id != row.task_id {
+             bail!("ledger task id mismatch");
+         }
++        let mut request_ids = HashSet::new();
+         let counts = count_requests(&ledger, &mut request_ids)?;
+         if counts.0 != row.task_requests
+             || counts.1 != row.wire_requests
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index 6a1aaa6..7f24377 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -81,6 +81,54 @@ fn missing_pending_ledger_is_unknown_and_symlink_is_rejected() {
+     assert!(!output.stderr.is_empty());
+ }
+ 
++#[test]
++fn owner_local_request_ids_are_valid_across_two_iterations() {
++    let (_tmp, root) = fixture("completed");
++    let manifest_path = root.join("iterations.json");
++    let mut manifest: serde_json::Value =
++        serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
++    let mut first = manifest["iterations"][0].clone();
++    first["termination"] = serde_json::Value::String("blocked".into());
++    first["completed"] = serde_json::Value::Bool(false);
++    let mut second = first.clone();
++    second["iteration"] = serde_json::Value::Number(2.into());
++    second["directory"] = serde_json::Value::String("iteration-02".into());
++    second["task_id"] = serde_json::Value::String("t2".into());
++    second["parent_task_id"] = serde_json::Value::String("t1".into());
++    second["termination"] = serde_json::Value::String("completed".into());
++    second["completed"] = serde_json::Value::Bool(true);
++    second["task_requests"] = serde_json::Value::Number(2.into());
++    second["wire_requests"] = serde_json::Value::Number(3.into());
++    manifest["iterations"] = serde_json::Value::Array(vec![first, second]);
++    manifest["task_requests"] = serde_json::Value::Number(4.into());
++    manifest["wire_requests"] = serde_json::Value::Number(6.into());
++    manifest["completed"] = serde_json::Value::Bool(true);
++    fs::create_dir_all(root.join("iteration-02/state")).unwrap();
++    let first_ledger = root.join("iteration-01/state/tui-work.json");
++    let mut ledger: serde_json::Value =
++        serde_json::from_str(&fs::read_to_string(&first_ledger).unwrap()).unwrap();
++    ledger["task_id"] = serde_json::Value::String("t2".into());
++    fs::write(
++        root.join("iteration-02/state/tui-work.json"),
++        serde_json::to_vec_pretty(&ledger).unwrap(),
++    )
++    .unwrap();
++    fs::write(
++        &manifest_path,
++        serde_json::to_vec_pretty(&manifest).unwrap(),
++    )
++    .unwrap();
++    let output = cli(&root);
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    let stdout = String::from_utf8_lossy(&output.stdout);
++    assert!(stdout.contains("\"iteration\":1"));
++    assert!(stdout.contains("\"iteration\":2"));
++}
++
+ fn assert_rejected(root: &Path) {
+     let output = cli(root);
+     assert!(!output.status.success());

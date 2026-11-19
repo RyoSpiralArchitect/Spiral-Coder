@@ -165,7 +165,16 @@ pub(in crate::tui::agent) fn validated_snapshot(message: &Value) -> Option<Recov
 pub(in crate::tui::agent) fn correlated_results(
     messages: &[Value],
 ) -> impl Iterator<Item = (ToolCallData, &Value)> {
+    numbered_correlated_results(messages).map(|(_, call, message)| (call, message))
+}
+
+/// Count every tool result in task order, as the verification ledger does.
+/// A provider may reuse a call ID for a later occurrence.
+pub(super) fn numbered_correlated_results(
+    messages: &[Value],
+) -> impl Iterator<Item = (usize, ToolCallData, &Value)> {
     let mut pending = BTreeMap::new();
+    let mut step = 0;
     crate::task_origin::current_task_messages(messages)
         .iter()
         .filter_map(move |message| {
@@ -183,9 +192,11 @@ pub(in crate::tui::agent) fn correlated_results(
             if message["role"] != "tool" {
                 return None;
             }
+            step += 1;
             let id = message["tool_call_id"].as_str()?;
             let (name, arguments) = pending.remove(id)?;
             Some((
+                step,
                 ToolCallData {
                     thought_signature: None,
                     id: id.into(),

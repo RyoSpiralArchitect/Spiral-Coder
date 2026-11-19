@@ -21,6 +21,10 @@ pub(crate) struct AuthoredTests {
 }
 
 impl AuthoredTests {
+    pub(in crate::tui::agent) fn source_line(&self, path: &str, line: usize) -> Option<&str> {
+        self.review_source.as_ref()?.line(path, line)
+    }
+
     pub(in crate::tui::agent) fn contains(&self, path: &str) -> bool {
         let path = path.trim_start_matches("./");
         self.targets.iter().any(|target| target.path == path)
@@ -33,6 +37,16 @@ impl AuthoredTests {
         tool_root: Option<&str>,
     ) {
         self.review_source = review_source::project(self, messages, context, tool_root);
+    }
+
+    pub(in crate::tui::agent) fn include_workspace_review_source(
+        &mut self,
+        messages: &[serde_json::Value],
+        workspace: &str,
+    ) {
+        if self.review_source.is_none() {
+            self.review_source = review_source::readback(self, messages, workspace);
+        }
     }
 }
 
@@ -387,6 +401,82 @@ mod tests {
             "FAILED (exit_code: 1)\ncwd: /workspace",
         );
         assert!(authored(&messages).is_null());
+    }
+
+    #[test]
+    fn local_review_refreshes_a_declared_test_when_the_formatter_invalidates_history() {
+        const PATH: &str = "tests/ledger.rs";
+        const CHECK: &str = "cargo test --locked --test ledger";
+        let root = tempfile::tempdir().unwrap();
+        let workspace = root.path().to_str().unwrap();
+        let target = root.path().join(PATH);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        let source = "#[test]\nfn duplicate_preserves_row_count() {}\n";
+        std::fs::write(&target, source).unwrap();
+        let task = format!(
+            "Add an integration test.\n<task_requirements>\n{}\n</task_requirements>",
+            json!({"version":1,"requirements":[{"id":"ledger","description":DESCRIPTION,
+                "artifacts":[{"path":PATH,"kind":"test"}],"checks":[{"command":CHECK}]}]})
+        );
+        let mut messages = vec![json!({"role":"user","content":task})];
+        let local = |history: &[Value]| {
+            serde_json::to_value(task_obligations::project_at(history, None, Some(workspace)))
+                .unwrap()
+        };
+        let key =
+            |view: &Value| view["task_requirements"]["authored_tests"]["review_source"].clone();
+        assert!(key(&local(&messages)).is_null());
+        result(
+            &mut messages,
+            "edit",
+            "patch_file",
+            json!({"path":target,"search":"before","replace":"after"}),
+            &format!("OK: patched '{}' (+0 lines, 2 total)", target.display()),
+        );
+        result(
+            &mut messages,
+            "format",
+            "exec",
+            json!({"command":"cargo fmt --all"}),
+            "OK (exit_code: 0)",
+        );
+        let advisory = serde_json::to_value(task_obligations::project_advisory(
+            &messages,
+            None,
+            Some(workspace),
+        ))
+        .unwrap();
+        let mut review = local(&messages);
+        assert!(key(&advisory).is_null());
+        assert_eq!(
+            key(&review),
+            json!({"path":PATH,"call_id":"edit","origin":"workspace_readback","source":source})
+        );
+        let coder = task_obligations::prompt(&messages, None, Some(workspace)).unwrap();
+        let observer = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+            &json!({"task_obligations":review,"work_budget":{"next_coder_turn":"work"}}),
+            "en",
+            "incomplete_task",
+        );
+        assert!(coder.contains("fn duplicate_preserves_row_count()"));
+        assert!(observer.contains("Authored test source read from the workspace"));
+        assert!(observer.contains("fn duplicate_preserves_row_count()"));
+        review["task_requirements"]["authored_tests"]
+            .as_object_mut()
+            .unwrap()
+            .remove("review_source");
+        assert_eq!(review, advisory);
+
+        std::fs::write(&target, "x".repeat(8 * 1024 + 1)).unwrap();
+        assert!(key(&local(&messages)).is_null());
+        std::fs::remove_file(&target).unwrap();
+        #[cfg(unix)]
+        {
+            let elsewhere = tempfile::NamedTempFile::new().unwrap();
+            std::fs::write(elsewhere.path(), "external contents\n").unwrap();
+            std::os::unix::fs::symlink(elsewhere.path(), &target).unwrap();
+            assert!(key(&local(&messages)).is_null());
+        }
     }
 
     #[test]

@@ -1,0 +1,83 @@
+{
+  "reviewed_head": "d52dc0da3b88db5cbae2929ef54fa512689ffac4",
+  "focused_run_receipt_sha256": "f064636029d4550aae770284f686c8b335da92ce099ed5c9a7744a7a47aa7ccc",
+  "validator_sha256": "48e37270d26aae60b6a35a50a661502cd20c9b4b2d4fa3cbd7f308e0ddf6b390",
+  "authored_tests_sha256": "c58b7645dca37f8d1dd8260cbcd79ab5fd502c63529d6b5379401d03e59e651c",
+  "native_archive_readback": {
+    "binary_sha256": "5974f4b4ed9f3baefd6a13731e8d278831b10e60c91ab8fd0920f885ad251def",
+    "provider_calls": 0,
+    "archives": [
+      {
+        "label": "unseeded-stopped",
+        "status": "stopped",
+        "stop_reason": "no_new_edit_or_verification",
+        "iterations": 4,
+        "task_requests": 128,
+        "wire_requests": 143,
+        "unchanged_files": 309,
+        "manifest_sha256": "e319968ee00ebdca1f774c06e46636c273f8a9b4782fac55fdcc9dfb9bc9ca35",
+        "result_sha256": "5ebc14b6ef41d67994dd7f98eba48d3087f3a62c968df9e38dd9dba9a46206c5"
+      },
+      {
+        "label": "focused-completed",
+        "status": "completed",
+        "stop_reason": "completed",
+        "iterations": 2,
+        "task_requests": 51,
+        "wire_requests": 59,
+        "unchanged_files": 166,
+        "manifest_sha256": "8b8d34b6dba7b3ccb090490b5f5eb1973325ada2b137da6407fc50d2796216b9",
+        "result_sha256": "5e2320a1f9b4c3ac290ba5b5cbbaf133ff6d2fddc0c9767e1e5bad282ea47bc8"
+      },
+      {
+        "label": "previous-completed",
+        "status": "completed",
+        "stop_reason": "completed",
+        "iterations": 5,
+        "task_requests": 152,
+        "wire_requests": 166,
+        "unchanged_files": 420,
+        "manifest_sha256": "06097a2f554b497c4f2b1733fe591070eb0ef4a21168b0ca94478825c3793377",
+        "result_sha256": "f4ac1307ad13bd5e68e8fc7c5a03f0e5ea92a105916dcadd367fba7b5c363ac9"
+      }
+    ]
+  },
+  "calibration": {
+    "previous": {
+      "passed": 16,
+      "total": 27,
+      "failed": [
+        "first_interrupted_missing",
+        "first_interrupted_spent",
+        "known_manifest_null_task_requests",
+        "known_manifest_null_wire_requests",
+        "missing_interruption_numeric_wire_requests",
+        "both_manifest_totals_lost",
+        "finalized_over_cap_active_unknown",
+        "pending_round_over_cap_active",
+        "finalized_over_cap_interrupted_unknown",
+        "pending_round_over_cap_interrupted",
+        "unknown_charge_in_pending"
+      ],
+      "result_sha256": "3b2407008a4f4cbda504ae07dbeabda81cbe6b2c7c4b5f71785bf718d545f8c1",
+      "binary_sha256": "5974f4b4ed9f3baefd6a13731e8d278831b10e60c91ab8fd0920f885ad251def",
+      "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+      "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648"
+    },
+    "reference": {
+      "passed": 27,
+      "total": 27,
+      "failed": [],
+      "result_sha256": "ae08a155e12c8ec461e49510be043cc4e97da1daf519a37c509cd2165088ef72",
+      "binary_sha256": "4f9b33fed31bf7166f743ec8ca2b8bf82249043fc2dac54b21b4fe4b46da66be",
+      "fixture_sha256": "2142faf21813d18f3961624634b04ab76491134dc191d3de439b6ec2485f8f2d",
+      "probe_sha256": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648"
+    }
+  },
+  "diagnostic_regression": {
+    "before_sha256": "49660766dfdf4b495d298849385e925d2c768505067c89fc2d61ca0bbfdcd18c",
+    "after_sha256": "78df930591ec09ed5908837a9524ddb4653f07df0d7cc3b6f96392d104e3ca1f",
+    "before_failed": 1,
+    "after_group_passed": 13
+  }
+}

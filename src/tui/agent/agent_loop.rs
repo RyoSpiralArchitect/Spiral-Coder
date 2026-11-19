@@ -233,15 +233,16 @@ Fix: use --provider openai-compatible (or --provider mistral).",
             observer_handoff = Some(crate::tui::coder_yield::CoderYieldReason::VerificationFailure);
             break;
         }
-        if let Some(followup) = observer_handoff::after_repeated_diagnosis(
+        if let Some(followup) = observer_handoff::after_diagnostic_read(
             &recovery.focus,
             &messages,
             tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
             initial_handoff_steps,
             step_seq,
         ) {
             emit_telemetry_event(&tx, "observer_diagnostic_followup", json!(&followup)).await;
-            let _ = tx.send(StreamToken::Delta("\n[agent] The same failure recurred and its location has been read. Returning to Observer for a different next step.\n".into())).await;
+            let _ = tx.send(StreamToken::Delta("\n[agent] The failure location has been read. Returning to Observer for the next diagnostic action.\n".into())).await;
             observer_handoff = Some(crate::tui::coder_yield::CoderYieldReason::DiagnosticFollowup);
             break;
         }

@@ -1,0 +1,21 @@
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index b939663..5d313fa 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -48,9 +48,13 @@ fn first_interruption_with_empty_ledger_preserves_known_totals() {
+     manifest["task_requests"] = serde_json::Value::Number(1.into());
+     manifest["wire_requests"] = serde_json::Value::Number(1.into());
+     manifest["completed"] = serde_json::Value::Bool(false);
+-    fs::write(&manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+-    let ledger = root.join("iteration-01/state/tui-work.json");
+-    fs::write(&ledger, br#"{\"task_id\":\"pending\",\"requests\":[]}"#).unwrap();
++    fs::write(
++        &manifest_path,
++        serde_json::to_vec_pretty(&manifest).unwrap(),
++    )
++    .unwrap();
++    let ledger = root.join("iteration-02/state/tui-work.json");
++    fs::write(&ledger, br#"{"task_id":"t2","requests":[]}"#).unwrap();
+     let output = cli(&root);
+     assert!(
+         output.status.success(),

@@ -6,6 +6,7 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 mod authored_tests;
+pub(super) use authored_tests::AuthoredTests;
 mod test_closeout;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -94,7 +95,7 @@ pub(crate) struct Status {
     baseline_receipts: BTreeMap<String, String>,
     pub pending_artifact_paths: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(super) authored_tests: Option<authored_tests::AuthoredTests>,
+    pub(super) authored_tests: Option<AuthoredTests>,
     requirements: Vec<Value>,
 }
 
@@ -255,6 +256,20 @@ pub(super) fn parse(root: &str) -> Result<Option<Contract>> {
         }
     }
     Ok(Some(contract))
+}
+
+pub(super) fn is_declared_test_check(root: &str, command: &str, path: &str) -> bool {
+    parse(root).ok().flatten().is_some_and(|contract| {
+        contract.requirements.iter().any(|requirement| {
+            requirement
+                .checks
+                .iter()
+                .any(|check| check.command == command)
+                && requirement.artifacts.iter().any(|artifact| {
+                    artifact.path == path && matches!(artifact.kind, ArtifactKind::Test)
+                })
+        })
+    })
 }
 
 pub(super) fn declared(root: &str) -> bool {

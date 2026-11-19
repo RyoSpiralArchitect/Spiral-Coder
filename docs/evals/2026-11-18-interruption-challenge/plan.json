@@ -1,0 +1,88 @@
+{
+  "task": "coupled-status",
+  "issue": 105,
+  "run": "first-interruption-fresh",
+  "created_at": "2026-11-18T10:50:30.531375+00:00",
+  "baseline_commit": "7ad8be4dca4bea603d717a3801837cb689f560ab",
+  "runtime_commit": "f7fcf4983293fb84e96156faa98473591ff58a6a",
+  "binary_sha256": "ce878df5a2ad984ead0892f3f505f6203643a32af171e588b86e1c7ba53f7b87",
+  "declaration_sha256": "ffdbc5ffd15bcbfd75c24a9ee87bd6e23f19e715112cab238ca491e9abe3779f",
+  "runner_sha256": "fce10eab00d1f13c1a695a6f9bb8f4fac79b8b773147d708c062425c40f4b983",
+  "assessor_sha256": "0d427c41a9fb6ea9a954ac5e3ec4175593bc17ca99a42565511e42c335b40e4a",
+  "prompt_sha256": "2035b83c6dd649db3b2e26da9696551076c10adaff6f87a1bd2ab05cda7ff4c5",
+  "spec_sha256": "79cb2d3fe6fab07c9709f19c8fca3095bc3335c0a4ab90a2b3ec4cffa44d5010",
+  "preflight_sha256": "b729408050ee4dbbcdbce1861cb0148e2fea373319402f28643f35b7520be02e",
+  "iterations": 6,
+  "maximum_task_requests": 192,
+  "maximum_wire_requests": 216,
+  "total_wall_seconds": 3600,
+  "roles": {
+    "coder": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    },
+    "observer": {
+      "provider": "openai",
+      "model": "gpt-5.6-luna"
+    }
+  },
+  "task_requests_per_iteration": 32,
+  "transport_per_iteration": 4,
+  "observer_reserve": 8,
+  "coder_chunk_requests": 8,
+  "additional_native_checks": [],
+  "preserve_original_guide": false,
+  "external_calls_at_pin": 0,
+  "condition": "Fresh checkout of the original #82 task, identical human prompt, workspace, limits and 26 original gates. Independently score the first terminal against #105 as well.",
+  "main_merge_required_before_run": false,
+  "decision": "Require all native, chain, report, and independent gates and detection of all four frozen faults. Retain the first terminal and review any qualified patch separately before adoption.",
+  "extended_assessor_sha256": "24aa8a1efd29138e8578d4d7c4ec2c1f590a7082d88ebd8b36fa8e07585a643a",
+  "baseline_changes": [],
+  "input_changes": [],
+  "test_sensitivity": {
+    "script_sha256": "db7d354869a6b46ec7fe1b53b1b063e673a580248c935d744071d46a54435cd7",
+    "wall_seconds": 600,
+    "faults": [
+      "missing_pending",
+      "symlink",
+      "duplicate_request",
+      "parent_link"
+    ],
+    "required": true,
+    "control_results_sha256": {
+      "reference-control": "f2e51eeabd135100cc70e1f289f43012aa58c975990471cdd5f827bc39d59270",
+      "s12-control": "b57999b13774775d6353d6f871321c16e072d18e7eed6ec02f7b1ac77447454b"
+    },
+    "control_note": "The reference tests pass against the reference and detect all four seeded faults. The retained S12 tests fail on the reference, so the audit skips their fault runs."
+  },
+  "native_work_fixture_sha256": "5d21beef81732d2144744aa3a36566e1907a75c99d44d7e1ec71925bf4e0dd60",
+  "prerequisite_main_commit": "609344c2049ec29c6dca4bdc12e47a6c0338e99b",
+  "host": "macOS arm64 (Apple M4), rustc 1.97.0",
+  "validation_log_sha256": "c7b4a78a11abf6aadd891b93b13f6a42df43f086f96faf5e79512c1d3bae9c6d",
+  "observational_measures": [
+    "Original 26 qualification gates and behavioral count out of 24",
+    "New native interruption matrix and authored public-output controls",
+    "Native read-only archive checks and replayable patch"
+  ],
+  "original_gate_issue": 82,
+  "successor_controls": {
+    "operator_files_sha256": {
+      "authored_controls.py": "b398225d4d09c7fdce2e5d66d2677f79d751d9fa928e9c3752a09463cc7860ac",
+      "interruption_cases.py": "9d11ce1460f2da6091d96e1a9404d94a23dea69063f81d4574a6d2814c018648",
+      "output_fixture.rs": "048f315207a215bb1f11c5ff03d74589ba7c333694a82c4dffa25d597852108e",
+      "visible.py": "8af4b7a3ee4001623eb5c11e2daf6f776a190ab4dede61a795d587de3274ce4a"
+    },
+    "new_native_cases_required": 27,
+    "windows_test_target": "x86_64-pc-windows-gnu",
+    "equivalent_outputs_that_must_pass": [
+      "native",
+      "pretty"
+    ],
+    "faults_that_must_fail_a_named_test": [
+      "swapped_task_ids",
+      "wrong_numbers",
+      "reversed_rows"
+    ],
+    "freeze": "Separate first terminals, measured against the same independent controls. Never promote automatically."
+  }
+}

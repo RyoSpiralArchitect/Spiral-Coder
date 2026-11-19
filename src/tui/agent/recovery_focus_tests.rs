@@ -1038,3 +1038,65 @@ fn unrelated_passing_checks_keep_the_existing_stage_rules_elsewhere() {
     g.on_exec_result(ExecKind::Verify, Some(VerificationLevel::Behavioral), true);
     assert_eq!(g.stage, Some(RecoveryStage::Verify));
 }
+
+#[test]
+fn authored_panic_sites_survive_restore_and_show_the_stopped_operations_to_both_roles() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let path = "tests/reading.rs";
+    let check = "cargo test --test reading";
+    let task = format!(
+        "Repair reading.\n<task_requirements>\n{}\n</task_requirements>",
+        json!({"version":1,"requirements":[{
+            "id":"read","description":"Test the reader.","artifacts":[{"kind":"test","path":path}],"checks":[{"command":check}]
+        }]})
+    );
+    let source = "fn test_case() {\n    setup().unwrap();\n    assert!(run());\n}\n";
+    let (written, err) = crate::file_tools::tool_write_file(path, source, root.to_str());
+    assert!(!err);
+    let write = call("edit", "write_file", json!({"path":path,"content":source}));
+    let mut messages = vec![json!({"role":"user","content":task})];
+    append(
+        &mut messages,
+        &write,
+        json!({"role":"tool","tool_call_id":"edit","content":written}),
+    );
+    let exec = call("check", "exec", json!({"command":check}));
+    let failed = exec_output(&format!("FAILED (exit_code: 101)\nthread 'case' (123) panicked at {path}:2:14:\nmissing fixture"), root);
+    let context = ExecVerificationContext::from_messages(Some(check), &messages);
+    let mut focus = RecoveryFocus::default();
+    focus.record_result(&exec, &failed, root.to_str(), Some(check), &context);
+    append(&mut messages, &exec, focus.tool_message(&exec, failed));
+    let restored: Vec<Value> =
+        serde_json::from_slice(&serde_json::to_vec(&messages).unwrap()).unwrap();
+    let obligations = agent::task_obligations::project_at(&restored, Some(check), root.to_str());
+    let packet = json!({"task_obligations":obligations});
+    let view = &packet["task_obligations"]["authored_test_failure"];
+    assert_eq!(
+        view["sites"],
+        json!([{"kind":"test_panic","line":2,"current_source_line":"    setup().unwrap();"}])
+    );
+    let coder = agent::task_obligations::prompt(&restored, Some(check), root.to_str()).unwrap();
+    let observer = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+        &packet,
+        "en",
+        "verification_failure",
+    );
+    for prompt in [coder, observer] {
+        assert!(
+            prompt.contains("current_source_line")
+                && prompt.contains("which behavior remains unmeasured")
+        );
+    }
+    assert_eq!(
+        packet["task_obligations"]["required_diagnostic_read"]["path"],
+        path
+    );
+    let tests = obligations
+        .task_requirements
+        .authored_tests
+        .as_ref()
+        .unwrap();
+    focus.mark_repair();
+    assert!(focus.authored_test_failure(tests, root.to_str()).is_none());
+}

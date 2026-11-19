@@ -1,0 +1,28 @@
+diff --git a/tests/coupled_status.rs b/tests/coupled_status.rs
+index 708ef91..6a1aaa6 100644
+--- a/tests/coupled_status.rs
++++ b/tests/coupled_status.rs
+@@ -95,6 +95,11 @@ fn each_missing_pending_component_is_unknown() {
+         assert!(cli(&root).status.success());
+         let iteration = root.join("iteration-02");
+         fs::create_dir_all(iteration.join("state")).unwrap();
++        fs::write(
++            iteration.join("state/tui-work.json"),
++            br#"{"task_id":"pending-test","requests":[]}"#,
++        )
++        .unwrap();
+         match component {
+             "directory" => fs::remove_dir_all(&iteration).unwrap(),
+             "state" => fs::remove_dir_all(iteration.join("state")).unwrap(),
+@@ -114,6 +119,11 @@ fn dangling_pending_symlink_components_are_rejected() {
+         assert!(cli(&root).status.success());
+         let iteration = root.join("iteration-02");
+         fs::create_dir_all(iteration.join("state")).unwrap();
++        fs::write(
++            iteration.join("state/tui-work.json"),
++            br#"{"task_id":"pending-test","requests":[]}"#,
++        )
++        .unwrap();
+         let missing = root.join("does-not-exist");
+         match component {
+             "directory" => {

@@ -1,4 +1,4 @@
-//! Native evidence for changing course after a repeated localized failure.
+//! Native evidence for an assertion comparison or a different diagnostic step.
 use super::*;
 use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome};
 
@@ -11,7 +11,8 @@ const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
 pub(crate) struct DiagnosticFollowup {
     failed_check: String,
     failure_path: String,
-    earlier_failure_call_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    earlier_failure_call_id: Option<String>,
     latest_failure_call_id: String,
     diagnostic_read_call_id: String,
     matching_failures: usize,
@@ -80,7 +81,8 @@ impl DiagnosticFollowup {
     }
 
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
-        self.matching_failures == 2 && self.first_read_just_returned
+        let first_actionable_failure = if self.has_unittest_comparison() { 1 } else { 2 };
+        self.matching_failures == first_actionable_failure && self.first_read_just_returned
     }
 }
 
@@ -99,6 +101,21 @@ struct Cycle<'a> {
 }
 
 impl RecoveryFocus {
+    pub(in crate::tui::agent) fn matches_current_focused_exec(
+        &self,
+        call: &ToolCallData,
+        messages: &[Value],
+        root: Option<&str>,
+    ) -> bool {
+        if call.name != "exec" || !call.arguments.contains("Focused unittest:") {
+            return false;
+        }
+        serde_json::from_str::<Value>(&call.arguments).is_ok_and(|arguments| {
+            self.diagnostic_followup(messages, root)
+                .is_some_and(|followup| followup.matches_unittest_comparison(&arguments))
+        })
+    }
+
     pub(super) fn retained_comparison(
         &self,
         messages: &[Value],
@@ -152,6 +169,9 @@ impl RecoveryFocus {
         }
         let mut cycle: Option<Cycle<'_>> = None;
         let mut first_read_just_returned = false;
+        let panic_line = root
+            .to_str()
+            .and_then(|root| focus.rust_panic_site(root).map(|(_, line)| line));
         for (call, message) in correlated_results(messages) {
             first_read_just_returned = false;
             let output = message["content"].as_str().unwrap_or_default();
@@ -194,6 +214,13 @@ impl RecoveryFocus {
                         .as_deref()
                         == Some(focus.path.as_str())
                         && recovery_progress::successful_read(&call, output, &focus.path, root)
+                        && panic_line.is_none_or(|line| {
+                            crate::file_tools::read_range::covers_line(
+                                &call.arguments,
+                                output,
+                                line,
+                            )
+                        })
                         && matches_snapshot(message, focus, Observation::Observed)
                     {
                         let prior = cycle
@@ -201,7 +228,8 @@ impl RecoveryFocus {
                             .as_ref()
                             .map(|read| read.result)
                             .or(cycle.earlier_read_result);
-                        if prior.is_some_and(|prior| prior != output) {
+                        let different_read = prior.is_some_and(|prior| prior != output);
+                        if different_read {
                             cycle.earlier_failure = None;
                             cycle.matching_failures = 1;
                             cycle.earlier_read_result = None;
@@ -212,27 +240,30 @@ impl RecoveryFocus {
                                 call_id: call.id,
                                 result: output,
                             });
-                            first_read_just_returned = true;
+                            // A different window updates the diagnosis for this
+                            // failure. It does not start another Observer turn.
+                            first_read_just_returned = !different_read;
                         }
                     }
                 }
             }
         }
         let cycle = cycle?;
+        let read = cycle.first_read?;
+        let unittest_comparison =
+            unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
+        if cycle.earlier_failure.is_none() && unittest_comparison.is_none() {
+            return None;
+        }
         Some(DiagnosticFollowup {
             failed_check: focus.check.clone(),
             failure_path: focus.path.clone(),
-            earlier_failure_call_id: cycle.earlier_failure?,
+            earlier_failure_call_id: cycle.earlier_failure,
             latest_failure_call_id: cycle.latest_failure,
-            diagnostic_read_call_id: cycle.first_read?.call_id,
+            diagnostic_read_call_id: read.call_id,
             matching_failures: cycle.matching_failures,
             diagnostic: focus.diagnostic.clone(),
-            unittest_comparison: unittest_comparison::project(
-                &focus.check,
-                &focus.path,
-                &cycle.output,
-                root,
-            ),
+            unittest_comparison,
             first_read_just_returned,
         })
     }
