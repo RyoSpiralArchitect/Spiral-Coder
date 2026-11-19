@@ -1,0 +1,107 @@
+{
+  "plan_sha256": "b41741a283cb5e21febb4a018a8b3e4ed63a6f81f9cc19c5a7ea14ee2e53c2b1",
+  "first_receipt_sha256": "471cae17f5e238d3340bcea7c43a687f75a13012f3ae6ed5442e86534ca9cc63",
+  "run_receipt_sha256": "e66735babef910776a2eae0000d38c6e317c5be2e57afa4ce2292207fb935676",
+  "terminal_inventory_sha256": "60bbaef18d65dec7dc7fe6ab58d693b902c9a296d85396b1d959ebfa671bc966",
+  "patch_sha256": "5eb890fdc8a88ba58c6b8b74383a39d50f32fa203bd3bad7f7ff1b45c877d999",
+  "process": {
+    "exit_code": 0,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 112.649,
+    "finished_at": "2026-11-19T06:51:43.242739+00:00",
+    "redacted_native_files": 0
+  },
+  "native_availability": {
+    "source": "report",
+    "errors": []
+  },
+  "termination": "blocked",
+  "error": null,
+  "role_requests": {
+    "coder": 13,
+    "observer": 2
+  },
+  "task_requests": 15,
+  "wire_requests": 15,
+  "combined_task_requests": 32,
+  "combined_wire_requests": 35,
+  "budget_valid": true,
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "changed_after_stream_interruption": [
+    "tests/coupled_status.rs"
+  ],
+  "protected_files_preserved": {
+    "src/coupled_status.rs": true,
+    "scripts/status_interruption_directory.py": true,
+    "scripts/status_fixture_observe.py": true,
+    "scripts/status_fixture_forwarder.rs": true
+  },
+  "last_mutation_step": 21,
+  "current_post_mutation_checks": {
+    "python3 -S scripts/status_fixture_observe.py": [
+      {
+        "call_id": "call_4h5aKbEZ8i5dx1hwQ1iV4pPl",
+        "tool": "exec",
+        "result_step": 23,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [
+      {
+        "call_id": "call_eh6hFkwdaIYGXRTD5UnLkRlw",
+        "tool": "exec",
+        "result_step": 24,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": [
+      {
+        "call_id": "call_f8z1wPxYddJjx8pKtJJR9vaN",
+        "tool": "exec",
+        "result_step": 22,
+        "succeeded": true,
+        "freshness": "current"
+      }
+    ]
+  },
+  "pending_checks": [
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory"
+  ],
+  "accepted_done_step": null,
+  "done": null,
+  "accepted_blocked_step": 25,
+  "native_completed": false,
+  "native_gate": false,
+  "independent_exact_checks": {
+    "python3 -S scripts/status_fixture_observe.py": {
+      "exit": 0,
+      "log_sha256": "65010493e638774deb0237b1577f1ba5a8fe1f08f5d87d70da4e4b7e457ed4ae"
+    },
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": {
+      "exit": 0,
+      "log_sha256": "59e34f3673c9b3eaf4811f7f76093cfd5fb82bbb25ecdf75d2467d742c9d6e38"
+    },
+    "cargo test --locked --test coupled_status -q": {
+      "exit": 0,
+      "log_sha256": "e88bb116ae2d3a8c563f5fc3bdf8a124688b0ccb10beb835b4755d62e819c68d"
+    },
+    "python3 -S -m unittest -v scripts.status_interruption_directory": {
+      "exit": 0,
+      "log_sha256": "f4b2acbef50ab398cdcfa945d7f25c19f6f6cd02c96c20ac83e7a88f4523be32"
+    },
+    "cargo fmt --all -- --check": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "match_entries_replayed": 1673
+}

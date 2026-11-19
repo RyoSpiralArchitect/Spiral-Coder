@@ -1,0 +1,390 @@
+{
+  "plan_sha256": "9bf2989963b5b2c76f4d042506c8a0ab9de373f4c65d34e2f2ddbc03491cc33a",
+  "run_receipt_sha256": "471cae17f5e238d3340bcea7c43a687f75a13012f3ae6ed5442e86534ca9cc63",
+  "report_sha256": "3c16f55c67f2ad9ebc7969953af985eef01dce3f8c28a554e941c8129b0cd647",
+  "ledger_sha256": "b68dbdc1ec019bc560433c7a39c71a650ac0bd120938fd9291b386fc92cafde6",
+  "advice_snapshot_sha256": "d373a26223b456b6777d69df058c24e6a2a2a333de046742a02bd0dccd820ad7",
+  "patch_sha256": "19d8129a161719ead957dd0d51a0aa2699c143eed4e45020351ec7a6e0a074db",
+  "terminal_inventory_sha256": "994d36f398a40cd22a8bc054562c2ef95cb1f323cd83b5f8cfcd51359753c26f",
+  "native_availability": {
+    "source": "report",
+    "errors": []
+  },
+  "process": {
+    "exit_code": 1,
+    "timed_out": false,
+    "output_limit": false,
+    "log_redactions": 0,
+    "wall_seconds": 249.097,
+    "finished_at": "2026-11-19T06:46:33.782457+00:00",
+    "redacted_native_files": 0
+  },
+  "roles": {
+    "coder": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 32768,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.0,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    },
+    "observer": {
+      "endpoint_origin": "https://api.openai.com",
+      "max_tokens": 8192,
+      "model": "gpt-5.6-luna",
+      "provider": "openai",
+      "temperature": 0.2,
+      "timeout_seconds": 90,
+      "transport": "openai-compatible"
+    }
+  },
+  "termination": "interrupted",
+  "error": "Coder: error decoding response body: request or response body error: error reading a body from connection: Operation timed out (os error 60)",
+  "task_requests": 17,
+  "wire_requests": 20,
+  "role_requests": {
+    "coder": 14,
+    "observer": 6
+  },
+  "budget_valid": true,
+  "original_check_failures_before_edit": [
+    {
+      "call_id": "call_9fwCIINzJIQ3suE3Xchkvya4",
+      "tool": "exec",
+      "result_step": 1,
+      "succeeded": false,
+      "freshness": "superseded"
+    }
+  ],
+  "first_failure_frame": {
+    "case": "first_interruption_with_empty_ledger_preserves_known_totals",
+    "comparisons": [
+      {
+        "expected": 0,
+        "field": "manifest.finalized_rows",
+        "observed": 0
+      },
+      {
+        "expected": "iteration-01",
+        "field": "manifest.interrupted_directory",
+        "observed": "iteration-02"
+      },
+      {
+        "expected": "valid",
+        "field": "iteration-01/state/tui-work.json JSON",
+        "observed": "invalid"
+      },
+      {
+        "expected": 0,
+        "field": "iteration-01/state/tui-work.json.wire_requests",
+        "observed": null
+      },
+      {
+        "expected": 0,
+        "field": "manifest.interrupted_iteration.task_requests",
+        "observed": 1
+      },
+      {
+        "expected": 0,
+        "field": "manifest.interrupted_iteration.wire_requests",
+        "observed": 2
+      },
+      {
+        "expected": 0,
+        "field": "manifest.task_requests",
+        "observed": 1
+      },
+      {
+        "expected": 0,
+        "field": "manifest.wire_requests",
+        "observed": 1
+      }
+    ],
+    "snapshots": [
+      {
+        "fields": {
+          "finalized_rows": 1,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "json": "valid",
+          "task_requests": 3,
+          "wire_requests": 5
+        },
+        "file": "iterations.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 2,
+          "wire_requests": 3
+        },
+        "file": "iteration-01/state/tui-work.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 2
+        },
+        "file": "iteration-02/state/tui-work.json",
+        "stage": "generated"
+      },
+      {
+        "fields": {
+          "finalized_rows": 0,
+          "interrupted_directory": "iteration-02",
+          "interrupted_task_requests": 1,
+          "interrupted_wire_requests": 2,
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 1
+        },
+        "file": "iterations.json",
+        "stage": "validator_input"
+      },
+      {
+        "fields": {
+          "column": 2,
+          "json": "invalid",
+          "line": 1
+        },
+        "file": "iteration-01/state/tui-work.json",
+        "stage": "validator_input"
+      },
+      {
+        "fields": {
+          "json": "valid",
+          "task_requests": 1,
+          "wire_requests": 2
+        },
+        "file": "iteration-02/state/tui-work.json",
+        "stage": "validator_input"
+      }
+    ],
+    "version": 1
+  },
+  "after_read_handoffs": [
+    {
+      "diagnostic_read_call_id": "call_QukiYtpITNU4z0UU3cOp0vH2",
+      "failed_check": "python3 -S scripts/status_fixture_observe.py",
+      "failure_path": "tests/coupled_status.rs",
+      "kind": "authored_fixture_read",
+      "test_name": "first_interruption_with_empty_ledger_preserves_known_totals"
+    }
+  ],
+  "advice_after_read_before_first_edit": [
+    {
+      "captured_at": "2026-11-19T06:43:20.360189+00:00",
+      "previous_tool_call_id": "call_QukiYtpITNU4z0UU3cOp0vH2",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\npatch_file(path=tests/coupled_status.rs, replace=    let ledger = root.join(\"iteration-02/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();, search=    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();)\nWhy: Apply the smallest supported test-only correction: target the fixture's actual interrupted directory, iteration-02, and emit valid JSON rather than the observed invalid escaped bytes. This makes the empty-ledger input coherent without changing validator code.\nObserver route (quoted advice, not native evidence or a queued action): {\"fallback\":{\"text\":\"If the corrected test still fails, retain the exact failed output and inspect only the implementation path that selects the interrupted directory or derives pending totals; do not broaden the edit scope or change protected checks.\",\"truncated\":false},\"why_this_first\":{\"text\":\"The current observation already proves the validator received interrupted_directory=iteration-02, iteration-01 invalid JSON, and expected zero totals were not reached. A coherent test-only correction is needed before product code is considered; rerunning the same diagnostic distinguishes fixture repair from a remaining product failure.\",\"truncated\":false}}\nCheck its conditions against the current results before choosing a new action; current scope, diagnosis, approvals and completion checks still apply.\n</observer_advisory>"
+    }
+  ],
+  "all_retained_advice_before_first_edit": [
+    {
+      "captured_at": "2026-11-19T06:43:05.905350+00:00",
+      "previous_tool_call_id": "call_9fwCIINzJIQ3suE3Xchkvya4",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\nread_file(path=tests/coupled_status.rs)\nWhy: Read the exact failing test source now, as required by pending_recovery, to trace fixture(\"interrupted\") through the helper and confirm the precise test-only correction. The current sampled input cannot test the intended behavior: it expected iteration-01 with zero totals but supplied the generator's iteration-02 pointer and counts (task 1, wire 2), and it wrote invalid JSON to iteration-01, causing the panic before the assertion. This read unlocks a coherent positive control and a single-condition negative control; if it confirms the quoted setup, correct the test to target the generated interrupted directory and write valid ledger JSON with zero requests before rerunning the failed observation and the deferred exact, suite, formatting, and Python checks. Do not edit the validator based on this failure. Continue the current route rather than inspecting implementation first because the native gate explicitly requires this bounded read and the observed contradiction is already in the fixture input; an alternative implementation read would not establish whether the product received the intended case. Fallback: if the source shows a different fixture path or assertion contract, use that bounded evidence to adjust only the test input, then rerun the failed check.\n</observer_advisory>\n\n[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native read_file with exactly these arguments: {\"path\":\"tests/coupled_status.rs\"}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply."
+    },
+    {
+      "captured_at": "2026-11-19T06:43:20.360189+00:00",
+      "previous_tool_call_id": "call_QukiYtpITNU4z0UU3cOp0vH2",
+      "advice": "<observer_advisory priority=\"soft\" source=\"external_observer\">\n[Observer advisory — soft hint only]\nStay within the current intent anchor and task scope.\nIf you are still stuck, prefer this next step before widening search:\npatch_file(path=tests/coupled_status.rs, replace=    let ledger = root.join(\"iteration-02/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();, search=    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();)\nWhy: Apply the smallest supported test-only correction: target the fixture's actual interrupted directory, iteration-02, and emit valid JSON rather than the observed invalid escaped bytes. This makes the empty-ledger input coherent without changing validator code.\nObserver route (quoted advice, not native evidence or a queued action): {\"fallback\":{\"text\":\"If the corrected test still fails, retain the exact failed output and inspect only the implementation path that selects the interrupted directory or derives pending totals; do not broaden the edit scope or change protected checks.\",\"truncated\":false},\"why_this_first\":{\"text\":\"The current observation already proves the validator received interrupted_directory=iteration-02, iteration-01 invalid JSON, and expected zero totals were not reached. A coherent test-only correction is needed before product code is considered; rerunning the same diagnostic distinguishes fixture repair from a remaining product failure.\",\"truncated\":false}}\nCheck its conditions against the current results before choosing a new action; current scope, diagnosis, approvals and completion checks still apply.\n</observer_advisory>"
+    }
+  ],
+  "assist_records": [
+    {
+      "assist_id": 1,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_QukiYtpITNU4z0UU3cOp0vH2"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "tool": "patch_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs",
+        "replace": "    let ledger = root.join(\"iteration-02/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+        "search": "    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+      },
+      "matching_call_ids": [
+        "call_wv3QbCptGUqZvc0dZX0CFTsb",
+        "call_YE5JfyOTouh6JNO3njVufAQP",
+        "call_xGygCv6MeWoYPVUIrhq7Sy57",
+        "call_NiwkY9YpNvuVDfcoQprqSUqu"
+      ],
+      "executed": true,
+      "succeeded": true
+    },
+    {
+      "assist_id": 3,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_cZKuOk4DcdYylyk138NxOZTA"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 4,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_jQGZHdrPRkJZO13zWRGSoluD"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 5,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [
+        "call_BJkh8qPAfC6nYaTaLoQYqdZQ"
+      ],
+      "executed": true,
+      "succeeded": null
+    },
+    {
+      "assist_id": 6,
+      "decision": "accept",
+      "tool": "read_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs"
+      },
+      "matching_call_ids": [],
+      "executed": false,
+      "succeeded": null
+    }
+  ],
+  "first_edit_matched_suggestions": [
+    {
+      "assist_id": 2,
+      "decision": "accept",
+      "tool": "patch_file",
+      "arguments": {
+        "path": "tests/coupled_status.rs",
+        "replace": "    let ledger = root.join(\"iteration-02/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+        "search": "    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+      },
+      "matching_call_ids": [
+        "call_wv3QbCptGUqZvc0dZX0CFTsb",
+        "call_YE5JfyOTouh6JNO3njVufAQP",
+        "call_xGygCv6MeWoYPVUIrhq7Sy57",
+        "call_NiwkY9YpNvuVDfcoQprqSUqu"
+      ],
+      "executed": true,
+      "succeeded": true
+    }
+  ],
+  "first_native_edit": {
+    "call_id": "call_NiwkY9YpNvuVDfcoQprqSUqu",
+    "tool": "patch_file",
+    "result_step": 7,
+    "succeeded": true,
+    "freshness": "before_mutation",
+    "path": "tests/coupled_status.rs"
+  },
+  "first_native_edit_arguments": {
+    "path": "tests/coupled_status.rs",
+    "replace": "    let ledger = root.join(\"iteration-02/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\"task_id\":\"pending\",\"requests\":[]}\"#).unwrap();",
+    "search": "    let ledger = root.join(\"iteration-01/state/tui-work.json\");\n    fs::write(&ledger, br#\"{\\\"task_id\\\":\\\"pending\\\",\\\"requests\\\":[]}\"#).unwrap();"
+  },
+  "native_edits": [
+    {
+      "call_id": "call_NiwkY9YpNvuVDfcoQprqSUqu",
+      "tool": "patch_file",
+      "result_step": 7,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_Ob2aOduUeoIEwRHLaTeasaD8",
+      "tool": "patch_file",
+      "result_step": 11,
+      "succeeded": true,
+      "freshness": "before_mutation",
+      "path": "tests/coupled_status.rs"
+    },
+    {
+      "call_id": "call_b830wMrYSgTcDsjjGPxBeJuf",
+      "tool": "patch_file",
+      "result_step": 13,
+      "succeeded": true,
+      "freshness": "current",
+      "path": "tests/coupled_status.rs"
+    }
+  ],
+  "changed_paths": [
+    "tests/coupled_status.rs"
+  ],
+  "protected_files_preserved": {
+    "src/coupled_status.rs": true,
+    "scripts/status_interruption_directory.py": true,
+    "scripts/status_fixture_observe.py": true,
+    "scripts/status_fixture_forwarder.rs": true
+  },
+  "post_mutation_passes": {
+    "python3 -S scripts/status_fixture_observe.py": [],
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": [],
+    "cargo test --locked --test coupled_status -q": [],
+    "python3 -S -m unittest -v scripts.status_interruption_directory": [],
+    "cargo fmt --all -- --check": []
+  },
+  "last_mutation_step": 13,
+  "accepted_done_step": null,
+  "pending_exact_checks": [
+    "python3 -S scripts/status_fixture_observe.py",
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact",
+    "cargo test --locked --test coupled_status -q",
+    "python3 -S -m unittest -v scripts.status_interruption_directory",
+    "cargo fmt --all -- --check"
+  ],
+  "native_completed": false,
+  "native_gate": false,
+  "matched_terminal_entries": 1673,
+  "independent_exact_checks": {
+    "python3 -S scripts/status_fixture_observe.py": {
+      "exit": 101,
+      "log_sha256": "72fbca2cdbf346dcdcf1df262b2969b6ff115ede029e320e262482176b3539c2"
+    },
+    "cargo test --locked --test coupled_status first_interruption_with_empty_ledger_preserves_known_totals -- --exact": {
+      "exit": 101,
+      "log_sha256": "8ec9cea1d107a157e47b28365f43d3160704f6af9759f28c4c5e8afa40877fc9"
+    },
+    "cargo test --locked --test coupled_status -q": {
+      "exit": 101,
+      "log_sha256": "384626b1020cab63a1c5279910f27fef9135dc2a30bedea2cac8de4343845f53"
+    },
+    "python3 -S -m unittest -v scripts.status_interruption_directory": {
+      "exit": 0,
+      "log_sha256": "2a0e45c83de5b79c1be2a7091df2251f8c1b52d8f0afd442a12d9e085c13a459"
+    },
+    "cargo fmt --all -- --check": {
+      "exit": 1,
+      "log_sha256": "f21986fd137a76fdae43ac1e9a7307bc0998f3f48904b9f6f011c992efb74157"
+    }
+  }
+}
