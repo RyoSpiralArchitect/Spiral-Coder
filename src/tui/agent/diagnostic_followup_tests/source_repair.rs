@@ -249,3 +249,107 @@ async fn additional_source_return_preserves_the_delivery_allowance() {
         assert_eq!(ready, expected, "remaining task requests: {remaining}");
     }
 }
+
+#[test]
+fn grounded_rust_comparison_uses_the_observed_binding() {
+    const RUST: &str = "src/value.rs";
+    let search = "    if output.map_or(false, |n| n > limit)\n    {\n        return false;\n    }";
+    let source = format!("fn within_limit(output: Option<u32>, limit: u32) -> bool {{\n    let wire_total = 3;\n{search}\n    true\n}}\n");
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    trace.messages[0]["content"] = json!(trace.messages[0]["content"]
+        .as_str()
+        .unwrap()
+        .replace(SOURCE, RUST));
+    std::fs::write(trace.path.join(RUST), source).unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(
+        &mut trace,
+        "known",
+        json!({"path":RUST,"start_line":1,"end_line":2}),
+    );
+    read_source(
+        &mut trace,
+        "guard",
+        json!({"path":RUST,"start_line":3,"end_line":9}),
+    );
+    let resolution = |name: &str| {
+        let replacement = search.replace("    {", &format!("        || {name} > limit\n    {{"));
+        let raw = json!({
+            "summary":"Keep unknown output and validate the known total",
+            "suggestions":[{"kind":"edit","reason":"Add a strict guard","confidence":0.96,
+                "suggested_tool":"patch_file","suggested_args":{"path":RUST,"search":search,"replace":replacement}}]
+        }).to_string();
+        crate::observer_action::resolve_advice(
+            &raw,
+            &trace.messages,
+            Some(CHECK),
+            trace.root(),
+            Some(12),
+        )
+    };
+    let wrong = resolution("finalized_wire_total");
+    assert!(wrong
+        .issue
+        .as_deref()
+        .unwrap()
+        .contains("`finalized_wire_total`"));
+    assert!(
+        resolution("total").issue.is_some(),
+        "substring hits cannot prove an identifier"
+    );
+    let correct = resolution("wire_total");
+    assert!(correct.issue.is_none());
+    assert_eq!(
+        crate::tui::suggestion::primary_suggestion(correct.envelope.as_ref().unwrap())
+            .unwrap()
+            .suggested_tool
+            .as_deref(),
+        Some("patch_file")
+    );
+}
+
+#[test]
+fn only_an_unseen_declared_source_range_qualifies_for_selection_repair() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    std::fs::write(
+        trace.path.join(SOURCE),
+        "value = 1\nlimit = 2\nreturn True\n",
+    )
+    .unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(
+        &mut trace,
+        "first",
+        json!({"path":SOURCE,"start_line":1,"end_line":1}),
+    );
+    let followup = trace.view().unwrap();
+    let root = trace.root().unwrap();
+    for (path, start, end, expected) in [
+        (SOURCE, 2, 3, true),
+        (SOURCE, 1, 1, false),
+        (SOURCE, 8, 9, false),
+        (SOURCE, 1, 400, false),
+        ("src/other.py", 2, 3, false),
+    ] {
+        let read = read_range::ReadRequest {
+            path: path.into(),
+            start_line: Some(start),
+            end_line: Some(end),
+        };
+        assert_eq!(followup.accepts_source_range(&read, root), expected);
+    }
+    accepted_source_read(&mut trace, "second", 2, 2);
+    let after = trace.view().unwrap();
+    assert!(!after.accepts_source_range(
+        &read_range::ReadRequest {
+            path: SOURCE.into(),
+            start_line: Some(3),
+            end_line: Some(3)
+        },
+        trace.root().unwrap()
+    ));
+}

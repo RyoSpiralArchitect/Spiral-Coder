@@ -175,6 +175,7 @@ Fix: use --provider openai-compatible (or --provider mistral).",
     // multi-attempt receipts cannot be misclassified into the transport pool.
     let mut last_request_cursor: Option<usize> = None;
     let mut first_observer_observation = observer_continuation::current();
+    let mut source_read_selection_repaired = false;
     for iter in 0..max_iters
         .saturating_add(repair_iterations)
         .saturating_add(GOVERNOR_BLOCK_ITER_RELIEF)
@@ -954,6 +955,48 @@ This is the LAST model call for this run.\n\
         let mut validated_think_for_turn: Option<ThinkBlock> = None;
 
         let mut tool_call: Option<ToolCallData> = tool_calls.pop();
+        if !source_read_selection_repaired {
+            if let (Some(observation), Some(call)) =
+                (observer_observation.as_ref(), tool_call.as_ref())
+            {
+                if let Some(block) = observation.source_read_selection_issue(call, &assistant_text)
+                {
+                    // Reject only the conflicting selection. Do not admit its
+                    // plan or start a new recovery cycle before the agreed read.
+                    source_read_selection_repaired = true;
+                    first_observer_observation = Some(observation.clone());
+                    step_seq = step_seq.saturating_add(1);
+                    tool_calls_this_run = tool_calls_this_run.saturating_add(1);
+                    messages.push(json!({
+                        "role": "assistant", "content": assistant_text_clean,
+                        "tool_calls": [call.to_json()]
+                    }));
+                    messages.push(json!({
+                        "role": "tool", "tool_call_id": call.id,
+                        "content": format!("GOVERNOR BLOCKED\n\n{block}")
+                    }));
+                    emit_telemetry_event(
+                        &tx,
+                        "observer_source_read_selection_blocked",
+                        json!({
+                            "call_id": call.id, "attempted_tool": call.name,
+                        }),
+                    )
+                    .await;
+                    pending_system_hint = Some(block);
+                    autosave_best_effort(
+                        &autosaver,
+                        &tx,
+                        tool_root_abs.as_deref(),
+                        checkpoint.as_deref(),
+                        cur_cwd.as_deref(),
+                        &messages,
+                    )
+                    .await;
+                    continue;
+                }
+            }
+        }
         let observer_observation = observer_observation.as_ref().filter(|observation| {
             tool_call
                 .as_ref()

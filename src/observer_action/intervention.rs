@@ -180,7 +180,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
                 ""
             };
             format!(
-                "{additional}{} Quote the invariant to preserve in the primary reason. If the observed window supports the repair, propose one exact patch_file with kind=edit and unique search and replacement bytes from the source. Cite the failed check and read IDs in based_on. Ask for a different bounded observation only when a specific fact is still missing.\n",
+                "{additional}{} Quote the invariant to preserve in the primary reason. If the observed window supports the repair, propose one exact patch_file with kind=edit and unique search and replacement bytes from the source. Copy reused identifiers verbatim from the current source reads. If a binding is still missing, ask for the region that declares it. Cite the failed check and read IDs in based_on.\n",
                 crate::tui::agent::task_obligations::SOURCE_REPAIR_GUIDANCE
             )
         });

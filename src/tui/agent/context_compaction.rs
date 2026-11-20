@@ -23,6 +23,7 @@ pub(super) fn render_coder_obligations(obligations: &impl Serialize, messages: &
         // The Coder already owns these native tool messages.
         read.remove("test_read");
         read.remove("implementation_read");
+        read.remove("previous_implementation_read");
     }
     obligations::reference_human_task(&mut view, messages);
     remove_repeated_pending_items(&mut view);

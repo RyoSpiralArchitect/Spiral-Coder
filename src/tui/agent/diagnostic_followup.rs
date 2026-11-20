@@ -2,10 +2,13 @@
 use super::*;
 use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome, file_edit_succeeded};
 use crate::file_tools::read_range;
-use std::ops::RangeInclusive;
 
 #[path = "diagnostic_followup/unittest_comparison.rs"]
 mod unittest_comparison;
+
+#[path = "diagnostic_followup/source_repair.rs"]
+mod source_repair;
+use source_repair::{adds_source_lines, SourceRead, SourceRepair, SourceWindow};
 
 const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
 
@@ -27,16 +30,6 @@ pub(crate) struct DiagnosticFollowup {
     first_read_just_returned: bool,
     #[serde(skip)]
     source_read_just_returned: bool,
-}
-
-#[derive(Debug, Serialize)]
-struct SourceRepair {
-    path: String,
-    read_call_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    previous_read_call_id: Option<String>,
-    test_read: String,
-    implementation_read: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -100,6 +93,28 @@ impl DiagnosticFollowup {
         self.source_repair.is_some()
     }
 
+    pub(in crate::tui::agent) fn accepts_source_range(
+        &self,
+        read: &read_range::ReadRequest,
+        root: &str,
+    ) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.accepts_range(read, root))
+    }
+
+    pub(crate) fn observed_source_fragment(&self, path: &str, fragment: &str) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.contains_fragment(path, fragment))
+    }
+
+    pub(crate) fn observed_source_identifier(&self, path: &str, identifier: &str) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.contains_identifier(path, identifier))
+    }
+
     pub(in crate::tui::agent) fn is_additional_source_return(&self) -> bool {
         self.source_read_just_returned
             && self
@@ -128,44 +143,7 @@ struct Cycle<'a> {
     earlier_read_result: Option<&'a str>,
     first_read: Option<Read<'a>>,
     source_read: Option<SourceRead<'a>>,
-    source_windows: Vec<RangeInclusive<usize>>,
-}
-
-struct SourceRead<'a> {
-    path: String,
-    read: Read<'a>,
-    lines: RangeInclusive<usize>,
-    previous_call_id: Option<String>,
-}
-
-impl<'a> SourceRead<'a> {
-    fn complete(path: String, call: &ToolCallData, output: &'a str) -> Option<Self> {
-        let request: read_range::ReadRequest = serde_json::from_str(&call.arguments).ok()?;
-        let (total, _, _) = read_range::header_counts(&request.path, output.lines().next()?)?;
-        let (start, end) = if request.is_range() {
-            let (start, end) = request.bounds().ok()?;
-            (start, end.min(total))
-        } else {
-            (1, total)
-        };
-        // Require the last line in the native window so a clipped or pruned
-        // result cannot supply new source for an exact edit.
-        read_range::covers_line(&call.arguments, output, end).then(|| Self {
-            path,
-            read: Read {
-                call_id: call.id.clone(),
-                result: output,
-            },
-            lines: start..=end,
-            previous_call_id: None,
-        })
-    }
-
-    fn adds_lines_to(&self, earlier: &[RangeInclusive<usize>]) -> bool {
-        self.lines
-            .clone()
-            .any(|line| !earlier.iter().any(|window| window.contains(&line)))
-    }
+    source_windows: Vec<SourceWindow<&'a str>>,
 }
 
 impl RecoveryFocus {
@@ -317,11 +295,14 @@ impl RecoveryFocus {
                     if let Some(previous) = &cycle.source_read {
                         if source.path != previous.path
                             || previous.previous_call_id.is_some()
-                            || !source.adds_lines_to(&cycle.source_windows)
+                            || !adds_source_lines(source.lines.clone(), &cycle.source_windows)
                         {
                             continue;
                         }
-                        cycle.source_windows.push(source.lines.clone());
+                        cycle.source_windows.push(SourceWindow {
+                            lines: source.lines.clone(),
+                            output: source.read.result,
+                        });
                         if !super::super::observer_continuation::accepted_read_result(message) {
                             continue;
                         }
@@ -330,7 +311,10 @@ impl RecoveryFocus {
                         if selected_source_read {
                             continue;
                         }
-                        cycle.source_windows.push(source.lines.clone());
+                        cycle.source_windows.push(SourceWindow {
+                            lines: source.lines.clone(),
+                            output: source.read.result,
+                        });
                     }
                     cycle.source_read = Some(source);
                     selected_source_read = true;
@@ -370,13 +354,9 @@ impl RecoveryFocus {
         let read = cycle.first_read?;
         let unittest_comparison =
             unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
-        let source_repair = cycle.source_read.map(|source| SourceRepair {
-            path: source.path,
-            read_call_id: source.read.call_id,
-            previous_read_call_id: source.previous_call_id,
-            test_read: read.result.to_owned(),
-            implementation_read: source.read.result.to_owned(),
-        });
+        let source_repair = cycle
+            .source_read
+            .map(|source| SourceRepair::from_read(source, read.result, cycle.source_windows));
         if cycle.earlier_failure.is_none()
             && unittest_comparison.is_none()
             && source_repair.is_none()

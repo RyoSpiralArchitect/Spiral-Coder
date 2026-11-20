@@ -25,7 +25,14 @@ case to state what the edit must preserve, and can propose an exact patch
 against the displayed source. If the Observer asks for a missing range, one
 additional return can follow the accepted read when it supplies new lines in
 the same source. The remaining allowance must cover the edit, required checks,
-and final report. Both roles still need the original checks after the edit.
+and final report. If the Coder accepts that ranged read and selects a different
+tool, it receives one correction with the exact read arguments. It can confirm
+the read or explicitly choose another action through the normal gates.
+
+For a Rust patch that inserts a comparison into an observed condition, the
+Observer action validator looks for the bare operand names in the retained
+source windows. It can return feedback asking for the actual binding or its
+declaration. Both roles still need the original checks after the edit.
 
 ## Asking the pair to consider existing code
 

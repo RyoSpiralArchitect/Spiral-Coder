@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 pub(crate) mod diagnostic;
 pub(crate) mod identity_scope;
 pub(crate) mod intervention;
+mod source_edit;
 pub(crate) mod strategy;
 mod test_recipe;
 pub(crate) mod work_route;
@@ -171,7 +172,7 @@ fn validate_advice(
     }) {
         return Some(problem);
     }
-    if let Some(required) = obligations.required_diagnostic_read {
+    if let Some(required) = &obligations.required_diagnostic_read {
         let supplied = action.suggested_args["path"]
             .as_str()
             .unwrap_or("")
@@ -181,10 +182,13 @@ fn validate_advice(
         }
         return Some(format!("Pending diagnosis requires read_file(path={}). Read the failure location before suggesting an edit, verification or another file; it is not necessarily the repair target.", required.path));
     }
-    if let Some(report) = obligations.report_repair {
+    if let Some(report) = &obligations.report_repair {
         if action.suggested_tool.as_deref() != Some("done") {
             return Some(format!("The latest native done was rejected only for its authored report; current checks and acceptance citations remain valid. Suggest done with corrected summary, or no-tool clarify when uncertain. Do not restart inspection, edits or passed checks. Authored report feedback:\n{}", report.feedback));
         }
+    }
+    if let Some(issue) = source_edit::issue(action, &obligations, tool_root) {
+        return Some(issue);
     }
     if action.suggested_tool.as_deref() == Some("done") {
         return agent::evidence_packet::acceptance_issue(
