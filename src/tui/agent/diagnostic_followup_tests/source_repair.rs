@@ -142,3 +142,110 @@ fn other_baseline_ownership_and_a_prior_edit_cannot_start_a_source_return() {
         assert!(trace.view().is_none());
     }
 }
+
+// The transcript marker is written by native file dispatch only after the
+// exact accepted Observer action succeeds.
+fn accepted_source_read(trace: &mut Trace, id: &str, start: usize, end: usize) {
+    read_source(
+        trace,
+        id,
+        json!({"path":SOURCE,"start_line":start,"end_line":end}),
+    );
+    trace.messages.last_mut().unwrap()[METADATA_KEY]["accepted_observer_read"] = json!(true);
+}
+
+#[test]
+fn accepted_additional_read_returns_only_for_previously_unseen_lines() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    let text = (1..=50)
+        .map(|n| format!("value_{n} = {n}\n"))
+        .collect::<String>();
+    std::fs::write(trace.path.join(SOURCE), text).unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(
+        &mut trace,
+        "first",
+        json!({"path":SOURCE,"start_line":1,"end_line":10}),
+    );
+    assert!(trace.view().unwrap().should_yield());
+    accepted_source_read(&mut trace, "contained", 4, 10);
+    assert!(!trace.view().unwrap().should_yield());
+
+    // Reading new lines on Coder's own initiative is useful, but it is not
+    // execution of the Observer's additional read.
+    read_source(
+        &mut trace,
+        "independent",
+        json!({"path":SOURCE,"start_line":11,"end_line":20}),
+    );
+    assert!(!trace.view().unwrap().should_yield());
+    accepted_source_read(&mut trace, "already-covered", 8, 18);
+    assert!(!trace.view().unwrap().should_yield());
+    accepted_source_read(&mut trace, "additional", 19, 25);
+
+    let updated = trace.view().unwrap();
+    assert!(updated.should_yield());
+    assert!(updated.is_additional_source_return());
+    let view = serde_json::to_value(updated).unwrap();
+    let repair = &view["source_repair"];
+    assert_eq!(repair["previous_read_call_id"], "first");
+    assert_eq!(repair["read_call_id"], "additional");
+    assert_eq!(view["diagnostic_read_call_id"], "test");
+    assert!(repair["implementation_read"]
+        .as_str()
+        .unwrap()
+        .contains("value_25 = 25"));
+    assert!(crate::observer_action::intervention::prompt(
+        &json!({"task_obligations":{"diagnostic_followup":view}})
+    )
+    .contains("The additional read you requested has returned with new lines"));
+
+    accepted_source_read(&mut trace, "third-window", 26, 35);
+    let retained = trace.view().unwrap();
+    assert!(!retained.should_yield());
+    assert_eq!(
+        serde_json::to_value(retained).unwrap()["source_repair"]["read_call_id"],
+        "additional"
+    );
+}
+
+#[tokio::test]
+async fn additional_source_return_preserves_the_delivery_allowance() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    std::fs::write(trace.path.join(SOURCE), "value = 1\nlimit = 2\n").unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(
+        &mut trace,
+        "first",
+        json!({"path":SOURCE,"start_line":1,"end_line":1}),
+    );
+    accepted_source_read(&mut trace, "additional", 2, 2);
+
+    for (remaining, expected) in [(3, false), (4, true)] {
+        let budget = crate::work_budget::WorkBudget::new(trace.root().unwrap(), remaining, None)
+            .with_observer_return(1);
+        let ready = crate::work_budget::scope(
+            Some(crate::work_budget::Context {
+                budget,
+                role: "coder",
+            }),
+            async {
+                agent::observer_handoff::after_diagnostic_read(
+                    &trace.focus,
+                    &trace.messages,
+                    trace.root(),
+                    Some(CHECK),
+                    3,
+                    4,
+                )
+                .is_some()
+            },
+        )
+        .await;
+        assert_eq!(ready, expected, "remaining task requests: {remaining}");
+    }
+}

@@ -1502,7 +1502,9 @@ Execute this minimal action instead: {}",
 
         // ── File tools: read_file / write_file / patch_file ────────────────
         if matches!(tc.name.as_str(), "read_file" | "write_file" | "patch_file") {
-            match file_tool_dispatch::run_file_tools(&mut tool_ctx, &tc).await? {
+            match file_tool_dispatch::run_file_tools(&mut tool_ctx, &tc, observer_observation)
+                .await?
+            {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,
             }

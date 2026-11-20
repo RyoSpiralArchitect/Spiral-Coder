@@ -6,6 +6,12 @@ use crate::tui::suggestion::{
 };
 use serde_json::Value;
 
+const ACCEPTED_READ: &str = "accepted_observer_read";
+
+pub(super) fn accepted_read_result(message: &Value) -> bool {
+    message[super::recovery_focus::METADATA_KEY][ACCEPTED_READ] == Value::Bool(true)
+}
+
 #[derive(Clone)]
 pub(crate) struct Observation {
     tool: &'static str,
@@ -113,10 +119,20 @@ impl Observation {
     }
 
     pub(super) fn matches_accepted_call(&self, call: &ToolCallData, text: &str) -> bool {
+        suggestion::explicit_response_decision(text) == Some(ObserverResponseMode::Accept)
+            && self.matches_call(call)
+    }
+
+    fn matches_call(&self, call: &ToolCallData) -> bool {
         call.name == self.tool
-            && suggestion::explicit_response_decision(text) == Some(ObserverResponseMode::Accept)
             && serde_json::from_str::<Value>(&call.arguments)
                 .is_ok_and(|arguments| arguments == self.arguments)
+    }
+
+    pub(super) fn record_read_result(&self, call: &ToolCallData, message: &mut Value) {
+        if call.name == "read_file" && self.matches_call(call) {
+            message[super::recovery_focus::METADATA_KEY][ACCEPTED_READ] = Value::Bool(true);
+        }
     }
 
     pub(super) fn command(&self) -> Option<&str> {
@@ -226,5 +242,30 @@ mod tests {
             let env = advice(kind, tool, args, confidence);
             assert!(Observation::from_advice(&env, &session(cwd), None, root).is_none());
         }
+    }
+    #[test]
+    fn accepted_observer_read_receipt_keeps_exact_arguments() {
+        let args = json!({"path":"src/a.rs","start_line":9,"end_line":16});
+        let observation = Observation {
+            tool: "read_file",
+            arguments: args.clone(),
+            wire_arguments: args.clone(),
+        };
+        let mut call = ToolCallData {
+            id: "read".into(),
+            name: "read_file".into(),
+            arguments: args.to_string(),
+            thought_signature: None,
+        };
+        assert!(observation.matches_accepted_call(&call, ACCEPT));
+        let mut result = json!({"role":"tool", "recovery_focus":{"version":2}});
+        observation.record_read_result(&call, &mut result);
+        assert!(accepted_read_result(&result));
+
+        call.arguments = json!({"path":"src/a.rs","start_line":9,"end_line":15}).to_string();
+        assert!(!observation.matches_accepted_call(&call, ACCEPT));
+        let mut result = json!({"role":"tool", "recovery_focus":{"version":2}});
+        observation.record_read_result(&call, &mut result);
+        assert!(!accepted_read_result(&result));
     }
 }

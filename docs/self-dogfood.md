@@ -22,8 +22,10 @@ through `task_requirements`. When the Coder has read the failed test and a
 complete native window in that source before editing, the pair can return once
 to the Observer with both reads. The Observer uses the valid control and failed
 case to state what the edit must preserve, and can propose an exact patch
-against the displayed source. Both roles still need the original checks after
-the edit.
+against the displayed source. If the Observer asks for a missing range, one
+additional return can follow the accepted read when it supplies new lines in
+the same source. The remaining allowance must cover the edit, required checks,
+and final report. Both roles still need the original checks after the edit.
 
 ## Asking the pair to consider existing code
 

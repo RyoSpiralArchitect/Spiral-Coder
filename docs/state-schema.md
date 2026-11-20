@@ -441,6 +441,11 @@ Localized verification failures:
   bounded diagnostic hints are intentionally visible to the model.
   New human task boundaries discard the previous task's recovery focus.
 - Tool messages carry `recovery_focus: {version: 2, state: {pending: ..., deferred: [...]}}`.
+  A successful read that exactly matches the accepted Observer action can also
+  carry `recovery_focus.accepted_observer_read: true`. Source diagnosis can use
+  this receipt to return once after a read of new lines in the same file. A
+  possible write ends that diagnostic cycle. The receipt grants no edit or
+  verification authority.
   `recovery_snapshot.rs` validates and restores this state, accepting version 1
   single-failure snapshots as well. Empty `deferred` is omitted. Duplicate check
   identities and a deferred list without an active failure are invalid.

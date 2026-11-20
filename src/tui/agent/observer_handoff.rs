@@ -134,25 +134,35 @@ pub(super) fn after_diagnostic_read(
     initial_steps: usize,
     current_steps: usize,
 ) -> Option<DiagnosticReturn> {
-    if current_steps <= initial_steps
-        || !crate::work_budget::current().is_some_and(|context| {
-            context.role == "coder"
-                && context.budget.can_return_to_observer()
-                && context.budget.remaining_for("observer") >= 3
-                && context.budget.remaining_for("coder") >= 2
-        })
-    {
+    if current_steps <= initial_steps {
         return None;
     }
-    focus
+    let context = crate::work_budget::current().filter(|context| {
+        context.role == "coder"
+            && context.budget.can_return_to_observer()
+            && context.budget.remaining_for("observer") >= 3
+            && context.budget.remaining_for("coder") >= 2
+    })?;
+    let followup = focus
         .diagnostic_followup(messages, root)
-        .filter(|followup| followup.should_yield())
-        .map(DiagnosticReturn::Followup)
-        .or_else(|| {
-            focus
-                .fixture_read_handoff(messages, root?, configured)
-                .map(DiagnosticReturn::Fixture)
-        })
+        .filter(|followup| {
+            if !followup.should_yield() {
+                return false;
+            }
+            if !followup.is_additional_source_return() {
+                return true;
+            }
+            let obligations = super::task_obligations::project_advisory(messages, configured, root);
+            obligations.minimum_delivery.is_some_and(|floor| {
+                context.budget.remaining_for("coder") >= floor.minimum_coder_requests
+                    && context.budget.remaining_for("observer") > floor.minimum_coder_requests
+            })
+        });
+    followup.map(DiagnosticReturn::Followup).or_else(|| {
+        focus
+            .fixture_read_handoff(messages, root?, configured)
+            .map(DiagnosticReturn::Fixture)
+    })
 }
 
 #[cfg(test)]

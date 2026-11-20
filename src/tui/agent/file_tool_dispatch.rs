@@ -4,6 +4,7 @@ use super::*;
 pub(super) async fn run_file_tools(
     ctx: &mut ToolDispatchCtx<'_>,
     tc: &ToolCallData,
+    observer_observation: Option<&observer_continuation::Observation>,
 ) -> Result<ToolFlow> {
     let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
     let path = args["path"].as_str().unwrap_or("").to_string();
@@ -490,10 +491,14 @@ Action required: obtain a complete read of current contents before write_file. F
             history_result.push_str(&plan);
         }
     }
-    ctx.messages.push(CargoInputReceipt::attach(
+    let mut message = CargoInputReceipt::attach(
         cargo_inputs,
         ctx.recovery.focus.tool_message(tc, history_result),
-    ));
+    );
+    if let Some(observation) = observer_observation.filter(|_| !is_error) {
+        observation.record_read_result(tc, &mut message);
+    }
+    ctx.messages.push(message);
     if !is_error && (tc.name == "read_file" || changed) && !ctx.root_read_only {
         if let Some(hint) = build_fix_stage_progress_hint(
             ctx.task_harness,
