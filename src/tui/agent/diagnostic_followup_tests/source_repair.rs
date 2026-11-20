@@ -1,0 +1,144 @@
+use super::*;
+
+const SOURCE: &str = "src/value.py";
+
+fn add_source_contract(trace: &mut Trace, baseline_command: &str) {
+    trace.messages[0]["content"] = json!(format!(
+        "{TASK}\n<task_requirements>\n{}\n</task_requirements>",
+        json!({
+            "version": 1,
+            "requirements": [{
+                "id": "boundary",
+                "description": "Keep the exact-limit control and reject the over-limit input.",
+                "artifacts": [{"path": SOURCE, "kind": "source"}],
+                "checks": [{"command": baseline_command, "baseline_failure": true}]
+            }]
+        })
+    ));
+    std::fs::create_dir_all(trace.path.join("src")).unwrap();
+}
+
+fn read_source(trace: &mut Trace, id: &str, args: Value) {
+    let (output, failed) = read_range::execute_args(&args, trace.root());
+    assert!(!failed, "{output}");
+    trace.append(id, "read_file", args, output);
+}
+
+#[test]
+fn baseline_source_read_yields_once_with_the_test_and_current_source() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    let text = "def validate(value):\n    return value\n";
+    std::fs::write(trace.path.join(SOURCE), text).unwrap();
+    trace.fail("failed", 2, "0.01");
+    read_source(&mut trace, "too-early", json!({"path":SOURCE}));
+    trace.read("test");
+    assert!(trace.view().is_none());
+    read_source(&mut trace, "source", json!({"path":SOURCE}));
+
+    let followup = trace.view().unwrap();
+    assert!(followup.should_yield());
+    let view = serde_json::to_value(&followup).unwrap();
+    assert_eq!(view["latest_failure_call_id"], "failed");
+    assert_eq!(view["diagnostic_read_call_id"], "test");
+    let source = &view["source_repair"];
+    assert_eq!(source["path"], SOURCE);
+    assert_eq!(source["read_call_id"], "source");
+    assert!(source["test_read"]
+        .as_str()
+        .unwrap()
+        .ends_with("assert actual == expected\n"));
+    assert!(source["implementation_read"]
+        .as_str()
+        .unwrap()
+        .ends_with(text));
+
+    let packet = json!({"task_obligations":{"diagnostic_followup":view}});
+    let observer = crate::observer_action::intervention::prompt(&packet);
+    assert!(observer.contains("Quote the invariant to preserve in the primary reason"));
+    assert!(observer.contains("propose one exact patch_file"));
+    assert!(observer.contains("def validate(value)"));
+    let coder =
+        agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root()).unwrap();
+    assert!(coder.contains("Use known evidence for validation"));
+    assert!(coder.contains("read_call_id"));
+    assert!(
+        !coder.contains("def validate(value)"),
+        "the Coder already receives the native read"
+    );
+
+    read_source(&mut trace, "repeated", json!({"path":SOURCE}));
+    assert!(!trace.view().unwrap().should_yield());
+    trace.fail("same", 2, "0.12");
+    trace.read("test-again");
+    read_source(&mut trace, "read-again", json!({"path":SOURCE}));
+    assert!(!trace.view().is_some_and(|followup| followup.should_yield()));
+}
+
+#[test]
+fn only_a_complete_declared_source_read_can_supply_the_pre_edit_return() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    std::fs::write(
+        trace.path.join(SOURCE),
+        "line of implementation\n".repeat(600),
+    )
+    .unwrap();
+    std::fs::write(trace.path.join("src/notes.py"), "# unrelated\n").unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(&mut trace, "unrelated", json!({"path":"src/notes.py"}));
+    read_source(&mut trace, "prefix", json!({"path":SOURCE}));
+    assert!(trace.view().is_none());
+
+    read_source(
+        &mut trace,
+        "range",
+        json!({"path":SOURCE,"start_line":450,"end_line":460}),
+    );
+    let view = trace.view().unwrap();
+    assert!(view.should_yield());
+    assert!(
+        serde_json::to_value(view).unwrap()["source_repair"]["implementation_read"]
+            .as_str()
+            .unwrap()
+            .contains("range: lines 450-460")
+    );
+
+    trace.append(
+        "potential-write",
+        "exec",
+        json!({"command":"python3 side_effect.py"}),
+        format!("FAILED (exit_code: 1)\ncwd: {}", trace.path.display()),
+    );
+    assert!(
+        trace.view().is_none(),
+        "an executed process can stale both reads"
+    );
+}
+
+#[test]
+fn other_baseline_ownership_and_a_prior_edit_cannot_start_a_source_return() {
+    for prior_edit in [false, true] {
+        let mut trace = Trace::new();
+        let declared_check = if prior_edit {
+            CHECK
+        } else {
+            "python3 other.py"
+        };
+        add_source_contract(&mut trace, declared_check);
+        std::fs::write(trace.path.join(SOURCE), "value = None\n").unwrap();
+        if prior_edit {
+            trace.append(
+                "edit",
+                "patch_file",
+                json!({"path":SOURCE}),
+                format!("OK: patched '{SOURCE}'"),
+            );
+        }
+        trace.fail("failed", 2, "0.01");
+        trace.read("test");
+        read_source(&mut trace, "source", json!({"path":SOURCE}));
+        assert!(trace.view().is_none());
+    }
+}

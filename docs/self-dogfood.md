@@ -15,6 +15,16 @@ The first live runs also exposed a runtime coercion conflict; the
 [follow-up edit safety contract](followup-edit-safety.md) preserves diagnostic
 reads and authored local edits while retaining completion and verification gates.
 
+## From a baseline failure to a source edit
+
+A failing check in the human task can name the source it is meant to exercise
+through `task_requirements`. When the Coder has read the failed test and a
+complete native window in that source before editing, the pair can return once
+to the Observer with both reads. The Observer uses the valid control and failed
+case to state what the edit must preserve, and can propose an exact patch
+against the displayed source. Both roles still need the original checks after
+the edit.
+
 ## Asking the pair to consider existing code
 
 Put the preference near the start of the task you give the Coder. The Observer

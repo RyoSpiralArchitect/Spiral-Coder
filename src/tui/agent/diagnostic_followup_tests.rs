@@ -1,4 +1,7 @@
 use super::*;
+
+#[path = "diagnostic_followup_tests/source_repair.rs"]
+mod source_repair;
 use crate::tui::agent::{self, AgenticStartState};
 
 const CHECK: &str = "python3 -S -m unittest -v test_failure";

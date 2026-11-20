@@ -16,6 +16,14 @@ const TARGET_BYTES: usize = 64 * 1024;
 
 pub(super) fn render_coder_obligations(obligations: &impl Serialize, messages: &[Value]) -> String {
     let mut view = serde_json::to_value(obligations).expect("task projection serializes");
+    if let Some(read) = view
+        .pointer_mut("/diagnostic_followup/source_repair")
+        .and_then(Value::as_object_mut)
+    {
+        // The Coder already owns these native tool messages.
+        read.remove("test_read");
+        read.remove("implementation_read");
+    }
     obligations::reference_human_task(&mut view, messages);
     remove_repeated_pending_items(&mut view);
     render(&view)

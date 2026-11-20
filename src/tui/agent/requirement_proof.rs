@@ -49,6 +49,16 @@ impl Contract {
             .any(|check| check.baseline_failure)
     }
 
+    pub(super) fn has_source_for_baseline(&self, path: &str, command: &str) -> bool {
+        self.requirements.iter().any(|requirement| {
+            requirement.has_source(path)
+                && requirement
+                    .checks
+                    .iter()
+                    .any(|check| check.baseline_failure && check.command == command)
+        })
+    }
+
     pub(super) fn names_artifact(&self, path: &str) -> bool {
         self.requirements
             .iter()
