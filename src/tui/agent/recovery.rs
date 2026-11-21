@@ -179,6 +179,21 @@ Required now: {}",
         }
     }
 
+    pub(super) fn on_evidence_rejection(
+        &mut self,
+        call: &ToolCallData,
+        messages: &[serde_json::Value],
+        root: Option<&str>,
+    ) -> &'static str {
+        if self.stage == Some(RecoveryStage::Fix)
+            && self.focus.latest_read_supports_edit(call, messages, root)
+        {
+            return "\n\nThe latest native read supports this edit target. Keep the repair phase and correct the <evidence> fields before retrying the edit. The failed check remains due.";
+        }
+        self.stage = Some(RecoveryStage::Diagnose);
+        ""
+    }
+
     pub(super) fn on_diagnostic_result(&mut self, ok: bool) {
         if !self.in_recovery() && !ok {
             self.stage = Some(RecoveryStage::Diagnose);

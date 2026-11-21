@@ -10,7 +10,9 @@ use serde_json::{json, Value};
 use super::exec_proof::ExecProofResult;
 use super::exec_verification::ExecVerificationContext;
 use super::ExecKind;
-use crate::execution_evidence::{auto_test_outcome, file_edit_succeeded, AutoTestOutcome};
+use crate::execution_evidence::{
+    auto_test_outcome, exec_may_have_run, file_edit_succeeded, AutoTestOutcome,
+};
 use crate::streaming::ToolCallData;
 use crate::task_scope::relative_path;
 
@@ -92,6 +94,49 @@ impl RecoveryFocus {
             .iter()
             .chain(&self.deferred)
             .map(|f| f.check.as_str())
+    }
+
+    /// A rejected evidence envelope can be corrected against this actual read.
+    pub(super) fn latest_read_supports_edit(
+        &self,
+        edit: &ToolCallData,
+        messages: &[Value],
+        root: Option<&str>,
+    ) -> bool {
+        if !self.observed() {
+            return false;
+        }
+        let Some(target) = argument_path(edit).and_then(|path| relative_path(&path, root)) else {
+            return false;
+        };
+        let Some((read, result)) = correlated_results(messages)
+            .filter(|(_, message)| {
+                message["content"].as_str().is_some_and(|output| {
+                    exec_may_have_run(output) && !output.starts_with("Awaiting approval")
+                })
+            })
+            .last()
+        else {
+            return false;
+        };
+        if read.name != "read_file"
+            || !native_snapshot(result).is_some_and(|snapshot| snapshot.pending == self.pending)
+        {
+            return false;
+        }
+        let Ok(request) =
+            serde_json::from_str::<crate::file_tools::read_range::ReadRequest>(&read.arguments)
+        else {
+            return false;
+        };
+        relative_path(&request.path, root).as_deref() == Some(target.as_str())
+            && result["content"].as_str().is_some_and(|output| {
+                crate::file_tools::read_range::covers_line(
+                    &read.arguments,
+                    output,
+                    request.start_line.unwrap_or(1),
+                )
+            })
     }
 
     pub(super) fn required_read(&self) -> Option<DiagnosticRead> {

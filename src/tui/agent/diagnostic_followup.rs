@@ -6,8 +6,11 @@ use crate::file_tools::read_range;
 #[path = "diagnostic_followup/unittest_comparison.rs"]
 mod unittest_comparison;
 
+#[path = "diagnostic_followup/source_prefix.rs"]
+mod source_prefix;
 #[path = "diagnostic_followup/source_repair.rs"]
 mod source_repair;
+use source_prefix::{PrefixExcerpt, SourcePrefix};
 use source_repair::{adds_source_lines, SourceRead, SourceRepair, SourceWindow};
 
 const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
@@ -103,6 +106,12 @@ impl DiagnosticFollowup {
             .is_some_and(|source| source.accepts_range(read, root))
     }
 
+    pub(crate) fn covered_source_read(&self, args: &Value, root: &str) -> Option<String> {
+        self.source_repair
+            .as_ref()?
+            .covered_read(&serde_json::from_value(args.clone()).ok()?, root)
+    }
+
     pub(crate) fn observed_source_fragment(&self, path: &str, fragment: &str) -> bool {
         self.source_repair
             .as_ref()
@@ -143,6 +152,7 @@ struct Cycle<'a> {
     earlier_read_result: Option<&'a str>,
     first_read: Option<Read<'a>>,
     source_read: Option<SourceRead<'a>>,
+    source_prefix: Option<SourcePrefix<'a>>,
     source_windows: Vec<SourceWindow<&'a str>>,
 }
 
@@ -259,6 +269,7 @@ impl RecoveryFocus {
                             earlier_failure: same.map(|p| p.latest_failure),
                             first_read: None,
                             source_read: None,
+                            source_prefix: None,
                             source_windows: Vec::new(),
                         });
                     }
@@ -286,7 +297,12 @@ impl RecoveryFocus {
                     {
                         continue;
                     }
-                    let Some(mut source) = SourceRead::complete(path, &call, output) else {
+                    let Some(mut source) = SourceRead::complete(path.clone(), &call, output) else {
+                        if cycle.source_read.is_none() {
+                            if let Some(prefix) = SourcePrefix::observed(path, &call, output) {
+                                cycle.source_prefix = Some(prefix);
+                            }
+                        }
                         continue;
                     };
                     // One first source return per task. An additional return
@@ -354,9 +370,14 @@ impl RecoveryFocus {
         let read = cycle.first_read?;
         let unittest_comparison =
             unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
-        let source_repair = cycle
-            .source_read
-            .map(|source| SourceRepair::from_read(source, read.result, cycle.source_windows));
+        let source_repair = cycle.source_read.map(|source| {
+            SourceRepair::from_read(
+                source,
+                read.result,
+                cycle.source_windows,
+                cycle.source_prefix,
+            )
+        });
         if cycle.earlier_failure.is_none()
             && unittest_comparison.is_none()
             && source_repair.is_none()

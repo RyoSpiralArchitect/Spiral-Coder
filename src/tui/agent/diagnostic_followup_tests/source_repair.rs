@@ -353,3 +353,85 @@ fn only_an_unseen_declared_source_range_qualifies_for_selection_repair() {
         trace.root().unwrap()
     ));
 }
+
+#[test]
+fn previously_returned_prefix_supplies_the_observers_missing_range() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    let lines: Vec<String> = (1..=400)
+        .map(|n| format!("value_{n:03} = 'source line {n:03}'\r\n"))
+        .collect();
+    std::fs::write(trace.path.join(SOURCE), lines.concat()).unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(&mut trace, "prefix", json!({"path":SOURCE}));
+    assert!(trace.view().is_none());
+    read_source(
+        &mut trace,
+        "range",
+        json!({"path":SOURCE,"start_line":190,"end_line":320}),
+    );
+    let view = serde_json::to_value(trace.view().unwrap()).unwrap();
+    let excerpt = &view["source_repair"]["preceding_lines"];
+    let first = excerpt["start_line"]
+        .as_u64()
+        .expect("complete preceding lines") as usize;
+    assert!((70..=100).contains(&first));
+    assert_eq!(excerpt["read_call_id"], "prefix");
+    assert_eq!(excerpt["end_line"], 189);
+    assert_eq!(excerpt["text"], lines[first - 1..189].concat());
+    let request = |start, end| {
+        json!({"summary":"Check the missing branch","suggestions":[
+        {"kind":"read","reason":"Inspect the preceding branch","confidence":0.95,
+         "suggested_tool":"read_file","suggested_args":{"path":SOURCE,"start_line":start,"end_line":end}}]}).to_string()
+    };
+    let issue = |start, end| {
+        crate::observer_action::resolve_advice(
+            &request(start, end),
+            &trace.messages,
+            Some(CHECK),
+            trace.root(),
+            Some(12),
+        )
+        .issue
+    };
+    assert!(issue(100, 210).unwrap().contains("already quoted"));
+    assert!(issue(300, 350).is_none(), "an unseen line stays available");
+    assert!(
+        issue(1, 30).is_none(),
+        "lines outside the delivered excerpt stay available"
+    );
+    let coder =
+        agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root()).unwrap();
+    assert!(
+        !coder.contains(&lines[105]),
+        "no duplicate source bytes in Coder obligations"
+    );
+}
+
+#[test]
+fn edited_overlap_cannot_join_the_clipped_prefix_to_a_later_read() {
+    let mut trace = Trace::new();
+    add_source_contract(&mut trace, CHECK);
+    let source = (1..=400)
+        .map(|n| format!("value_{n:03} = 'source line {n:03}'\n"))
+        .collect::<String>();
+    std::fs::write(trace.path.join(SOURCE), &source).unwrap();
+    trace.fail("failed", 2, "0.01");
+    trace.read("test");
+    read_source(&mut trace, "prefix", json!({"path":SOURCE}));
+    std::fs::write(
+        trace.path.join(SOURCE),
+        source.replace("source line 200", "change line 200"),
+    )
+    .unwrap();
+    read_source(
+        &mut trace,
+        "range",
+        json!({"path":SOURCE,"start_line":190,"end_line":320}),
+    );
+    assert!(
+        serde_json::to_value(trace.view().unwrap()).unwrap()["source_repair"]["preceding_lines"]
+            .is_null()
+    );
+}

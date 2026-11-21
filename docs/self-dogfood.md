@@ -28,6 +28,17 @@ the same source. The remaining allowance must cover the edit, required checks,
 and final report. If the Coder accepts that ranged read and selects a different
 tool, it receives one correction with the exact read arguments. It can confirm
 the read or explicitly choose another action through the normal gates.
+When a complete range overlaps an earlier clipped full-file read, Observer can
+see up to 120 preceding complete lines (4 KiB) from that read. The shared lines
+must agree byte for byte and both native headers must agree on file size and
+line count. The excerpt cites its original read. A proposed bounded reread
+fully covered by that excerpt and the current window receives the usual single
+advice-repair opportunity. Ranges extending beyond the quoted evidence stay available.
+
+If a patch is rejected before execution for a malformed evidence block, an
+observed failed check stays in its repair phase when the latest executed call
+read that exact target under the same native diagnosis. Coder must correct its
+evidence fields and rerun the failed check after the edit.
 
 For a Rust patch that inserts a comparison into an observed condition, the
 Observer action validator looks for the bare operand names in the retained

@@ -349,3 +349,41 @@ fn a_later_file_error_remains_pending_without_a_failed_check_memory() {
     restored.restore_focus(&trace.messages, trace.root.path().to_str(), None);
     assert_eq!(restored.stage, Some(RecoveryStage::Diagnose));
 }
+
+#[test]
+fn rejected_evidence_can_be_corrected_after_the_current_target_read() {
+    let mut trace = Trace::new();
+    trace.read(SOURCE, true);
+    let patch = trace.call(
+        "patch_file",
+        json!({"path":SOURCE,"search":"return 1","replace":"return 2"}),
+    );
+    let root = trace.root.path().to_str();
+    let rejection = trace
+        .live
+        .on_evidence_rejection(&patch, &trace.messages, root);
+    assert!(rejection.contains("correct the <evidence> fields"));
+    assert_eq!(trace.live.stage, Some(RecoveryStage::Fix));
+    assert!(trace.live.focus.check_matches(CHECK));
+    trace.record(
+        &patch,
+        "GOVERNOR BLOCKED\n[Evidence Gate] evidence missing target_files".into(),
+    );
+    let root = trace.root.path().to_str();
+    assert!(!trace
+        .live
+        .on_evidence_rejection(&patch, &trace.messages, root)
+        .is_empty());
+    let other = trace.call("patch_file", json!({"path":OTHER}));
+    assert!(trace
+        .live
+        .on_evidence_rejection(&other, &trace.messages, root)
+        .is_empty());
+    assert_eq!(trace.live.stage, Some(RecoveryStage::Diagnose));
+    trace.failed_check("cargo test new_failure", false);
+    assert!(trace
+        .live
+        .on_evidence_rejection(&patch, &trace.messages, trace.root.path().to_str())
+        .is_empty());
+    assert_eq!(trace.live.stage, Some(RecoveryStage::Diagnose));
+}

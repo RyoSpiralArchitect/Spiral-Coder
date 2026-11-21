@@ -113,6 +113,11 @@ pub fn resolve_safe_path(rel: &str, base: Option<&str>) -> Result<PathBuf> {
 /// ~8000 chars ≈ 2000 tokens; enough for most source files.
 pub(crate) const MAX_READ_CHARS: usize = 8000;
 
+pub(crate) fn full_read_truncation_note(line_count: usize, shown: &str) -> String {
+    let hidden = line_count.saturating_sub(shown.lines().count());
+    format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
+}
+
 /// Read a file's content. Returns `(result_text, is_error)`.
 ///
 /// On success: header line + file content (truncated if large).
@@ -143,8 +148,7 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
 
             let header = format!("[{path}] ({line_count} lines, {byte_count} bytes)\n");
             let trunc_note = if truncated {
-                let hidden = line_count.saturating_sub(shown.lines().count());
-                format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
+                full_read_truncation_note(line_count, &shown)
             } else {
                 String::new()
             };

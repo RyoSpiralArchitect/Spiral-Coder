@@ -179,8 +179,11 @@ pub(crate) fn prompt(packet: &Value) -> String {
             } else {
                 ""
             };
+            let preceding = if read["preceding_lines"].is_object() {
+                "Use preceding_lines together with implementation_read. Both contain native source. Request a further read only for a missing region. "
+            } else { "" };
             format!(
-                "{additional}{} Quote the invariant to preserve in the primary reason. If the observed window supports the repair, propose one exact patch_file with kind=edit and unique search and replacement bytes from the source. Copy reused identifiers verbatim from the current source reads. If a binding is still missing, ask for the region that declares it. Cite the failed check and read IDs in based_on.\n",
+                "{additional}{preceding}{} Quote the invariant to preserve in the primary reason. If the observed window supports the repair, propose one exact patch_file with kind=edit and unique search and replacement bytes from the source. Copy reused identifiers verbatim from the current source reads. If a binding is still missing, ask for the region that declares it. Cite the failed check and read IDs in based_on.\n",
                 crate::tui::agent::task_obligations::SOURCE_REPAIR_GUIDANCE
             )
         });

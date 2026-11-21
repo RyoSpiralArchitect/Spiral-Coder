@@ -187,6 +187,15 @@ fn validate_advice(
             return Some(format!("The latest native done was rejected only for its authored report; current checks and acceptance citations remain valid. Suggest done with corrected summary, or no-tool clarify when uncertain. Do not restart inspection, edits or passed checks. Authored report feedback:\n{}", report.feedback));
         }
     }
+    if action.suggested_tool.as_deref() == Some("read_file") {
+        if let Some(issue) = obligations
+            .diagnostic_followup
+            .as_ref()
+            .and_then(|followup| followup.covered_source_read(&action.suggested_args, tool_root?))
+        {
+            return Some(issue);
+        }
+    }
     if let Some(issue) = source_edit::issue(action, &obligations, tool_root) {
         return Some(issue);
     }

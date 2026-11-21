@@ -24,6 +24,12 @@ pub(super) fn render_coder_obligations(obligations: &impl Serialize, messages: &
         read.remove("test_read");
         read.remove("implementation_read");
         read.remove("previous_implementation_read");
+        if let Some(prefix) = read
+            .get_mut("preceding_lines")
+            .and_then(Value::as_object_mut)
+        {
+            prefix.remove("text");
+        }
     }
     obligations::reference_human_task(&mut view, messages);
     remove_repeated_pending_items(&mut view);
