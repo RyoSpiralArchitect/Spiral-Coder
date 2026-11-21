@@ -734,6 +734,8 @@ Important rule:
 - it must not directly rewrite `shared/governor_contract.json` during a normal run
 - promotion into a source contract should stay gated by replay/eval health
 
+The live exact-repeat check compares the last successful observation using the tool, full path or search pattern, and effective arguments. Different line ranges remain available to the Coder. The queue keeps a compact diagnostic signature for display and promotion history.
+
 ### 5d. Project-local promoted governor overlay
 
 Code:

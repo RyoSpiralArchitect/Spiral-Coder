@@ -830,6 +830,15 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
 
 const MAX_LIST_DIR_ENTRIES: usize = 200;
 
+pub(crate) fn list_dir_limit(max_entries: usize) -> usize {
+    if max_entries == 0 {
+        MAX_LIST_DIR_ENTRIES
+    } else {
+        max_entries
+    }
+    .clamp(1, 500)
+}
+
 /// List a single directory (non-recursive).
 /// Returns a compact, sorted listing suitable for LLM context.
 pub fn tool_list_dir(
@@ -838,12 +847,7 @@ pub fn tool_list_dir(
     include_hidden: bool,
     base: Option<&str>,
 ) -> (String, bool) {
-    let max_entries = if max_entries == 0 {
-        MAX_LIST_DIR_ENTRIES
-    } else {
-        max_entries
-    }
-    .clamp(1, 500);
+    let max_entries = list_dir_limit(max_entries);
 
     let (dir_label, dir_path) = if dir.trim().is_empty() {
         (

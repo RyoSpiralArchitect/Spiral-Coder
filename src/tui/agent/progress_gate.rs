@@ -138,7 +138,10 @@ pub(in super::super) fn build_progress_gate_block(
         {
             return None;
         }
-        let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
+        let same_successes = super::super::observation_key::key(&tc.name, &tc.arguments)
+            .and_then(|key| history.by_command.get(&key))
+            .copied()
+            .unwrap_or(0);
         let allow_first_target_read = harness.artifact_mode == ArtifactMode::ExistingFiles
             && tc.name == "read_file"
             && (same_successes == 0
