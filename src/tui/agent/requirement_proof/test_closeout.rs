@@ -27,6 +27,7 @@ pub(super) const PLAN_MARKER: &str = "[Test coverage plan]";
 pub(super) const MARKER: &str = "[Authored-test closeout]";
 pub(super) const COVERAGE_MARKER: &str = "[Test coverage map]";
 const DECLARED_CASE_MARKER: &str = "[Declared test cases]";
+const CASE_REPORT_MARKER: &str = "[Requested test case report]";
 // Whole requirement text: S28's review clipped at 160 characters and cut the
 // sentence that named the four fault families to cover.
 const MAX_DESCRIPTION_CHARS: usize = 1200;
@@ -252,7 +253,8 @@ pub(super) fn coverage(
     summary: &str,
     coder_remaining: Option<usize>,
 ) -> Option<String> {
-    if !shown(messages, MARKER) {
+    let reviewed = shown(messages, MARKER);
+    if !reviewed && !shown(messages, PLAN_MARKER) {
         return None;
     }
     let linked = linked(contract);
@@ -317,6 +319,28 @@ pub(super) fn coverage(
     }
     if !open.is_empty() {
         return Some(format!("{DECLARED_CASE_MARKER} A completion report marks requested tests as uncovered: {}. Implement or cite the current public tests for these cases, then rerun the declared checks after an edit. If they remain open, submit a blocked report with the affected remaining_acceptance and next_steps.",open.into_iter().collect::<Vec<_>>().join(", ")));
+    }
+    // A full edit and verification sweep may no longer fit, but a single
+    // remaining ordinary turn can still report the cases from the existing plan.
+    if !reviewed {
+        let remaining = coder_remaining?;
+        if !(1..floor(contract)).contains(&remaining) || shown(messages, CASE_REPORT_MARKER) {
+            return None;
+        }
+        let missing: Vec<_> = case_keys
+            .iter()
+            .filter(|key| {
+                entries
+                    .as_ref()
+                    .and_then(|map| map.get(*key))
+                    .is_none_or(|value| backticked(value).is_empty())
+            })
+            .map(String::as_str)
+            .collect();
+        if missing.is_empty() {
+            return None;
+        }
+        return Some(format!("{CASE_REPORT_MARKER} The original task explicitly asks for these tests: {}. Reuse the current check receipts. In done.summary add a Test coverage: section with one line per case, '- <requirement / case>: `test_name`' or 'none'. For any requested case still uncovered, submit an incomplete done with remaining_acceptance and next_steps for the next iteration. Reporting the current tests needs no new edit or check.", missing.join(", ")));
     }
     if shown(messages, COVERAGE_MARKER) || coder_remaining == Some(0) {
         return None;
@@ -852,6 +876,35 @@ mod tests {
             coverage_entry(&history, root_dir, "Implemented.", Some(19)),
             None
         );
+    }
+
+    #[test]
+    fn a_late_case_report_uses_one_ordinary_reply_without_a_full_edit_budget() {
+        let contract: Contract = serde_json::from_value(json!({"version":1,"requirements":[{
+            "id":"records","description":"Cover empty input, absent input and invalid encoding.",
+            "artifacts":[{"kind":"test","path":"tests/status.rs"}],"checks":[{"command":"cargo test"}]}]})).unwrap();
+        let mut history = vec![json!({"role":"user","content":"Implement the requested tests."})];
+        assert!(coverage(&contract, &history, None, "All checks passed.", Some(1)).is_none());
+        history.extend(blocked("plan", PLAN_MARKER));
+        assert!(coverage(&contract, &history, None, "All checks passed.", Some(0)).is_none());
+        let report = coverage(&contract, &history, None, "All checks passed.", Some(1)).unwrap();
+        assert!(
+            report.starts_with(CASE_REPORT_MARKER) && report.contains("records / absent input")
+        );
+        history.extend(blocked("report", &report));
+        assert!(coverage(&contract, &history, None, "All checks passed.", Some(1)).is_none());
+        let mapped="Test coverage:\n- records / empty input: `test_records`\n- records / absent input: none\n- records / invalid encoding: `test_records`";
+        assert!(coverage(&contract, &history, None, mapped, Some(0))
+            .unwrap()
+            .starts_with(DECLARED_CASE_MARKER));
+        assert!(coverage(
+            &contract,
+            &history,
+            None,
+            &mapped.replace("none", "`test_records`"),
+            Some(0)
+        )
+        .is_none());
     }
 
     #[test]

@@ -1352,6 +1352,12 @@ symbolic link case also compares a regular component with a link to the same
 valid contents. The existing Observer response and native verification rules
 apply to these suggestions.
 
+If the full review no longer fits but an ordinary Coder reply remains, a
+previous coverage plan with explicitly enumerated cases can ask once for just
+those case-to-test mappings. The report uses the current verification receipts.
+An uncovered mandatory case belongs in an incomplete report and can carry into
+the next iteration.
+
 After the review, the first completion claim whose map is absent, lacks a line
 for a linked requirement, has a line that names no test and does not say `none`,
 or names a function that is not a current test receives one
