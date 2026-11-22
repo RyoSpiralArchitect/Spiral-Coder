@@ -207,7 +207,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
         .and_then(|view| view.get("unittest_comparison"))
         .is_some_and(Value::is_object)
     {
-        "If the missing fact is the clipped assertion difference, offer the ready diagnostic_followup.unittest_comparison.arguments as the primary suggestion with kind=verify and suggested_tool=exec. Copy the complete arguments exactly. When subtest_failures is present, the comparison samples the first observed failure in that method and the original exact check remains due. Name the specific result-dependent repair decision in the reason. Account for one exec and the listed checks_to_refresh when deciding what fits. A new fixture read is useful only if the runnable comparison or retained evidence cannot answer the missing fact. Keep native plan admission, approvals and exact-check obligations in force.\n"
+        "If the missing fact is the clipped assertion difference, offer kind=verify with suggested_tool=exec. When the available exec schema supports check_id, use only diagnostic_followup.comparison_check_id as check_id. Otherwise copy the ready diagnostic_followup.unittest_comparison.arguments exactly. When subtest_failures is present, the comparison samples the first observed failure in that method and the original exact check remains due. Name the specific result-dependent repair decision in the reason. Account for one exec and the listed checks_to_refresh when deciding what fits. A new fixture read is useful only if the runnable comparison or retained evidence cannot answer the missing fact. Keep native plan admission, approvals and exact-check obligations in force.\n"
     } else {
         ""
     };

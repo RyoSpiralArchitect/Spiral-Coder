@@ -116,13 +116,13 @@ pub fn exec_tool_def() -> serde_json::Value {
                             ALWAYS check exit_code — 0 = success, non-zero = failure.\n\
                             If exit_code != 0: STOP, diagnose the error, then fix it.\n\
                             Do NOT proceed to the next step while any command is failing.\n\
-                            Supply either command (optional cwd), or a declared check_id alone.",
+                            Supply either command (optional cwd), or an offered check_id alone.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "check_id": {
                         "type": "string",
-                        "description": "Select a declared exact check at tool_root. Use alone, without command or cwd."
+                        "description": "Select an offered check or focused diagnostic at tool_root. Use alone, without command or cwd."
                     },
                     "command": {
                         "type": "string",

@@ -108,6 +108,7 @@ impl Observation {
         };
         let task = crate::task_origin::root_user_text(&session.messages);
         Catalog::from_root(task)
+            .with_comparison(obligations.diagnostic_followup.as_ref())
             .resolve(&mut selection, Some(root))
             .ok()?;
         let arguments: Value = serde_json::from_str(&selection.arguments).ok()?;

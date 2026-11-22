@@ -30,6 +30,8 @@ pub(crate) struct DiagnosticFollowup {
     #[serde(skip_serializing_if = "Option::is_none")]
     unittest_comparison: Option<unittest_comparison::UnittestComparison>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    comparison_check_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     reported_subtests: Option<reported_subtests::ReportedSubtests>,
     #[serde(skip_serializing_if = "Option::is_none")]
     unchanged_after_patch: Option<reported_subtests::UnchangedAfterPatch>,
@@ -67,9 +69,26 @@ impl DiagnosticFollowup {
     }
 
     pub(in crate::tui::agent) fn matches_unittest_comparison(&self, args: &Value) -> bool {
-        self.unittest_comparison
-            .as_ref()
-            .is_some_and(|comparison| comparison.matches_arguments(args))
+        let Some(comparison) = &self.unittest_comparison else {
+            return false;
+        };
+        if let Some(id) = args.get("check_id") {
+            return self
+                .comparison_check_id
+                .as_deref()
+                .is_some_and(|current| id == current)
+                && comparison.matches_selection(args);
+        }
+        comparison.matches_arguments(args)
+    }
+
+    pub(in crate::tui::agent) fn comparison_check(
+        &self,
+    ) -> Option<crate::tui::agent::check_catalog::Check> {
+        Some(crate::tui::agent::check_catalog::Check {
+            id: self.comparison_check_id.clone()?,
+            command: self.unittest_comparison.as_ref()?.command().to_owned(),
+        })
     }
 
     pub(in crate::tui::agent) fn include_comparison_check_cost(
@@ -418,7 +437,19 @@ impl RecoveryFocus {
         {
             return None;
         }
+        // The colon separates native selections from every valid user-declared ID.
+        // A new failure or workspace must select its own current command.
+        let comparison_check_id = unittest_comparison.as_ref().map(|comparison| {
+            let input = format!(
+                "{}\0{}\0{}",
+                root.display(),
+                cycle.latest_failure,
+                comparison.command()
+            );
+            format!("unittest:{:016x}", crate::tui::agent::hash_text(&input))
+        });
         Some(DiagnosticFollowup {
+            comparison_check_id,
             failed_check: focus.check.clone(),
             failure_path: focus.path.clone(),
             earlier_failure_call_id: cycle.earlier_failure,

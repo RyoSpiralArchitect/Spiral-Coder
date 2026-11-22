@@ -84,6 +84,12 @@ impl UnittestComparison {
         &self.arguments.command
     }
 
+    pub(super) fn matches_selection(&self, args: &serde_json::Value) -> bool {
+        args.as_object().is_some_and(|fields| fields.len() == 3)
+            && args["command"] == self.arguments.command
+            && args["cwd"] == self.arguments.cwd
+    }
+
     pub(super) fn matches_arguments(&self, args: &serde_json::Value) -> bool {
         serde_json::to_value(&self.arguments).is_ok_and(|expected| expected == *args)
             || self.legacy_command.as_ref().is_some_and(|command| {

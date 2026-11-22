@@ -507,6 +507,11 @@ differing span and marks incomplete output. Live execution and resume use
 the same history predicate and a native observation receipt before
 preserving the completed diagnosis. The execution ledger expires current exact checks
 when this command runs. The advice includes those checks as follow-up work.
+The current diagnostic also has a short `check_id` for Coder and Observer.
+The ID binds the command to the workspace and failed call. The native check
+catalog expands it before approval and execution. The full command remains
+available to providers that require signed arguments. A comparison can expose
+the failing input and both operands while the original check remains pending.
 
 ### Author tests from declared requirements
 

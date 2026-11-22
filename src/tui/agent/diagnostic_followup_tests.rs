@@ -265,8 +265,59 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
             Some(root),
         ));
     }
+    let id = followup_view["comparison_check_id"].as_str().unwrap();
+    let selection = json!({"check_id":id});
+    let catalog = agent::check_catalog::Catalog::from_root(TASK).with_comparison(Some(&followup));
+    let mut selected = ToolCallData {
+        arguments: selection.to_string(),
+        ..call.clone()
+    };
+    let mut stale = selected.clone();
+    assert!(agent::check_catalog::Catalog::from_root(TASK)
+        .resolve(&mut stale, Some(root))
+        .is_err());
+    let mut tools = json!([agent::exec_tool_def()]);
+    catalog
+        .bind_for(&mut tools, "https://example.test/v1", None)
+        .unwrap();
+    assert!(
+        tools[0]["function"]["parameters"]["properties"]["check_id"]["enum"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(id))
+    );
+    let resolved = catalog.resolve(&mut selected, Some(root)).unwrap().unwrap();
+    assert_eq!(resolved["command"], command);
+    assert!(trace
+        .focus
+        .matches_current_focused_exec(&selected, &trace.messages, Some(root)));
+    let session = crate::agent_session::AgentSession::new(
+        Some(root.into()),
+        None,
+        None,
+        None,
+        trace.messages.clone(),
+    );
+    let advice = serde_json::from_value(json!({"summary":"Compare the observed assertion",
+        "suggestions":[{"kind":"verify","reason":"Read the differing public values","confidence":0.98,
+        "suggested_tool":"exec","suggested_args":selection}]})).unwrap();
+    let observation = agent::observer_continuation::Observation::from_advice(
+        &advice,
+        &session,
+        Some(CHECK),
+        root,
+    )
+    .unwrap();
+    assert!(observation.guidance().contains(&selection.to_string()));
+    assert!(observation.matches_accepted_call(
+        &selected,
+        "<observer_response>\ndecision: accept\n</observer_response>"
+    ));
+    let mut bad_id: Value = serde_json::from_str(&selected.arguments).unwrap();
+    bad_id["check_id"] = json!("unittest:stale");
+    assert!(!followup.matches_unittest_comparison(&bad_id));
     let process = std::process::Command::new("sh")
-        .args(["-c", command])
+        .args(["-c", resolved["command"].as_str().unwrap()])
         .current_dir(root)
         .output()
         .unwrap();
@@ -292,7 +343,12 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
         &format!("cwd: {root}"),
         None,
     );
-    trace.append("comparison", "exec", args.clone(), body);
+    trace.append(
+        "comparison",
+        "exec",
+        serde_json::from_str(&selected.arguments).unwrap(),
+        body,
+    );
     let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
     assert!(!focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
     let comparison_result = trace.messages.pop().unwrap();
