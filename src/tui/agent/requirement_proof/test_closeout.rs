@@ -254,7 +254,12 @@ pub(super) fn coverage(
     coder_remaining: Option<usize>,
 ) -> Option<String> {
     let reviewed = shown(messages, MARKER);
-    if !reviewed && !shown(messages, PLAN_MARKER) {
+    let planned = reviewed || shown(messages, PLAN_MARKER);
+    if !planned
+        && !messages
+            .iter()
+            .any(|m| m["blocked_report"]["remaining_test_cases"].is_array())
+    {
         return None;
     }
     let linked = linked(contract);
@@ -262,22 +267,29 @@ pub(super) fn coverage(
         return None;
     }
     let entries = coverage_entries(summary);
-    let case_keys: BTreeSet<String> = linked
-        .values()
-        .flatten()
-        .flat_map(|r| {
-            r.explicit_test_cases()
-                .into_iter()
-                .map(|case| format!("{} / {case}", r.id))
-        })
-        .collect();
+    let case_keys = case_keys(contract);
     let mut open = BTreeSet::new();
+    let mut accepted_gaps = BTreeSet::new();
     if !case_keys.is_empty() {
         for (call, result) in crate::tui::agent::recovery_focus::correlated_results(messages) {
-            if call.name != "done"
-                || !result["content"]
-                    .as_str()
-                    .is_some_and(|s| s.starts_with("GOVERNOR BLOCKED\n\n[Declared test cases]"))
+            if call.name != "done" {
+                continue;
+            }
+            if result["content"] == "OK: blocked" {
+                if let Some(cases) = result["blocked_report"]["remaining_test_cases"].as_array() {
+                    accepted_gaps.extend(
+                        cases
+                            .iter()
+                            .filter_map(Value::as_str)
+                            .filter(|key| case_keys.contains(*key))
+                            .map(str::to_owned),
+                    );
+                }
+                continue;
+            }
+            if !result["content"]
+                .as_str()
+                .is_some_and(|s| s.starts_with("GOVERNOR BLOCKED\n\n[Declared test cases]"))
             {
                 continue;
             }
@@ -293,18 +305,38 @@ pub(super) fn coverage(
                 );
             }
         }
+        open.extend(accepted_gaps.iter().cloned());
         if let Some(entries) = &entries {
             if !open.is_empty() {
-                let available: Option<Vec<_>> =
-                    linked.keys().map(|p| current_tests(tool_root, p)).collect();
+                let available: BTreeMap<_, _> = linked
+                    .keys()
+                    .map(|&path| (path, current_tests(tool_root, path)))
+                    .collect();
                 open.retain(|key| {
                     !entries.get(key).is_some_and(|v| {
                         let named = backticked(v);
-                        !named.is_empty()
-                            && available.as_ref().is_none_or(|sets| {
-                                named
-                                    .iter()
-                                    .all(|name| sets.iter().flatten().any(|test| test == name))
+                        if named.is_empty() {
+                            return false;
+                        }
+                        if accepted_gaps.contains(key) {
+                            let Some((id, _)) = key.rsplit_once(" / ") else {
+                                return false;
+                            };
+                            return named.iter().all(|name| {
+                                linked.iter().any(|(path, rules)| {
+                                    rules.iter().any(|rule| rule.id == id)
+                                        && available[*path].as_ref().is_some_and(|tests| {
+                                            tests.iter().any(|test| test.as_str() == *name)
+                                        })
+                                })
+                            });
+                        }
+                        available.values().any(Option::is_none)
+                            || named.iter().all(|name| {
+                                available
+                                    .values()
+                                    .flatten()
+                                    .any(|tests| tests.iter().any(|test| test.as_str() == *name))
                             })
                     })
                 });
@@ -319,6 +351,9 @@ pub(super) fn coverage(
     }
     if !open.is_empty() {
         return Some(format!("{DECLARED_CASE_MARKER} A completion report marks requested tests as uncovered: {}. Implement or cite the current public tests for these cases, then rerun the declared checks after an edit. If they remain open, submit a blocked report with the affected remaining_acceptance and next_steps.",open.into_iter().collect::<Vec<_>>().join(", ")));
+    }
+    if !planned {
+        return None;
     }
     // A full edit and verification sweep may no longer fit, but a single
     // remaining ordinary turn can still report the cases from the existing plan.
@@ -489,6 +524,45 @@ fn explicit_none(value: &str) -> bool {
             .split(|c: char| !c.is_alphanumeric())
             .next()
             .is_some_and(|w| w.eq_ignore_ascii_case("none"))
+}
+
+fn case_keys(contract: &Contract) -> BTreeSet<String> {
+    contract
+        .requirements
+        .iter()
+        .flat_map(|requirement| {
+            requirement
+                .explicit_test_cases()
+                .into_iter()
+                .map(|case| format!("{} / {case}", requirement.id))
+        })
+        .collect()
+}
+
+/// A report with green mechanical checks can still declare an original test
+/// case unfinished. This records the author's gap and never grants completion.
+pub(in crate::tui::agent) fn blocked_test_cases(
+    root: &str,
+    summary: &str,
+    next_steps: &str,
+) -> anyhow::Result<Vec<String>> {
+    let keys = super::parse(root)?
+        .as_ref()
+        .map(case_keys)
+        .unwrap_or_default();
+    anyhow::ensure!(!keys.is_empty(), "Blocked report claims remaining work, but every declared requirement and pending check is already discharged. Call `done` with the accurate completed/remaining split, or execute the missing step first");
+    let map = coverage_entries(summary).unwrap_or_default();
+    let uncovered: Vec<_> = keys
+        .iter()
+        .filter(|key| map.get(*key).is_some_and(|value| explicit_none(value)))
+        .cloned()
+        .collect();
+    anyhow::ensure!(!uncovered.is_empty(), "The declared checks passed. To report a requested test that is still missing, add a Test coverage: section in done.summary. Mark the matching case on a separate line as '- <requirement / case>: none', retain its remaining acceptance criterion, and give the next test edit in next_steps. Declared case keys include {}", keys.iter().take(8).cloned().collect::<Vec<_>>().join(", "));
+    anyhow::ensure!(
+        !next_steps.trim().is_empty(),
+        "Give the next test edit in next_steps for the declared uncovered case"
+    );
+    Ok(uncovered)
 }
 
 fn clip(description: &str) -> String {
@@ -905,6 +979,56 @@ mod tests {
             Some(0)
         )
         .is_none());
+    }
+
+    #[test]
+    fn named_gap_remains_incomplete_across_resume_without_an_earlier_review() {
+        let contract: Contract = serde_json::from_value(json!({"version":1,"requirements":[
+            {"id":"edges","description":"Cover empty input, missing input, and invalid encoding.",
+             "artifacts":[{"kind":"test","path":"tests/coupled_status.rs"}],"checks":[{"command":"cargo test"}]},
+            {"id":"other","description":"Cover headings, paragraphs, and footnotes.","artifacts":[{"kind":"test","path":"tests/other.rs"}],"checks":[{"command":"cargo test"}]}
+        ]})).unwrap();
+        let root = format!(
+            "<task_requirements>\n{}\n</task_requirements>",
+            json!(contract)
+        );
+        let map = "Test coverage:\n- edges / invalid encoding: none (still open)";
+        let gap = blocked_test_cases(&root, map, "Add the invalid encoding test").unwrap();
+        assert_eq!(gap, ["edges / invalid encoding"]);
+        assert!(blocked_test_cases(&root, map, "").is_err());
+        for text in [
+            "More work remains",
+            "Test coverage:\n- edges / invented: none",
+            "Test coverage:\n- edges / invalid encoding: `known_test`",
+        ] {
+            assert!(blocked_test_cases(&root, text, "Continue")
+                .unwrap_err()
+                .to_string()
+                .contains("edges / invalid encoding"));
+        }
+        let messages = vec![
+            json!({"role":"user","content":root}),
+            json!({"role":"assistant","tool_calls":[{"id":"report","function":{"name":"done","arguments":json!({"summary":map}).to_string()}}]}),
+            json!({"role":"tool","tool_call_id":"report","content":"OK: blocked","blocked_report":{"remaining_test_cases":gap}}),
+        ];
+        let temp = workspace(TWO_TESTS);
+        std::fs::write(
+            temp.path().join("tests/other.rs"),
+            "#[test]\nfn unrelated() {}",
+        )
+        .unwrap();
+        let dir = temp.path().to_str();
+        for text in [
+            "Done.",
+            "Test coverage:\n- edges / invalid encoding: `unrelated`",
+        ] {
+            assert!(coverage(&contract, &messages, dir, text, Some(1))
+                .unwrap()
+                .contains("edges / invalid encoding"));
+        }
+        let mapped = "Test coverage:\n- edges / invalid encoding: `unsupported_manifest_version_is_rejected_without_stdout`";
+        assert!(coverage(&contract, &messages, None, mapped, Some(1)).is_some());
+        assert!(coverage(&contract, &messages, dir, mapped, Some(1)).is_none());
     }
 
     #[test]

@@ -204,8 +204,16 @@ pub(crate) fn project_advisory(
         iteration_handoff: super::iteration_handoff::Note::from_task(messages),
         previous_blocked_report: evidence.actions.last()
             .filter(|a| a.tool == "done" && a.executed == Some(true) && a.result.as_deref() == Some("OK: blocked"))
-            .map(|a| serde_json::json!({"call_id":a.call_id, "summary":a.arguments["summary"].as_str().map(|v| v.chars().take(600).collect::<String>()),
-                "next_steps":a.arguments["next_steps"].as_str().map(|v| v.chars().take(800).collect::<String>())})),
+            .map(|a| {
+                let mut report = serde_json::json!({"call_id":a.call_id, "summary":a.arguments["summary"].as_str().map(|v| v.chars().take(600).collect::<String>()),
+                    "next_steps":a.arguments["next_steps"].as_str().map(|v| v.chars().take(800).collect::<String>())});
+                if let Some(cases) = messages.iter().rev()
+                    .find(|m| m["role"] == "tool" && m["tool_call_id"] == a.call_id && m["content"] == "OK: blocked")
+                    .and_then(|m| m["blocked_report"]["remaining_test_cases"].as_array()) {
+                    report["remaining_test_cases"] = serde_json::json!(cases);
+                }
+                report
+            }),
         strategy_memory: super::strategy_memory::project(messages),
         diagnostic_patch: None,
         deferred_edit: if pending_recovery.is_empty() {

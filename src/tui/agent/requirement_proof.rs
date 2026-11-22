@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 mod authored_tests;
 pub(super) use authored_tests::AuthoredTests;
 mod test_closeout;
+pub(super) use test_closeout::blocked_test_cases;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

@@ -294,6 +294,15 @@ must still retain the unfinished criteria. The [fresh two-iteration pilot](evals
 includes the actual first-round handoff, second-round verification and
 independent check on the completed change.
 
+Passing every declared command can leave an explicitly requested test case
+uncovered. For an incomplete report, list that original case in the
+`Test coverage:` section as `- <requirement / case>: none`. Keep its
+acceptance criterion in `remaining_acceptance` and describe the next test
+edit in `next_steps`. The recorded case travels with the blocked handoff.
+On resume, a completion claim must name a current test in a linked artifact
+for each case previously reported missing. Independent checks still decide
+whether those tests exercise the promised behavior.
+
 ## Receipts and budget
 
 `coupled-run` defaults to the same resolved provider, actual model, endpoint and
