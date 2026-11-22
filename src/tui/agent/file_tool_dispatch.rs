@@ -5,6 +5,7 @@ pub(super) async fn run_file_tools(
     ctx: &mut ToolDispatchCtx<'_>,
     tc: &ToolCallData,
     observer_observation: Option<&observer_continuation::Observation>,
+    observer_handoff: &mut Option<crate::tui::coder_yield::CoderYieldReason>,
 ) -> Result<ToolFlow> {
     let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
     let path = args["path"].as_str().unwrap_or("").to_string();
@@ -486,9 +487,22 @@ Action required: obtain a complete read of current contents before write_file. F
             path.as_str(),
             requirement_proof::test_review_allowance(),
         ) {
-            let _ = ctx.tx.send(StreamToken::Delta(format!("{plan}\n"))).await;
+            let _ = ctx
+                .tx
+                .send(StreamToken::Delta(format!("{}\n", plan.text)))
+                .await;
             history_result.push_str("\n\n");
-            history_result.push_str(&plan);
+            history_result.push_str(&plan.text);
+            if plan.observer_review {
+                *observer_handoff =
+                    Some(crate::tui::coder_yield::CoderYieldReason::AuthoredTestReview);
+                emit_telemetry_event(
+                    ctx.tx,
+                    "observer_authored_test_review",
+                    json!({"changed_call_id":tc.id, "changed_path":path}),
+                )
+                .await;
+            }
         }
     }
     let mut message = CargoInputReceipt::attach(

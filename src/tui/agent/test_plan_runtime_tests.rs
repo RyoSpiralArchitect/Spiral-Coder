@@ -36,6 +36,113 @@ fn body(request: &HttpMockRequest) -> String {
     String::from_utf8_lossy(request.body.as_deref().unwrap_or_default()).into_owned()
 }
 
+#[tokio::test]
+async fn declared_cases_return_the_first_funded_test_plan_to_the_observer() {
+    let server = MockServer::start();
+    let authored = server.mock(|when, then| {
+        when.method(POST).path("/chat/completions");
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(write(
+                &think("write_file", "write tests/test_status.py"),
+                "first-tests",
+                "tests/test_status.py",
+                "def test_valid_record():\n    pass\n",
+            ));
+    });
+    let root = tempfile::tempdir().unwrap();
+    let requirements = json!({"version":1,"requirements":[{"id":"record-tests",
+        "description":"Cover empty input, absent names and repeated values.",
+        "artifacts":[{"path":"tests/test_status.py","kind":"test"}],
+        "checks":[{"command":CHECK}]}]});
+    let task = format!("Implement status.py and its tests.\n<task_requirements>\n{requirements}\n</task_requirements>");
+    let messages = vec![
+        crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User),
+        json!({"role":"assistant","accepted_plan":{
+            "goal":"Implement status.py and its tests","steps":["Write tests/test_status.py","Run the declared check"],
+            "acceptance_criteria":["The public tests pass"],"risks":"missing cases","assumptions":"python3 is available"}}),
+    ];
+    let budget = crate::work_budget::WorkBudget::new(&task, 8, None);
+    let session = AgenticStartState {
+        messages,
+        checkpoint: None,
+        cur_cwd: None,
+        observation_cache: None,
+        session_bridge: None,
+        create_checkpoint: false,
+    };
+    let (tx, mut rx) = mpsc::channel(256);
+    let result = crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: budget.with_observer_return(3),
+            role: "coder",
+        }),
+        Box::pin(run_agentic_json(
+            session,
+            &super::check_catalog_tests::mock_config(&server),
+            root.path().to_str(),
+            3,
+            tx,
+            None,
+            None,
+            None,
+            true,
+            Some(RealizePreset::Off),
+            None,
+            &crate::approvals::AutoApprover,
+        )),
+    )
+    .await
+    .unwrap();
+    authored.assert_hits(1);
+    let mut review = false;
+    let mut yielded = false;
+    while let Ok(token) = rx.try_recv() {
+        if let StreamToken::Telemetry(e) = token {
+            review |= e.event == "observer_authored_test_review"
+                && e.data["changed_call_id"] == "first-tests";
+            yielded |= e.data["yield_reason"] == "authored_test_review";
+        }
+    }
+    assert!(review && yielded);
+    assert_eq!(budget.snapshot().task_requests(), 1);
+    assert!(evidence_packet::project(&result.messages, None)
+        .pending_exact_checks
+        .contains(&CHECK.to_owned()));
+    // The same native history cannot trigger a second case review.
+    assert!(requirement_proof::test_plan(
+        &result.messages,
+        root.path().to_str(),
+        "tests/test_status.py",
+        Some(7)
+    )
+    .is_none());
+    let packet = json!({"task_obligations":task_obligations::project_advisory(&result.messages,None,root.path().to_str())});
+    let prompt = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+        &packet,
+        "en",
+        "authored_test_review",
+    );
+    assert!(prompt.contains("Pick one uncovered assertion") && prompt.contains("absent names"));
+    // At the floor, the Coder still gets the plan, with no handoff that would take its last action.
+    let first = crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User);
+    let tight = crate::work_budget::WorkBudget::new(&task, 3, None);
+    crate::work_budget::scope(
+        Some(crate::work_budget::Context {
+            budget: tight.with_observer_return(2),
+            role: "coder",
+        }),
+        async {
+            assert!(
+                !requirement_proof::test_plan(&[first], None, "tests/test_status.py", Some(3))
+                    .unwrap()
+                    .observer_review
+            );
+        },
+    )
+    .await;
+}
+
 #[cfg(not(target_os = "windows"))]
 #[tokio::test]
 async fn a_written_linked_test_file_carries_one_plan_on_the_first_change_whose_auto_test_passes() {

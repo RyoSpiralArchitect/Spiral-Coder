@@ -4,5 +4,6 @@
 pub(crate) enum CoderYieldReason {
     VerificationFailure,
     DiagnosticFollowup,
+    AuthoredTestReview,
     Blocked,
 }

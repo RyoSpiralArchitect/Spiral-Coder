@@ -23,6 +23,13 @@ pub(crate) struct AuthoredTests {
 }
 
 impl AuthoredTests {
+    pub(in crate::tui::agent) fn has_nullable_comparison(&self) -> bool {
+        self.shared_requirements
+            .iter()
+            .chain(&self.test_only_requirements)
+            .any(|r| r.nullable_comparison.is_some())
+    }
+
     pub(in crate::tui::agent) fn has_explicit_cases(&self) -> bool {
         self.test_only_requirements
             .iter()
@@ -71,6 +78,8 @@ struct TestRequirement {
     description: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     explicit_cases: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    nullable_comparison: Option<String>,
 }
 
 pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option<AuthoredTests> {
@@ -124,6 +133,7 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         target.push(TestRequirement {
             id: requirement.id.clone(),
             description: requirement.description.clone(),
+            nullable_comparison: nullable_comparison(&requirement.description).map(str::to_owned),
             explicit_cases: requirement
                 .explicit_test_cases()
                 .into_iter()
@@ -159,6 +169,26 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         shared_requirements,
         review_source: None,
     })
+}
+
+/// Quote only a sentence which explicitly ties equality to the missing-value case.
+fn nullable_comparison(description: &str) -> Option<&str> {
+    description
+        .split_terminator(['.', '\n'])
+        .map(str::trim)
+        .find(|sentence| {
+            if sentence.len() > 512 {
+                return false;
+            }
+            let lower = sentence.to_ascii_lowercase();
+            lower.split(';').any(|clause| {
+                (clause.contains("must match ") || clause.contains("must equal "))
+                    && (clause.contains("null if absent")
+                        || clause.contains("null when absent")
+                        || clause.contains("null if missing")
+                        || clause.contains("null when missing"))
+            })
+        })
 }
 
 fn names_record_order(description: &str) -> bool {
@@ -199,6 +229,45 @@ mod tests {
             "Place an order.",
         ] {
             assert!(!super::names_record_order(description));
+        }
+    }
+
+    #[test]
+    fn nullable_equality_is_quoted_for_both_roles_only_when_required() {
+        let clause =
+            "The cached checksum must match the supplied checksum, or be null when missing";
+        for (rule, applies) in [
+            (clause.to_owned(), true),
+            ("Cache a checksum or use null if absent.".into(), false),
+            (
+                "Names must match exactly; an unrelated label is null if absent.".into(),
+                false,
+            ),
+            ("A checksum must not equal null when missing.".into(), false),
+        ] {
+            let root = format!(
+                "Test the catalog.\n<task_requirements>\n{}\n</task_requirements>",
+                json!({"version":1,"requirements":[{"id":"checksum","description":rule,"artifacts":[{"path":"tests/catalog.rs","kind":"test"}],"checks":[{"command":"cargo test"}]}]})
+            );
+            let messages = vec![json!({"role":"user","content":root})];
+            let view =
+                serde_json::to_value(task_obligations::project_advisory(&messages, None, None))
+                    .unwrap();
+            let comparison = &view["task_requirements"]["authored_tests"]["test_only_requirements"]
+                [0]["nullable_comparison"];
+            assert_eq!(comparison.as_str(), applies.then_some(clause));
+            let coder = task_obligations::prompt(&messages, None, None).unwrap();
+            let observer =
+                crate::observer_action::intervention::prompt(&json!({"task_obligations":view}));
+            for prompt in [coder, observer] {
+                assert_eq!(
+                    prompt.contains(task_obligations::NULLABLE_COMPARISON_GUIDANCE.trim()),
+                    applies
+                );
+                if applies {
+                    assert!(prompt.contains(clause));
+                }
+            }
         }
     }
 

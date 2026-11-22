@@ -92,7 +92,7 @@ fn listed(names: &[String]) -> String {
 }
 
 /// One edit, every declared check after it, and the final report.
-fn floor(contract: &Contract) -> usize {
+pub(super) fn floor(contract: &Contract) -> usize {
     let checks: BTreeSet<&str> = contract
         .requirements
         .iter()
@@ -529,9 +529,17 @@ fn test_names(path: &str, source: &str) -> Vec<String> {
 mod tests {
     use super::super::test_closeout as closeout_entry;
     use super::super::test_coverage as coverage_entry;
-    use super::super::test_plan as plan_entry;
     use super::*;
     use serde_json::json;
+
+    fn plan_entry(
+        messages: &[Value],
+        root: Option<&str>,
+        path: &str,
+        remaining: Option<usize>,
+    ) -> Option<String> {
+        super::super::test_plan(messages, root, path, remaining).map(|plan| plan.text)
+    }
 
     // S20–S30 share this task text byte for byte.
     const S28_PROMPT: &str =

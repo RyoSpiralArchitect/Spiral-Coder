@@ -5,6 +5,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 pub(crate) const EXPLICIT_TEST_CASE_GUIDANCE: &str = "For each explicit_cases item in the original test requirement, identify the input that isolates it, the verified positive control, and the current public test that distinguishes the two outcomes. Implement missing cases while there is room for an edit and verification. A case map cites test functions; the assertions determine what they actually cover.\n";
+pub(crate) const NULLABLE_COMPARISON_GUIDANCE: &str = "For a nullable_comparison, write down what each recorded side must contain when the underlying input is present and when it is absent. From valid controls for both states, change one recorded side or one component at a time, including known-to-null and null-to-known mismatches. Check the constraints on still-known data before propagating an unknown result. Follow the original rule for which fields must agree.\n";
 
 pub(crate) const DOCUMENT_ENDING_GUIDANCE: &str = "For a requested append, document_ending.read_file gives the last lines of a pending document. Use those bytes for a unique patch_file or apply_diff anchor and preserve the original text. A shell write cannot supply the required native edit receipt. If the text already exists, check the actual outstanding change before adding another copy.\n";
 pub(crate) const ORDERED_OUTPUT_GUIDANCE: &str = "When the task promises ordered or linked records, exercise the public interface with two distinguishable valid records from the real fixture or producer. Compare the ordered identities and their associated values on parsed output. A single record cannot exercise order.\n";
@@ -260,6 +261,14 @@ pub(crate) fn prompt(
     );
     if obligations.task_requirements.document_ending.is_some() {
         prompt.push_str(DOCUMENT_ENDING_GUIDANCE);
+    }
+    if obligations
+        .task_requirements
+        .authored_tests
+        .as_ref()
+        .is_some_and(|tests| tests.has_nullable_comparison())
+    {
+        prompt.push_str(NULLABLE_COMPARISON_GUIDANCE);
     }
     if obligations
         .task_requirements

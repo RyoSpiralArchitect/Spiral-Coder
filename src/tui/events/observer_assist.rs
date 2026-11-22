@@ -232,8 +232,13 @@ pub(crate) fn build_tui_next_action_prompt(
     lang: &str,
     reason_hint: &str,
 ) -> String {
+    let case_review = if reason_hint == "authored_test_review" {
+        "The Coder just received its first test coverage plan. Read the actual test source against the originally requested cases. Pick one uncovered assertion that would distinguish a broken implementation from a valid control. Give the Coder an actionable fixture, single change and expected public result while edit and recheck budget remains. If the tests already distinguish the stated cases, name the evidence and advance the remaining work.\n"
+    } else {
+        ""
+    };
     format!(
-        "{}\n{}\n{}",
+        "{case_review}{}\n{}\n{}",
         crate::observer_action::intervention::prompt(packet),
         crate::observer_action::work_route::prompt(packet),
         build_next_action_body(packet, lang, reason_hint)

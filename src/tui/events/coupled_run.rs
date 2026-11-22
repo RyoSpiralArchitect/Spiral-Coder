@@ -328,6 +328,10 @@ async fn run_iteration(
                 == Some(super::super::coder_yield::CoderYieldReason::DiagnosticFollowup)
             {
                 "diagnostic_followup"
+            } else if app.coder_yield_reason
+                == Some(super::super::coder_yield::CoderYieldReason::AuthoredTestReview)
+            {
+                "authored_test_review"
             } else {
                 "incomplete_task"
             };

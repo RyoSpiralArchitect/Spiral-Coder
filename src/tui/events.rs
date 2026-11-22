@@ -2728,6 +2728,9 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::DiagnosticFollowup) {
         return Some((idx, "diagnostic_followup".into()));
     }
+    if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::AuthoredTestReview) {
+        return Some((idx, "authored_test_review".into()));
+    }
     if !meta_failure_like(&msg.content) {
         return None;
     }

@@ -223,6 +223,9 @@ Fix: use --provider openai-compatible (or --provider mistral).",
         let iter_allowance = max_iters
             .saturating_add(repair_extensions)
             .saturating_add(governor_block_iter_relief(&messages));
+        if observer_handoff == Some(crate::tui::coder_yield::CoderYieldReason::AuthoredTestReview) {
+            break;
+        }
         if let Some(failure) = observer_handoff::newly_executed(
             &messages,
             test_cmd.as_deref(),
@@ -1552,8 +1555,13 @@ Execute this minimal action instead: {}",
 
         // ── File tools: read_file / write_file / patch_file ────────────────
         if matches!(tc.name.as_str(), "read_file" | "write_file" | "patch_file") {
-            match file_tool_dispatch::run_file_tools(&mut tool_ctx, &tc, observer_observation)
-                .await?
+            match file_tool_dispatch::run_file_tools(
+                &mut tool_ctx,
+                &tc,
+                observer_observation,
+                &mut observer_handoff,
+            )
+            .await?
             {
                 tool_dispatch::ToolFlow::Break => break,
                 tool_dispatch::ToolFlow::Continue => continue,

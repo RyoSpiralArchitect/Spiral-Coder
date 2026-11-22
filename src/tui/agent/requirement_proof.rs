@@ -725,23 +725,41 @@ pub(super) fn test_review_allowance() -> Option<usize> {
 /// One coverage plan after a test file linked to several requirements has been
 /// written in the current task (see `test_closeout::plan`). `changed_path` is
 /// the path of the successful file change being reported.
+pub(super) struct TestPlan {
+    pub(super) text: String,
+    pub(super) observer_review: bool,
+}
+
 pub(super) fn test_plan(
     messages: &[Value],
     tool_root: Option<&str>,
     changed_path: &str,
     coder_remaining: Option<usize>,
-) -> Option<String> {
+) -> Option<TestPlan> {
     let messages = crate::task_origin::current_task_messages(messages);
     let contract = parse(crate::task_origin::root_user_text(messages))
         .ok()
         .flatten()?;
-    test_closeout::plan(
+    let text = test_closeout::plan(
         &contract,
         messages,
         tool_root,
         changed_path,
         coder_remaining,
-    )
+    )?;
+    let observer_review = crate::work_budget::current().is_some_and(|context| {
+        context.role == "coder"
+            && context.budget.can_return_to_observer()
+            && context.budget.remaining_for("observer") > test_closeout::floor(&contract)
+            && contract
+                .requirements
+                .iter()
+                .any(|r| !r.explicit_test_cases().is_empty())
+    });
+    Some(TestPlan {
+        text,
+        observer_review,
+    })
 }
 
 /// One review of an authored test against the requirements that link it, before
