@@ -167,7 +167,8 @@ pub(crate) fn compact_success_tool_result_for_history(tool_name: &str, content: 
         return content.to_string();
     }
     if content.len() <= SUCCESS_TOOL_HISTORY_MAX_CHARS
-        && content.lines().count() <= SUCCESS_TOOL_HISTORY_MAX_LINES
+        && (content.lines().count() <= SUCCESS_TOOL_HISTORY_MAX_LINES
+            || (tool_name == "exec" && complete_json_stdout(content)))
     {
         return content.to_string();
     }
@@ -257,6 +258,21 @@ pub(crate) fn compact_success_tool_result_for_history(tool_name: &str, content: 
         );
     }
     kept.join("\n")
+}
+
+/// A pretty-printed object or array can fit the existing byte budget while
+/// exceeding the line budget. Keep the original text so its values, spelling
+/// and order survive. Mixed logs and truncated previews use the usual digest.
+fn complete_json_stdout(content: &str) -> bool {
+    if !crate::execution_evidence::exec_succeeded(content) {
+        return false;
+    }
+    content
+        .split_once("\nstdout:\n")
+        .is_some_and(|(_, output)| {
+            output.trim_start().starts_with(['{', '['])
+                && serde_json::from_str::<serde_json::Value>(output).is_ok()
+        })
 }
 
 /// Collapse tool result messages older than KEEP_RECENT_TOOL_TURNS to a

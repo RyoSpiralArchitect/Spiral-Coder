@@ -534,6 +534,11 @@ their catalog IDs. Coder and Observer can use these historical results to
 preserve the corresponding behavior while narrowing the repair. A new declared
 check supersedes this view. Completion still requires fresh receipts after edits.
 
+Successful commands that print one JSON object or array retain the complete
+output in tool history when the whole receipt fits the 1,200-byte budget.
+Pretty-printed examples can therefore be reused with their original values
+and ordering when the line-based digest would omit part of the document.
+
 The `done.summary` field description includes the same current report clauses
 and before/after rows as the shared task projection, formatted as plain text
 instructions. A command cited in an
