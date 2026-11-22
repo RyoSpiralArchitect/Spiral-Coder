@@ -269,6 +269,20 @@ struct HandoffEvidence {
     commands: BTreeSet<String>,
 }
 
+fn names_artifact_path(summary: &str, path: &str) -> bool {
+    let boundary = |ch: char| ch.is_whitespace() || "`'\"()[]{}<>,;:=|!?「」『』、。".contains(ch);
+    summary.match_indices(path).any(|(start, _)| {
+        let before = &summary[..start];
+        let before = before.strip_suffix("./").unwrap_or(before);
+        let after = &summary[start + path.len()..];
+        before.chars().next_back().is_none_or(boundary)
+            && (after.chars().next().is_none_or(boundary)
+                || after
+                    .strip_prefix('.')
+                    .is_some_and(|rest| rest.chars().next().is_none_or(boundary)))
+    })
+}
+
 fn collect_evidence(root: &str, messages: &[Value], test_cmd: Option<&str>) -> HandoffEvidence {
     let context = super::exec_verification::ExecVerificationContext::from_root(test_cmd, root);
     let mut pending = BTreeMap::new();
@@ -358,6 +372,23 @@ pub(super) fn validate_authored_done_summary(
         }
     }
 
+    // The task explicitly requires edits to its declared artifacts. For every
+    // such native edit the author must account for the path, even if reverted.
+    // Other recorded edits remain advisory because their final state can differ.
+    if let Some(paths) = report["recorded_edit_paths"].as_array() {
+        if let Ok(Some(contract)) = super::requirement_proof::parse(root) {
+            let summary = summary.replace('\\', "/");
+            let missing: Vec<_> = paths
+                .iter()
+                .filter_map(Value::as_str)
+                .filter(|p| contract.names_artifact(p) && !names_artifact_path(&summary, p))
+                .collect();
+            if !missing.is_empty() {
+                return Err(format!("List the repository-relative path of each edited task artifact in done.summary. Still missing: {}. Describe its final state, including any reversion. The existing check receipts remain current.", missing.join(", ")));
+            }
+        }
+    }
+
     let Some(hint) = authored_final_answer_hint(root) else {
         return Ok(());
     };
@@ -395,6 +426,7 @@ pub(super) fn validate_authored_done_summary(
             missing.push(format!("explicit item `{literal}`{case_hint}"));
         }
     }
+    let rendered_paths = rendered.replace('\\', "/");
     for kind in path_kinds(&clauses) {
         let candidates: Vec<_> = evidence
             .paths
@@ -406,7 +438,7 @@ pub(super) fn validate_authored_done_summary(
         if !candidates.is_empty()
             && !candidates
                 .iter()
-                .any(|path| rendered.contains(path.as_str()))
+                .any(|path| rendered_paths.contains(path.as_str()))
         {
             missing.push(format!(
                 "{} (recorded: {})",
