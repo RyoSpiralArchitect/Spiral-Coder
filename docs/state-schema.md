@@ -36,6 +36,11 @@ the narrow schema for ordinary access/path diagnosis without resolving the
 failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
+For a pending Markdown artifact, a current partial read can also yield
+`task_requirements.document_ending`. It cites that read and gives native
+`read_file` arguments for the final twelve lines so an append can use an
+observed anchor. Both roles receive the same suggested window. Editing a
+declared file through the shell leaves its native file-edit obligation open.
 While a correlated recovery failure remains pending, module-discovery guesses
 from older reads cannot supply a replacement repair target or rewrite an
 observation into a different source read. Fix-stage guidance and observation
@@ -1273,6 +1278,9 @@ requirements shared with other artifacts, within one 4 KiB description budget.
 Both roles can use the shared rules to compare source decisions with public
 test assertions after the structural obligations pass. The view adds no
 persisted state or coverage receipt.
+When a linked requirement explicitly names record or array order, the view
+includes its ID in `ordered_record_requirement`. Both roles can use it to
+exercise the public output with two distinguishable records.
 
 When a declared test file is linked to two or more requirements, the first
 completion claim of a task that passes every other gate receives one

@@ -105,8 +105,68 @@ pub(crate) struct Status {
     baseline_receipts: BTreeMap<String, String>,
     pub pending_artifact_paths: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) document_ending: Option<DocumentEnding>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) authored_tests: Option<AuthoredTests>,
     requirements: Vec<Value>,
+}
+
+/// An optional read for an append to a declared document whose end is still unseen.
+#[derive(Debug, Serialize)]
+pub(super) struct DocumentEnding {
+    read_call_id: String,
+    read_file: crate::file_tools::read_range::ReadRequest,
+}
+
+fn document_ending(
+    evidence: &super::evidence_packet::ExecutionPacket,
+    pending_docs: &BTreeSet<String>,
+) -> Option<DocumentEnding> {
+    use crate::file_tools::read_range::{header_counts, matches_range_header, ReadRequest};
+    if pending_docs.is_empty() {
+        return None;
+    }
+    let mut seen = BTreeSet::new();
+    for action in evidence.current_actions().into_iter().rev() {
+        if action.tool != "read_file" || action.executed != Some(true) {
+            continue;
+        }
+        let Some(path) = action.arguments["path"].as_str() else {
+            continue;
+        };
+        let relative = path.trim_start_matches("./");
+        if !pending_docs.contains(relative)
+            || !seen.insert(relative)
+            || action.succeeded == Some(false)
+        {
+            continue;
+        }
+        let Some(header) = action.result.as_deref().and_then(|s| s.lines().next()) else {
+            continue;
+        };
+        let Some((total, _, suffix)) = header_counts(path, header) else {
+            continue;
+        };
+        let Ok(request) = serde_json::from_value::<ReadRequest>(action.arguments.clone()) else {
+            continue;
+        };
+        if total < 13
+            || !suffix.ends_with("; partial file]")
+            || !matches_range_header(&action.arguments.to_string(), header)
+            || !request.bounds().is_ok_and(|(_, end)| end < total)
+        {
+            continue;
+        }
+        return Some(DocumentEnding {
+            read_call_id: action.call_id.clone(),
+            read_file: ReadRequest {
+                path: relative.to_owned(),
+                start_line: Some(total - 11),
+                end_line: Some(total),
+            },
+        });
+    }
+    None
 }
 
 /// Optimistic count under the one-call contract. Diagnosis and additional repairs can cost more.
@@ -349,6 +409,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
         authored_tests: authored_tests::project(&contract, &evidence.actions),
         ..Status::default()
     };
+    let mut pending_docs = BTreeSet::new();
     for requirement in contract.requirements {
         let mut missing = Vec::new();
         for artifact in &requirement.artifacts {
@@ -358,6 +419,9 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                     .map(|p| p.trim_start_matches("./"))
                     == Some(artifact.path.as_str())
             }) {
+                if artifact.is_markdown_document() {
+                    pending_docs.insert(artifact.path.clone());
+                }
                 if !status.pending_artifact_paths.contains(&artifact.path) {
                     status.pending_artifact_paths.push(artifact.path.clone());
                 }
@@ -405,6 +469,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
             .requirements
             .push(serde_json::json!({"requirement":requirement,"pending":missing}));
     }
+    status.document_ending = document_ending(&evidence, &pending_docs);
     status
 }
 
@@ -673,6 +738,58 @@ mod tests {
     fn exchange(messages: &mut Vec<Value>, id: &str, tool: &str, args: Value, output: &str) {
         messages.extend([json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}),json!({"role":"tool","tool_call_id":id,"content":output})]);
     }
+    #[test]
+    fn pending_document_append_uses_a_current_partial_read_of_its_own_path() {
+        let mut messages = vec![json!({"role":"user","content":root()})];
+        let path = "docs/usage.md";
+        let args = json!({"path":path,"start_line":1,"end_line":2});
+        let output = "[docs/usage.md] (1600 lines, 78000 bytes) [range: lines 1-2; partial file]\nOverview\nSetup";
+        let view = |messages: &[Value]| {
+            serde_json::to_value(project(messages, None)).unwrap()["document_ending"].clone()
+        };
+        for (name, read_args, body) in [
+            ("forged", args.clone(), "GOVERNOR BLOCKED"),
+            (
+                "wrong",
+                json!({"path":"docs/other.md","start_line":1,"end_line":2}),
+                output,
+            ),
+        ] {
+            exchange(&mut messages, name, "read_file", read_args, body);
+            assert!(view(&messages).is_null());
+        }
+        exchange(&mut messages, "observed", "read_file", args, output);
+        assert_eq!(
+            view(&messages),
+            json!({"read_call_id":"observed","read_file":{"path":path,"start_line":1589,"end_line":1600}})
+        );
+        let mut stale = messages.clone();
+        exchange(
+            &mut stale,
+            "change",
+            "exec",
+            json!({"command":"python3 modify.py"}),
+            "OK (exit_code: 0)",
+        );
+        assert!(view(&stale).is_null());
+        exchange(
+            &mut messages,
+            "tail",
+            "read_file",
+            json!({"path":path,"start_line":1589,"end_line":1600}),
+            "[docs/usage.md] (1600 lines, 78000 bytes) [range: lines 1589-1600; partial file]\nend",
+        );
+        assert!(view(&messages).is_null());
+        exchange(
+            &mut messages,
+            "applied",
+            "patch_file",
+            json!({"path":path}),
+            "OK: patched 'docs/usage.md'",
+        );
+        assert!(view(&messages).is_null());
+    }
+
     #[test]
     fn old_test_pass_and_self_declared_plan_cannot_complete_missing_artifacts() {
         let mut messages = vec![json!({"role":"user","content":root()})];

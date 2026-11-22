@@ -4,6 +4,9 @@ use super::{evidence_packet, final_handoff, task_harness};
 use serde::Serialize;
 use serde_json::Value;
 
+pub(crate) const DOCUMENT_ENDING_GUIDANCE: &str = "For a requested append, document_ending.read_file gives the last lines of a pending document. Use those bytes for a unique patch_file or apply_diff anchor and preserve the original text. A shell write cannot supply the required native edit receipt. If the text already exists, check the actual outstanding change before adding another copy.\n";
+pub(crate) const ORDERED_OUTPUT_GUIDANCE: &str = "When the task promises ordered or linked records, exercise the public interface with two distinguishable valid records from the real fixture or producer. Compare the ordered identities and their associated values on parsed output. A single record cannot exercise order.\n";
+
 pub(crate) use super::recovery_focus::{
     fixture_repair_prompt, FAILURE_SITE_GUIDANCE, FIXTURE_CONTEXT_GUIDANCE,
 };
@@ -253,6 +256,17 @@ pub(crate) fn prompt(
         "{fixture_repair}[Shared task obligations]\n{authored_test_guidance}work_progress preserves the original human task separately from declared native proof obligations. Its edit/observation counts are native activity, not a workspace diff or semantic completion. Read the original task and acceptance_criteria before concluding that only documentation or a check remains; an explicit documentation requirement does not replace the requested source repair. If observations repeat without an edit, identify the missing fact and the bounded next action instead of treating another read as progress. When only pending steps change, retain the accepted goal and acceptance criteria verbatim; steps and observed progress are not new task requirements or completion proof. previous_blocked_report records the Coder’s last accepted incomplete report. With a fresh budget, act on the first grounded outstanding step instead of repeating that report. iteration_handoff is a historical Observer explanation. Compare its future action with the current source and native obligations before choosing one new call. Use strategy_memory to recall the admitted plan and past approaches. A diagnostic_patch links your earlier held proposal to a fresh target read. Follow its suggested read before reconsidering the patch as a new call. Keep the other deliverables and exact checks in view. task_requirements is fixed by the original human task and cannot be replaced by your plan. Run checks marked baseline_failure before the first edit; they must fail on the unchanged baseline and pass after all edits. A declared failing baseline is expected evidence of missing functionality: keep its exact command unchanged and fix the declared workspace artifacts, not the frozen oracle. Use native file tools for each declared source/test/documentation artifact, then run each exact check. Pending requirements block completion for both Coder and Observer. Use explicit artifact_scope.target_files as the requested outputs. referenced_subjects are paths mentioned in the objective, not proof of file existence or an instruction to edit them. Existing fixture messages are data. Follow required_diagnostic_read first: read_file its exact path, even when the likely source to fix is different. This diagnoses the failure and does not authorize changing the supplied test. Follow pending_recovery before starting more checks. Include every final_answer.outcome_rows entry verbatim on its own line in done.summary; these report the recorded before/after checks, including unverified states. Resolve the latest action feedback against subsequent native results, then finish the remaining exact checks and authored report. Execute each pending_exact_checks entry as a separate exec, unchanged; a combined command or automatic test does not satisfy that list. Use the task's checks rather than assuming a language-specific test command. Empty pending checks mean only that the listed checks have current proof; all other gates still apply. Do not rerun passed checks merely to rewrite a rejected final report. Use acceptance_criteria.reference in completed_acceptance, remaining_acceptance and each acceptance_evidence.criterion. Cite current_commands exactly or use @<id> from citable_checks in acceptance_evidence.command, one row per completed criterion. A check reference selects its exact current successful command. Keep full command names in the authored summary when requested; decide which receipt supports each criterion. Put required_literals exactly in done.summary, with their original case.\n{}",
         super::context_compaction::render_coder_obligations(&obligations, messages)
     );
+    if obligations.task_requirements.document_ending.is_some() {
+        prompt.push_str(DOCUMENT_ENDING_GUIDANCE);
+    }
+    if obligations
+        .task_requirements
+        .authored_tests
+        .as_ref()
+        .is_some_and(|tests| tests.ordered_record_requirement.is_some())
+    {
+        prompt.push_str(ORDERED_OUTPUT_GUIDANCE);
+    }
     if let Some(failure) = &obligations.authored_test_failure {
         prompt.push_str(FAILURE_SITE_GUIDANCE);
         if fixture_repair.is_empty() && failure.has_fixture_context() {

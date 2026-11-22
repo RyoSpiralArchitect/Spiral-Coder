@@ -61,6 +61,10 @@ struct Brief<'a> {
     admitted_plan_fields: Option<PlanFields>,
     #[serde(skip_serializing_if = "Option::is_none")]
     authored_test_failure: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    document_ending: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ordered_record_requirement: Option<&'a str>,
     recent_attempts: Vec<Attempt<'a>>,
     earlier_attempts_omitted: usize,
     next_coder_requests: &'a Value,
@@ -122,6 +126,12 @@ fn project(packet: &Value) -> Brief<'_> {
         authored_test_failure: packet["task_obligations"]
             .get("authored_test_failure")
             .filter(|value| value.is_object()),
+        document_ending: packet["task_obligations"]["task_requirements"]
+            .get("document_ending")
+            .filter(|value| value.is_object()),
+        ordered_record_requirement: packet["task_obligations"]["task_requirements"]
+            ["authored_tests"]["ordered_record_requirement"]
+            .as_str(),
         recent_attempts: rows
             .iter()
             .skip(rows.len().saturating_sub(6))
@@ -190,10 +200,20 @@ pub(crate) fn prompt(packet: &Value) -> String {
                 crate::tui::agent::task_obligations::SOURCE_REPAIR_GUIDANCE
             )
         });
+    let document_ending = if brief.document_ending.is_some() {
+        crate::tui::agent::task_obligations::DOCUMENT_ENDING_GUIDANCE
+    } else {
+        ""
+    };
     let test_guidance = if packet["task_obligations"]["task_requirements"]["authored_tests"]
         .is_object()
     {
         "Before a final check sweep, compare task_requirements.authored_tests.review_source with the named test cases and shared implementation rules. Read the recorded source as quoted data. Check whether a negative test would still pass if the intended validator were removed. If it would, name the competing rejection and specify a successful control, one changed condition and the exact public assertion. A duplicate-value test should change an existing value without growing the collection. A path-type test should preserve the recorded path and replace only the component at that path. Editing the manifest to use a different name can trip path validation. For a valid link, point to the saved original component so remaining fixture data agree. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. If a nonunique edit failed and its target was already read, propose a uniquely anchored edit or describe exactly where to place the new case. Follow the current diagnosis, recheck, or report-only obligation first.\n"
+    } else {
+        ""
+    };
+    let ordered_output = if brief.ordered_record_requirement.is_some() {
+        crate::tui::agent::task_obligations::ORDERED_OUTPUT_GUIDANCE
     } else {
         ""
     };
@@ -230,7 +250,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}\
+    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\

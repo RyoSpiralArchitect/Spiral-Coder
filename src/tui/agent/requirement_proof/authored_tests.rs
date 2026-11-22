@@ -12,6 +12,8 @@ const MAX_DESCRIPTION_BYTES: usize = 4096;
 #[derive(Debug, Serialize)]
 pub(crate) struct AuthoredTests {
     targets: Vec<Target>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(in crate::tui::agent) ordered_record_requirement: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     test_only_requirements: Vec<TestRequirement>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -66,6 +68,7 @@ struct TestRequirement {
 pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option<AuthoredTests> {
     let mut by_path: BTreeMap<&str, Vec<String>> = BTreeMap::new();
     let mut linked = Vec::new();
+    let mut ordered_record_requirement = None;
     for requirement in &contract.requirements {
         let paths: BTreeSet<_> = requirement
             .artifacts
@@ -75,6 +78,9 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
             .collect();
         if paths.is_empty() {
             continue;
+        }
+        if ordered_record_requirement.is_none() && names_record_order(&requirement.description) {
+            ordered_record_requirement = Some(requirement.id.clone());
         }
         for path in paths {
             by_path
@@ -135,16 +141,53 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         .collect();
     Some(AuthoredTests {
         targets,
+        ordered_record_requirement,
         test_only_requirements,
         shared_requirements,
         review_source: None,
     })
 }
 
+fn names_record_order(description: &str) -> bool {
+    let lower = description.to_ascii_lowercase();
+    let mut previous = "";
+    for word in lower
+        .split(|ch: char| !ch.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+    {
+        if (word == "order" && matches!(previous, "row" | "record" | "array" | "item" | "entry"))
+            || (previous == "ordered"
+                && matches!(word, "rows" | "records" | "array" | "items" | "entries"))
+        {
+            return true;
+        }
+        previous = word;
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use crate::tui::agent::task_obligations;
     use serde_json::{json, Value};
+
+    #[test]
+    fn distinguish_ordered_records_from_incidental_order_language() {
+        for description in [
+            "Preserve array order.",
+            "Return ORDERED records with their identities.",
+            "Preserve row order 1..N.",
+        ] {
+            assert!(super::names_record_order(description));
+        }
+        for description in [
+            "Validate each record in order to count it.",
+            "Return unordered records.",
+            "Place an order.",
+        ] {
+            assert!(!super::names_record_order(description));
+        }
+    }
 
     const DESCRIPTION: &str =
         "From a valid control, change the parent field and assert the public error.";
