@@ -163,3 +163,46 @@ fn helper_search_distinguishes_lexical_evidence_from_a_planned_import() {
     );
     assert!(!search(source, "host.rs", "select", ".").contains("[navigation]"));
 }
+
+#[test]
+fn directory_command_search_locates_one_definition_and_dispatch_across_literal_callers() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("src");
+    std::fs::create_dir(&dir).unwrap();
+    let source="enum Command {\n    InspectRun(Args),\n}\nfn dispatch(cmd:Command) { match cmd {\n    Command::InspectRun(args) => inspect(args),\n} }\n";
+    std::fs::write(dir.join("entry.rs"), source).unwrap();
+    std::fs::write(
+        dir.join("caller.md"),
+        "Use inspect-run for the current run.\n",
+    )
+    .unwrap();
+    let search_dir = || tool_search_files("inspect-run", "src", false, root.path().to_str()).0;
+    let with_hits = search_dir();
+    let note="[navigation] In `src/entry.rs`, enum `Command` declares `InspectRun` at line 2 and its qualified match arm is at line 5.";
+    assert_eq!(
+        with_hits.lines().collect::<Vec<_>>(),
+        [
+            "[search_files: 'inspect-run' — 1 match(es)]",
+            note,
+            "src/caller.md:1: Use inspect-run for the current run."
+        ]
+    );
+    std::fs::write(dir.join("caller.md"), "operator guide").unwrap();
+    let no_hits = search_dir();
+    assert!(no_hits.starts_with("[search_files] No matches"));
+    assert_eq!(no_hits.lines().nth(1), Some(note));
+    std::fs::write(dir.join("other.rs"), source).unwrap();
+    assert!(!search_dir().contains("[navigation]"));
+    std::fs::write(
+        dir.join("other.rs"),
+        "// Command::InspectRun(args) => inspect(args)\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("caller.md"),
+        "inspect-run\n".repeat(super::MAX_SEARCH_RESULTS + 1),
+    )
+    .unwrap();
+    let truncated = search_dir();
+    assert!(truncated.contains("more may exist") && !truncated.contains("[navigation]"));
+}

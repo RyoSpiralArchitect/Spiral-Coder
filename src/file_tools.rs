@@ -531,6 +531,16 @@ fn display_search_path(path: &Path, search_root: &Path, base: Option<&str>) -> S
         .unwrap_or_else(|_| path.display().to_string())
 }
 
+// Keep the literal header first and the navigation ahead of long result bodies.
+fn add_search_navigation(output: &mut String, note: &str) {
+    if let Some(end) = output.find('\n') {
+        output.insert_str(end + 1, note);
+    } else {
+        output.push('\n');
+        output.push_str(note.trim_end());
+    }
+}
+
 fn search_single_file(
     pattern: &str,
     file_path: &Path,
@@ -586,11 +596,7 @@ fn search_single_file(
         )
     };
     if let Some(note) = rust_navigation::note(file_path, pattern, &content, results.len()) {
-        // Keep the ordinary header first and the note ahead of lengthy literal
-        // results so the Observer's bounded action excerpt can carry it too.
-        if let Some(end) = output.find('\n') {
-            output.insert_str(end + 1, &note);
-        }
+        add_search_navigation(&mut output, &note);
     }
     (output, false)
 }
@@ -643,6 +649,8 @@ pub fn tool_search_files(
     };
 
     let mut results: Vec<String> = Vec::new();
+    let spelling = rust_navigation::rust_spelling(pattern);
+    let mut command_notes = Vec::new();
     let mut stack: Vec<PathBuf> = vec![search_root.clone()];
     let mut truncated = false;
 
@@ -690,6 +698,15 @@ pub fn tool_search_files(
                 Err(_) => continue,
             };
             let rel = display_search_path(file_path, &search_root, base);
+            // Two candidate files make the route ambiguous. A truncated walk
+            // also cannot establish that just one visited file has this pair.
+            if command_notes.len() < 2 {
+                if let Some(note) = spelling.as_deref().and_then(|name| {
+                    rust_navigation::exact_command_note(file_path, &rel, name, &content)
+                }) {
+                    command_notes.push(note);
+                }
+            }
 
             for (ln, line) in content.lines().enumerate() {
                 let cmp = if case_insensitive {
@@ -711,21 +728,21 @@ pub fn tool_search_files(
         stack.extend(subdirs);
     }
 
-    if results.is_empty() {
-        return (
-            format!(
-                "[search_files] No matches for '{}' in '{}'",
-                pattern,
-                search_root.display()
-            ),
-            false,
-        );
+    let mut output = if results.is_empty() {
+        format!(
+            "[search_files] No matches for '{}' in '{}'",
+            pattern,
+            search_root.display()
+        )
+    } else {
+        finalize_search_output(pattern, &results, truncated, None)
+    };
+    if !truncated {
+        if let [note] = command_notes.as_slice() {
+            add_search_navigation(&mut output, note);
+        }
     }
-
-    (
-        finalize_search_output(pattern, &results, truncated, None),
-        false,
-    )
+    (output, false)
 }
 
 // ── apply_diff ────────────────────────────────────────────────────────────────

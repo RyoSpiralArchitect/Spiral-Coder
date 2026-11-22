@@ -42,12 +42,46 @@ pub(super) fn note(
     ))
 }
 
+struct CommandSites<'a> {
+    owner: &'a str,
+    name: &'a str,
+    definition: usize,
+    arm: usize,
+}
+
+/// A directory search can locate an exact Rust CLI spelling in a file
+/// already visited, even when the literal hits occur only in callers.
+pub(super) fn exact_command_note(
+    file: &Path,
+    display_path: &str,
+    spelling: &str,
+    source: &str,
+) -> Option<String> {
+    if file.extension()?.to_str()? != "rs"
+        || source.len() > MAX_SOURCE_BYTES
+        || !source.contains(spelling)
+    {
+        return None;
+    }
+    let sites = command_sites(source, |name| name == spelling)?;
+    Some(format!("[navigation] In `{display_path}`, enum `{}` declares `{}` at line {} and its qualified match arm is at line {}.\n",sites.owner,sites.name,sites.definition,sites.arm))
+}
+
 /// When a new command is absent, show a nearby spelling only if the same file
 /// contains one matching qualified arm and a variant in the named enum.
 fn sibling_note(prefix: &str, source: &str) -> Option<String> {
     if prefix.len() < 3 {
         return None;
     }
+    let sites = command_sites(source, |name| {
+        name.strip_prefix(prefix).is_some_and(|rest| {
+            rest.starts_with(|c: char| c.is_ascii_uppercase() || c.is_ascii_digit())
+        })
+    })?;
+    Some(format!("[navigation] A related spelling `{}` appears in enum `{}` at line {} and in a qualified match arm at line {}. Inspect these lines for how an existing command is wired.\n", sites.name,sites.owner,sites.definition,sites.arm))
+}
+
+fn command_sites(source: &str, matches_name: impl Fn(&str) -> bool) -> Option<CommandSites<'_>> {
     let separator = |c: char| !c.is_alphanumeric() && c != '_';
     let mut arm = None;
     for (i, line) in source.lines().enumerate() {
@@ -60,10 +94,7 @@ fn sibling_note(prefix: &str, source: &str) -> Option<String> {
         for (at, _) in pattern.match_indices("::") {
             let owner = pattern[..at].rsplit(separator).next()?;
             let name = pattern[at + 2..].split(separator).next()?;
-            let related = name.strip_prefix(prefix).is_some_and(|rest| {
-                rest.starts_with(|c: char| c.is_ascii_uppercase() || c.is_ascii_digit())
-            });
-            if !related || !owner.starts_with(|c: char| c.is_ascii_uppercase()) {
+            if !matches_name(name) || !owner.starts_with(|c: char| c.is_ascii_uppercase()) {
                 continue;
             }
             if arm.replace((owner, name, i + 1)).is_some() {
@@ -97,10 +128,15 @@ fn sibling_note(prefix: &str, source: &str) -> Option<String> {
             return None;
         }
     }
-    Some(format!("[navigation] A related spelling `{name}` appears in enum `{owner}` at line {} and in a qualified match arm at line {arm_line}. Inspect these lines for how an existing command is wired.\n", definition?))
+    Some(CommandSites {
+        owner,
+        name,
+        definition: definition?,
+        arm: arm_line,
+    })
 }
 
-fn rust_spelling(pattern: &str) -> Option<String> {
+pub(super) fn rust_spelling(pattern: &str) -> Option<String> {
     if pattern.len() > MAX_NAME_BYTES || !pattern.contains('-') {
         return None;
     }
