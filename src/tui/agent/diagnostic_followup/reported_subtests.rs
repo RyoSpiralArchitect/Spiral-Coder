@@ -19,25 +19,13 @@ impl ReportedSubtests {
         if failures < 2 {
             return None;
         }
-        // The native digest precedes stdout/stderr. Repeated headers in either
-        // captured stream do not supply another set of observations.
-        let mut lines = output
-            .lines()
-            .take_while(|line| !matches!(*line, "stdout:" | "stderr:"));
-        let count = lines
-            .find_map(|line| {
-                line.strip_prefix("[ERROR DIGEST — ")?
-                    .strip_suffix(" line(s)]")
-            })?
-            .parse::<usize>()
-            .ok()?;
+        let lines = crate::tui::agent::failure_diagnostics::retained_digest_lines(output)?;
         let short_method = method.rsplit_once('.')?.1;
         let header = format!("FAIL: {short_method} ({method}) ");
         let mut pending = None;
         let mut labels = BTreeSet::new();
         let mut cases = Vec::new();
-        for _ in 0..count {
-            let line = lines.next()?;
+        for line in lines {
             if let Some(label) = line.strip_prefix(&header) {
                 if pending.is_some()
                     || !label.starts_with('(')

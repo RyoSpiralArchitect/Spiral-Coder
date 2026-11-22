@@ -476,9 +476,27 @@ mod tests {
         history.extend(observed_project("Cargo.toml"));
         let lookup = json!({"dir":"src","pattern":"TuiReplay"});
         let search = |h: &[Value], q: Value| blocked(h, "search_files", q);
+        for pattern in ["Command::Replay", "router.commands.replay"] {
+            let qualified = json!({"dir":"src/main.rs","pattern":pattern});
+            assert!(search(&history, qualified.clone()).is_none(), "{pattern}");
+            let mut searched = history.clone();
+            tool(
+                &mut searched,
+                "search_files",
+                qualified.clone(),
+                "[search_files] No matches",
+            );
+            assert!(search(&searched, qualified).is_some());
+        }
         for q in [
             json!({"dir":".","pattern":"TuiReplay"}),
             json!({"dir":"tests","pattern":"TuiReplay"}),
+            json!({"dir":"src","pattern":"Command::Replay"}),
+            json!({"dir":"src/other.rs","pattern":"Command::Replay"}),
+            json!({"dir":"src/main.rs","pattern":"Command::::Replay"}),
+            json!({"dir":"src/main.rs","pattern":"Command::Replay()"}),
+            json!({"dir":"src/main.rs","pattern":"router.*"}),
+            json!({"dir":"src/main.rs","pattern":"Command::"}),
             json!({"dir":"src","pattern":"*"}),
             json!({"dir":"src","pattern":"a b"}),
         ] {

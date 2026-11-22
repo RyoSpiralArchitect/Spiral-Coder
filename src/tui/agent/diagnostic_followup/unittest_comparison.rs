@@ -158,6 +158,11 @@ pub(super) fn project(
     {
         return None;
     }
+    // assertRegex and assertNotRegex report their own reason without emitting
+    // the two operand rows that the focused runner is designed to recover.
+    if failures == 1 && single_regex_failure(output, case) {
+        return None;
+    }
     let mut flags = flags.to_vec();
     if !flags.contains(&"-B") {
         flags.insert(0, "-B");
@@ -179,6 +184,21 @@ pub(super) fn project(
         },
         checks_to_refresh: Vec::new(),
     }))
+}
+
+fn single_regex_failure(output: &str, case: &str) -> bool {
+    let Some(lines) = crate::tui::agent::failure_diagnostics::retained_digest_lines(output) else {
+        return false;
+    };
+    let (header, reason) = match lines.as_slice() {
+        [header, reason] => (header, reason),
+        [header, frame, reason] if frame.starts_with("File \"") => (header, reason),
+        _ => return false,
+    };
+    let method = case.rsplit('.').next().unwrap_or(case);
+    *header == format!("FAIL: {method} ({case})")
+        && (reason.starts_with("AssertionError: Regex didn't match:")
+            || reason.starts_with("AssertionError: Regex matched:"))
 }
 
 fn failure_count(output: &str) -> Option<usize> {
@@ -261,6 +281,25 @@ mod tests {
     const FILE: &str = "test_value.py";
     const FAILURE: &str =
         "FAIL: test_total (test_value.ValueTest.test_total)\nFAIL: test_tot\n[... output omitted ...]\nFAILED (failures=1)";
+
+    #[test]
+    fn single_regex_failure_has_no_diff_operands_to_recover() {
+        let header = "FAIL: test_total (test_value.ValueTest.test_total)";
+        let failure = |digest: &str| format!("{digest}\nstderr:\n{FAILURE}");
+        let probe = |output: &str| project(CHECK, FILE, output, Path::new("/workspace")).is_some();
+        for why in [
+            "Regex didn't match: 'a' not found in 'b'",
+            "Regex matched: 'a' matches 'a' in 'ab'",
+        ] {
+            let digest = format!("[ERROR DIGEST — 3 line(s)]\n{header}\nFile \"test_value.py\", line 9\nAssertionError: {why}");
+            assert!(!probe(&failure(&digest)));
+            assert!(probe(&failure(&format!("stdout:\n{digest}"))));
+            assert!(probe(&failure(&digest.replace("3 line(s)", "4 line(s)"))));
+        }
+        assert!(probe(&failure(&format!(
+            "[ERROR DIGEST — 2 line(s)]\n{header}\nAssertionError: {{'x': 1}} != {{'x': 2}}"
+        ))));
+    }
 
     #[test]
     fn offers_one_method_for_a_clipped_local_assertion() {

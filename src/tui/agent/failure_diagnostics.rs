@@ -7,6 +7,25 @@ const AUTO_TEST_DIAGNOSTIC_LINES: usize = 4;
 const AUTO_TEST_DIAGNOSTIC_CHARS: usize = 220;
 const AUTO_TEST_TAIL_CHARS: usize = 1200;
 
+/// Return the complete, length-delimited native digest before captured output.
+pub(super) fn retained_digest_lines(output: &str) -> Option<Vec<&str>> {
+    let mut lines = output
+        .lines()
+        .take_while(|line| !matches!(*line, "stdout:" | "stderr:"));
+    let count: usize = lines
+        .find_map(|line| {
+            line.strip_prefix("[ERROR DIGEST — ")?
+                .strip_suffix(" line(s)]")
+        })?
+        .parse()
+        .ok()?;
+    if !(1..=MAX_DIGEST_LINES).contains(&count) {
+        return None;
+    }
+    let digest: Vec<_> = lines.take(count).collect();
+    (digest.len() == count).then_some(digest)
+}
+
 /// Preserve opening diagnostics and the final explanation across both display
 /// limits. The omission marker separates partial lines and counts toward the cap.
 pub(super) fn failure_excerpt(text: &str, limit: usize) -> String {
