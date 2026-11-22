@@ -49,6 +49,21 @@ fn observer_verify_handoff_uses_one_typed_action_not_free_text_quickest_check() 
 }
 
 #[test]
+fn observer_patch_handoff_preserves_literal_arguments_in_both_coder_messages() {
+    let (mut app, _root) = interaction_app();
+    app.coder.messages.push(msg(Role::Assistant, "[GOVERNOR BLOCK] Need a revised patch."));
+    let args = json!({"path":"src/parser.rs","search":"match (a, b) {\n    \"猫\"","replace":"match (a, b) {\n    \"猫, 犬\""});
+    let result = replay_observer_next_action_case(&mut app, "last-fail", "bad_edit", &suggestion_response("edit", "patch_file", args.clone())).unwrap();
+    let forwarded = result.coder_preview_messages.iter().filter(|m| m.content.contains("<observer_")).collect::<Vec<_>>();
+    assert_eq!(forwarded.len(), 2);
+    for message in forwarded {
+        let line = message.content.split_once("patch_file arguments (JSON): ").unwrap().1.lines().next().unwrap();
+        assert_eq!(serde_json::from_str::<serde_json::Value>(line).unwrap(), args);
+    }
+    assert!(result.pending_observer_hint.unwrap().contains("different edit first"));
+}
+
+#[test]
 fn observer_no_tool_handoff_does_not_promote_free_text_to_an_action() {
     let (mut app, _root) = interaction_app();
     app.coder.messages.push(msg(Role::Assistant, "[GOVERNOR BLOCK] Need task clarification."));

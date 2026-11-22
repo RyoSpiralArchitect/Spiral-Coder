@@ -2435,15 +2435,11 @@ pub(crate) fn build_observer_suggestion_soft_hint(
     if primary.confidence < 0.75 {
         return None;
     }
-    let action = if let Some(tool) = primary.suggested_tool.as_deref() {
-        let args = render_observer_suggestion_args(&primary.suggested_args);
-        if args.is_empty() {
-            tool.to_string()
-        } else {
-            format!("{tool}({args})")
-        }
+    let action = observer_suggested_action(primary);
+    let edit_scope = if primary.suggested_tool.as_deref() == Some("patch_file") {
+        "Compare the literal search and replacement with the failed checks. If you choose a different edit first, say override or defer and identify the work still pending.\n"
     } else {
-        primary.reason.clone()
+        ""
     };
     let reason = if primary.reason.is_empty() {
         env.summary.as_str()
@@ -2457,6 +2453,7 @@ pub(crate) fn build_observer_suggestion_soft_hint(
 Stay within the current intent anchor and task scope.\n\
 If you are still stuck, prefer this next step before widening search:\n\
 {action}\n\
+{edit_scope}\
 Why: {reason}\n\
 {route}\
 </observer_advisory>"
@@ -2482,18 +2479,7 @@ pub(crate) fn build_observer_response_contract_message(
         env.response_contract.focus_axes.join(", ")
     };
     let quickest = suggestion::primary_suggestion(env)
-        .map(|primary| {
-            if let Some(tool) = primary.suggested_tool.as_deref() {
-                let args = render_observer_suggestion_args(&primary.suggested_args);
-                if args.is_empty() {
-                    tool.to_string()
-                } else {
-                    format!("{tool}({args})")
-                }
-            } else {
-                primary.reason.clone()
-            }
-        })
+        .map(observer_suggested_action)
         .unwrap_or_else(|| "the primary observer suggestion".to_string());
     let note = if env.response_contract.note.is_empty() {
         "If you do not follow the observer's next step on this turn, explicitly choose override or defer and give a short reason."
@@ -2518,6 +2504,21 @@ decision: accept|override|defer\n\
 reason: short justification\n\
 </observer_response_contract>"
     )
+}
+
+fn observer_suggested_action(primary: &suggestion::ObserverSuggestion) -> String {
+    let Some(tool) = primary.suggested_tool.as_deref() else {
+        return primary.reason.clone();
+    };
+    if tool == "patch_file" {
+        return format!("patch_file arguments (JSON): {}", primary.suggested_args);
+    }
+    let args = render_observer_suggestion_args(&primary.suggested_args);
+    if args.is_empty() {
+        tool.to_string()
+    } else {
+        format!("{tool}({args})")
+    }
 }
 
 fn render_observer_suggestion_args(args: &serde_json::Value) -> String {
