@@ -221,7 +221,7 @@ pub(crate) fn project_advisory(
             tool_root,
             !pending_recovery.is_empty(),
         ),
-        repair_brief: super::repair_brief::project(root, &evidence, test_cmd),
+        repair_brief: super::repair_brief::project(messages, &evidence, test_cmd, tool_root),
         artifact_scope: crate::task_scope::artifact_scope(root),
         explicit_edit_paths: super::explicit_edit_scope::Scope::parse(root),
         required_recheck: focus.declared_recheck(&evidence.pending_exact_checks),

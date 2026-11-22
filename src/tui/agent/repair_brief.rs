@@ -4,12 +4,16 @@ use super::{evidence_packet::ExecutionPacket, requirement_proof};
 use serde::Serialize;
 use serde_json::Value;
 
+mod prior_controls;
+
 #[derive(Debug, Serialize)]
 pub(crate) struct RepairBrief {
     source_artifacts: Vec<String>,
     observed_sources: Vec<Value>,
     latest_successful_edit: Option<Value>,
     recent_check_failures: Vec<CheckFailure>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    prior_controls: Option<prior_controls::PriorControls>,
     instruction: &'static str,
 }
 
@@ -22,10 +26,12 @@ struct CheckFailure {
 }
 
 pub(super) fn project(
-    root: &str,
+    messages: &[Value],
     evidence: &ExecutionPacket,
     test_cmd: Option<&str>,
+    tool_root: Option<&str>,
 ) -> Option<RepairBrief> {
+    let root = crate::task_origin::root_user_text(messages);
     let source_artifacts = requirement_proof::source_paths(root);
     if source_artifacts.is_empty() || evidence.pending_exact_checks.is_empty() {
         return None;
@@ -65,6 +71,7 @@ pub(super) fn project(
             |action| serde_json::json!({"path":action.arguments["path"], "call_id":action.call_id}),
         );
     Some(RepairBrief {
+        prior_controls: prior_controls::project(messages, evidence, test_cmd, tool_root, &source_artifacts),
         source_artifacts,
         observed_sources,
         latest_successful_edit,
@@ -150,7 +157,7 @@ mod tests {
         let resumed: Vec<Value> =
             serde_json::from_str(&serde_json::to_string(&messages).unwrap()).unwrap();
         let packet = super::super::evidence_packet::project(&resumed, Some("check"));
-        let brief = project(root, &packet, Some("check")).unwrap();
+        let brief = project(&resumed, &packet, Some("check"), None).unwrap();
         assert_eq!(brief.recent_check_failures.len(), 2);
         assert_eq!(brief.recent_check_failures[0].call_id, "baseline");
         assert_eq!(brief.recent_check_failures[1].call_id, "edit");
@@ -162,7 +169,7 @@ mod tests {
             .instruction
             .contains("not proof that earlier cases are fixed"));
         assert_eq!(
-            project(root, &packet, None)
+            project(&resumed, &packet, None, None)
                 .unwrap()
                 .recent_check_failures
                 .len(),
@@ -177,7 +184,7 @@ mod tests {
         );
         add(&mut messages, "new", "patch_file", json!({"path":"src/main.py"}), "OK: patched 'src/main.py'\n[auto-test] ✗ FAILED (exit 1)\nFAIL: test_new (tests.Selection.test_new)");
         let packet = super::super::evidence_packet::project(&messages, Some("check"));
-        let brief = project(root, &packet, Some("check")).unwrap();
+        let brief = project(&messages, &packet, Some("check"), None).unwrap();
         assert_eq!(brief.recent_check_failures.len(), 1);
         assert_eq!(brief.recent_check_failures[0].call_id, "new");
     }
@@ -211,7 +218,8 @@ mod tests {
             "ERROR: no match",
         );
         let evidence = super::super::evidence_packet::project(&messages, None);
-        let brief = serde_json::to_value(project(root, &evidence, None).unwrap()).unwrap();
+        let brief =
+            serde_json::to_value(project(&messages, &evidence, None, None).unwrap()).unwrap();
         assert_eq!(brief["source_artifacts"], json!(["src/main.py"]));
         assert_eq!(brief["observed_sources"][0]["start_line"], 30);
         assert!(brief["latest_successful_edit"].is_null());
@@ -223,8 +231,9 @@ mod tests {
             "OK: patched 'src/main.py'",
         );
         let brief = project(
-            root,
+            &messages,
             &super::super::evidence_packet::project(&messages, None),
+            None,
             None,
         )
         .unwrap();
@@ -237,15 +246,17 @@ mod tests {
             "OK (exit_code: 0)",
         );
         assert!(project(
-            root,
+            &messages,
             &super::super::evidence_packet::project(&messages, None),
+            None,
             None
         )
         .is_none());
         messages.push(json!({"role":"user","content":"New task"}));
         assert!(project(
-            "New task",
+            &messages,
             &super::super::evidence_packet::project(&messages, None),
+            None,
             None
         )
         .is_none());

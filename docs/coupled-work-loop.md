@@ -527,6 +527,13 @@ separates failure sequences. Changed failure names do not prove an earlier case
 was fixed. Compact Python diagnostics retain the failing case, innermost frame
 and exception through history pruning and resume.
 
+When a declared check fails and a subsequent source edit also fails its
+automatic test, `prior_controls` can recall up to eight other required checks
+that had passed in the same workspace before the failure. Long commands use
+their catalog IDs. Coder and Observer can use these historical results to
+preserve the corresponding behavior while narrowing the repair. A new declared
+check supersedes this view. Completion still requires fresh receipts after edits.
+
 The `done.summary` field description includes the same current report clauses
 and before/after rows as the shared task projection, formatted as plain text
 instructions. A command cited in an
