@@ -14,6 +14,61 @@ pub(super) struct Failure {
     trigger: Option<ActionIdentity>,
 }
 
+/// The plan is delivered to the Coder immediately. Its optional paid review
+/// survives slices until the next ordinary work turn can act on the advice.
+pub(super) fn take_test_review(
+    messages: &mut [Value],
+    configured: Option<&str>,
+    workspace: Option<&str>,
+) -> Option<Value> {
+    let task = crate::task_origin::current_task_messages(messages);
+    let original = task.iter().rposition(|message| {
+        message["role"] == "tool" && message["recovery_focus"]["test_review"].is_object()
+    })?;
+    let review = &task[original]["recovery_focus"]["test_review"];
+    if !review["dispatched_on"].is_null() {
+        return None;
+    }
+    let floor = usize::try_from(review["floor"].as_u64()?).ok()?;
+    let context = crate::work_budget::current()?;
+    let remaining = context.budget.remaining_for("coder");
+    if context.role != "coder"
+        || !context.budget.can_return_to_observer()
+        || context.budget.is_report_closeout()
+        || remaining < floor
+        || context.budget.remaining_for("observer") <= floor
+    {
+        return None;
+    }
+    let last_result = task.iter().rfind(|message| message["role"] == "tool")?;
+    if !std::ptr::eq(last_result, &task[original]) {
+        let (call, result) = super::recovery_focus::correlated_results(task).last()?;
+        let output = result["content"].as_str()?;
+        let new_evidence = if call.name == "exec" {
+            exec_outcome(output) == Some(true)
+        } else {
+            crate::execution_evidence::file_edit_succeeded(&call.name, output)
+                && auto_test_outcome(&call.name, output) != AutoTestOutcome::Failed
+        };
+        if !std::ptr::eq(last_result, result) || !new_evidence {
+            return None;
+        }
+    }
+    let facts = super::task_obligations::project_advisory(task, configured, workspace);
+    if facts.coder_turn(remaining) != super::task_obligations::CoderTurn::Work
+        || !crate::observer_action::test_review::recovery_allows(&serde_json::to_value(facts).ok()?)
+    {
+        return None;
+    }
+    let dispatched_on = last_result["tool_call_id"].as_str()?.to_owned();
+    let note = serde_json::json!({"changed_call_id":task[original]["tool_call_id"],
+        "changed_path":review["path"], "dispatched_on":dispatched_on});
+    let index = messages.len() - task.len() + original;
+    messages[index]["recovery_focus"]["test_review"]["dispatched_on"] =
+        Value::String(dispatched_on);
+    Some(note)
+}
+
 pub(super) fn latest(messages: &[Value], configured: Option<&str>) -> Option<Failure> {
     let messages = crate::task_origin::current_task_messages(messages);
     let (index, result) = messages

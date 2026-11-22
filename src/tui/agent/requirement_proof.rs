@@ -727,7 +727,7 @@ pub(super) fn test_review_allowance() -> Option<usize> {
 /// the path of the successful file change being reported.
 pub(super) struct TestPlan {
     pub(super) text: String,
-    pub(super) observer_review: bool,
+    pub(super) review_floor: Option<usize>,
 }
 
 pub(super) fn test_plan(
@@ -747,10 +747,11 @@ pub(super) fn test_plan(
         changed_path,
         coder_remaining,
     )?;
+    let floor = test_closeout::floor(&contract);
     let observer_review = crate::work_budget::current().is_some_and(|context| {
         context.role == "coder"
             && context.budget.can_return_to_observer()
-            && context.budget.remaining_for("observer") > test_closeout::floor(&contract)
+            && context.budget.remaining_for("observer") > floor
             && contract
                 .requirements
                 .iter()
@@ -758,7 +759,7 @@ pub(super) fn test_plan(
     });
     Some(TestPlan {
         text,
-        observer_review,
+        review_floor: observer_review.then_some(floor),
     })
 }
 

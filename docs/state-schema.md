@@ -1324,6 +1324,14 @@ below the review's floor of 8, so its tests were never compared with the fault
 families the task names. The plan is advisory: it blocks nothing, and the
 completion review still follows when there is room.
 
+A funded plan records its review intent in the native tool result's
+`recovery_focus.test_review`. The Coder still receives the plan on the edit.
+A required diagnosis, recheck, failing authored test, baseline or report repair
+keeps the optional review pending across slices. On the first eligible work
+turn, the runtime checks the remaining edit, verification and report budget,
+records the triggering tool call in `dispatched_on`, and yields once. Earlier
+sessions without this local field keep their original scheduling.
+
 When the plan yields to the Observer with a single authored test file, the
 Observer can review the current source alongside all of its linked requirements
 and the requested cases. The handoff asks for a fixture, an assertion and its

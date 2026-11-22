@@ -5,7 +5,6 @@ pub(super) async fn run_file_tools(
     ctx: &mut ToolDispatchCtx<'_>,
     tc: &ToolCallData,
     observer_observation: Option<&observer_continuation::Observation>,
-    observer_handoff: &mut Option<crate::tui::coder_yield::CoderYieldReason>,
 ) -> Result<ToolFlow> {
     let args: serde_json::Value = serde_json::from_str(&tc.arguments)?;
     let path = args["path"].as_str().unwrap_or("").to_string();
@@ -477,6 +476,7 @@ Action required: obtain a complete read of current contents before write_file. F
     // Once a test file linked to several requirements has been written, the
     // first change whose automatic test did not fail carries a one-time coverage
     // plan after the digest, so failure parsing never reads it as test output.
+    let mut review_floor = None;
     if changed
         && !ctx.root_read_only
         && automatic_test != crate::execution_evidence::AutoTestOutcome::Failed
@@ -493,22 +493,16 @@ Action required: obtain a complete read of current contents before write_file. F
                 .await;
             history_result.push_str("\n\n");
             history_result.push_str(&plan.text);
-            if plan.observer_review {
-                *observer_handoff =
-                    Some(crate::tui::coder_yield::CoderYieldReason::AuthoredTestReview);
-                emit_telemetry_event(
-                    ctx.tx,
-                    "observer_authored_test_review",
-                    json!({"changed_call_id":tc.id, "changed_path":path}),
-                )
-                .await;
-            }
+            review_floor = plan.review_floor;
         }
     }
     let mut message = CargoInputReceipt::attach(
         cargo_inputs,
         ctx.recovery.focus.tool_message(tc, history_result),
     );
+    if let Some(floor) = review_floor {
+        message["recovery_focus"]["test_review"] = json!({"floor":floor, "path":path});
+    }
     if let Some(observation) = observer_observation.filter(|_| !is_error) {
         observation.record_read_result(tc, &mut message);
     }

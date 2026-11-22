@@ -2,6 +2,24 @@
 use crate::tui::agent::task_obligations::test_controls;
 use serde_json::{json, Value};
 
+/// The Coder scheduler and the Observer prompt use the same recovery precedence.
+pub(crate) fn recovery_allows(obligations: &Value) -> bool {
+    [
+        "required_diagnostic_read",
+        "required_recheck",
+        "report_repair",
+        "authored_test_failure",
+    ]
+    .iter()
+    .all(|key| obligations[key].is_null())
+        && obligations["task_requirements"]["pending_baselines"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+        && obligations["pending_recovery"]
+            .as_array()
+            .is_some_and(Vec::is_empty)
+}
+
 pub(crate) fn prompt(packet: &Value, language: &str) -> Option<String> {
     let work = &packet["work_budget"];
     let o = &packet["task_obligations"];
@@ -10,16 +28,7 @@ pub(crate) fn prompt(packet: &Value, language: &str) -> Option<String> {
     let checks = o["required_exact_checks"].as_array()?;
     if work["next_coder_turn"] != "work"
         || work["next_coder_requests"].as_u64()? < checks.len() as u64 + 2
-        || [
-            "required_diagnostic_read",
-            "required_recheck",
-            "report_repair",
-            "authored_test_failure",
-        ]
-        .iter()
-        .any(|k| !o[k].is_null())
-        || !r["pending_baselines"].as_array()?.is_empty()
-        || !o["pending_recovery"].as_array()?.is_empty()
+        || !recovery_allows(o)
     {
         return None;
     }

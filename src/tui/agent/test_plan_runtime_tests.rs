@@ -154,12 +154,99 @@ async fn declared_cases_return_the_first_funded_test_plan_to_the_observer() {
         }),
         async {
             assert!(
-                !requirement_proof::test_plan(&[first], None, "tests/test_status.py", Some(3))
+                requirement_proof::test_plan(&[first], None, "tests/test_status.py", Some(3))
                     .unwrap()
-                    .observer_review
+                    .review_floor
+                    .is_none()
             );
         },
     )
+    .await;
+}
+
+#[tokio::test]
+async fn paid_test_review_waits_for_the_recheck_and_survives_resume_once() {
+    let path = "tests/test_status.py";
+    let requirements = json!({"version":1,"requirements":[{"id":"cases",
+        "description":"Cover valid records, missing fields and repeated values.",
+        "artifacts":[{"path":path,"kind":"test"}],"checks":[{"command":CHECK}]}]});
+    let request = format!(
+        "Implement and verify status.\n<task_requirements>\n{requirements}\n</task_requirements>"
+    );
+    let mut history = vec![crate::task_origin::user_message(
+        &request,
+        crate::task_origin::MessageOrigin::User,
+    )];
+    let call = |id: &str, name: &str, args: Value| {
+        json!({"role":"assistant","tool_calls":[{
+        "id":id, "function":{"name":name,"arguments":args.to_string()}}]})
+    };
+    history.push(call(
+        "authored",
+        "write_file",
+        json!({"path":path,"content":"def test_status(): pass"}),
+    ));
+    let pending = json!({"pending":{"check":CHECK,"diagnostic":"public status value differed",
+        "path":"check.py","location":"current","observation":"repair_attempted"}});
+    history.push(
+        json!({"role":"tool","tool_call_id":"authored","content":"OK: wrote 'tests/test_status.py'",
+        "recovery_focus":{"version":2,"state":pending,"test_review":{"floor":3,"path":path}}}),
+    );
+    let context = |cap| {
+        Some(crate::work_budget::Context {
+            budget: crate::work_budget::WorkBudget::new(&request, cap, None)
+                .with_observer_return(3),
+            role: "coder",
+        })
+    };
+    crate::work_budget::scope(context(8), async {
+        let facts = task_obligations::project(&history, Some(CHECK));
+        assert_eq!(facts.required_recheck.as_deref(), Some(CHECK));
+        assert!(observer_handoff::take_test_review(&mut history, Some(CHECK), None).is_none());
+        history.push(call("red", "exec", json!({"command":CHECK})));
+        history.push(
+            json!({"role":"tool","tool_call_id":"red","content":"FAILED (exit_code: 1)",
+            "recovery_focus":{"version":2,"state":pending}}),
+        );
+        assert!(observer_handoff::take_test_review(&mut history, Some(CHECK), None).is_none());
+    })
+    .await;
+    let mut restored: Vec<Value> =
+        serde_json::from_str(&serde_json::to_string(&history).unwrap()).unwrap();
+    restored.push(crate::task_origin::user_message(
+        "Continue",
+        crate::task_origin::MessageOrigin::Runtime,
+    ));
+    restored.push(call("green", "exec", json!({"command":CHECK})));
+    restored.push(
+        json!({"role":"tool","tool_call_id":"green","content":"OK (exit_code: 0)",
+        "recovery_focus":{"version":2,"state":{"pending":null}}}),
+    );
+    crate::work_budget::scope(context(3), async {
+        assert!(observer_handoff::take_test_review(&mut restored, Some(CHECK), None).is_none());
+    })
+    .await;
+    crate::work_budget::scope(context(8), async {
+        let mut steered = restored.clone();
+        steered.push(crate::task_origin::user_message(
+            "Inspect a new task",
+            crate::task_origin::MessageOrigin::User,
+        ));
+        assert!(observer_handoff::take_test_review(&mut steered, Some(CHECK), None).is_none());
+        let sent = observer_handoff::take_test_review(&mut restored, Some(CHECK), None).unwrap();
+        assert_eq!(
+            sent,
+            json!({"changed_call_id":"authored","changed_path":path,"dispatched_on":"green"})
+        );
+        assert!(observer_handoff::take_test_review(&mut restored, Some(CHECK), None).is_none());
+        assert_eq!(
+            restored[2]["recovery_focus"]["test_review"]["dispatched_on"],
+            "green"
+        );
+        assert!(crate::task_origin::provider_messages(&restored)[2]
+            .get("recovery_focus")
+            .is_none());
+    })
     .await;
 }
 
