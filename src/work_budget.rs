@@ -37,6 +37,7 @@ pub(crate) struct RequestReceipt {
 pub(crate) enum RequestPurpose {
     ReportCloseout,
     ObserverReconnect,
+    CoderReconnect,
 }
 
 /// Only native stream readers assign these causes. Error text and broad
@@ -300,6 +301,28 @@ impl WorkBudget {
         bounded.purpose = Some(RequestPurpose::ObserverReconnect);
         bounded.retry_of = Some(interrupted_request);
         bounded
+    }
+
+    /// Limit a second Coder delivery to the same slice and one wire attempt.
+    pub(crate) fn coder_reconnect(&self, cursor: usize) -> Option<Self> {
+        if self.is_report_closeout() || self.slice_remaining("coder") == 0 {
+            return None;
+        }
+        let state = self.snapshot();
+        let [receipt] = state.requests.get(cursor..)? else {
+            return None;
+        };
+        if receipt.role != "coder"
+            || receipt.purpose.is_some()
+            || receipt.status != "stream_interrupted"
+            || receipt.stream_interruption.is_none()
+        {
+            return None;
+        }
+        let mut bounded = self.with_one_wire_attempt();
+        bounded.purpose = Some(RequestPurpose::CoderReconnect);
+        bounded.retry_of = Some(receipt.id);
+        Some(bounded)
     }
 
     pub(crate) fn is_report_closeout(&self) -> bool {

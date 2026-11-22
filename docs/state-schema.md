@@ -1993,3 +1993,14 @@ final sweep to preserve freshness across the later checks.
 The first Observer handoff after diagnosis uses a native read that includes
 the panic line. A possible mutation retires the quoted source context until
 a fresh native failure locates it again.
+
+
+### Interrupted Coder delivery
+
+A budgeted Coder turn can retry one interrupted stream when its own slice has
+another request. The failed delivery stays in the ledger. The retry's wire
+receipt carries `purpose: "coder_reconnect"` and `retry_of` points to the
+interrupted request. The retry receives the original messages and a recovery
+instruction. Only a complete response can issue tool calls. An exhausted slice,
+a final-report turn, an HTTP or protocol error, and a second failed delivery
+keep their terminal outcomes. Canceling the Coder task cancels its provider call.
