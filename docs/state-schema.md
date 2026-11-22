@@ -1282,6 +1282,15 @@ When a linked requirement explicitly names record or array order, the view
 includes its ID in `ordered_record_requirement`. Both roles can use it to
 exercise the public output with two distinguishable records.
 
+While a named test is still unwritten, `authored_tests.fixture_input` can
+link it to a Python fixture helper explicitly referenced by its test-only
+requirement. Both roles receive the native read ID and the line of a single
+literal sibling JSON load. A complete read of that JSON adds its own receipt
+ID. The fixture contents stay in the original tool result. The hint becomes
+available once any required failing baselines have been reproduced. A
+successful test edit retires it, and edits to the producer or an executable
+workspace action invalidate the recorded observation.
+
 When a declared test file is linked to two or more requirements, the first
 completion claim of a task that passes every other gate receives one
 `[Authored-test closeout]` review instead of acceptance. It lists each linked

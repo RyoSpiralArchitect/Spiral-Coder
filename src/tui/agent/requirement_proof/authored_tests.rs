@@ -5,6 +5,7 @@ use crate::tui::agent::evidence_packet::ActionEvidence;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod fixture_input;
 mod review_source;
 
 const MAX_DESCRIPTION_BYTES: usize = 4096;
@@ -20,6 +21,8 @@ pub(crate) struct AuthoredTests {
     shared_requirements: Vec<TestRequirement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     review_source: Option<review_source::ReviewSource>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(in crate::tui::agent) fixture_input: Option<fixture_input::FixtureInput>,
 }
 
 impl AuthoredTests {
@@ -50,8 +53,12 @@ impl AuthoredTests {
         messages: &[serde_json::Value],
         context: &crate::tui::agent::exec_verification::ExecVerificationContext<'_>,
         tool_root: Option<&str>,
+        baselines_ready: bool,
     ) {
         self.review_source = review_source::project(self, messages, context, tool_root);
+        if baselines_ready && self.has_explicit_cases() {
+            self.fixture_input = fixture_input::project(self, messages, context, tool_root);
+        }
     }
 
     pub(in crate::tui::agent) fn include_workspace_review_source(
@@ -168,6 +175,7 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         test_only_requirements,
         shared_requirements,
         review_source: None,
+        fixture_input: None,
     })
 }
 
@@ -230,6 +238,130 @@ mod tests {
         ] {
             assert!(!super::names_record_order(description));
         }
+    }
+
+    #[test]
+    fn a_pending_test_can_follow_its_named_fixture_to_one_observed_input() {
+        let description = "Use tools.catalog.make for fixtures. Cover missing entries, duplicate tokens and invalid labels.";
+        let task = |baseline: bool| {
+            format!(
+                "Test the catalog.\n<task_requirements>\n{}\n</task_requirements>",
+                json!({"version":1,"requirements":[{"id":"catalog","description":description,"artifacts":[{"path":"tests/catalog.rs","kind":"test"}],"checks":[{"command":"cargo test","baseline_failure":baseline}]}]})
+            )
+        };
+        let helper = "tools/catalog.py";
+        let data = "tools/sample.json";
+        let body = "def make():\n    source = json.loads(Path(__file__).with_name('sample.json').read_text())\n";
+        let read = |history: &mut Vec<Value>, id, path: &str, contents: &str| {
+            result(
+                history,
+                id,
+                "read_file",
+                json!({"path":path}),
+                &format!(
+                    "[{path}] ({} lines, {} bytes)\n{contents}",
+                    contents.lines().count(),
+                    contents.len()
+                ),
+            );
+        };
+        let project = |m: &[Value]| {
+            serde_json::to_value(task_obligations::project_advisory(
+                m,
+                None,
+                Some("/workspace"),
+            ))
+            .unwrap()
+        };
+        let fixture = |m: &[Value]| {
+            project(m)["task_requirements"]["authored_tests"]["fixture_input"].clone()
+        };
+        let root = |baseline| vec![json!({"role":"user","content":task(baseline)})];
+        let mut history = root(false);
+        read(&mut history, "unrelated", "other/catalog.py", body);
+        read(&mut history, "wrong", "tools/catalog_tools.py", body);
+        assert!(fixture(&history).is_null());
+        read(&mut history, "producer", helper, body);
+        let expected = json!({"test_path":"tests/catalog.rs","requirement_id":"catalog","helper_path":helper,"helper_read_call_id":"producer","source_line":2,"data_path":data});
+        assert_eq!(fixture(&history), expected);
+        let coder = task_obligations::prompt(&history, None, Some("/workspace")).unwrap();
+        let observer = crate::observer_action::intervention::prompt(
+            &json!({"task_obligations":project(&history)}),
+        );
+        for prompt in [coder, observer] {
+            assert!(
+                prompt.contains(data) && prompt.contains(task_obligations::FIXTURE_INPUT_GUIDANCE)
+            );
+        }
+        let mut prior = root(false);
+        read(
+            &mut prior,
+            "sample",
+            data,
+            "{\"label\":\"secret-sample-value\"}\n",
+        );
+        read(&mut prior, "producer", helper, body);
+        let mut with_sample = expected.clone();
+        with_sample["data_read_call_id"] = json!("sample");
+        assert_eq!(fixture(&prior), with_sample);
+        read(&mut history, "sample", data, "{}\n");
+        assert_eq!(fixture(&history), with_sample);
+        let mut missing = history.clone();
+        result(
+            &mut missing,
+            "missing",
+            "read_file",
+            json!({"path":data}),
+            "ERROR reading 'tools/sample.json': file missing",
+        );
+        assert_eq!(fixture(&missing), expected);
+        for (tool, args, out) in [
+            (
+                "write_file",
+                json!({"path":"tests/catalog.rs","content":"test"}),
+                "OK: wrote 'tests/catalog.rs'",
+            ),
+            (
+                "patch_file",
+                json!({"path":helper}),
+                "OK: patched 'tools/catalog.py'",
+            ),
+            (
+                "exec",
+                json!({"command":"python3 alter_catalog.py"}),
+                "OK (exit_code: 0)\ncwd: /workspace",
+            ),
+        ] {
+            let mut changed = history.clone();
+            result(&mut changed, "changed", tool, args, out);
+            assert!(fixture(&changed).is_null(), "{tool}");
+        }
+        for invalid in [
+            body.replace("'sample.json'", "'../sample.json'"),
+            body.replace("'sample.json'", "input_name"),
+            body.replace("'sample.json'", "'sample.txt'"),
+            format!("{body}{body}"),
+            format!("# {body}").replace("    source", "# source"),
+            format!("\"\"\"Example code:\n{body}\"\"\"\n"),
+        ] {
+            let mut bad = root(false);
+            read(&mut bad, "producer", helper, &invalid);
+            assert!(fixture(&bad).is_null(), "{invalid}");
+        }
+        let mut unrun = root(true);
+        read(&mut unrun, "producer", helper, body);
+        assert!(fixture(&unrun).is_null());
+        let mut partial = root(false);
+        result(
+            &mut partial,
+            "producer",
+            "read_file",
+            json!({"path":helper,"start_line":1,"end_line":2}),
+            &format!("[{helper}] (3 lines, 100 bytes) [range: lines 1-2; partial file]\n{body}"),
+        );
+        assert!(fixture(&partial).is_null());
+        history.push(json!({"role":"user","content":task(false)}));
+        assert!(fixture(&history).is_null());
     }
 
     #[test]

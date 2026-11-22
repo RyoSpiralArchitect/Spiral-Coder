@@ -64,6 +64,8 @@ struct Brief<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     document_ending: Option<&'a Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    fixture_input: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     ordered_record_requirement: Option<&'a str>,
     #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty")]
     explicit_test_cases: std::collections::BTreeMap<&'a str, &'a Value>,
@@ -145,6 +147,9 @@ fn project(packet: &Value) -> Brief<'_> {
             })
             .collect(),
         immediate_admission_block: block,
+        fixture_input: packet["task_obligations"]["task_requirements"]["authored_tests"]
+            .get("fixture_input")
+            .filter(|v| v.is_object()),
         admitted_plan_fields: fields,
         authored_test_failure: packet["task_obligations"]
             .get("authored_test_failure")
@@ -276,6 +281,11 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
+    let fixture_input = if brief.fixture_input.is_some() {
+        crate::tui::agent::task_obligations::FIXTURE_INPUT_GUIDANCE
+    } else {
+        ""
+    };
     let test_review = packet["task_obligations"]["task_requirements"]["authored_tests"]
         .get("review_source")
         .filter(|view| view.is_object())
@@ -291,7 +301,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}{explicit_cases}{nullable_comparisons}{unchanged_patch}\
+    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{fixture_input}{document_ending}{ordered_output}{explicit_cases}{nullable_comparisons}{unchanged_patch}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\
