@@ -9,12 +9,13 @@ pub(super) use delivery::take_delivery_window;
 pub(super) mod reconnect;
 pub(super) use work_return::{
     low_confidence_work_return, native_work_remains, rejected_repair_work_return,
+    resume_rejected_test_review,
 };
 
 #[derive(Debug)]
 pub(crate) struct ObserverAssistRequest {
     source_stamp: u64,
-    output: crate::observer_action::diagnostic::Output,
+    pub(super) output: crate::observer_action::diagnostic::Output,
     original_prompt: String,
     repair_used: bool,
     repair_started: bool,
@@ -385,7 +386,8 @@ pub(super) async fn send_next_action_assist(
         .get("failure_kind")
         .and_then(|v| v.as_str())
         .unwrap_or("unclear");
-    let mut prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
+    let (mut prompt, output) =
+        super::observer_assist::next_action_request(&packet, app.lang.as_str(), reason_hint);
     if reason_hint == "blocked_terminal_diagnosis" {
         prompt.push_str("\n[Blocked terminal diagnosis] This episode is stopping incomplete. Diagnose why the Coder is blocked using native evidence, identify the exact missing fact or next action, and preserve every pending obligation. Return a no-tool clarify suggestion with empty suggested_args. Do not claim completion, request execution, or raise confidence to obtain forwarding. This is one diagnostic round trip, not another work loop.");
     }
@@ -396,7 +398,7 @@ pub(super) async fn send_next_action_assist(
     }
 
     let mut request = ObserverAssistRequest::new(app, prompt.clone()).for_reason(reason_hint);
-    request.output = crate::observer_action::diagnostic::Output::for_packet(&packet, reason_hint);
+    request.output = output;
     app.observer_assist_request = Some(request);
     let budget = app.work_budget.clone();
     start_request(app, tx, prompt, label, budget).await;

@@ -365,6 +365,10 @@ async fn run_iteration(
                 continue;
             }
             if !blocked && app.pending_observer_hint.is_none() && iterations::send_last_report(&mut app,&coder_tx,&trace).await? { continue; }
+            if let Some(request_id) = observer_request::resume_rejected_test_review(&mut app, &coder_tx).await {
+                trace.event("observer_test_review_returned_work", json!({"observer_request_id":request_id}))?;
+                continue;
+            }
             let window = observer_request::take_delivery_window(&mut app);
             if let Some(args) = &window {
                 trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;

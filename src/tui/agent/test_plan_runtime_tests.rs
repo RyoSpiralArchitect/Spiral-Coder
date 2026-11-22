@@ -119,11 +119,22 @@ async fn declared_cases_return_the_first_funded_test_plan_to_the_observer() {
     .is_none());
     let packet = json!({"work_budget":{"next_coder_turn":"work","next_coder_requests":6},
         "task_obligations":task_obligations::project_advisory(&result.messages,None,root.path().to_str())});
-    let prompt = crate::tui::events::observer_assist::build_tui_next_action_prompt(
+    let (prompt, output) = crate::tui::events::observer_assist::next_action_request(
         &packet,
         "en",
         "authored_test_review",
     );
+    let wire = output.hosted_format();
+    assert_eq!(wire["json_schema"]["name"], "observer_test_review");
+    assert_eq!(wire["json_schema"]["strict"], true);
+    let properties = &wire["json_schema"]["schema"]["properties"];
+    assert_eq!(
+        properties["response_contract"]["properties"]["required"]["type"],
+        "boolean"
+    );
+    assert_eq!(properties["suggestions"]["type"], "array");
+    assert_eq!(properties["suggestions"]["maxItems"], 1);
+    assert!(prompt.contains("a JSON boolean") && prompt.contains("an array containing one object"));
     assert!(prompt.starts_with("Review the Coder's current test assertions"));
     assert!(prompt.contains("absent names") && prompt.contains(CHECK));
     assert_eq!(prompt.matches("def test_valid_record()").count(), 1);
@@ -143,6 +154,8 @@ async fn declared_cases_return_the_first_funded_test_plan_to_the_observer() {
         let (parent, key) = pointer.rsplit_once('/').unwrap();
         blocked.pointer_mut(parent).unwrap()[key] = value;
         assert!(crate::observer_action::test_review::prompt(&blocked, "English").is_none(), "{pointer}");
+        let (_, route) = crate::tui::events::observer_assist::next_action_request(&blocked, "en", "authored_test_review");
+        assert_ne!(route, crate::observer_action::diagnostic::Output::TestReview, "{pointer}");
     }
     // At the floor, the Coder still gets the plan, with no handoff that would take its last action.
     let first = crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User);

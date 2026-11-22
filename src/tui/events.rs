@@ -12,7 +12,9 @@ use request_stream::RequestEvent;
 pub(crate) mod observer_assist;
 pub(crate) mod observer_request;
 mod report_closeout;
-use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
+use observer_assist::build_tui_meta_failure_packet_for_selector;
+#[cfg(test)]
+use observer_assist::build_tui_next_action_prompt;
 use observer_request::{
     finalize_observer_next_action_suggestion, maybe_observer_action_repair,
     send_next_action_assist, ObserverAssistRequest,
@@ -1113,6 +1115,7 @@ pub async fn run_event_loop(
                 observer_request::reconnect::maybe_start(app, &observer_tx).await;
                 maybe_observer_action_repair(app, &observer_tx).await;
                 observer_request::maybe_report_closeout(app, &coder_tx).await;
+                observer_request::resume_rejected_test_review(app, &coder_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
                 maybe_auto_observe(app, &observer_tx).await;
                 maybe_observer_lang_retry(app, &observer_tx).await;
@@ -2342,7 +2345,8 @@ pub(crate) fn replay_observer_next_action_case(
     observer_response: &str,
 ) -> Result<TuiNextActionReplayOutcome, String> {
     let packet = build_tui_meta_failure_packet_for_selector(app, selector)?;
-    let observer_prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
+    let (observer_prompt, output) =
+        observer_assist::next_action_request(&packet, app.lang.as_str(), reason_hint);
     let target_message_id = packet
         .get("target_message_id")
         .and_then(|v| v.as_str())
@@ -2353,8 +2357,10 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
-    app.observer_assist_request =
-        Some(ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint));
+    let mut request =
+        ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint);
+    request.output = output;
+    app.observer_assist_request = Some(request);
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;

@@ -568,3 +568,12 @@ be offered as executable patch bytes. This is advisory guidance, not a semantic
 validator or permission expansion. Existing diagnosis, recheck, approval,
 confidence and completion gates remain unchanged. No new persisted state or
 provider request is introduced.
+
+When the Coder yields its first funded test coverage plan, the focused Observer
+review asks for one clarification or bounded source read. The hosted OpenAI
+request uses the same typed response shape as diagnostic reads. The original
+request and its single format repair use the same schema. If both answers are
+unusable, the interactive and headless loops can return once to the already
+delivered test plan. This requires a current completed repair and actionable
+native work on an ordinary Coder turn. The raw answers and their charges stay
+in the ledger and transcript. The Coder chooses its own edit and verification.
