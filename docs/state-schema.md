@@ -1807,10 +1807,13 @@ does not earn another iteration.
 A run with positive progress can still fail its acceptance checks.
 An accepted `blocked` termination with this fresh progress can advance even
 with unused Coder requests. It does not increase the declared number of
-iterations or transfer unused credit. Approval barriers/refusals, provider
-interruptions and no-progress rounds still stop; the prior blocked receipt
-remains incomplete. Other incomplete terminations still require exhausted
-Coder allowance to advance.
+iterations or transfer unused credit. When the last task request is an
+ordinary Coder delivery and its stream ends early, a chain with fresh progress,
+a saved session, and another declared iteration can carry that work forward.
+The interrupted row keeps its error in the child report and names the charged
+request in `continued_after_coder_stream_request`. The next child gets its
+own ledger. Approval barriers, refusals, other provider failures and rounds
+without progress still stop the chain.
 
 A version-1 `iteration_handoff` on the original human message stores the
 source task ID, up to 600 characters of an accepted terminal Observer

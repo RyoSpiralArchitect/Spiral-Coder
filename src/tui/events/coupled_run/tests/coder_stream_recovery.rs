@@ -83,3 +83,116 @@ async fn coder_stream_reconnect_stops_on_second_loss_or_exhausted_slice() {
             .all(|r| r["status"] == "stream_interrupted" && r["charge"] == "task"));
     }
 }
+
+#[tokio::test]
+async fn a_lost_last_delivery_carries_only_saved_work_into_the_next_iteration() {
+    use super::iterations::{greeting_seed, response};
+    use serde_json::Value;
+    let server = MockServer::start();
+    let edited = server.mock(|when,then| {
+        when.method(POST).path("/chat/completions").matches(|r|{
+            let v:Value=serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+            v["tools"].is_array() && !v.to_string().contains("boundary-edit")
+        });
+        let thought = "<evidence>\ntarget_files: 1) guide.md\ntarget_symbols: 1) greeting\nevidence: The retained read shows old in guide.md.\nopen_questions: none\nnext_probe: patch guide.md\n</evidence>\n<think>\ngoal: Update the greeting in guide.md\nstep: 1\ntool: patch_file\nrisk: stale anchor\ndoubt: none\nnext: replace the old greeting\nverify: inspect guide.md\n</think>";
+        then.status(200).header("content-type","text/event-stream").body(response("patch_file","boundary-edit",json!({"path":"guide.md","search":"old","replace":"hello"}),thought));
+    });
+    let lost = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("boundary-edit")
+            .matches(|r| {
+                let v: Value = serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+                v["tools"].is_array() && !v.to_string().contains("[New iteration allowance]")
+            });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(unfinished_tool());
+    });
+    let resumed = server.mock(|when, then| {
+        when.method(POST)
+            .path("/chat/completions")
+            .body_contains("[New iteration allowance]")
+            .body_contains("boundary-edit")
+            .matches(|r| {
+                let v: Value = serde_json::from_slice(r.body.as_deref().unwrap()).unwrap();
+                v["tools"].is_array() && !v.to_string().contains("discarded_call")
+            });
+        then.status(200)
+            .header("content-type", "text/event-stream")
+            .body(response(
+                "",
+                "",
+                json!({}),
+                "Verification is still pending.",
+            ));
+    });
+    server.mock(|when,then|{
+        when.method(POST).path("/chat/completions").matches(|r|{
+            let v:Value=serde_json::from_slice(r.body.as_deref().unwrap()).unwrap(); !v["tools"].is_array()
+        });
+        let advice=json!({"summary":"Verify the greeting.","suggestions":[{"kind":"clarify","reason":"Verify the changed greeting.","confidence":0.9,"suggested_tool":null,"suggested_args":{}}]});
+        then.status(200).header("content-type","text/event-stream").body(response("","",json!({}),&advice.to_string()));
+    });
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("project");
+    std::fs::create_dir(&root).unwrap();
+    std::fs::write(root.join("guide.md"), "old\n").unwrap();
+    let task = "Update the greeting in guide.md from old to hello.";
+    let prompt = dir.path().join("task.txt");
+    std::fs::write(&prompt, task).unwrap();
+    let seed = dir.path().join("seed.json");
+    greeting_seed(&seed, task);
+    let out = dir.path().join("chain");
+    let cli = crate::Cli::try_parse_from([
+        "spiral-coder",
+        "--provider",
+        "openai",
+        "--base-url",
+        &server.base_url(),
+        "--model",
+        "offline",
+        "--api-key",
+        "offline",
+        "coupled-run",
+        "--tool-root",
+        root.to_str().unwrap(),
+        "--out-dir",
+        out.to_str().unwrap(),
+        "--prompt-file",
+        prompt.to_str().unwrap(),
+        "--seed-session",
+        seed.to_str().unwrap(),
+        "--max-requests",
+        "2",
+        "--iterations",
+        "2",
+    ])
+    .unwrap();
+    let Some(crate::Command::CoupledRun(args)) = cli.command else {
+        panic!("expected coupled-run")
+    };
+    let outcome = run(args, cli.common).await;
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(out.join("iterations.json")).unwrap()).unwrap();
+    assert!(outcome.is_ok(), "{outcome:?} {manifest}");
+    let rows = manifest["iterations"].as_array().unwrap();
+    assert_eq!(rows.len(), 2, "{manifest}");
+    assert_eq!(rows[0]["termination"], "interrupted");
+    assert_eq!(rows[0]["task_requests"], 2);
+    assert_eq!(rows[0]["continued_after_coder_stream_request"], 1);
+    assert_eq!(rows[1]["parent_task_id"], rows[0]["task_id"]);
+    assert_ne!(rows[1]["task_id"], rows[0]["task_id"]);
+    assert_eq!(
+        std::fs::read_to_string(root.join("guide.md")).unwrap(),
+        "hello\n"
+    );
+    assert!(
+        !std::fs::read_to_string(out.join("iteration-01/session.json"))
+            .unwrap()
+            .contains("discarded_call")
+    );
+    edited.assert_hits(1);
+    lost.assert_hits(1);
+    assert!(resumed.hits() > 0);
+}

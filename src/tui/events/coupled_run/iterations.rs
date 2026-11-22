@@ -107,6 +107,32 @@ struct Receipt {
 }
 
 impl Receipt {
+    fn has_progress(&self) -> bool {
+        !self.iteration_progress.changed_files.is_empty()
+            || !self.iteration_progress.newly_verified.is_empty()
+            || !self
+                .iteration_progress
+                .newly_reproduced_baselines
+                .is_empty()
+    }
+
+    fn interrupted_boundary(&self, error: &anyhow::Error) -> Option<usize> {
+        let loss = error.downcast_ref::<termination::CoderStreamLoss>()?;
+        let last = self.work.requests.last()?;
+        (self.termination == "interrupted"
+            && !self.completed
+            && !self.iteration_progress.user_refusal
+            && self.has_progress()
+            && self.work.task_requests() == self.work.request_limit
+            && last.id == loss.request_id
+            && last.charge == RequestCharge::Task
+            && last.role == "coder"
+            && last.purpose.is_none()
+            && last.status == "stream_interrupted"
+            && last.stream_interruption.is_some())
+        .then_some(last.id)
+    }
+
     fn stop(&self) -> Option<&str> {
         if self.completed {
             return Some("completed");
@@ -125,13 +151,7 @@ impl Receipt {
         if !may_advance {
             return Some(&self.termination);
         }
-        if self.iteration_progress.changed_files.is_empty()
-            && self.iteration_progress.newly_verified.is_empty()
-            && self
-                .iteration_progress
-                .newly_reproduced_baselines
-                .is_empty()
-        {
+        if !self.has_progress() {
             return Some("no_new_edit_or_verification");
         }
         None
@@ -182,6 +202,59 @@ mod continuation_tests {
         r.termination = "blocked".into();
         r.completed = true;
         assert_eq!(r.stop(), Some("completed"));
+    }
+
+    #[test]
+    fn advancing_after_stream_loss_requires_the_matching_ordinary_last_request_and_progress() {
+        use crate::work_budget::{RequestPurpose, StreamInterruption, WorkBudget};
+        let budget = WorkBudget::new("task", 1, None);
+        budget
+            .begin("coder", &Value::Null)
+            .unwrap()
+            .interrupted(StreamInterruption::ReadFailed);
+        let mut r = receipt();
+        r.work = budget.snapshot();
+        r.termination = "interrupted".into();
+        let error = |id| {
+            anyhow::Error::new(termination::CoderStreamLoss {
+                request_id: id,
+                message: "wire closed".into(),
+            })
+        };
+        assert_eq!(r.interrupted_boundary(&error(0)), Some(0));
+        assert_eq!(r.interrupted_boundary(&error(1)), None);
+        assert_eq!(
+            r.interrupted_boundary(&anyhow::anyhow!("wire closed")),
+            None
+        );
+        r.work.request_limit = 2;
+        assert_eq!(r.interrupted_boundary(&error(0)), None);
+        r.work.request_limit = 1;
+        for purpose in [
+            RequestPurpose::CoderReconnect,
+            RequestPurpose::ReportCloseout,
+        ] {
+            r.work.requests[0].purpose = Some(purpose);
+            assert_eq!(r.interrupted_boundary(&error(0)), None);
+        }
+        r.work.requests[0].purpose = None;
+        r.iteration_progress.user_refusal = true;
+        assert_eq!(r.interrupted_boundary(&error(0)), None);
+        r.iteration_progress = Progress::default();
+        assert_eq!(r.interrupted_boundary(&error(0)), None);
+        r.iteration_progress.newly_verified.insert("test".into());
+        let usage = json!({"status":"stream_interrupted","stream_interruption":"read_failed"});
+        assert_eq!(termination::lost_request(&r.work, &usage), Some(0));
+        assert_eq!(
+            termination::lost_request(&r.work, &json!({"status":"stream_interrupted"})),
+            None
+        );
+        r.work.requests[0].role = "observer".into();
+        assert_eq!(termination::lost_request(&r.work, &usage), None);
+        r.work.requests[0].role = "coder".into();
+        r.work.requests[0].status = "http_429".into();
+        assert_eq!(termination::lost_request(&r.work, &usage), None);
+        assert_eq!(r.interrupted_boundary(&error(0)), None);
     }
 
     #[test]
@@ -289,17 +362,29 @@ pub(super) async fn run(mut args: Args, roles: roles::ResolvedRoles) -> Result<(
         };
         task_used += receipt.work.task_requests();
         wire_used += receipt.work.requests.len();
-        let reason = if outcome.is_err() {
+        let session = output.join("session.json");
+        let boundary = outcome
+            .as_ref()
+            .err()
+            .filter(|_| number < args.iterations && session.is_file())
+            .and_then(|error| receipt.interrupted_boundary(error));
+        let reason = if boundary.is_some() {
+            None
+        } else if outcome.is_err() {
             Some("interrupted")
         } else {
             receipt
                 .stop()
                 .or_else(|| (number == args.iterations).then_some("iteration_limit"))
         };
-        rows.push(json!({"iteration":number,"directory":name,"task_id":receipt.work.task_id,
+        let mut row = json!({"iteration":number,"directory":name,"task_id":receipt.work.task_id,
             "parent_task_id":parent.as_ref().map(|w: &WorkState| &w.task_id),
             "termination":receipt.termination,"completed":receipt.completed,
-            "task_requests":receipt.work.task_requests(),"wire_requests":receipt.work.requests.len(),"progress":receipt.iteration_progress}));
+            "task_requests":receipt.work.task_requests(),"wire_requests":receipt.work.requests.len(),"progress":receipt.iteration_progress});
+        if let Some(id) = boundary {
+            row["continued_after_coder_stream_request"] = json!(id);
+        }
+        rows.push(row);
         record["iterations"] = json!(rows);
         record["completed"] = json!(receipt.completed);
         record["stop_reason"] = json!(reason);
@@ -312,7 +397,7 @@ pub(super) async fn run(mut args: Args, roles: roles::ResolvedRoles) -> Result<(
             break;
         }
         args.follow_up_session = None;
-        args.seed_session = Some(output.join("session.json"));
+        args.seed_session = Some(session);
         parent = Some(receipt.work);
     }
     println!(
