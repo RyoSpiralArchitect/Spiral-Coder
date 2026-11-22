@@ -1320,10 +1320,14 @@ for a linked requirement, has a line that names no test and does not say `none`,
 or names a function that is not a current test receives one
 `[Test coverage map]` return listing those problems and the current test
 functions. It is skipped when the Coder has no allowance left to answer,
-including a report-only closeout. The next `done` proceeds. The map is the
-Coder's own claim: only its shape and the existence of named tests are checked.
-None of these steps adds completion evidence, a pass condition or a coverage
-receipt.
+including a report-only closeout. The map records the Coder's claim and the
+names of existing tests. Independent verification measures their sensitivity.
+For a test-only requirement with an explicit list such as “Cover A, B and C”,
+both roles also receive the individual case names. The same one-time map
+reminder includes a line for each case, keyed by `requirement ID / case`.
+One parameterized test may exercise several cases. A successful report that
+explicitly labels a requested case `none` returns to the Coder. An incomplete
+report can record that case and the next repair in the same iteration.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful

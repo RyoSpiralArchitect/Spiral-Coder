@@ -65,6 +65,8 @@ struct Brief<'a> {
     document_ending: Option<&'a Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     ordered_record_requirement: Option<&'a str>,
+    #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    explicit_test_cases: std::collections::BTreeMap<&'a str, &'a Value>,
     recent_attempts: Vec<Attempt<'a>>,
     earlier_attempts_omitted: usize,
     next_coder_requests: &'a Value,
@@ -121,6 +123,17 @@ fn project(packet: &Value) -> Brief<'_> {
         });
     let rows = actions.map(Vec::as_slice).unwrap_or_default();
     Brief {
+        explicit_test_cases: packet["task_obligations"]["task_requirements"]["authored_tests"]
+            ["test_only_requirements"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|r| {
+                let cases = r.get("explicit_cases")?;
+                cases.as_array().filter(|l| !l.is_empty())?;
+                Some((r["id"].as_str()?, cases))
+            })
+            .collect(),
         immediate_admission_block: block,
         admitted_plan_fields: fields,
         authored_test_failure: packet["task_obligations"]
@@ -217,6 +230,11 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
+    let explicit_cases = if brief.explicit_test_cases.is_empty() {
+        ""
+    } else {
+        crate::tui::agent::task_obligations::EXPLICIT_TEST_CASE_GUIDANCE
+    };
     let failure_site_guidance = if brief.authored_test_failure.is_some() {
         crate::tui::agent::task_obligations::FAILURE_SITE_GUIDANCE
     } else {
@@ -250,7 +268,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}\
+    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}{explicit_cases}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\

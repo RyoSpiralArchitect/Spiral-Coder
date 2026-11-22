@@ -81,6 +81,66 @@ impl Artifact {
 }
 
 impl Requirement {
+    /// Preserve literal cases from an explicit test-only enumeration. Prose
+    /// examples, alternatives and conditional lists keep the ordinary review.
+    pub(super) fn explicit_test_cases(&self) -> Vec<&str> {
+        if self.artifacts.is_empty()
+            || !self
+                .artifacts
+                .iter()
+                .all(|a| matches!(a.kind, ArtifactKind::Test))
+        {
+            return Vec::new();
+        }
+        let mut cases = Vec::new();
+        for sentence in self.description.split(['.', ';', '\n']) {
+            let Some(list) = sentence.trim().strip_prefix("Cover ") else {
+                continue;
+            };
+            let Some((leading, last)) = list.rsplit_once(" and ") else {
+                continue;
+            };
+            if !leading.contains(',') {
+                continue;
+            }
+            let mut items: Vec<_> = leading
+                .trim_end_matches(',')
+                .split(',')
+                .map(str::trim)
+                .collect();
+            items.push(last.trim());
+            if !(3..=8).contains(&items.len())
+                || items.iter().any(|s| {
+                    s.is_empty()
+                        || s.len() > 96
+                        || !s
+                            .chars()
+                            .all(|c| c.is_alphanumeric() || matches!(c, ' ' | '-' | '_'))
+                        || s.split_ascii_whitespace().any(|w| {
+                            matches!(
+                                w.to_ascii_lowercase().as_str(),
+                                "or" | "and"
+                                    | "if"
+                                    | "unless"
+                                    | "when"
+                                    | "optionally"
+                                    | "example"
+                                    | "examples"
+                            )
+                        })
+                })
+            {
+                continue;
+            }
+            for item in items {
+                if !cases.contains(&item) {
+                    cases.push(item);
+                }
+            }
+        }
+        cases
+    }
+
     pub(super) fn has_source(&self, path: &str) -> bool {
         self.artifacts
             .iter()

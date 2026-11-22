@@ -15,9 +15,9 @@
 //! - after that review, the first completion claim whose `done.summary` lacks a
 //!   valid `Test coverage:` section is returned once.
 //!
-//! None of them adds completion evidence or a new pass condition: the map is
-//! the Coder's own claim, checked only for its shape and for test functions
-//! that exist, and the next `done` proceeds.
+//! A coverage map supplies no completion evidence. When the author explicitly
+//! reports a mandatory enumerated test case as uncovered, a successful report
+//! contradicts that admission. An honest blocked report remains available.
 use super::{ArtifactKind, Contract, Requirement};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
@@ -26,6 +26,7 @@ use std::path::Path;
 pub(super) const PLAN_MARKER: &str = "[Test coverage plan]";
 pub(super) const MARKER: &str = "[Authored-test closeout]";
 pub(super) const COVERAGE_MARKER: &str = "[Test coverage map]";
+const DECLARED_CASE_MARKER: &str = "[Declared test cases]";
 // Whole requirement text: S28's review clipped at 160 characters and cut the
 // sentence that named the four fault families to cover.
 const MAX_DESCRIPTION_CHARS: usize = 1200;
@@ -58,7 +59,12 @@ fn linked(contract: &Contract) -> BTreeMap<&str, Vec<&Requirement>> {
             linked.entry(path).or_default().push(requirement);
         }
     }
-    linked.retain(|_, requirements| requirements.len() >= 2);
+    linked.retain(|_, requirements| {
+        requirements.len() >= 2
+            || requirements
+                .iter()
+                .any(|r| !r.explicit_test_cases().is_empty())
+    });
     linked
 }
 
@@ -114,6 +120,9 @@ fn section(path: &str, requirements: &[&Requirement], tool_root: Option<&str>) -
             requirement.id,
             clip(&requirement.description)
         ));
+        for case in requirement.explicit_test_cases() {
+            text.push_str(&format!("\n  Map this explicitly requested case in the same section: - {} / {case}: `current_test_function` or none (remaining work)", requirement.id));
+        }
     }
     match current_tests(tool_root, path) {
         Some(names) if !names.is_empty() => text.push_str(&format!(
@@ -233,11 +242,73 @@ pub(super) fn coverage(
     summary: &str,
     coder_remaining: Option<usize>,
 ) -> Option<String> {
-    if !shown(messages, MARKER) || shown(messages, COVERAGE_MARKER) || coder_remaining == Some(0) {
+    if !shown(messages, MARKER) {
         return None;
     }
     let linked = linked(contract);
     if linked.is_empty() {
+        return None;
+    }
+    let entries = coverage_entries(summary);
+    let case_keys: BTreeSet<String> = linked
+        .values()
+        .flatten()
+        .flat_map(|r| {
+            r.explicit_test_cases()
+                .into_iter()
+                .map(|case| format!("{} / {case}", r.id))
+        })
+        .collect();
+    let mut open = BTreeSet::new();
+    if !case_keys.is_empty() {
+        for (call, result) in crate::tui::agent::recovery_focus::correlated_results(messages) {
+            if call.name != "done"
+                || !result["content"]
+                    .as_str()
+                    .is_some_and(|s| s.starts_with("GOVERNOR BLOCKED\n\n[Declared test cases]"))
+            {
+                continue;
+            }
+            let Ok(args) = serde_json::from_str::<Value>(&call.arguments) else {
+                continue;
+            };
+            if let Some(old) = args["summary"].as_str().and_then(coverage_entries) {
+                open.extend(
+                    case_keys
+                        .iter()
+                        .filter(|key| old.get(*key).is_some_and(|v| explicit_none(v)))
+                        .cloned(),
+                );
+            }
+        }
+        if let Some(entries) = &entries {
+            if !open.is_empty() {
+                let available: Option<Vec<_>> =
+                    linked.keys().map(|p| current_tests(tool_root, p)).collect();
+                open.retain(|key| {
+                    !entries.get(key).is_some_and(|v| {
+                        let named = backticked(v);
+                        !named.is_empty()
+                            && available.as_ref().is_none_or(|sets| {
+                                named
+                                    .iter()
+                                    .all(|name| sets.iter().flatten().any(|test| test == name))
+                            })
+                    })
+                });
+            }
+            open.extend(
+                case_keys
+                    .iter()
+                    .filter(|key| entries.get(*key).is_some_and(|v| explicit_none(v)))
+                    .cloned(),
+            );
+        }
+    }
+    if !open.is_empty() {
+        return Some(format!("{DECLARED_CASE_MARKER} A completion report marks requested tests as uncovered: {}. Implement or cite the current public tests for these cases, then rerun the declared checks after an edit. If they remain open, submit a blocked report with the affected remaining_acceptance and next_steps.",open.into_iter().collect::<Vec<_>>().join(", ")));
+    }
+    if shown(messages, COVERAGE_MARKER) || coder_remaining == Some(0) {
         return None;
     }
     let mut known = BTreeSet::new();
@@ -252,12 +323,12 @@ pub(super) fn coverage(
             None => readable = false,
         }
     }
-    let ids: BTreeSet<&str> = linked
+    let mut ids: BTreeSet<&str> = linked
         .values()
         .flatten()
         .map(|requirement| requirement.id.as_str())
         .collect();
-    let entries = coverage_entries(summary);
+    ids.extend(case_keys.iter().map(String::as_str));
     let mut problems = Vec::new();
     match &entries {
         None => problems.push("There is no `Test coverage:` section.".to_string()),
@@ -376,6 +447,14 @@ fn says_none(value: &str) -> bool {
         .to_ascii_lowercase()
         .split(|c: char| !c.is_ascii_alphanumeric())
         .any(|word| word == "none")
+}
+
+fn explicit_none(value: &str) -> bool {
+    backticked(value).is_empty()
+        && value
+            .split(|c: char| !c.is_alphanumeric())
+            .next()
+            .is_some_and(|w| w.eq_ignore_ascii_case("none"))
 }
 
 fn clip(description: &str) -> String {
@@ -755,6 +834,72 @@ mod tests {
             coverage_entry(&history, root_dir, "Implemented.", Some(19)),
             None
         );
+    }
+
+    #[test]
+    fn a_general_test_mapping_cannot_hide_an_explicitly_uncovered_test_case() {
+        let file = "tests/coupled_status.rs";
+        let mut contract: Contract=serde_json::from_value(json!({"version":1,"requirements":[{
+            "id":"boundaries","description":"Exercise the public CLI. Cover empty input, absent input, and invalid encoding; use real data.",
+            "artifacts":[{"kind":"test","path":file}],"checks":[{"command":"cargo test"}]}]})).unwrap();
+        let temp = workspace(TWO_TESTS);
+        let dir = temp.path().to_str();
+        let name = "completed_fixture_is_reported_by_public_cli";
+        let broad = format!("Test coverage:\n- boundaries: `{name}`");
+        let mut messages = vec![json!({"role":"user","content":"test"})];
+        messages.extend(blocked("review", MARKER));
+        let advice = coverage(&contract, &messages, dir, &broad, Some(18)).unwrap();
+        for case in ["empty input", "absent input", "invalid encoding"] {
+            assert!(advice.contains(&format!("boundaries / {case}")));
+        }
+        let mapped=format!("{broad}\n- boundaries / empty input: `{name}`\n- boundaries / absent input: `{name}`\n- boundaries / invalid encoding: `{name}`");
+        assert!(
+            coverage(&contract, &messages, dir, &mapped, Some(18)).is_none(),
+            "parameterized tests can exercise more than one case"
+        );
+        messages.extend(blocked("map", &advice));
+        let uncovered = mapped.replace(
+            &format!("invalid encoding: `{name}`"),
+            "invalid encoding: none (still missing)",
+        );
+        assert!(coverage(&contract, &messages, dir, &uncovered, Some(18))
+            .unwrap()
+            .contains("[Declared test cases]"));
+        assert!(
+            coverage(&contract, &messages, dir, &broad, Some(18)).is_none(),
+            "a formatting reminder is bounded"
+        );
+        let gap = coverage(&contract, &messages, dir, &uncovered, Some(18)).unwrap();
+        messages.extend([json!({"role":"assistant","tool_calls":[{"id":"known-gap","function":{"name":"done","arguments":json!({"summary":uncovered}).to_string()}}]}),json!({"role":"tool","tool_call_id":"known-gap","content":format!("GOVERNOR BLOCKED\n\n{gap}")})]);
+        assert!(
+            coverage(&contract, &messages, dir, &broad, Some(18))
+                .unwrap()
+                .contains(DECLARED_CASE_MARKER),
+            "dropping the previously admitted gap does not correct it"
+        );
+        assert!(coverage(
+            &contract,
+            &messages,
+            dir,
+            &mapped.replace(name, "unwritten_case"),
+            Some(18)
+        )
+        .is_some());
+        assert!(coverage(&contract, &messages, dir, &mapped, Some(18)).is_none());
+        for d in [
+            "Consider covering empty, absent, and invalid input.",
+            "Cover ascending, descending, or empty.",
+            "Cover tests, guards and ordering if needed.",
+        ] {
+            contract.requirements[0].description = d.into();
+            assert!(
+                contract.requirements[0].explicit_test_cases().is_empty(),
+                "{d}"
+            );
+        }
+        contract.requirements[0].description = "Cover one, two and three.".into();
+        contract.requirements[0].artifacts[0].kind = ArtifactKind::Source;
+        assert!(contract.requirements[0].explicit_test_cases().is_empty());
     }
 
     #[test]

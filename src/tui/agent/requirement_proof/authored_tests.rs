@@ -23,6 +23,12 @@ pub(crate) struct AuthoredTests {
 }
 
 impl AuthoredTests {
+    pub(in crate::tui::agent) fn has_explicit_cases(&self) -> bool {
+        self.test_only_requirements
+            .iter()
+            .any(|r| !r.explicit_cases.is_empty())
+    }
+
     pub(in crate::tui::agent) fn source_line(&self, path: &str, line: usize) -> Option<&str> {
         self.review_source.as_ref()?.line(path, line)
     }
@@ -63,6 +69,8 @@ struct Target {
 struct TestRequirement {
     id: String,
     description: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    explicit_cases: Vec<String>,
 }
 
 pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option<AuthoredTests> {
@@ -116,6 +124,11 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         target.push(TestRequirement {
             id: requirement.id.clone(),
             description: requirement.description.clone(),
+            explicit_cases: requirement
+                .explicit_test_cases()
+                .into_iter()
+                .map(str::to_owned)
+                .collect(),
         });
     }
     let targets = by_path
