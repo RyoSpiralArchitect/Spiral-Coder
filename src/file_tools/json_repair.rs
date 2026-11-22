@@ -148,7 +148,7 @@ mod tests {
             3,
             None,
         );
-        budget.protect_replay(dir.path()).unwrap();
+        budget.protect_task_artifacts(dir.path()).unwrap();
         scope(
             Some(Context {
                 budget,

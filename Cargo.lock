@@ -2028,6 +2028,7 @@ dependencies = [
  "once_cell",
  "ratatui",
  "reqwest",
+ "ring",
  "rustyline",
  "serde",
  "serde_json",

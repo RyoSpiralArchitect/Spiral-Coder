@@ -253,7 +253,10 @@ pub(super) async fn send_coder_input_with_window(
             .unwrap_or_else(|| crate::work_budget::WorkBudget::new(root_request, 0, None));
     }
     if let Some(root) = tool_root.as_deref() {
-        if let Err(error) = app.work_budget.protect_replay(std::path::Path::new(root)) {
+        if let Err(error) = app
+            .work_budget
+            .protect_task_artifacts(std::path::Path::new(root))
+        {
             app.coder
                 .push_tool(format!("Could not preserve the replay baseline: {error}"));
             app.coder.finish_stream();

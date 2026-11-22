@@ -61,7 +61,7 @@ pub(super) fn from_body(body: &[u8], workspace: &Path) -> Result<Option<Context>
         "task budget identity changed"
     );
     let root = req.tool_root.as_deref().map(Path::new).unwrap_or(workspace);
-    budget.protect_replay(&workspace.join(root))?;
+    budget.protect_task_artifacts(&workspace.join(root))?;
     Ok(Some(Context { budget, role }))
 }
 

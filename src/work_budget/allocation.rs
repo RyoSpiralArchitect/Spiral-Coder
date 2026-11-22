@@ -262,7 +262,7 @@ mod iteration_protection_tests {
         .unwrap();
         let prompt = "Preserve every existing case in .spiral-coder/tui_replay.json";
         let first = WorkBudget::new(prompt, 5, None);
-        first.protect_replay(root).unwrap();
+        first.protect_task_artifacts(root).unwrap();
         let second = WorkBudget::new(prompt, 5, None);
         second.inherit_protections(&first.snapshot(), root).unwrap();
         assert_eq!(

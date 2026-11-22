@@ -1271,6 +1271,14 @@ the original human task, native edit/command counts, repeated observations and
 authored done claims distinct from completion proof. It adds no persistent
 store; see [Observer work progress](observer-work-progress.md).
 
+When the original task says `<path> is append-only` for an existing workspace
+document, the first budget binding stores its byte length and SHA-256 in
+`append_only_documents`. Native edits check the proposed prefix before writing.
+Completion and iteration handoff also check the file on disk, including edits
+made by commands. The original fingerprint carries across restarts and later
+iterations. A run that already started on an older runtime keeps its original
+protections. New text after the protected prefix remains editable.
+
 For a task with declared test artifacts, `task_requirements.authored_tests`
 links each path to its original requirement IDs and latest recorded native
 edit. It retains complete descriptions of test-only requirements first, then
