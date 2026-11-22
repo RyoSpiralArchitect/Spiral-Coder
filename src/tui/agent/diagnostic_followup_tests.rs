@@ -501,3 +501,52 @@ async fn repeated_diagnosis_returns_before_another_coder_call_and_forwards_a_dif
     );
     drop(trace.root);
 }
+
+#[test]
+fn named_scalar_subtests_reach_both_roles_after_the_native_test_read() {
+    let mut trace = Trace::new();
+    let frame = format!(
+        "  File \"{}\", line 1, in test_value\n",
+        trace.path.join(FILE).display()
+    );
+    let body = format!(
+        "FAIL: test_value (test_failure.Check.test_value) (mode='active')\n{frame}AssertionError: 0 == 0 : accepted active\n\n\
+         FAIL: test_value (test_failure.Check.test_value) (mode='saved')\n{frame}AssertionError: 1 != 2 : wrong saved count\n\n\
+         Ran 1 test in 0.1s\n\nFAILED (failures=2)\n"
+    );
+    let result = agent::inject_cwd(
+        &agent::build_failed_tool_output("", &body, 1),
+        &format!("cwd: {}", trace.path.display()),
+        None,
+    );
+    trace.append("failed", "exec", json!({"command":CHECK}), result);
+    assert!(trace.view().is_none());
+    trace.read("test");
+    let followup = trace.view().unwrap();
+    assert!(followup.should_yield());
+    let view = serde_json::to_value(followup).unwrap();
+    assert_eq!(
+        view["reported_subtests"],
+        json!({
+            "method":"test_failure.Check.test_value",
+            "cases":[{"parameters":"(mode='active')","assertion":"0 == 0 : accepted active"},
+                     {"parameters":"(mode='saved')","assertion":"1 != 2 : wrong saved count"}]
+        })
+    );
+    assert!(view.get("unittest_comparison").is_none());
+    assert_eq!(view["latest_failure_call_id"], "failed");
+    for prompt in [
+        agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root()).unwrap(),
+        crate::observer_action::intervention::prompt(
+            &json!({"task_obligations":{"diagnostic_followup":view}}),
+        ),
+    ] {
+        assert!(prompt.contains("wrong saved count") && prompt.contains("which rows"));
+    }
+    trace.read("same-test");
+    assert!(!trace.view().unwrap().should_yield());
+    // A later check owns its own cases and removes the earlier advisory.
+    trace.fail("new-failure", 9, "0.02");
+    trace.read("new-test");
+    assert!(!trace.view().is_some_and(|f| f.has_reported_subtests()));
+}

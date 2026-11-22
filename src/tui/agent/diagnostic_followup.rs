@@ -3,6 +3,8 @@ use super::*;
 use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome, file_edit_succeeded};
 use crate::file_tools::read_range;
 
+#[path = "diagnostic_followup/reported_subtests.rs"]
+mod reported_subtests;
 #[path = "diagnostic_followup/unittest_comparison.rs"]
 mod unittest_comparison;
 
@@ -28,6 +30,8 @@ pub(crate) struct DiagnosticFollowup {
     #[serde(skip_serializing_if = "Option::is_none")]
     unittest_comparison: Option<unittest_comparison::UnittestComparison>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    reported_subtests: Option<reported_subtests::ReportedSubtests>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     source_repair: Option<SourceRepair>,
     #[serde(skip)]
     first_read_just_returned: bool,
@@ -48,6 +52,10 @@ impl ComparisonReceipt<'_> {
 }
 
 impl DiagnosticFollowup {
+    pub(in crate::tui::agent) fn has_reported_subtests(&self) -> bool {
+        self.reported_subtests.is_some()
+    }
+
     pub(in crate::tui::agent) fn has_unittest_comparison(&self) -> bool {
         self.unittest_comparison.is_some()
     }
@@ -133,7 +141,12 @@ impl DiagnosticFollowup {
     }
 
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
-        let first_actionable_failure = if self.has_unittest_comparison() { 1 } else { 2 };
+        let first_actionable_failure =
+            if self.has_unittest_comparison() || self.has_reported_subtests() {
+                1
+            } else {
+                2
+            };
         self.source_read_just_returned
             || (self.matching_failures == first_actionable_failure && self.first_read_just_returned)
     }
@@ -368,8 +381,12 @@ impl RecoveryFocus {
         }
         let cycle = cycle?;
         let read = cycle.first_read?;
-        let unittest_comparison =
-            unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
+        let (unittest_comparison, reported_subtests) =
+            match unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root) {
+                Some(unittest_comparison::Diagnosis::Comparison(probe)) => (Some(probe), None),
+                Some(unittest_comparison::Diagnosis::Subtests(cases)) => (None, Some(cases)),
+                None => (None, None),
+            };
         let source_repair = cycle.source_read.map(|source| {
             SourceRepair::from_read(
                 source,
@@ -380,6 +397,7 @@ impl RecoveryFocus {
         });
         if cycle.earlier_failure.is_none()
             && unittest_comparison.is_none()
+            && reported_subtests.is_none()
             && source_repair.is_none()
         {
             return None;
@@ -393,6 +411,7 @@ impl RecoveryFocus {
             matching_failures: cycle.matching_failures,
             diagnostic: focus.diagnostic.clone(),
             unittest_comparison,
+            reported_subtests,
             source_repair,
             first_read_just_returned,
             source_read_just_returned,

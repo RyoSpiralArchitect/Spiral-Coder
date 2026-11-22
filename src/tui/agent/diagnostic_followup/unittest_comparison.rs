@@ -3,6 +3,11 @@ use serde::Serialize;
 use std::collections::BTreeSet;
 use std::path::Path;
 
+pub(super) enum Diagnosis {
+    Comparison(UnittestComparison),
+    Subtests(super::reported_subtests::ReportedSubtests),
+}
+
 // The standard runner still executes the original method and keeps its exit
 // status. Select the assertion's changed lines before tool output is clipped.
 const RUNNER_PREFIX: &str = concat!(
@@ -116,12 +121,7 @@ pub(super) fn project(
     failure_path: &str,
     output: &str,
     root: &Path,
-) -> Option<UnittestComparison> {
-    if !output.contains("[... output omitted ...]")
-        && !output.contains("Set self.maxDiff to None to see it.")
-    {
-        return None;
-    }
+) -> Option<Diagnosis> {
     let failures = failure_count(output)?;
     let words: Vec<_> = check.split_ascii_whitespace().collect();
     let (python, rest) = words.split_first()?;
@@ -148,6 +148,16 @@ pub(super) fn project(
     {
         return None;
     }
+    if let Some(subtests) =
+        super::reported_subtests::ReportedSubtests::from_digest(output, case, failures)
+    {
+        return Some(Diagnosis::Subtests(subtests));
+    }
+    if !output.contains("[... output omitted ...]")
+        && !output.contains("Set self.maxDiff to None to see it.")
+    {
+        return None;
+    }
     let mut flags = flags.to_vec();
     if !flags.contains(&"-B") {
         flags.insert(0, "-B");
@@ -160,7 +170,7 @@ pub(super) fn project(
         (SINGLE_FAILURE, SINGLE_HEADER, String::new())
     };
     let runner = format!("{RUNNER_PREFIX}{trace}{RUNNER_OPERANDS}{header}{RUNNER_RESULT}");
-    Some(UnittestComparison {
+    Some(Diagnosis::Comparison(UnittestComparison {
         case: case.into(),
         subtest_failures: grouped.then_some(failures),
         arguments: ExecArguments {
@@ -168,7 +178,7 @@ pub(super) fn project(
             cwd: root.to_str()?.into(),
         },
         checks_to_refresh: Vec::new(),
-    })
+    }))
 }
 
 fn failure_count(output: &str) -> Option<usize> {
@@ -239,6 +249,13 @@ fn identifier(name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn project(check: &str, path: &str, output: &str, root: &Path) -> Option<UnittestComparison> {
+        match super::project(check, path, output, root)? {
+            Diagnosis::Comparison(comparison) => Some(comparison),
+            Diagnosis::Subtests(_) => None,
+        }
+    }
 
     const CHECK: &str = "python3 -S -m unittest -v test_value";
     const FILE: &str = "test_value.py";

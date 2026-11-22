@@ -17,6 +17,15 @@ reads and authored local edits while retaining completion and verification gates
 
 ## From a baseline failure to a source edit
 
+After a failed Python unittest and a read of its test, Coder and Observer can
+receive the named subtests and the scalar assertion for each one in
+`diagnostic_followup.reported_subtests`. This requires the native error digest
+to account for every reported failure in the selected method. Each role can
+trace which rows share a source condition, identify the positive control, and
+name any row that still needs a separate change. A clipped comparison with
+incomplete observations can still use the focused unittest probe. The original
+exact check measures the effect of the edit.
+
 A failing check in the human task can name the source it is meant to exercise
 through `task_requirements`. When the Coder has read the failed test and a
 complete native window in that source before editing, the pair can return once

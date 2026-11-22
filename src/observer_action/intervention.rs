@@ -155,7 +155,10 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
-    let after_diagnosis = brief.diagnostic_followup.map_or(String::new(), |_| {
+    let after_diagnosis = brief.diagnostic_followup.map_or(String::new(), |followup| {
+        if followup["reported_subtests"].is_object() {
+            return format!("{} Include this coverage in the primary suggestion reason.\n", crate::tui::agent::task_obligations::SUBTEST_GUIDANCE);
+        }
         format!(
             "{} Put the missing fact and the result-dependent decision in the primary suggestion reason. Explain why the completed read is insufficient.\n",
             crate::tui::agent::task_obligations::DIAGNOSTIC_FOLLOWUP_GUIDANCE
