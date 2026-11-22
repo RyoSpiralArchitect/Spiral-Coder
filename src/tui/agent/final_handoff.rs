@@ -59,6 +59,19 @@ pub(super) fn report_requirements(root: &str) -> serde_json::Value {
 
 pub(super) fn report_context(root: &str, messages: &[Value], test_cmd: Option<&str>) -> Value {
     let mut report = report_requirements(root);
+    if report["clauses"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .any(super::final_instructions::names_all_changed_paths)
+    {
+        let current = crate::task_origin::current_task_messages(messages);
+        let edits = collect_evidence(root, current, test_cmd).paths;
+        if !edits.is_empty() {
+            report["recorded_edit_paths"] = serde_json::json!(edits);
+        }
+    }
     report["outcome_rows"] = serde_json::json!(super::report_outcomes::required_rows(
         root, messages, test_cmd
     ));

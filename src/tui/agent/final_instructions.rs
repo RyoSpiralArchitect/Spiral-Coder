@@ -60,6 +60,39 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
                 }
             }
         }
+        // A direct request may name the report at the end of the sentence.
+        for (start, verb) in lower
+            .match_indices("name ")
+            .chain(lower.match_indices("list "))
+        {
+            let prefix = lower[..start]
+                .rsplit(['.', '!', '?'])
+                .next()
+                .unwrap_or("")
+                .trim();
+            if !prefix.is_empty() || prose_context::is_inside_inline_quote(line, start) {
+                continue;
+            }
+            let clause_start = start + verb.trim_end().len();
+            let sentence = lower[clause_start..]
+                .split(['.', '!', '?'])
+                .next()
+                .unwrap_or("")
+                .trim();
+            if [
+                " in the final report",
+                " in your final report",
+                " in the final answer",
+            ]
+            .iter()
+            .any(|suffix| {
+                sentence
+                    .strip_suffix(suffix)
+                    .is_some_and(names_all_changed_paths)
+            }) {
+                starts.push(clause_start);
+            }
+        }
         starts.sort_unstable();
         for start in starts {
             let tail = &line[start..];
@@ -84,6 +117,33 @@ pub(super) fn instructions(root: &str) -> Vec<&str> {
         }
     }
     clauses
+}
+
+/// Bounded inventory wording for a native edit list. An unquantified request
+/// for a path keeps the usual category-based handoff.
+pub(super) fn names_all_changed_paths(clause: &str) -> bool {
+    let lower = clause
+        .trim()
+        .trim_end_matches(['.', '!', '?'])
+        .to_ascii_lowercase();
+    let first = lower.split(" and ").next().unwrap_or("");
+    let subject = [
+        " in the final report",
+        " in your final report",
+        " in the final answer",
+    ]
+    .iter()
+    .find_map(|suffix| first.strip_suffix(suffix))
+    .unwrap_or(first);
+    matches!(
+        subject,
+        "every changed path"
+            | "each changed path"
+            | "all changed paths"
+            | "every changed file"
+            | "each changed file"
+            | "all changed files"
+    )
 }
 
 /// Recognize an explicit, positive request for the two bare report lines.
