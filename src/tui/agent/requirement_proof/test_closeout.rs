@@ -133,6 +133,16 @@ fn section(path: &str, requirements: &[&Requirement], tool_root: Option<&str>) -
         Some(_) => text.push_str("\nCurrent test functions: none recognized."),
         None => text.push_str("\nCurrent test functions: the file could not be read."),
     }
+    let controls = crate::tui::agent::task_obligations::test_controls(
+        requirements
+            .iter()
+            .any(|r| super::authored_tests::names_record_order(&r.description)),
+        requirements.iter().flat_map(|r| r.explicit_test_cases()),
+    );
+    if !controls.is_empty() {
+        text.push('\n');
+        text.push_str(controls.trim_end());
+    }
     text
 }
 

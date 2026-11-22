@@ -11,6 +11,31 @@ pub(crate) const NULLABLE_COMPARISON_GUIDANCE: &str = "For a nullable_comparison
 pub(crate) const DOCUMENT_ENDING_GUIDANCE: &str = "For a requested append, document_ending.read_file gives the last lines of a pending document. Use those bytes for a unique patch_file or apply_diff anchor and preserve the original text. A shell write cannot supply the required native edit receipt. If the text already exists, check the actual outstanding change before adding another copy.\n";
 pub(crate) const ORDERED_OUTPUT_GUIDANCE: &str = "When the task promises ordered or linked records, exercise the public interface with two distinguishable valid records from the real fixture or producer. Compare the ordered identities and their associated values on parsed output. A single record cannot exercise order.\n";
 
+/// Show a discriminating control only for behavior linked to this test file.
+pub(crate) fn test_controls<'a>(ordered: bool, cases: impl Iterator<Item = &'a str>) -> String {
+    let mut text = String::new();
+    if ordered {
+        text.push_str(ORDERED_OUTPUT_GUIDANCE);
+        text.push_str("Preserve the producer's links and counts when extending the fixture. If the public result returns records, derive the expected sequence of positions and identities from the fixture, then compare that sequence in order.\n");
+    }
+    let mut cases = cases;
+    if cases.any(|case| {
+        let case = case.to_ascii_lowercase();
+        let mut previous = "";
+        case.split(|c: char| !c.is_alphanumeric())
+            .filter(|w| !w.is_empty())
+            .any(|word| {
+                let found = matches!(word, "symlink" | "symlinks")
+                    || (previous == "symbolic" && matches!(word, "link" | "links"));
+                previous = word;
+                found
+            })
+    }) {
+        text.push_str("For a requested symbolic link case, compare the ordinary valid component with a link at the same path to its saved, existing contents. Assert the public outcome specified for that link. A dangling target also tests missing data; keep a requested dangling case separately.\n");
+    }
+    text
+}
+
 pub(crate) use super::recovery_focus::{
     fixture_repair_prompt, FAILURE_SITE_GUIDANCE, FIXTURE_CONTEXT_GUIDANCE,
 };

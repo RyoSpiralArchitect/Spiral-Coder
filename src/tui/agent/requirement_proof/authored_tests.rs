@@ -199,7 +199,7 @@ fn nullable_comparison(description: &str) -> Option<&str> {
         })
 }
 
-fn names_record_order(description: &str) -> bool {
+pub(super) fn names_record_order(description: &str) -> bool {
     let lower = description.to_ascii_lowercase();
     let mut previous = "";
     for word in lower

@@ -1324,6 +1324,18 @@ below the review's floor of 8, so its tests were never compared with the fault
 families the task names. The plan is advisory: it blocks nothing, and the
 completion review still follows when there is room.
 
+When the plan yields to the Observer with a single authored test file, the
+Observer can review the current source alongside all of its linked requirements
+and the requested cases. The handoff asks for a fixture, an assertion and its
+expected public result. A read can supply a specific fact that changes that
+assertion. The focused view needs a recorded edit, a current source snapshot
+and room for an edit, the exact checks and a report. Pending diagnosis,
+rechecks, baselines and report repairs keep their usual priority. A request
+about record order brings a two-record control to both roles. A requested
+symbolic link case also compares a regular component with a link to the same
+valid contents. The existing Observer response and native verification rules
+apply to these suggestions.
+
 After the review, the first completion claim whose map is absent, lacks a line
 for a linked requirement, has a line that names no test and does not say `none`,
 or names a function that is not a current test receives one

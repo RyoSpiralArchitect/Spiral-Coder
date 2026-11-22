@@ -232,7 +232,15 @@ pub(crate) fn build_tui_next_action_prompt(
     lang: &str,
     reason_hint: &str,
 ) -> String {
+    let language = match lang {
+        "fr" => "French",
+        "en" => "English",
+        _ => "Japanese",
+    };
     let case_review = if reason_hint == "authored_test_review" {
+        if let Some(review) = crate::observer_action::test_review::prompt(packet, language) {
+            return review;
+        }
         "The Coder just received its first test coverage plan. Read the actual test source against the originally requested cases. Pick one uncovered assertion that would distinguish a broken implementation from a valid control. Give the Coder an actionable fixture, single change and expected public result while edit and recheck budget remains. If the tests already distinguish the stated cases, name the evidence and advance the remaining work.\n"
     } else {
         ""
@@ -241,16 +249,15 @@ pub(crate) fn build_tui_next_action_prompt(
         "{case_review}{}\n{}\n{}",
         crate::observer_action::intervention::prompt(packet),
         crate::observer_action::work_route::prompt(packet),
-        build_next_action_body(packet, lang, reason_hint)
+        build_next_action_body(packet, language, reason_hint)
     )
 }
 
-fn build_next_action_body(packet: &serde_json::Value, lang: &str, reason_hint: &str) -> String {
-    let lang_name = match lang {
-        "fr" => "French",
-        "en" => "English",
-        _ => "Japanese",
-    };
+fn build_next_action_body(
+    packet: &serde_json::Value,
+    lang_name: &str,
+    reason_hint: &str,
+) -> String {
     use crate::observer_action::diagnostic::{self, Output};
     if let Some(handoff) = crate::observer_action::strategy::handoff_prompt(packet, lang_name) {
         return handoff;

@@ -9,6 +9,7 @@ pub(crate) mod intervention;
 mod source_edit;
 pub(crate) mod strategy;
 mod test_recipe;
+pub(crate) mod test_review;
 pub(crate) mod work_route;
 
 #[cfg(test)]

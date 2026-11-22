@@ -117,13 +117,33 @@ async fn declared_cases_return_the_first_funded_test_plan_to_the_observer() {
         Some(7)
     )
     .is_none());
-    let packet = json!({"task_obligations":task_obligations::project_advisory(&result.messages,None,root.path().to_str())});
+    let packet = json!({"work_budget":{"next_coder_turn":"work","next_coder_requests":6},
+        "task_obligations":task_obligations::project_advisory(&result.messages,None,root.path().to_str())});
     let prompt = crate::tui::events::observer_assist::build_tui_next_action_prompt(
         &packet,
         "en",
         "authored_test_review",
     );
-    assert!(prompt.contains("Pick one uncovered assertion") && prompt.contains("absent names"));
+    assert!(prompt.starts_with("Review the Coder's current test assertions"));
+    assert!(prompt.contains("absent names") && prompt.contains(CHECK));
+    assert_eq!(prompt.matches("def test_valid_record()").count(), 1);
+    assert!(!prompt.contains("two distinguishable") && !prompt.contains("symbolic link"));
+    for (pointer, value) in [
+        ("/work_budget/next_coder_turn", json!("report_only")),
+        ("/work_budget/next_coder_requests", json!(2)),
+        ("/task_obligations/required_recheck", json!({"command":CHECK})),
+        ("/task_obligations/required_diagnostic_read", json!({"path":"check.py"})),
+        ("/task_obligations/report_repair", json!({"reason":"missing receipt"})),
+        ("/task_obligations/task_requirements/pending_baselines", json!([CHECK])),
+        ("/task_obligations/task_requirements/authored_tests/review_source/path", json!("tests/other.py")),
+        ("/task_obligations/task_requirements/authored_tests/review_source", Value::Null),
+        ("/task_obligations/task_requirements/authored_tests/test_only_requirements/0/explicit_cases", json!([])),
+    ] {
+        let mut blocked = packet.clone();
+        let (parent, key) = pointer.rsplit_once('/').unwrap();
+        blocked.pointer_mut(parent).unwrap()[key] = value;
+        assert!(crate::observer_action::test_review::prompt(&blocked, "English").is_none(), "{pointer}");
+    }
     // At the floor, the Coder still gets the plan, with no handoff that would take its last action.
     let first = crate::task_origin::user_message(&task, crate::task_origin::MessageOrigin::User);
     let tight = crate::work_budget::WorkBudget::new(&task, 3, None);
