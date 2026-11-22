@@ -106,6 +106,14 @@ This task is read-only inspection only.\n\
 - In read-only plans, acceptance should focus on locating and confirming the code path/context; meta constraints like `no files modified` are constraints, not acceptance targets."
 }
 
+pub(crate) fn require_explicit_exec_command(parameters: &mut serde_json::Value) {
+    parameters["properties"]
+        .as_object_mut()
+        .unwrap()
+        .remove("check_id");
+    parameters["required"] = json!(["command"]);
+}
+
 pub fn exec_tool_def() -> serde_json::Value {
     json!({
         "type": "function",

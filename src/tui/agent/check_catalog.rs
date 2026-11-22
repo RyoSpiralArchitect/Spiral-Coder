@@ -126,11 +126,7 @@ impl Catalog {
                 parameters["properties"]["check_id"]["enum"] =
                     json!(choices.iter().map(|c| &c.id).collect::<Vec<_>>());
             } else {
-                parameters["properties"]
-                    .as_object_mut()
-                    .unwrap()
-                    .remove("check_id");
-                parameters["required"] = json!(["command"]);
+                super::require_explicit_exec_command(parameters);
             }
         }
         if let Some(error) = &self.error {

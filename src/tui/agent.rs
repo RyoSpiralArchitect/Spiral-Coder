@@ -227,6 +227,7 @@ use self::meta_harness::MetaHarness;
 use self::output_compaction::*;
 use self::plan_governor::*;
 use self::progress_bridge::ProgressBridgeView;
+pub(crate) use self::prompt_setup::require_explicit_exec_command;
 use self::prompt_setup::*;
 pub use self::prompt_setup::{
     apply_diff_tool_def, coder_system, done_tool_def, exec_tool_def, glob_tool_def,

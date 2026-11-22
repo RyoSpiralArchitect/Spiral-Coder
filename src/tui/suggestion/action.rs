@@ -8,9 +8,13 @@ pub(crate) fn tool_schemas() -> Value {
 }
 
 pub(crate) fn tool_schemas_for(base_url: &str) -> Value {
+    let mut exec = agent::exec_tool_def();
+    if crate::streaming::provider_metadata::is_google_endpoint(base_url) {
+        agent::require_explicit_exec_command(&mut exec["function"]["parameters"]);
+    }
     Value::Array(
         [
-            agent::exec_tool_def(),
+            exec,
             agent::read_file_tool_def(),
             agent::write_file_tool_def(),
             agent::patch_file_tool_def(),
@@ -178,6 +182,21 @@ mod tests {
     #[test]
     fn observer_can_suggest_small_json_edits_and_flat_coder_evidence() {
         let catalog = tool_schemas_for("https://generativelanguage.googleapis.com/v1beta/openai");
+        let google_exec = catalog
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["name"] == "exec")
+            .unwrap();
+        assert!(google_exec["parameters"]["properties"]
+            .get("check_id")
+            .is_none());
+        assert_eq!(google_exec["parameters"]["required"], json!(["command"]));
+        assert!(
+            tool_schemas_for("https://example.com/v1")[0]["parameters"]["properties"]
+                .get("check_id")
+                .is_some()
+        );
         let done = catalog
             .as_array()
             .unwrap()
