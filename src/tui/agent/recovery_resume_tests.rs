@@ -256,6 +256,39 @@ fn a_failed_read_invalidates_only_its_own_diagnosis_and_must_be_retried() {
 }
 
 #[test]
+fn a_read_backed_edit_refusal_names_the_unanswered_file_read_across_resume() {
+    let mut session = Session::new();
+    for path in ["missing.rs", "other.rs", "visible.rs"] {
+        session.record(
+            "read_file",
+            json!({"path":path}),
+            "ERROR: failed to read file",
+        );
+    }
+    session.fail_edit("source.rs");
+    session.read("source.rs");
+    for path in ["other.rs", "visible.rs"] {
+        let governor = session.assert_stage(RecoveryStage::Diagnose);
+        let hint = governor
+            .unresolved_read_hint(&session.messages, session.root.path().to_str(), Some(FIRST))
+            .unwrap();
+        let args = json!({"path":path,"start_line":1,"end_line":40});
+        assert!(hint.contains(&args.to_string()), "{hint}");
+        let (output, failed) =
+            crate::file_tools::read_range::execute_args(&args, session.root.path().to_str());
+        assert!(!failed);
+        session.record("read_file", args, &output);
+    }
+    let governor = session.assert_stage(RecoveryStage::Diagnose);
+    assert!(governor
+        .unresolved_read_hint(&session.messages, session.root.path().to_str(), Some(FIRST))
+        .is_none());
+    std::fs::write(session.root.path().join("missing.rs"), "created\n").unwrap();
+    session.read("missing.rs");
+    session.assert_stage(RecoveryStage::Fix);
+}
+
+#[test]
 fn overlapping_read_edit_and_check_failures_keep_separate_diagnostic_obligations() {
     let mut session = diagnosed();
     session.record(

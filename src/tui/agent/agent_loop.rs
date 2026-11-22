@@ -1435,8 +1435,11 @@ Execute this minimal action instead: {}",
             })
         {
             if block.starts_with("[Recovery Gate] stage=diagnose\n") {
-                if let Some(hint) =
-                    recovery.target_read_hint(&tc, &root_user_text, tool_root_abs.as_deref())
+                if let Some(hint) = recovery
+                    .unresolved_read_hint(&messages, tool_root_abs.as_deref(), test_cmd.as_deref())
+                    .or_else(|| {
+                        recovery.target_read_hint(&tc, &root_user_text, tool_root_abs.as_deref())
+                    })
                 {
                     block.push_str(&hint);
                 }

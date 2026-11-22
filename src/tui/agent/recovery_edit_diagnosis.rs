@@ -13,12 +13,12 @@ struct EditDiagnosis {
 impl RecoveryFocus {
     /// An edit failure can target a different file from the failed check. Both
     /// diagnoses must survive a handoff, without borrowing either one's proof.
-    pub(in crate::tui::agent) fn restored_edit_stage(
+    pub(in crate::tui::agent) fn restored_edit_diagnosis(
         &self,
         messages: &[Value],
         root: Option<&str>,
         check: Option<&str>,
-    ) -> Option<RecoveryStage> {
+    ) -> Option<(RecoveryStage, BTreeSet<String>)> {
         let context = ExecVerificationContext::from_messages(check, messages);
         let restored = EditFailureMemory::from_messages(messages, &context);
         if restored.count() == 0 {
@@ -141,10 +141,11 @@ impl RecoveryFocus {
             && !unknown_failure
             && !unexplained_check
             && !focused_diagnosis_pending;
-        Some(if complete {
+        let stage = if complete {
             RecoveryStage::Fix
         } else {
             RecoveryStage::Diagnose
-        })
+        };
+        Some((stage, failed_reads))
     }
 }
