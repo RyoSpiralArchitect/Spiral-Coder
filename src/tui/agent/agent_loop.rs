@@ -1387,7 +1387,7 @@ Execute this minimal action instead: {}",
             tool_root_abs.as_deref(),
             test_cmd.as_deref(),
         );
-        if let Some(block) = recovery
+        if let Some(mut block) = recovery
             .maybe_block_tool(
                 &tc,
                 test_cmd.as_deref(),
@@ -1416,6 +1416,13 @@ Execute this minimal action instead: {}",
                 explicit_edit_scope::native_issue(&root_user_text, &tc, tool_root_abs.as_deref())
             })
         {
+            if block.starts_with("[Recovery Gate] stage=diagnose\n") {
+                if let Some(hint) =
+                    recovery.target_read_hint(&tc, &root_user_text, tool_root_abs.as_deref())
+                {
+                    block.push_str(&hint);
+                }
+            }
             state = AgentState::Recovery;
             let _ = tx
                 .send(StreamToken::Delta(format!(

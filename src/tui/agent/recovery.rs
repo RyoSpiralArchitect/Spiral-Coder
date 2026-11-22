@@ -184,14 +184,28 @@ Required now: {}",
         call: &ToolCallData,
         messages: &[serde_json::Value],
         root: Option<&str>,
-    ) -> &'static str {
+    ) -> String {
         if self.stage == Some(RecoveryStage::Fix)
             && self.focus.latest_read_supports_edit(call, messages, root)
         {
-            return "\n\nThe latest native read supports this edit target. Keep the repair phase and correct the <evidence> fields before retrying the edit. The failed check remains due.";
+            return "\n\nThe latest native read supports this edit target. Keep the repair phase and correct the <evidence> fields before retrying the edit. The failed check remains due.".into();
         }
         self.stage = Some(RecoveryStage::Diagnose);
-        ""
+        self.target_read_hint(call, crate::task_origin::root_user_text(messages), root)
+            .unwrap_or_default()
+    }
+
+    pub(super) fn target_read_hint(
+        &self,
+        call: &ToolCallData,
+        task: &str,
+        root: Option<&str>,
+    ) -> Option<String> {
+        if self.stage != Some(RecoveryStage::Diagnose) || !self.focus.observed() {
+            return None;
+        }
+        let args = super::deferred_edit::diagnosis::evidence_read(call, task, root?)?;
+        Some(format!("\n\nThe failure location has been read. Your proposed patch currently has one matching source block. Inspect it with read_file using {args}. Use the returned source to correct the evidence for a new edit, then rerun the failed check."))
     }
 
     pub(super) fn on_diagnostic_result(&mut self, ok: bool) {

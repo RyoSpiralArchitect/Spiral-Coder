@@ -48,6 +48,11 @@ If a patch is rejected before execution for a malformed evidence block, an
 observed failed check stays in its repair phase when the latest executed call
 read that exact target under the same native diagnosis. Coder must correct its
 evidence fields and rerun the failed check after the edit.
+When the latest observation was the failed test and the proposed literal
+patch still needs a current source read, recovery can locate its unique
+search block in the allowed workspace file and suggest those exact lines.
+The Coder must read the source and submit a new edit with valid evidence.
+An ambiguous, missing, or oversized search block yields no suggested range.
 
 For a Rust patch that inserts a comparison into an observed condition, the
 Observer action validator looks for the bare operand names in the retained

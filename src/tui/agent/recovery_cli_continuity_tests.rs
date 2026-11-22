@@ -387,3 +387,60 @@ fn rejected_evidence_can_be_corrected_after_the_current_target_read() {
         .is_empty());
     assert_eq!(trace.live.stage, Some(RecoveryStage::Diagnose));
 }
+
+#[test]
+fn rejected_patch_after_fixture_read_points_to_current_anchor_without_admitting_it() {
+    let mut trace = Trace::new();
+    trace.read(SOURCE, true);
+    std::fs::write(
+        trace.root.path().join(SOURCE),
+        "# new line\ndef value():\n    return 1\n",
+    )
+    .unwrap();
+    trace.failed_check(CHECK, true);
+    trace.read(TEST, false);
+    let patch = trace.call(
+        "patch_file",
+        json!({"path":SOURCE,"search":"    return 1\n","replace":"    return 2\n"}),
+    );
+    let root = trace.root.path().to_str();
+    let task = crate::task_origin::root_user_text(&trace.messages);
+    let expected = json!({"path":SOURCE,"start_line":3,"end_line":3});
+    let hint = trace
+        .live
+        .on_evidence_rejection(&patch, &trace.messages, root);
+    assert!(hint.contains(&expected.to_string()), "{hint}");
+    assert_eq!(trace.live.stage, Some(RecoveryStage::Diagnose));
+    assert!(trace.live.focus.check_matches(CHECK));
+    assert!(trace
+        .live
+        .maybe_block_tool(&patch, Some(CHECK), TaskHarness::infer(task, false), false)
+        .is_some());
+    assert_eq!(
+        trace.live.target_read_hint(&patch, task, root).as_deref(),
+        Some(hint.as_str())
+    );
+    for search in ["absent anchor", "e", ""] {
+        let bad = trace.call(
+            "patch_file",
+            json!({"path":SOURCE,"search":search,"replace":"fixed"}),
+        );
+        assert!(trace.live.target_read_hint(&bad, task, root).is_none());
+    }
+    let read = trace.call("read_file", expected.clone());
+    let (output, failed) = crate::file_tools::read_range::execute_args(&expected, root);
+    assert!(!failed && output.contains("return 1"));
+    trace.record(&read, output);
+    trace.live.on_diagnostic_result(true);
+    assert_eq!(trace.live.stage, Some(RecoveryStage::Fix));
+    assert!(trace.live.focus.check_matches(CHECK));
+    trace.failed_check(CHECK, true);
+    assert!(trace
+        .live
+        .target_read_hint(
+            &patch,
+            crate::task_origin::root_user_text(&trace.messages),
+            trace.root.path().to_str()
+        )
+        .is_none());
+}

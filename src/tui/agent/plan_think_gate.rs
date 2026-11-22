@@ -1092,7 +1092,7 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     *state = AgentState::Recovery;
                     let mut block =
                         build_evidence_gate_prompt(tc, &observations, &*assumption_ledger);
-                    block.push_str(recovery.on_evidence_rejection(
+                    block.push_str(&recovery.on_evidence_rejection(
                         tc,
                         messages,
                         tool_root_abs.as_deref(),
@@ -1134,7 +1134,7 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                 governor_contract::evidence_invalid_message(&e.to_string()),
                 build_evidence_gate_prompt(tc, &observations, &*assumption_ledger)
             );
-            block.push_str(recovery.on_evidence_rejection(tc, messages, tool_root_abs.as_deref()));
+            block.push_str(&recovery.on_evidence_rejection(tc, messages, tool_root_abs.as_deref()));
             if !evidence_block.target_symbols.is_empty() {
                 block.push_str("\n\nCurrent target_symbols:\n");
                 for symbol in &evidence_block.target_symbols {
