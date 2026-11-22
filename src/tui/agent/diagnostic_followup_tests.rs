@@ -550,3 +550,106 @@ fn named_scalar_subtests_reach_both_roles_after_the_native_test_read() {
     trace.read("new-test");
     assert!(!trace.view().is_some_and(|f| f.has_reported_subtests()));
 }
+
+#[test]
+fn compare_the_complete_public_failures_across_one_landed_source_patch() {
+    for scenario in [
+        "same",
+        "changed_assertion",
+        "different_case",
+        "unchanged_file",
+        "unrelated_exec",
+        "other_path",
+        "wrong_cwd",
+    ] {
+        let mut trace = Trace::new();
+        let contract = json!({"version":1,"requirements":[{"id":"catalog","description":"Validate the catalog",
+            "artifacts":[{"path":"src/value.py","kind":"source"},{"path":FILE,"kind":"test"}],
+            "checks":[{"command":CHECK}]}]});
+        trace.messages[0]["content"] = json!(format!(
+            "{TASK}\n<task_requirements>\n{contract}\n</task_requirements>"
+        ));
+        let failed = |trace: &mut Trace, id: &str, name: &str, actual: usize, correct_cwd: bool| {
+            let frame = format!(
+                "  File \"{}\", line 1, in test_value",
+                trace.path.join(FILE).display()
+            );
+            let body=format!("FAIL: test_value (test_failure.Check.test_value) (item='first')\n{frame}\nAssertionError: 0 != 2\nFAIL: test_value (test_failure.Check.test_value) (item='{name}')\n{frame}\nAssertionError: {actual} != 2\n\nRan 1 test in 0.1s\n\nFAILED (failures=2)\n");
+            let cwd = if correct_cwd {
+                trace.root().unwrap()
+            } else {
+                "/another-workspace"
+            };
+            let output = agent::inject_cwd(
+                &agent::build_failed_tool_output("", &body, 1),
+                &format!("cwd: {cwd}"),
+                None,
+            );
+            trace.append(id, "exec", json!({"command":CHECK}), output);
+        };
+        failed(&mut trace, "before", "second", 1, scenario != "wrong_cwd");
+        if scenario != "wrong_cwd" {
+            trace.read("earlier-read");
+        }
+        let path = if scenario == "other_path" {
+            "other.py"
+        } else {
+            "src/value.py"
+        };
+        let receipt = if scenario == "unchanged_file" {
+            format!("OK: unchanged '{path}'")
+        } else {
+            format!("OK: patched '{path}'")
+        };
+        trace.append(
+            "patch",
+            "patch_file",
+            json!({"path":path,"search":"old","replace":"new"}),
+            receipt,
+        );
+        if scenario == "unrelated_exec" {
+            trace.append(
+                "barrier",
+                "exec",
+                json!({"command":"python3 other.py"}),
+                "OK (exit_code: 0)".into(),
+            );
+        }
+        failed(
+            &mut trace,
+            "after",
+            if scenario == "different_case" {
+                "third"
+            } else {
+                "second"
+            },
+            if scenario == "changed_assertion" {
+                3
+            } else {
+                1
+            },
+            true,
+        );
+        trace.read("after-read");
+        let followup = serde_json::to_value(trace.view().expect("two labeled assertions")).unwrap();
+        if scenario == "same" {
+            assert_eq!(
+                followup["unchanged_after_patch"],
+                json!({"before_check_call_id":"before","patch_call_id":"patch","path":"src/value.py","repeated_assertions":2})
+            );
+            let coder = agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root())
+                .unwrap();
+            let observer = crate::observer_action::intervention::prompt(
+                &json!({"task_obligations":{"diagnostic_followup":followup}}),
+            );
+            assert!(
+                coder.contains("Inspect the caller") && observer.contains("Inspect the caller")
+            );
+        } else {
+            assert!(
+                followup.get("unchanged_after_patch").is_none(),
+                "{scenario}: {followup}"
+            );
+        }
+    }
+}

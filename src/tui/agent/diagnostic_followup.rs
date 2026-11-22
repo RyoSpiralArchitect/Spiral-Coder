@@ -32,6 +32,8 @@ pub(crate) struct DiagnosticFollowup {
     #[serde(skip_serializing_if = "Option::is_none")]
     reported_subtests: Option<reported_subtests::ReportedSubtests>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    unchanged_after_patch: Option<reported_subtests::UnchangedAfterPatch>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     source_repair: Option<SourceRepair>,
     #[serde(skip)]
     first_read_just_returned: bool,
@@ -54,6 +56,10 @@ impl ComparisonReceipt<'_> {
 impl DiagnosticFollowup {
     pub(in crate::tui::agent) fn has_reported_subtests(&self) -> bool {
         self.reported_subtests.is_some()
+    }
+
+    pub(in crate::tui::agent) fn has_unchanged_after_patch(&self) -> bool {
+        self.unchanged_after_patch.is_some()
     }
 
     pub(in crate::tui::agent) fn has_unittest_comparison(&self) -> bool {
@@ -387,6 +393,16 @@ impl RecoveryFocus {
                 Some(unittest_comparison::Diagnosis::Subtests(cases)) => (None, Some(cases)),
                 None => (None, None),
             };
+        let unchanged_after_patch = reported_subtests.as_ref().and_then(|cases| {
+            cases.unchanged_after_patch(
+                messages,
+                &focus.check,
+                &focus.path,
+                root,
+                &cycle.latest_failure,
+                requirements.as_ref()?,
+            )
+        });
         let source_repair = cycle.source_read.map(|source| {
             SourceRepair::from_read(
                 source,
@@ -412,6 +428,7 @@ impl RecoveryFocus {
             diagnostic: focus.diagnostic.clone(),
             unittest_comparison,
             reported_subtests,
+            unchanged_after_patch,
             source_repair,
             first_read_just_returned,
             source_read_just_returned,

@@ -1,6 +1,10 @@
 //! Quote complete scalar assertions from a single native unittest failure digest.
+use super::{correlated_results, exec_cwd, exec_may_have_run, exec_outcome, relative_path};
+use crate::tui::agent::{parse_exec_command_from_args, requirement_proof::Contract};
 use serde::Serialize;
+use serde_json::Value;
 use std::collections::BTreeSet;
+use std::path::Path;
 
 #[derive(Debug, Serialize)]
 pub(super) struct ReportedSubtests {
@@ -8,13 +12,91 @@ pub(super) struct ReportedSubtests {
     cases: Vec<Case>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Eq)]
 struct Case {
     parameters: String,
     assertion: String,
 }
 
+#[derive(Debug, Serialize)]
+pub(super) struct UnchangedAfterPatch {
+    before_check_call_id: String,
+    patch_call_id: String,
+    path: String,
+    repeated_assertions: usize,
+}
+
 impl ReportedSubtests {
+    /// Compare complete labeled failures around a single landed source patch.
+    /// Other processes and edits are barriers to this narrowly attributed observation.
+    pub(super) fn unchanged_after_patch(
+        &self,
+        messages: &[Value],
+        check: &str,
+        failure_path: &str,
+        root: &Path,
+        current_id: &str,
+        requirements: &Contract,
+    ) -> Option<UnchangedAfterPatch> {
+        let mut last = [None, None, None];
+        for (call, result) in correlated_results(messages) {
+            if matches!(
+                call.name.as_str(),
+                "exec" | "write_file" | "patch_file" | "apply_diff"
+            ) && result["content"]
+                .as_str()
+                .is_some_and(|s| exec_may_have_run(s) && !s.starts_with("Awaiting approval"))
+            {
+                last.rotate_left(1);
+                last[2] = Some((call, result));
+            }
+        }
+        let [Some((before, old)), Some((patch, edit)), Some((current, _))] = last else {
+            return None;
+        };
+        if current.name != "exec"
+            || current.id != current_id
+            || before.name != "exec"
+            || patch.name != "patch_file"
+        {
+            return None;
+        }
+        let output = old["content"].as_str()?;
+        let command = parse_exec_command_from_args(&before.arguments)?;
+        if command != check
+            || exec_cwd(output).map(Path::new) != Some(root)
+            || exec_outcome(output) != Some(false)
+            || crate::execution_evidence::file_edit_outcome(&patch.name, edit["content"].as_str()?)
+                != Some(crate::execution_evidence::FileEditOutcome::Changed)
+        {
+            return None;
+        }
+        let args: Value = serde_json::from_str(&patch.arguments).ok()?;
+        let path = relative_path(args["path"].as_str()?, root.to_str())?;
+        if !requirements
+            .requirements
+            .iter()
+            .any(|r| r.has_source(&path))
+            || path == failure_path
+        {
+            return None;
+        }
+        let super::unittest_comparison::Diagnosis::Subtests(previous) =
+            super::unittest_comparison::project(check, failure_path, output, root)?
+        else {
+            return None;
+        };
+        (self.method == previous.method
+            && self.cases.len() == previous.cases.len()
+            && self.cases.iter().all(|case| previous.cases.contains(case)))
+        .then(|| UnchangedAfterPatch {
+            before_check_call_id: before.id,
+            patch_call_id: patch.id,
+            path,
+            repeated_assertions: self.cases.len(),
+        })
+    }
+
     pub(super) fn from_digest(output: &str, method: &str, failures: usize) -> Option<Self> {
         if failures < 2 {
             return None;

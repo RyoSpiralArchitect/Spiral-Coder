@@ -240,6 +240,14 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
+    let unchanged_patch = if brief
+        .diagnostic_followup
+        .is_some_and(|f| f["unchanged_after_patch"].is_object())
+    {
+        crate::tui::agent::task_obligations::UNCHANGED_PATCH_GUIDANCE
+    } else {
+        ""
+    };
     let nullable_comparisons = if brief.nullable_comparisons.is_empty() {
         ""
     } else {
@@ -283,7 +291,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}{explicit_cases}{nullable_comparisons}\
+    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{document_ending}{ordered_output}{explicit_cases}{nullable_comparisons}{unchanged_patch}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\

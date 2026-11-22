@@ -15,6 +15,7 @@ pub(crate) use super::recovery_focus::{
 };
 
 pub(crate) const SUBTEST_GUIDANCE: &str = "Use reported_subtests as quoted observations from the latest failed check. Trace each row through the test setup to its controlling source condition. Name which rows the next edit addresses, which control must keep passing, and which rows still need a separate change or read. For a patch suggestion, compare its literal search and replacement before claiming coverage. Keep changes needed elsewhere in the remaining work. Rerun the original exact check to measure coverage.";
+pub(crate) const UNCHANGED_PATCH_GUIDANCE: &str = "unchanged_after_patch records the same labeled assertions before and after one successful source edit. Trace one failing input from the public entry to the edited branch. Inspect the caller or earlier return that selects the branch, and how its result is consumed. Identify a bounded observation that distinguishes a skipped branch from an ineffective change before revising the same helper again. The matching results alone do not identify the cause.";
 
 pub(crate) const DIAGNOSTIC_FOLLOWUP_GUIDANCE: &str = "The native diagnostic_followup links the current failed check with a completed read of its failure location. Use the returned observations to state the specific missing fact. Choose one different bounded observation that could distinguish likely causes, such as comparing the actual and expected result for the one failing case. A different file or line range must address an identified gap. If current evidence already supports a repair, make it in the allowed scope. Keep the original check pending for after the repair. The read and this comparison supply no completion proof.";
 pub(crate) const SOURCE_REPAIR_GUIDANCE: &str = "Use the linked failed check, test read and implementation read to identify the accepted control, the single changed condition, and what the repair must preserve. When a declaration is visible but its use site is missing, search for its qualified name inside that file and read the matching lines. Use known evidence for validation and preserve the output contract for fields still unknown. Apply a shared rule where it covers every in-scope branch with the same preconditions. Ground the edit in the current source. Recheck both outcomes with the original exact command after the edit. These reads grant no proof or approval.";
@@ -298,6 +299,10 @@ pub(crate) fn prompt(
         if followup.has_reported_subtests() {
             prompt.push('\n');
             prompt.push_str(SUBTEST_GUIDANCE);
+        }
+        if followup.has_unchanged_after_patch() {
+            prompt.push('\n');
+            prompt.push_str(UNCHANGED_PATCH_GUIDANCE);
         }
         if followup.has_source_repair() {
             prompt.push('\n');
