@@ -585,7 +585,7 @@ fn search_single_file(
             Some("dir resolved to a file, so the search was scoped to that file"),
         )
     };
-    if let Some(note) = rust_navigation::note(file_path, pattern, &content) {
+    if let Some(note) = rust_navigation::note(file_path, pattern, &content, results.len()) {
         // Keep the ordinary header first and the note ahead of lengthy literal
         // results so the Observer's bounded action excerpt can carry it too.
         if let Some(end) = output.find('\n') {

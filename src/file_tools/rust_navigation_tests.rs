@@ -69,6 +69,73 @@ fn ordinary_searches_get_no_identifier_note() {
 }
 
 #[test]
+fn an_absent_command_can_point_to_one_existing_declaration_and_match_arm() {
+    let source = "enum Task {\n    ExportCsv(Args),\n}\nmatch input {\n    Some(Task::ExportCsv(args)) => save(args),\n}\n";
+    let out = search(source, "entry.rs", "export-json", "entry.rs");
+    let mut lines = out.lines();
+    assert_eq!(
+        lines.next(),
+        Some("[search_files] No matches for 'export-json' in file 'entry.rs'")
+    );
+    let note = lines.next().unwrap();
+    assert!(
+        note.starts_with("[navigation]")
+            && note.contains("`ExportCsv`")
+            && note.contains("line 2")
+            && note.contains("line 5"),
+        "{out}"
+    );
+    assert!(!out.lines().any(|line| line.starts_with("entry.rs:")));
+    for extra in [
+        "ExportXml(Other),\nTask::ExportXml(_) => xml(),\n",
+        "Task::ExportCsv(other) => other(),\n",
+        "const REQUEST: &str = \"export-json\";\n",
+    ] {
+        assert!(
+            !search(
+                &format!("{source}{extra}"),
+                "entry.rs",
+                "export-json",
+                "entry.rs"
+            )
+            .contains("[navigation]"),
+            "{extra}"
+        );
+    }
+    for (src, query) in [
+        ("enum Task {\n    ExportCsv(Args),\n}\n", "export-json"),
+        ("Task::ExportCsv(_) => save(),\n", "export-json"),
+        (
+            "enum Task {\n    Exporter(Args),\n}\nTask::Exporter(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    // ExportCsv(Args),\n}\nTask::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    ExportCsv(Args),\n}\n// Task::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    ExportCsv(Args),\n}\nTask::ExportCsvExtra(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Job {\n    ExportCsv(Args),\n}\nTask::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+    ] {
+        assert!(
+            !search(src, "entry.rs", query, "entry.rs").contains("[navigation]"),
+            "{src}"
+        );
+    }
+    assert!(!search(source, "entry.rs", "export-json", ".").contains("[navigation]"));
+    assert!(!search(source, "entry.md", "export-json", "entry.md").contains("[navigation]"));
+}
+
+#[test]
 fn navigation_is_bounded_even_when_the_literal_search_finds_more() {
     let entry = "ListRuns(); ListRuns(); // list-runs\n";
     let out = search(&entry.repeat(7), "entry.rs", "list-runs", "entry.rs");
