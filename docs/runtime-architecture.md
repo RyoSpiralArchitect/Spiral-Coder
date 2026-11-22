@@ -498,7 +498,11 @@ For a clipped Python unittest assertion, a simple module, class or method
 check can supply a ready `exec` comparison when the retained failure names one
 method in the diagnosed file. Observer can forward the exact arguments to
 Coder. The command runs that method and keeps the assertion's changed lines
-and the test exit status. The runner bounds each operand around the first
+and the test exit status. When an ordinary failing assertion supplies a
+message beginning with a short scalar label such as `case=empty`, its
+comparison includes that label from the assertion's message argument. This
+lets both roles distinguish loop inputs that fail at the same assertion.
+The runner bounds each operand around the first
 differing span and marks incomplete output. Live execution and resume use
 the same history predicate and a native observation receipt before
 preserving the completed diagnosis. The execution ledger expires current exact checks
