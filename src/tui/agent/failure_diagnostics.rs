@@ -173,9 +173,56 @@ pub(super) fn failing_test_names(body: &str) -> Vec<String> {
     names
 }
 
+/// Keep one rustc suggestion beside the error that owns it. The original
+/// headline and span retain their places in the four-line edit history.
+fn include_rustc_help(diagnostics: &mut [String], stderr: &str) {
+    let mut header = None;
+    let mut has_span = false;
+    for line in stderr.lines().map(str::trim) {
+        if let Some((code, _)) = line
+            .strip_prefix("error[E")
+            .and_then(|s| s.split_once("]: "))
+        {
+            header = (code.len() == 4 && code.bytes().all(|c| c.is_ascii_digit()))
+                .then(|| diagnostics.iter().position(|row| row == line))
+                .flatten();
+            has_span = false;
+            continue;
+        }
+        let Some(index) = header else { continue };
+        if line.is_empty()
+            || line.starts_with("error")
+            || rust_warning_header(line)
+            || line.starts_with("thread '")
+            || matches!(line, "stdout:" | "stderr:")
+        {
+            header = None;
+        } else if let Some(span) = line.strip_prefix("--> ") {
+            has_span = span.rsplit_once(':').and_then(|(p, column)| {
+                let (path, row) = p.rsplit_once(':')?;
+                Some(
+                    path.ends_with(".rs")
+                        && row.parse::<u32>().is_ok_and(|n| n > 0)
+                        && column.parse::<u32>().is_ok_and(|n| n > 0),
+                )
+            }) == Some(true);
+        } else if has_span {
+            let hint = line.strip_prefix("= ").unwrap_or(line);
+            if hint.strip_prefix("help: ").is_some_and(|s| !s.is_empty())
+                && diagnostics[index].chars().count() + 3 + hint.chars().count()
+                    <= AUTO_TEST_DIAGNOSTIC_CHARS
+            {
+                diagnostics[index].push_str(" | ");
+                diagnostics[index].push_str(hint);
+                return;
+            }
+        }
+    }
+}
+
 pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
     let mut lines = Vec::new();
-    for source in [stderr, stdout] {
+    for (stream, source) in [stderr, stdout].into_iter().enumerate() {
         let source = bounded_source(source);
         let mut last_python_frame = None;
         let mut named_test = false;
@@ -286,6 +333,9 @@ pub(super) fn error_digest(stdout: &str, stderr: &str) -> Option<String> {
         // A shortened historical digest can contain just the location.
         if let Some(frame) = last_python_frame {
             push_line(&mut lines, frame);
+        }
+        if stream == 0 && source.contains("help: ") {
+            include_rustc_help(&mut lines, &source);
         }
         if lines.len() >= MAX_DIGEST_LINES {
             break;
@@ -653,6 +703,38 @@ error: could not compile",
         }
         super::super::prune_old_tool_results(&mut messages);
         messages[0]["content"].as_str().unwrap().to_string()
+    }
+
+    #[test]
+    fn first_compiler_help_stays_with_its_primary_error_through_history() {
+        let cause = "error[E0255]: the name `Item` is defined multiple times";
+        let span = "--> src/catalog.rs:7:1";
+        let help = "help: you can use `as` to change the binding name of the import";
+        let second = "error[E0574]: expected struct, found trait";
+        let noise = "progress\n".repeat(400);
+        let raw = format!("{cause}\n  {span}\n  |\n 1 | use catalog::Item;\n  = note: twice\n{help}\n\n{second}\n  --> src/catalog.rs:7:9\n{noise}");
+        let annotated = format!("{cause} | {help}");
+        let retained = compact_and_prune(&automatic_test_output("", &raw, 101, "/work"));
+        assert!(
+            retained.contains(&annotated) && retained.contains(span) && retained.contains(second)
+        );
+        for unrelated in [
+            format!("warning: unused import\n{span}\n{help}"),
+            format!("{cause}\n{span}\n\n{help}"),
+            format!("{cause}\n--> readme.txt:3:4\n{help}"),
+            format!("{cause}\n{help}"),
+            format!("{cause}\n{span}\nwarning: unused import\n{help}"),
+            format!("{cause}\n{span}\n{help}{}", "x".repeat(250)),
+        ] {
+            assert!(!error_digest("", &unrelated)
+                .unwrap_or_default()
+                .contains(" | help:"));
+        }
+        assert!(!error_digest(&raw, "").unwrap().contains(" | help:"));
+        assert_eq!(
+            auto_test_outcome("patch_file", &retained),
+            AutoTestOutcome::Failed
+        );
     }
 
     #[test]
