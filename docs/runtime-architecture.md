@@ -577,3 +577,8 @@ unusable, the interactive and headless loops can return once to the already
 delivered test plan. This requires a current completed repair and actionable
 native work on an ordinary Coder turn. The raw answers and their charges stay
 in the ledger and transcript. The Coder chooses its own edit and verification.
+
+A retained assertion comparison is checked against the diagnosis recorded when
+it ran. After the Coder edits the implementation, a resumed slice can rerun
+that exact failed check. The comparison keeps its failing exit status. A new
+independent failure still requires its own diagnosis.

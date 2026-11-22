@@ -235,17 +235,19 @@ impl RecoveryFocus {
         else {
             return false;
         };
-        if !self
+        // Rebuild the diagnostic as it was when this comparison ran. The
+        // active focus can already be waiting for verification after an edit.
+        let Some(observed) = self
             .pending
             .as_ref()
-            .is_some_and(|pending| matches_snapshot(message, pending, Observation::Observed))
-        {
+            .and_then(|pending| matching_snapshot(message, pending, Observation::Observed))
+        else {
             return false;
-        }
+        };
         messages
             .iter()
             .position(|candidate| std::ptr::eq(candidate, message))
-            .and_then(|index| self.diagnostic_followup(&messages[..index], root))
+            .and_then(|index| observed.diagnostic_followup(&messages[..index], root))
             .and_then(|followup| followup.observed_comparison(&command, cwd, frame))
             .is_some()
     }
@@ -291,7 +293,7 @@ impl RecoveryFocus {
                     && exec_cwd(output).map(Path::new) == Some(root)
                     && super::super::parse_exec_command_from_args(&call.arguments)
                         .is_some_and(|command| command == focus.check)
-                    && matches_snapshot(message, focus, Observation::AwaitingRead)
+                    && matching_snapshot(message, focus, Observation::AwaitingRead).is_some()
                 {
                     if let Some(output) = comparable_output(output) {
                         let same = previous.filter(|previous| {
@@ -322,7 +324,7 @@ impl RecoveryFocus {
                     continue;
                 };
                 if !recovery_progress::successful_read(&call, output, &path, root)
-                    || !matches_snapshot(message, focus, Observation::Observed)
+                    || matching_snapshot(message, focus, Observation::Observed).is_none()
                 {
                     continue;
                 }
@@ -467,17 +469,23 @@ impl RecoveryFocus {
     }
 }
 
-fn matches_snapshot(message: &Value, focus: &FailureFocus, observation: Observation) -> bool {
-    message[METADATA_KEY]["version"] == 2
-        && native_snapshot(message)
-            .and_then(|snapshot| snapshot.pending)
-            .is_some_and(|pending| {
-                pending.check == focus.check
-                    && pending.path == focus.path
-                    && pending.diagnostic == focus.diagnostic
-                    && pending.location == LocationEvidence::Current
-                    && pending.observation == observation
-            })
+fn matching_snapshot(
+    message: &Value,
+    focus: &FailureFocus,
+    observation: Observation,
+) -> Option<RecoveryFocus> {
+    if message[METADATA_KEY]["version"] != 2 {
+        return None;
+    }
+    native_snapshot(message).filter(|snapshot| {
+        snapshot.pending.as_ref().is_some_and(|pending| {
+            pending.check == focus.check
+                && pending.path == focus.path
+                && pending.diagnostic == focus.diagnostic
+                && pending.location == LocationEvidence::Current
+                && pending.observation == observation
+        })
+    })
 }
 
 fn comparable_output(output: &str) -> Option<String> {

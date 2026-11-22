@@ -370,6 +370,49 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
             .pending_exact_checks;
     assert_eq!(pending, vec![CHECK, OTHER_CHECK]);
 
+    // The comparison belongs to the observed failure. A subsequent repair
+    // changes today's phase, but the same red comparison still has its owner.
+    let repaired = {
+        let mut history = trace.messages.clone();
+        let repair = ToolCallData {
+            id: "repair-after-comparison".into(),
+            name: "patch_file".into(),
+            arguments: json!({"path":"src/counter.rs"}).to_string(),
+            thought_signature: None,
+        };
+        let result = "OK: patched 'src/counter.rs' (+1 line)".to_owned();
+        let mut focus = RecoveryFocus::from_messages(&history, trace.root(), Some(CHECK));
+        focus.record_result(
+            &repair,
+            &result,
+            trace.root(),
+            Some(CHECK),
+            &ExecVerificationContext::from_messages(Some(CHECK), &history),
+        );
+        history.push(json!({"role":"assistant","tool_calls":[repair.to_json()]}));
+        history.push(focus.tool_message(&repair, result));
+        history
+    };
+    let mut governor = agent::RecoveryGovernor {
+        stage: Some(agent::RecoveryStage::Diagnose),
+        ..Default::default()
+    };
+    governor.restore_focus(&repaired, trace.root(), Some(CHECK));
+    assert_eq!(governor.stage, Some(agent::RecoveryStage::Verify));
+    assert!(governor.focus.check_matches(CHECK));
+    let mut later_failure = repaired;
+    let unrelated = ToolCallData {
+        id: "unrelated-red".into(),
+        name: "exec".into(),
+        arguments: json!({"command":"check another invariant"}).to_string(),
+        thought_signature: None,
+    };
+    later_failure.extend([json!({"role":"assistant","tool_calls":[unrelated.to_json()]}),
+        json!({"role":"tool","tool_call_id":unrelated.id,"content":format!("FAILED (exit_code: 1)\ncwd: {}",trace.path.display())})]);
+    governor.stage = Some(agent::RecoveryStage::Diagnose);
+    governor.restore_focus(&later_failure, trace.root(), Some(CHECK));
+    assert_eq!(governor.stage, Some(agent::RecoveryStage::Diagnose));
+
     // Both the native failing check and the read must still be correlated.
     let missing_read: Vec<_> = trace
         .messages
