@@ -450,9 +450,12 @@ The [coupled work-loop contract](coupled-work-loop.md) documents native same-tas
 
 A valid current Observer primary action below the unchanged 0.75 hint threshold
 is not forwarded or upgraded by choosing a secondary action. While native work
-remains on a Coder work turn (an outstanding artifact, exact check or diagnostic
-read), the headless driver returns the Coder an ordinary work slice without the
-advice, so the iteration keeps its remaining allowance. At the report turn, or
+remains on a Coder work turn (an outstanding artifact, exact check, diagnostic
+read, or a failed edit or check still awaiting repair), the headless driver
+returns the Coder an ordinary work slice without the advice, so the iteration
+keeps its remaining allowance. In trial T, a pending edit failure did not count:
+the iteration closed with 27 Coder requests left, and without a new edit the run
+stopped. At the report turn, or
 when no native work is left, a declared task with an admitted plan may instead
 receive one report-only Coder request from its remaining allowance. The request
 exposes only `done`; the Observer's tool, arguments and response contract are not

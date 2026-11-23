@@ -4,20 +4,26 @@
 use super::*;
 
 /// The Coder can still advance native work on its next turn: a declared task
-/// with an outstanding artifact, exact check or diagnostic read, a work (not
-/// report-only) turn, and no approval barrier.
+/// with an outstanding artifact, exact check, diagnostic read or pending
+/// recovery, a work (not report-only) turn, and no approval barrier.
 pub(in crate::tui::events) fn native_work_remains(
     messages: &[serde_json::Value],
     test_command: Option<&str>,
     coder_remaining: usize,
 ) -> bool {
     let obligations = agent::task_obligations::project(messages, test_command);
+    // A failed edit or check awaiting repair is unfinished work even when every
+    // artifact and check already has proof. In trial T a non-unique edit
+    // anchor and its target read were followed by an uncertain Observer answer;
+    // the iteration closed with 27 Coder requests left, and without a new edit
+    // the run stopped.
     let actionable = !obligations
         .task_requirements
         .pending_artifact_paths
         .is_empty()
         || !obligations.pending_exact_checks.is_empty()
-        || obligations.required_diagnostic_read.is_some();
+        || obligations.required_diagnostic_read.is_some()
+        || !obligations.pending_recovery.is_empty();
     obligations.task_requirements.declared
         && actionable
         && obligations.coder_turn(coder_remaining) == agent::task_obligations::CoderTurn::Work
@@ -151,6 +157,42 @@ pub(in crate::tui::events) fn low_confidence_work_return(app: &App) -> Option<us
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_failed_edit_awaiting_repair_is_native_work_left() {
+        let check = Some("python3 -B -S check.py");
+        let mut messages = crate::tui::events::tests::closeout_messages();
+        assert!(
+            !native_work_remains(&messages, check, 20),
+            "every artifact is edited and the exact check passed"
+        );
+        // Trial T, round 4: a non-unique edit anchor, then the target read.
+        for (id, tool, args, result) in [
+            (
+                "anchor",
+                "patch_file",
+                json!({"path":"source.py","search":"    return x\n","replace":"    return y\n"}),
+                "ERROR: search string is not unique in 'source.py' (2 matches); add more context",
+            ),
+            (
+                "target",
+                "read_file",
+                json!({"path":"source.py"}),
+                "[source.py] (3 lines, 36 bytes)\ndef f(x):\n    return x\n    return x\n",
+            ),
+        ] {
+            messages.extend([
+                json!({"role":"assistant","tool_calls":[{"id":id,"type":"function","function":{"name":tool,"arguments":args.to_string()}}]}),
+                json!({"role":"tool","tool_call_id":id,"content":result}),
+            ]);
+        }
+        assert!(!agent::task_obligations::project(&messages, check)
+            .pending_recovery
+            .is_empty());
+        assert!(native_work_remains(&messages, check, 20));
+        // The report turn stays report-only.
+        assert!(!native_work_remains(&messages, check, 1));
+    }
 
     #[test]
     fn only_a_current_rejected_focused_review_returns_the_coders_own_work_once() {
