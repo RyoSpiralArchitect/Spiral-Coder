@@ -36,7 +36,8 @@ the narrow schema for ordinary access/path diagnosis without resolving the
 failure. A read that fails only because a declared artifact without native edit
 receipts does not exist yet is not a failure to diagnose. The recovery stage,
 reflection requirement and agent state stay as they are, and the hint says to
-create the file. In S31, three writes creating the test file were held after
+create the file. When a later slice restores a pending edit diagnosis from
+history, it skips such a read as well. In S31, three writes creating the test file were held after
 such a read. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
@@ -1369,6 +1370,11 @@ or names a function that is not a current test receives one
 functions. It is skipped when the Coder has no allowance left to answer,
 including a report-only closeout. The map records the Coder's claim and the
 names of existing tests. Independent verification measures their sensitivity.
+A cited name may be qualified (`tests::name`, `Class.name`, `file.py::name`) and
+matches by its last segment. Test functions are listed for Rust, Python and
+JavaScript/TypeScript files. A name cited for a linked file of another type is
+not checked. The same holds for the tests that a later claim cites for a case
+reported missing (see [the coupled work loop](coupled-work-loop.md)).
 For a test-only requirement with an explicit list such as “Cover A, B and C”,
 both roles also receive the individual case names. The same one-time map
 reminder includes a line for each case, keyed by `requirement ID / case`.

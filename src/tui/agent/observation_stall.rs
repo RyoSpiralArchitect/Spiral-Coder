@@ -118,19 +118,30 @@ fn read_key(args: &Value) -> Option<(String, Option<u64>, Option<u64>)> {
     ))
 }
 
-/// How many consecutive identical native results the same read arguments
-/// returned in this task, if reading the file now would return them again.
+/// Wording of the Coder's refusal below, also used to find it in history.
+const UNCHANGED_READ: &str = "has not changed since these read_file arguments last returned it";
+
+/// The identical native results the same read arguments returned in a row in
+/// this task, kept only if reading the file now would return them again.
+#[derive(Default)]
+struct UnchangedReads {
+    /// Call ids of the identical results since the content last differed.
+    calls: Vec<String>,
+    /// The Coder was already refused this read once since then.
+    refused: bool,
+}
+
 /// Edits of other files and executed commands do not make such a read new:
 /// the file is read from disk and compared byte for byte with the latest
 /// result, so a change made by any command does. R read its unchanged
 /// protected path check eight times across two iterations while the failure
 /// stayed the same.
-fn unchanged_read_repeats(messages: &[Value], args: &Value, tool_root: Option<&str>) -> usize {
+fn unchanged_reads(messages: &[Value], args: &Value, tool_root: Option<&str>) -> UnchangedReads {
     let Some(wanted) = read_key(args) else {
-        return 0;
+        return UnchangedReads::default();
     };
     let mut latest: Option<String> = None;
-    let mut count = 0;
+    let mut reads = UnchangedReads::default();
     for (call, message) in super::recovery_focus::correlated_results(messages) {
         if call.name != "read_file" {
             continue;
@@ -143,23 +154,31 @@ fn unchanged_read_repeats(messages: &[Value], args: &Value, tool_root: Option<&s
         }
         let text = message["content"].as_str().unwrap_or("");
         match native_observation("read_file", &call_args, text) {
-            Some(output) if latest.as_deref() == Some(output) => count += 1,
+            Some(output) if latest.as_deref() == Some(output) => reads.calls.push(call.id.clone()),
             Some(output) => {
                 latest = Some(output.to_owned());
-                count = 1;
+                reads = UnchangedReads {
+                    calls: vec![call.id.clone()],
+                    refused: false,
+                };
             }
-            // Actual errors invalidate the comparison; refusals do not.
+            None if text.starts_with("GOVERNOR BLOCKED\n\n[Progress Gate]\n")
+                && text.contains(UNCHANGED_READ) =>
+            {
+                reads.refused = true;
+            }
+            // Actual errors invalidate the comparison; other refusals do not.
             None if crate::execution_evidence::exec_may_have_run(text)
                 && !text.trim_start().starts_with("Awaiting approval") =>
             {
                 latest = None;
-                count = 0;
+                reads = UnchangedReads::default();
             }
             None => {}
         }
     }
     let Some(latest) = latest else {
-        return 0;
+        return UnchangedReads::default();
     };
     let (current, failed) = if args.get("start_line").is_some() || args.get("end_line").is_some() {
         crate::file_tools::read_range::execute_args(args, tool_root)
@@ -167,16 +186,18 @@ fn unchanged_read_repeats(messages: &[Value], args: &Value, tool_root: Option<&s
         crate::file_tools::tool_read_file(args["path"].as_str().unwrap_or(""), tool_root)
     };
     if failed || current != latest {
-        return 0;
+        return UnchangedReads::default();
     }
-    count
+    reads
 }
 
 /// A read that would return, for the third time or more, the same bytes the
-/// same arguments already returned while the file stayed unchanged. The
-/// diagnosis of a failed edit or check keeps its own read requirement, so a
-/// pending target read or required diagnostic read never counts. Both the
-/// Coder's call and an Observer suggestion are checked with this.
+/// same arguments already returned while the file stayed unchanged, while the
+/// Coder's request still shows one of those results in full. The diagnosis of
+/// a failed edit or check keeps its own read requirement, so a pending target
+/// read or required diagnostic read never counts. A read is refused once per
+/// unchanged result, so a read another instruction asks for is never held
+/// twice. Both the Coder's call and an Observer suggestion are checked here.
 pub(crate) fn unchanged_reread(
     messages: &[Value],
     tool: &str,
@@ -188,8 +209,8 @@ pub(crate) fn unchanged_reread(
         return None;
     }
     let path = args["path"].as_str()?.trim_start_matches("./").to_owned();
-    let repeats = unchanged_read_repeats(messages, args, tool_root);
-    if repeats < 2 {
+    let reads = unchanged_reads(messages, args, tool_root);
+    if reads.calls.len() < 2 || reads.refused {
         return None;
     }
     let context =
@@ -205,7 +226,13 @@ pub(crate) fn unchanged_reread(
     {
         return None;
     }
-    Some((path, repeats))
+    // Once the request is compacted, an older result is only a history entry
+    // without the file's text, and the projection tells the Coder to reread.
+    let visible = super::context_compaction::verbatim_tool_results(messages, test_cmd);
+    if !reads.calls.iter().any(|id| visible.contains(id)) {
+        return None;
+    }
+    Some((path, reads.calls.len()))
 }
 
 /// Failing case labels from the latest executed command, when it failed.
@@ -268,7 +295,7 @@ fn latest_failure(messages: &[Value]) -> String {
     )
 }
 
-/// The Coder's third identical read of an unchanged file is refused (see
+/// The Coder's third identical read of an unchanged file is refused once (see
 /// `unchanged_reread`), in any recovery stage: a required diagnostic read is
 /// never refused, and other reads remain available for a diagnosis.
 pub(super) fn unchanged_read_block(
@@ -280,7 +307,7 @@ pub(super) fn unchanged_read_block(
     let args = serde_json::from_str::<Value>(&call.arguments).ok()?;
     let (path, repeats) = unchanged_reread(messages, &call.name, &args, tool_root, test_cmd)?;
     Some(format!(
-        "[Progress Gate]\n{path} has not changed since these read_file arguments last returned it: the same native result came back {repeats} times in this task, across later edits and commands. Reading it again adds no evidence.{}\nWork from the content already read: compare it with the latest failure and change the code that produces that result, or read a different range or file for a fact not seen yet. No edit is forced by this gate.",
+        "[Progress Gate]\n{path} {UNCHANGED_READ}: the same native result came back {repeats} times in this task, and your context still shows it in full. Reading it again adds no evidence.{}\nUse that content: compare it with the latest failure and decide the next step, or read another range or file you still need. This read is refused only once: if you still need it, the next identical call runs. No edit is forced by this gate.",
         latest_failure(messages)
     ))
 }
@@ -583,6 +610,17 @@ mod tests {
             "This read_file of scripts/status_fixture.py would return the same native result the Coder already received 2 times in this task"
         ));
 
+        // The refusal is recorded on the refused call. It is not repeated for
+        // the same unchanged result, so another instruction cannot be held.
+        messages.push(json!({"role":"assistant","tool_calls":[{"id":"refused","function":{"name":"read_file","arguments":fixture.to_string()}}]}));
+        messages.push(json!({"role":"tool","tool_call_id":"refused",
+            "content":format!("GOVERNOR BLOCKED\n\n{block}\n\ntool:\nread_file\narguments:\n{fixture}")}));
+        assert_eq!(
+            unchanged_read_block(&messages, &call(fixture.clone()), root, None),
+            None
+        );
+        assert_eq!(observer(&messages, &fixture), None);
+
         // Another range and a changed file remain new evidence.
         let range = json!({"path":"scripts/status_fixture.py","start_line":1,"end_line":1});
         assert_eq!(
@@ -599,6 +637,63 @@ mod tests {
             None
         );
         assert_eq!(observer(&messages, &fixture), None);
+    }
+
+    #[test]
+    fn rereads_count_only_results_the_request_still_shows() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("scripts")).unwrap();
+        std::fs::write(
+            dir.path().join("scripts/status_fixture.py"),
+            "def make(root, state):\n    pass\n",
+        )
+        .unwrap();
+        let root = dir.path().to_str();
+        let fixture = json!({"path":"scripts/status_fixture.py"});
+        let read = || crate::file_tools::tool_read_file("scripts/status_fixture.py", root).0;
+        let mut messages = vec![crate::task_origin::user_message(
+            "Implement coupled-status.",
+            crate::task_origin::MessageOrigin::User,
+        )];
+        let mut edits = 0;
+        let mut edit = |messages: &mut Vec<Value>| {
+            edits += 1;
+            tool(
+                messages,
+                "patch_file",
+                json!({"path":"src/coupled_status.rs","n":edits}),
+                &format!("OK: patched 'src/coupled_status.rs' (+1 lines, {edits} total)"),
+            );
+        };
+        for _ in 0..2 {
+            tool(&mut messages, "read_file", fixture.clone(), &read());
+            edit(&mut messages);
+        }
+        assert!(
+            unchanged_read_block(&messages, &call(fixture.clone()), root, None).is_some(),
+            "both identical results are still shown in full"
+        );
+        // Later exchanges push both reads out of the recent window. They were
+        // made before later edits, so compaction keeps only history entries.
+        for _ in 0..9 {
+            edit(&mut messages);
+        }
+        let visible = super::super::context_compaction::verbatim_tool_results(&messages, None);
+        let reads: Vec<&str> = messages
+            .iter()
+            .filter(|m| {
+                m["content"]
+                    .as_str()
+                    .is_some_and(|c| c.starts_with("[scripts/status_fixture.py]"))
+            })
+            .filter_map(|m| m["tool_call_id"].as_str())
+            .collect();
+        assert_eq!(reads.len(), 2);
+        assert!(reads.iter().all(|id| !visible.contains(*id)), "{visible:?}");
+        assert_eq!(
+            unchanged_read_block(&messages, &call(fixture.clone()), root, None),
+            None
+        );
     }
 
     #[test]

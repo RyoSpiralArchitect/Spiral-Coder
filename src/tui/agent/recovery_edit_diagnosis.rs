@@ -76,9 +76,15 @@ impl RecoveryFocus {
             if tc.name == "read_file" {
                 if file_failed {
                     if let Some(path) = path.as_ref() {
-                        failed_reads.insert(path.clone());
-                        if let Some(target) = targets.get_mut(path) {
-                            target.observed = false;
+                        // As in the live dispatch, a declared artifact that does
+                        // not exist yet is to be created, not diagnosed.
+                        if !crate::tui::agent::requirement_proof::absent_declared_artifact(
+                            messages, check, path, root,
+                        ) {
+                            failed_reads.insert(path.clone());
+                            if let Some(target) = targets.get_mut(path) {
+                                target.observed = false;
+                            }
                         }
                     } else {
                         unknown_failure = true;

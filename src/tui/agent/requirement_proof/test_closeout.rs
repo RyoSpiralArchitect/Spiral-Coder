@@ -270,6 +270,11 @@ pub(super) fn coverage(
     let case_keys = case_keys(contract);
     let mut open = BTreeSet::new();
     let mut accepted_gaps = BTreeSet::new();
+    let mut unmatched = BTreeSet::new();
+    let available: BTreeMap<&str, Option<Vec<String>>> = linked
+        .keys()
+        .map(|&path| (path, current_tests(tool_root, path)))
+        .collect();
     if !case_keys.is_empty() {
         for (call, result) in crate::tui::agent::recovery_focus::correlated_results(messages) {
             if call.name != "done" {
@@ -308,37 +313,45 @@ pub(super) fn coverage(
         open.extend(accepted_gaps.iter().cloned());
         if let Some(entries) = &entries {
             if !open.is_empty() {
-                let available: BTreeMap<_, _> = linked
-                    .keys()
-                    .map(|&path| (path, current_tests(tool_root, path)))
-                    .collect();
+                // A file whose test functions cannot be listed cannot refute a
+                // citation, so the citation is taken as given there.
+                let found = |path: &str, name: &str| {
+                    !listable(path)
+                        || available[path]
+                            .as_ref()
+                            .is_some_and(|tests| tests.iter().any(|test| cites(name, test)))
+                };
                 open.retain(|key| {
-                    !entries.get(key).is_some_and(|v| {
+                    let covered = entries.get(key).is_some_and(|v| {
                         let named = backticked(v);
                         if named.is_empty() {
                             return false;
                         }
-                        if accepted_gaps.contains(key) {
-                            let Some((id, _)) = key.rsplit_once(" / ") else {
-                                return false;
-                            };
-                            return named.iter().all(|name| {
-                                linked.iter().any(|(path, rules)| {
-                                    rules.iter().any(|rule| rule.id == id)
-                                        && available[*path].as_ref().is_some_and(|tests| {
-                                            tests.iter().any(|test| test.as_str() == *name)
-                                        })
+                        let covered = if accepted_gaps.contains(key) {
+                            key.rsplit_once(" / ").is_some_and(|(id, _)| {
+                                named.iter().all(|name| {
+                                    linked.iter().any(|(path, rules)| {
+                                        rules.iter().any(|rule| rule.id == id) && found(path, name)
+                                    })
                                 })
-                            });
-                        }
-                        available.values().any(Option::is_none)
-                            || named.iter().all(|name| {
-                                available
-                                    .values()
-                                    .flatten()
-                                    .any(|tests| tests.iter().any(|test| test.as_str() == *name))
                             })
-                    })
+                        } else {
+                            available.values().any(Option::is_none)
+                                || named
+                                    .iter()
+                                    .all(|name| linked.keys().any(|path| found(path, name)))
+                        };
+                        if !covered {
+                            unmatched.extend(
+                                named
+                                    .iter()
+                                    .filter(|name| !linked.keys().any(|path| found(path, name)))
+                                    .map(|name| name.to_string()),
+                            );
+                        }
+                        covered
+                    });
+                    !covered
                 });
             }
             open.extend(
@@ -350,7 +363,27 @@ pub(super) fn coverage(
         }
     }
     if !open.is_empty() {
-        return Some(format!("{DECLARED_CASE_MARKER} A completion report marks requested tests as uncovered: {}. Implement or cite the current public tests for these cases, then rerun the declared checks after an edit. If they remain open, submit a blocked report with the affected remaining_acceptance and next_steps.",open.into_iter().collect::<Vec<_>>().join(", ")));
+        let mut current: Vec<String> = available.values().flatten().flatten().cloned().collect();
+        current.sort();
+        current.dedup();
+        let unmatched = if unmatched.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " These cited names are not test functions in the linked test files: {}.",
+                unmatched
+                    .iter()
+                    .map(|name| format!("`{name}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        let current = if current.is_empty() {
+            String::new()
+        } else {
+            format!(" Test functions there now: {}.", listed(&current))
+        };
+        return Some(format!("{DECLARED_CASE_MARKER} A completion report marks requested tests as uncovered: {}.{unmatched}{current} Implement or cite the current public tests for these cases, then rerun the declared checks after an edit. If they remain open, submit a blocked report with the affected remaining_acceptance and next_steps.",open.into_iter().collect::<Vec<_>>().join(", ")));
     }
     if !planned {
         return None;
@@ -384,7 +417,8 @@ pub(super) fn coverage(
     let mut readable = true;
     let mut current = Vec::new();
     for path in linked.keys() {
-        match current_tests(tool_root, path) {
+        // A file whose test functions cannot be listed cannot refute a name.
+        match current_tests(tool_root, path).filter(|_| listable(path)) {
             Some(names) => {
                 current.push(format!("{path}: {}", listed(&names)));
                 known.extend(names);
@@ -421,7 +455,7 @@ pub(super) fn coverage(
                     .iter()
                     .filter(|(id, _)| ids.contains(id.as_str()))
                     .flat_map(|(_, value)| backticked(value))
-                    .filter(|name| !known.contains(*name))
+                    .filter(|name| !known.iter().any(|test| cites(name, test)))
                     .collect()
             } else {
                 BTreeSet::new()
@@ -573,7 +607,26 @@ fn clip(description: &str) -> String {
     }
 }
 
-/// Test function names recognized by language; unknown file types list none.
+/// File types whose test functions `test_names` can list.
+fn listable(path: &str) -> bool {
+    matches!(
+        Path::new(path)
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or(""),
+        "rs" | "py" | "js" | "mjs" | "cjs" | "ts" | "tsx" | "jsx"
+    )
+}
+
+/// A cited name names a listed test by itself or by its last path segment,
+/// as in `tests::name`, `Class.name`, `file.py::name` or `name()`.
+fn cites(name: &str, test: &str) -> bool {
+    let name = name.trim_end_matches("()");
+    name == test || name.rsplit([':', '.']).next() == Some(test)
+}
+
+/// Test function names recognized by language; other file types (see
+/// `listable`) list none.
 fn test_names(path: &str, source: &str) -> Vec<String> {
     let identifier = |text: &str| -> String {
         text.chars()
@@ -1095,6 +1148,89 @@ mod tests {
         contract.requirements[0].description = "Cover one, two and three.".into();
         contract.requirements[0].artifacts[0].kind = ArtifactKind::Source;
         assert!(contract.requirements[0].explicit_test_cases().is_empty());
+    }
+
+    #[test]
+    fn an_open_case_closes_on_qualified_or_unlistable_citations_and_names_current_tests() {
+        let contract_for = |file: &str| -> Contract {
+            serde_json::from_value(json!({"version":1,"requirements":[{
+                "id":"boundaries","description":"Exercise the public CLI. Cover empty input, absent input, and invalid encoding; use real data.",
+                "artifacts":[{"kind":"test","path":file}],"checks":[{"command":"cargo test"}]}]}))
+            .unwrap()
+        };
+        let map = |name: &str, last: &str| {
+            format!("Test coverage:\n- boundaries: `{name}`\n- boundaries / empty input: `{name}`\n- boundaries / absent input: `{name}`\n- boundaries / invalid encoding: {last}")
+        };
+        let gap = |contract: &Contract, dir: Option<&str>| {
+            let mut messages = vec![json!({"role":"user","content":"test"})];
+            messages.extend(blocked("review", MARKER));
+            let uncovered = map("known", "none (still missing)");
+            let refusal = coverage(contract, &messages, dir, &uncovered, Some(18)).unwrap();
+            messages.extend([json!({"role":"assistant","tool_calls":[{"id":"gap","function":{"name":"done","arguments":json!({"summary":uncovered}).to_string()}}]}),json!({"role":"tool","tool_call_id":"gap","content":format!("GOVERNOR BLOCKED\n\n{refusal}")})]);
+            messages
+        };
+
+        let contract = contract_for(TESTS);
+        let temp = workspace(TWO_TESTS);
+        let dir = temp.path().to_str();
+        let messages = gap(&contract, dir);
+        let name = "completed_fixture_is_reported_by_public_cli";
+        for cited in [
+            format!("tests::{name}"),
+            format!("coupled_status.rs::{name}"),
+            format!("{name}()"),
+        ] {
+            let summary = map(&cited, &format!("`{cited}`"));
+            assert!(
+                coverage(&contract, &messages, dir, &summary, Some(18)).is_none(),
+                "{cited}"
+            );
+        }
+        let refusal = coverage(
+            &contract,
+            &messages,
+            dir,
+            &map(name, "`unwritten_case`"),
+            Some(18),
+        )
+        .unwrap();
+        assert!(refusal.starts_with(DECLARED_CASE_MARKER), "{refusal}");
+        assert!(refusal.contains(
+            "These cited names are not test functions in the linked test files: `unwritten_case`."
+        ));
+        assert!(refusal.contains(&format!(
+            "Test functions there now: {name}, unsupported_manifest_version_is_rejected_without_stdout."
+        )));
+
+        // Test functions of other file types cannot be listed, so a citation
+        // there cannot be refuted and does not hold completion.
+        let go = "tests/status_test.go";
+        let contract = contract_for(go);
+        let temp = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(temp.path().join("tests")).unwrap();
+        std::fs::write(
+            temp.path().join(go),
+            "package status\n\nfunc TestStatus(t *testing.T) {}\n",
+        )
+        .unwrap();
+        let dir = temp.path().to_str();
+        let messages = gap(&contract, dir);
+        assert!(coverage(
+            &contract,
+            &messages,
+            dir,
+            &map("TestStatus", "`TestStatus`"),
+            Some(18)
+        )
+        .is_none());
+        assert!(coverage(
+            &contract,
+            &messages,
+            dir,
+            &map("TestStatus", "none (still missing)"),
+            Some(18)
+        )
+        .is_some());
     }
 
     #[test]

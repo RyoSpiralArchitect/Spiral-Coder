@@ -301,7 +301,11 @@ acceptance criterion in `remaining_acceptance` and describe the next test
 edit in `next_steps`. The recorded case travels with the blocked handoff.
 On resume, a completion claim must name a current test in a linked artifact
 for each case previously reported missing. Independent checks still decide
-whether those tests exercise the promised behavior.
+whether those tests exercise the promised behavior. A claim that does not is
+returned with `[Declared test cases]`, which lists the open cases, any cited
+names it could not find, and the current test functions. A qualified name
+(`tests::name`, `Class.name`) counts by its last segment. A name cited for a
+file type whose tests cannot be listed is taken as given.
 
 ## Receipts and budget
 

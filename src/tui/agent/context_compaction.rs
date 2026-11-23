@@ -57,6 +57,32 @@ fn wire_bytes(messages: &[Value]) -> usize {
         .len()
 }
 
+/// Tool results a Coder request still carries verbatim once compaction
+/// applies. The threshold is measured on the assembled request, which adds
+/// runtime notes to the native messages, so this assumes compaction is active:
+/// a result it reduces to a history entry no longer shows its content.
+pub(crate) fn verbatim_tool_results(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+) -> std::collections::BTreeSet<String> {
+    let mut metrics = Metrics {
+        version: 1,
+        role: "coder",
+        before_bytes: 0,
+        after_bytes: 0,
+        target_bytes: TARGET_BYTES,
+        compacted_exchanges: 0,
+        compacted_messages: 0,
+        omitted_history_entries: 0,
+        protected_overflow: false,
+    };
+    history::project(messages, test_cmd, &mut metrics)
+        .iter()
+        .filter(|message| message["role"] == "tool")
+        .filter_map(|message| message["tool_call_id"].as_str().map(str::to_owned))
+        .collect()
+}
+
 pub(crate) fn coder(messages: &[Value], test_cmd: Option<&str>) -> (Vec<Value>, Metrics) {
     let before_bytes = wire_bytes(messages);
     let mut metrics = Metrics {

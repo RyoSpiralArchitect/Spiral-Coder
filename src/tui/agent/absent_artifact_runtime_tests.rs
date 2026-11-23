@@ -169,3 +169,57 @@ fn only_absent_declared_artifacts_skip_diagnosis() {
         assert!(!absent(TESTS));
     }
 }
+
+#[test]
+fn a_restored_edit_diagnosis_does_not_wait_on_an_absent_declared_artifact() {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(root.path().join("tests")).unwrap();
+    std::fs::write(root.path().join("status.py"), "print('ok')\n").unwrap();
+    let requirements = json!({"version":1,"requirements":[
+        {"id":"status-tests","description":"Cover a missing record.",
+         "artifacts":[{"path":"status.py","kind":"source"},{"path":TESTS,"kind":"test"}],
+         "checks":[{"command":CHECK}]}]});
+    let mut messages = vec![crate::task_origin::user_message(
+        &format!("Implement it.\n<task_requirements>\n{requirements}\n</task_requirements>"),
+        crate::task_origin::MessageOrigin::User,
+    )];
+    let workspace = root.path().to_str();
+    let push = |messages: &mut Vec<Value>, id: &str, name: &str, args: Value, result: &str| {
+        messages.push(json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":name,"arguments":args.to_string()}}]}));
+        messages.push(json!({"role":"tool","tool_call_id":id,"content":result}));
+    };
+    push(
+        &mut messages,
+        "edit",
+        "patch_file",
+        json!({"path":"status.py","search":"print('missing')","replace":"print('x')"}),
+        "ERROR: search string not found in 'status.py'.",
+    );
+    let read = |path: &str| crate::file_tools::tool_read_file(path, workspace).0;
+    push(
+        &mut messages,
+        "absent",
+        "read_file",
+        json!({"path":TESTS}),
+        &read(TESTS),
+    );
+    let focus = super::recovery_focus::RecoveryFocus::default();
+    let restored = |messages: &[Value]| {
+        focus
+            .restored_edit_diagnosis(messages, workspace, Some(CHECK))
+            .expect("the failed edit is still pending")
+            .1
+    };
+    // A new slice restores the pending edit diagnosis from history. The read
+    // of the declared, not yet created test file does not hold it.
+    assert!(!restored(&messages).contains(TESTS));
+    // An undeclared missing file is still a read failure to diagnose.
+    push(
+        &mut messages,
+        "missing",
+        "read_file",
+        json!({"path":"tests/other.py"}),
+        &read("tests/other.py"),
+    );
+    assert!(restored(&messages).contains("tests/other.py"));
+}

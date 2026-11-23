@@ -205,7 +205,7 @@ fn validate_advice(
             tool_root,
             test_command,
         ) {
-            return Some(format!("This read_file of {path} would return the same native result the Coder already received {repeats} times in this task; the file has not changed since. Suggest an action that uses that content, such as an edit tied to the latest failure or a read of a different range or file for a fact not seen yet, or give a no-tool clarify."));
+            return Some(format!("This read_file of {path} would return the same native result the Coder already received {repeats} times in this task, and the Coder's context still shows it in full; the file has not changed since. Suggest an action that uses that content, such as an edit tied to the latest failure or a read of another range or file, or give a no-tool clarify."));
         }
     }
     if let Some(issue) = source_edit::issue(action, &obligations, tool_root) {
