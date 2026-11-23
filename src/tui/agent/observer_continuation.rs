@@ -6,11 +6,18 @@ use crate::tui::suggestion::{
 };
 use serde_json::Value;
 
+const ACCEPTED_READ: &str = "accepted_observer_read";
+
+pub(super) fn accepted_read_result(message: &Value) -> bool {
+    message[super::recovery_focus::METADATA_KEY][ACCEPTED_READ] == Value::Bool(true)
+}
+
 #[derive(Clone)]
 pub(crate) struct Observation {
     tool: &'static str,
     arguments: Value,
     wire_arguments: Value,
+    source_range: bool,
 }
 
 tokio::task_local! {
@@ -44,12 +51,42 @@ impl Observation {
                 tool: "read_file",
                 arguments: action.suggested_args.clone(),
                 wire_arguments: action.suggested_args.clone(),
+                source_range: Self::is_source_range(
+                    &action.suggested_args,
+                    session,
+                    test_command,
+                    tool_root,
+                ),
             }),
             (ObserverSuggestionKind::Verify, Some("exec")) => {
                 Self::verification(&action.suggested_args, session, test_command, tool_root)
             }
             _ => None,
         }
+    }
+
+    fn is_source_range(
+        args: &Value,
+        session: &AgentSession,
+        test_command: Option<&str>,
+        root: &str,
+    ) -> bool {
+        let Ok(read) =
+            serde_json::from_value::<crate::file_tools::read_range::ReadRequest>(args.clone())
+        else {
+            return false;
+        };
+        if !read.is_range() {
+            return false;
+        }
+        let focus = super::recovery_focus::RecoveryFocus::from_messages(
+            &session.messages,
+            Some(root),
+            test_command,
+        );
+        focus
+            .diagnostic_followup(&session.messages, Some(root))
+            .is_some_and(|followup| followup.accepts_source_range(&read, root))
     }
 
     fn verification(
@@ -71,6 +108,7 @@ impl Observation {
         };
         let task = crate::task_origin::root_user_text(&session.messages);
         Catalog::from_root(task)
+            .with_comparison(obligations.diagnostic_followup.as_ref())
             .resolve(&mut selection, Some(root))
             .ok()?;
         let arguments: Value = serde_json::from_str(&selection.arguments).ok()?;
@@ -102,21 +140,51 @@ impl Observation {
             tool: "exec",
             arguments,
             wire_arguments: args.clone(),
+            source_range: false,
         })
     }
 
     pub(crate) fn guidance(&self) -> String {
+        let next = if self.source_range {
+            " Accepting this source read means making it your next native action. Use override or defer when choosing a different action."
+        } else {
+            ""
+        };
         format!(
-            "[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native {} with exactly these arguments: {}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply.",
+            "[Current Observer observation]\nAccept this observation only if it advances the current task. Use the admitted plan. Put the local purpose in think.goal and keep the original goal and acceptance criteria if revising the steps. To use this handoff, give decision: accept in the Observer response and emit one native {} with exactly these arguments: {}. For exec, think.next may be @observer. Required diagnosis, scope, approval and verification still apply.{next}",
             self.tool, self.wire_arguments,
         )
     }
 
     pub(super) fn matches_accepted_call(&self, call: &ToolCallData, text: &str) -> bool {
-        call.name == self.tool
+        suggestion::explicit_response_decision(text) == Some(ObserverResponseMode::Accept)
+            && self.matches_call(call)
+    }
+
+    pub(super) fn source_read_selection_issue(
+        &self,
+        call: &ToolCallData,
+        text: &str,
+    ) -> Option<String> {
+        (self.source_range
             && suggestion::explicit_response_decision(text) == Some(ObserverResponseMode::Accept)
+            && !self.matches_call(call))
+            .then(|| format!(
+                "[Observer source read] The accept decision selected read_file with exactly these arguments: {}. The attempted {} did not run. Keep the admitted plan. To accept, set think.tool to read_file and issue that one call. To choose a different action, use decision: override or decision: defer and explain why. Normal gates still apply.",
+                self.wire_arguments, call.name,
+            ))
+    }
+
+    fn matches_call(&self, call: &ToolCallData) -> bool {
+        call.name == self.tool
             && serde_json::from_str::<Value>(&call.arguments)
                 .is_ok_and(|arguments| arguments == self.arguments)
+    }
+
+    pub(super) fn record_read_result(&self, call: &ToolCallData, message: &mut Value) {
+        if call.name == "read_file" && self.matches_call(call) {
+            message[super::recovery_focus::METADATA_KEY][ACCEPTED_READ] = Value::Bool(true);
+        }
     }
 
     pub(super) fn command(&self) -> Option<&str> {
@@ -226,5 +294,61 @@ mod tests {
             let env = advice(kind, tool, args, confidence);
             assert!(Observation::from_advice(&env, &session(cwd), None, root).is_none());
         }
+    }
+    #[test]
+    fn accepted_observer_read_receipt_keeps_exact_arguments() {
+        let args = json!({"path":"src/a.rs","start_line":9,"end_line":16});
+        let observation = Observation {
+            tool: "read_file",
+            arguments: args.clone(),
+            wire_arguments: args.clone(),
+            source_range: false,
+        };
+        let mut call = ToolCallData {
+            id: "read".into(),
+            name: "read_file".into(),
+            arguments: args.to_string(),
+            thought_signature: None,
+        };
+        assert!(observation.matches_accepted_call(&call, ACCEPT));
+        let mut result = json!({"role":"tool", "recovery_focus":{"version":2}});
+        observation.record_read_result(&call, &mut result);
+        assert!(accepted_read_result(&result));
+
+        call.arguments = json!({"path":"src/a.rs","start_line":9,"end_line":15}).to_string();
+        assert!(!observation.matches_accepted_call(&call, ACCEPT));
+        let mut result = json!({"role":"tool", "recovery_focus":{"version":2}});
+        observation.record_read_result(&call, &mut result);
+        assert!(!accepted_read_result(&result));
+    }
+    #[test]
+    fn conflicting_accept_gets_specific_read_feedback_without_forcing_an_override() {
+        let read = json!({"path":"src/a.rs","start_line":10,"end_line":20});
+        let observation = Observation {
+            tool: "read_file",
+            arguments: read.clone(),
+            wire_arguments: read.clone(),
+            source_range: true,
+        };
+        let mut call = ToolCallData {
+            id: "candidate".into(),
+            name: "patch_file".into(),
+            arguments: "{}".into(),
+            thought_signature: None,
+        };
+        let issue = observation
+            .source_read_selection_issue(&call, ACCEPT)
+            .unwrap();
+        assert!(issue.contains(&read.to_string()));
+        for decision in ["decision: override", "decision: defer", "No decision"] {
+            assert!(observation
+                .source_read_selection_issue(&call, decision)
+                .is_none());
+        }
+        call.name = "read_file".into();
+        call.arguments = read.to_string();
+        assert!(observation
+            .source_read_selection_issue(&call, ACCEPT)
+            .is_none());
     }
 }

@@ -35,7 +35,7 @@ impl RecoveryGovernor {
         check: Option<&str>,
     ) {
         self.focus = super::recovery_focus::RecoveryFocus::from_messages(messages, root, check);
-        if let Some(stage) = self.focus.restored_edit_stage(messages, root, check) {
+        if let Some((stage, _)) = self.focus.restored_edit_diagnosis(messages, root, check) {
             self.stage = Some(stage);
         } else if self.focus.is_pending()
             && (self.stage != Some(RecoveryStage::Diagnose)
@@ -177,6 +177,60 @@ Required now: {}",
                 ))
             }
         }
+    }
+
+    pub(super) fn on_evidence_rejection(
+        &mut self,
+        call: &ToolCallData,
+        messages: &[serde_json::Value],
+        root: Option<&str>,
+    ) -> String {
+        if self.stage == Some(RecoveryStage::Fix)
+            && self.focus.latest_read_supports_edit(call, messages, root)
+        {
+            return "\n\nThe latest native read supports this edit target. Keep the repair phase and correct the <evidence> fields before retrying the edit. The failed check remains due.".into();
+        }
+        self.stage = Some(RecoveryStage::Diagnose);
+        self.target_read_hint(call, crate::task_origin::root_user_text(messages), root)
+            .unwrap_or_default()
+    }
+
+    pub(super) fn target_read_hint(
+        &self,
+        call: &ToolCallData,
+        task: &str,
+        root: Option<&str>,
+    ) -> Option<String> {
+        if self.stage != Some(RecoveryStage::Diagnose) || !self.focus.observed() {
+            return None;
+        }
+        let args = super::deferred_edit::diagnosis::evidence_read(call, task, root?)?;
+        Some(format!("\n\nThe failure location has been read. Your proposed patch currently has one matching source block. Inspect it with read_file using {args}. Use the returned source to correct the evidence for a new edit, then rerun the failed check."))
+    }
+
+    /// An edit's own target may have been diagnosed while an older file read
+    /// still holds the gate. Name one existing target the Coder can read now.
+    pub(super) fn unresolved_read_hint(
+        &self,
+        messages: &[serde_json::Value],
+        root: Option<&str>,
+        check: Option<&str>,
+    ) -> Option<String> {
+        if self.stage != Some(RecoveryStage::Diagnose) || self.focus.requires_read() {
+            return None;
+        }
+        let root = root?;
+        let (RecoveryStage::Diagnose, failed_reads) =
+            self.focus
+                .restored_edit_diagnosis(messages, Some(root), check)?
+        else {
+            return None;
+        };
+        let path = failed_reads.into_iter().find(|p| {
+            crate::file_tools::resolve_safe_path(p, Some(root)).is_ok_and(|file| file.is_file())
+        })?;
+        let args = serde_json::json!({"path":path,"start_line":1,"end_line":40});
+        Some(format!("\n\nAn earlier read of this file failed and has no successful read since. Inspect it with read_file using {args}. Then retry the pending edit once its diagnosis is complete."))
     }
 
     pub(super) fn on_diagnostic_result(&mut self, ok: bool) {

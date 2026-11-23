@@ -15,6 +15,50 @@ The first live runs also exposed a runtime coercion conflict; the
 [follow-up edit safety contract](followup-edit-safety.md) preserves diagnostic
 reads and authored local edits while retaining completion and verification gates.
 
+## From a baseline failure to a source edit
+
+After a failed Python unittest and a read of its test, Coder and Observer can
+receive the named subtests and the scalar assertion for each one in
+`diagnostic_followup.reported_subtests`. This requires the native error digest
+to account for every reported failure in the selected method. Each role can
+trace which rows share a source condition, identify the positive control, and
+name any row that still needs a separate change. A clipped comparison with
+incomplete observations can still use the focused unittest probe. The original
+exact check measures the effect of the edit.
+
+A failing check in the human task can name the source it is meant to exercise
+through `task_requirements`. When the Coder has read the failed test and a
+complete native window in that source before editing, the pair can return once
+to the Observer with both reads. The Observer uses the valid control and failed
+case to state what the edit must preserve, and can propose an exact patch
+against the displayed source. If the Observer asks for a missing range, one
+additional return can follow the accepted read when it supplies new lines in
+the same source. The remaining allowance must cover the edit, required checks,
+and final report. If the Coder accepts that ranged read and selects a different
+tool, it receives one correction with the exact read arguments. It can confirm
+the read or explicitly choose another action through the normal gates.
+When a complete range overlaps an earlier clipped full-file read, Observer can
+see up to 120 preceding complete lines (4 KiB) from that read. The shared lines
+must agree byte for byte and both native headers must agree on file size and
+line count. The excerpt cites its original read. A proposed bounded reread
+fully covered by that excerpt and the current window receives the usual single
+advice-repair opportunity. Ranges extending beyond the quoted evidence stay available.
+
+If a patch is rejected before execution for a malformed evidence block, an
+observed failed check stays in its repair phase when the latest executed call
+read that exact target under the same native diagnosis. Coder must correct its
+evidence fields and rerun the failed check after the edit.
+When the latest observation was the failed test and the proposed literal
+patch still needs a current source read, recovery can locate its unique
+search block in the allowed workspace file and suggest those exact lines.
+The Coder must read the source and submit a new edit with valid evidence.
+An ambiguous, missing, or oversized search block yields no suggested range.
+
+For a Rust patch that inserts a comparison into an observed condition, the
+Observer action validator looks for the bare operand names in the retained
+source windows. It can return feedback asking for the actual binding or its
+declaration. Both roles still need the original checks after the edit.
+
 ## Asking the pair to consider existing code
 
 Put the preference near the start of the task you give the Coder. The Observer

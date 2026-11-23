@@ -54,3 +54,10 @@ explicit `.rs` file of at most 512 KiB. It treats text in strings and comments
 like other lexical occurrences. Read the surrounding source to identify the
 argument declaration and handler, then run the public command with the requested
 arguments and inspect its output.
+
+A directory search for a command such as `inspect-run` can also locate a Rust
+enum variant named `InspectRun`. When one visited file contains both its
+declaration and a qualified match arm, the navigation note gives their file
+and line numbers. The result count still describes literal hits. Directory
+searches omit the note when the walk reaches its result limit or finds the
+pair in multiple files.

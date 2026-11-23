@@ -1,3 +1,4 @@
+use super::observation_key::key as observation_key;
 use super::task_harness::{fix_existing_target_hint, ArtifactMode, TaskHarness};
 use super::*;
 use serde_json::Value;
@@ -60,6 +61,7 @@ pub(super) struct PolicyDelta {
     pub action: PolicyAction,
     pub evidence_count: usize,
     pub attempted_command: Option<String>,
+    pub attempted_signature: Option<String>,
     pub next_target: Option<String>,
 }
 
@@ -236,7 +238,8 @@ Do NOT spend the next turn on another same-target observation unless new tool ou
 struct PendingToolIntent {
     name: String,
     command: Option<String>,
-    signature: Option<String>,
+    display: Option<String>,
+    observation_key: Option<String>,
     path: Option<String>,
 }
 
@@ -247,6 +250,7 @@ pub(super) struct ObservationWindow {
     pub(super) by_command: BTreeMap<String, usize>,
     repeated_last_command: usize,
     last_command: Option<String>,
+    last_signature: Option<String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -311,6 +315,7 @@ fn detect_repeated_observation_loop(
         action,
         evidence_count: window.total_successes_since_mutation,
         attempted_command: window.last_command,
+        attempted_signature: window.last_signature,
         next_target,
     })
 }
@@ -349,6 +354,7 @@ fn detect_repo_scaffold_drift(
         action: PolicyAction::AdvanceRepoScaffold,
         evidence_count: progress.present_files.len() + usize::from(progress.has_git),
         attempted_command: None,
+        attempted_signature: None,
         next_target: Some(next_target),
     })
 }
@@ -391,8 +397,8 @@ pub(super) fn observation_window_since_last_mutation(
                     } else {
                         None
                     };
-                    let signature =
-                        canonicalize_tool_call_command(name.as_str(), arguments.as_str());
+                    let observation_key = observation_key(&name, &arguments);
+                    let display = canonicalize_tool_call_command(name.as_str(), arguments.as_str());
                     let path = serde_json::from_str::<Value>(arguments.as_str())
                         .ok()
                         .and_then(|value| {
@@ -407,7 +413,8 @@ pub(super) fn observation_window_since_last_mutation(
                         PendingToolIntent {
                             name,
                             command,
-                            signature,
+                            display,
+                            observation_key,
                             path,
                         },
                     );
@@ -439,14 +446,18 @@ pub(super) fn observation_window_since_last_mutation(
                 }
 
                 let command = intent
-                    .signature
+                    .display
                     .unwrap_or_else(|| intent.path.unwrap_or_else(|| intent.name.clone()));
                 out.total_successes_since_mutation += 1;
-                *out.by_command.entry(command.clone()).or_default() += 1;
-                if out.last_command.as_deref() == Some(command.as_str()) {
+                out.last_command = Some(command);
+                if let Some(key) = &intent.observation_key {
+                    *out.by_command.entry(key.clone()).or_default() += 1;
+                }
+                if intent.observation_key.is_some() && out.last_signature == intent.observation_key
+                {
                     out.repeated_last_command += 1;
                 } else {
-                    out.last_command = Some(command);
+                    out.last_signature = intent.observation_key;
                     out.repeated_last_command = 1;
                 }
             }
@@ -551,7 +562,8 @@ fn repo_scaffold_progress(
                         PendingToolIntent {
                             name,
                             command,
-                            signature: None,
+                            display: None,
+                            observation_key: None,
                             path,
                         },
                     );
@@ -738,6 +750,7 @@ mod tests {
                 action: PolicyAction::AdvanceRepoScaffold,
                 evidence_count: 2,
                 attempted_command: None,
+                attempted_signature: None,
                 next_target: Some("demo_repo/README.md".to_string()),
             }),
         };

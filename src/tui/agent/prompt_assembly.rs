@@ -103,9 +103,9 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
     let harness_evolution_warned = &mut *ctx.harness_evolution_warned;
 
     let mut msgs_for_call = messages.clone();
-    if let Some(hint) =
-        task_obligations::prompt(&messages, test_cmd.as_deref(), tool_root_abs.as_deref())
-    {
+    let obligations =
+        task_obligations::project_at(messages, test_cmd.as_deref(), tool_root_abs.as_deref());
+    if let Some(hint) = task_obligations::prompt_for(&obligations, messages) {
         msgs_for_call.push(json!({"role":"system", "content":hint}));
     }
     if let Some(h) = pending_system_hint.take() {
@@ -473,7 +473,8 @@ pub(super) async fn assemble_turn(ctx: &mut AssemblyCtx<'_>) -> AssemblyOut {
     }
 
     let mut tools_clone = next_action.tools(&tools);
-    let check_catalog = check_catalog::Catalog::from_root(&root_user_text);
+    let check_catalog = check_catalog::Catalog::from_root(&root_user_text)
+        .with_comparison(obligations.diagnostic_followup.as_ref());
     if let Some(prompt) =
         check_catalog.bind_for(&mut tools_clone, &cfg.base_url, next_action.recheck())
     {

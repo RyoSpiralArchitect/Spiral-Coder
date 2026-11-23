@@ -1004,7 +1004,15 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         test_cmd.as_deref(),
         last_mutation_step,
         file_tool_consec_failures,
-    ) {
+    )
+    .or_else(|| {
+        super::observation_stall::unchanged_read_block(
+            &*messages,
+            tc,
+            tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
+        )
+    }) {
         *state = AgentState::Recovery;
         emit_governor_block(
             governor_emit(
@@ -1090,8 +1098,13 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
                     block
                 } else {
                     *state = AgentState::Recovery;
-                    recovery.stage = Some(RecoveryStage::Diagnose);
-                    let block = build_evidence_gate_prompt(tc, &observations, &*assumption_ledger);
+                    let mut block =
+                        build_evidence_gate_prompt(tc, &observations, &*assumption_ledger);
+                    block.push_str(&recovery.on_evidence_rejection(
+                        tc,
+                        messages,
+                        tool_root_abs.as_deref(),
+                    ));
                     emit_governor_block(
                         governor_emit(
                             &tx,
@@ -1124,12 +1137,12 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         };
         if let Err(e) = validate_evidence_block(&evidence_block, tc, &observations) {
             *state = AgentState::Recovery;
-            recovery.stage = Some(RecoveryStage::Diagnose);
             let mut block = format!(
                 "{}\n\n{}",
                 governor_contract::evidence_invalid_message(&e.to_string()),
                 build_evidence_gate_prompt(tc, &observations, &*assumption_ledger)
             );
+            block.push_str(&recovery.on_evidence_rejection(tc, messages, tool_root_abs.as_deref()));
             if !evidence_block.target_symbols.is_empty() {
                 block.push_str("\n\nCurrent target_symbols:\n");
                 for symbol in &evidence_block.target_symbols {

@@ -3,6 +3,7 @@
 //! the task into a typed outcome.
 use super::*;
 use serde_json::Value;
+use std::sync::Arc;
 
 /// Result of a single streamed provider response.
 pub(super) struct StreamedTurn {
@@ -26,23 +27,68 @@ pub(super) async fn request_turn_stream(
     tx: &mpsc::Sender<StreamToken>,
     last_request_cursor: &mut Option<usize>,
 ) -> StreamedTurn {
+    let context = crate::work_budget::current();
+    let mut payload = Arc::new((messages, tools));
+    let mut turn = delivery(client, cfg, payload.clone(), tx, context.clone()).await;
+    let retry = match (&context, turn.request_cursor, &turn.error) {
+        (Some(ctx), Some(cursor), Some(_)) if ctx.role == "coder" && !tx.is_closed() => ctx
+            .budget
+            .coder_reconnect(cursor)
+            .map(|budget| (cursor, budget)),
+        _ => None,
+    };
+    if let Some((parent, budget)) = retry {
+        let instruction = "Coder stream recovery: the previous response was incomplete. Choose one short, complete next action from the current evidence. Any partial text or tool arguments from that delivery were discarded.";
+        if tx
+            .send(StreamToken::Delta(format!("\n[agent] {instruction}\n")))
+            .await
+            .is_ok()
+        {
+            emit_telemetry_event(
+                tx,
+                "coder_stream_reconnect",
+                json!({"source_request":parent}),
+            )
+            .await;
+            let messages = &mut Arc::make_mut(&mut payload).0;
+            let at = messages
+                .iter()
+                .position(|m| m["role"] != "system")
+                .unwrap_or(messages.len());
+            messages.insert(at, json!({"role":"system","content":instruction}));
+            let retry = crate::work_budget::Context {
+                budget,
+                role: "coder",
+            };
+            turn = delivery(client, cfg, payload, tx, Some(retry)).await;
+        }
+    }
+    *last_request_cursor = turn.request_cursor;
+    if let Some(error) = &turn.error {
+        let _ = tx.send(StreamToken::Error(error.clone())).await;
+    }
+    turn
+}
+
+async fn delivery(
+    client: &reqwest::Client,
+    cfg: &RunConfig,
+    payload: Arc<(Vec<Value>, Value)>,
+    tx: &mpsc::Sender<StreamToken>,
+    request_context: Option<crate::work_budget::Context>,
+) -> StreamedTurn {
     let (token_tx, mut token_rx) = mpsc::channel::<StreamToken>(256);
     let client_clone = client.clone();
     let cfg_clone = cfg.clone();
-    let msgs_clone = messages;
-    let tools_clone = tools;
-
-    let request_context = crate::work_budget::current();
     let request_cursor = request_context
         .as_ref()
         .map(|c| c.budget.snapshot().requests.len());
-    *last_request_cursor = request_cursor;
     let stream_task = tokio::spawn(crate::work_budget::scope(request_context, async move {
         stream_openai_compat_json(
             &client_clone,
             &cfg_clone,
-            &msgs_clone,
-            Some(&tools_clone),
+            &payload.0,
+            Some(&payload.1),
             token_tx,
         )
         .await
@@ -87,7 +133,6 @@ pub(super) async fn request_turn_stream(
             }
             StreamToken::Done => break,
             StreamToken::Error(e) => {
-                let _ = tx.send(StreamToken::Error(e.clone())).await;
                 turn.error = Some(e);
                 break;
             }
@@ -96,23 +141,9 @@ pub(super) async fn request_turn_stream(
     }
 
     match stream_task.await {
-        Err(join_err) => {
-            let msg = format!("stream task panicked: {join_err}");
-            if turn.error.is_none() {
-                let _ = tx.send(StreamToken::Error(msg.clone())).await;
-            }
-            turn.error = Some(msg);
-        }
-        Ok(Err(e)) => {
-            // Stream failed (network error, bad status, etc.) — surface it.
-            let msg = format!("{e:#}");
-            if turn.error.is_none() {
-                let _ = tx.send(StreamToken::Error(msg.clone())).await;
-            }
-            turn.error = Some(msg);
-        }
-        Ok(Ok(())) => {}
+        Err(error) => turn.error = Some(format!("stream task panicked: {error}")),
+        Ok(Err(error)) if turn.error.is_none() => turn.error = Some(format!("{error:#}")),
+        _ => {}
     }
-
     turn
 }

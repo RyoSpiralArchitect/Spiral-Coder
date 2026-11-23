@@ -37,6 +37,8 @@ pub(super) struct BlockedReport {
     pub next_steps: String,
     pub pending_exact_checks: Vec<String>,
     pub pending_recovery: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub remaining_test_cases: Vec<String>,
 }
 
 pub(super) fn prepare(
@@ -84,26 +86,26 @@ pub(super) fn prepare(
             observation,
         )?;
         let obligations = task_obligations::project(messages, test_cmd);
-        // A blocked report needs a live blocker. When an explicit requirements
-        // contract exists and every declared requirement and pending check is
-        // already discharged, the honest closeout is `done` — not an
-        // incomplete report. Undeclared prose tasks are out of scope: without a
-        // declared contract we cannot prove nothing remains, so a truthful
-        // incomplete report stays admissible.
-        let requirements = requirement_proof::project(messages, test_cmd);
-        anyhow::ensure!(
-            !(requirements.declared
-                && requirements.pending.is_empty()
-                && obligations.pending_exact_checks.is_empty()
-                && obligations.pending_recovery.is_empty()),
-            "Blocked report claims remaining work, but every declared requirement and pending check is already discharged. Call `done` with the accurate completed/remaining split, or execute the one missing step first."
-        );
+        let remaining_test_cases = if obligations.task_requirements.declared
+            && obligations.task_requirements.pending.is_empty()
+            && obligations.pending_exact_checks.is_empty()
+            && obligations.pending_recovery.is_empty()
+        {
+            requirement_proof::blocked_test_cases(
+                crate::task_origin::root_user_text(messages),
+                summary,
+                next_steps,
+            )?
+        } else {
+            Vec::new()
+        };
         Ok(BlockedReport {
             summary: summary.into(),
             remaining_acceptance,
             next_steps: next_steps.into(),
             pending_exact_checks: obligations.pending_exact_checks,
             pending_recovery: obligations.pending_recovery,
+            remaining_test_cases,
         })
     })())
 }

@@ -55,6 +55,7 @@ async fn drain(
     pane: PaneId,
     trace: &crate::trace_writer::TraceWriter,
 ) -> Result<()> {
+    let mut interrupted_coder_request = None;
     loop {
         let event = rx
             .recv()
@@ -69,7 +70,22 @@ async fn drain(
         );
         if let request_stream::Payload::Token(token) = &event.payload {
             match token {
-                StreamToken::Telemetry(event) => trace.event(&event.event, event.data.clone())?,
+                StreamToken::Telemetry(event) => {
+                    trace.event(&event.event, event.data.clone())?;
+                    if matches!(pane, PaneId::Coder) {
+                        match event.event.as_str() {
+                            "request_started" => interrupted_coder_request = None,
+                            "request_usage" if event.data["status"] == "stream_interrupted" => {
+                                interrupted_coder_request = termination::lost_request(
+                                    &app.work_budget.snapshot(),
+                                    &event.data,
+                                );
+                            }
+                            "request_usage" => interrupted_coder_request = None,
+                            _ => {}
+                        }
+                    }
+                }
                 StreamToken::ToolCall(call) if matches!(pane, PaneId::Coder) => trace.event(
                     "tool_call",
                     json!({"id":call.id,"name":call.name,"arguments":call.arguments}),
@@ -86,6 +102,13 @@ async fn drain(
         };
         request_stream::dispatch(event, app, pane);
         if let Some(error) = error {
+            if let Some(request_id) = interrupted_coder_request {
+                return Err(termination::CoderStreamLoss {
+                    request_id,
+                    message: format!("{pane:?}: {error}"),
+                }
+                .into());
+            }
             anyhow::bail!("{pane:?}: {error}");
         }
         if terminal {
@@ -328,6 +351,10 @@ async fn run_iteration(
                 == Some(super::super::coder_yield::CoderYieldReason::DiagnosticFollowup)
             {
                 "diagnostic_followup"
+            } else if app.coder_yield_reason
+                == Some(super::super::coder_yield::CoderYieldReason::AuthoredTestReview)
+            {
+                "authored_test_review"
             } else {
                 "incomplete_task"
             };
@@ -338,6 +365,10 @@ async fn run_iteration(
                 continue;
             }
             if !blocked && app.pending_observer_hint.is_none() && iterations::send_last_report(&mut app,&coder_tx,&trace).await? { continue; }
+            if let Some(request_id) = observer_request::resume_rejected_test_review(&mut app, &coder_tx).await {
+                trace.event("observer_test_review_returned_work", json!({"observer_request_id":request_id}))?;
+                continue;
+            }
             let window = observer_request::take_delivery_window(&mut app);
             if let Some(args) = &window {
                 trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;

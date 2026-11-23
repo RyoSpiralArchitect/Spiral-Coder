@@ -7,6 +7,43 @@ use crate::tui::agent::{
 use serde_json::json;
 
 #[test]
+fn small_structured_stdout_survives_the_history_line_limit_verbatim() {
+    let value = json!({"rows":[{"id":"a","count":1},{"id":"b","count":null}],
+        "labels":["  preserve spacing  ", "引用 🐈"], "complete":false});
+    for value in [value.clone(), json!([value])] {
+        let stdout = serde_json::to_string_pretty(&value).unwrap();
+        let original = format!("OK (exit_code: 0)\ncwd: /work tree\nstdout:\n{stdout}");
+        assert!(original.lines().count() > crate::tui::agent::SUCCESS_TOOL_HISTORY_MAX_LINES);
+        let saved = compact_success_tool_result_for_history("exec", &original);
+        assert_eq!(saved, original);
+        assert_eq!(
+            crate::execution_evidence::exec_cwd(&saved),
+            Some("/work tree")
+        );
+        let (_, output, _) = parse_exec_tool_output_sections(&saved);
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&output).unwrap(),
+            value
+        );
+        for mixed in [
+            format!("{original}\nextra log line"),
+            format!("{original}\nstderr:\nwarning"),
+            original.replace("OK (exit_code: 0)", "FAILED (exit_code: 1)"),
+        ] {
+            assert!(
+                compact_success_tool_result_for_history("exec", &mixed).contains("[history digest")
+            );
+        }
+    }
+    let large = json!({"items": vec!["large payload"; 130]});
+    let verbose = format!(
+        "OK (exit_code: 0)\nstdout:\n{}",
+        serde_json::to_string_pretty(&large).unwrap()
+    );
+    assert!(compact_success_tool_result_for_history("exec", &verbose).contains("[history digest"));
+}
+
+#[test]
 fn successful_test_names_are_not_error_records() {
     let output = "running 3 tests\n\
 test agent::initial_baseline_exception_preserves_proof ... ok\n\

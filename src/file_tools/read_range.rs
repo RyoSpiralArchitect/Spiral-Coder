@@ -24,7 +24,7 @@ pub(crate) fn bounded_workspace_text(workspace: &Path, path: &str, limit: u64) -
     (body.len() as u64 <= limit).then_some(body)
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, serde::Serialize)]
 pub(crate) struct ReadRequest {
     pub path: String,
     pub start_line: Option<usize>,

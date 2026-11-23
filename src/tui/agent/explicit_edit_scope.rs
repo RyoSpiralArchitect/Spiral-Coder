@@ -133,8 +133,19 @@ pub(super) fn symbol_lookup(task: &str, call: &crate::streaming::ToolCallData) -
     else {
         return false;
     };
-    (2..=96).contains(&pattern.len())
-        && pattern.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_')
+    if !(2..=96).contains(&pattern.len()) {
+        return false;
+    }
+    if pattern.contains("::") || pattern.contains('.') {
+        // A qualified name locates a use site in one explicitly listed file.
+        // The progress gate still allows just one successful search per window.
+        return scope.0.contains(&dir)
+            && pattern.split("::").flat_map(|p| p.split('.')).all(|part| {
+                part.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_')
+                    && part.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_')
+            });
+    }
+    pattern.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_')
         && pattern
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))

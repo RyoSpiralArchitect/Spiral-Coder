@@ -1,9 +1,19 @@
 //! Native evidence for an assertion comparison or a different diagnostic step.
 use super::*;
-use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome};
+use crate::execution_evidence::{exec_cwd, exec_may_have_run, exec_outcome, file_edit_succeeded};
+use crate::file_tools::read_range;
 
+#[path = "diagnostic_followup/reported_subtests.rs"]
+mod reported_subtests;
 #[path = "diagnostic_followup/unittest_comparison.rs"]
 mod unittest_comparison;
+
+#[path = "diagnostic_followup/source_prefix.rs"]
+mod source_prefix;
+#[path = "diagnostic_followup/source_repair.rs"]
+mod source_repair;
+use source_prefix::{PrefixExcerpt, SourcePrefix};
+use source_repair::{adds_source_lines, SourceRead, SourceRepair, SourceWindow};
 
 const MAX_COMPARABLE_BYTES: usize = 16 * 1024;
 
@@ -19,8 +29,18 @@ pub(crate) struct DiagnosticFollowup {
     diagnostic: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     unittest_comparison: Option<unittest_comparison::UnittestComparison>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    comparison_check_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reported_subtests: Option<reported_subtests::ReportedSubtests>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    unchanged_after_patch: Option<reported_subtests::UnchangedAfterPatch>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source_repair: Option<SourceRepair>,
     #[serde(skip)]
     first_read_just_returned: bool,
+    #[serde(skip)]
+    source_read_just_returned: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -36,14 +56,39 @@ impl ComparisonReceipt<'_> {
 }
 
 impl DiagnosticFollowup {
+    pub(in crate::tui::agent) fn has_reported_subtests(&self) -> bool {
+        self.reported_subtests.is_some()
+    }
+
+    pub(in crate::tui::agent) fn has_unchanged_after_patch(&self) -> bool {
+        self.unchanged_after_patch.is_some()
+    }
+
     pub(in crate::tui::agent) fn has_unittest_comparison(&self) -> bool {
         self.unittest_comparison.is_some()
     }
 
     pub(in crate::tui::agent) fn matches_unittest_comparison(&self, args: &Value) -> bool {
-        self.unittest_comparison
-            .as_ref()
-            .is_some_and(|comparison| comparison.matches_arguments(args))
+        let Some(comparison) = &self.unittest_comparison else {
+            return false;
+        };
+        if let Some(id) = args.get("check_id") {
+            return self
+                .comparison_check_id
+                .as_deref()
+                .is_some_and(|current| id == current)
+                && comparison.matches_selection(args);
+        }
+        comparison.matches_arguments(args)
+    }
+
+    pub(in crate::tui::agent) fn comparison_check(
+        &self,
+    ) -> Option<crate::tui::agent::check_catalog::Check> {
+        Some(crate::tui::agent::check_catalog::Check {
+            id: self.comparison_check_id.clone()?,
+            command: self.unittest_comparison.as_ref()?.command().to_owned(),
+        })
     }
 
     pub(in crate::tui::agent) fn include_comparison_check_cost(
@@ -80,9 +125,55 @@ impl DiagnosticFollowup {
         Some(ComparisonReceipt { frame })
     }
 
+    pub(in crate::tui::agent) fn has_source_repair(&self) -> bool {
+        self.source_repair.is_some()
+    }
+
+    pub(in crate::tui::agent) fn accepts_source_range(
+        &self,
+        read: &read_range::ReadRequest,
+        root: &str,
+    ) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.accepts_range(read, root))
+    }
+
+    pub(crate) fn covered_source_read(&self, args: &Value, root: &str) -> Option<String> {
+        self.source_repair
+            .as_ref()?
+            .covered_read(&serde_json::from_value(args.clone()).ok()?, root)
+    }
+
+    pub(crate) fn observed_source_fragment(&self, path: &str, fragment: &str) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.contains_fragment(path, fragment))
+    }
+
+    pub(crate) fn observed_source_identifier(&self, path: &str, identifier: &str) -> bool {
+        self.source_repair
+            .as_ref()
+            .is_some_and(|source| source.contains_identifier(path, identifier))
+    }
+
+    pub(in crate::tui::agent) fn is_additional_source_return(&self) -> bool {
+        self.source_read_just_returned
+            && self
+                .source_repair
+                .as_ref()
+                .is_some_and(|source| source.previous_read_call_id.is_some())
+    }
+
     pub(in crate::tui::agent) fn should_yield(&self) -> bool {
-        let first_actionable_failure = if self.has_unittest_comparison() { 1 } else { 2 };
-        self.matching_failures == first_actionable_failure && self.first_read_just_returned
+        let first_actionable_failure =
+            if self.has_unittest_comparison() || self.has_reported_subtests() {
+                1
+            } else {
+                2
+            };
+        self.source_read_just_returned
+            || (self.matching_failures == first_actionable_failure && self.first_read_just_returned)
     }
 }
 
@@ -98,6 +189,9 @@ struct Cycle<'a> {
     matching_failures: usize,
     earlier_read_result: Option<&'a str>,
     first_read: Option<Read<'a>>,
+    source_read: Option<SourceRead<'a>>,
+    source_prefix: Option<SourcePrefix<'a>>,
+    source_windows: Vec<SourceWindow<&'a str>>,
 }
 
 impl RecoveryFocus {
@@ -141,17 +235,19 @@ impl RecoveryFocus {
         else {
             return false;
         };
-        if !self
+        // Rebuild the diagnostic as it was when this comparison ran. The
+        // active focus can already be waiting for verification after an edit.
+        let Some(observed) = self
             .pending
             .as_ref()
-            .is_some_and(|pending| matches_snapshot(message, pending, Observation::Observed))
-        {
+            .and_then(|pending| matching_snapshot(message, pending, Observation::Observed))
+        else {
             return false;
-        }
+        };
         messages
             .iter()
             .position(|candidate| std::ptr::eq(candidate, message))
-            .and_then(|index| self.diagnostic_followup(&messages[..index], root))
+            .and_then(|index| observed.diagnostic_followup(&messages[..index], root))
             .and_then(|followup| followup.observed_comparison(&command, cwd, frame))
             .is_some()
     }
@@ -169,11 +265,19 @@ impl RecoveryFocus {
         }
         let mut cycle: Option<Cycle<'_>> = None;
         let mut first_read_just_returned = false;
+        let mut source_read_just_returned = false;
+        let mut started_repair = false;
+        let mut selected_source_read = false;
+        let requirements =
+            super::super::requirement_proof::parse(crate::task_origin::root_user_text(messages))
+                .ok()
+                .flatten();
         let panic_line = root
             .to_str()
             .and_then(|root| focus.rust_panic_site(root).map(|(_, line)| line));
         for (call, message) in correlated_results(messages) {
             first_read_just_returned = false;
+            source_read_just_returned = false;
             let output = message["content"].as_str().unwrap_or_default();
             if !exec_may_have_run(output) || output.starts_with("Awaiting approval") {
                 continue;
@@ -182,13 +286,14 @@ impl RecoveryFocus {
                 call.name.as_str(),
                 "exec" | "write_file" | "patch_file" | "apply_diff"
             ) {
+                started_repair |= file_edit_succeeded(&call.name, output);
                 let previous = cycle.take();
                 if call.name == "exec"
                     && exec_outcome(output) == Some(false)
                     && exec_cwd(output).map(Path::new) == Some(root)
                     && super::super::parse_exec_command_from_args(&call.arguments)
                         .is_some_and(|command| command == focus.check)
-                    && matches_snapshot(message, focus, Observation::AwaitingRead)
+                    && matching_snapshot(message, focus, Observation::AwaitingRead).is_some()
                 {
                     if let Some(output) = comparable_output(output) {
                         let same = previous.filter(|previous| {
@@ -203,59 +308,150 @@ impl RecoveryFocus {
                                 .and_then(|p| p.first_read.as_ref().map(|r| r.result)),
                             earlier_failure: same.map(|p| p.latest_failure),
                             first_read: None,
+                            source_read: None,
+                            source_prefix: None,
+                            source_windows: Vec::new(),
                         });
                     }
                 }
             } else if call.name == "read_file" {
-                if let Some(cycle) = cycle.as_mut() {
-                    let root = root.to_str();
-                    if argument_path(&call)
-                        .and_then(|path| relative_path(&path, root))
-                        .as_deref()
-                        == Some(focus.path.as_str())
-                        && recovery_progress::successful_read(&call, output, &focus.path, root)
-                        && panic_line.is_none_or(|line| {
-                            crate::file_tools::read_range::covers_line(
-                                &call.arguments,
-                                output,
-                                line,
-                            )
+                let Some(cycle) = cycle.as_mut() else {
+                    continue;
+                };
+                let root = root.to_str();
+                let Some(path) = argument_path(&call).and_then(|path| relative_path(&path, root))
+                else {
+                    continue;
+                };
+                if !recovery_progress::successful_read(&call, output, &path, root)
+                    || matching_snapshot(message, focus, Observation::Observed).is_none()
+                {
+                    continue;
+                }
+                if path != focus.path {
+                    if started_repair
+                        || cycle.first_read.is_none()
+                        || !requirements.as_ref().is_some_and(|contract| {
+                            contract.has_source_for_baseline(&path, &focus.check)
                         })
-                        && matches_snapshot(message, focus, Observation::Observed)
                     {
-                        let prior = cycle
-                            .first_read
-                            .as_ref()
-                            .map(|read| read.result)
-                            .or(cycle.earlier_read_result);
-                        let different_read = prior.is_some_and(|prior| prior != output);
-                        if different_read {
-                            cycle.earlier_failure = None;
-                            cycle.matching_failures = 1;
-                            cycle.earlier_read_result = None;
-                            cycle.first_read = None;
-                        }
-                        if cycle.first_read.is_none() {
-                            cycle.first_read = Some(Read {
-                                call_id: call.id,
-                                result: output,
-                            });
-                            // A different window updates the diagnosis for this
-                            // failure. It does not start another Observer turn.
-                            first_read_just_returned = !different_read;
-                        }
+                        continue;
                     }
+                    let Some(mut source) = SourceRead::complete(path.clone(), &call, output) else {
+                        if cycle.source_read.is_none() {
+                            if let Some(prefix) = SourcePrefix::observed(path, &call, output) {
+                                cycle.source_prefix = Some(prefix);
+                            }
+                        }
+                        continue;
+                    };
+                    // One first source return per task. An additional return
+                    // needs an accepted Observer read with new lines in the
+                    // same source, in this same failed-check cycle.
+                    if let Some(previous) = &cycle.source_read {
+                        if source.path != previous.path
+                            || previous.previous_call_id.is_some()
+                            || !adds_source_lines(source.lines.clone(), &cycle.source_windows)
+                        {
+                            continue;
+                        }
+                        cycle.source_windows.push(SourceWindow {
+                            lines: source.lines.clone(),
+                            output: source.read.result,
+                        });
+                        if !super::super::observer_continuation::accepted_read_result(message) {
+                            continue;
+                        }
+                        source.previous_call_id = Some(previous.read.call_id.clone());
+                    } else {
+                        if selected_source_read {
+                            continue;
+                        }
+                        cycle.source_windows.push(SourceWindow {
+                            lines: source.lines.clone(),
+                            output: source.read.result,
+                        });
+                    }
+                    cycle.source_read = Some(source);
+                    selected_source_read = true;
+                    source_read_just_returned = true;
+                    continue;
+                }
+                if panic_line
+                    .is_some_and(|line| !read_range::covers_line(&call.arguments, output, line))
+                {
+                    continue;
+                }
+
+                let prior = cycle
+                    .first_read
+                    .as_ref()
+                    .map(|read| read.result)
+                    .or(cycle.earlier_read_result);
+                let different_read = prior.is_some_and(|prior| prior != output);
+                if different_read {
+                    cycle.earlier_failure = None;
+                    cycle.matching_failures = 1;
+                    cycle.earlier_read_result = None;
+                    cycle.first_read = None;
+                }
+                if cycle.first_read.is_none() {
+                    cycle.first_read = Some(Read {
+                        call_id: call.id,
+                        result: output,
+                    });
+                    // A different window updates the diagnosis for this
+                    // failure. It does not start another Observer turn.
+                    first_read_just_returned = !different_read;
                 }
             }
         }
         let cycle = cycle?;
         let read = cycle.first_read?;
-        let unittest_comparison =
-            unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root);
-        if cycle.earlier_failure.is_none() && unittest_comparison.is_none() {
+        let (unittest_comparison, reported_subtests) =
+            match unittest_comparison::project(&focus.check, &focus.path, &cycle.output, root) {
+                Some(unittest_comparison::Diagnosis::Comparison(probe)) => (Some(probe), None),
+                Some(unittest_comparison::Diagnosis::Subtests(cases)) => (None, Some(cases)),
+                None => (None, None),
+            };
+        let unchanged_after_patch = reported_subtests.as_ref().and_then(|cases| {
+            cases.unchanged_after_patch(
+                messages,
+                &focus.check,
+                &focus.path,
+                root,
+                &cycle.latest_failure,
+                requirements.as_ref()?,
+            )
+        });
+        let source_repair = cycle.source_read.map(|source| {
+            SourceRepair::from_read(
+                source,
+                read.result,
+                cycle.source_windows,
+                cycle.source_prefix,
+            )
+        });
+        if cycle.earlier_failure.is_none()
+            && unittest_comparison.is_none()
+            && reported_subtests.is_none()
+            && source_repair.is_none()
+        {
             return None;
         }
+        // The colon separates native selections from every valid user-declared ID.
+        // A new failure or workspace must select its own current command.
+        let comparison_check_id = unittest_comparison.as_ref().map(|comparison| {
+            let input = format!(
+                "{}\0{}\0{}",
+                root.display(),
+                cycle.latest_failure,
+                comparison.command()
+            );
+            format!("unittest:{:016x}", crate::tui::agent::hash_text(&input))
+        });
         Some(DiagnosticFollowup {
+            comparison_check_id,
             failed_check: focus.check.clone(),
             failure_path: focus.path.clone(),
             earlier_failure_call_id: cycle.earlier_failure,
@@ -264,22 +460,32 @@ impl RecoveryFocus {
             matching_failures: cycle.matching_failures,
             diagnostic: focus.diagnostic.clone(),
             unittest_comparison,
+            reported_subtests,
+            unchanged_after_patch,
+            source_repair,
             first_read_just_returned,
+            source_read_just_returned,
         })
     }
 }
 
-fn matches_snapshot(message: &Value, focus: &FailureFocus, observation: Observation) -> bool {
-    message[METADATA_KEY]["version"] == 2
-        && native_snapshot(message)
-            .and_then(|snapshot| snapshot.pending)
-            .is_some_and(|pending| {
-                pending.check == focus.check
-                    && pending.path == focus.path
-                    && pending.diagnostic == focus.diagnostic
-                    && pending.location == LocationEvidence::Current
-                    && pending.observation == observation
-            })
+fn matching_snapshot(
+    message: &Value,
+    focus: &FailureFocus,
+    observation: Observation,
+) -> Option<RecoveryFocus> {
+    if message[METADATA_KEY]["version"] != 2 {
+        return None;
+    }
+    native_snapshot(message).filter(|snapshot| {
+        snapshot.pending.as_ref().is_some_and(|pending| {
+            pending.check == focus.check
+                && pending.path == focus.path
+                && pending.diagnostic == focus.diagnostic
+                && pending.location == LocationEvidence::Current
+                && pending.observation == observation
+        })
+    })
 }
 
 fn comparable_output(output: &str) -> Option<String> {

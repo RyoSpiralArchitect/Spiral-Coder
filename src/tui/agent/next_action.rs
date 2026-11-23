@@ -107,7 +107,17 @@ impl Contract {
 
     pub(super) fn tools(&self, all: &Value) -> Value {
         if self.phase == Phase::Work {
-            return all.clone();
+            let mut tools = all.clone();
+            if !self.pending_artifact_paths.is_empty() {
+                for tool in tools.as_array_mut().into_iter().flatten() {
+                    if tool["function"]["name"] == "exec" {
+                        if let Some(description) = tool["function"]["description"].as_str() {
+                            tool["function"]["description"] = json!(format!("{description} Use the native file tools to edit a pending_artifact_paths target. A shell write cannot supply its required file-edit receipt. Use exec for checks and inspection."));
+                        }
+                    }
+                }
+            }
+            return tools;
         }
         let mut tools = json!(all
             .as_array()
@@ -195,6 +205,21 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shell_edit_guidance_follows_the_original_file_receipt_obligation() {
+        let all = json!([{"function":{"name":"exec","description":"Run a command."}},{"function":{"name":"patch_file","description":"Patch a file."}}]);
+        let mut status = Status::default();
+        assert_eq!(Contract::project(Some(12), &[], &status).tools(&all), all);
+        status.pending_artifact_paths.push("docs/guide.md".into());
+        let tools = Contract::project(Some(12), &[], &status).tools(&all);
+        assert!(tools[0]["function"]["description"]
+            .as_str()
+            .unwrap()
+            .contains("file-edit receipt"));
+        assert_eq!(tools[1], all[1]);
+        assert_eq!(all[0]["function"]["description"], "Run a command.");
+    }
 
     #[test]
     fn one_call_response_and_slice_do_not_mean_one_remaining_task_request() {

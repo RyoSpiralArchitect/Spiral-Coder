@@ -294,6 +294,19 @@ must still retain the unfinished criteria. The [fresh two-iteration pilot](evals
 includes the actual first-round handoff, second-round verification and
 independent check on the completed change.
 
+Passing every declared command can leave an explicitly requested test case
+uncovered. For an incomplete report, list that original case in the
+`Test coverage:` section as `- <requirement / case>: none`. Keep its
+acceptance criterion in `remaining_acceptance` and describe the next test
+edit in `next_steps`. The recorded case travels with the blocked handoff.
+On resume, a completion claim must name a current test in a linked artifact
+for each case previously reported missing. Independent checks still decide
+whether those tests exercise the promised behavior. A claim that does not is
+returned with `[Declared test cases]`, which lists the open cases, any cited
+names it could not find, and the current test functions. A qualified name
+(`tests::name`, `Class.name`) counts by its last segment. A name cited for a
+file type whose tests cannot be listed is taken as given.
+
 ## Receipts and budget
 
 `coupled-run` defaults to the same resolved provider, actual model, endpoint and
@@ -526,6 +539,18 @@ unmatched and prose-only results cannot enter this projection. A successful chec
 separates failure sequences. Changed failure names do not prove an earlier case
 was fixed. Compact Python diagnostics retain the failing case, innermost frame
 and exception through history pruning and resume.
+
+When a declared check fails and a subsequent source edit also fails its
+automatic test, `prior_controls` can recall up to eight other required checks
+that had passed in the same workspace before the failure. Long commands use
+their catalog IDs. Coder and Observer can use these historical results to
+preserve the corresponding behavior while narrowing the repair. A new declared
+check supersedes this view. Completion still requires fresh receipts after edits.
+
+Successful commands that print one JSON object or array retain the complete
+output in tool history when the whole receipt fits the 1,200-byte budget.
+Pretty-printed examples can therefore be reused with their original values
+and ordering when the line-based digest would omit part of the document.
 
 The `done.summary` field description includes the same current report clauses
 and before/after rows as the shared task projection, formatted as plain text

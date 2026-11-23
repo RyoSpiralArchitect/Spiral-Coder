@@ -6,8 +6,10 @@ use serde_json::{json, Value};
 pub(crate) mod diagnostic;
 pub(crate) mod identity_scope;
 pub(crate) mod intervention;
+mod source_edit;
 pub(crate) mod strategy;
 mod test_recipe;
+pub(crate) mod test_review;
 pub(crate) mod work_route;
 
 #[cfg(test)]
@@ -171,7 +173,7 @@ fn validate_advice(
     }) {
         return Some(problem);
     }
-    if let Some(required) = obligations.required_diagnostic_read {
+    if let Some(required) = &obligations.required_diagnostic_read {
         let supplied = action.suggested_args["path"]
             .as_str()
             .unwrap_or("")
@@ -181,10 +183,33 @@ fn validate_advice(
         }
         return Some(format!("Pending diagnosis requires read_file(path={}). Read the failure location before suggesting an edit, verification or another file; it is not necessarily the repair target.", required.path));
     }
-    if let Some(report) = obligations.report_repair {
+    if let Some(report) = &obligations.report_repair {
         if action.suggested_tool.as_deref() != Some("done") {
             return Some(format!("The latest native done was rejected only for its authored report; current checks and acceptance citations remain valid. Suggest done with corrected summary, or no-tool clarify when uncertain. Do not restart inspection, edits or passed checks. Authored report feedback:\n{}", report.feedback));
         }
+    }
+    if action.suggested_tool.as_deref() == Some("read_file") {
+        if let Some(issue) = obligations
+            .diagnostic_followup
+            .as_ref()
+            .and_then(|followup| followup.covered_source_read(&action.suggested_args, tool_root?))
+        {
+            return Some(issue);
+        }
+        // R: four Observer suggestions in one iteration re-read the same
+        // unchanged protected check while its failure stayed the same.
+        if let Some((path, repeats)) = agent::unchanged_reread(
+            messages,
+            "read_file",
+            &action.suggested_args,
+            tool_root,
+            test_command,
+        ) {
+            return Some(format!("This read_file of {path} would return the same native result the Coder already received {repeats} times in this task, and the Coder's context still shows it in full; the file has not changed since. Suggest an action that uses that content, such as an edit tied to the latest failure or a read of another range or file, or give a no-tool clarify."));
+        }
+    }
+    if let Some(issue) = source_edit::issue(action, &obligations, tool_root) {
+        return Some(issue);
     }
     if action.suggested_tool.as_deref() == Some("done") {
         return agent::evidence_packet::acceptance_issue(

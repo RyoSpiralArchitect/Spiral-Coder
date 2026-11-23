@@ -12,7 +12,9 @@ use request_stream::RequestEvent;
 pub(crate) mod observer_assist;
 pub(crate) mod observer_request;
 mod report_closeout;
-use observer_assist::{build_tui_meta_failure_packet_for_selector, build_tui_next_action_prompt};
+use observer_assist::build_tui_meta_failure_packet_for_selector;
+#[cfg(test)]
+use observer_assist::build_tui_next_action_prompt;
 use observer_request::{
     finalize_observer_next_action_suggestion, maybe_observer_action_repair,
     send_next_action_assist, ObserverAssistRequest,
@@ -1113,6 +1115,7 @@ pub async fn run_event_loop(
                 observer_request::reconnect::maybe_start(app, &observer_tx).await;
                 maybe_observer_action_repair(app, &observer_tx).await;
                 observer_request::maybe_report_closeout(app, &coder_tx).await;
+                observer_request::resume_rejected_test_review(app, &coder_tx).await;
                 maybe_auto_next_action_assist(app, &observer_tx).await;
                 maybe_auto_observe(app, &observer_tx).await;
                 maybe_observer_lang_retry(app, &observer_tx).await;
@@ -2342,7 +2345,8 @@ pub(crate) fn replay_observer_next_action_case(
     observer_response: &str,
 ) -> Result<TuiNextActionReplayOutcome, String> {
     let packet = build_tui_meta_failure_packet_for_selector(app, selector)?;
-    let observer_prompt = build_tui_next_action_prompt(&packet, app.lang.as_str(), reason_hint);
+    let (observer_prompt, output) =
+        observer_assist::next_action_request(&packet, app.lang.as_str(), reason_hint);
     let target_message_id = packet
         .get("target_message_id")
         .and_then(|v| v.as_str())
@@ -2353,8 +2357,10 @@ pub(crate) fn replay_observer_next_action_case(
         .unwrap_or("unclear")
         .to_string();
 
-    app.observer_assist_request =
-        Some(ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint));
+    let mut request =
+        ObserverAssistRequest::new(app, observer_prompt.clone()).for_reason(reason_hint);
+    request.output = output;
+    app.observer_assist_request = Some(request);
     app.observer_meta_mode = false;
     app.observer_next_action_mode = true;
     app.last_observer_suggestion = None;
@@ -2435,15 +2441,11 @@ pub(crate) fn build_observer_suggestion_soft_hint(
     if primary.confidence < 0.75 {
         return None;
     }
-    let action = if let Some(tool) = primary.suggested_tool.as_deref() {
-        let args = render_observer_suggestion_args(&primary.suggested_args);
-        if args.is_empty() {
-            tool.to_string()
-        } else {
-            format!("{tool}({args})")
-        }
+    let action = observer_suggested_action(primary);
+    let edit_scope = if primary.suggested_tool.as_deref() == Some("patch_file") {
+        "Compare the literal search and replacement with the failed checks. If you choose a different edit first, say override or defer and identify the work still pending.\n"
     } else {
-        primary.reason.clone()
+        ""
     };
     let reason = if primary.reason.is_empty() {
         env.summary.as_str()
@@ -2457,6 +2459,7 @@ pub(crate) fn build_observer_suggestion_soft_hint(
 Stay within the current intent anchor and task scope.\n\
 If you are still stuck, prefer this next step before widening search:\n\
 {action}\n\
+{edit_scope}\
 Why: {reason}\n\
 {route}\
 </observer_advisory>"
@@ -2482,18 +2485,7 @@ pub(crate) fn build_observer_response_contract_message(
         env.response_contract.focus_axes.join(", ")
     };
     let quickest = suggestion::primary_suggestion(env)
-        .map(|primary| {
-            if let Some(tool) = primary.suggested_tool.as_deref() {
-                let args = render_observer_suggestion_args(&primary.suggested_args);
-                if args.is_empty() {
-                    tool.to_string()
-                } else {
-                    format!("{tool}({args})")
-                }
-            } else {
-                primary.reason.clone()
-            }
-        })
+        .map(observer_suggested_action)
         .unwrap_or_else(|| "the primary observer suggestion".to_string());
     let note = if env.response_contract.note.is_empty() {
         "If you do not follow the observer's next step on this turn, explicitly choose override or defer and give a short reason."
@@ -2518,6 +2510,21 @@ decision: accept|override|defer\n\
 reason: short justification\n\
 </observer_response_contract>"
     )
+}
+
+fn observer_suggested_action(primary: &suggestion::ObserverSuggestion) -> String {
+    let Some(tool) = primary.suggested_tool.as_deref() else {
+        return primary.reason.clone();
+    };
+    if tool == "patch_file" {
+        return format!("patch_file arguments (JSON): {}", primary.suggested_args);
+    }
+    let args = render_observer_suggestion_args(&primary.suggested_args);
+    if args.is_empty() {
+        tool.to_string()
+    } else {
+        format!("{tool}({args})")
+    }
 }
 
 fn render_observer_suggestion_args(args: &serde_json::Value) -> String {
@@ -2726,6 +2733,9 @@ fn latest_tui_next_action_target_impl(app: &App) -> Option<(usize, String)> {
     }
     if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::DiagnosticFollowup) {
         return Some((idx, "diagnostic_followup".into()));
+    }
+    if app.coder_yield_reason == Some(super::coder_yield::CoderYieldReason::AuthoredTestReview) {
+        return Some((idx, "authored_test_review".into()));
     }
     if !meta_failure_like(&msg.content) {
         return None;

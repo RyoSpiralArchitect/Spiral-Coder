@@ -5,6 +5,7 @@ use crate::tui::agent::evidence_packet::ActionEvidence;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
+mod fixture_input;
 mod review_source;
 
 const MAX_DESCRIPTION_BYTES: usize = 4096;
@@ -12,15 +13,32 @@ const MAX_DESCRIPTION_BYTES: usize = 4096;
 #[derive(Debug, Serialize)]
 pub(crate) struct AuthoredTests {
     targets: Vec<Target>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(in crate::tui::agent) ordered_record_requirement: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     test_only_requirements: Vec<TestRequirement>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     shared_requirements: Vec<TestRequirement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     review_source: Option<review_source::ReviewSource>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(in crate::tui::agent) fixture_input: Option<fixture_input::FixtureInput>,
 }
 
 impl AuthoredTests {
+    pub(in crate::tui::agent) fn has_nullable_comparison(&self) -> bool {
+        self.shared_requirements
+            .iter()
+            .chain(&self.test_only_requirements)
+            .any(|r| r.nullable_comparison.is_some())
+    }
+
+    pub(in crate::tui::agent) fn has_explicit_cases(&self) -> bool {
+        self.test_only_requirements
+            .iter()
+            .any(|r| !r.explicit_cases.is_empty())
+    }
+
     pub(in crate::tui::agent) fn source_line(&self, path: &str, line: usize) -> Option<&str> {
         self.review_source.as_ref()?.line(path, line)
     }
@@ -35,8 +53,12 @@ impl AuthoredTests {
         messages: &[serde_json::Value],
         context: &crate::tui::agent::exec_verification::ExecVerificationContext<'_>,
         tool_root: Option<&str>,
+        baselines_ready: bool,
     ) {
         self.review_source = review_source::project(self, messages, context, tool_root);
+        if baselines_ready && self.has_explicit_cases() {
+            self.fixture_input = fixture_input::project(self, messages, context, tool_root);
+        }
     }
 
     pub(in crate::tui::agent) fn include_workspace_review_source(
@@ -61,11 +83,16 @@ struct Target {
 struct TestRequirement {
     id: String,
     description: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    explicit_cases: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    nullable_comparison: Option<String>,
 }
 
 pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option<AuthoredTests> {
     let mut by_path: BTreeMap<&str, Vec<String>> = BTreeMap::new();
     let mut linked = Vec::new();
+    let mut ordered_record_requirement = None;
     for requirement in &contract.requirements {
         let paths: BTreeSet<_> = requirement
             .artifacts
@@ -75,6 +102,9 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
             .collect();
         if paths.is_empty() {
             continue;
+        }
+        if ordered_record_requirement.is_none() && names_record_order(&requirement.description) {
+            ordered_record_requirement = Some(requirement.id.clone());
         }
         for path in paths {
             by_path
@@ -110,6 +140,12 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         target.push(TestRequirement {
             id: requirement.id.clone(),
             description: requirement.description.clone(),
+            nullable_comparison: nullable_comparison(&requirement.description).map(str::to_owned),
+            explicit_cases: requirement
+                .explicit_test_cases()
+                .into_iter()
+                .map(str::to_owned)
+                .collect(),
         });
     }
     let targets = by_path
@@ -135,16 +171,237 @@ pub(super) fn project(contract: &Contract, actions: &[ActionEvidence]) -> Option
         .collect();
     Some(AuthoredTests {
         targets,
+        ordered_record_requirement,
         test_only_requirements,
         shared_requirements,
         review_source: None,
+        fixture_input: None,
     })
+}
+
+/// Quote only a sentence which explicitly ties equality to the missing-value case.
+fn nullable_comparison(description: &str) -> Option<&str> {
+    description
+        .split_terminator(['.', '\n'])
+        .map(str::trim)
+        .find(|sentence| {
+            if sentence.len() > 512 {
+                return false;
+            }
+            let lower = sentence.to_ascii_lowercase();
+            lower.split(';').any(|clause| {
+                (clause.contains("must match ") || clause.contains("must equal "))
+                    && (clause.contains("null if absent")
+                        || clause.contains("null when absent")
+                        || clause.contains("null if missing")
+                        || clause.contains("null when missing"))
+            })
+        })
+}
+
+pub(super) fn names_record_order(description: &str) -> bool {
+    let lower = description.to_ascii_lowercase();
+    let mut previous = "";
+    for word in lower
+        .split(|ch: char| !ch.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+    {
+        if (word == "order" && matches!(previous, "row" | "record" | "array" | "item" | "entry"))
+            || (previous == "ordered"
+                && matches!(word, "rows" | "records" | "array" | "items" | "entries"))
+        {
+            return true;
+        }
+        previous = word;
+    }
+    false
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tui::agent::task_obligations;
     use serde_json::{json, Value};
+
+    #[test]
+    fn distinguish_ordered_records_from_incidental_order_language() {
+        for description in [
+            "Preserve array order.",
+            "Return ORDERED records with their identities.",
+            "Preserve row order 1..N.",
+        ] {
+            assert!(super::names_record_order(description));
+        }
+        for description in [
+            "Validate each record in order to count it.",
+            "Return unordered records.",
+            "Place an order.",
+        ] {
+            assert!(!super::names_record_order(description));
+        }
+    }
+
+    #[test]
+    fn a_pending_test_can_follow_its_named_fixture_to_one_observed_input() {
+        let description = "Use tools.catalog.make for fixtures. Cover missing entries, duplicate tokens and invalid labels.";
+        let task = |baseline: bool| {
+            format!(
+                "Test the catalog.\n<task_requirements>\n{}\n</task_requirements>",
+                json!({"version":1,"requirements":[{"id":"catalog","description":description,"artifacts":[{"path":"tests/catalog.rs","kind":"test"}],"checks":[{"command":"cargo test","baseline_failure":baseline}]}]})
+            )
+        };
+        let helper = "tools/catalog.py";
+        let data = "tools/sample.json";
+        let body = "def make():\n    source = json.loads(Path(__file__).with_name('sample.json').read_text())\n";
+        let read = |history: &mut Vec<Value>, id, path: &str, contents: &str| {
+            result(
+                history,
+                id,
+                "read_file",
+                json!({"path":path}),
+                &format!(
+                    "[{path}] ({} lines, {} bytes)\n{contents}",
+                    contents.lines().count(),
+                    contents.len()
+                ),
+            );
+        };
+        let project = |m: &[Value]| {
+            serde_json::to_value(task_obligations::project_advisory(
+                m,
+                None,
+                Some("/workspace"),
+            ))
+            .unwrap()
+        };
+        let fixture = |m: &[Value]| {
+            project(m)["task_requirements"]["authored_tests"]["fixture_input"].clone()
+        };
+        let root = |baseline| vec![json!({"role":"user","content":task(baseline)})];
+        let mut history = root(false);
+        read(&mut history, "unrelated", "other/catalog.py", body);
+        read(&mut history, "wrong", "tools/catalog_tools.py", body);
+        assert!(fixture(&history).is_null());
+        read(&mut history, "producer", helper, body);
+        let expected = json!({"test_path":"tests/catalog.rs","requirement_id":"catalog","helper_path":helper,"helper_read_call_id":"producer","source_line":2,"data_path":data});
+        assert_eq!(fixture(&history), expected);
+        let coder = task_obligations::prompt(&history, None, Some("/workspace")).unwrap();
+        let observer = crate::observer_action::intervention::prompt(
+            &json!({"task_obligations":project(&history)}),
+        );
+        for prompt in [coder, observer] {
+            assert!(
+                prompt.contains(data) && prompt.contains(task_obligations::FIXTURE_INPUT_GUIDANCE)
+            );
+        }
+        let mut prior = root(false);
+        read(
+            &mut prior,
+            "sample",
+            data,
+            "{\"label\":\"secret-sample-value\"}\n",
+        );
+        read(&mut prior, "producer", helper, body);
+        let mut with_sample = expected.clone();
+        with_sample["data_read_call_id"] = json!("sample");
+        assert_eq!(fixture(&prior), with_sample);
+        read(&mut history, "sample", data, "{}\n");
+        assert_eq!(fixture(&history), with_sample);
+        let mut missing = history.clone();
+        result(
+            &mut missing,
+            "missing",
+            "read_file",
+            json!({"path":data}),
+            "ERROR reading 'tools/sample.json': file missing",
+        );
+        assert_eq!(fixture(&missing), expected);
+        for (tool, args, out) in [
+            (
+                "write_file",
+                json!({"path":"tests/catalog.rs","content":"test"}),
+                "OK: wrote 'tests/catalog.rs'",
+            ),
+            (
+                "patch_file",
+                json!({"path":helper}),
+                "OK: patched 'tools/catalog.py'",
+            ),
+            (
+                "exec",
+                json!({"command":"python3 alter_catalog.py"}),
+                "OK (exit_code: 0)\ncwd: /workspace",
+            ),
+        ] {
+            let mut changed = history.clone();
+            result(&mut changed, "changed", tool, args, out);
+            assert!(fixture(&changed).is_null(), "{tool}");
+        }
+        for invalid in [
+            body.replace("'sample.json'", "'../sample.json'"),
+            body.replace("'sample.json'", "input_name"),
+            body.replace("'sample.json'", "'sample.txt'"),
+            format!("{body}{body}"),
+            format!("# {body}").replace("    source", "# source"),
+            format!("\"\"\"Example code:\n{body}\"\"\"\n"),
+        ] {
+            let mut bad = root(false);
+            read(&mut bad, "producer", helper, &invalid);
+            assert!(fixture(&bad).is_null(), "{invalid}");
+        }
+        let mut unrun = root(true);
+        read(&mut unrun, "producer", helper, body);
+        assert!(fixture(&unrun).is_null());
+        let mut partial = root(false);
+        result(
+            &mut partial,
+            "producer",
+            "read_file",
+            json!({"path":helper,"start_line":1,"end_line":2}),
+            &format!("[{helper}] (3 lines, 100 bytes) [range: lines 1-2; partial file]\n{body}"),
+        );
+        assert!(fixture(&partial).is_null());
+        history.push(json!({"role":"user","content":task(false)}));
+        assert!(fixture(&history).is_null());
+    }
+
+    #[test]
+    fn nullable_equality_is_quoted_for_both_roles_only_when_required() {
+        let clause =
+            "The cached checksum must match the supplied checksum, or be null when missing";
+        for (rule, applies) in [
+            (clause.to_owned(), true),
+            ("Cache a checksum or use null if absent.".into(), false),
+            (
+                "Names must match exactly; an unrelated label is null if absent.".into(),
+                false,
+            ),
+            ("A checksum must not equal null when missing.".into(), false),
+        ] {
+            let root = format!(
+                "Test the catalog.\n<task_requirements>\n{}\n</task_requirements>",
+                json!({"version":1,"requirements":[{"id":"checksum","description":rule,"artifacts":[{"path":"tests/catalog.rs","kind":"test"}],"checks":[{"command":"cargo test"}]}]})
+            );
+            let messages = vec![json!({"role":"user","content":root})];
+            let view =
+                serde_json::to_value(task_obligations::project_advisory(&messages, None, None))
+                    .unwrap();
+            let comparison = &view["task_requirements"]["authored_tests"]["test_only_requirements"]
+                [0]["nullable_comparison"];
+            assert_eq!(comparison.as_str(), applies.then_some(clause));
+            let coder = task_obligations::prompt(&messages, None, None).unwrap();
+            let observer =
+                crate::observer_action::intervention::prompt(&json!({"task_obligations":view}));
+            for prompt in [coder, observer] {
+                assert_eq!(
+                    prompt.contains(task_obligations::NULLABLE_COMPARISON_GUIDANCE.trim()),
+                    applies
+                );
+                if applies {
+                    assert!(prompt.contains(clause));
+                }
+            }
+        }
+    }
 
     const DESCRIPTION: &str =
         "From a valid control, change the parent field and assert the public error.";

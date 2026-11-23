@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 mod allocation;
+mod append_only;
 #[cfg(test)]
 mod native_fixture;
 pub(crate) use allocation::{BudgetPolicy, RequestCharge, TransportRejection};
@@ -37,6 +38,7 @@ pub(crate) struct RequestReceipt {
 pub(crate) enum RequestPurpose {
     ReportCloseout,
     ObserverReconnect,
+    CoderReconnect,
 }
 
 /// Only native stream readers assign these causes. Error text and broad
@@ -91,6 +93,8 @@ pub(crate) struct WorkState {
     pub assists: Vec<AssistReceipt>,
     #[serde(default)]
     pub protected_artifacts: std::collections::BTreeMap<PathBuf, Value>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    append_only_documents: std::collections::BTreeMap<PathBuf, append_only::Prefix>,
 }
 
 #[derive(Debug, Clone)]
@@ -143,6 +147,7 @@ impl WorkBudget {
                 requests: Vec::new(),
                 assists: Vec::new(),
                 protected_artifacts: Default::default(),
+                append_only_documents: Default::default(),
             })),
             path,
             claimed: Arc::new(AtomicBool::new(false)),
@@ -185,6 +190,9 @@ impl WorkBudget {
         state
             .protected_artifacts
             .clone_from(&parent.protected_artifacts);
+        state
+            .append_only_documents
+            .clone_from(&parent.append_only_documents);
         self.persist(&mut state)?;
         drop(state);
         if let Some(problem) = self.preservation_issue() {
@@ -193,11 +201,14 @@ impl WorkBudget {
         Ok(())
     }
 
-    pub fn protect_replay(&self, root: &std::path::Path) -> Result<()> {
+    pub fn protect_task_artifacts(&self, root: &std::path::Path) -> Result<()> {
         let mut state = self.state.lock().unwrap();
         let root = root.canonicalize()?;
         if let Some(saved) = &state.tool_root {
             anyhow::ensure!(*saved == root, "task workspace changed; start a new task");
+        }
+        if state.tool_root.is_none() && state.requests.is_empty() {
+            state.append_only_documents = append_only::capture(&state.root, &root)?;
         }
         state.tool_root = Some(root.clone());
         self.persist(&mut state)?;
@@ -223,6 +234,12 @@ impl WorkBudget {
     pub fn check_write(&self, path: &std::path::Path, body: &str) -> Result<()> {
         let state = self.state.lock().unwrap();
         let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+        for (key, prefix) in &state.append_only_documents {
+            if key == path || *key == canonical || key.canonicalize().is_ok_and(|p| p == canonical)
+            {
+                prefix.check(key, body.as_bytes())?;
+            }
+        }
         if let Some(baseline) = state.protected_artifacts.iter().find_map(|(key, value)| {
             (key.canonicalize().unwrap_or_else(|_| key.clone()) == canonical).then_some(value)
         }) {
@@ -233,7 +250,20 @@ impl WorkBudget {
     }
 
     pub fn preservation_issue(&self) -> Option<String> {
-        let baselines = self.snapshot().protected_artifacts;
+        let state = self.state.lock().unwrap();
+        let baselines = state.protected_artifacts.clone();
+        let documents = state.append_only_documents.clone();
+        let root = state.tool_root.clone();
+        drop(state);
+        for (path, prefix) in documents {
+            let check = root
+                .as_deref()
+                .ok_or_else(|| anyhow::anyhow!("append-only workspace is missing"))
+                .and_then(|root| prefix.check_on_disk(&path, root));
+            if let Err(error) = check {
+                return Some(format!("{}: {error}", path.display()));
+            }
+        }
         for (path, baseline) in baselines {
             let result = std::fs::read(&path)
                 .map_err(anyhow::Error::from)
@@ -300,6 +330,28 @@ impl WorkBudget {
         bounded.purpose = Some(RequestPurpose::ObserverReconnect);
         bounded.retry_of = Some(interrupted_request);
         bounded
+    }
+
+    /// Limit a second Coder delivery to the same slice and one wire attempt.
+    pub(crate) fn coder_reconnect(&self, cursor: usize) -> Option<Self> {
+        if self.is_report_closeout() || self.slice_remaining("coder") == 0 {
+            return None;
+        }
+        let state = self.snapshot();
+        let [receipt] = state.requests.get(cursor..)? else {
+            return None;
+        };
+        if receipt.role != "coder"
+            || receipt.purpose.is_some()
+            || receipt.status != "stream_interrupted"
+            || receipt.stream_interruption.is_none()
+        {
+            return None;
+        }
+        let mut bounded = self.with_one_wire_attempt();
+        bounded.purpose = Some(RequestPurpose::CoderReconnect);
+        bounded.retry_of = Some(receipt.id);
+        Some(bounded)
     }
 
     pub(crate) fn is_report_closeout(&self) -> bool {
@@ -622,7 +674,7 @@ mod tests {
         let goal = "Add to .spiral-coder/tui_replay.json; preserve every existing case.";
         let budget_path = root.join("budget.json");
         let budget = WorkBudget::new(goal, 4, Some(budget_path.clone()));
-        budget.protect_replay(root).unwrap();
+        budget.protect_task_artifacts(root).unwrap();
         let budget = WorkBudget::load(goal, budget_path).unwrap();
         scope(Some(Context {budget:budget.clone(), role:"coder"}), async {
             let (result, error) = crate::file_tools::tool_write_file(".spiral-coder/tui_replay.json", "{\"cases\":[]}", Some(root.to_str().unwrap()));

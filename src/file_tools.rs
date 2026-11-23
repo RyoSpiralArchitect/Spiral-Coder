@@ -113,6 +113,11 @@ pub fn resolve_safe_path(rel: &str, base: Option<&str>) -> Result<PathBuf> {
 /// ~8000 chars ≈ 2000 tokens; enough for most source files.
 pub(crate) const MAX_READ_CHARS: usize = 8000;
 
+pub(crate) fn full_read_truncation_note(line_count: usize, shown: &str) -> String {
+    let hidden = line_count.saturating_sub(shown.lines().count());
+    format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
+}
+
 /// Read a file's content. Returns `(result_text, is_error)`.
 ///
 /// On success: header line + file content (truncated if large).
@@ -143,8 +148,7 @@ pub fn tool_read_file(path: &str, base: Option<&str>) -> (String, bool) {
 
             let header = format!("[{path}] ({line_count} lines, {byte_count} bytes)\n");
             let trunc_note = if truncated {
-                let hidden = line_count.saturating_sub(shown.lines().count());
-                format!("\n[…truncated — {hidden} more lines not shown; use read_file with start_line/end_line (at most 200 lines) to inspect a specific range. Use patch_file for edits; this partial read cannot authorize a whole-file overwrite.]")
+                full_read_truncation_note(line_count, &shown)
             } else {
                 String::new()
             };
@@ -527,6 +531,16 @@ fn display_search_path(path: &Path, search_root: &Path, base: Option<&str>) -> S
         .unwrap_or_else(|_| path.display().to_string())
 }
 
+// Keep the literal header first and the navigation ahead of long result bodies.
+fn add_search_navigation(output: &mut String, note: &str) {
+    if let Some(end) = output.find('\n') {
+        output.insert_str(end + 1, note);
+    } else {
+        output.push('\n');
+        output.push_str(note.trim_end());
+    }
+}
+
 fn search_single_file(
     pattern: &str,
     file_path: &Path,
@@ -581,12 +595,8 @@ fn search_single_file(
             Some("dir resolved to a file, so the search was scoped to that file"),
         )
     };
-    if let Some(note) = rust_navigation::note(file_path, pattern, &content) {
-        // Keep the ordinary header first and the note ahead of lengthy literal
-        // results so the Observer's bounded action excerpt can carry it too.
-        if let Some(end) = output.find('\n') {
-            output.insert_str(end + 1, &note);
-        }
+    if let Some(note) = rust_navigation::note(file_path, pattern, &content, results.len()) {
+        add_search_navigation(&mut output, &note);
     }
     (output, false)
 }
@@ -639,6 +649,8 @@ pub fn tool_search_files(
     };
 
     let mut results: Vec<String> = Vec::new();
+    let spelling = rust_navigation::rust_spelling(pattern);
+    let mut command_notes = Vec::new();
     let mut stack: Vec<PathBuf> = vec![search_root.clone()];
     let mut truncated = false;
 
@@ -686,6 +698,15 @@ pub fn tool_search_files(
                 Err(_) => continue,
             };
             let rel = display_search_path(file_path, &search_root, base);
+            // Two candidate files make the route ambiguous. A truncated walk
+            // also cannot establish that just one visited file has this pair.
+            if command_notes.len() < 2 {
+                if let Some(note) = spelling.as_deref().and_then(|name| {
+                    rust_navigation::exact_command_note(file_path, &rel, name, &content)
+                }) {
+                    command_notes.push(note);
+                }
+            }
 
             for (ln, line) in content.lines().enumerate() {
                 let cmp = if case_insensitive {
@@ -707,21 +728,21 @@ pub fn tool_search_files(
         stack.extend(subdirs);
     }
 
-    if results.is_empty() {
-        return (
-            format!(
-                "[search_files] No matches for '{}' in '{}'",
-                pattern,
-                search_root.display()
-            ),
-            false,
-        );
+    let mut output = if results.is_empty() {
+        format!(
+            "[search_files] No matches for '{}' in '{}'",
+            pattern,
+            search_root.display()
+        )
+    } else {
+        finalize_search_output(pattern, &results, truncated, None)
+    };
+    if !truncated {
+        if let [note] = command_notes.as_slice() {
+            add_search_navigation(&mut output, note);
+        }
     }
-
-    (
-        finalize_search_output(pattern, &results, truncated, None),
-        false,
-    )
+    (output, false)
 }
 
 // ── apply_diff ────────────────────────────────────────────────────────────────
@@ -830,6 +851,15 @@ pub fn tool_apply_diff(path: &str, diff: &str, base: Option<&str>) -> (String, b
 
 const MAX_LIST_DIR_ENTRIES: usize = 200;
 
+pub(crate) fn list_dir_limit(max_entries: usize) -> usize {
+    if max_entries == 0 {
+        MAX_LIST_DIR_ENTRIES
+    } else {
+        max_entries
+    }
+    .clamp(1, 500)
+}
+
 /// List a single directory (non-recursive).
 /// Returns a compact, sorted listing suitable for LLM context.
 pub fn tool_list_dir(
@@ -838,12 +868,7 @@ pub fn tool_list_dir(
     include_hidden: bool,
     base: Option<&str>,
 ) -> (String, bool) {
-    let max_entries = if max_entries == 0 {
-        MAX_LIST_DIR_ENTRIES
-    } else {
-        max_entries
-    }
-    .clamp(1, 500);
+    let max_entries = list_dir_limit(max_entries);
 
     let (dir_label, dir_path) = if dir.trim().is_empty() {
         (

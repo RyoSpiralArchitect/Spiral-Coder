@@ -69,6 +69,73 @@ fn ordinary_searches_get_no_identifier_note() {
 }
 
 #[test]
+fn an_absent_command_can_point_to_one_existing_declaration_and_match_arm() {
+    let source = "enum Task {\n    ExportCsv(Args),\n}\nmatch input {\n    Some(Task::ExportCsv(args)) => save(args),\n}\n";
+    let out = search(source, "entry.rs", "export-json", "entry.rs");
+    let mut lines = out.lines();
+    assert_eq!(
+        lines.next(),
+        Some("[search_files] No matches for 'export-json' in file 'entry.rs'")
+    );
+    let note = lines.next().unwrap();
+    assert!(
+        note.starts_with("[navigation]")
+            && note.contains("`ExportCsv`")
+            && note.contains("line 2")
+            && note.contains("line 5"),
+        "{out}"
+    );
+    assert!(!out.lines().any(|line| line.starts_with("entry.rs:")));
+    for extra in [
+        "ExportXml(Other),\nTask::ExportXml(_) => xml(),\n",
+        "Task::ExportCsv(other) => other(),\n",
+        "const REQUEST: &str = \"export-json\";\n",
+    ] {
+        assert!(
+            !search(
+                &format!("{source}{extra}"),
+                "entry.rs",
+                "export-json",
+                "entry.rs"
+            )
+            .contains("[navigation]"),
+            "{extra}"
+        );
+    }
+    for (src, query) in [
+        ("enum Task {\n    ExportCsv(Args),\n}\n", "export-json"),
+        ("Task::ExportCsv(_) => save(),\n", "export-json"),
+        (
+            "enum Task {\n    Exporter(Args),\n}\nTask::Exporter(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    // ExportCsv(Args),\n}\nTask::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    ExportCsv(Args),\n}\n// Task::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Task {\n    ExportCsv(Args),\n}\nTask::ExportCsvExtra(_) => save(),\n",
+            "export-json",
+        ),
+        (
+            "enum Job {\n    ExportCsv(Args),\n}\nTask::ExportCsv(_) => save(),\n",
+            "export-json",
+        ),
+    ] {
+        assert!(
+            !search(src, "entry.rs", query, "entry.rs").contains("[navigation]"),
+            "{src}"
+        );
+    }
+    assert!(!search(source, "entry.rs", "export-json", ".").contains("[navigation]"));
+    assert!(!search(source, "entry.md", "export-json", "entry.md").contains("[navigation]"));
+}
+
+#[test]
 fn navigation_is_bounded_even_when_the_literal_search_finds_more() {
     let entry = "ListRuns(); ListRuns(); // list-runs\n";
     let out = search(&entry.repeat(7), "entry.rs", "list-runs", "entry.rs");
@@ -95,4 +162,47 @@ fn helper_search_distinguishes_lexical_evidence_from_a_planned_import() {
         absent.contains("No exact identifier spelling `select_cases` was observed in this file")
     );
     assert!(!search(source, "host.rs", "select", ".").contains("[navigation]"));
+}
+
+#[test]
+fn directory_command_search_locates_one_definition_and_dispatch_across_literal_callers() {
+    let root = tempfile::tempdir().unwrap();
+    let dir = root.path().join("src");
+    std::fs::create_dir(&dir).unwrap();
+    let source="enum Command {\n    InspectRun(Args),\n}\nfn dispatch(cmd:Command) { match cmd {\n    Command::InspectRun(args) => inspect(args),\n} }\n";
+    std::fs::write(dir.join("entry.rs"), source).unwrap();
+    std::fs::write(
+        dir.join("caller.md"),
+        "Use inspect-run for the current run.\n",
+    )
+    .unwrap();
+    let search_dir = || tool_search_files("inspect-run", "src", false, root.path().to_str()).0;
+    let with_hits = search_dir();
+    let note="[navigation] In `src/entry.rs`, enum `Command` declares `InspectRun` at line 2 and its qualified match arm is at line 5.";
+    assert_eq!(
+        with_hits.lines().collect::<Vec<_>>(),
+        [
+            "[search_files: 'inspect-run' — 1 match(es)]",
+            note,
+            "src/caller.md:1: Use inspect-run for the current run."
+        ]
+    );
+    std::fs::write(dir.join("caller.md"), "operator guide").unwrap();
+    let no_hits = search_dir();
+    assert!(no_hits.starts_with("[search_files] No matches"));
+    assert_eq!(no_hits.lines().nth(1), Some(note));
+    std::fs::write(dir.join("other.rs"), source).unwrap();
+    assert!(!search_dir().contains("[navigation]"));
+    std::fs::write(
+        dir.join("other.rs"),
+        "// Command::InspectRun(args) => inspect(args)\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("caller.md"),
+        "inspect-run\n".repeat(super::MAX_SEARCH_RESULTS + 1),
+    )
+    .unwrap();
+    let truncated = search_dir();
+    assert!(truncated.contains("more may exist") && !truncated.contains("[navigation]"));
 }

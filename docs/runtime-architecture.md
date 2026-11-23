@@ -498,11 +498,20 @@ For a clipped Python unittest assertion, a simple module, class or method
 check can supply a ready `exec` comparison when the retained failure names one
 method in the diagnosed file. Observer can forward the exact arguments to
 Coder. The command runs that method and keeps the assertion's changed lines
-and the test exit status. The runner bounds each operand around the first
+and the test exit status. When an ordinary failing assertion supplies a
+message beginning with a short scalar label such as `case=empty`, its
+comparison includes that label from the assertion's message argument. This
+lets both roles distinguish loop inputs that fail at the same assertion.
+The runner bounds each operand around the first
 differing span and marks incomplete output. Live execution and resume use
 the same history predicate and a native observation receipt before
 preserving the completed diagnosis. The execution ledger expires current exact checks
 when this command runs. The advice includes those checks as follow-up work.
+The current diagnostic also has a short `check_id` for Coder and Observer.
+The ID binds the command to the workspace and failed call. The native check
+catalog expands it before approval and execution. The full command remains
+available to providers that require signed arguments. A comparison can expose
+the failing input and both operands while the original check remains pending.
 
 ### Author tests from declared requirements
 
@@ -559,3 +568,17 @@ be offered as executable patch bytes. This is advisory guidance, not a semantic
 validator or permission expansion. Existing diagnosis, recheck, approval,
 confidence and completion gates remain unchanged. No new persisted state or
 provider request is introduced.
+
+When the Coder yields its first funded test coverage plan, the focused Observer
+review asks for one clarification or bounded source read. The hosted OpenAI
+request uses the same typed response shape as diagnostic reads. The original
+request and its single format repair use the same schema. If both answers are
+unusable, the interactive and headless loops can return once to the already
+delivered test plan. This requires a current completed repair and actionable
+native work on an ordinary Coder turn. The raw answers and their charges stay
+in the ledger and transcript. The Coder chooses its own edit and verification.
+
+A retained assertion comparison is checked against the diagnosis recorded when
+it ran. After the Coder edits the implementation, a resumed slice can rerun
+that exact failed check. The comparison keeps its failing exit status. A new
+independent failure still requires its own diagnosis.

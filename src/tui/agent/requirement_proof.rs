@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 mod authored_tests;
 pub(super) use authored_tests::AuthoredTests;
 mod test_closeout;
+pub(super) use test_closeout::blocked_test_cases;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -49,6 +50,16 @@ impl Contract {
             .any(|check| check.baseline_failure)
     }
 
+    pub(super) fn has_source_for_baseline(&self, path: &str, command: &str) -> bool {
+        self.requirements.iter().any(|requirement| {
+            requirement.has_source(path)
+                && requirement
+                    .checks
+                    .iter()
+                    .any(|check| check.baseline_failure && check.command == command)
+        })
+    }
+
     pub(super) fn names_artifact(&self, path: &str) -> bool {
         self.requirements
             .iter()
@@ -71,6 +82,66 @@ impl Artifact {
 }
 
 impl Requirement {
+    /// Preserve literal cases from an explicit test-only enumeration. Prose
+    /// examples, alternatives and conditional lists keep the ordinary review.
+    pub(super) fn explicit_test_cases(&self) -> Vec<&str> {
+        if self.artifacts.is_empty()
+            || !self
+                .artifacts
+                .iter()
+                .all(|a| matches!(a.kind, ArtifactKind::Test))
+        {
+            return Vec::new();
+        }
+        let mut cases = Vec::new();
+        for sentence in self.description.split(['.', ';', '\n']) {
+            let Some(list) = sentence.trim().strip_prefix("Cover ") else {
+                continue;
+            };
+            let Some((leading, last)) = list.rsplit_once(" and ") else {
+                continue;
+            };
+            if !leading.contains(',') {
+                continue;
+            }
+            let mut items: Vec<_> = leading
+                .trim_end_matches(',')
+                .split(',')
+                .map(str::trim)
+                .collect();
+            items.push(last.trim());
+            if !(3..=8).contains(&items.len())
+                || items.iter().any(|s| {
+                    s.is_empty()
+                        || s.len() > 96
+                        || !s
+                            .chars()
+                            .all(|c| c.is_alphanumeric() || matches!(c, ' ' | '-' | '_'))
+                        || s.split_ascii_whitespace().any(|w| {
+                            matches!(
+                                w.to_ascii_lowercase().as_str(),
+                                "or" | "and"
+                                    | "if"
+                                    | "unless"
+                                    | "when"
+                                    | "optionally"
+                                    | "example"
+                                    | "examples"
+                            )
+                        })
+                })
+            {
+                continue;
+            }
+            for item in items {
+                if !cases.contains(&item) {
+                    cases.push(item);
+                }
+            }
+        }
+        cases
+    }
+
     pub(super) fn has_source(&self, path: &str) -> bool {
         self.artifacts
             .iter()
@@ -95,8 +166,68 @@ pub(crate) struct Status {
     baseline_receipts: BTreeMap<String, String>,
     pub pending_artifact_paths: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) document_ending: Option<DocumentEnding>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) authored_tests: Option<AuthoredTests>,
     requirements: Vec<Value>,
+}
+
+/// An optional read for an append to a declared document whose end is still unseen.
+#[derive(Debug, Serialize)]
+pub(super) struct DocumentEnding {
+    read_call_id: String,
+    read_file: crate::file_tools::read_range::ReadRequest,
+}
+
+fn document_ending(
+    evidence: &super::evidence_packet::ExecutionPacket,
+    pending_docs: &BTreeSet<String>,
+) -> Option<DocumentEnding> {
+    use crate::file_tools::read_range::{header_counts, matches_range_header, ReadRequest};
+    if pending_docs.is_empty() {
+        return None;
+    }
+    let mut seen = BTreeSet::new();
+    for action in evidence.current_actions().into_iter().rev() {
+        if action.tool != "read_file" || action.executed != Some(true) {
+            continue;
+        }
+        let Some(path) = action.arguments["path"].as_str() else {
+            continue;
+        };
+        let relative = path.trim_start_matches("./");
+        if !pending_docs.contains(relative)
+            || !seen.insert(relative)
+            || action.succeeded == Some(false)
+        {
+            continue;
+        }
+        let Some(header) = action.result.as_deref().and_then(|s| s.lines().next()) else {
+            continue;
+        };
+        let Some((total, _, suffix)) = header_counts(path, header) else {
+            continue;
+        };
+        let Ok(request) = serde_json::from_value::<ReadRequest>(action.arguments.clone()) else {
+            continue;
+        };
+        if total < 13
+            || !suffix.ends_with("; partial file]")
+            || !matches_range_header(&action.arguments.to_string(), header)
+            || !request.bounds().is_ok_and(|(_, end)| end < total)
+        {
+            continue;
+        }
+        return Some(DocumentEnding {
+            read_call_id: action.call_id.clone(),
+            read_file: ReadRequest {
+                path: relative.to_owned(),
+                start_line: Some(total - 11),
+                end_line: Some(total),
+            },
+        });
+    }
+    None
 }
 
 /// Optimistic count under the one-call contract. Diagnosis and additional repairs can cost more.
@@ -339,6 +470,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
         authored_tests: authored_tests::project(&contract, &evidence.actions),
         ..Status::default()
     };
+    let mut pending_docs = BTreeSet::new();
     for requirement in contract.requirements {
         let mut missing = Vec::new();
         for artifact in &requirement.artifacts {
@@ -348,6 +480,9 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
                     .map(|p| p.trim_start_matches("./"))
                     == Some(artifact.path.as_str())
             }) {
+                if artifact.is_markdown_document() {
+                    pending_docs.insert(artifact.path.clone());
+                }
                 if !status.pending_artifact_paths.contains(&artifact.path) {
                     status.pending_artifact_paths.push(artifact.path.clone());
                 }
@@ -395,6 +530,7 @@ pub(super) fn project(messages: &[Value], test_cmd: Option<&str>) -> Status {
             .requirements
             .push(serde_json::json!({"requirement":requirement,"pending":missing}));
     }
+    status.document_ending = document_ending(&evidence, &pending_docs);
     status
 }
 
@@ -574,6 +710,27 @@ fn repeated_successful_mutation_issue(
     })
 }
 
+/// A path the original task declares as an artifact that has no native edit
+/// yet and does not exist in the workspace.
+pub(super) fn absent_declared_artifact(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+    path: &str,
+    tool_root: Option<&str>,
+) -> bool {
+    let path = path.trim_start_matches("./");
+    let Some(root) = tool_root else {
+        return false;
+    };
+    if path.is_empty() || std::fs::symlink_metadata(std::path::Path::new(root).join(path)).is_ok() {
+        return false;
+    }
+    project(messages, test_cmd)
+        .pending_artifact_paths
+        .iter()
+        .any(|pending| pending.trim_start_matches("./") == path)
+}
+
 /// The Coder allowance that an authored-test plan or review can count on. A
 /// report-only closeout offers only `done` within one wire attempt, so the Coder
 /// could neither edit tests nor resubmit: it counts as none.
@@ -590,23 +747,42 @@ pub(super) fn test_review_allowance() -> Option<usize> {
 /// One coverage plan after a test file linked to several requirements has been
 /// written in the current task (see `test_closeout::plan`). `changed_path` is
 /// the path of the successful file change being reported.
+pub(super) struct TestPlan {
+    pub(super) text: String,
+    pub(super) review_floor: Option<usize>,
+}
+
 pub(super) fn test_plan(
     messages: &[Value],
     tool_root: Option<&str>,
     changed_path: &str,
     coder_remaining: Option<usize>,
-) -> Option<String> {
+) -> Option<TestPlan> {
     let messages = crate::task_origin::current_task_messages(messages);
     let contract = parse(crate::task_origin::root_user_text(messages))
         .ok()
         .flatten()?;
-    test_closeout::plan(
+    let text = test_closeout::plan(
         &contract,
         messages,
         tool_root,
         changed_path,
         coder_remaining,
-    )
+    )?;
+    let floor = test_closeout::floor(&contract);
+    let observer_review = crate::work_budget::current().is_some_and(|context| {
+        context.role == "coder"
+            && context.budget.can_return_to_observer()
+            && context.budget.remaining_for("observer") > floor
+            && contract
+                .requirements
+                .iter()
+                .any(|r| !r.explicit_test_cases().is_empty())
+    });
+    Some(TestPlan {
+        text,
+        review_floor: observer_review.then_some(floor),
+    })
 }
 
 /// One review of an authored test against the requirements that link it, before
@@ -663,6 +839,58 @@ mod tests {
     fn exchange(messages: &mut Vec<Value>, id: &str, tool: &str, args: Value, output: &str) {
         messages.extend([json!({"role":"assistant","tool_calls":[{"id":id,"function":{"name":tool,"arguments":args.to_string()}}]}),json!({"role":"tool","tool_call_id":id,"content":output})]);
     }
+    #[test]
+    fn pending_document_append_uses_a_current_partial_read_of_its_own_path() {
+        let mut messages = vec![json!({"role":"user","content":root()})];
+        let path = "docs/usage.md";
+        let args = json!({"path":path,"start_line":1,"end_line":2});
+        let output = "[docs/usage.md] (1600 lines, 78000 bytes) [range: lines 1-2; partial file]\nOverview\nSetup";
+        let view = |messages: &[Value]| {
+            serde_json::to_value(project(messages, None)).unwrap()["document_ending"].clone()
+        };
+        for (name, read_args, body) in [
+            ("forged", args.clone(), "GOVERNOR BLOCKED"),
+            (
+                "wrong",
+                json!({"path":"docs/other.md","start_line":1,"end_line":2}),
+                output,
+            ),
+        ] {
+            exchange(&mut messages, name, "read_file", read_args, body);
+            assert!(view(&messages).is_null());
+        }
+        exchange(&mut messages, "observed", "read_file", args, output);
+        assert_eq!(
+            view(&messages),
+            json!({"read_call_id":"observed","read_file":{"path":path,"start_line":1589,"end_line":1600}})
+        );
+        let mut stale = messages.clone();
+        exchange(
+            &mut stale,
+            "change",
+            "exec",
+            json!({"command":"python3 modify.py"}),
+            "OK (exit_code: 0)",
+        );
+        assert!(view(&stale).is_null());
+        exchange(
+            &mut messages,
+            "tail",
+            "read_file",
+            json!({"path":path,"start_line":1589,"end_line":1600}),
+            "[docs/usage.md] (1600 lines, 78000 bytes) [range: lines 1589-1600; partial file]\nend",
+        );
+        assert!(view(&messages).is_null());
+        exchange(
+            &mut messages,
+            "applied",
+            "patch_file",
+            json!({"path":path}),
+            "OK: patched 'docs/usage.md'",
+        );
+        assert!(view(&messages).is_null());
+    }
+
     #[test]
     fn old_test_pass_and_self_declared_plan_cannot_complete_missing_artifacts() {
         let mut messages = vec![json!({"role":"user","content":root()})];

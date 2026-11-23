@@ -2,7 +2,7 @@ use super::*;
 use crate::agent_session::AgentSession;
 use serde_json::Value;
 
-fn response(tool: &str, id: &str, args: Value, text: &str) -> String {
+pub(super) fn response(tool: &str, id: &str, args: Value, text: &str) -> String {
     let mut delta = json!({"content":text});
     if !tool.is_empty() {
         delta["tool_calls"] = json!([{"index":0,"id":id,"type":"function","function":{"name":tool,"arguments":args.to_string()}}]);
@@ -11,6 +11,12 @@ fn response(tool: &str, id: &str, args: Value, text: &str) -> String {
         "data: {}\n\ndata: [DONE]\n\n",
         json!({"choices":[{"delta":delta,"finish_reason":"stop"}]})
     )
+}
+
+pub(super) fn greeting_seed(seed: &std::path::Path, task: &str) {
+    AgentSession::save_atomic(seed,&AgentSession::new(None,None,None,None,vec![
+        json!({"role":"user","content":task}),json!({"role":"assistant","accepted_plan":{"goal":"Update the greeting in guide.md","steps":["Edit the greeting","Report the result"],"acceptance_criteria":["guide.md greets the reader"],"risks":"incorrect anchor","assumptions":"guide.md exists"},"tool_calls":[{"id":"prior-read","type":"function","function":{"name":"read_file","arguments":r#"{"path":"guide.md"}"#}}]}),
+        json!({"role":"tool","tool_call_id":"prior-read","content":"[guide.md] (1 lines, 4 bytes)\nold\n"})])).unwrap();
 }
 
 #[test]
@@ -142,9 +148,7 @@ async fn iteration_case(first: FirstRound) {
     let prompt = dir.path().join("task.txt");
     std::fs::write(&prompt, task).unwrap();
     let seed = dir.path().join("seed.json");
-    AgentSession::save_atomic(&seed,&AgentSession::new(None,None,None,None,vec![
-        json!({"role":"user","content":task}),json!({"role":"assistant","accepted_plan":{"goal":"Update the greeting in guide.md","steps":["Edit the greeting","Report the result"],"acceptance_criteria":["guide.md greets the reader"],"risks":"incorrect anchor","assumptions":"guide.md exists"},"tool_calls":[{"id":"prior-read","type":"function","function":{"name":"read_file","arguments":r#"{"path":"guide.md"}"#}}]}),
-        json!({"role":"tool","tool_call_id":"prior-read","content":"[guide.md] (1 lines, 4 bytes)\nold\n"})])).unwrap();
+    greeting_seed(&seed, task);
     let output = dir.path().join("chain");
     let cli = crate::Cli::try_parse_from([
         "spiral-coder",

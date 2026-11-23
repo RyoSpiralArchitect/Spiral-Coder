@@ -4,6 +4,7 @@ use httpmock::prelude::*;
 
 mod blocked_terminal;
 mod budget_rhythm;
+mod coder_stream_recovery;
 mod cross_family;
 mod observer_stream_recovery;
 mod observer_summary;

@@ -138,7 +138,7 @@ mod tests {
             3,
             None,
         );
-        budget.protect_replay(dir.path()).unwrap();
+        budget.protect_task_artifacts(dir.path()).unwrap();
         crate::work_budget::scope(Some(crate::work_budget::Context { budget, role: "coder" }), async {
             let args = json!({"json_pointer":"/cases/0/checks","json_value":"[]","json_expected":"[{\"kind\":\"hint_queued\"}]"});
             let (output, failed) = super::super::tool_patch_file_args(path, &args, dir.path().to_str());

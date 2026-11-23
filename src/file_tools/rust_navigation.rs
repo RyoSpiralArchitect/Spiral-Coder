@@ -5,7 +5,12 @@ const MAX_SOURCE_BYTES: usize = 512 * 1024;
 const MAX_NAME_BYTES: usize = 64;
 const MAX_LOCATIONS: usize = 4;
 
-pub(super) fn note(file: &Path, pattern: &str, source: &str) -> Option<String> {
+pub(super) fn note(
+    file: &Path,
+    pattern: &str,
+    source: &str,
+    literal_hits: usize,
+) -> Option<String> {
     if file.extension()?.to_str()? != "rs" || source.len() > MAX_SOURCE_BYTES {
         return None;
     }
@@ -25,7 +30,11 @@ pub(super) fn note(file: &Path, pattern: &str, source: &str) -> Option<String> {
         .map(|(i, _)| (i + 1).to_string())
         .collect();
     if lines.is_empty() {
-        return None;
+        if literal_hits != 0 {
+            return None;
+        }
+        let (first, _) = pattern.split_once('-')?;
+        return sibling_note(&identifier[..first.len()], source);
     }
     Some(format!(
         "[navigation] Related Rust spelling `{identifier}` appears in this file on lines {}. For CLI changes, inspect a working sibling's argument definition and follow its dispatch to the handler. Try the requested invocation with real arguments and check its output.\n",
@@ -33,7 +42,101 @@ pub(super) fn note(file: &Path, pattern: &str, source: &str) -> Option<String> {
     ))
 }
 
-fn rust_spelling(pattern: &str) -> Option<String> {
+struct CommandSites<'a> {
+    owner: &'a str,
+    name: &'a str,
+    definition: usize,
+    arm: usize,
+}
+
+/// A directory search can locate an exact Rust CLI spelling in a file
+/// already visited, even when the literal hits occur only in callers.
+pub(super) fn exact_command_note(
+    file: &Path,
+    display_path: &str,
+    spelling: &str,
+    source: &str,
+) -> Option<String> {
+    if file.extension()?.to_str()? != "rs"
+        || source.len() > MAX_SOURCE_BYTES
+        || !source.contains(spelling)
+    {
+        return None;
+    }
+    let sites = command_sites(source, |name| name == spelling)?;
+    Some(format!("[navigation] In `{display_path}`, enum `{}` declares `{}` at line {} and its qualified match arm is at line {}.\n",sites.owner,sites.name,sites.definition,sites.arm))
+}
+
+/// When a new command is absent, show a nearby spelling only if the same file
+/// contains one matching qualified arm and a variant in the named enum.
+fn sibling_note(prefix: &str, source: &str) -> Option<String> {
+    if prefix.len() < 3 {
+        return None;
+    }
+    let sites = command_sites(source, |name| {
+        name.strip_prefix(prefix).is_some_and(|rest| {
+            rest.starts_with(|c: char| c.is_ascii_uppercase() || c.is_ascii_digit())
+        })
+    })?;
+    Some(format!("[navigation] A related spelling `{}` appears in enum `{}` at line {} and in a qualified match arm at line {}. Inspect these lines for how an existing command is wired.\n", sites.name,sites.owner,sites.definition,sites.arm))
+}
+
+fn command_sites(source: &str, matches_name: impl Fn(&str) -> bool) -> Option<CommandSites<'_>> {
+    let separator = |c: char| !c.is_alphanumeric() && c != '_';
+    let mut arm = None;
+    for (i, line) in source.lines().enumerate() {
+        let Some((pattern, _)) = line.split_once("=>") else {
+            continue;
+        };
+        if pattern.contains(['/', '*', '"', '\'']) {
+            continue;
+        }
+        for (at, _) in pattern.match_indices("::") {
+            let owner = pattern[..at].rsplit(separator).next()?;
+            let name = pattern[at + 2..].split(separator).next()?;
+            if !matches_name(name) || !owner.starts_with(|c: char| c.is_ascii_uppercase()) {
+                continue;
+            }
+            if arm.replace((owner, name, i + 1)).is_some() {
+                return None;
+            }
+        }
+    }
+    let (owner, name, arm_line) = arm?;
+    let mut enum_indent = None;
+    let mut definition = None;
+    for (i, line) in source.lines().enumerate() {
+        let trimmed = line.trim_start();
+        let indent = line.len() - trimmed.len();
+        if let Some(header) = trimmed.trim_end().strip_suffix('{') {
+            let mut words = header.split_whitespace().rev();
+            if words.next() == Some(owner) && words.next() == Some("enum") {
+                enum_indent = Some(indent);
+                continue;
+            }
+        }
+        if enum_indent.is_some_and(|start| indent <= start) && trimmed.starts_with('}') {
+            enum_indent = None;
+        }
+        let variant = trimmed.strip_prefix(name).is_some_and(|rest| {
+            rest.trim_start().starts_with(['(', '{', ',']) && !rest.contains("=>")
+        });
+        if !variant || enum_indent.is_none_or(|start| indent <= start) {
+            continue;
+        }
+        if definition.replace(i + 1).is_some() {
+            return None;
+        }
+    }
+    Some(CommandSites {
+        owner,
+        name,
+        definition: definition?,
+        arm: arm_line,
+    })
+}
+
+pub(super) fn rust_spelling(pattern: &str) -> Option<String> {
     if pattern.len() > MAX_NAME_BYTES || !pattern.contains('-') {
         return None;
     }

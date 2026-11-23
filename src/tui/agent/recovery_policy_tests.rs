@@ -177,3 +177,35 @@ fn rejected_exec_cannot_reset_observation_pressure_with_embedded_success_text() 
         0
     );
 }
+
+#[test]
+fn exact_repeat_policy_distinguishes_ranges_in_the_same_source() {
+    let harness = TaskHarness::infer("Fix the accounting implementation", false);
+    let path = "src/coupled_status.rs";
+    let previous = json!({"path":path,"start_line":190,"end_line":340});
+    let proposed = json!({"end_line":210,"path":path,"start_line":100});
+    let mut messages = Vec::new();
+    for args in [
+        json!({"path":"scripts/check.py"}),
+        json!({"path":path}),
+        previous.clone(),
+    ] {
+        record(&mut messages, "read_file", args, "[observed source]");
+    }
+    let meta = MetaHarness::analyze(harness, &messages, Some(RecoveryStage::Fix), None, None);
+    let evaluator =
+        EvaluatorLoop::analyze(harness, &meta, &Default::default(), None, None, None, 0);
+    let check = |args: Value| {
+        let mut call = read(path);
+        call.arguments = args.to_string();
+        evaluator.build_violation_block(&call)
+    };
+    assert!(
+        check(previous).is_some(),
+        "the actual last window is a repeat"
+    );
+    assert!(
+        check(proposed).is_none(),
+        "distinct line numbers with the same digit count"
+    );
+}

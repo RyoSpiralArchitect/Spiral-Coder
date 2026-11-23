@@ -138,7 +138,10 @@ pub(in super::super) fn build_progress_gate_block(
         {
             return None;
         }
-        let same_successes = history.by_command.get(&attempted).copied().unwrap_or(0);
+        let same_successes = super::super::observation_key::key(&tc.name, &tc.arguments)
+            .and_then(|key| history.by_command.get(&key))
+            .copied()
+            .unwrap_or(0);
         let allow_first_target_read = harness.artifact_mode == ArtifactMode::ExistingFiles
             && tc.name == "read_file"
             && (same_successes == 0
@@ -473,9 +476,27 @@ mod tests {
         history.extend(observed_project("Cargo.toml"));
         let lookup = json!({"dir":"src","pattern":"TuiReplay"});
         let search = |h: &[Value], q: Value| blocked(h, "search_files", q);
+        for pattern in ["Command::Replay", "router.commands.replay"] {
+            let qualified = json!({"dir":"src/main.rs","pattern":pattern});
+            assert!(search(&history, qualified.clone()).is_none(), "{pattern}");
+            let mut searched = history.clone();
+            tool(
+                &mut searched,
+                "search_files",
+                qualified.clone(),
+                "[search_files] No matches",
+            );
+            assert!(search(&searched, qualified).is_some());
+        }
         for q in [
             json!({"dir":".","pattern":"TuiReplay"}),
             json!({"dir":"tests","pattern":"TuiReplay"}),
+            json!({"dir":"src","pattern":"Command::Replay"}),
+            json!({"dir":"src/other.rs","pattern":"Command::Replay"}),
+            json!({"dir":"src/main.rs","pattern":"Command::::Replay"}),
+            json!({"dir":"src/main.rs","pattern":"Command::Replay()"}),
+            json!({"dir":"src/main.rs","pattern":"router.*"}),
+            json!({"dir":"src/main.rs","pattern":"Command::"}),
             json!({"dir":"src","pattern":"*"}),
             json!({"dir":"src","pattern":"a b"}),
         ] {

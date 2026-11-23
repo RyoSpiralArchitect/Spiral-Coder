@@ -96,7 +96,10 @@ impl ContractPatchProposal {
                 .collect(),
             blocked_scope: blocked_scope_label(patch.blocked_scope).to_string(),
             blocked_command_display: patch.blocked_command_display.clone(),
-            blocked_command_signature: patch.blocked_command_signature.clone(),
+            blocked_command_signature: patch
+                .blocked_command_display
+                .as_deref()
+                .map(normalize_for_signature),
             next_target: policy.next_target.clone(),
             exit_hint: patch.exit_hint.clone(),
             support_note: patch.support_note.clone(),
@@ -770,6 +773,7 @@ mod tests {
             action: PolicyAction::MutateExistingNow,
             evidence_count: 3,
             attempted_command: Some("read_file(path=src/lib.rs)".to_string()),
+            attempted_signature: None,
             next_target: Some("src/lib.rs".to_string()),
         };
         let meta = MetaHarness::for_test(policy);
@@ -792,6 +796,7 @@ mod tests {
             action: PolicyAction::AdvanceRepoScaffold,
             evidence_count: 2,
             attempted_command: Some("list_dir(path=demo_repo)".to_string()),
+            attempted_signature: None,
             next_target: Some("demo_repo/.git".to_string()),
         };
         let meta = MetaHarness::for_test(policy);

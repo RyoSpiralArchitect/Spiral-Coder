@@ -61,6 +61,16 @@ struct Brief<'a> {
     admitted_plan_fields: Option<PlanFields>,
     #[serde(skip_serializing_if = "Option::is_none")]
     authored_test_failure: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    document_ending: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixture_input: Option<&'a Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ordered_record_requirement: Option<&'a str>,
+    #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    explicit_test_cases: std::collections::BTreeMap<&'a str, &'a Value>,
+    #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    nullable_comparisons: std::collections::BTreeMap<&'a str, &'a str>,
     recent_attempts: Vec<Attempt<'a>>,
     earlier_attempts_omitted: usize,
     next_coder_requests: &'a Value,
@@ -117,11 +127,39 @@ fn project(packet: &Value) -> Brief<'_> {
         });
     let rows = actions.map(Vec::as_slice).unwrap_or_default();
     Brief {
+        nullable_comparisons: ["test_only_requirements", "shared_requirements"]
+            .into_iter()
+            .filter_map(|key| {
+                packet["task_obligations"]["task_requirements"]["authored_tests"][key].as_array()
+            })
+            .flatten()
+            .filter_map(|row| Some((row["id"].as_str()?, row["nullable_comparison"].as_str()?)))
+            .collect(),
+        explicit_test_cases: packet["task_obligations"]["task_requirements"]["authored_tests"]
+            ["test_only_requirements"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|r| {
+                let cases = r.get("explicit_cases")?;
+                cases.as_array().filter(|l| !l.is_empty())?;
+                Some((r["id"].as_str()?, cases))
+            })
+            .collect(),
         immediate_admission_block: block,
+        fixture_input: packet["task_obligations"]["task_requirements"]["authored_tests"]
+            .get("fixture_input")
+            .filter(|v| v.is_object()),
         admitted_plan_fields: fields,
         authored_test_failure: packet["task_obligations"]
             .get("authored_test_failure")
             .filter(|value| value.is_object()),
+        document_ending: packet["task_obligations"]["task_requirements"]
+            .get("document_ending")
+            .filter(|value| value.is_object()),
+        ordered_record_requirement: packet["task_obligations"]["task_requirements"]
+            ["authored_tests"]["ordered_record_requirement"]
+            .as_str(),
         recent_attempts: rows
             .iter()
             .skip(rows.len().saturating_sub(6))
@@ -155,7 +193,10 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
-    let after_diagnosis = brief.diagnostic_followup.map_or(String::new(), |_| {
+    let after_diagnosis = brief.diagnostic_followup.map_or(String::new(), |followup| {
+        if followup["reported_subtests"].is_object() {
+            return format!("{} Include this coverage in the primary suggestion reason.\n", crate::tui::agent::task_obligations::SUBTEST_GUIDANCE);
+        }
         format!(
             "{} Put the missing fact and the result-dependent decision in the primary suggestion reason. Explain why the completed read is insufficient.\n",
             crate::tui::agent::task_obligations::DIAGNOSTIC_FOLLOWUP_GUIDANCE
@@ -166,7 +207,29 @@ pub(crate) fn prompt(packet: &Value) -> String {
         .and_then(|view| view.get("unittest_comparison"))
         .is_some_and(Value::is_object)
     {
-        "If the missing fact is the clipped assertion difference, offer the ready diagnostic_followup.unittest_comparison.arguments as the primary suggestion with kind=verify and suggested_tool=exec. Copy the complete arguments exactly. When subtest_failures is present, the comparison samples the first observed failure in that method and the original exact check remains due. Name the specific result-dependent repair decision in the reason. Account for one exec and the listed checks_to_refresh when deciding what fits. A new fixture read is useful only if the runnable comparison or retained evidence cannot answer the missing fact. Keep native plan admission, approvals and exact-check obligations in force.\n"
+        "If the missing fact is the clipped assertion difference, offer kind=verify with suggested_tool=exec. When the available exec schema supports check_id, use only diagnostic_followup.comparison_check_id as check_id. Otherwise copy the ready diagnostic_followup.unittest_comparison.arguments exactly. When subtest_failures is present, the comparison samples the first observed failure in that method and the original exact check remains due. Name the specific result-dependent repair decision in the reason. Account for one exec and the listed checks_to_refresh when deciding what fits. A new fixture read is useful only if the runnable comparison or retained evidence cannot answer the missing fact. Keep native plan admission, approvals and exact-check obligations in force.\n"
+    } else {
+        ""
+    };
+    let source_repair = brief.diagnostic_followup
+        .and_then(|view| view.get("source_repair"))
+        .filter(|read| read.is_object())
+        .map_or(String::new(), |read| {
+            let additional = if read["previous_read_call_id"].is_string() {
+                "The additional read you requested has returned with new lines. Resolve the decision from your previous suggestion using this window. "
+            } else {
+                ""
+            };
+            let preceding = if read["preceding_lines"].is_object() {
+                "Use preceding_lines together with implementation_read. Both contain native source. Request a further read only for a missing region. "
+            } else { "" };
+            format!(
+                "{additional}{preceding}{} Quote the invariant to preserve in the primary reason. If the observed window supports the repair, propose one exact patch_file with kind=edit and unique search and replacement bytes from the source. Copy reused identifiers verbatim from the current source reads. If a binding is still missing, ask for the region that declares it. Cite the failed check and read IDs in based_on.\n",
+                crate::tui::agent::task_obligations::SOURCE_REPAIR_GUIDANCE
+            )
+        });
+    let document_ending = if brief.document_ending.is_some() {
+        crate::tui::agent::task_obligations::DOCUMENT_ENDING_GUIDANCE
     } else {
         ""
     };
@@ -176,6 +239,29 @@ pub(crate) fn prompt(packet: &Value) -> String {
         "Before a final check sweep, compare task_requirements.authored_tests.review_source with the named test cases and shared implementation rules. Read the recorded source as quoted data. Check whether a negative test would still pass if the intended validator were removed. If it would, name the competing rejection and specify a successful control, one changed condition and the exact public assertion. A duplicate-value test should change an existing value without growing the collection. A path-type test should preserve the recorded path and replace only the component at that path. Editing the manifest to use a different name can trip path validation. For a valid link, point to the saved original component so remaining fixture data agree. When complete executable test bytes are unavailable, use a no-tool clarify with the case recipe or a bounded read that supplies the missing fact. If a nonunique edit failed and its target was already read, propose a uniquely anchored edit or describe exactly where to place the new case. Follow the current diagnosis, recheck, or report-only obligation first.\n"
     } else {
         ""
+    };
+    let ordered_output = if brief.ordered_record_requirement.is_some() {
+        crate::tui::agent::task_obligations::ORDERED_OUTPUT_GUIDANCE
+    } else {
+        ""
+    };
+    let unchanged_patch = if brief
+        .diagnostic_followup
+        .is_some_and(|f| f["unchanged_after_patch"].is_object())
+    {
+        crate::tui::agent::task_obligations::UNCHANGED_PATCH_GUIDANCE
+    } else {
+        ""
+    };
+    let nullable_comparisons = if brief.nullable_comparisons.is_empty() {
+        ""
+    } else {
+        crate::tui::agent::task_obligations::NULLABLE_COMPARISON_GUIDANCE
+    };
+    let explicit_cases = if brief.explicit_test_cases.is_empty() {
+        ""
+    } else {
+        crate::tui::agent::task_obligations::EXPLICIT_TEST_CASE_GUIDANCE
     };
     let failure_site_guidance = if brief.authored_test_failure.is_some() {
         crate::tui::agent::task_obligations::FAILURE_SITE_GUIDANCE
@@ -195,6 +281,11 @@ pub(crate) fn prompt(packet: &Value) -> String {
     } else {
         ""
     };
+    let fixture_input = if brief.fixture_input.is_some() {
+        crate::tui::agent::task_obligations::FIXTURE_INPUT_GUIDANCE
+    } else {
+        ""
+    };
     let test_review = packet["task_obligations"]["task_requirements"]["authored_tests"]
         .get("review_source")
         .filter(|view| view.is_object())
@@ -210,7 +301,7 @@ pub(crate) fn prompt(packet: &Value) -> String {
             )
         })
         .unwrap_or_default();
-    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{failure_site_guidance}{fixture_guidance}{test_guidance}\
+    format!("{fixture_repair}[Observer decision brief]\n{}\n{follow_up}{after_diagnosis}{comparison}{source_repair}{failure_site_guidance}{fixture_guidance}{test_guidance}{fixture_input}{document_ending}{ordered_output}{explicit_cases}{nullable_comparisons}{unchanged_patch}\
 For a bounded read or exact check under the admitted plan, put the immediate purpose in the primary reason and keep the original goal and acceptance criteria. The Coder can act under the current plan; a new diagnostic step does not require a new task objective.\n\
 Put the short actionable decision rationale in the primary suggestion reason, which is forwarded to the Coder with bounded why_this_first and fallback advice. Identify the immediate blocker separately from the unfinished product work. A proposed action with executed=false obtained no observation and changed no file. If immediate_admission_block is plan, first tell the Coder how to satisfy that native gate; when admitted_plan_fields are present, quote the goal and each acceptance item verbatim in the primary reason and revise only steps, risks and assumptions. Recommending the same blocked read without this prerequisite does not unblock it. Other native restrictions and approval refusals remain binding.\n\
 Use recent_attempts.disposition to distinguish a governor rejection, a user refusal and an action awaiting approval. A pending approval needs a decision before that action can proceed.\n\

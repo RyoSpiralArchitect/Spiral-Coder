@@ -40,6 +40,17 @@ impl Catalog {
         }
     }
 
+    pub(super) fn with_comparison(
+        mut self,
+        followup: Option<&super::recovery_focus::DiagnosticFollowup>,
+    ) -> Self {
+        if self.error.is_none() {
+            self.checks
+                .extend(followup.and_then(|f| f.comparison_check()));
+        }
+        self
+    }
+
     fn parse(root: &str) -> Result<Vec<Check>> {
         let required = benchmark_proof::required_commands(root);
         let mut checks = required
@@ -115,17 +126,20 @@ impl Catalog {
                 parameters["properties"]["check_id"]["enum"] =
                     json!(choices.iter().map(|c| &c.id).collect::<Vec<_>>());
             } else {
-                parameters["properties"]
-                    .as_object_mut()
-                    .unwrap()
-                    .remove("check_id");
-                parameters["required"] = json!(["command"]);
+                super::require_explicit_exec_command(parameters);
             }
         }
         if let Some(error) = &self.error {
             return Some(format!("[Check selections unavailable] {error}. Use the original exact commands; all task obligations remain."));
         }
-        enabled.then(|| format!("[Declared check selections]\n{}\nSelect an exact command with exec arguments {{\"check_id\":\"<id>\"}} alone. Runtime executes the listed command at tool_root and records its command, directory and result. Keep tool=exec in think; next may name the check ID. Do not add command, cwd, pipelines or output filters: runtime bounds displayed output. Selection does not grant approval or satisfy a check. Required checks still need fresh successful native execution after final edits; optional reproducers do not create new completion obligations.", json!(choices)))
+        let display: Vec<_> = choices.iter().map(|row| {
+            if row.id.starts_with("unittest:") {
+                json!({"id":row.id, "purpose":"Compare the failing unittest assertion at tool_root. Select this ID alone."})
+            } else {
+                json!(row)
+            }
+        }).collect();
+        enabled.then(|| format!("[Declared check selections]\n{}\nSelect an exact command with exec arguments {{\"check_id\":\"<id>\"}} alone. Runtime executes the listed command at tool_root and records its command, directory and result. Keep tool=exec in think; next may name the check ID. Do not add command, cwd, pipelines or output filters: runtime bounds displayed output. Selection does not grant approval or satisfy a check. Required checks still need fresh successful native execution after final edits; optional reproducers do not create new completion obligations.", json!(display)))
     }
 
     /// Resolve only a single valid selection, before any action/recovery gate.

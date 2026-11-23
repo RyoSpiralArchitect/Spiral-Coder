@@ -1,4 +1,7 @@
 use super::*;
+
+#[path = "diagnostic_followup_tests/source_repair.rs"]
+mod source_repair;
 use crate::tui::agent::{self, AgenticStartState};
 
 const CHECK: &str = "python3 -S -m unittest -v test_failure";
@@ -262,8 +265,59 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
             Some(root),
         ));
     }
+    let id = followup_view["comparison_check_id"].as_str().unwrap();
+    let selection = json!({"check_id":id});
+    let catalog = agent::check_catalog::Catalog::from_root(TASK).with_comparison(Some(&followup));
+    let mut selected = ToolCallData {
+        arguments: selection.to_string(),
+        ..call.clone()
+    };
+    let mut stale = selected.clone();
+    assert!(agent::check_catalog::Catalog::from_root(TASK)
+        .resolve(&mut stale, Some(root))
+        .is_err());
+    let mut tools = json!([agent::exec_tool_def()]);
+    catalog
+        .bind_for(&mut tools, "https://example.test/v1", None)
+        .unwrap();
+    assert!(
+        tools[0]["function"]["parameters"]["properties"]["check_id"]["enum"]
+            .as_array()
+            .unwrap()
+            .contains(&json!(id))
+    );
+    let resolved = catalog.resolve(&mut selected, Some(root)).unwrap().unwrap();
+    assert_eq!(resolved["command"], command);
+    assert!(trace
+        .focus
+        .matches_current_focused_exec(&selected, &trace.messages, Some(root)));
+    let session = crate::agent_session::AgentSession::new(
+        Some(root.into()),
+        None,
+        None,
+        None,
+        trace.messages.clone(),
+    );
+    let advice = serde_json::from_value(json!({"summary":"Compare the observed assertion",
+        "suggestions":[{"kind":"verify","reason":"Read the differing public values","confidence":0.98,
+        "suggested_tool":"exec","suggested_args":selection}]})).unwrap();
+    let observation = agent::observer_continuation::Observation::from_advice(
+        &advice,
+        &session,
+        Some(CHECK),
+        root,
+    )
+    .unwrap();
+    assert!(observation.guidance().contains(&selection.to_string()));
+    assert!(observation.matches_accepted_call(
+        &selected,
+        "<observer_response>\ndecision: accept\n</observer_response>"
+    ));
+    let mut bad_id: Value = serde_json::from_str(&selected.arguments).unwrap();
+    bad_id["check_id"] = json!("unittest:stale");
+    assert!(!followup.matches_unittest_comparison(&bad_id));
     let process = std::process::Command::new("sh")
-        .args(["-c", command])
+        .args(["-c", resolved["command"].as_str().unwrap()])
         .current_dir(root)
         .output()
         .unwrap();
@@ -289,7 +343,12 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
         &format!("cwd: {root}"),
         None,
     );
-    trace.append("comparison", "exec", args.clone(), body);
+    trace.append(
+        "comparison",
+        "exec",
+        serde_json::from_str(&selected.arguments).unwrap(),
+        body,
+    );
     let focus = RecoveryFocus::from_messages(&trace.messages, trace.root(), Some(CHECK));
     assert!(!focus.progress_survives(&trace.messages, trace.root(), Some(CHECK)));
     let comparison_result = trace.messages.pop().unwrap();
@@ -310,6 +369,49 @@ fn first_focused_comparison_retains_diagnosis_without_verification() {
         agent::task_obligations::project_advisory(&trace.messages, Some(CHECK), trace.root())
             .pending_exact_checks;
     assert_eq!(pending, vec![CHECK, OTHER_CHECK]);
+
+    // The comparison belongs to the observed failure. A subsequent repair
+    // changes today's phase, but the same red comparison still has its owner.
+    let repaired = {
+        let mut history = trace.messages.clone();
+        let repair = ToolCallData {
+            id: "repair-after-comparison".into(),
+            name: "patch_file".into(),
+            arguments: json!({"path":"src/counter.rs"}).to_string(),
+            thought_signature: None,
+        };
+        let result = "OK: patched 'src/counter.rs' (+1 line)".to_owned();
+        let mut focus = RecoveryFocus::from_messages(&history, trace.root(), Some(CHECK));
+        focus.record_result(
+            &repair,
+            &result,
+            trace.root(),
+            Some(CHECK),
+            &ExecVerificationContext::from_messages(Some(CHECK), &history),
+        );
+        history.push(json!({"role":"assistant","tool_calls":[repair.to_json()]}));
+        history.push(focus.tool_message(&repair, result));
+        history
+    };
+    let mut governor = agent::RecoveryGovernor {
+        stage: Some(agent::RecoveryStage::Diagnose),
+        ..Default::default()
+    };
+    governor.restore_focus(&repaired, trace.root(), Some(CHECK));
+    assert_eq!(governor.stage, Some(agent::RecoveryStage::Verify));
+    assert!(governor.focus.check_matches(CHECK));
+    let mut later_failure = repaired;
+    let unrelated = ToolCallData {
+        id: "unrelated-red".into(),
+        name: "exec".into(),
+        arguments: json!({"command":"check another invariant"}).to_string(),
+        thought_signature: None,
+    };
+    later_failure.extend([json!({"role":"assistant","tool_calls":[unrelated.to_json()]}),
+        json!({"role":"tool","tool_call_id":unrelated.id,"content":format!("FAILED (exit_code: 1)\ncwd: {}",trace.path.display())})]);
+    governor.stage = Some(agent::RecoveryStage::Diagnose);
+    governor.restore_focus(&later_failure, trace.root(), Some(CHECK));
+    assert_eq!(governor.stage, Some(agent::RecoveryStage::Diagnose));
 
     // Both the native failing check and the read must still be correlated.
     let missing_read: Vec<_> = trace
@@ -497,4 +599,156 @@ async fn repeated_diagnosis_returns_before_another_coder_call_and_forwards_a_dif
         json!([CHECK])
     );
     drop(trace.root);
+}
+
+#[test]
+fn named_scalar_subtests_reach_both_roles_after_the_native_test_read() {
+    let mut trace = Trace::new();
+    let frame = format!(
+        "  File \"{}\", line 1, in test_value\n",
+        trace.path.join(FILE).display()
+    );
+    let body = format!(
+        "FAIL: test_value (test_failure.Check.test_value) (mode='active')\n{frame}AssertionError: 0 == 0 : accepted active\n\n\
+         FAIL: test_value (test_failure.Check.test_value) (mode='saved')\n{frame}AssertionError: 1 != 2 : wrong saved count\n\n\
+         Ran 1 test in 0.1s\n\nFAILED (failures=2)\n"
+    );
+    let result = agent::inject_cwd(
+        &agent::build_failed_tool_output("", &body, 1),
+        &format!("cwd: {}", trace.path.display()),
+        None,
+    );
+    trace.append("failed", "exec", json!({"command":CHECK}), result);
+    assert!(trace.view().is_none());
+    trace.read("test");
+    let followup = trace.view().unwrap();
+    assert!(followup.should_yield());
+    let view = serde_json::to_value(followup).unwrap();
+    assert_eq!(
+        view["reported_subtests"],
+        json!({
+            "method":"test_failure.Check.test_value",
+            "cases":[{"parameters":"(mode='active')","assertion":"0 == 0 : accepted active"},
+                     {"parameters":"(mode='saved')","assertion":"1 != 2 : wrong saved count"}]
+        })
+    );
+    assert!(view.get("unittest_comparison").is_none());
+    assert_eq!(view["latest_failure_call_id"], "failed");
+    for prompt in [
+        agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root()).unwrap(),
+        crate::observer_action::intervention::prompt(
+            &json!({"task_obligations":{"diagnostic_followup":view}}),
+        ),
+    ] {
+        assert!(prompt.contains("wrong saved count") && prompt.contains("which rows"));
+    }
+    trace.read("same-test");
+    assert!(!trace.view().unwrap().should_yield());
+    // A later check owns its own cases and removes the earlier advisory.
+    trace.fail("new-failure", 9, "0.02");
+    trace.read("new-test");
+    assert!(!trace.view().is_some_and(|f| f.has_reported_subtests()));
+}
+
+#[test]
+fn compare_the_complete_public_failures_across_one_landed_source_patch() {
+    for scenario in [
+        "same",
+        "changed_assertion",
+        "different_case",
+        "unchanged_file",
+        "unrelated_exec",
+        "other_path",
+        "wrong_cwd",
+    ] {
+        let mut trace = Trace::new();
+        let contract = json!({"version":1,"requirements":[{"id":"catalog","description":"Validate the catalog",
+            "artifacts":[{"path":"src/value.py","kind":"source"},{"path":FILE,"kind":"test"}],
+            "checks":[{"command":CHECK}]}]});
+        trace.messages[0]["content"] = json!(format!(
+            "{TASK}\n<task_requirements>\n{contract}\n</task_requirements>"
+        ));
+        let failed = |trace: &mut Trace, id: &str, name: &str, actual: usize, correct_cwd: bool| {
+            let frame = format!(
+                "  File \"{}\", line 1, in test_value",
+                trace.path.join(FILE).display()
+            );
+            let body=format!("FAIL: test_value (test_failure.Check.test_value) (item='first')\n{frame}\nAssertionError: 0 != 2\nFAIL: test_value (test_failure.Check.test_value) (item='{name}')\n{frame}\nAssertionError: {actual} != 2\n\nRan 1 test in 0.1s\n\nFAILED (failures=2)\n");
+            let cwd = if correct_cwd {
+                trace.root().unwrap()
+            } else {
+                "/another-workspace"
+            };
+            let output = agent::inject_cwd(
+                &agent::build_failed_tool_output("", &body, 1),
+                &format!("cwd: {cwd}"),
+                None,
+            );
+            trace.append(id, "exec", json!({"command":CHECK}), output);
+        };
+        failed(&mut trace, "before", "second", 1, scenario != "wrong_cwd");
+        if scenario != "wrong_cwd" {
+            trace.read("earlier-read");
+        }
+        let path = if scenario == "other_path" {
+            "other.py"
+        } else {
+            "src/value.py"
+        };
+        let receipt = if scenario == "unchanged_file" {
+            format!("OK: unchanged '{path}'")
+        } else {
+            format!("OK: patched '{path}'")
+        };
+        trace.append(
+            "patch",
+            "patch_file",
+            json!({"path":path,"search":"old","replace":"new"}),
+            receipt,
+        );
+        if scenario == "unrelated_exec" {
+            trace.append(
+                "barrier",
+                "exec",
+                json!({"command":"python3 other.py"}),
+                "OK (exit_code: 0)".into(),
+            );
+        }
+        failed(
+            &mut trace,
+            "after",
+            if scenario == "different_case" {
+                "third"
+            } else {
+                "second"
+            },
+            if scenario == "changed_assertion" {
+                3
+            } else {
+                1
+            },
+            true,
+        );
+        trace.read("after-read");
+        let followup = serde_json::to_value(trace.view().expect("two labeled assertions")).unwrap();
+        if scenario == "same" {
+            assert_eq!(
+                followup["unchanged_after_patch"],
+                json!({"before_check_call_id":"before","patch_call_id":"patch","path":"src/value.py","repeated_assertions":2})
+            );
+            let coder = agent::task_obligations::prompt(&trace.messages, Some(CHECK), trace.root())
+                .unwrap();
+            let observer = crate::observer_action::intervention::prompt(
+                &json!({"task_obligations":{"diagnostic_followup":followup}}),
+            );
+            assert!(
+                coder.contains("Inspect the caller") && observer.contains("Inspect the caller")
+            );
+        } else {
+            assert!(
+                followup.get("unchanged_after_patch").is_none(),
+                "{scenario}: {followup}"
+            );
+        }
+    }
 }

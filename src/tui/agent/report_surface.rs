@@ -33,6 +33,7 @@ pub(super) fn guidance(report: &Value) -> String {
         ("clauses", "Report requirements"),
         ("required_literals", "Required exact text"),
         ("path_categories", "Path categories"),
+        ("recorded_edit_paths", "Name every changed path in done.summary. Reconcile these recorded native edits with the final changes, including any reversions or shell edits"),
         ("outcome_rows", "Recorded outcomes"),
         (
             "standalone_outcome_lines",

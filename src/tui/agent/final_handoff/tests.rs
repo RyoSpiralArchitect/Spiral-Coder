@@ -31,6 +31,81 @@ fn verified_edits() -> Vec<Value> {
 }
 
 #[test]
+fn an_explicit_inventory_in_the_final_report_names_only_current_native_edits() {
+    let directive = "Name every changed path and the exact commands in the final report.";
+    let mut messages = verified_edits();
+    messages.push(json!({"role":"user","content":directive}));
+    for (path, output) in [
+        ("src/new.rs", "OK: patched 'src/new.rs'"),
+        ("guide.md", "OK: patched 'guide.md'"),
+        ("denied.rs", "GOVERNOR BLOCKED"),
+        ("missing.rs", "ERROR: search string not found"),
+    ] {
+        exchange(&mut messages, "patch_file", json!({"path":path}), output);
+    }
+    let report = report_context(directive, &messages, None);
+    assert_eq!(
+        report["recorded_edit_paths"],
+        json!(["guide.md", "src/new.rs"])
+    );
+    let guidance = super::super::report_surface::guidance(&report);
+    assert!(guidance.contains("guide.md") && guidance.contains("src/new.rs"));
+    assert!(
+        validate_authored_done_summary(directive, "Updated.", "Updated.", &messages, None).is_err()
+    );
+    let correct = "Updated guide.md and src/new.rs.";
+    assert!(validate_authored_done_summary(directive, correct, correct, &messages, None).is_ok());
+    for text in [
+        format!("For example: {directive}"),
+        format!("Do not {directive}"),
+        format!("> {directive}"),
+        format!("`{directive}`"),
+        format!("```\n{directive}\n```"),
+        "List every changed path in the guide.".into(),
+        "List every changed path except generated files in the final report.".into(),
+    ] {
+        assert!(
+            report_context(&text, &messages, None)["recorded_edit_paths"].is_null(),
+            "{text}"
+        );
+    }
+}
+
+#[test]
+fn an_all_paths_report_accounts_for_each_edited_declared_artifact() {
+    let root = format!("Name every changed path in the final report.\n<task_requirements>\n{}\n</task_requirements>", json!({
+        "version":1, "requirements":[{"id":"deliver", "description":"Change source and guide",
+          "artifacts":[{"path":"src/new.rs","kind":"source"},{"path":"my guide.md","kind":"documentation"}],
+          "checks":[{"command":"cargo test"}]}]
+    }));
+    let mut messages = vec![json!({"role":"user","content":root})];
+    for path in ["src/new.rs", "my guide.md", "temporary.rs"] {
+        exchange(
+            &mut messages,
+            "patch_file",
+            json!({"path":path}),
+            &format!("OK: patched '{path}'"),
+        );
+    }
+    let complete = "Updated ./src/new.rs and `my guide.md`.";
+    for summary in [
+        "src/new.rs",
+        "src/new.rs.bak and my guide.md",
+        "unrelated/src/new.rs and my guide.md",
+    ] {
+        let error =
+            validate_authored_done_summary(&root, summary, complete, &messages, None).unwrap_err();
+        assert!(error.contains("Still missing:"), "{error}");
+    }
+    assert!(validate_authored_done_summary(&root, complete, complete, &messages, None).is_ok());
+    let windows_paths = "Updated 「src\\new.rs」 and 「my guide.md」。";
+    assert!(
+        validate_authored_done_summary(&root, windows_paths, windows_paths, &messages, None)
+            .is_ok()
+    );
+}
+
+#[test]
 fn practical_example_prompts_activate_native_before_after_report_checks() {
     let command = "python3 -B -S -m unittest discover -s tests -v";
     for (root, source, doc) in [

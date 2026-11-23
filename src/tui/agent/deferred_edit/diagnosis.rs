@@ -73,11 +73,7 @@ fn history(messages: &[Value]) -> Option<History<'_>> {
     };
     let patch = held_patch(&proposal)?;
     let latest_hold = proposal.id;
-    if patch.search.trim().is_empty()
-        || patch.search == patch.replace
-        || patch.search.len() + patch.replace.len() > 4096
-        || !eligible_target(crate::task_origin::root_user_text(messages), &patch.path)
-    {
+    if !patch.eligible(crate::task_origin::root_user_text(messages)) {
         return None;
     }
     let failure = loop {
@@ -208,6 +204,73 @@ fn confirmed(read: &Exchange<'_>, patch: &Patch, source: &str, first: usize, las
             .eq(body.split_inclusive('\n'))
 }
 
+impl Patch {
+    fn eligible(&self, task: &str) -> bool {
+        !self.search.trim().is_empty()
+            && self.search != self.replace
+            && self.search.len() + self.replace.len() <= 4096
+            && eligible_target(task, &self.path)
+    }
+
+    fn anchor_lines(&self, source: &str) -> Option<(usize, usize)> {
+        let mut matches = source.match_indices(&self.search);
+        let (at, _) = matches.next()?;
+        if matches.next().is_some() {
+            return None;
+        }
+        let first = source[..at].bytes().filter(|b| *b == b'\n').count() + 1;
+        let last = first
+            + self
+                .search
+                .strip_suffix('\n')
+                .unwrap_or(&self.search)
+                .bytes()
+                .filter(|b| *b == b'\n')
+                .count();
+        if source
+            .split_inclusive('\n')
+            .skip(first - 1)
+            .take(last - first + 1)
+            .flat_map(str::chars)
+            .nth(crate::file_tools::MAX_READ_CHARS)
+            .is_some()
+        {
+            return None;
+        }
+        ReadRequest {
+            path: self.path.clone(),
+            start_line: Some(first),
+            end_line: Some(last),
+        }
+        .bounds()
+        .ok()
+    }
+
+    fn read_args(&self, first: usize, last: usize) -> Value {
+        json!({"path": self.path, "start_line":first, "end_line":last})
+    }
+}
+
+/// Locate the rejected literal proposal for a new read. This hint never
+/// supplies a read receipt or marks the failed check as resolved.
+pub(in crate::tui::agent) fn evidence_read(
+    call: &crate::streaming::ToolCallData,
+    task: &str,
+    workspace: &str,
+) -> Option<Value> {
+    if call.name != "patch_file" || call.arguments.len() > 4608 {
+        return None;
+    }
+    let patch: Patch = serde_json::from_str(&call.arguments).ok()?;
+    if !patch.eligible(task) {
+        return None;
+    }
+    let root = Path::new(workspace).canonicalize().ok()?;
+    let source = bounded_workspace_text(&root, &patch.path, FILE_LIMIT)?;
+    let (first, last) = patch.anchor_lines(&source)?;
+    Some(patch.read_args(first, last))
+}
+
 pub(in crate::tui::agent) fn project(messages: &[Value], workspace: &str) -> Option<NextAction> {
     let h = history(messages)?;
     let root = Path::new(workspace).canonicalize().ok()?;
@@ -219,35 +282,7 @@ pub(in crate::tui::agent) fn project(messages: &[Value], workspace: &str) -> Opt
         return None;
     }
     let source = bounded_workspace_text(&root, &h.patch.path, FILE_LIMIT)?;
-    let mut matches = source.match_indices(&h.patch.search);
-    let (at, _) = matches.next()?;
-    if matches.next().is_some() {
-        return None;
-    }
-    let first = source[..at].bytes().filter(|b| *b == b'\n').count() + 1;
-    let last = first
-        + h.patch
-            .search
-            .strip_suffix('\n')
-            .unwrap_or(&h.patch.search)
-            .bytes()
-            .filter(|b| *b == b'\n')
-            .count();
-    if source
-        .split_inclusive('\n')
-        .skip(first - 1)
-        .take(last - first + 1)
-        .flat_map(str::chars)
-        .nth(crate::file_tools::MAX_READ_CHARS)
-        .is_some()
-    {
-        return None;
-    }
-    let range = json!({"path":h.patch.path,"start_line":first,"end_line":last});
-    serde_json::from_value::<ReadRequest>(range.clone())
-        .ok()?
-        .bounds()
-        .ok()?;
+    let (first, last) = h.patch.anchor_lines(&source)?;
     let read = h.read.filter(|r| {
         r.id != h.failure.id
             && r.id != h.proposal.id
@@ -258,7 +293,7 @@ pub(in crate::tui::agent) fn project(messages: &[Value], workspace: &str) -> Opt
     let (suggested_tool, suggested_args, instruction) = if read.is_some() {
         ("patch_file", json!(h.patch), "The diagnostic read covers your earlier proposal and its exact search still occurs once. Reconsider it against the objective. If appropriate, submit it as a new ordinary tool call, then verify the change.")
     } else {
-        ("read_file", range, "Your earlier patch was held for diagnosis. Inspect this current source window. If it explains the failure, reconsider the proposal after the read.")
+        ("read_file", h.patch.read_args(first,last), "Your earlier patch was held for diagnosis. Inspect this current source window. If it explains the failure, reconsider the proposal after the read.")
     };
     Some(NextAction {
         proposal_call_id: h.proposal.id.into(),

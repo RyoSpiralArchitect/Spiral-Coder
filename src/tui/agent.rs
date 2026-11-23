@@ -42,6 +42,8 @@ use crate::streaming::{
 use crate::types::ChatMessage;
 use std::path::Path;
 
+#[cfg(test)]
+mod absent_artifact_runtime_tests;
 mod acceptance_report;
 mod acceptance_schema;
 pub mod agent_loop;
@@ -99,7 +101,9 @@ mod next_action_tests;
 #[cfg(test)]
 mod no_change_runtime_tests;
 mod no_tool_call;
+mod observation_key;
 mod observation_stall;
+pub(crate) use observation_stall::unchanged_reread;
 mod outcome;
 mod output_compaction;
 mod plan_governor;
@@ -226,6 +230,7 @@ use self::meta_harness::MetaHarness;
 use self::output_compaction::*;
 use self::plan_governor::*;
 use self::progress_bridge::ProgressBridgeView;
+pub(crate) use self::prompt_setup::require_explicit_exec_command;
 use self::prompt_setup::*;
 pub use self::prompt_setup::{
     apply_diff_tool_def, coder_system, done_tool_def, exec_tool_def, glob_tool_def,

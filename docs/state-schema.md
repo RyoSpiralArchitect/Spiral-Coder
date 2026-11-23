@@ -33,9 +33,19 @@ into a `diagnose` phase with an exact-path `read_file` schema and runtime
 refusal for other proposed actions. `done` stays available for a blocked report;
 the final shared report slot wins over diagnosis. Actual failed reads release
 the narrow schema for ordinary access/path diagnosis without resolving the
-failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
+failure. A read that fails only because a declared artifact without native edit
+receipts does not exist yet is not a failure to diagnose. The recovery stage,
+reflection requirement and agent state stay as they are, and the hint says to
+create the file. When a later slice restores a pending edit diagnosis from
+history, it skips such a read as well. In S31, three writes creating the test file were held after
+such a read. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
+For a pending Markdown artifact, a current partial read can also yield
+`task_requirements.document_ending`. It cites that read and gives native
+`read_file` arguments for the final twelve lines so an append can use an
+observed anchor. Both roles receive the same suggested window. Editing a
+declared file through the shell leaves its native file-edit obligation open.
 While a correlated recovery failure remains pending, module-discovery guesses
 from older reads cannot supply a replacement repair target or rewrite an
 observation into a different source read. Fix-stage guidance and observation
@@ -441,6 +451,11 @@ Localized verification failures:
   bounded diagnostic hints are intentionally visible to the model.
   New human task boundaries discard the previous task's recovery focus.
 - Tool messages carry `recovery_focus: {version: 2, state: {pending: ..., deferred: [...]}}`.
+  A successful read that exactly matches the accepted Observer action can also
+  carry `recovery_focus.accepted_observer_read: true`. Source diagnosis can use
+  this receipt to return once after a read of new lines in the same file. A
+  possible write ends that diagnostic cycle. The receipt grants no edit or
+  verification authority.
   `recovery_snapshot.rs` validates and restores this state, accepting version 1
   single-failure snapshots as well. Empty `deferred` is omitted. Duplicate check
   identities and a deferred list without an active failure are invalid.
@@ -728,6 +743,8 @@ Important rule:
 - this layer may bias the live runtime with overlay prompts
 - it must not directly rewrite `shared/governor_contract.json` during a normal run
 - promotion into a source contract should stay gated by replay/eval health
+
+The live exact-repeat check compares the last successful observation using the tool, full path or search pattern, and effective arguments. Different line ranges remain available to the Coder. The queue keeps a compact diagnostic signature for display and promotion history.
 
 ### 5d. Project-local promoted governor overlay
 
@@ -1259,6 +1276,14 @@ the original human task, native edit/command counts, repeated observations and
 authored done claims distinct from completion proof. It adds no persistent
 store; see [Observer work progress](observer-work-progress.md).
 
+When the original task says `<path> is append-only` for an existing workspace
+document, the first budget binding stores its byte length and SHA-256 in
+`append_only_documents`. Native edits check the proposed prefix before writing.
+Completion and iteration handoff also check the file on disk, including edits
+made by commands. The original fingerprint carries across restarts and later
+iterations. A run that already started on an older runtime keeps its original
+protections. New text after the protected prefix remains editable.
+
 For a task with declared test artifacts, `task_requirements.authored_tests`
 links each path to its original requirement IDs and latest recorded native
 edit. It retains complete descriptions of test-only requirements first, then
@@ -1266,6 +1291,18 @@ requirements shared with other artifacts, within one 4 KiB description budget.
 Both roles can use the shared rules to compare source decisions with public
 test assertions after the structural obligations pass. The view adds no
 persisted state or coverage receipt.
+When a linked requirement explicitly names record or array order, the view
+includes its ID in `ordered_record_requirement`. Both roles can use it to
+exercise the public output with two distinguishable records.
+
+While a named test is still unwritten, `authored_tests.fixture_input` can
+link it to a Python fixture helper explicitly referenced by its test-only
+requirement. Both roles receive the native read ID and the line of a single
+literal sibling JSON load. A complete read of that JSON adds its own receipt
+ID. The fixture contents stay in the original tool result. The hint becomes
+available once any required failing baselines have been reproduced. A
+successful test edit retires it, and edits to the producer or an executable
+workspace action invalidate the recorded observation.
 
 When a declared test file is linked to two or more requirements, the first
 completion claim of a task that passes every other gate receives one
@@ -1300,15 +1337,50 @@ below the review's floor of 8, so its tests were never compared with the fault
 families the task names. The plan is advisory: it blocks nothing, and the
 completion review still follows when there is room.
 
+A funded plan records its review intent in the native tool result's
+`recovery_focus.test_review`. The Coder still receives the plan on the edit.
+A required diagnosis, recheck, failing authored test, baseline or report repair
+keeps the optional review pending across slices. On the first eligible work
+turn, the runtime checks the remaining edit, verification and report budget,
+records the triggering tool call in `dispatched_on`, and yields once. Earlier
+sessions without this local field keep their original scheduling.
+
+When the plan yields to the Observer with a single authored test file, the
+Observer can review the current source alongside all of its linked requirements
+and the requested cases. The handoff asks for a fixture, an assertion and its
+expected public result. A read can supply a specific fact that changes that
+assertion. The focused view needs a recorded edit, a current source snapshot
+and room for an edit, the exact checks and a report. Pending diagnosis,
+rechecks, baselines and report repairs keep their usual priority. A request
+about record order brings a two-record control to both roles. A requested
+symbolic link case also compares a regular component with a link to the same
+valid contents. The existing Observer response and native verification rules
+apply to these suggestions.
+
+If the full review no longer fits but an ordinary Coder reply remains, a
+previous coverage plan with explicitly enumerated cases can ask once for just
+those case-to-test mappings. The report uses the current verification receipts.
+An uncovered mandatory case belongs in an incomplete report and can carry into
+the next iteration.
+
 After the review, the first completion claim whose map is absent, lacks a line
 for a linked requirement, has a line that names no test and does not say `none`,
 or names a function that is not a current test receives one
 `[Test coverage map]` return listing those problems and the current test
 functions. It is skipped when the Coder has no allowance left to answer,
-including a report-only closeout. The next `done` proceeds. The map is the
-Coder's own claim: only its shape and the existence of named tests are checked.
-None of these steps adds completion evidence, a pass condition or a coverage
-receipt.
+including a report-only closeout. The map records the Coder's claim and the
+names of existing tests. Independent verification measures their sensitivity.
+A cited name may be qualified (`tests::name`, `Class.name`, `file.py::name`) and
+matches by its last segment. Test functions are listed for Rust, Python and
+JavaScript/TypeScript files. A name cited for a linked file of another type is
+not checked. The same holds for the tests that a later claim cites for a case
+reported missing (see [the coupled work loop](coupled-work-loop.md)).
+For a test-only requirement with an explicit list such as “Cover A, B and C”,
+both roles also receive the individual case names. The same one-time map
+reminder includes a line for each case, keyed by `requirement ID / case`.
+One parameterized test may exercise several cases. A successful report that
+explicitly labels a requested case `none` returns to the Coder. An incomplete
+report can record that case and the next repair in the same iteration.
 
 For one declared test file, `authored_tests.review_source` carries up to
 8 KiB of quoted source from a correlated complete native read or successful
@@ -1767,10 +1839,13 @@ does not earn another iteration.
 A run with positive progress can still fail its acceptance checks.
 An accepted `blocked` termination with this fresh progress can advance even
 with unused Coder requests. It does not increase the declared number of
-iterations or transfer unused credit. Approval barriers/refusals, provider
-interruptions and no-progress rounds still stop; the prior blocked receipt
-remains incomplete. Other incomplete terminations still require exhausted
-Coder allowance to advance.
+iterations or transfer unused credit. When the last task request is an
+ordinary Coder delivery and its stream ends early, a chain with fresh progress,
+a saved session, and another declared iteration can carry that work forward.
+The interrupted row keeps its error in the child report and names the charged
+request in `continued_after_coder_stream_request`. The next child gets its
+own ledger. Approval barriers, refusals, other provider failures and rounds
+without progress still stop the chain.
 
 A version-1 `iteration_handoff` on the original human message stores the
 source task ID, up to 600 characters of an accepted terminal Observer
@@ -1986,3 +2061,14 @@ final sweep to preserve freshness across the later checks.
 The first Observer handoff after diagnosis uses a native read that includes
 the panic line. A possible mutation retires the quoted source context until
 a fresh native failure locates it again.
+
+
+### Interrupted Coder delivery
+
+A budgeted Coder turn can retry one interrupted stream when its own slice has
+another request. The failed delivery stays in the ledger. The retry's wire
+receipt carries `purpose: "coder_reconnect"` and `retry_of` points to the
+interrupted request. The retry receives the original messages and a recovery
+instruction. Only a complete response can issue tool calls. An exhausted slice,
+a final-report turn, an HTTP or protocol error, and a second failed delivery
+keep their terminal outcomes. Canceling the Coder task cancels its provider call.

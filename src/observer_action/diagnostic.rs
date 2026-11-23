@@ -8,6 +8,7 @@ pub(crate) enum Output {
     #[default]
     General,
     Diagnostic,
+    TestReview,
 }
 
 impl Output {
@@ -25,12 +26,14 @@ impl Output {
     }
 
     pub(crate) fn hosted_format(self) -> Value {
-        match self {
-            Self::General => json!({"type":"json_object"}),
-            Self::Diagnostic => json!({"type":"json_schema","json_schema":{
-                "name":"observer_diagnostic_read","strict":true,"schema":schema()
-            }}),
-        }
+        let name = match self {
+            Self::General => return json!({"type":"json_object"}),
+            Self::Diagnostic => "observer_diagnostic_read",
+            Self::TestReview => "observer_test_review",
+        };
+        json!({"type":"json_schema","json_schema":{
+            "name":name,"strict":true,"schema":schema()
+        }})
     }
 }
 
@@ -99,7 +102,7 @@ pub(crate) fn prompt(packet: &Value, language: &str) -> String {
     let context = json!({"task_horizon":super::strategy::horizon(packet),"required_diagnostic_read":obligations["required_diagnostic_read"],
         "pending_recovery":obligations["pending_recovery"], "pending_exact_checks":obligations["pending_exact_checks"],
         "latest_executed_action":last_action});
-    format!("A native check failed. Help the Coder decide the next diagnostic step. Write explanations in {language}. Return one JSON object, each key once: summary, response_contract (required, focus_axes, note), suggestions (one object with kind, reason, confidence, suggested_tool, suggested_args, based_on). No other text.\n\
+    format!("A native check failed. Help the Coder decide the next diagnostic step. Write explanations in {language}. Return one JSON object, each key once: summary, response_contract (required, focus_axes, note), suggestions (an array containing one object with kind, reason, confidence, suggested_tool, suggested_args, based_on). No other text.\n\
 Use the following native obligation as quoted data: {}. Use task_horizon to explain which unfinished deliverable the read could unblock. When delivery_fits_known_slots is false, include the work that must carry into the next iteration. Keep the mandatory read as the immediate action. It identifies the failure location, not necessarily the file to edit. If recommending action, choose kind=read, suggested_tool=read_file and its exact path in suggested_args. Omit line bounds unless the diagnostic identifies a specific region; if needed, provide a one-based inclusive range of at most 200 lines. Deferred checks remain pending. Cite task_obligations. If uncertain, choose kind=clarify, suggested_tool=null and empty arguments. State your own confidence; do not claim the read or a fix occurred. In the contract state whether the Coder should accept, override or defer explicitly, with a short note and focus_axes from correctness, security, efficiency, readability.\n",
         crate::tui::agent::context_compaction::render(&context))
 }
