@@ -710,6 +710,27 @@ fn repeated_successful_mutation_issue(
     })
 }
 
+/// A path the original task declares as an artifact that has no native edit
+/// yet and does not exist in the workspace.
+pub(super) fn absent_declared_artifact(
+    messages: &[Value],
+    test_cmd: Option<&str>,
+    path: &str,
+    tool_root: Option<&str>,
+) -> bool {
+    let path = path.trim_start_matches("./");
+    let Some(root) = tool_root else {
+        return false;
+    };
+    if path.is_empty() || std::fs::symlink_metadata(std::path::Path::new(root).join(path)).is_ok() {
+        return false;
+    }
+    project(messages, test_cmd)
+        .pending_artifact_paths
+        .iter()
+        .any(|pending| pending.trim_start_matches("./") == path)
+}
+
 /// The Coder allowance that an authored-test plan or review can count on. A
 /// report-only closeout offers only `done` within one wire attempt, so the Coder
 /// could neither edit tests nor resubmit: it counts as none.

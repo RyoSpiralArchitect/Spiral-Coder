@@ -33,7 +33,11 @@ into a `diagnose` phase with an exact-path `read_file` schema and runtime
 refusal for other proposed actions. `done` stays available for a blocked report;
 the final shared report slot wins over diagnosis. Actual failed reads release
 the narrow schema for ordinary access/path diagnosis without resolving the
-failure. `task_requirements.pending_artifact_paths` is a deduplicated projection
+failure. A read that fails only because a declared artifact without native edit
+receipts does not exist yet is not a failure to diagnose. The recovery stage,
+reflection requirement and agent state stay as they are, and the hint says to
+create the file. In S31, three writes creating the test file were held after
+such a read. `task_requirements.pending_artifact_paths` is a deduplicated projection
 of declared artifacts without native edit receipts, shared with both roles and
 the next-action contract. These fields add no persisted state or proof authority.
 For a pending Markdown artifact, a current partial read can also yield

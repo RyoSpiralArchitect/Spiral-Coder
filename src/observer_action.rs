@@ -196,6 +196,17 @@ fn validate_advice(
         {
             return Some(issue);
         }
+        // R: four Observer suggestions in one iteration re-read the same
+        // unchanged protected check while its failure stayed the same.
+        if let Some((path, repeats)) = agent::unchanged_reread(
+            messages,
+            "read_file",
+            &action.suggested_args,
+            tool_root,
+            test_command,
+        ) {
+            return Some(format!("This read_file of {path} would return the same native result the Coder already received {repeats} times in this task; the file has not changed since. Suggest an action that uses that content, such as an edit tied to the latest failure or a read of a different range or file for a fact not seen yet, or give a no-tool clarify."));
+        }
     }
     if let Some(issue) = source_edit::issue(action, &obligations, tool_root) {
         return Some(issue);

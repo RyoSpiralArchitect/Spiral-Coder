@@ -317,7 +317,19 @@ Action required: obtain a complete read of current contents before write_file. F
     } else {
         None
     };
+    // A declared artifact that does not exist yet is the work still to do, not
+    // a failure to diagnose. S31 iteration 6 read its test file before creating
+    // it; the read error entered diagnose and held three writes creating it.
+    let absent_artifact = is_error
+        && tc.name == "read_file"
+        && requirement_proof::absent_declared_artifact(
+            ctx.messages,
+            ctx.test_cmd,
+            &path,
+            ctx.tool_root_abs.as_deref(),
+        );
     match tc.name.as_str() {
+        "read_file" if absent_artifact => {}
         "read_file" => ctx.recovery.on_diagnostic_result(!is_error),
         "write_file" | "patch_file" => {
             if is_error {
@@ -361,8 +373,14 @@ Action required: obtain a complete read of current contents before write_file. F
                 let _ = ctx.tx.send(StreamToken::Delta(display)).await;
             }
         }
-        *ctx.state = AgentState::Recovery;
-        let hint = if rejected_by_user {
+        if !absent_artifact {
+            *ctx.state = AgentState::Recovery;
+        }
+        let hint = if absent_artifact {
+            format!(
+                "{path} does not exist yet. The original task declares it as an artifact to produce: create it with write_file once its content is ready. There is nothing to read or diagnose."
+            )
+        } else if rejected_by_user {
             "The user rejected the edit. Choose a safer alternative or ask again with a smaller change."
                 .to_string()
         } else if tc.name.as_str() == "read_file" && repo_map_hint.is_some() {
@@ -458,7 +476,7 @@ Action required: obtain a complete read of current contents before write_file. F
         }
     }
 
-    if is_error || *ctx.file_tool_consec_failures >= 2 {
+    if (is_error && !absent_artifact) || *ctx.file_tool_consec_failures >= 2 {
         *ctx.reflection_required = Some(
             ctx.pending_system_hint
                 .clone()

@@ -42,6 +42,8 @@ use crate::streaming::{
 use crate::types::ChatMessage;
 use std::path::Path;
 
+#[cfg(test)]
+mod absent_artifact_runtime_tests;
 mod acceptance_report;
 mod acceptance_schema;
 pub mod agent_loop;
@@ -101,6 +103,7 @@ mod no_change_runtime_tests;
 mod no_tool_call;
 mod observation_key;
 mod observation_stall;
+pub(crate) use observation_stall::unchanged_reread;
 mod outcome;
 mod output_compaction;
 mod plan_governor;

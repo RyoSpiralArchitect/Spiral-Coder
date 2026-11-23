@@ -1004,7 +1004,15 @@ pub(super) async fn validate_plan_think(ctx: &mut PlanThinkCtx<'_>) -> Result<Pl
         test_cmd.as_deref(),
         last_mutation_step,
         file_tool_consec_failures,
-    ) {
+    )
+    .or_else(|| {
+        super::observation_stall::unchanged_read_block(
+            &*messages,
+            tc,
+            tool_root_abs.as_deref(),
+            test_cmd.as_deref(),
+        )
+    }) {
         *state = AgentState::Recovery;
         emit_governor_block(
             governor_emit(
