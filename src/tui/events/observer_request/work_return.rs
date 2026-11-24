@@ -15,8 +15,8 @@ pub(in crate::tui::events) fn native_work_remains(
     // A failed edit or check awaiting repair is unfinished work even when every
     // artifact and check already has proof. In trial T a non-unique edit
     // anchor and its target read were followed by an uncertain Observer answer;
-    // the iteration closed with 27 Coder requests left, and without a new edit
-    // the run stopped.
+    // the iteration closed with 27 of its 32 task requests unused, 20 of them
+    // the Coder's, and without a new edit the run stopped.
     let actionable = !obligations
         .task_requirements
         .pending_artifact_paths

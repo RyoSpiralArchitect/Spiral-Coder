@@ -454,8 +454,8 @@ remains on a Coder work turn (an outstanding artifact, exact check, diagnostic
 read, or a failed edit or check still awaiting repair), the headless driver
 returns the Coder an ordinary work slice without the advice, so the iteration
 keeps its remaining allowance. In trial T, a pending edit failure did not count:
-the iteration closed with 27 Coder requests left, and without a new edit the run
-stopped. At the report turn, or
+the iteration closed with 27 of its 32 task requests unused, 20 of them the
+Coder's, and without a new edit the run stopped. At the report turn, or
 when no native work is left, a declared task with an admitted plan may instead
 receive one report-only Coder request from its remaining allowance. The request
 exposes only `done`; the Observer's tool, arguments and response contract are not
