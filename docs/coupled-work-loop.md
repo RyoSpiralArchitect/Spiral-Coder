@@ -264,7 +264,10 @@ Before an accepted blocked report ends the run this way, the chain returns the
 first such report of a round as work. This applies when the report names its
 `next_steps`, no approval barrier or user refusal is recorded, and the Coder can
 still afford one edit, every required check after it and a report. The
-Observer's terminal diagnosis is still recorded. A runtime-origin
+returned turn must also be a work turn: with complete proof, a declared task's
+next Coder turn is report-only at three or fewer requests, and such a turn
+could not act on the returned step. The Observer's terminal diagnosis is still
+recorded. A runtime-origin
 `[Blocked report returned]` message quotes those next steps and the remaining
 Coder requests. It creates no allowance or progress. A second blocked report in
 the same round ends it as before. In trial U, the Coder reported blocked with

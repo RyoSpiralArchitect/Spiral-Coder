@@ -84,6 +84,11 @@ pub struct TuiReplayCase {
     /// are recorded as completed task-charged receipts for the given role.
     #[serde(default)]
     pub work_budget: Option<TuiReplayBudget>,
+    /// Index into `session_messages` where the current coupled chain round
+    /// begins. Calls and current checks before it are the round's baseline for
+    /// the blocked-report return; without it, the case is not a chain round.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chain_round_start: Option<usize>,
     pub observer_response: Value,
     #[serde(default)]
     pub checks: Vec<TuiReplayCheck>,
@@ -122,11 +127,27 @@ pub enum TuiReplayCheck {
     HintQueued,
     HintNotQueued,
     ContractQueued,
-    ObserverContains { value: String },
-    CoderSystemContains { value: String },
-    TargetMessageContains { value: String },
-    ObserverPromptContains { value: String },
-    ObserverToolContains { value: String },
+    ObserverContains {
+        value: String,
+    },
+    CoderSystemContains {
+        value: String,
+    },
+    TargetMessageContains {
+        value: String,
+    },
+    ObserverPromptContains {
+        value: String,
+    },
+    ObserverToolContains {
+        value: String,
+    },
+    /// The headless coupled driver would return work to the Coder next, with a
+    /// runtime continuation containing `value`.
+    CoderWorkReturned {
+        value: String,
+    },
+    CoderWorkNotReturned,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -150,6 +171,8 @@ pub struct TuiReplayMetrics {
     pub coder_preview_system_count: usize,
     pub target_message_id: Option<String>,
     pub failure_kind: String,
+    #[serde(default)]
+    pub coder_work_returned: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -337,11 +360,12 @@ fn run_case(
     let (selector, reason_hint) = resolve_selector_and_reason(&app, case).map_err(input_error)?;
     let observer_response_raw =
         render_observer_response(&case.observer_response).map_err(input_error)?;
-    let outcome = events::replay_observer_next_action_case(
+    let outcome = events::replay_observer_next_action_round(
         &mut app,
         &selector,
         &reason_hint,
         &observer_response_raw,
+        case.chain_round_start,
     )
     .map_err(|e| input_error(anyhow::anyhow!(e)))?;
 
@@ -391,6 +415,7 @@ fn run_case(
             .count(),
         target_message_id: outcome.target_message_id.clone(),
         failure_kind: outcome.failure_kind.clone(),
+        coder_work_returned: outcome.coder_work_return.is_some(),
     };
     let checks = evaluate_checks(case, &outcome, &metrics);
     let ok = checks.iter().all(|c| c.ok);
@@ -593,6 +618,22 @@ fn evaluate_checks(
                     .to_string(),
                 }
             }
+            TuiReplayCheck::CoderWorkReturned { value } => {
+                let matched = outcome
+                    .coder_work_return
+                    .as_deref()
+                    .is_some_and(|text| text.contains(value));
+                TuiReplayCheckResult {
+                    label: format!("coder_work_returned:{value}"),
+                    ok: matched,
+                    detail: format!("returned={} matched={matched}", metrics.coder_work_returned),
+                }
+            }
+            TuiReplayCheck::CoderWorkNotReturned => TuiReplayCheckResult {
+                label: "coder_work_not_returned".into(),
+                ok: !metrics.coder_work_returned,
+                detail: format!("returned={}", metrics.coder_work_returned),
+            },
         })
         .collect()
 }
@@ -709,6 +750,14 @@ Error: tui-replay checks must be a nonempty array on the case object, alongside 
             "tui replay case '{}': spent requests ({spent}) exceed work_budget.request_limit ({})",
             case.id,
             budget.request_limit
+        );
+    }
+    if let Some(start) = case.chain_round_start {
+        anyhow::ensure!(
+            start <= case.session_messages.len(),
+            "tui replay case '{}': chain_round_start ({start}) is past the end of session_messages ({})",
+            case.id,
+            case.session_messages.len()
         );
     }
     Ok(())

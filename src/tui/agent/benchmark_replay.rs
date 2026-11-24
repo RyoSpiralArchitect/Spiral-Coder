@@ -14,6 +14,7 @@ pub(super) fn case(id: String, path: &str) -> TuiReplayCase {
         tags: vec!["benchmark-plan".to_string(), "observer-handoff".to_string()],
         session_messages: Vec::new(),
         work_budget: None,
+        chain_round_start: None,
         coder_messages: vec![
             TuiReplayMessage { role: TuiReplayMessageRole::User, content: prompt },
             TuiReplayMessage {

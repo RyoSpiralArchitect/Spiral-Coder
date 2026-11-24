@@ -126,32 +126,50 @@ pub(in crate::tui::events) fn low_confidence_work_return(app: &App) -> Option<us
     if wire.role != "observer" || wire.status != "completed" {
         return None;
     }
-    let reply = app
+    low_confidence_leaves_work(app, work.coder_remaining()).then_some(wire.id)
+}
+
+/// The latest complete Observer reply is a valid answer whose primary action
+/// is below the forwarding threshold, while native work remains on a Coder
+/// work turn. TUI replay evaluates this decision on recorded answers, which
+/// have no wire receipt.
+pub(in crate::tui::events) fn low_confidence_leaves_work(
+    app: &App,
+    coder_remaining: usize,
+) -> bool {
+    let Some(reply) = app
         .observer
         .messages
         .iter()
         .rev()
-        .find(|message| message.role == Role::Assistant && message.complete)?;
+        .find(|message| message.role == Role::Assistant && message.complete)
+    else {
+        return false;
+    };
     let raw = reply.raw_content.as_deref().unwrap_or(&reply.content);
+    let Some(messages) = app.coder_session.as_ref().map(|s| &s.messages) else {
+        return false;
+    };
     if suggestion::transport_issue_for_raw(raw).is_some() {
-        return None;
+        return false;
     }
-    let messages = &app.coder_session.as_ref()?.messages;
     let test_command = app.project_test_cmd.as_deref();
     let resolved = crate::observer_action::resolve_advice(
         raw,
         messages,
         test_command,
         super::super::observer_assist::execution_root(app).as_deref(),
-        Some(work.coder_remaining()),
+        Some(coder_remaining),
     );
-    if resolved.issue.is_some() {
-        return None;
-    }
-    let primary = suggestion::primary_suggestion(resolved.envelope.as_ref()?)?;
-    (primary.confidence < 0.75
-        && native_work_remains(messages, test_command, work.coder_remaining()))
-    .then_some(wire.id)
+    resolved.issue.is_none()
+        && resolved
+            .envelope
+            .as_ref()
+            .and_then(suggestion::primary_suggestion)
+            .is_some_and(|primary| {
+                primary.confidence < 0.75
+                    && native_work_remains(messages, test_command, coder_remaining)
+            })
 }
 
 #[cfg(test)]

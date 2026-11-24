@@ -8,8 +8,8 @@ mod work_return;
 pub(super) use delivery::take_delivery_window;
 pub(super) mod reconnect;
 pub(super) use work_return::{
-    low_confidence_work_return, native_work_remains, rejected_repair_work_return,
-    resume_rejected_test_review,
+    low_confidence_leaves_work, low_confidence_work_return, native_work_remains,
+    rejected_repair_work_return, resume_rejected_test_review,
 };
 
 #[derive(Debug)]

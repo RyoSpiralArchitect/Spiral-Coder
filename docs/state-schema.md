@@ -1066,6 +1066,10 @@ confidence or native proof is stored.
 `TuiReplayCheck` also supports `suggestion_not_parsed` and `hint_not_queued`
 assertions so malformed-response fixtures verify refusal, rather than merely
 matching text. Existing positive checks retain their meaning.
+`coder_work_returned` and `coder_work_not_returned` assert the headless coupled
+driver's next work return. The optional case field `chain_round_start` marks
+where the current chain round begins in `session_messages`. Both are replay
+inputs only; no runtime state stores them.
 
 `src/runtime_storage.rs` owns an ephemeral, task-local mapping from a canonical
 workspace to a fresh external `coupled-run --out-dir`. The existing owners and

@@ -108,6 +108,28 @@ impl Progress {
     }
 }
 
+/// The calls and current successful checks recorded before a round starts.
+/// Only later calls can count as the round's progress.
+pub(super) fn round_baseline(
+    messages: &[Value],
+    test_command: Option<&str>,
+) -> (BTreeSet<String>, BTreeSet<String>) {
+    let mut calls = BTreeSet::new();
+    let mut checks = BTreeSet::new();
+    for action in agent::evidence_packet::project(messages, test_command).actions {
+        if action.tool == "exec"
+            && action.succeeded == Some(true)
+            && action.freshness == Freshness::Current
+        {
+            if let Some(command) = action.arguments["command"].as_str() {
+                checks.insert(command.to_owned());
+            }
+        }
+        calls.insert(action.call_id);
+    }
+    (calls, checks)
+}
+
 /// The round's progress so far, against the calls and current checks recorded
 /// before it started.
 pub(super) fn round_progress(
@@ -137,8 +159,10 @@ pub(super) fn round_progress(
 /// An accepted blocked report in a round without progress stops the chain.
 /// The driver returns the first such report as work when the report names its
 /// next step, no approval barrier is recorded, and the Coder can still afford
-/// one edit, every required check after it and a report. A second blocked
-/// report in the same round ends it as before.
+/// one edit, every required check after it and a report. The returned turn
+/// must also be a work turn: with complete proof, three or fewer requests make
+/// the next Coder turn report-only. A second blocked report in the same round
+/// ends it as before.
 pub(super) fn blocked_report_return(
     app: &App,
     root: &str,
@@ -153,7 +177,9 @@ pub(super) fn blocked_report_return(
         .map(str::trim)
         .filter(|steps| !steps.is_empty())?;
     let remaining = app.work_budget.remaining_for("coder");
-    if remaining < obligations.required_exact_checks.len() + 2 {
+    if remaining < obligations.required_exact_checks.len() + 2
+        || obligations.coder_turn(remaining) != agent::task_obligations::CoderTurn::Work
+    {
         return None;
     }
     let evidence = agent::evidence_packet::project(messages, test_command);
@@ -379,8 +405,10 @@ mod blocked_report_return_tests {
 
     /// Trial U, round 5: earlier rounds edited every artifact and passed the
     /// exact check. This round only read and then reported blocked, although
-    /// its own next step was a test edit.
+    /// its own next step was a test edit. With `stale`, an earlier round also
+    /// edited the source after its last check, so the check is pending again.
     fn round(
+        stale: bool,
         calls: Vec<[Value; 2]>,
         next_steps: &str,
         coder_left: usize,
@@ -388,6 +416,14 @@ mod blocked_report_return_tests {
         let (mut app, dir) = crate::tui::events::tests::interaction_app();
         let mut messages = crate::tui::events::tests::closeout_messages();
         let task = crate::task_origin::root_user_text(&messages).to_owned();
+        if stale {
+            messages.extend(call(
+                "late-edit",
+                "patch_file",
+                json!({"path":"source.py"}),
+                "OK: patched 'source.py'",
+            ));
+        }
         messages.extend(calls.into_iter().flatten());
         let report = json!({"summary":"The authored tests are still missing.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[],"next_steps":next_steps});
         messages.extend([
@@ -403,7 +439,7 @@ mod blocked_report_return_tests {
     }
 
     fn returned(app: &App, dir: &tempfile::TempDir, old_checks: &[&str]) -> Option<String> {
-        let old_calls = ["source-edit", "docs-edit", "current-check"]
+        let old_calls = ["source-edit", "docs-edit", "current-check", "late-edit"]
             .map(String::from)
             .into();
         let old_checks = old_checks.iter().map(|c| c.to_string()).collect();
@@ -421,21 +457,28 @@ mod blocked_report_return_tests {
             )
         };
         let next = "Add a test for the empty input in tests/test_source.py.";
-        // One edit, the required check and the report: three requests.
-        let (app, dir) = round(vec![read()], next, 3);
+        let (app, dir) = round(false, vec![read()], next, 4);
         let text = returned(&app, &dir, &[CHECK]).expect("the run would stop");
         assert!(text.starts_with("[Blocked report returned]\n"), "{text}");
         assert!(
-            text.contains(next) && text.contains("3 Coder requests remain"),
+            text.contains(next) && text.contains("4 Coder requests remain"),
             "{text}"
         );
-        let (app, dir) = round(vec![read()], next, 2);
+        // Complete proof turns three remaining requests into a report-only
+        // turn, which could not act on the returned step.
+        let (app, dir) = round(false, vec![read()], next, 3);
+        assert_eq!(returned(&app, &dir, &[CHECK]), None, "a report-only turn");
+        // With the check pending again, three requests are a work turn: one
+        // edit, the required check and the report. Two are not enough.
+        let (app, dir) = round(true, vec![read()], next, 3);
+        assert!(returned(&app, &dir, &[]).is_some(), "a pending check");
+        let (app, dir) = round(true, vec![read()], next, 2);
         assert_eq!(
-            returned(&app, &dir, &[CHECK]),
+            returned(&app, &dir, &[]),
             None,
             "below one edit, the check and a report"
         );
-        let (app, dir) = round(vec![read()], "  ", 3);
+        let (app, dir) = round(false, vec![read()], "  ", 4);
         assert_eq!(
             returned(&app, &dir, &[CHECK]),
             None,
@@ -448,7 +491,7 @@ mod blocked_report_return_tests {
             json!({"path":"source.py"}),
             "OK: patched 'source.py'",
         );
-        let (app, dir) = round(vec![read(), edit], next, 3);
+        let (app, dir) = round(false, vec![read(), edit], next, 4);
         assert_eq!(returned(&app, &dir, &[CHECK]), None, "a changed file");
         let check = call(
             "round-check",
@@ -456,9 +499,9 @@ mod blocked_report_return_tests {
             json!({"command":CHECK}),
             "OK (exit_code: 0)",
         );
-        let (app, dir) = round(vec![read(), check.clone()], next, 3);
+        let (app, dir) = round(false, vec![read(), check.clone()], next, 4);
         assert_eq!(returned(&app, &dir, &[]), None, "a newly verified check");
-        let (app, dir) = round(vec![read(), check], next, 3);
+        let (app, dir) = round(false, vec![read(), check], next, 4);
         assert!(
             returned(&app, &dir, &[CHECK]).is_some(),
             "a recheck is not progress"
@@ -469,7 +512,7 @@ mod blocked_report_return_tests {
             json!({"command":"verify"}),
             "REJECTED BY USER",
         );
-        let (app, dir) = round(vec![read(), denied], next, 3);
+        let (app, dir) = round(false, vec![read(), denied], next, 4);
         assert_eq!(returned(&app, &dir, &[CHECK]), None, "an approval barrier");
     }
 }

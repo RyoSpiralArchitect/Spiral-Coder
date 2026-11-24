@@ -202,6 +202,35 @@ async fn run_owned(args: Args, roles: roles::ResolvedRoles) -> Result<()> {
     run_iteration(args, roles, None).await
 }
 
+const LOW_CONFIDENCE_RETURN: &str = "The Observer's primary action was below the confidence threshold and was not adopted. Use this work slice to advance one outstanding native obligation from current evidence. Follow any required diagnostic read or recheck first. Keep all remaining checks and approvals in force.";
+
+/// The runtime continuation this driver would send after a replayed Observer
+/// answer, instead of closing the slice: after a blocked terminal diagnosis in
+/// a chain round whose first message is `round_start`, the returned blocked
+/// report; otherwise, after a low-confidence answer, the Coder's own slice.
+/// Replay has no wire receipts or loop flags, so the once-per-round limit and
+/// the receipt currency checks stay with the live loop and its tests.
+pub(crate) fn replay_work_return(
+    app: &App,
+    blocked: bool,
+    round_start: Option<usize>,
+) -> Option<String> {
+    if blocked {
+        let messages = &app.coder_session.as_ref()?.messages;
+        let (calls, checks) = iterations::round_baseline(
+            messages.get(..round_start?)?,
+            app.project_test_cmd.as_deref(),
+        );
+        return iterations::blocked_report_return(app, app.tool_root.as_deref()?, &calls, &checks);
+    }
+    (app.pending_observer_hint.is_none()
+        && observer_request::low_confidence_leaves_work(
+            app,
+            app.work_budget.remaining_for("coder"),
+        ))
+    .then(|| LOW_CONFIDENCE_RETURN.to_owned())
+}
+
 async fn run_iteration(
     args: Args,
     roles: roles::ResolvedRoles,
@@ -281,19 +310,8 @@ async fn run_iteration(
             session.cur_cwd = Some(root.clone());
         }
         session.repair_for_resume();
-        let evidence =
-            agent::evidence_packet::project(&session.messages, app.project_test_cmd.as_deref());
-        for action in evidence.actions {
-            if action.tool == "exec"
-                && action.succeeded == Some(true)
-                && action.freshness == agent::current_evidence::Freshness::Current
-            {
-                if let Some(command) = action.arguments["command"].as_str() {
-                    prior_current_checks.insert(command.to_owned());
-                }
-            }
-            prior_calls.insert(action.call_id);
-        }
+        (prior_calls, prior_current_checks) =
+            iterations::round_baseline(&session.messages, app.project_test_cmd.as_deref());
         app.coder_session = Some(session);
         app.work_budget = crate::work_budget::WorkBudget::new(
             prompt.trim_end(),
@@ -397,7 +415,7 @@ async fn run_iteration(
                     send_coder_input(
                         &mut app,
                         &coder_tx,
-                        "The Observer's primary action was below the confidence threshold and was not adopted. Use this work slice to advance one outstanding native obligation from current evidence. Follow any required diagnostic read or recheck first. Keep all remaining checks and approvals in force.".into(),
+                        LOW_CONFIDENCE_RETURN.into(),
                         CoderInput::RuntimeContinuation,
                     ).await;
                     continue;
