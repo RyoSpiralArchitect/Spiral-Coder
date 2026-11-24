@@ -327,6 +327,7 @@ async fn run_iteration(
     // Provider/consumer failures still need the budget, session and failure receipt.
     let outcome: Result<()> = async {
         let mut returned_after_rejected_repair = false;
+        let mut returned_blocked_report = false;
         while app.coder.streaming {
             drain(&mut app, &mut coder_rx, PaneId::Coder, &trace).await?;
             if app.coder_completed == Some(true)
@@ -373,7 +374,21 @@ async fn run_iteration(
             if let Some(args) = &window {
                 trace.event("observer_return_for_delivery", json!({"remaining_coder":app.work_budget.remaining_for("coder"),"native_read_window":args}))?;
             }
-            if blocked || app.work_budget.remaining_for("coder") == 0 {
+            if blocked {
+                // In a chain, a round that ends without progress stops the run.
+                // The first such blocked report returns the Coder's own next step.
+                let report_return = (args.iterations > 1 && !returned_blocked_report)
+                    .then(|| iterations::blocked_report_return(&app, &root, &prior_calls, &prior_current_checks))
+                    .flatten();
+                if let Some(text) = report_return {
+                    returned_blocked_report = true;
+                    trace.event("blocked_report_returned_work", json!({"remaining_coder":app.work_budget.remaining_for("coder")}))?;
+                    send_coder_input(&mut app, &coder_tx, text, CoderInput::RuntimeContinuation).await;
+                    continue;
+                }
+                break;
+            }
+            if app.work_budget.remaining_for("coder") == 0 {
                 break;
             }
             if app.pending_observer_hint.is_none() && window.is_none() {
@@ -425,20 +440,13 @@ async fn run_iteration(
         .map(|s| s.messages.as_slice())
         .unwrap_or_default();
     let obligations = agent::task_obligations::project(messages, app.project_test_cmd.as_deref());
-    let new_baselines = evidence
-        .as_ref()
-        .map(|packet| {
-            obligations
-                .task_requirements
-                .new_test_baselines(messages, packet, &root, &prior_calls)
-        })
-        .unwrap_or_default();
-    let progress = iterations::progress(
+    let progress = iterations::round_progress(
+        messages,
+        &obligations,
         evidence.as_ref(),
+        &root,
         &prior_calls,
         &prior_current_checks,
-        &obligations.required_exact_checks,
-        new_baselines,
     );
     let report = json!({
         "version":1,"completed":outcome.is_ok() && app.coder_completed == Some(true),

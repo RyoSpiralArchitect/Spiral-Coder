@@ -98,6 +98,78 @@ pub(super) fn progress(
     out
 }
 
+impl Progress {
+    /// A new changed file, newly verified declared command or first reproduced
+    /// baseline lets an incomplete round advance instead of ending the run.
+    fn advances(&self) -> bool {
+        !self.changed_files.is_empty()
+            || !self.newly_verified.is_empty()
+            || !self.newly_reproduced_baselines.is_empty()
+    }
+}
+
+/// The round's progress so far, against the calls and current checks recorded
+/// before it started.
+pub(super) fn round_progress(
+    messages: &[Value],
+    obligations: &agent::task_obligations::TaskObligations,
+    evidence: Option<&agent::evidence_packet::ExecutionPacket>,
+    root: &str,
+    old_calls: &BTreeSet<String>,
+    old_checks: &BTreeSet<String>,
+) -> Progress {
+    let baselines = evidence
+        .map(|packet| {
+            obligations
+                .task_requirements
+                .new_test_baselines(messages, packet, root, old_calls)
+        })
+        .unwrap_or_default();
+    progress(
+        evidence,
+        old_calls,
+        old_checks,
+        &obligations.required_exact_checks,
+        baselines,
+    )
+}
+
+/// An accepted blocked report in a round without progress stops the chain.
+/// The driver returns the first such report as work when the report names its
+/// next step, no approval barrier is recorded, and the Coder can still afford
+/// one edit, every required check after it and a report. A second blocked
+/// report in the same round ends it as before.
+pub(super) fn blocked_report_return(
+    app: &App,
+    root: &str,
+    old_calls: &BTreeSet<String>,
+    old_checks: &BTreeSet<String>,
+) -> Option<String> {
+    let messages = &app.coder_session.as_ref()?.messages;
+    let test_command = app.project_test_cmd.as_deref();
+    let obligations = agent::task_obligations::project(messages, test_command);
+    let next_steps = obligations.previous_blocked_report.as_ref()?["next_steps"]
+        .as_str()
+        .map(str::trim)
+        .filter(|steps| !steps.is_empty())?;
+    let remaining = app.work_budget.remaining_for("coder");
+    if remaining < obligations.required_exact_checks.len() + 2 {
+        return None;
+    }
+    let evidence = agent::evidence_packet::project(messages, test_command);
+    let progress = round_progress(
+        messages,
+        &obligations,
+        Some(&evidence),
+        root,
+        old_calls,
+        old_checks,
+    );
+    (!progress.user_refusal && !progress.advances()).then(|| format!(
+        "[Blocked report returned]\nYour blocked report is recorded, but this round has no changed file or newly passed required check yet. A round that ends this way stops the whole run, and {remaining} Coder requests remain in this one. Take the first concrete step of your own next steps now:\n{next_steps}\nIf an approval barrier, a user refusal or a genuine external blocker prevents every edit and check, report again; that report ends the round. The task, its checks and its approvals are unchanged."
+    ))
+}
+
 #[derive(Deserialize)]
 struct Receipt {
     completed: bool,
@@ -108,12 +180,7 @@ struct Receipt {
 
 impl Receipt {
     fn has_progress(&self) -> bool {
-        !self.iteration_progress.changed_files.is_empty()
-            || !self.iteration_progress.newly_verified.is_empty()
-            || !self
-                .iteration_progress
-                .newly_reproduced_baselines
-                .is_empty()
+        self.iteration_progress.advances()
     }
 
     fn interrupted_boundary(&self, error: &anyhow::Error) -> Option<usize> {
@@ -294,6 +361,116 @@ mod continuation_tests {
         assert_eq!(r.stop(), Some("no_new_edit_or_verification"));
         r.iteration_progress.user_refusal = true;
         assert_eq!(r.stop(), Some("user_refusal"));
+    }
+}
+
+#[cfg(test)]
+mod blocked_report_return_tests {
+    use super::*;
+
+    const CHECK: &str = "python3 -B -S check.py";
+
+    fn call(id: &str, tool: &str, args: Value, result: &str) -> [Value; 2] {
+        [
+            json!({"role":"assistant","tool_calls":[{"id":id,"type":"function","function":{"name":tool,"arguments":args.to_string()}}]}),
+            json!({"role":"tool","tool_call_id":id,"content":result}),
+        ]
+    }
+
+    /// Trial U, round 5: earlier rounds edited every artifact and passed the
+    /// exact check. This round only read and then reported blocked, although
+    /// its own next step was a test edit.
+    fn round(
+        calls: Vec<[Value; 2]>,
+        next_steps: &str,
+        coder_left: usize,
+    ) -> (App, tempfile::TempDir) {
+        let (mut app, dir) = crate::tui::events::tests::interaction_app();
+        let mut messages = crate::tui::events::tests::closeout_messages();
+        let task = crate::task_origin::root_user_text(&messages).to_owned();
+        messages.extend(calls.into_iter().flatten());
+        let report = json!({"summary":"The authored tests are still missing.","completed_acceptance":[],"remaining_acceptance":["acceptance 1"],"acceptance_evidence":[],"next_steps":next_steps});
+        messages.extend([
+            json!({"role":"assistant","tool_calls":[{"id":"report","type":"function","function":{"name":"done","arguments":report.to_string()}}]}),
+            json!({"role":"tool","tool_call_id":"report","content":"OK: blocked","blocked_report":{"remaining_acceptance":["acceptance 1"],"next_steps":next_steps}}),
+        ]);
+        app.project_test_cmd = Some(CHECK.into());
+        app.coder_session = Some(crate::agent_session::AgentSession::new(
+            None, None, None, None, messages,
+        ));
+        app.work_budget = crate::work_budget::WorkBudget::new(&task, coder_left, None);
+        (app, dir)
+    }
+
+    fn returned(app: &App, dir: &tempfile::TempDir, old_checks: &[&str]) -> Option<String> {
+        let old_calls = ["source-edit", "docs-edit", "current-check"]
+            .map(String::from)
+            .into();
+        let old_checks = old_checks.iter().map(|c| c.to_string()).collect();
+        blocked_report_return(app, dir.path().to_str().unwrap(), &old_calls, &old_checks)
+    }
+
+    #[test]
+    fn a_blocked_report_that_would_stop_the_run_returns_its_own_next_step() {
+        let read = || {
+            call(
+                "read",
+                "read_file",
+                json!({"path":"source.py"}),
+                "[source.py] (1 lines, 9 bytes)\nfixed()\n",
+            )
+        };
+        let next = "Add a test for the empty input in tests/test_source.py.";
+        // One edit, the required check and the report: three requests.
+        let (app, dir) = round(vec![read()], next, 3);
+        let text = returned(&app, &dir, &[CHECK]).expect("the run would stop");
+        assert!(text.starts_with("[Blocked report returned]\n"), "{text}");
+        assert!(
+            text.contains(next) && text.contains("3 Coder requests remain"),
+            "{text}"
+        );
+        let (app, dir) = round(vec![read()], next, 2);
+        assert_eq!(
+            returned(&app, &dir, &[CHECK]),
+            None,
+            "below one edit, the check and a report"
+        );
+        let (app, dir) = round(vec![read()], "  ", 3);
+        assert_eq!(
+            returned(&app, &dir, &[CHECK]),
+            None,
+            "no next step to return"
+        );
+        // Progress lets the round advance, so its report is not returned.
+        let edit = call(
+            "round-edit",
+            "patch_file",
+            json!({"path":"source.py"}),
+            "OK: patched 'source.py'",
+        );
+        let (app, dir) = round(vec![read(), edit], next, 3);
+        assert_eq!(returned(&app, &dir, &[CHECK]), None, "a changed file");
+        let check = call(
+            "round-check",
+            "exec",
+            json!({"command":CHECK}),
+            "OK (exit_code: 0)",
+        );
+        let (app, dir) = round(vec![read(), check.clone()], next, 3);
+        assert_eq!(returned(&app, &dir, &[]), None, "a newly verified check");
+        let (app, dir) = round(vec![read(), check], next, 3);
+        assert!(
+            returned(&app, &dir, &[CHECK]).is_some(),
+            "a recheck is not progress"
+        );
+        let denied = call(
+            "denied",
+            "exec",
+            json!({"command":"verify"}),
+            "REJECTED BY USER",
+        );
+        let (app, dir) = round(vec![read(), denied], next, 3);
+        assert_eq!(returned(&app, &dir, &[CHECK]), None, "an approval barrier");
     }
 }
 

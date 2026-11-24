@@ -464,7 +464,9 @@ completion still fails. Stale replies, malformed envelopes, approval barriers,
 exhausted budgets, already-blocked tasks and repeated closeout attempts cannot use
 this path. An accepted blocked report can reach the next predeclared iteration
 only through the existing progress/no-refusal rule. No progress still stops; caps
-never grow.
+never grow. The first such report of a round is returned once as work when it
+names a next step and the Coder can still afford one edit, the required checks
+and a report.
 
 
 Pending native recovery owns repair guidance as well as the initial diagnostic

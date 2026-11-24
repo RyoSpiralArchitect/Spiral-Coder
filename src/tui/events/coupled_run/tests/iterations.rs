@@ -209,12 +209,14 @@ async fn iteration_case(first: FirstRound) {
     );
     assert_eq!(manifest["stop_reason"], "no_new_edit_or_verification");
     assert_eq!(manifest["max_iterations"], 6);
+    // A second-round blocked report without progress is returned once (one more
+    // Coder request and terminal diagnosis) before the repeated report stops.
     let (limit, spent) = match first {
         FirstRound::Exhausted => (12, 4),
-        FirstRound::Blocked => (30, 5),
+        FirstRound::Blocked => (30, 7),
         // The uncertain answer returns the Coder a work slice; its own blocked
         // report then receives the terminal diagnosis and its one repair.
-        FirstRound::Uncertain => (30, 7),
+        FirstRound::Uncertain => (30, 10),
     };
     assert_eq!(manifest["max_task_requests"], limit);
     assert_eq!(manifest["max_wire_requests"], limit);
@@ -231,6 +233,22 @@ async fn iteration_case(first: FirstRound) {
         );
         assert_eq!(manifest["completed"], false);
         early_blocked.assert_hits(1);
+        assert_eq!(manifest["iterations"][1]["termination"], "blocked");
+        let trace = std::fs::read_to_string(output.join("iteration-02/trace.jsonl")).unwrap();
+        assert_eq!(trace.matches("blocked_report_returned_work").count(), 1);
+        let session: Value = serde_json::from_slice(
+            &std::fs::read(output.join("iteration-02/session.json")).unwrap(),
+        )
+        .unwrap();
+        let returned: Vec<_> = session["messages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|m| m["content"].as_str())
+            .filter(|c| c.starts_with("[Blocked report returned]"))
+            .collect();
+        assert_eq!(returned.len(), 1, "{returned:?}");
+        assert!(returned[0].contains(blocked_args["next_steps"].as_str().unwrap()));
     } else {
         early_blocked.assert_hits(0);
     }
@@ -271,11 +289,15 @@ async fn iteration_case(first: FirstRound) {
             .contains(&json!("printf verified")));
     }
     coder_first.assert_hits(1);
-    resumed.assert_hits(1);
-    observer.assert_hits(if matches!(first, FirstRound::Uncertain) {
-        4
+    resumed.assert_hits(if matches!(first, FirstRound::Exhausted) {
+        1
     } else {
         2
+    });
+    observer.assert_hits(match first {
+        FirstRound::Exhausted => 2,
+        FirstRound::Blocked => 3,
+        FirstRound::Uncertain => 6,
     });
 }
 

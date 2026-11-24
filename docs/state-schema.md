@@ -1845,7 +1845,11 @@ a saved session, and another declared iteration can carry that work forward.
 The interrupted row keeps its error in the child report and names the charged
 request in `continued_after_coder_stream_request`. The next child gets its
 own ledger. Approval barriers, refusals, other provider failures and rounds
-without progress still stop the chain.
+without progress still stop the chain. Before that stop, the first accepted
+blocked report of a round without progress can be returned once as work. The
+child trace then records `blocked_report_returned_work`, and the session keeps
+the accepted report followed by a runtime-origin `[Blocked report returned]`
+message.
 
 A version-1 `iteration_handoff` on the original human message stores the
 source task ID, up to 600 characters of an accepted terminal Observer
