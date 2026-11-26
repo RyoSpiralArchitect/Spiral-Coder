@@ -260,6 +260,19 @@ rejected report-only closeout (`report_incomplete`): that attempt is the
 iteration's final Coder turn, even though a rejected attempt is charged as
 transport and the ledger can still show Coder allowance. A user refusal,
 pending approval, provider failure or a round without this progress ends the run.
+Before an accepted blocked report ends the run this way, the chain returns the
+first such report of a round as work. This applies when the report names its
+`next_steps`, no approval barrier or user refusal is recorded, and the Coder can
+still afford one edit, every required check after it and a report. The
+returned turn must also be a work turn: with complete proof, a declared task's
+next Coder turn is report-only at three or fewer requests, and such a turn
+could not act on the returned step. The Observer's terminal diagnosis is still
+recorded. A runtime-origin
+`[Blocked report returned]` message quotes those next steps and the remaining
+Coder requests. It creates no allowance or progress. A second blocked report in
+the same round ends it as before. In trial U, the Coder reported blocked with
+the sixth request of its fifth round and 18 Coder requests left, although its
+own next step was a test edit.
 An accepted incomplete report remains incomplete in its original record.
 An explicit `--seed-session FILE` still starts a newly budgeted invocation
 from an operator-selected native session. Supply the corresponding workspace

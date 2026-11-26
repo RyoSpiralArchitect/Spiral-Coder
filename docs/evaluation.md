@@ -291,6 +291,17 @@ including handoff and diagnostic variants. `observer_tool_contains` asserts on
 the Observer pane's tool messages, where validation issues such as
 capacity rejections are surfaced.
 
+`coder_work_returned` asserts that the headless coupled driver would send the
+Coder a runtime continuation containing `value` after the replayed answer,
+instead of closing its slice; `coder_work_not_returned` asserts that it would
+not. After a low-confidence answer this is the Coder's own slice while native
+work remains on a work turn. After a blocked terminal diagnosis it is the
+returned blocked report, and only for a chain round: `chain_round_start`
+indexes the first `session_messages` entry of the current round, and the calls
+and current checks before it are that round's progress baseline. Replay has no
+wire receipts or loop flags, so the once-per-round limit and the receipt
+checks stay covered by the coupled-run tests.
+
 Every TUI replay case must contain at least one entry in its top-level `checks`
 array. Loading or executing a case with missing or empty checks fails before
 replay artifacts are created. An unknown nested `replay.checks` object does not

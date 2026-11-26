@@ -2332,6 +2332,9 @@ pub(crate) struct TuiNextActionReplayOutcome {
     pub pending_observer_contract: Option<suggestion::ObserverSuggestionEnvelope>,
     pub coder_preview_messages: Vec<ChatMessage>,
     pub observer_tool_messages: Vec<String>,
+    /// The runtime continuation the headless coupled driver would send next
+    /// instead of closing the slice (see `coupled_run::replay_work_return`).
+    pub coder_work_return: Option<String>,
 }
 
 pub(crate) fn latest_tui_next_action_target(app: &App) -> Option<(usize, String)> {
@@ -2343,6 +2346,18 @@ pub(crate) fn replay_observer_next_action_case(
     selector: &str,
     reason_hint: &str,
     observer_response: &str,
+) -> Result<TuiNextActionReplayOutcome, String> {
+    replay_observer_next_action_round(app, selector, reason_hint, observer_response, None)
+}
+
+/// As `replay_observer_next_action_case`, for a transcript whose current chain
+/// round begins at `chain_round_start` in the Coder session.
+pub(crate) fn replay_observer_next_action_round(
+    app: &mut App,
+    selector: &str,
+    reason_hint: &str,
+    observer_response: &str,
+    chain_round_start: Option<usize>,
 ) -> Result<TuiNextActionReplayOutcome, String> {
     let packet = build_tui_meta_failure_packet_for_selector(app, selector)?;
     let (observer_prompt, output) =
@@ -2377,6 +2392,11 @@ pub(crate) fn replay_observer_next_action_case(
     handle_observer_token(StreamToken::Done, app);
 
     let preview_messages = preview_coder_continuation_messages(app, "Continue.");
+    let coder_work_return = coupled_run::replay_work_return(
+        app,
+        reason_hint == "blocked_terminal_diagnosis",
+        chain_round_start,
+    );
 
     Ok(TuiNextActionReplayOutcome {
         selector: selector.to_string(),
@@ -2404,6 +2424,7 @@ pub(crate) fn replay_observer_next_action_case(
             .filter(|m| matches!(m.role, Role::Tool))
             .map(|m| m.content.clone())
             .collect(),
+        coder_work_return,
     })
 }
 
