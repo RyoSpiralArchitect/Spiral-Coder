@@ -1832,7 +1832,13 @@ appendix for those bytes. Unexpected trailing text leaves the reread due.
 ### Bounded coupled iterations
 
 Each chain owns its top-level `iterations.json` and task copy. Each child
-output owns its session, work ledger and report. The manifest attributes
+output owns its session, work ledger and report. `src/coupled_status.rs` is
+the read-only inspector over this layout: `spiral coupled-status --run-dir`
+reconciles the manifest with each round's ledger without calling providers
+or modifying records, reports missing-ledger usage as `null` rather than
+zero, counts in-flight and transport attempts once each in the wire total,
+and keeps the recorded completion claim separate from independent receipt
+qualification. See [coupled-status](coupled-status.md). The manifest attributes
 task and transport usage to the original child task ID. The child's
 `iteration_progress` uses fresh correlated native call IDs. Previously
 recorded edits and checks do not count as new progress on a resumed budget.
